@@ -1,12 +1,12 @@
 
 @font-face {
 	font-family: ImFellFrenchCannon;
-    src: url(../fonts/FeFCsc2.ttf);
+    src: url(../../fonts/FeFCsc2.ttf);
 }
 
 @font-face {
 	font-family: ImFellDoublePica;
-    src: url(../fonts/IMFeDPsc28P.ttf);
+    src: url(../../fonts/IMFeDPsc28P.ttf);
 }
 
 body {
@@ -162,7 +162,7 @@ a:focus {
 .intro {
     display: table;
     width: 100%;
-    height: auto;
+    height: 100%;
     padding: 100px 0;
     text-align: center;
     color: #fff;
@@ -189,7 +189,6 @@ a:focus {
 
 @media(min-width:768px) {
     .intro {
-        height: 100%;
         padding: 0;
     }
 

@@ -9,13 +9,13 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Mr Brian</title>
+    <title>PipeRift</title>
 
     <!-- Bootstrap Core CSS -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://getbootstrap.com/dist/css/bootstrap.css" rel="stylesheet" type="text/css" />
 
     <!-- Custom CSS -->
-    <link href="css/grayscale.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
 
     <!-- Custom Fonts -->
     <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
@@ -35,27 +35,33 @@
 
     <!-- Navigation -->
     <nav class="navbar navbar-custom navbar-fixed-top" role="navigation">
-        <div class="container">
-            <!-- Collect the nav links, forms, and other content for toggling -->
-            <div class="collapse navbar-collapse navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <!-- Hidden li included to remove active class from about link when scrolled up past about section -->
-                    <li class="hidden">
-                        <a href="#page-top"></a>
-                    </li>
-                    <li>
-                        <a class="page-scroll" href="#about">About</a>
-                    </li>
-                    <!--
-                    <li>
-                        <a class="page-scroll" href="./press">Press</a>
-                    </li>
-                    -->
-                    <li>
-                        <a class="page-scroll" href="#contact">Contact</a>
-                    </li>
-                </ul>
-            </div>
+<!--
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="fa fa-bars  fa-2x"></span>
+            </button>
+        </div>-->
+
+        <div class="container-fluid">
+            <ul class="nav navbar-nav">
+                <!-- Hidden li included to remove active class from about link when scrolled up past about section -->
+                <li class="hidden">
+                    <a href="#page-top"></a>
+                </li>
+                <li>
+                    <a class="page-scroll" href="#about">About</a>
+                </li>
+                <li>
+                    <a class="page-scroll" href="#team">Team</a>
+                </li>
+                <li>
+                    <a class="page-scroll" href="./mrbrian">Mr Brian</a>
+                </li>
+                <li>
+                    <a class="page-scroll" href="#contact">Contact</a>
+                </li>
+            </ul>
             <!-- /.navbar-collapse -->
         </div>
         <!-- /.container -->
@@ -67,8 +73,8 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-8 col-md-offset-2">
-                        <h1 class="brand-heading">Mr BRIAN</h1>
-                        <p class="intro-text">Who is the human?</p>
+                        <h1 class="brand-heading">Pipe Rift</h1>
+                        <p class="intro-text"></p>
                         <a href="#about" class="btn btn-circle page-scroll">
                             <i class="fa fa-angle-double-down animated"></i>
                         </a>
@@ -83,20 +89,46 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2">
                 <h2>About</h2>
-                <p>Mr Brian is the first person stealth game where you will live a mind-blowing and convoluted adventure never seen before. </p>
-
-                <p>Escape the clutches of the Conscience and prepare your self to discover the secret behind her. </p>
-
-                <p>But.. what if you can decide?</p>
+                <p><b>PipeRift</b> is a small indie studio located in Madrid, Spain. <br>Currently working on <b>Mr. Brian</b></p>
             </div>
         </div>
     </section>
 
-    <section id="separator" class="content-section text-center">
-        <div class="separator-section">
-            <div class="container">
-                <div class="col-lg-8 col-lg-offset-2">
-                    <h2><br><br><br><br></h2>
+    <!-- Team Section -->
+    <section id="team" class="container content-section text-center">
+        <div class="row">
+            <div class="col-lg-10 col-lg-offset-1">
+                <h2>Team</h2>
+                <div class="row">
+                    <div class="col-lg-4">
+                        <h4>Miguel Fernandez<br>
+                        <small>Creative Director & Programmer</small>
+                        </h4>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <h4>Jorge Herrero<br>
+                        <small>Designer</small>
+                        </h4>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <h4>Carlos Ramiro<br>
+                        <small>Designer</small>
+                        </h4>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <h4>Javier Esteban<br>
+                        <small>Concept Artist</small>
+                        </h4>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <h4>Miguel Coronado<br>
+                        <small>3d Artist</small>
+                        </h4>
+                    </div>
                 </div>
             </div>
         </div>
@@ -107,16 +139,11 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2">
                 <h2>Contact</h2>
-                <p>Being developed by PixelDream, a small indie studio from Madrid, Spain.</p>
-                
-                <h3>Email</h3>
-                <p>If you want to get in touch, you can contact us at ..pixeldream.gmail.com</p>
+                <p>If you want to get in touch, you can contact us at:</p>
                 <ul class="list-inline banner-social-buttons">
                     <li>
-                        <a href="https://twitter.com/SBootstrap" class="btn btn-default btn-lg"><i class="fa fa-twitter fa-fw"></i> <span class="network-name">Twitter</span></a>
-                    </li>
-                    <li>
-                        <a href="https://github.com/IronSummitMedia/startbootstrap" class="btn btn-default btn-lg"><i class="fa fa-github fa-fw"></i> <span class="network-name">Github</span></a>
+                        <a href="mailto:piperift@gmail.com" class="btn btn-default btn-lg"><i class="fa fa-envelope fa-fw"></i> <span class="network-name">Email</span></a>
+                        <a href="https://twitter.com/piperift" class="btn btn-default btn-lg"><i class="fa fa-twitter fa-fw"></i> <span class="network-name">Twitter</span></a>
                     </li>
                 </ul>
             </div>
@@ -129,24 +156,18 @@
     <!-- Footer -->
     <footer>
         <div class="container text-center">
-            <p>Copyright &copy; PixelDream 2016</p>
+            <p>Copyright &copy; PipeRift 2016</p>
         </div>
     </footer>
 
-    <!-- jQuery -->
+
     <script src="js/jquery.js"></script>
-
-    <!-- Bootstrap Core JavaScript -->
-    <script src="js/bootstrap.min.js"></script>
-
-    <!-- Plugin JavaScript -->
+    <script src="http://getbootstrap.com/dist/js/bootstrap.js"></script>
     <script src="js/jquery.easing.min.js"></script>
 
-    <!-- Google Maps API Key - Use your own API key to enable the map feature. More information on the Google Maps API can be found at https://developers.google.com/maps/ -->
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQq_QjKxG1vReg5rtkkoKyzJ5aIl3vzgQ&sensor=false"></script>
 
-    <!-- Custom Theme JavaScript -->
-    <script src="js/grayscale.js"></script>
+    <script src="js/main.js"></script>
 
 </body>
 
