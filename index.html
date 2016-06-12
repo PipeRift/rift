@@ -1,191 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
+---
+layout: default
+---
 
-<head>
+<div class="main-post-list">
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
+  <ol class="post-list">
+    {% for post in paginator.posts %}
+      <li>
+        <h2 class="post-list__post-title post-title"><a href="{{ site.baseurl }}{{ post.url | remove_first: '/' }}" title="{{ post.title }}">{{ post.title }}</a></h2>
+        <p class="excerpt">{{ post.excerpt | remove: '<p>' | remove: '</p>' }}&hellip;
+          {% assign foundImage = 0 %}
+          {% assign images = post.content | split:"<img " %}
+          {% for image in images %}
+            {% if image contains 'src' %}
 
-    <title>PipeRift</title>
+                {% if foundImage == 0 %}
+                    {% assign html = image | split:"/>" | first %}
+                    <img {{ html }} />
+                    {% assign foundImage = 1 %}
+                {% endif %}
+            {% endif %}
+          {% endfor %}
+        </p>
 
-    <!-- Bootstrap Core CSS -->
-    <link href="http://getbootstrap.com/dist/css/bootstrap.css" rel="stylesheet" type="text/css" />
+        
+        <div class="post-list__meta"><time datetime="{{ post.date | date: "%-d %b %Y" }}" class="post-list__meta--date date">{{ post.date | date: "%-d %b %Y" }}</time> &#8226; <span class="post-meta__tags">on {% for tag in post.tags %}<a href="{{ site.baseurl }}tags/#{{ tag }}">{{ tag }}</a> {% endfor %}</span></div>
+        <hr class="post-list__divider">
+      </li>
+    {% endfor %}
+  </ol>
 
-    <!-- Custom CSS -->
-    <link href="css/style.css" rel="stylesheet">
+  <hr class="post-list__divider ">
 
-    <!-- Custom Fonts -->
-    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css">
-    <link href="http://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+  {% if paginator.previous_page or paginator.next_page %}
+      {% include pagination.html %}
+  {% endif %}
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-
-</head>
-
-<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
-
-    <!-- Navigation -->
-    <nav class="navbar navbar-custom navbar-fixed-top" role="navigation">
-        <!--
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="fa fa-bars  fa-2x"></span>
-            </button>
-        </div>
-        -->
-
-        <div class="container-fluid">
-            <ul class="nav navbar-nav">
-                <!-- Hidden li included to remove active class from about link when scrolled up past about section -->
-                <li class="hidden">
-                    <a href="#page-top"></a>
-                </li>
-                <li>
-                    <a class="page-scroll" href="#about">About</a>
-                </li>
-                <li>
-                    <a class="page-scroll" href="#team">Team</a>
-                </li>
-                <li>
-                    <a class="page-scroll" href="./mrbrian">Mr Brian</a>
-                </li>
-                <li>
-                    <a class="page-scroll" href="#contact">Contact</a>
-                </li>
-            </ul>
-            <!-- /.navbar-collapse -->
-        </div>
-        <!-- /.container -->
-    </nav>
-
-    <!-- Intro Header -->
-    <header class="intro">
-        <div class="intro-body">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-8 col-md-offset-2">
-                        <h1 class="brand-heading">Pipe Rift</h1>
-                        <p class="intro-text"></p>
-                        <a href="#about" class="btn btn-circle page-scroll">
-                            <i class="fa fa-angle-double-down animated"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- About Section -->
-    <section id="about" class="container content-section text-center">
-        <div class="row">
-            <div class="col-lg-8 col-lg-offset-2">
-                <h2>About</h2>
-                <p><b>PipeRift</b> is a small indie studio located in Madrid, Spain. <br>Currently working on <b>Mr. Brian</b></p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Team Section -->
-    <section id="team" class="container content-section text-center">
-        <div class="row">
-            <div class="col-lg-10 col-lg-offset-1">
-                <h2>Team</h2>
-                <div class="row">
-                    <div class="member col-lg-4">
-                        <h4>Miguel Fernandez<br>
-                        <small>Creative Director & Programmer</small>
-                        <p>
-                            <a href="https://twitter.com/muitxer"><i class="fa fa-twitter fa-fw"></i></a>
-                            <a href="https://www.linkedin.com/in/muitxer"><i class="fa fa-linkedin fa-fw"></i></a>
-                            <a href="mailto:miguel_3c@hotmail.com"><i class="fa fa-envelope fa-fw"></i></a>
-                        </p>
-                        </h4>
-                    </div>
-
-                    <div class="member col-lg-4">
-                        <h4>Miguel Coronado<br>
-                        <small>3D Artist</small>
-                        </h4>
-                    </div>
-
-                    <div class="member col-lg-4">
-                        <h4>Antonio Serón<br>
-                        <small>Scriptwriter</small>
-                        </h4>
-                    </div>
-
-                    <div class="member col-lg-4">
-                        <h4>Jorge Herrero<br>
-                        <small>Designer</small>
-                        <p>
-                            <a href="https://twitter.com/jorgehi_"><i class="fa fa-twitter fa-fw"></i></a>
-                            <a href="https://es.linkedin.com/in/jorge-herrero-7441093a"><i class="fa fa-linkedin fa-fw"></i></a>
-                            <a href="mailto:joheil94@gmail.com"><i class="fa fa-envelope fa-fw"></i></a>
-                        </p>
-                        </h4>
-                    </div>
-
-                    <div class="member col-lg-4">
-                        <h4>Carlos Ramiro<br>
-                        <small>Designer</small>
-                        </h4>
-                    </div>
-
-                    <div class="member col-lg-4">
-                        <h4>Isabel Royán<br>
-                        <small>Composer & Sound Designer</small>
-                        </h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="container content-section text-center">
-        <div class="row">
-            <div class="col-lg-8 col-lg-offset-2">
-                <h2>Contact</h2>
-                <p>If you want to get in touch, you can contact us at:</p>
-                <ul class="list-inline banner-social-buttons">
-                    <li>
-                        <a href="mailto:info@piperift.com" class="btn btn-default btn-lg"><i class="fa fa-envelope fa-fw"></i> <span class="network-name">Email</span></a>
-                        <a href="https://twitter.com/piperift" class="btn btn-default btn-lg"><i class="fa fa-twitter fa-fw"></i> <span class="network-name">Twitter</span></a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    <!-- Map Section -->
-    <div id="map"></div>
-
-    <!-- Footer -->
-    <footer>
-        <div class="container text-center">
-            <p>Copyright &copy; PipeRift 2016</p>
-        </div>
-    </footer>
-
-
-    <script src="js/jquery.js"></script>
-    <script src="http://getbootstrap.com/dist/js/bootstrap.js"></script>
-    <script src="js/jquery.easing.min.js"></script>
-
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQq_QjKxG1vReg5rtkkoKyzJ5aIl3vzgQ&sensor=false"></script>
-
-    <script src="js/main.js"></script>
-
-</body>
-
-</html>
+</div>
