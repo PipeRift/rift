@@ -1,5 +1,5 @@
 ---
 layout: tags
-title: PipeRift - Tags
+title: Tags
 permalink: /tags/
 ---

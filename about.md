@@ -1,5 +1,5 @@
 ---
 layout: about
-title: PipeRift - About
+title: About
 permalink: /about/
 ---

@@ -1,5 +1,5 @@
 ---
 layout: categories
-title: PipeRift - Categories
+title: Categories
 permalink: /categories/
 ---
