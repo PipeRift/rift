@@ -10,3 +10,4 @@ A stealth game where Brian will need to escape from the evil Conscience and answ
 Who am I?
 
 {% include img.html src="images/posts/hall.png" alt="hall" %}
+<!--end-preview-->
