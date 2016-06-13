@@ -1,0 +1,57 @@
+{% assign post = include.post %}
+
+<section class="social">
+  <h5 class="">Share:</h5>
+  <nav class="navigation--social no-margin-left">
+    <ul class="navigation">
+
+      <!-- Twitter -->
+      <li class="navigation__item share-twitter">
+        <a title="Click to share on Twitter" target="_blank" href="https://twitter.com/intent/tweet?text={{ post.title }}&url={{ site.url }}{{ post.url }}&via={{ site.author.twitter_username }}&related={{ site.author.twitter_username }}">
+          <i class="fi fi-social-twitter"></i>
+          <span class="label">Twitter</span>
+        </a>
+      </li>
+
+      <!-- Facebook -->
+      <li class="navigation__item share-facebook">
+        <a title="Click to share on Facebook" target="_blank" href="https://facebook.com/sharer.php?u={{ site.url }}{{ post.url }}&p[title]={{ post.title }}">
+          <i class="fi fi-social-facebook"></i>
+          <span class="label">Facebook<!--<span class="share-count">1</span>--></span>
+        </a>
+      </li>
+
+      <!-- Reddit -->
+      <li class="navigation__item share-reddit">
+        <a title="Click to share on Reddit" target="_blank" href="http://www.reddit.com/submit?url={{ site.url }}{{ post.url }}&title={{ post.title }}">
+          <i class="fi fi-social-reddit"></i>
+          <span class="label">Reddit</span>
+        </a>
+      </li>
+
+      <!-- Pinterest -->
+      <li class="navigation__item share-pinterest">
+        <a title="Click to share on Pinterest" target="_blank" href="https://www.pinterest.com/pin/create/button/" data-pin-do="buttonPin" data-pin-custom="true">
+          <i class="fi fi-social-pinterest"></i>
+          <span class="label">Pinterest</span>
+        </a>
+      </li>
+
+      <!-- Google Plus -->
+      <li class="navigation__item share-google-plus">
+        <a title="Click to share on Google+" target="_blank" href="https://plus.google.com/share?url={{ site.url }}{{ post.url }}">
+          <i class="fi fi-social-google-plus"></i>
+          <span class="label">Google+</span>
+        </a>
+      </li>
+
+      <!-- Tumblr -->
+      <li class="navigation__item share-tumblr">
+        <a title="Click to share on Tumblr" target="_blank" href="http://www.tumblr.com/share/link?url={{ site.url }}{{ post.url }}&name={{ post.title }}">
+          <i class="fi fi-social-tumblr"></i>
+          <span class="label">Tumblr</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</section>

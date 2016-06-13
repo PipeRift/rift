@@ -1,10 +1,10 @@
 # Site settings
 title: PipeRift
 description: 'PipeRift - A small game development studio.'
-url: 'piperift.com'
+url: 'http://piperift.com'
 baseurl: '/'
 google_analytics: 'UA-27762240-2'
-disqus_shortname: 'piperift'
+#disqus_shortname: 'piperift'
 
 author:
   name: 'PipeRift'
