@@ -337,7 +337,7 @@ hr {
 
 .panel-title {
 	margin: 0 0 5px 0;
-	font-size: 4.5em;
+	font-size: 5em;
 	letter-spacing: 4px;
 	color: #FFF; }
 
@@ -711,7 +711,7 @@ input[type="tel"] {
 		width: 70px; }
 
 	.panel-title {
-		font-size: 2em; }
+		font-size: 4em; }
 
 	.panel-subtitle {
 		font-size: 1em; }
@@ -724,6 +724,10 @@ input[type="tel"] {
 		margin-top: 5px;
 		margin-left: 0; } }
 @media all and (max-width: 960px) {
+
+	.panel-title {
+		font-size: 3em; }
+
 	.btn-mobile-menu {
 		display: block; }
 
