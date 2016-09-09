@@ -40,6 +40,12 @@ defaults:
       type: 'posts'
     values:
         layout: 'post'
+  -
+    scope:
+      path: "presskit"
+      type: "pages"
+    values:
+      layout: "presskit"
 
 # Build settings
 destination: _site
