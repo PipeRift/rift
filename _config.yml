@@ -14,23 +14,27 @@ author:
 
 team:
   -
-    name: 'Muit '
+    name: 'Miguel Fernández Arce'
     position: 'Creative Director'
     twitter: muitxer
     github: muit
     linkedin: muitxer
-    email: miguel_3c@hotmail.com
+    email: muit@piperift.com
+  - 
+    name: 'Guillermo Castilla Mejías'
+    position: 'Designer'
+    email: gcastillam@piperift.com
   -
-    name: 'Miguel Coronado'
+    name: 'Miguel Coronado García'
     position: '3D Artist'
   - 
-    name: 'Antonio Serón'
-    position: 'Designer & Scriptwriter'
-    email: antonioseronmolina@gmail.com
+    name: 'Martin Barbudo'
+    position: 'Concept Artist'
+    twitter: MartinBarbudo
   - 
-    name: 'Isabel Royán'
-    position: 'Composer & Sound Designer'
-    email: i.royan@hotmail.com
+    name: 'Antonio Serón Molina'
+    position: 'Additional Design'
+    email: antonioseronmolina@gmail.com
 
 
 defaults:
