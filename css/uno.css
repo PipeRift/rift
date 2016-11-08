@@ -10,6 +10,12 @@
     src: url(../fonts/IMFeDPsc28P.ttf);
 }
 
+@font-face {
+	font-family: ObtiSans;
+    src: url(../fonts/ObtiSans.ttf);
+}
+
+
 /* http://meyerweb.com/eric/tools/css/reset/
 	 v2.0 | 20110126
 	 License: none (public domain)
@@ -67,7 +73,7 @@ html {
 	max-height: 100%; }
 
 body {
-	font-family: "Raleway", sans-serif;
+	font-family: ObtiSans, sans-serif;
 	font-size: 1em;
 	color: #FFF; 
 	background-color: #1a1a1a;
