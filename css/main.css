@@ -55,3 +55,22 @@ pre.highlight code,
   border: 3px solid #fff;
   border-radius:100%;
 }
+
+.m-t-1 {
+  margin-top: 1em;
+}
+.m-t-2 {
+  margin-top: 2em;
+}
+.m-t-3 {
+  margin-top: 3em;
+}
+
+/* Lenguaje */
+.lenguaje {
+  display: none;
+}
+
+.lenguaje.visible{
+  display: block;
+}
