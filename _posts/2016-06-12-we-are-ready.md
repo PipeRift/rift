@@ -1,10 +1,9 @@
 ---
 title:  "We are ready!"
 layout: default
-date:   2016-06-12
 display-date: June 12, 2016
 modal-id: 1
-img: dreams.png
+thumbnail: dreams.png
 categories: [mr.brian]
 tags: [development]
 ---

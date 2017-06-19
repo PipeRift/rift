@@ -25,7 +25,7 @@ body {
 }
 
 .text-primary {
-    color: #{{ site.data.template.color.primary }};
+    color: #{{ site.data.template.color.primary }} !important;
 }
 
 p {
@@ -74,6 +74,10 @@ h6 {
 	font-weight: lighter;
 	color: #aaa;
 	-webkit-font-smoothing: antialiased;
+}
+
+.cover {
+  min-height: 100vh;
 }
 
 .img-centered {
@@ -298,7 +302,7 @@ header {
 }
 
 header .intro-text {
-    padding-top: 100px;
+    padding-top: 150px;
     padding-bottom: 50px;
 }
 

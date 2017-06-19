@@ -1,6 +1,7 @@
 ---
 title:  "Another walkthrough"
-date:   2016-08-12
+display-date: Aug 12, 2016
+thumbnail: dreams.png
 categories: [mr.brian]
 tags: [development]
 ---
