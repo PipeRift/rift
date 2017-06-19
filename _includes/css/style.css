@@ -1,8 +1,18 @@
-/*!
- * Start Bootstrap - Agency Bootstrap Theme (http://startbootstrap.com)
- * Code licensed under the Apache License v2.0.
- * For details, see http://www.apache.org/licenses/LICENSE-2.0.
- */
+@font-face {
+	font-family: ImFellFrenchCannon;
+    src: url(../fonts/FeFCsc2.ttf);
+}
+
+@font-face {
+	font-family: ImFellDoublePica;
+    src: url(../fonts/IMFeDPsc28P.ttf);
+}
+
+@font-face {
+	font-family: ObtiSans;
+    src: url(../fonts/ObtiSans.ttf);
+}
+
 
 body {
     overflow-x: hidden;
@@ -55,6 +65,15 @@ h6 {
     text-transform: uppercase;
     font-family: {{ site.data.template.font.primary }};
     font-weight: 700;
+}
+
+h1, h2 {
+    margin-top: .8em;
+	margin-bottom: .4em;
+	font-family: ImFellFrenchCannon, {{ site.data.template.font.primary }};
+	font-weight: lighter;
+	color: #aaa;
+	-webkit-font-smoothing: antialiased;
 }
 
 .img-centered {

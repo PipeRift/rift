@@ -7,5 +7,6 @@ color:
 
 # Font Families
 font:
+  title: 'ImFellFrenchCannon, "Helvetica Neue",Helvetica,Arial,sans-serif'
   primary: 'Montserrat, "Helvetica Neue",Helvetica,Arial,sans-serif'
   secondary: '"Droid Serif", "Helvetica Neue", Helvetica,Arial,sans-serif'
