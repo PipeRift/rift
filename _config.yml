@@ -1,4 +1,6 @@
-url: https://y7kim.github.io
+gems: [jekyll-paginate]
+
+url: https://piperift.com
 
 # Site settings
 title: Piperift
@@ -55,3 +57,6 @@ address:
 # Build settings
 markdown: kramdown
 permalink: pretty
+
+# Pagination
+paginate: 3

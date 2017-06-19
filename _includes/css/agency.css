@@ -82,7 +82,7 @@ h6 {
 .btn-primary:focus,
 .btn-primary:active,
 .btn-primary.active,
-.open .dropdown-toggle.btn-primary {
+.open .dropdown-r.btn-primary {
     border-color: #{{ site.data.template.color.primary }};
     color: #fff;
     background-color: #{{ site.data.template.color.secondary }};
@@ -90,7 +90,7 @@ h6 {
 
 .btn-primary:active,
 .btn-primary.active,
-.open .dropdown-toggle.btn-primary {
+.open .dropdown-toggler.btn-primary {
     background-image: none;
 }
 
@@ -134,7 +134,7 @@ fieldset[disabled] .btn-primary.active {
 .btn-xl:focus,
 .btn-xl:active,
 .btn-xl.active,
-.open .dropdown-toggle.btn-xl {
+.open .dropdown-toggler.btn-xl {
     border-color: #{{ site.data.template.color.primary }};
     color: #fff;
     background-color: #{{ site.data.template.color.secondary }};
@@ -142,7 +142,7 @@ fieldset[disabled] .btn-primary.active {
 
 .btn-xl:active,
 .btn-xl.active,
-.open .dropdown-toggle.btn-xl {
+.open .dropdown-toggler.btn-xl {
     background-image: none;
 }
 
@@ -170,42 +170,42 @@ fieldset[disabled] .btn-xl.active {
     background-color: #fff;
 }
 
-.navbar-default {
+.navbar {
     border-color: transparent;
     background-color: #222;
 }
 
-.navbar-default .navbar-brand {
+.navbar .navbar-brand {
     font-family: "Kaushan Script","Helvetica Neue",Helvetica,Arial,cursive;
     color: #{{ site.data.template.color.primary }};
 }
 
-.navbar-default .navbar-brand:hover,
-.navbar-default .navbar-brand:focus,
-.navbar-default .navbar-brand:active,
-.navbar-default .navbar-brand.active {
+.navbar .navbar-brand:hover,
+.navbar .navbar-brand:focus,
+.navbar .navbar-brand:active,
+.navbar .navbar-brand.active {
     color: #{{ site.data.template.color.secondary }};
 }
 
-.navbar-default .navbar-collapse {
+.navbar .navbar-collapse {
     border-color: rgba(255,255,255,.02);
 }
 
-.navbar-default .navbar-toggle {
+.navbar .navbar-toggler {
     border-color: #{{ site.data.template.color.primary }};
     background-color: #{{ site.data.template.color.primary }};
 }
 
-.navbar-default .navbar-toggle .icon-bar {
+.navbar .navbar-toggler .icon-bar {
     background-color: #fff;
 }
 
-.navbar-default .navbar-toggle:hover,
-.navbar-default .navbar-toggle:focus {
+.navbar .navbar-toggler:hover,
+.navbar .navbar-toggler:focus {
     background-color: #{{ site.data.template.color.primary }};
 }
 
-.navbar-default .nav li a {
+.navbar .navbar-nav li a {
     text-transform: uppercase;
     font-family: {{ site.data.template.font.primary }};
     font-weight: 400;
@@ -216,26 +216,26 @@ fieldset[disabled] .btn-xl.active {
     transition: all ease .35s;
 }
 
-.navbar-default .nav li a:hover,
-.navbar-default .nav li a:focus {
+.navbar .navbar-nav li a:hover,
+.navbar .navbar-nav li a:focus {
     outline: 0;
     color: #{{ site.data.template.color.primary }};
 }
 
-.navbar-default .navbar-nav>.active>a {
+.navbar .navbar-nav>.active>a {
     border-radius: 0;
     color: #fff;
     background-color: #{{ site.data.template.color.primary }};
 }
 
-.navbar-default .navbar-nav>.active>a:hover,
-.navbar-default .navbar-nav>.active>a:focus {
+.navbar .navbar-nav>.active>a:hover,
+.navbar .navbar-nav>.active>a:focus {
     color: #fff;
     background-color: #{{ site.data.template.color.secondary }};
 }
 
 @media(min-width:768px) {
-    .navbar-default {
+    .navbar {
         padding: 15px 0;
         border: 0;
         background-color: rgba(25, 25, 25, .1);
@@ -244,23 +244,23 @@ fieldset[disabled] .btn-xl.active {
         transition: padding .4s;
     }
 
-    .navbar-default .navbar-brand {
+    .navbar .navbar-brand {
         font-size: 2em;
         -webkit-transition: all .3s;
         -moz-transition: all .3s;
         transition: all .3s;
     }
 
-    .navbar-default .navbar-nav>.active>a {
+    .navbar .navbar-nav>.active>a {
         border-radius: 3px;
     }
 
-    .navbar-default.navbar-shrink {
+    .navbar.navbar-shrink {
         padding: 5px 0;
         background-color: #222;
     }
 
-    .navbar-default.navbar-shrink .navbar-brand {
+    .navbar.navbar-shrink .navbar-brand {
         font-size: 1.5em;
     }
 }
