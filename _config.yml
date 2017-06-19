@@ -1,5 +1,3 @@
-gems: [jekyll-paginate]
-
 url: https://piperift.com
 
 # Site settings
@@ -55,7 +53,20 @@ address:
   - line: Tres Cantos, Madrid, 28760
 
 # Build settings
+permalink: /:year/:title/
+
 markdown: kramdown
+highlighter: rouge
+kramdown:
+  # use Github Flavored Markdown
+  input: GFM
+  # do not replace newlines by <br>s
+  hard_wrap: false
+
+gems: ['jekyll-paginate']
+exclude: ['README.md', 'Gemfile', 'Gemfile.lock', 'LICENSE',]
+excerpt_separator: '<!--end-preview-->'
+
 permalink: pretty
 
 # Pagination

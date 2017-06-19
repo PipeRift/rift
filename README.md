@@ -1,15 +1,15 @@
-Agency Jekyll theme
+Piperift Jekyll
 ====================
 
-Agency theme based on [Agency bootstrap theme ](https://startbootstrap.com/template-overviews/agency/)
+# How to
 
-# How to use
+### Execute
 
-###Portfolio 
+### Post
 
-Portfolio projects are in '/_posts'
+Posts are in '/_posts'
 
-Images are in '/img/portfolio'
+Post images are in '/img/posts'
 
 ###About
 
@@ -20,11 +20,6 @@ Images are in '/img/about/'
 Team members and info are in '_config.yml'
 
 Images are in '/img/team/'
-
-
-# Demo
-
-View this jekyll theme in action [here](https://y7kim.github.io/agency-jekyll-theme)
 
 =========
 For more details, read [documentation](http://jekyllrb.com/)

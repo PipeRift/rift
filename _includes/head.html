@@ -1,9 +1,20 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
-    <meta name="viewport" content="width=device-width">
+    <title>{% if page.title %}{{ page.title }} - PipeRift{% else %}{{ site.title }}{% endif %}</title>
+    <meta name="author" content="{{ site.author.name }}">
     <meta name="description" content="{{ site.description }}">
+
+    <meta name="viewport" content="width=device-width">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ site.title }}">
+    <meta name="twitter:description" content="{{ site.description }}">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{{ site.title }}">
+    <meta property="og:description" content="{{ site.description }}">
+
+
     <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
 
 
