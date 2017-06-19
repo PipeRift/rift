@@ -1,68 +1,57 @@
+url: https://y7kim.github.io
+
 # Site settings
-title: PipeRift
-description: 'PipeRift - A small game development studio.'
-url: 'http://piperift.com'
-baseurl: '/'
-google_analytics: 'UA-27762240-2'
-#disqus_shortname: 'piperift'
-
-author:
-  name: 'PipeRift'
-  email: info@piperift.com
-  twitter_username: piperift
-  github_username:  PipeRift
-
-team:
-  -
-    name: 'Miguel Fernández Arce'
-    position: 'Creative Director'
-    twitter: muitxer
-    github: muit
-    linkedin: muitxer
-    email: muit@piperift.com
-  - 
-    name: 'Guillermo Castilla Mejías'
-    position: 'Designer'
-    email: guillecastillam@gmail.com
-    linkedin: guillermo-castilla-mejias-8b3246b3
-  -
-    name: 'Miguel Coronado García'
-    position: '3D Artist'
-    email: migueldel89@gmail.com
-  - 
-    name: 'Martin Barbudo'
-    position: 'Concept Artist'
-    email: MartinMBarbudo@gmail.com
-    twitter: MartinBarbudo
-  - 
-    name: 'Antonio Serón Molina'
-    position: 'Additional Design'
-    email: antonioseronmolina@gmail.com
+title: Piperift
+email: your-email@domain.com
+description: "Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description."
 
 
-defaults:
-  -
-    scope:
-      path: ''
-      type: 'posts'
-    values:
-        layout: 'post'
+# Team names, titles and social links
+people:
+- name: Miguel Fernandez
+  pic: 1
+  position: Founder
+  social:
+    - title: twitter
+      url: #
+    - title: facebook
+      url: #
+    - title: stack-overflow
+      url: #
+
+- name: Larry Parker
+  pic: 2
+  position: Lead Marketer
+  social:
+    - title: twitter
+      url: #
+    - title: facebook
+      url: #
+    - title: linkedin
+      url: #
+
+- name: Diana Petersen
+  pic: 3
+  position: Lead Developer
+  social:
+    - title: twitter
+      url: #
+    - title: facebook
+      url: #
+    - title: google-plus
+      url: #
+
+# Social networks usernames (many more available: google-plus, flickr, dribbble, pinterest, instagram, tumblr, linkedin, etc.)
+social:
+  - title: twitter
+    url: http://twitter.com/piperift
+  - title: github
+    url: http://github.com/piperift
+
+# Postal address (add as many lines as necessary)
+address:
+  - line: Tres Cantos, Madrid, 28760
 
 # Build settings
-destination: _site
-paginate: 10
-permalink: /:year/:title/
 markdown: kramdown
-highlighter: rouge
-
-kramdown:
-  # use Github Flavored Markdown
-  input: GFM
-  # do not replace newlines by <br>s
-  hard_wrap: false
-
-gems: ['jekyll-paginate']
-exclude: ['README.md', 'Gemfile', 'Gemfile.lock', 'screenshot.png']
-
-
-excerpt_separator: '<!--end-preview-->'
+permalink: pretty
