@@ -23,7 +23,7 @@
 
                             <div class="col-md-5 {% if mod == 0 %}pull-md-7{% endif %}">
                                 <h5>{{ post.display-date }}</h5>
-                                <p class="text-muted">{{ post.description }}</p>
+                                <p class="text-muted">{{ post.excerpt | remove: '<p>' | remove: '</p>' }}</p>
                                 <p><a href="#posts_modal{{ post.modal-id }}">Read More...</a></p>
                             </div>
                         </div>
