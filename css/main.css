@@ -65,6 +65,12 @@ pre.highlight code,
 .m-t-3 {
   margin-top: 3em;
 }
+.m-t-6 {
+  margin-top: 6em;
+}
+.m-t-9 {
+  margin-top: 9em;
+}
 
 /* Lenguaje */
 .lenguaje {
@@ -73,4 +79,9 @@ pre.highlight code,
 
 .lenguaje.visible{
   display: block;
+}
+
+.responsive {
+  width: 100%;
+  height: auto;
 }
