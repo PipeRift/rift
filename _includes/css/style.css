@@ -68,16 +68,19 @@ h6 {
 }
 
 .title {
-    margin-top: .8em;
+    margin-top: .4em;
 	margin-bottom: .4em;
 	font-family: ImFellFrenchCannon, {{ site.data.template.font.primary }};
 	font-weight: lighter;
-	color: #aaa;
 	-webkit-font-smoothing: antialiased;
 }
 
 .cover {
   min-height: 100vh;
+}
+
+.cover.press {
+    min-height: 60vh;
 }
 
 .img-centered {
@@ -200,7 +203,7 @@ fieldset[disabled] .btn-xl.active {
 
 .navbar .navbar-brand {
 	font-family: ImFellFrenchCannon, {{ site.data.template.font.primary }};
-    color: #{{ site.data.template.color.primary }};
+    color: #eee;
 }
 
 .navbar .navbar-brand:hover,
@@ -259,9 +262,9 @@ fieldset[disabled] .btn-xl.active {
 
 @media(min-width:768px) {
     .navbar {
-        padding: 15px 0;
+        padding: 8px 0;
         border: 0;
-        background-color: rgba(25, 25, 25, .1);
+        background-color: rgba(25, 25, 25, .2);
         -webkit-transition: padding .4s;
         -moz-transition: padding .4s;
         transition: padding .4s;
@@ -316,8 +319,8 @@ header .intro-text .intro-lead-in {
 
 header .intro-text .intro-heading {
     margin-bottom: 25px;
-    text-transform: uppercase;
-    font-family: {{ site.data.template.font.primary }};
+    text-transform: none;
+    font-family: ImFellFrenchCannon, {{ site.data.template.font.primary }};
     font-size: 50px;
     font-weight: 700;
     line-height: 50px;
@@ -333,14 +336,11 @@ header .intro-text .intro-heading {
         margin-bottom: 25px;
         font-family: {{ site.data.template.font.secondary }};
         font-size: 40px;
-        font-style: italic;
         line-height: 40px;
     }
 
     header .intro-text .intro-heading {
         margin-bottom: 50px;
-        text-transform: uppercase;
-        font-family: {{ site.data.template.font.primary }};
         font-size: 75px;
         font-weight: 700;
         line-height: 75px;
@@ -359,11 +359,10 @@ section h2.section-heading {
 
 section h3.section-subheading {
     margin-bottom: 75px;
-    text-transform: none;
-    font-family: {{ site.data.template.font.secondary }};
-    font-size: 16px;
-    font-style: italic;
-    font-weight: 400;
+    text-transform: uppercase;
+    font-family: {{ site.data.template.font.primary }};
+    font-size: 26px;
+    font-weight: 700;
 }
 
 @media(min-width:768px) {
@@ -675,8 +674,12 @@ section h3.section-subheading {
     margin-top: 0;
 }
 
-aside.clients img {
+#clients img {
     margin: 50px auto;
+}
+
+#clients {
+    text-align: center;
 }
 
 section#contact {
@@ -776,11 +779,20 @@ ul.social-buttons li a {
     font-size: 20px;
     line-height: 40px;
     outline: 0;
-    color: #fff;
     background-color: #222;
+    color: #fff;
+    text-align: center;
     -webkit-transition: all .3s;
     -moz-transition: all .3s;
     transition: all .3s;
+}
+
+.navbar ul.social-buttons li a {
+    background-color: rgba(25, 25, 25, .2);
+}
+
+.navbar.navbar-shrink ul.social-buttons li a {
+    background-color: #222;
 }
 
 ul.social-buttons li a:hover,
@@ -887,4 +899,12 @@ img::-moz-selection {
 
 body {
     webkit-tap-highlight-color: #{{ site.data.template.color.primary }};
+}
+
+.fa-itch-io {
+    background-image: url('{{ site.baseurl }}/img/logos/icon_itchio.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: 19px;
+    width: 19px;
 }
