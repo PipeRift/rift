@@ -47,7 +47,7 @@ kramdown:
   # do not replace newlines by <br>s
   hard_wrap: false
 
-gems: ['jekyll-paginate', 'kramdown']
+plugins: ['jekyll-paginate', 'kramdown']
 exclude: ['README.md', 'Gemfile', 'Gemfile.lock', 'LICENSE',]
 excerpt_separator: '<!--end-preview-->'
 

@@ -28,6 +28,14 @@ body {
     color: #{{ site.data.template.color.primary }} !important;
 }
 
+.bg-muted {
+    background-color: #{{ site.data.template.color.muted }} !important;
+}
+
+.bg-primary {
+    background-color: #{{ site.data.template.color.primary }} !important;
+}
+
 p {
     font-size: 14px;
     line-height: 1.75;
@@ -65,6 +73,10 @@ h6 {
     text-transform: uppercase;
     font-family: {{ site.data.template.font.primary }};
     font-weight: 700;
+}
+
+p {
+    font-size: 18px;
 }
 
 .title {
@@ -202,7 +214,6 @@ fieldset[disabled] .btn-xl.active {
 }
 
 .navbar .navbar-brand {
-	font-family: ImFellFrenchCannon, {{ site.data.template.font.primary }};
     color: #eee;
 }
 
