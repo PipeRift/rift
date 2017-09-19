@@ -99,6 +99,16 @@ p {
     margin: 0 auto;
 }
 
+img.responsive, img.responsive-100 {
+    max-width: 100%;
+}
+img.responsive-80 {
+    max-width: 80%;
+}
+img.responsive-50 {
+    max-width: 50%;
+}
+
 .bg-light-gray {
     background-color: #f7f7f7;
 }

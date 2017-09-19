@@ -13,14 +13,31 @@ author:
 
 # Team names, titles and social links
 people:
-- name: Miguel Fernandez
-  pic: 1
-  position: Founder
+- name: Miguel Fernández
+  position: Founder & programmer
   social:
     - title: twitter
-      url: https://twitter.com/
+      url: https://twitter.com/muitxer
+    - title: linkedin
+      url: https://www.linkedin.com/in/muitxer
     - title: github
       url: https://github.com/muit
+    - title: envelope
+      url: mailto:muit@piperift.com
+
+- name: Miguel Coronado García
+  position: 3D Artist
+  social:
+    - title: envelope
+      url: mailto:migueldel89@gmail.com
+
+- name: Guillermo Castilla Mejías
+  position: Narrative Designer
+  social:
+    - title: linkedin
+      url: https://www.linkedin.com/in/guillermo-castilla-mejias-8b3246b3
+    - title: envelope
+      url: mailto:guillecastillam@gmail.com
 
 # Social networks usernames (many more available: google-plus, flickr, dribbble, pinterest, instagram, tumblr, linkedin, etc.)
 social:
