@@ -1,0 +1,74 @@
+<!-- Posts Grid Section -->
+    <section id="posts" class="bg-light-gray">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2 class="section-heading">Updates</h2>
+                    <!--<h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>-->
+                </div>
+            </div>
+            <div class="row">
+            {% for post in paginator.posts %}
+                <div class="col-12">
+                    <div class="col-lg-10 offset-lg-1" style="padding: 0 4em;">
+                        <h5 class="text-uppercase" style="font-weight:bold; margin-top: 2em; margin-bottom: 2em; color:#000; text-align: left; border-bottom: 4px solid #000; padding: 10px;">
+                            {{ post.title }}
+                        </h5>
+                        {% assign mod = forloop.index0 | modulo:2 %}
+
+                        <div class="row">
+                            <div class="col-md-7 {% if mod == 0 %}push-md-5{% endif %}">
+                                <a href="#posts_modal{{ post.modal-id }}"><img src="/img/posts/{{ post.thumbnail }}" width="100%"></a>
+                            </div>
+
+                            <div class="col-md-5 {% if mod == 0 %}pull-md-7{% endif %}">
+                                <h5>{{ post.display-date }}</h5>
+                                <p class="text-muted">{{ post.excerpt | remove: '<p>' | remove: '</p>' }}</p>
+                                <p><a href="#posts_modal{{ post.modal-id }}">Read More...</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+            <!-- Pagination links -->
+
+            <div class="row justify-content-center">
+                {% if paginator.total_pages > 1 %}
+                <nav aria-label="...">
+                    <ul class="pagination">
+                        <li class="page-item {% unless paginator.previous_page %}disabled{% endunless %}">
+                            <a class="page-link" href="{{ paginator.previous_page_path }}#posts" tabindex="-1">
+                                <span aria-hidden="true">&laquo;</span>
+                                <span class="sr-only">Previous</span>
+                            </a>
+                        </li>
+
+                        {% for page in (1..paginator.total_pages) %}
+                            {% if page == paginator.page %}
+                            <li class="page-item active">
+                                <a class="page-link">{{ page }}<span class="sr-only">(current)</span></a>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                {% if page == 1 %}
+                                <a class="page-link" href="{{ paginator.previous_page_path | prepend: site.baseurl | replace: '//', '/' }}#posts">{{ page }}</a>
+                                {% else %}
+                                <a class="page-link" href="{{ site.paginate_path | prepend: site.baseurl | replace: '//', '/' | replace: ':num', page }}#posts">{{ page }}</a>
+                                {% endif %}
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <li class="page-item {% unless paginator.next_page %}disabled{% endunless %}">
+                            <a class="page-link" href="{{ paginator.next_page_path }}#posts">
+                                <span aria-hidden="true">&raquo;</span>
+                                <span class="sr-only">Next</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </section>

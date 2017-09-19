@@ -1,6 +1,7 @@
 ---
 title:  "Some particles"
-date:   2016-06-12
+display-date: June 16, 2016
+thumbnail: dreams.png
 categories: [mr.brian]
 tags: [development]
 ---
