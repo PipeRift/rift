@@ -4,6 +4,11 @@
 
 @import url('https://fonts.googleapis.com/css?family=Montserrat:200,400,700');
 
+@font-face {
+	font-family: ImFellFrenchCannon;
+    src: url(./assets/fonts/FeFCsc2.ttf);
+}
+
 // Color system
  
 $theme-colors: (
@@ -137,7 +142,7 @@ $nav-tabs-border-width : 			0px;
 
 // Navbar
 
-$navbar-brand-font-size:		0.85 * $font-size-base;
+$navbar-brand-font-size:		1.1 * $font-size-base;
 $navbar-dark-color:         white;
 $navbar-dark-hover-color:   white;
 $navbar-padding-y:          9px;
@@ -186,6 +191,17 @@ $modal-sm:                   255px;
 // Progress bars
 
 $progress-height:   1px;
+
+
+.title, .navbar-title {
+  font-family: ImFellFrenchCannon, Montserrat, "Helvetica Neue",Helvetica,Arial,sans-serif !important;
+}
+
+.title {
+  font-weight: 700 !important;
+  line-height: 50px !important;
+}
+
 
 
 // Import Bootstrap 4.0.0

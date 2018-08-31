@@ -2,6 +2,17 @@
 * Based on Bootstrap v4.0.0 (https://getbootstrap.com) 
 */
 @import url("https://fonts.googleapis.com/css?family=Montserrat:200,400,700");
+@font-face {
+  font-family: ImFellFrenchCannon;
+  src: url(./assets/fonts/FeFCsc2.ttf); }
+
+.title, .navbar-title {
+  font-family: ImFellFrenchCannon, Montserrat, "Helvetica Neue",Helvetica,Arial,sans-serif !important; }
+
+.title {
+  font-weight: 700 !important;
+  line-height: 50px !important; }
+
 /*!
  * Bootstrap v4.0.0 (https://getbootstrap.com)
  * Copyright 2011-2018 The Bootstrap Authors
@@ -2729,10 +2740,10 @@ tbody.collapse.show {
 
 .navbar-brand {
   display: inline-block;
-  padding-top: 0.805rem;
-  padding-bottom: 0.805rem;
+  padding-top: 0.56rem;
+  padding-bottom: 0.56rem;
   margin-right: 1rem;
-  font-size: 0.74375rem;
+  font-size: 1.05rem;
   line-height: inherit;
   white-space: nowrap; }
   .navbar-brand:hover, .navbar-brand:focus {
