@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="  https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/css/bootstrap-datepicker.standalone.min.css">
-  <link rel="stylesheet" href="now-ui-kit.css" type="text/css">
+  <link rel="stylesheet" href="style.css" type="text/css">
   <link rel="stylesheet" href="assets/css/nucleo-icons.css" type="text/css">
   <script src="assets/js/navbar-ontop.js"></script>
   <link rel="icon" href="https://templates.pingendo.com/assets/Pingendo_favicon.ico">
@@ -25,41 +25,39 @@
       <div class="collapse navbar-collapse text-center justify-content-end" id="navbarNowUIKitFree">
         <ul class="navbar-nav">
           <li class="nav-item mx-1 align-items-center d-flex justify-content-center">
-            <a class="nav-link" href="#download">
-              <i class="now-ui-icons arrows-1_cloud-download-93 x2 mr-2"></i>PLUGINS</a>
+            <a class="nav-link" href="#plugins">
+              <i class="fa fa-cog fa-2x mr-2"></i>PLUGINS</a>
           </li>
           <li class="nav-item mx-1 align-items-center d-flex justify-content-center">
-            <a class="nav-link" href="#">
-              <i class="now-ui-icons files_paper x2 mr-2"></i>GAMES</a>
+            <a class="nav-link" href="#games">
+              <i class="fa mr-2 fa-gamepad fa-2x"></i>GAMES</a>
+          </li>
+          <li class="nav-item mx-1 align-items-center d-flex justify-content-center">
+            <a class="nav-link" href="#about-us"> ABOUT US</a>
           </li>
         </ul>
-        <a class="btn btn-light text-primary" href="#pro">
-          <i class="now-ui-icons arrows-1_share-66 mr-1"></i>Get in Touch</a>
         <ul class="navbar-nav flex-row justify-content-center mt-2 mt-md-0">
-          <li class="nav-item mx-3 mx-md-1">
-            <a class="nav-link" href="#" data-placement="bottom" data-toggle="tooltip" title="Join our Discord">
+          <li class="nav-item mx-1">
+            <a class="nav-link" href="https://discord.gg/nnsdr22" data-placement="bottom" data-toggle="tooltip" title="Join our Discord" target="_blank">
               <img height="18px" width="24px" src="assets/img/logos/discord.svg" style="fill: white;"> </a>
           </li>
           <li class="nav-item mx-1">
-            <a class="nav-link" href="#" data-placement="bottom" data-toggle="tooltip" title="Follow us on Twitter">
+            <a class="nav-link" href="https://twitter.com/piperift" data-placement="bottom" data-toggle="tooltip" title="Follow us on Twitter">
               <i class="fa fa-fw fa-twitter fa-2x"></i>
             </a>
           </li>
           <li class="nav-item ml-1">
-            <a class="nav-link" href="#" data-placement="bottom" data-toggle="tooltip" title="See our Github">
+            <a class="nav-link" href="https://github.com/PipeRift" data-placement="bottom" data-toggle="tooltip" title="See our Github">
               <i class="fa fa-fw fa-2x fa-github"></i>
             </a>
           </li>
-          <li class="nav-item ml-1">
-            <a class="nav-link" href="#" data-placement="bottom" data-toggle="tooltip" title="Send a mail">
-              <i class="fa fa-fw fa-2x fa-envelope"></i>
-            </a>
-          </li>
         </ul>
+        <a class="btn btn-light text-primary ml-2" href="mailto:info@piperift.com">
+          <i class="now-ui-icons arrows-1_share-66 mr-1"></i>Get in Touch</a>
       </div>
     </div>
   </nav>
-  <div class="py-5 text-center parallax cover gradient-overlay" style="background-image: url(&quot;./assets/img/header.jpg&quot;); position: relative; background-position: center center; background-size: cover; height: 100vh;">
+  <div class="py-5 text-center parallax cover gradient-overlay" style="background-image: url('./assets/img/header.png'); position: relative; background-position: center center; background-size: cover; height: 100vh;">
     <div class="container d-flex flex-column">
       <div class="row my-auto">
         <div class="col-md-12 text-white">
@@ -80,18 +78,18 @@
       </div>
     </div>
   </div>
-  <div class="py-5 text-center bg-dark">
+  <div class="py-5 text-center bg-dark" id="plugins">
     <div class="container">
       <div class="row">
         <div class="col-md-12">
+          <h1 class="text-center display-3 text-primary">PLUGINS</h1>
           <div class="row">
             <div class="col-md-12">
-              <h1 class="display-1">Our plugins</h1>
               <p class="lead">We develop our plugins for years with real use, testing and well crafted design.
                 <br>Thousands of devs use them and we are super grateful with them
                 <br> </p>
               <div class="row justify-content-center">
-                <div class="col-3 col-md-3">
+                <div class="col-md-3 col-6 my-2">
                   <div class="card">
                     <img class="card-img-top" src="assets/img/plugins/QuestExtension_Thumb.png" alt="Card image cap">
                     <div class="card-body">
@@ -101,7 +99,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-md-3 col-3">
+                <div class="col-md-3 col-6 my-2">
                   <div class="card">
                     <img class="card-img-top" src="assets/img/plugins/FactionsExtension_Thumbnail.png" alt="Card image cap">
                     <div class="card-body">
@@ -112,7 +110,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-md-3 col-3">
+                <div class="col-md-3 col-6 my-2">
                   <div class="card">
                     <img class="card-img-top" src="assets/img/plugins/AttributesExtension_Thumbnail.png" alt="Card image cap">
                     <div class="card-body">
@@ -130,7 +128,7 @@
       </div>
     </div>
   </div>
-  <div class="bg-dark">
+  <div class="bg-dark py-5">
     <div class="container">
       <div class="row">
         <div class="col-md-3 align-self-center text-center p-4">
@@ -158,7 +156,7 @@
             <div class="col-sm-3 text-center">
               <i class="d-block  fa fa-4x fa-linode"></i>
             </div>
-            <div class="col-sm-9">
+            <div class="col-sm-9 text-center">
               <h3 class="">Architecture Design</h3>
               <p class="">Code is always well structured and designed to do its best at what it does while keeping everything as simple as posible. Always start a house from its fundations
                 <br> </p>
@@ -170,7 +168,7 @@
             <div class="col-sm-3 text-center">
               <i class="d-block  fa fa-connectdevelop fa-4x"></i>
             </div>
-            <div class="col-sm-9">
+            <div class="col-sm-9 text-center">
               <h3 class="">Performant</h3>
               <p class="">Fast and light code. All plugins get analyzed to keep performance low and cheap
                 <br> </p>
@@ -186,7 +184,7 @@
         <div class="col-md-12">
           <div class="row">
             <div class="col-md-12">
-              <h1 class="display-1">Projects that use our plugins</h1>
+              <h1 class="display-1">Projects using Piperift</h1>
             </div>
           </div>
         </div>
@@ -194,1143 +192,112 @@
     </div>
   </div>
   <div class="py-5 text-center bg-dark">
-    <div class="container">
+    <div class="container pb-5">
       <div class="row">
         <div class="col-md-12">
-          <div class="row">
-            <div class="col-md-12">
-              <h1 class="display-1">We collaborate with</h1>
-              <div class="row">
-                <div class="col-md-4">
-                  <img class="d-block mx-auto" src="assets/img/logos/nmrih2.png" height="150px"> </div>
-                <div class="col-md-4">
-                  <img src="assets/img/logos/epicgames.png" class="d-block mx-auto" height="150px"> </div>
-                <div class="col-md-4">
-                  <img class="d-block mx-auto" src="assets/img/logos/frontwire.png" height="150px"> </div>
-              </div>
-            </div>
-          </div>
+          <h1 class="display-1">We collaborate with</h1>
         </div>
-      </div>
-    </div>
-  </div>
-  <div class="pt-5">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-12">
-          <h3 class="mb-2">
-            <b>Basic Elements</b>
-          </h3>
-        </div>
-      </div>
-      <div class="row my-4">
-        <div class="col-md-12" style="transition: all 0.25s;">
-          <h4 class="mb-2">Buttons</h4>
-          <p class="text-muted">
-            <b>PICK YOUR STYLE</b>
-          </p>
-          <div class="row mb-4">
-            <div class="col-md-12">
-              <button class="btn btn-primary" type="button">Default</button>
-              <button class="btn btn-primary rounded" type="button">Round</button>
-              <button class="btn btn-primary rounded" type="button">
-                <i class="now-ui-icons ui-2_favourite-28"></i>&nbsp;With Icon</button>
-              <button class="btn btn-primary btn-icon rounded" type="button">
-                <i class="now-ui-icons ui-2_favourite-28 lg"></i>
-              </button>
-              <button class="btn btn-outline-primary rounded" type="button">Simple</button>
-            </div>
-          </div>
-          <p class="text-muted">
-            <b>PICK YOUR SIZE</b>
-          </p>
-          <div class="row mb-4">
-            <div class="col-md-12">
-              <button class="btn btn-primary btn-sm" type="button">Small</button>
-              <button class="btn btn-primary" type="button">Regular</button>
-              <button class="btn btn-primary btn-lg" type="button">Large</button>
-            </div>
-          </div>
-          <p class="text-muted">
-            <b>PICK YOUR COLOR</b>
-          </p>
-          <div class="row">
-            <div class="col-md-12">
-              <button class="btn btn-primary" type="button">Primary</button>
-              <button class="btn btn-secondary" type="button">Secondary</button>
-              <button class="btn btn-info" type="button">Info</button>
-              <button class="btn btn-success" type="button">Success</button>
-              <button class="btn  btn-warning" type="button">Warning</button>
-              <button class="btn btn-danger" type="button">Danger</button>
-              <button class="btn btn-link" type="button">Neutral</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row my-5">
-        <div class="col-md-12">
-          <h4 class="mb-3">Links</h4>
-          <a class="btn btn-link text-primary" role="button" href="#">Primary</a>
-          <a class="btn btn-link text-secondary " role="button" href="#">Secondary</a>
-          <a href="#" class="btn btn-link text-info " role="button">Info</a>
-          <a class="btn btn-link text-success" role="button" href="#">Success</a>
-          <a class="btn btn-link text-warning " role="button" href="#">Warning</a>
-          <a href="#" class="btn btn-link text-danger" role="button">Danger</a>
-        </div>
-      </div>
-      <div class="row my-5">
-        <div class="col-md-12">
-          <h4 class="mb-2">Inputs</h4>
-          <p class="text-muted">
-            <b>FORM CONTROLS</b>
-          </p>
-          <div class="row mb-5">
-            <div class="col-lg-3 col-md-6 col-6">
-              <form class="">
-                <div class="form-group">
-                  <input type="text" class="form-control" placeholder="Regular"> </div>
-              </form>
-            </div>
-            <div class="col-lg-3 col-md-1 col-6">
-              <form class="">
-                <div class="form-group is-valid">
-                  <input type="text" class="form-control" placeholder="Success" value="Success"> </div>
-              </form>
-            </div>
-            <div class="col-lg-3 col-md-6 col-6">
-              <form class="">
-                <div class="form-group is-invalid">
-                  <input type="text" class="form-control" placeholder="Error input" value="Error input"> </div>
-              </form>
-            </div>
-            <div class="col-lg-3 col-md-6 col-6">
-              <form class="">
-                <div class="form-group">
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text" id="basic-addon1">
-                        <i class="fa fa-fw fa-user-circle"></i>
-                      </span>
-                    </div>
-                    <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Left Font Awesome Icon"> </div>
-                </div>
-              </form>
-            </div>
-            <div class="col-lg-3 col-md-6 col-6">
-              <form class="">
-                <div class="form-group">
-                  <div class="input-group">
-                    <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Right Nucleo Icon">
-                    <div class="input-group-append">
-                      <span class="input-group-text" id="basic-addon1">
-                        <i class="now-ui-icons users_single-02 md"></i>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-          <div class="row py-3">
-            <div class="col-md-3 col-6">
-              <p class="text-muted">
-                <b>CHECKBOXES</b>
-              </p>
-              <form class="">
-                <div class="form-group">
-                  <div class="custom-control custom-checkbox pl-0">
-                    <input class="custom-control-input" type="checkbox" id="customCheck1" value="on">
-                    <label class="custom-control-label" for="customCheck1">Unchecked</label>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <div class="custom-control custom-checkbox pl-0">
-                    <input class="custom-control-input" type="checkbox" id="customCheck2" checked="" value="on">
-                    <label class="custom-control-label" for="customCheck2">Checked</label>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <div class="custom-control custom-checkbox pl-0">
-                    <input class="custom-control-input" type="checkbox" id="customCheck3" disabled="" value="on">
-                    <label class="custom-control-label" for="customCheck3">Disabled uchecked</label>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <div class="custom-control custom-checkbox pl-0">
-                    <input class="custom-control-input" type="checkbox" id="customCheck1" disabled="" checked="" value="on">
-                    <label class="custom-control-label" for="customCheck1">Disabled checked</label>
-                  </div>
-                </div>
-              </form>
-            </div>
-            <div class="col-md-3 col-6">
-              <p class="text-muted">
-                <b>RADIOS</b>
-              </p>
-              <form>
-                <div class="custom-control custom-radio">
-                  <input type="radio" id="customRadio1" name="customRadio" class="custom-control-input" value="on">
-                  <label class="custom-control-label" for="customRadio1">Radio is off</label>
-                </div>
-                <div class="custom-control custom-radio">
-                  <input type="radio" id="customRadio2" name="customRadio" class="custom-control-input" value="on" checked="">
-                  <label class="custom-control-label" for="customRadio2">Radio is on</label>
-                </div>
-                <div class="custom-control custom-radio">
-                  <input type="radio" id="customRadio3" name="customRadio2" value="on" disabled="" class="custom-control-input">
-                  <label class="custom-control-label" for="customRadio3">Disabled radio is off</label>
-                </div>
-                <div class="custom-control custom-radio">
-                  <input type="radio" id="customRadio4" name="customRadio2" class="custom-control-input" value="on" disabled="" checked="">
-                  <label class="custom-control-label" for="customRadio4">Disabled radio is on</label>
-                </div>
-              </form>
-            </div>
-            <div class="col-md-3 col-6">
-              <p class="text-muted">
-                <b>TOGGLE BUTTONS</b>
-              </p>
-              <form class="">
-                <div class="form-group mb-2">
-                  <div class="custom-control custom-toggle pl-0">
-                    <input class="custom-control-input" type="checkbox" id="customCheck1" value="on" checked="">
-                    <label class="custom-control-label"></label>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <div class="custom-control custom-toggle pl-0">
-                    <input class="custom-control-input" type="checkbox" value="on" data-off-label="OFF" id="customCheck1">
-                    <label class="custom-control-label"></label>
-                  </div>
-                </div>
-              </form>
-            </div>
-            <div class="col-3 col-md-3">
-              <p class="text-muted">
-                <b>SLIDERS</b>
-              </p>
-              <form class="">
-                <div class="form-group">
-                  <div class="custom-control custom-slider pl-0">
-                    <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
-                    <label class="custom-control-label"></label>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row my-5">
-        <div class="col-md-6">
-          <h4 class="my-3">Menu</h4>
-          <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-            <div class="container">
-              <a class="navbar-brand" href="#">MENU</a>
-              <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent3">
-                <span class="navbar-toggler-icon"></span>
-              </button>
-              <div class="collapse navbar-collapse" id="navbarSupportedContent3">
-                <ul class="navbar-nav mr-auto">
-                  <li class="nav-item mx-1">
-                    <a class="nav-link active" href="#">LINK</a>
-                  </li>
-                  <li class="nav-item mx-1">
-                    <a class="nav-link" href="#">LINK</a>
-                  </li>
-                  <li class="nav-item dropdown mx-1">
-                    <a class="nav-link dropdown-toggle" href="http://example.com" id="navbarDropdownMenuLink" data-toggle="dropdown"> DROPDOWN</a>
-                    <div class="dropdown-menu">
-                      <a class="dropdown-item" href="#">Action</a>
-                      <a class="dropdown-item" href="#">Another action</a>
-                      <a class="dropdown-item" href="#">Something else here</a>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </nav>
-        </div>
-        <div class="col-md-6">
-          <h4 class="my-3">Menu with Icons</h4>
-          <nav class="navbar navbar-expand-lg navbar-dark bg-info">
-            <div class="container">
-              <a class="navbar-brand" href="#">ICONS</a>
-              <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent4">
-                <span class="navbar-toggler-icon"></span>
-              </button>
-              <div class="collapse navbar-collapse" id="navbarSupportedContent4">
-                <ul class="navbar-nav ml-auto">
-                  <li class="nav-item mx-2">
-                    <a class="nav-link" href="#">
-                      <i class="now-ui-icons ui-1_send x2"></i>
-                    </a>
-                  </li>
-                  <li class="nav-item mx-2">
-                    <a class="nav-link" href="#">
-                      <i class="now-ui-icons users_single-02 x2"></i>
-                    </a>
-                  </li>
-                  <li class="nav-item dropdown ml-2">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown">
-                      <i class="now-ui-icons ui-1_settings-gear-63 x2"></i>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right">
-                      <h6 class="dropdown-header">Dropdown header</h6>
-                      <a class="dropdown-item" href="#">Action</a>
-                      <a class="dropdown-item" href="#">Another action</a>
-                      <a class="dropdown-item" href="#">Something else here</a>
-                      <div class="divider"></div>
-                      <a class="dropdown-item" href="#">Separated link</a>
-                      <div class="divider"></div>
-                      <a class="dropdown-item" href="#">One more separated link</a>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </nav>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div>
-    <div class="container">
-      <div class="row">
-        <div class="col-md-12">
-          <h4 class="mb-3">Navigation</h4>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div style="background-image: url(&quot;assets/img/bg7.jpg&quot;); background-position: center center; background-size: cover;" class="pb-5">
-    <nav class="navbar navbar-expand-md bg-primary navbar-dark mb-4">
-      <div class="container">
-        <a class="navbar-brand" href="#">PRIMARY COLOR</a>
-        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarPrimaryContent">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse text-center justify-content-end" id="navbarPrimaryContent">
-          <ul class="navbar-nav">
-            <li class="nav-item mx-1">
-              <a class="nav-link active align-items-center d-flex" href="#">
-                <i class="now-ui-icons objects_globe x2 mr-2"></i> DISCOVER</a>
-            </li>
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">
-                <i class="now-ui-icons users_circle-08 x2 mr-2"></i>&nbsp;PROFILE</a>
-            </li>
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">
-                <i class="now-ui-icons ui-1_settings-gear-63 x2 mr-2"></i>&nbsp;SETTINGS</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <nav class="navbar navbar-expand-md navbar-dark mb-4 bg-info">
-      <div class="container">
-        <a class="navbar-brand" href="#">INFO COLOR</a>
-        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarInfoContent">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse text-center justify-content-end" id="navbarInfoContent">
-          <ul class="navbar-nav">
-            <li class="nav-item mx-1">
-              <a class="nav-link active align-items-center d-flex" href="#">DISCOVER</a>
-            </li>
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">PROFILE</a>
-            </li>
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">SETTINGS</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <nav class="navbar navbar-expand-md navbar-dark mb-4 bg-success">
-      <div class="container">
-        <a class="navbar-brand" href="#">SUCCESS COLOR</a>
-        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSuccessContent">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse text-center justify-content-end" id="navbarSuccessContent">
-          <ul class="navbar-nav">
-            <li class="nav-item mx-1">
-              <a class="nav-link active align-items-center d-flex" href="#">
-                <i class="d-inline now-ui-icons objects_globe x2"></i>
-              </a>
-            </li>
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">
-                <i class="d-inline now-ui-icons users_circle-08 x2"></i>
-              </a>
-            </li>
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">
-                <i class="d-inline now-ui-icons ui-1_settings-gear-63 x2"></i>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <nav class="navbar navbar-expand-md navbar-dark mb-4 bg-warning">
-      <div class="container">
-        <a class="navbar-brand" href="#">WARNING COLOR</a>
-        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarWarningContent">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse text-center justify-content-end" id="navbarWarningContent">
-          <ul class="navbar-nav">
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">
-                <i class="fa fa-fw fa-2x fa-facebook-square"></i>
-              </a>
-            </li>
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">
-                <i class="fa fa-twitter fa-fw fa-2x"></i>
-              </a>
-            </li>
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">
-                <i class="fa d-inline fa-google-plus fa-2x"></i>
-              </a>
-            </li>
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">
-                <i class="fa d-inline fa-instagram fa-2x"></i>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <nav class="navbar navbar-expand-md navbar-dark mb-4 bg-danger">
-      <div class="container">
-        <a class="navbar-brand" href="#">DANGER COLOR</a>
-        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarDangerContent">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse text-center justify-content-end" id="navbarDangerContent">
-          <ul class="navbar-nav">
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">
-                <i class="fa fa-facebook-square fa-fw fa-2x mr-2"></i> SHARE</a>
-            </li>
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">
-                <i class="fa fa-twitter fa-fw fa-2x mr-2"></i> TWEET</a>
-            </li>
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">
-                <i class="fa fa-pinterest fa-fw fa-2x mr-2"></i> PIN</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <nav class="navbar navbar-expand-md navbar-dark mb-5 pb-5 transparent">
-      <div class="container">
-        <a class="navbar-brand" href="#">TRANSPARENT</a>
-        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarTransparentContent">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse text-center justify-content-end" id="navbarTransparentContent">
-          <ul class="navbar-nav">
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">
-                <i class="fa fa-facebook-square fa-fw fa-2x mr-2"></i> FACEBOOK</a>
-            </li>
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">
-                <i class="fa fa-twitter fa-fw fa-2x mr-2"></i> TWITTER</a>
-            </li>
-            <li class="nav-item mx-1">
-              <a class="nav-link align-items-center d-flex" href="#">
-                <i class="fa fa-instagram fa-fw fa-2x mr-2"></i> INSTAGRAM</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-  </div>
-  <div class="py-5 bg-gray">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-6">
-          <p class="text-secondary">
-            <b>TABS WITH ICONS ON CARD</b>
-          </p>
-          <div class="card mb-4">
-            <ul class="nav nav-tabs px-1 py-3  bg-light flex-column flex-lg-row justify-content-md-center text-center">
-              <li class="nav-item">
-                <a class="active nav-link" href="" data-toggle="tab" data-target="#tabone">
-                  <i class="now-ui-icons objects_umbrella-13 mr-1"></i>Home</a>
-              </li>
-              <li class="nav-item ">
-                <a href="" class="nav-link" data-toggle="tab" data-target="#tabtwo">
-                  <i class="now-ui-icons shopping_cart-simple mr-1"></i>Profile</a>
-              </li>
-              <li class="nav-item">
-                <a href="" class="nav-link" data-toggle="tab" data-target="#tabthree">
-                  <i class="now-ui-icons shopping_shop mr-1"></i>Messages</a>
-              </li>
-              <li class="nav-item">
-                <a href="" class="nav-link" data-toggle="tab" data-target="#tabfour">
-                  <i class="now-ui-icons ui-2_settings-90 mr-1"></i>Settings</a>
-              </li>
-            </ul>
-            <div class="card-body">
-              <div class="tab-content mt-2">
-                <div class="tab-pane fade show active text-center" id="tabone" role="tabpanel">
-                  <p class="">I think that’s a responsibility that I have, to push possibilities, to show people, this is the level that things could be at. So when you get something that has the name Kanye West on it, it’s supposed to be pushing the furthest possibilities.
-                    I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus.</p>
-                </div>
-                <div class="tab-pane fade text-center" id="tabtwo" role="tabpanel">
-                  <p class="">I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus. I think that’s a responsibility that I have, to push possibilities, to show people, this
-                    is the level that things could be at. I think that’s a responsibility that I have, to push possibilities, to show people, this is the level that things could be at.</p>
-                </div>
-                <div class="tab-pane fade text-center" id="tabthree" role="tabpanel">
-                  <p class="">I think that’s a responsibility that I have, to push possibilities, to show people, this is the level that things could be at. So when you get something that has the name Kanye West on it, it’s supposed to be pushing the furthest possibilities.
-                    I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus.</p>
-                </div>
-                <div class="tab-pane fade text-center" id="tabfour" role="tabpanel">
-                  <p class="">"I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus. I think that’s a responsibility that I have, to push possibilities, to show people, this
-                    is the level that things could be at."</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <p class="text-secondary">
-            <b>TABS WITH BACKGROUND ON CARD</b>
-          </p>
-          <div class="mb-4 card border-0">
-            <ul class="nav nav-tabs flex-column flex-lg-row p-3 bg-primary justify-content-md-center">
-              <li class="nav-item mr-1 text-center">
-                <a class="active nav-link rounded" href="" data-toggle="pill" data-target="#tabBackgroundOne">Home</a>
-              </li>
-              <li class="nav-item mr-1 text-center">
-                <a href="" class="nav-link rounded" data-toggle="pill" data-target="#tabBackgroundTwo">Profile</a>
-              </li>
-              <li class="nav-item mr-1 text-center">
-                <a href="" class="nav-link rounded" data-toggle="pill" data-target="#tabBackgroundThree">Messages</a>
-              </li>
-              <li class="nav-item text-center">
-                <a href="" class="nav-link rounded" data-toggle="pill" data-target="#tabBackgroundFour">Settings</a>
-              </li>
-            </ul>
-            <div class="card-body">
-              <div class="tab-content mt-2">
-                <div class="tab-pane fade show active text-center" id="tabBackgroundOne" role="tabpanel">
-                  <p class="">I think that’s a responsibility that I have, to push possibilities, to show people, this is the level that things could be at. So when you get something that has the name Kanye West on it, it’s supposed to be pushing the furthest possibilities.
-                    I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus.</p>
-                </div>
-                <div class="tab-pane fade text-center" id="tabBackgroundTwo" role="tabpanel">
-                  <p class="">I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus. I think that’s a responsibility that I have, to push possibilities, to show people, this
-                    is the level that things could be at. I think that’s a responsibility that I have, to push possibilities, to show people, this is the level that things could be at.</p>
-                </div>
-                <div class="tab-pane fade text-center" id="tabBackgroundThree" role="tabpanel">
-                  <p class="">I think that’s a responsibility that I have, to push possibilities, to show people, this is the level that things could be at. So when you get something that has the name Kanye West on it, it’s supposed to be pushing the furthest possibilities.
-                    I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus.</p>
-                </div>
-                <div class="tab-pane fade text-center" id="tabBackgroundFour" role="tabpanel">
-                  <p class="">"I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus. I think that’s a responsibility that I have, to push possibilities, to show people, this
-                    is the level that things could be at."</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="py-5">
-    <div class="container my-5">
-      <div class="row">
-        <div class="col-md-6">
-          <h4 class="mb-3">Progress Bars</h4>
-          <p class="text-muted"> DEFAULT </p>
-          <div class="progress">
-            <div class="progress-bar bg-dark" role="progressbar" style="width: 25%">25%</div>
-          </div>
-          <p class="mt-3 text-primary"> PRIMARY </p>
-          <div class="progress">
-            <div class="progress-bar bg-primary" role="progressbar" style="width: 60%">60%</div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <h4 class="mb-3">Pagination</h4>
-          <ul class="pagination py-3 mb-0">
-            <li class="page-item active">
-              <a class="page-link " href="#">1</a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="#">2</a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="#">3</a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="#">4</a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="#">5</a>
-            </li>
-          </ul>
-          <ul class="pagination pt-2">
-            <li class="page-item">
-              <a class="page-link" href="#">
-                <span>«</span>
-                <span class="sr-only">Previous</span>
-              </a>
-            </li>
-            <li class="page-item">
-              <a class="page-link " href="#">1</a>
-            </li>
-            <li class="page-item active bg-secondary">
-              <a class="page-link" href="#">2</a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="#">3</a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="#">
-                <span>»</span>
-                <span class="sr-only">Next</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div class="row mt-3">
-        <div class="col-md-6">
-          <h4 class="mb-3">Navigation Pills </h4>
-          <ul class="nav nav-pills" role="tablist">
-            <li class="nav-item circle">
-              <a href="#" class="nav-link">
-                <i class="fa fa-diamond"></i>
-              </a>
-            </li>
-            <li class="nav-item circle ">
-              <a href="#" class="nav-link active">
-                <i class="fa fa-thermometer-full"></i>
-              </a>
-            </li>
-            <li class="nav-item circle">
-              <a href="#" class="nav-link">
-                <i class="fa fa-suitcase"></i>
-              </a>
-            </li>
-            <li class="nav-item circle">
-              <a href="#" class="nav-link disabled">
-                <i class="fa fa fa-exclamation"></i>
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div class="col-md-6">
-          <h4 class="mb-3">Labels</h4>
-          <span class="badge badge-primary badge-pill mr-1">PRIMARY</span>
-          <span class="badge badge-secondary badge-pill mr-1">SECONDARY</span>
-          <span class="badge badge-pill badge-success mr-1">SUCCESS</span>
-          <span class="badge badge-pill badge-info mr-1">INFO</span>
-          <span class="badge badge-pill badge-warning mr-1">WARNING</span>
-          <span class="badge badge-pill badge-danger">DANGER</span>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div>
-    <div class="container">
-      <div class="row">
-        <div class="col-md-12">
-          <h4 class="my-3">Notifications</h4>
-        </div>
-      </div>
-    </div>
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col mb-2 px-0">
-          <div class="alert alert-success text-white px-5" role="alert">
-            <div class="container">
-              <i class="now-ui-icons ui-2_like lg pull-left mr-3"></i>
-              <strong>WELL DONE!</strong>
-              <span> You successfully read this important alert message. </span>
-              <button type="button" class="close text-white" data-dismiss="alert">
-                <i class="now-ui-icons ui-1_simple-remove"></i>
-              </button>
-            </div>
-          </div>
-          <div class="alert alert-info text-white px-5" role="alert">
-            <div class="container">
-              <i class="now-ui-icons travel_info lg pull-left mr-3"></i>
-              <strong>HEADS UP!</strong>
-              <span> This alert needs your attention, but it's not super important. </span>
-              <button type="button" class="close text-white" data-dismiss="alert">
-                <i class="now-ui-icons ui-1_simple-remove"></i>
-              </button>
-            </div>
-          </div>
-          <div class="alert alert-warning text-white px-5" role="alert">
-            <div class="container">
-              <i class="now-ui-icons ui-1_bell-53 lg pull-left mr-3"></i>
-              <strong>WARNING!</strong>
-              <span> Better check yourself, you're not looking too good. </span>
-              <button type="button" class="close text-white" data-dismiss="alert">
-                <i class="now-ui-icons ui-1_simple-remove"></i>
-              </button>
-            </div>
-          </div>
-          <div class="alert alert-danger text-white px-5" role="alert">
-            <div class="container">
-              <i class="now-ui-icons objects_support-17 lg pull-left mr-3"></i>
-              <strong>OH SNAP!</strong>
-              <span> Change a few things up and try submitting again. </span>
-              <button type="button" class="close text-white" data-dismiss="alert">
-                <i class="now-ui-icons ui-1_simple-remove"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="py-5">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-12">
-          <h3 class="mb-4">
-            <b>Typography</b>
-          </h3>
-        </div>
-      </div>
-      <div class="row">
-        <div class="ml-3 col-3 d-flex align-self-center">
-          <p class="text-muted">Header 1</p>
-        </div>
-        <div class="col">
-          <h1>The Life of Now UI Kit</h1>
-        </div>
-      </div>
-      <div class="row">
-        <div class="ml-3 col-3 d-flex align-self-center">
-          <p class="text-muted">Header 2</p>
-        </div>
-        <div class="col">
-          <h2>The Life of Now UI Kit</h2>
-        </div>
-      </div>
-      <div class="row">
-        <div class="ml-3 col-3 d-flex align-self-center">
-          <p class="text-muted">Header 3</p>
-        </div>
-        <div class="col">
-          <h3>The Life of Now UI Kit</h3>
-        </div>
-      </div>
-      <div class="row">
-        <div class="ml-3 col-3 d-flex align-self-center">
-          <p class="text-muted">Header 4</p>
-        </div>
-        <div class="col">
-          <h4>The Life of Now UI Kit</h4>
-        </div>
-      </div>
-      <div class="row">
-        <div class="ml-3 col-3 d-flex align-self-center">
-          <p class="text-muted">Header 5</p>
-        </div>
-        <div class="col">
-          <h5>The Life of Now UI Kit</h5>
-        </div>
-      </div>
-      <div class="row">
-        <div class="ml-3 col-3 d-flex align-self-center">
-          <p class="text-muted">Header 6</p>
-        </div>
-        <div class="col">
-          <h6>THE LIFE OF NOW UI KIT</h6>
-        </div>
-      </div>
-      <div class="row">
-        <div class="ml-3 col-3 d-flex align-items-center">
-          <p class="text-muted">Paragraph</p>
-        </div>
-        <div class="col pr-0">
-          <p>I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus. I think that’s a responsibility that I have, to push possibilities, to show people, this is the
-            level that things could be at.</p>
-        </div>
-      </div>
-      <div class="row">
-        <div class="ml-3 col-3 d-flex align-self-center">
-          <p class="text-muted">Quote</p>
-        </div>
-        <div class="col pr-0">
-          <blockquote class="blockquote blockquote-primary">
-            <p>"I will be the leader of a company that ends up being worth billions of dollars, because I got the answers. I understand culture. I am the nucleus. I think that’s a responsibility that I have, to push possibilities, to show people, this is
-              the level that things could be at."</p>
-            <footer class="blockquote-footer">NOAA</footer>
-          </blockquote>
-        </div>
-      </div>
-      <div class="row my-3">
-        <div class="ml-3 col-3 d-flex align-items-center">
-          <p class="text-muted">Muted Text</p>
-        </div>
-        <div class="col">
-          <p class="text-muted">I will be the leader of a company that ends up being worth billions of dollars, because I got the answers...</p>
-        </div>
-      </div>
-      <div class="row my-3">
-        <div class="ml-3 col-3 d-flex align-self-center">
-          <p class="text-muted">Primary Text</p>
-        </div>
-        <div class="col">
-          <p class="text-primary">I will be the leader of a company that ends up being worth billions of dollars, because I got the answers...</p>
-        </div>
-      </div>
-      <div class="row my-3">
-        <div class="ml-3 col-3 align-self-center">
-          <p class="text-muted">Secondary Text</p>
-        </div>
-        <div class="col">
-          <p class="text-secondary">I will be the leader of a company that ends up being worth billions of dollars, because I got the answers...</p>
-        </div>
-      </div>
-      <div class="row my-3">
-        <div class="ml-3 col-3 d-flex align-self-center">
-          <p class="text-muted">Info Text</p>
-        </div>
-        <div class="col">
-          <p class="text-info">I will be the leader of a company that ends up being worth billions of dollars, because I got the answers...</p>
-        </div>
-      </div>
-      <div class="row my-3">
-        <div class="ml-3 col-3 d-flex align-self-center">
-          <p class="text-muted">Success Text</p>
-        </div>
-        <div class="col">
-          <p class="text-success">I will be the leader of a company that ends up being worth billions of dollars, because I got the answers...</p>
-        </div>
-      </div>
-      <div class="row my-3">
-        <div class="ml-3 col-3 d-flex align-self-center">
-          <p class="text-muted">Warning Text</p>
-        </div>
-        <div class="col">
-          <p class="text-warning">I will be the leader of a company that ends up being worth billions of dollars, because I got the answers...</p>
-        </div>
-      </div>
-      <div class="row my-3">
-        <div class="ml-3 col-3 d-flex align-self-center">
-          <p class="text-muted">Danger Text</p>
-        </div>
-        <div class="col">
-          <p class="text-danger">I will be the leader of a company that ends up being worth billions of dollars, because I got the answers...</p>
-        </div>
-      </div>
-      <div class="row mt-3">
-        <div class="ml-3 col-3 d-flex align-self-center">
-          <p class="text-muted">Small Tag</p>
-        </div>
-        <div class="col">
-          <h2> Header with small subtitle
-            <br>
-            <small>Use "small" tag for the headers</small>
-          </h2>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="py-5">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-12">
-          <h4 class="mt-3 mb-5">Images</h4>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-2">
-          <p class="text-muted">
-            <b>IMAGE</b>
-          </p>
-          <img class="img-fluid d-block rounded" src="assets/img/avatar.jpg"> </div>
-        <div class="col-md-2">
-          <p class="text-muted">
-            <b>CIRCLE IMAGE</b>
-          </p>
-          <img class="img-fluid d-block rounded-circle" src="assets/img/avatar.jpg"> </div>
-        <div class="col-md-2">
-          <p class="text-muted">
-            <b>RAISED</b>
-          </p>
-          <img class="img-fluid d-block shadow rounded" src="assets/img/avatar.jpg"> </div>
-        <div class="col-md-2">
-          <p class="text-muted">
-            <b>CIRCLE RAISED</b>
-          </p>
-          <img class="img-fluid d-block shadow rounded-circle" src="assets/img/avatar.jpg"> </div>
-      </div>
-    </div>
-  </div>
-  <div class="py-5 mt-4">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-12">
-          <h3 class="mt-3">
-            <b>Javascript components</b>
-          </h3>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-6">
-          <h4 class="mb-3">Modal</h4>
-          <div>
-            <a class="btn btn-primary" href="#" data-toggle="modal" data-target="#modal1">Launch Modal</a>
-            <a class="btn btn-warning" href="#" data-toggle="modal" data-target="#modal2">Launch Modal Mini</a>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <h4 class="mb-3">Popovers</h4>
-          <button class="btn btn-secondary" type="button" data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus." data-toggle="popover" title="Popover On Left" data-placement="left">On left</button>
-          <button class="btn btn-secondary" type="button" data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus." data-placement="top" data-toggle="popover" title="Popover On Top">On top</button>
-          <button class="btn btn-secondary" type="button" data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus." data-toggle="popover" title="Popover On Right" data-placement="right">On right</button>
-          <button class="btn btn-secondary" type="button" data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus." data-toggle="popover" title="Popover On Bottom" data-placement="bottom">On bottom</button>
-        </div>
-      </div>
-      <div class="row mt-5">
         <div class="col-md-4">
-          <h4 class="mb-3">Datepicker</h4>
-          <input type="text" class="form-control" id="datepicker-example" placeholder="05/03/1965"> </div>
-        <div class="col-md-2"> </div>
-        <div class="col-md-6">
-          <h4 class="mb-3">Tooltips</h4>
-          <button class="btn btn-secondary" type="button" data-toggle="tooltip" title="Tooltip on left" data-placement="left" data-animation="true" data-delay="100">On left</button>
-          <button class="btn btn-secondary" type="button" data-toggle="tooltip" title="Tooltip on top" data-placement="top" data-animation="true" data-delay="100">On top</button>
-          <button class="btn btn-secondary" type="button" data-toggle="tooltip" title="Tooltip on right" data-placement="right" data-animation="true" data-delay="100">On bottom</button>
-          <button class="btn btn-secondary" type="button" data-toggle="tooltip" title="Tooltip on bottom" data-placement="bottom" data-animation="true" data-delay="100">On right</button>
-        </div>
+          <img class="d-block mx-auto  my-2" src="assets/img/logos/nmrih2.png" height="150px"> </div>
+        <div class="col-md-4">
+          <img src="assets/img/logos/epicgames.png" class="d-block mx-auto my-2" height="150px"> </div>
+        <div class="col-md-4">
+          <img class="d-block mx-auto" src="assets/img/logos/frontwire.png" height="150px"> </div>
       </div>
     </div>
   </div>
-  <div class="py-5">
+  <div class="py-5" id="games">
     <div class="container">
       <div class="row">
         <div class="col-md-12">
-          <h4 class="mb-4">Carousel</h4>
-        </div>
-      </div>
-      <div class="row my-5">
-        <div class="mx-auto col-8">
-          <div id="carousel" class="carousel slide" data-ride="carousel">
-            <ol class="carousel-indicators">
-              <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"> </li>
-              <li data-target="#carouselExampleIndicators" data-slide-to="1"> </li>
-              <li data-target="#carouselExampleIndicators" data-slide-to="2"> </li>
-            </ol>
-            <div class="carousel-inner">
-              <div class="carousel-item active">
-                <img class="d-block img-fluid w-100" src="assets/img/bg1.jpg">
-                <div class="carousel-caption ">
-                  <h5>Nature, United States</h5>
-                </div>
-              </div>
-              <div class="carousel-item">
-                <img class="d-block img-fluid w-100" src="assets/img/bg3.jpg">
-                <div class="carousel-caption">
-                  <h5>Somewhere Beyond, United States</h5>
-                </div>
-              </div>
-              <div class="carousel-item">
-                <img class="img-fluid" src="assets/img/bg4.jpg">
-                <div class="carousel-caption">
-                  <h5>Yellowstone National Park, United States</h5>
+          <h1 class="text-center display-3 text-primary">Games</h1>
+          <p class="lead text-center">we make games too</p>
+          <div class="row">
+            <div class="col-md-4 my-2">
+              <div class="card">
+                <img class="card-img-top" src="assets/img/games/etereo.png" alt="Card image cap">
+                <div class="card-body">
+                  <h5 class="card-title">Etereo</h5>
+                  <p class="card-text">
+                    <b>3D Adventure game</b>
+                    <br>Will this child, with the power of the white smoke, be able to seal it again?
+                    <br>
+                    <br>Help him in his adventure, exorcising the corrupted forest dwellers and destroying the darkness dispensers. The forest has to be free again
+                    <br> </p>
+                  <a href="https://piperift.itch.io/etereo" class="btn btn-primary">
+                    <i class="now-ui-icons shopping_shop mr-1"></i>&nbsp;Itch.io </a>
                 </div>
               </div>
             </div>
-            <a class="carousel-control-prev" href="#carousel" role="button" data-slide="prev">
-              <i class="now-ui-icons arrows-1_minimal-left x3"></i>
-              <span class="sr-only">Previous</span>
-            </a>
-            <a class="carousel-control-next" href="#carousel" role="button" data-slide="next">
-              <i class="now-ui-icons arrows-1_minimal-right x3"></i>
-              <span class="sr-only">Next</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="py-5">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-6">
-          <h2 class="my-3">
-            <b>Nucleo icons</b>
-          </h2>
-          <p class="lead mb-4"> Now UI Kit comes with 100 custom icons made by our friends from NucleoApp. The official package contains over 2.100 thin icons which are looking great in combination with Now UI Kit Make sure you check all of them and use those that you like
-            the most. </p>
-          <a class="btn btn-primary rounded btn-lg" href="https://demos.creative-tim.com/now-ui-kit/nucleo-icons.html" target="blank">View Demo Icons</a>
-          <a class="btn btn-outline-primary rounded mx-2 btn-lg" href="https://nucleoapp.com/?ref=1712" target="blank">View All Icons</a>
-        </div>
-        <div class="col-md-6">
-          <img class="img-fluid d-block" src="assets/img/icons.png"> </div>
-      </div>
-    </div>
-  </div>
-  <div class="py-5">
-    <div class="container">
-      <div class="row">
-        <div class="mx-auto col-xl-8 col-md-10">
-          <h2 class="my-3 text-center">
-            <b>Completed with examples</b>
-          </h2>
-          <p class="lead text-center"> The kit comes with three pre-built pages to help you get started faster. You can change the text and images and you're good to go. More importantly, looking at them will give you a picture of what you can built with this powerful Bootstrap 4
-            ui kit. </p>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="py-5 bg-dark" style="background-image: url(&quot;assets/img/bg11.jpg&quot;); background-size: cover; background-position: center top;">
-    <div class="container">
-      <div class="row my-4">
-        <div class="mx-auto col-md-6 col-10 col-xl-4 px-4">
-          <div class="card bg-primary">
-            <div class="card-body text-center">
-              <div class="row mt-5">
-                <div class="col-md-12">
-                  <h5 class="mb-4">
-                    <b>SIGN UP</b>
-                  </h5>
-                  <button class="btn btn-icon rounded btn-light mx-1 btn-facebook shadow" type="button">
-                    <i class="fa fa-fw fa-lg fa-facebook-square"></i>
-                  </button>
-                  <button class="btn btn-icon rounded btn-lg btn-light mx-1 btn-twitter shadow" type="button">
-                    <i class="fa fa-fw fa-2x fa-twitter"></i>
-                  </button>
-                  <button class="btn btn-icon rounded btn-light mx-1 btn-google shadow" type="button">
-                    <i class="fa fa-fw fa-google-plus fa-lg"></i>
-                  </button>
+            <div class="col-md-4 my-2">
+              <div class="card">
+                <img class="card-img-top" src="assets/img/games/before-you-die.jpg" alt="Card image cap">
+                <div class="card-body">
+                  <h5 class="card-title">Before You Die</h5>
+                  <p class="card-text">
+                    <b>Rogue-like arcade</b>
+                    <br>Nightmares come back every night.
+                    <br>The same dungeon, the same monsters, the same death.
+                    <br>
+                    <br>How many levels will you survive until all your family dies? Their souls must be saved!
+                    <br>&nbsp;Zelian must be Killed!</p>
+                  <a href="https://piperift.itch.io/before-you-die" class="btn btn-primary">
+                    <i class="now-ui-icons shopping_shop mr-1"></i>&nbsp;Itch.io</a>
                 </div>
               </div>
-              <div class="row mt-4 pt-2">
-                <div class="col">
-                  <form>
-                    <div class="form-group mb-2">
-                      <div class="input-group border-0">
-                        <div class="input-group-prepend">
-                          <span class="input-group-text" id="basic-addon1">
-                            <i class="now-ui-icons users_circle-08 lg"></i>
-                          </span>
-                        </div>
-                        <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="First Name..."> </div>
-                    </div>
-                    <div class="form-group mb-2">
-                      <div class="input-group border-0">
-                        <div class="input-group-prepend ">
-                          <span class="input-group-text" id="basic-addon1">
-                            <i class="now-ui-icons text_caps-small lg"></i>
-                          </span>
-                        </div>
-                        <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Last Name..."> </div>
-                    </div>
-                    <div class="form-group mb-3">
-                      <div class="input-group border-0">
-                        <div class="input-group-prepend ">
-                          <span class="input-group-text" id="basic-addon1">
-                            <i class="now-ui-icons ui-1_email-85 lg"></i>
-                          </span>
-                        </div>
-                        <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Email..."> </div>
-                    </div>
-                    <button type="submit" class="btn mt-4 mb-3 btn-light rounded btn-lg text-primary">Get Started</button>
-                  </form>
+            </div>
+            <div class="col-md-4 my-2">
+              <div class="card">
+                <img class="card-img-top" src="assets/img/games/mr-brian.png" alt="Card image cap">
+                <div class="card-body">
+                  <h5 class="card-title">Mr Brian</h5>
+                  <p class="card-text">
+                    <b>First person stealth</b>
+                    <br>Mr. Brian is a first person stealth game in which we will play as Brian, a neurologist who has been kept locked in some scientific facilities controlled by an A.I self-named “The Conscious”.&nbsp;
+                    <br>
+                    <br>Brian’s morality will be continuously tested in a escape full of mystery and self-discovery. A travel in which nothing is what it seems</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="row text-center">
-        <div class="col">
-          <a class="btn rounded btn-lg btn-outline-secondary" href="#">View Login Page</a>
+    </div>
+  </div>
+  <div class="py-5 bg-dark" id="about-us">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-12">
+          <h1 class="text-center display-3 text-primary">About Us</h1>
+        </div>
+        <div class="col-md-8">
+          <p class="text-center">Piperift is a spanish independent game studio that strives to push the boundaries of&nbsp;game narrative in order to create&nbsp;and help creating new experiences that players have never seen before.
+            <br>In other words, we love telling stories and helping other devs with our tools.</p>
         </div>
       </div>
     </div>
   </div>
-  <div class="pt-5 bg-dark">
+  <div class="text-white bg-dark">
     <div class="container">
-      <div class="row my-5 py-5">
-        <div class="col-6 text-center">
-          <img src="assets/img/landing.jpg" class="img-fluid">
-          <a class="btn btn-outline-light my-4 rounded" href="#">View Landing Page</a>
-        </div>
-        <div class="col-6 text-center">
-          <img src="assets/img/profile.jpg" class="img-fluid">
-          <a class="btn btn-outline-light my-4 rounded" href="#">View Login Page</a>
-        </div>
-      </div>
-      <div class="row my-5 pt-5" id="download">
-        <div class="col-12 text-center mx-auto col-md-10 col-xl-8">
-          <h3 class="mb-4">
-            <b>Do you love this Bootstrap 4 UI Kit? </b>
-          </h3>
-          <p class="lead mb-5"> Cause if you do, it can be yours for FREE. Surf Pingendo Template web page or Creative Tim website and download it. Start a new project or give an old Bootstrap project a new look! </p>
-          <a class="btn btn-primary mx-1 my-3 rounded btn-lg" href="https://templates.pingendo.com/"
-            target="_blank">Download from Pingendo</a>
-          <a class="btn btn-outline-light my-3 rounded btn-lg" href="https://www.creative-tim.com/" target="_blank"> Creative Tim
-            <span class="badge badge-dark mb-0"> coming soon! </span>
-          </a>
-        </div>
-      </div>
-      <div class="row mt-4 py-5">
-        <div class="col-md-12 text-center">
-          <h3 class="mb-5 text-center">Thank you for supporting us!</h3>
-          <button class="btn btn-icon rounded btn-lg btn-light mx-1 btn-twitter" type="button" data-placement="top" data-toggle="tooltip" title="Follow us">
-            <i class="fa fa-fw fa-2x fa-twitter"></i>
-          </button>
-          <button class="btn btn-icon rounded btn-lg btn-light mx-1 btn-facebook" type="button" data-placement="top" data-toggle="tooltip" title="Like us">
-            <i class="fa fa-fw fa-2x fa-facebook-square"></i>
-          </button>
-          <button class="btn btn-icon rounded btn-lg btn-light mx-1 btn-linkedin" type="button" data-placement="top" data-toggle="tooltip" title="Follow us">
-            <i class="fa fa-fw fa-2x fa-linkedin"></i>
-          </button>
-          <button class="btn btn-icon rounded btn-lg btn-light mx-1" type="button" data-placement="top" data-toggle="tooltip" title="Star on Github">
-            <i class="fa fa-fw fa-2x fa-github text-primary"></i>
-          </button>
-        </div>
-      </div>
-      <div class="row mt-5">
-        <div class="col-12 col-sm-6 text-left ">
-          <ul class="list-inline text-muted d-flex justify-content-center justify-content-md-start mb-4">
-            <li class="list-inline-item mx-2">
-              <a href="https://www.creative-tim.com/" class="text-light" target="_blank">
-                <small>PIPERIFT</small>
-              </a>
-            </li>
-            <li class="list-inline-item mx-2">
-              <a href="http://presentation.creative-tim.com/" class="text-light" target="_blank">
-                <small>PLUGINS</small>
-              </a>
-            </li>
-            <li class="list-inline-item mx-2">
-              <a href="http://blog.creative-tim.com/" class="text-light" target="_blank">
-                <small>GAMES</small>
-              </a>
-            </li>
+      <div class="row justify-content-center">
+        <div class="p-2 col-md-4 col-12 align-items-center text-center">
+          <img src="assets/img/logos/logo.png" width="60" class=""> </div>
+        <div class="col-md-4 p-2 justify-content-center d-flex flex-column align-items-center">
+          <ul class="list-unstyled text-right flex-row d-flex justify-content-end m-0">
+            <a href="#" class="text-white px-2">Home</a>
+            <br>
+            <a href="#plugins" class="text-white px-2">Plugins</a>
+            <br>
+            <a href="#games" class="text-white px-2">Games</a>
+            <br>
+            <a href="#about-us" class="text-white px-2">About Us</a>
           </ul>
         </div>
-        <div class="col-12 col-sm-6 pr-0 text-right d-flex justify-content-center justify-content-md-end">
-          <li class="list-inline-item text-light mb-4">
-            <small> © 2018, Piperift. All rights reserved.</small>
-          </li>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <p class="text-center">© Copyright 2018 Piperift - All rights reserved. </p>
         </div>
-        <div> </div>
       </div>
     </div>
   </div>
