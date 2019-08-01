@@ -70,7 +70,7 @@ namespace Chrono = std::chrono;
  * @see FDateRange
  * @see FTimespan
  */
-struct DateTime
+struct CORE_API DateTime
 {
 	using SysClock = Chrono::system_clock;
 	using SysTime = Chrono::time_point<SysClock, decmicroseconds>;

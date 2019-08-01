@@ -10,7 +10,7 @@
 
 #include "Core/Reflection/Class.h"
 #include "Core/Reflection/Runtime/TPropertyHandle.h"
-#include "Editor/Widgets/PropertyWidget.h"
+#include "UI/Widgets/PropertyWidget.h"
 #endif
 
 

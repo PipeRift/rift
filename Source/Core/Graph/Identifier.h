@@ -7,8 +7,7 @@
 
 class Identifier : public Struct
 {
-    STRUCT(Identifier, Struct)
+	STRUCT(Identifier, Struct)
 
-    PROP(FName, name)
-    Name name;
+	P(Name, name);
 };

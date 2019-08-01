@@ -6,12 +6,11 @@
 #include <imgui/imgui_impl_sdl.h>
 #include <imgui/imgui_internal.h>
 
-#include "World.h"
+#include "Context.h"
 #include "Core/Object/Object.h"
 #include "Core/Assets/AssetPtr.h"
-#include "Assets/Scene.h"
-#include "Widgets/Assets/NewAssetDialog.h"
-#include "Widgets/Assets/SelectAssetDialog.h"
+#include "UI/Widgets/Assets/NewAssetDialog.h"
+#include "UI/Widgets/Assets/SelectAssetDialog.h"
 
 
 #if WITH_EDITOR
@@ -36,8 +35,6 @@ void EditorManager::Construct()
 	AddFont("KarlaBoldItalic", FileSystem::GetAssetsPath() / "Fonts/karla_bold_italic.ttf");
 	ImGui::StyleColorsDark();
 	ApplyStyle();
-
-	sceneEditor = CreateEditor<SceneEditor>();
 
 	assetBrowser = Widget::CreateStandalone<AssetBrowser>(Self());
 	log = Widget::CreateStandalone<LogWindow>(Self());
@@ -118,19 +115,14 @@ void EditorManager::TickMainNavBar()
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("Open Scene"))
+			if (ImGui::MenuItem("Open File"))
 			{
 				openSceneDialog.Open();
 			}
-			if (ImGui::MenuItem("Save Scene", "CTRL+S"))
+			if (ImGui::MenuItem("Save File", "CTRL+S"))
 			{
-				if (TAssetPtr<Scene> scene = GetWorld()->GetActiveScene())
-				{
-					scene->SaveScene(GetWorld());
-					scene->Save();
-				}
 			}
-			if (ImGui::MenuItem("Save Scene as", "CTRL+S"))
+			if (ImGui::MenuItem("Save File as", "CTRL+S"))
 			{
 				saveSceneAsDialog.Open();
 			}
@@ -164,25 +156,13 @@ void EditorManager::TickMainNavBar()
 			ImGui::EndMenu();
 		}
 
-		auto world = GetWorld();
-		if (world->IsEditor())
+		if (ImGui::MenuItem("Play"))
 		{
-			if (ImGui::MenuItem("Play"))
-			{
-				world->BeginPlay();
-			}
-		}
-		else if (world->IsPIE())
-		{
-			if (ImGui::MenuItem("Stop"))
-			{
-				world->EndPlay();
-			}
 		}
 
-		// Displays scene name
-		const String sceneLabel = CString::Printf("%s###sceneLabel", GetWorld()->GetActiveScene().GetSPath().c_str());
-		ImGui::MenuItem(sceneLabel.c_str(), nullptr, false, false);
+		// Displays file name
+		//const String sceneLabel = CString::Printf("%s###sceneLabel", GetContext()->GetActiveScene().GetSPath().c_str());
+		//ImGui::MenuItem(sceneLabel.c_str(), nullptr, false, false);
 
 		ImGui::EndMainMenuBar();
 	}
@@ -190,30 +170,15 @@ void EditorManager::TickMainNavBar()
 	// Draw modals
 	if (openSceneDialog.Draw() == EDialogResult::Success)
 	{
-		const Name sceneName = FileSystem::ToString(openSceneDialog.selectedAsset);
-		GetWorld()->LoadScene({ sceneName });
+		const Name fileName = FileSystem::ToString(openSceneDialog.selectedAsset);
+		//
 	}
 
 	if (saveSceneAsDialog.Draw() == EDialogResult::Success)
 	{
-		if (TAssetPtr<Scene>& scene = GetWorld()->GetActiveScene())
-		{
-			const Name newAssetId = FileSystem::ToString(saveSceneAsDialog.finalPath);
-
-			// Save to specified asset
-			scene->SaveScene(GetWorld());
-			scene->SaveToPath(newAssetId);
-
-			// Replace active scene
-			scene = { newAssetId };
-			scene.Load();
-		}
+		const Name newAssetId = FileSystem::ToString(saveSceneAsDialog.finalPath);
+		//
 	}
-}
-
-void EditorManager::OnSDLEvent(SDL_Event* ev)
-{
-	ImGui_ImplSDL2_ProcessEvent(ev);
 }
 
 void EditorManager::AddFont(Name name, Path path, u8 size)

@@ -3,16 +3,18 @@
 #pragma once
 
 #include "CoreStruct.h"
+#include "Core/Assets/AssetData.h"
+
 #include "Container.h"
+#include "VariableIdentifier.h"
+#include "FunctionIdentifier.h"
 
 
-class ClassContainer : public Container
+class ClassAsset : public AssetData
 {
-    STRUCT(ClassContainer, Container)
+	STRUCT(ClassAsset, AssetData)
 
-    PROP(TArray<VariableIdentifier>, variables)
-    TArray<VariableIdentifier> variables;
+	P(TArray<VariableIdentifier>, variables);
 
-    PROP(TArray<FunctionIdentifier>, functions)
-    TArray<FunctionIdentifier> functions;
+	P(TArray<FunctionIdentifier>, functions);
 };

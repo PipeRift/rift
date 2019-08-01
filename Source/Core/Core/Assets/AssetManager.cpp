@@ -2,11 +2,11 @@
 
 #include "AssetManager.h"
 
-#include "World.h"
+#include "Context.h"
 #include "Core/Files/FileSystem.h"
 #include "Core/Object/ObjectPtr.h"
-#include "Core/Engine.h"
-#include "Tools/Profiler.h"
+#include "Context.h"
+#include "Profiler.h"
 
 
 Ptr<AssetData> AssetManager::Load(const AssetInfo& info)
@@ -89,5 +89,5 @@ Ptr<AssetData> AssetManager::LoadOrCreate(const AssetInfo& info, Class* assetTyp
 
 Ptr<AssetManager> AssetManager::Get()
 {
-	return GEngine->GetAssetManager();
+	return Context::Get()->GetAssetManager();
 }

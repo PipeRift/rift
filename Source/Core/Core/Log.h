@@ -7,9 +7,9 @@
 #include <tracy/Tracy.hpp>
 
 #include "Strings/String.h"
-#include "Editor/Scene/LogWindow.h"
 
 #if WITH_EDITOR
+#include "UI/Windows/LogWindow.h"
 #endif
 
 namespace Log {

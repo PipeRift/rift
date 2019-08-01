@@ -4,7 +4,7 @@
 
 #if WITH_EDITOR
 
-#include "Editor/Widgets/Properties/AssetInfoPropertyWidget.h"
+#include "UI/Widgets/Properties/AssetInfoPropertyWidget.h"
 
 Class* BaseAssetPtr::GetDetailsWidgetClass()
 {

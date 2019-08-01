@@ -8,10 +8,9 @@
 #include <imgui/ImGuizmo.h>
 #include <tracy/TracyOpenGL.hpp>
 
-#include "World.h"
+#include "Context.h"
 #include "Core/Log.h"
-#include "Tools/Profiler.h"
-#include "Core/Engine.h"
+#include "Profiler.h"
 #include "Interface/OpenGL.h"
 
 

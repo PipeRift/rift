@@ -6,7 +6,7 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_stl.h>
 #include "Core/Reflection/ReflectionTags.h"
-#include "Editor/Widgets/Assets/SelectAssetDialog.h"
+#include "UI/Widgets/Assets/SelectAssetDialog.h"
 
 
 void AssetInfoPropertyWidget::Tick(float)

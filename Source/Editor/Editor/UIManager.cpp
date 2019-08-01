@@ -4,7 +4,7 @@
 #include <SDL_events.h>
 
 #include "Core/Log.h"
-#include "Tools/Profiler.h"
+#include "Profiler.h"
 
 
 void UIManager::Prepare()
@@ -13,13 +13,6 @@ void UIManager::Prepare()
 
 #if WITH_EDITOR
 	editor = Create<EditorManager>(Self());
-#endif
-}
-
-void UIManager::OnSDLEvent(SDL_Event* ev)
-{
-#if WITH_EDITOR
-	editor->OnSDLEvent(ev);
 #endif
 }
 

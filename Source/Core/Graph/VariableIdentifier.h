@@ -8,8 +8,7 @@
 
 class VariableIdentifier : public Identifier
 {
-    STRUCT(VariableIdentifier, Identifier)
+	STRUCT(VariableIdentifier, Identifier)
 
-    PROP(String, defaultValue)
-    String defaultValue;
+	P(String, defaultValue);
 };

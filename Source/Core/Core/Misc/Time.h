@@ -7,7 +7,7 @@
 #include "DateTime.h"
 
 
-struct FrameTime
+struct CORE_API FrameTime
 {
 protected:
 

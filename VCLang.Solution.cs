@@ -7,7 +7,6 @@ using Sharpmake; // contains the entire Sharpmake object library.
 [module: Sharpmake.Include("Source/Core/Core.Module.cs")]
 [module: Sharpmake.Include("Source/Compiler/Compiler.Project.cs")]
 [module: Sharpmake.Include("Source/Editor/Editor.Project.cs")]
-[module: Sharpmake.Include("Source/Test/Test.Project.cs")]
 [module: Sharpmake.Include("Source/ThirdParty/SDL2/SDL2.Library.cs")]
 [module: Sharpmake.Include("Source/ThirdParty/Assimp/Assimp.Library.cs")]
 [module: Sharpmake.Include("Source/ThirdParty/curl/Curl.Library.cs")]
@@ -36,7 +35,6 @@ class VCLangSolution : Solution
 
         conf.AddProject<CompilerProject>(target);
         conf.AddProject<EditorProject>(target);
-        conf.AddProject<TestProject>(target);
         conf.AddProject<CoreModule>(target);
         conf.AddProject<SDL2Library>(target);
         conf.AddProject<AssimpLibrary>(target);

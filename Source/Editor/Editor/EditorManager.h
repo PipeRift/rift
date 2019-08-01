@@ -12,10 +12,9 @@
 #include "Core/Containers/Map.h"
 #include "Core/Files/FileSystem.h"
 #include "UI/Widget.h"
-#include "Windows/MemoryDebugger.h"
-#include "Windows/AssetBrowser.h"
-#include "Scene/SceneEditor.h"
-#include "Scene/LogWindow.h"
+#include "UI/Windows/MemoryDebugger.h"
+#include "UI/Windows/AssetBrowser.h"
+#include "UI/Windows/LogWindow.h"
 
 
 class EditorManager : public Object {
@@ -25,8 +24,6 @@ class EditorManager : public Object {
 
 	GlobalPtr<AssetBrowser> assetBrowser;
 	GlobalPtr<LogWindow> log;
-
-	Ptr<SceneEditor> sceneEditor;
 
 	bool showDemoWindow = true;
 
@@ -42,8 +39,6 @@ public:
 
 	void TickDocking();
 	void TickMainNavBar();
-
-	void OnSDLEvent(union SDL_Event* ev);
 
 	template<typename EditorType>
 	Ptr<EditorType> CreateEditor()

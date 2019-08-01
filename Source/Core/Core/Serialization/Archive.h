@@ -16,7 +16,7 @@ class Archive
 	const bool bLoads = false;
 
 public:
-	class World* context;
+	class Context* context;
 
 
 	Archive() : bLoads(false), context{ nullptr } {}

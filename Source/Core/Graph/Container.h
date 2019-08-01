@@ -7,11 +7,9 @@
 
 class Container : public Struct
 {
-    STRUCT(Container, Struct)
+	STRUCT(Container, Struct)
 
-    PROP(Transient)
-    String path;
+	P(String, path, Transient);
 
-    PROP(FName, name)
-    Name name;
+	P(FName, name);
 };

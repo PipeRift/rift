@@ -8,9 +8,6 @@
 #include <EASTL/queue.h>
 
 #include "Frame.h"
-#include "Resources.h"
-#include "Commands/RenderCommand.h"
-
 
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720

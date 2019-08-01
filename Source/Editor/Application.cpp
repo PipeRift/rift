@@ -1,9 +1,9 @@
 // Copyright 2015-2019 Piperift - All rights reserved
 
-#include "Engine.h"
+#include "Application.h"
 
 #include <SDL_image.h>
-#include "Tools/Profiler.h"
+#include "Profiler.h"
 
 
 Ptr<Engine> Engine::globalEngine {};
@@ -37,8 +37,8 @@ bool Engine::Start()
 		input = Create<InputManager>(Self());
 		assetManager = Create<AssetManager>(Self());
 
-		world = Create<World>(Self());
-		world->Initialize();
+		context = Create<Context>(Self());
+		context->Initialize();
 
 		ui = Create<UIManager>(Self());
 		ui->Prepare();
@@ -80,8 +80,7 @@ void Engine::Loop(TaskFlow& frameTasks, bool& bFinish)
 
 	// Start game thread
 	Task gameTick = frameTasks.emplace([this]() {
-		ScopedGameZone("Game");
-		world->Tick(frameTime.GetDeltaTime());
+		ScopedGameZone("Tick");
 	});
 	frameTasks.dispatch();
 

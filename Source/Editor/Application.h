@@ -5,13 +5,14 @@
 #include "CoreObject.h"
 #include "Rendering/Renderer.h"
 
-#include "World.h"
-#include "Rendering/Frame.h"
-#include "Input/InputManager.h"
-#include "UI/UIManager.h"
+#include "Context.h"
+#include "Core/Input/InputManager.h"
+#include "Core/MultiThreading.h"
+#include "Core/Misc/Time.h"
+
+#include "Editor/UIManager.h"
 #include "Rendering/Renderer.h"
-#include "Misc/Time.h"
-#include "MultiThreading.h"
+#include "Rendering/Frame.h"
 
 
 class Engine : public Object
@@ -22,7 +23,7 @@ class Engine : public Object
 
 	FrameTime frameTime;
 
-	GlobalPtr<World> world;
+	GlobalPtr<Context> context;
 
 	GlobalPtr<InputManager> input;
 	GlobalPtr<AssetManager> assetManager;
@@ -43,7 +44,7 @@ public:
 protected:
 	virtual void BeforeDestroy() override { Shutdown(); }
 public:
-	virtual Ptr<World> GetWorld() const override { return world; }
+	virtual Ptr<Context> GetContext() const override { return context; }
 	/** End Object interface */
 
 private:
@@ -55,7 +56,6 @@ private:
 public:
 
 	void Shutdown() {
-		world->Shutdown();
 		SDL_Quit();
 	}
 

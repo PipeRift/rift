@@ -130,9 +130,11 @@ static inline void __meta_RegistryProperties() {\
 	StaticType()->__RegistryTags(tags);\
 
 
-#define PROP(type, name, tags) __PROPERTY_IMPL(type, name, CAT(__meta_id_, name), tags)
+#define P(type, name, tags) __PROPERTY_IMPL(type, name, CAT(__meta_id_, name), tags)
 
 #define __PROPERTY_IMPL(type, name, id_name, inTags)\
+type name;\
+\
 static constexpr u32 id_name = decltype(__meta_Counter(MetaCounter<255>{}))::value;\
 static constexpr MetaCounter<id_name + 1> __meta_Counter(MetaCounter<id_name + 1>);\
 \

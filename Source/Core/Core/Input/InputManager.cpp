@@ -4,14 +4,13 @@
 #include <SDL_events.h>
 #if WITH_EDITOR
 #include <imgui/imgui.h>
+#include <imgui/imgui_impl_sdl.h>
 #endif
 
-#include "Rendering/Renderer.h"
-#include "UI/UIManager.h"
-#include "Tools/Profiler.h"
+#include "Profiler.h"
 
 
-bool InputManager::Tick(float deltaTime, Ptr<UIManager> ui, u32 windowId)
+bool InputManager::Tick(float deltaTime, u32 windowId)
 {
 	ScopedGameZone("Input");
 
@@ -31,7 +30,7 @@ bool InputManager::Tick(float deltaTime, Ptr<UIManager> ui, u32 windowId)
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
 	{
-		ui->OnSDLEvent(&event);
+		ImGui_ImplSDL2_ProcessEvent(&event);
 
 		// Window events
 		switch (event.type)

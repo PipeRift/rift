@@ -4,11 +4,11 @@
 
 #if WITH_EDITOR
 
-#include "Editor/EditorWindow.h"
+#include "UI/Window.h"
 
 
-class MemoryDebugger : public EditorWindow {
-	CLASS(MemoryDebugger, EditorWindow)
+class AssetBrowser : public Window {
+	CLASS(AssetBrowser, Window)
 
 protected:
 

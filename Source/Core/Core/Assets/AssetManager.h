@@ -21,8 +21,8 @@ private:
 public:
 
 	Ptr<AssetData> Load(const AssetInfo& info);
-	Ptr<AssetData> LoadOrCreate(const AssetInfo& info, Class* assetType);
 
+	Ptr<AssetData> LoadOrCreate(const AssetInfo& info, Class* assetType);
 
 	inline Ptr<AssetData> GetLoadedAsset(const AssetInfo& id) {
 		return loadedAssets[id.GetPath()];

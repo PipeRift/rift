@@ -7,25 +7,24 @@
 #include "../Serialization/Archive.h"
 
 
-class World;
+class Context;
 
 
-class Object : public BaseObject {
+class CORE_API Object : public BaseObject {
 	ORPHAN_CLASS(Object)
 
 private:
 
-	PROP(Name, name)
-	Name name;
+	P(Name, name);
 
-	Ptr<BaseObject> self;
 	Class* ownClass;
+	Ptr<BaseObject> self;
 	Ptr<BaseObject> owner;
 
 
 public:
 
-	Object() : BaseObject(), self{}, ownClass{ nullptr }, owner{} {};
+	Object() : BaseObject(), ownClass{ nullptr }, self{}, owner{} {};
 
 	void PreConstruct(Ptr<BaseObject>&& inSelf, Class* inClass, const Ptr<BaseObject>& inOwner) {
 		ownClass = inClass;
@@ -62,9 +61,8 @@ public:
 	void SetName(Name newName) { name = eastl::move(newName); }
 	Name GetName() const { return name; }
 
-	virtual Ptr<World> GetWorld() const;
+	virtual Ptr<Context> GetContext() const;
 };
-
 
 
 template <typename Type>

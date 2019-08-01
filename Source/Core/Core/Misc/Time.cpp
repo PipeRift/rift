@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Time.h"
-#include "Tools/Profiler.h"
+#include "Profiler.h"
 
 
 void FrameTime::Tick()

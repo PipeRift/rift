@@ -11,9 +11,9 @@ class FunctionIdentifier : public Identifier
 {
     STRUCT(FunctionIdentifier, Identifier)
 
-    PROP(TArray<VariableIdentifier>, parameters)
+    P(TArray<VariableIdentifier>, parameters)
     TArray<VariableIdentifier> parameters;
 
-    PROP(TArray<VariableIdentifier>, localVariables)
+    P(TArray<VariableIdentifier>, localVariables)
     TArray<VariableIdentifier> localVariables;
 };

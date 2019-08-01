@@ -3,8 +3,7 @@
 #include <cstdio>
 #include <iostream>
 
-#include <Core/Engine.h>
-#include <Core/Strings/Name.h>
+#include "Pipeline.h"
 
 int main(int, char**)
 {

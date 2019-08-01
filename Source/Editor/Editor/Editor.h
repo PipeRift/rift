@@ -4,7 +4,7 @@
 
 #include "CoreObject.h"
 
-#include "EditorWindow.h"
+#include "UI/Window.h"
 
 
 #if WITH_EDITOR

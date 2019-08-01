@@ -4,11 +4,11 @@
 
 #if WITH_EDITOR
 
-#include "Editor/EditorWindow.h"
+#include "UI/Window.h"
 
 
-class LogWindow : public EditorWindow {
-	CLASS(LogWindow, EditorWindow)
+class LogWindow : public Window {
+	CLASS(LogWindow, Window)
 
 	ImGuiTextBuffer textBuffer;
 	ImGuiTextFilter filter;

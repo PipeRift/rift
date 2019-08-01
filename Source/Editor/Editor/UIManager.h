@@ -24,7 +24,5 @@ public:
 
 	void Prepare();
 
-	void OnSDLEvent(union SDL_Event* ev);
-
 	void Tick(float deltaTime);
 };
