@@ -15,11 +15,9 @@
 #include "Rendering/Frame.h"
 
 
-class Engine : public Object
+class Application : public Object
 {
-	CLASS(Engine, Object)
-
-	static Ptr<Engine> globalEngine;
+	CLASS(Application, Object)
 
 	FrameTime frameTime;
 
@@ -37,7 +35,7 @@ class Engine : public Object
 
 public:
 
-	Engine() : Super() {}
+	Application() : Super() {}
 
 
 	/** Begin Object interface */
@@ -65,44 +63,12 @@ public:
 
 	TaskSystem& Tasks() { return taskSystem; }
 
-	/** STATIC */
-
-	static bool StartEngine()
-	{
-		GlobalPtr<Engine> engine{ Create<Engine>() };
-		globalEngine = engine.AsPtr();
-
-		return engine->Start();
-	}
-
-	static Ptr<Engine> GetEngine() { return globalEngine; }
-
-
 	/** Frame being prepared on game thread */
 	Frame& GetGameFrame() { return frameBuffers[gameFrameId]; }
 	/** Frame being rendered on graphics thread */
 	Frame& GetRenderFrame() { return frameBuffers[(gameFrameId + 1) % 2]; }
 
-	template<typename Command, typename ...Args>
-	void QueueRenderCommand(Args... args)
-	{
-		static_assert(eastl::is_base_of<RenderCommand, Command>::value, "Command type must inherit RenderCommand");
-
-		GetGameFrame().ScheduleCommand(
-			eastl::make_unique<Command>(eastl::forward<Args>(args)...)
-		);
-	}
-
 private:
 
 	void SwitchFrameBuffer() { gameFrameId = (gameFrameId + 1) % 2; }
 };
-
-#define GEngine Engine::GetEngine()
-
-
-template<typename Command, typename ...Args>
-FORCEINLINE void QueueRenderCommand(Args... args)
-{
-	GEngine->QueueRenderCommand<Command>(eastl::forward<Args>(args)...);
-}

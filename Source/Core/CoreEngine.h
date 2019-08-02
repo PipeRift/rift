@@ -7,13 +7,13 @@
 // dllexport boilerplate
 #if defined(CORE_DLL)
 #   if defined(_MSC_VER)
-#       if defined(LIBRARY_COMPILE)
+#       if defined(CORE_COMPILE)
 #           define CORE_API __declspec(dllexport)
 #       else
 #           define CORE_API __declspec(dllimport)
 #       endif
 #   elif defined(__GNUC__) || defined(__clang__)
-#       if defined(LIBRARY_COMPILE)
+#       if defined(CORE_COMPILE)
 #           define CORE_API __attribute__ ((visibility ("default")))
 #       endif
 #   endif

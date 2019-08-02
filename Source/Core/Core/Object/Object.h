@@ -69,7 +69,7 @@ template <typename Type>
 using IsObject = eastl::is_convertible<Type, Object>;
 
 template<class ObjectType>
-static GlobalPtr<ObjectType> Create(Class* objectClass, const Ptr<Object> owner = {}) {
+static CORE_API GlobalPtr<ObjectType> Create(Class* objectClass, const Ptr<Object> owner = {}) {
 	static_assert(IsObject<ObjectType>::value, "Type is not an Object!");
 
 	if (objectClass)
@@ -80,7 +80,7 @@ static GlobalPtr<ObjectType> Create(Class* objectClass, const Ptr<Object> owner 
 }
 
 template<class ObjectType>
-static inline GlobalPtr<ObjectType> Create(const Ptr<Object> owner = {}) {
+static CORE_API inline GlobalPtr<ObjectType> Create(const Ptr<Object> owner = {}) {
 	static_assert(IsObject<ObjectType>::value, "Type is not an Object!");
 
 	return GlobalPtr<ObjectType>::Create(owner);

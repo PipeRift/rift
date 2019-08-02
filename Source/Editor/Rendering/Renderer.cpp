@@ -11,7 +11,9 @@
 #include "Context.h"
 #include "Core/Log.h"
 #include "Profiler.h"
+
 #include "Interface/OpenGL.h"
+#include "Application.h"
 
 
 #if PLATFORM_APPLE
@@ -29,8 +31,6 @@ Renderer::Renderer()
 
 bool Renderer::Initialize()
 {
-	engine = *GEngine;
-
 #if PLATFORM_APPLE
 	// GL 3.2 Core + GLSL 150
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
@@ -138,8 +138,6 @@ void Renderer::Render()
 
 		// Reset render data
 		render.NewFrame(viewportSize);
-
-		engine->GetRenderFrame().ExecuteCommands(render);
 	}
 
 	glCheckError();

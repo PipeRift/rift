@@ -6,9 +6,7 @@
 #include "Profiler.h"
 
 
-Ptr<Engine> Engine::globalEngine {};
-
-bool Engine::Start()
+bool Application::Start()
 {
 	{
 		Log::Message("Start-Up");
@@ -60,7 +58,7 @@ bool Engine::Start()
 	return true;
 }
 
-void Engine::Loop(TaskFlow& frameTasks, bool& bFinish)
+void Application::Loop(TaskFlow& frameTasks, bool& bFinish)
 {
 	frameTime.Tick();
 
@@ -76,7 +74,7 @@ void Engine::Loop(TaskFlow& frameTasks, bool& bFinish)
 
 	// Receive Input
 	u32 windowId = renderer->GetWindowId();
-	bFinish = input->Tick(frameTime.GetDeltaTime(), ui, windowId);
+	bFinish = input->Tick(frameTime.GetDeltaTime(), windowId);
 
 	// Start game thread
 	Task gameTick = frameTasks.emplace([this]() {

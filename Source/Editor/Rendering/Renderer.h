@@ -20,8 +20,8 @@ class Renderer : public Object
 
 	static const char* glslVersion;
 
-	// Raw ptr to engine. Renderer cant use Ptr<>
-	class Engine* engine;
+	// Raw ptr to app. Renderer cant use Ptr<>
+	class Application* app;
 	SDL_Window* window;
 	SDL_GLContext gl_context;
 

@@ -9,6 +9,7 @@
 #include <taskflow/taskflow.hpp>
 
 #include "Core/Misc/DateTime.h"
+#include "Core/Math/Vector.h"
 
 
 struct Frame

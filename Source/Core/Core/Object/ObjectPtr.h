@@ -71,7 +71,7 @@ class Ptr;
  * GlobalPtrs are Unique. An object can't be referenced by more than one global ptr.
  */
 template<typename Type>
-class GlobalPtr : public BaseGlobalPtr
+class CORE_API GlobalPtr : public BaseGlobalPtr
 {
 	static_assert(eastl::is_convertible< Type, BaseObject >::value, "Type is not an Object!");
 
@@ -193,7 +193,7 @@ protected:
 * Objects will be removed if their global ptr is destroyed. In this case all pointers will be invalidated.
 */
 template<typename Type>
-class Ptr : public BaseWeakPtr
+class CORE_API Ptr : public BaseWeakPtr
 {
 	static_assert(eastl::is_convertible<Type, BaseObject>::value, "Type is not an Object!");
 
