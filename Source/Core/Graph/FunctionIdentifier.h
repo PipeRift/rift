@@ -7,13 +7,11 @@
 #include "VariableIdentifier.h"
 
 
-class FunctionIdentifier : public Identifier
+struct FunctionIdentifier : public Identifier
 {
-    STRUCT(FunctionIdentifier, Identifier)
+	STRUCT(FunctionIdentifier, Identifier)
 
-    P(TArray<VariableIdentifier>, parameters)
-    TArray<VariableIdentifier> parameters;
+	TArray<VariableIdentifier> parameters;
 
-    P(TArray<VariableIdentifier>, localVariables)
-    TArray<VariableIdentifier> localVariables;
+	P(TArray<VariableIdentifier>, localVariables);
 };

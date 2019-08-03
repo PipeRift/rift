@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreObject.h"
-#include "Core/Assets/AssetData.h"
+#include "BaseAsset.h"
 
 
-class VCFile : public AssetData
+class ClassAsset : public BaseAsset
 {
-	CLASS(VCFile, AssetData)
+	CLASS(ClassAsset, BaseAsset)
 };

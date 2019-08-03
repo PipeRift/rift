@@ -57,7 +57,8 @@ public:
 
 	void OnTick(float deltaTime);
 
-	void TickChilds(float deltaTime) {
+	virtual void TickContent(float deltaTime)
+	{
 		for (auto& child : children)
 		{
 			child->OnTick(deltaTime);
@@ -70,7 +71,7 @@ protected:
 	/** Called before rebuilding or when the widget gets destroyed */
 	virtual void UndoBuild() {}
 
-	virtual void Tick(float deltaTime) { TickChilds(deltaTime); }
+	virtual void Tick(float deltaTime) { TickContent(deltaTime); }
 
 	virtual void BeforeDestroy() override {
 		UndoBuild();

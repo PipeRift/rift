@@ -68,6 +68,8 @@ public:
 		return IsAssetPath(path) && path.has_extension() && path.extension() == ".meta";
 	}
 
+	static void CreateDirectory(const Path path) { fs::create_directory(path); }
+
 
 	/** HELPERS */
 

@@ -9,6 +9,7 @@
 #include "Core/TypeTraits.h"
 #include "Core/Object/ObjectPtr.h"
 #include "../Math/Vector.h"
+#include "../Object/Struct.h"
 
 
 class Archive
@@ -26,7 +27,7 @@ public:
 
 	template<typename T>
 	FORCEINLINE Archive& operator()(const char* name, T& val) {
-		CustomSerializeOrNot(*this, name, val);
+		CustomSerializeOrNot(name, val);
 		return *this;
 	}
 
@@ -115,6 +116,14 @@ public:
 		EndObject();
 	}
 
+	template<typename T>
+	void SerializeStruct(const char* name, T& val)
+	{
+		BeginObject(name);
+		val.SerializeReflection(*this);
+		EndObject();
+	}
+
 	// Starts an object by name
 	virtual void BeginObject(const String& name) { BeginObject(name.c_str()); };
 	virtual void BeginObject(const char* name) = 0;
@@ -136,19 +145,24 @@ private:
 	 * Selection of Serialize call.
 	 */
 	template<class T>
-	NOINLINE bool CustomSerializeOrNot(Archive& ar, const char* name, T& val)
+	bool CustomSerializeOrNot(const char* name, T& val)
 	{
 		if constexpr(ClassTraits<T>::HasCustomSerialize)
 		{
-			return val.Serialize(ar, name);
+			return val.Serialize(*this, name);
 		}
 		else if constexpr(ClassTraits<T>::HasGlobalSerialize)
 		{
 			return ::Serialize(*this, name, val);
 		}
+		else if constexpr (IsStructType<T>())
+		{
+			SerializeStruct(name, val);
+			return true;
+		}
 		else
 		{
-			ar.Serialize(name, val);
+			Serialize(name, val);
 			return true;
 		}
 	}

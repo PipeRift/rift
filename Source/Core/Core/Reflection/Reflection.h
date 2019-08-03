@@ -139,7 +139,7 @@ static constexpr u32 id_name = decltype(__meta_Counter(MetaCounter<255>{}))::val
 static constexpr MetaCounter<id_name + 1> __meta_Counter(MetaCounter<id_name + 1>);\
 \
 static void __meta_RegistryProperty(MetaCounter<id_name>) {\
-	static_assert(IsReflectableType<type>(), "Only reflectable types are allowed (u8, u32, i32, Name, String...)");\
+	static_assert(IsReflectableType<type>(), ""#type" is not a valid reflectable type.");\
 \
 	constexpr ReflectionTags tags = ReflectionTagsInitializer<inTags>::value;\
 	static_assert(!(tags & Abstract), "Properties can't be Abstract");\

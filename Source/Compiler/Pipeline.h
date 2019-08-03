@@ -32,8 +32,7 @@ public:
 
 	bool Start();
 
-	void Shutdown() {
-	}
+	void Shutdown() {}
 
 	Ptr<AssetManager> GetAssetManager() const { return assetManager; }
 

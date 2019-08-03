@@ -6,7 +6,7 @@
 #include "Identifier.h"
 
 
-class VariableIdentifier : public Identifier
+struct VariableIdentifier : public Identifier
 {
 	STRUCT(VariableIdentifier, Identifier)
 

@@ -2,8 +2,6 @@
 
 #pragma once
 
-#if WITH_EDITOR
-
 #include "CoreObject.h"
 #include "Editor.h"
 
@@ -38,13 +36,17 @@ public:
 	void Tick(float deltaTime);
 
 	void TickDocking();
-	void TickMainNavBar();
+	void DrawMainNavBar();
 
 	template<typename EditorType>
-	Ptr<EditorType> CreateEditor()
+	void CreateEditor()
 	{
-		const i32 i = editors.Add(Create<EditorType>(Self()));
-		return editors[i].AsPtr().Cast<EditorType>();
+		GlobalPtr<EditorType> editor = Create<EditorType>(Self());
+
+		editor->Configure();
+		editor->OnBuild();
+
+		editors.Add(MoveTemp(editor));
 	}
 
 	static void AddFont(Name name, Path path, u8 size = 14u);
@@ -55,5 +57,3 @@ private:
 
 	void ApplyStyle();
 };
-
-#endif

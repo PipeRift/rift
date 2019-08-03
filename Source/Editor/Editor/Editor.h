@@ -6,17 +6,32 @@
 
 #include "UI/Window.h"
 
+#include "Assets/BaseAsset.h"
+#include "MemberVariablesWindow.h"
+#include "MemberFunctionsWindow.h"
+#include "LocalVariablesWindow.h"
+#include "FunctionGraphWindow.h"
 
-#if WITH_EDITOR
 
-class Editor : public Object {
-	CLASS(Editor, Object)
+class Editor : public Window
+{
+	CLASS(Editor, Window)
+
+	Ptr<BaseAsset> asset;
+
+	GlobalPtr<MemberVariablesWindow> variables;
+	GlobalPtr<MemberFunctionsWindow> functions;
+	GlobalPtr<LocalVariablesWindow> localVariables;
+	GlobalPtr<FunctionGraphWindow> functionGraph;
+
 
 public:
 
-	virtual void Tick(float /*deltaTime*/) {}
+	virtual void Build() override;
+
+	virtual void Tick(float deltaTime) override;
+	virtual void TickContent(float deltaTime) override;
 
 	virtual void ExpandViewsMenu() {}
 };
 
-#endif

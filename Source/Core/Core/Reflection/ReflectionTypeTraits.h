@@ -3,6 +3,8 @@
 
 #include <EASTL/type_traits.h>
 
+struct Struct;
+
 
 template<typename T>
 struct HasItemType
@@ -24,7 +26,8 @@ inline constexpr bool IsArrayType() {
 }
 
 template<typename T>
-inline constexpr bool IsAssetType() {
+inline constexpr bool IsAssetType()
+{
 	// Check if we are dealing with a TAssetPtr
 	if constexpr (HasItemType<T>::value)
 		return eastl::is_same<TAssetPtr<typename T::ItemType>, T>::value;
@@ -33,30 +36,41 @@ inline constexpr bool IsAssetType() {
 }
 
 template<typename T>
-inline constexpr bool IsReflectableType() {
-	if constexpr (IsArrayType<T>())
+inline constexpr bool IsStructType()
+{
+	return eastl::is_convertible<T, Struct>::value;
+}
+
+template<typename T>
+inline constexpr bool IsReflectableType()
+{
+	if constexpr(IsArrayType<T>())
 	{
 		return IsReflectableType<typename T::ItemType>();
 	}
-	return IsAssetType<T>();
+	return IsAssetType<T>() || IsStructType<T>();
 }
 
 template<typename T>
 inline Name GetReflectableName()
 {
-	if constexpr (IsArrayType<T>())
+	if constexpr(IsArrayType<T>())
 	{
-		if constexpr (IsReflectableType<typename T::ItemType>())
+		if constexpr(IsReflectableType<typename T::ItemType>())
 		{
 			// TArray<Itemtype> name
 			return { CString::Printf(TX("TArray<%s>"), GetReflectableName<typename T::ItemType>().ToString().c_str()) };
 		}
 		return TX("TArray<Invalid>");
 	}
-	else if constexpr (IsAssetType<T>())
+	else if constexpr(IsAssetType<T>())
 	{
 		// TAssetPtr<Itemtype> name
 		return { CString::Printf(TX("TAssetPtr<%s>"), GetReflectableName<typename T::ItemType>().ToString().c_str()) };
+	}
+	else if constexpr (IsStructType<T>())
+	{
+		return T::StaticStruct()->GetName();
 	}
 
 	return TX("Invalid");

@@ -13,14 +13,14 @@
 #include "UI/Widgets/Assets/SelectAssetDialog.h"
 
 
-#if WITH_EDITOR
-
 TMap<Name, ImFont*> EditorManager::fonts {};
 const String EditorManager::configPath { FileSystem::ToString(FileSystem::GetConfigPath() / "ui.ini") };
 
 void EditorManager::Construct()
 {
 	Super::Construct();
+
+	CreateEditor<Editor>();
 
 	fonts.SetEmptyKey("");
 
@@ -43,7 +43,7 @@ void EditorManager::Construct()
 void EditorManager::Tick(float deltaTime)
 {
 	ZoneScopedNC("Editor", 0x459bd1);
-	TickMainNavBar();
+	DrawMainNavBar();
 	TickDocking();
 
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
@@ -53,7 +53,7 @@ void EditorManager::Tick(float deltaTime)
 	editors.RemoveIf([](const auto & editor) { return !editor.IsValid(); });
 	for (const auto& editor : editors)
 	{
-		editor->Tick(deltaTime);
+		editor->OnTick(deltaTime);
 	}
 
 	assetBrowser->OnTick(deltaTime);
@@ -83,10 +83,6 @@ void EditorManager::TickDocking()
 		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 	}
 
-	// When using ImGuiDockNodeFlags_PassthruDockspace, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
-	if (opt_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-		window_flags |= ImGuiWindowFlags_NoBackground;
-
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
 	bool b_dockspace_open = true;
@@ -94,7 +90,7 @@ void EditorManager::TickDocking()
 	ImGui::PopStyleVar();
 
 	if (opt_fullscreen)
-		ImGui::PopStyleVar(1);
+		ImGui::PopStyleVar();
 
 	// Dock space
 	ImGuiIO& io = ImGui::GetIO();
@@ -106,7 +102,7 @@ void EditorManager::TickDocking()
 	ImGui::End();
 }
 
-void EditorManager::TickMainNavBar()
+void EditorManager::DrawMainNavBar()
 {
 	static NewAssetDialog saveSceneAsDialog{ "Save Scene" };
 	static SelectAssetDialog openSceneDialog{ "Open Scene" };
@@ -183,7 +179,7 @@ void EditorManager::TickMainNavBar()
 
 void EditorManager::AddFont(Name name, Path path, u8 size)
 {
-	String sPath = FileSystem::ToString(path);
+	const String sPath = FileSystem::ToString(path);
 
 	if (!FileSystem::FileExists(path))
 	{
@@ -263,5 +259,3 @@ void EditorManager::ApplyStyle()
 	style.WindowRounding = 2;
 	style.ScrollbarRounding = 2;
 }
-
-#endif

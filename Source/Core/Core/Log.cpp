@@ -78,10 +78,13 @@ using ProfilerSink_st = ProfilerSink<spdlog::details::null_mutex>;
 
 void Log::Init()
 {
-	// File
-	const Path filePath = FileSystem::GetLogsPath() / "log.txt";
+	// File logging
+	const Path logsFolder = FileSystem::GetLogsPath();
+	FileSystem::CreateDirectory(logsFolder);
+
+	const Path logFile = logsFolder / "log.txt";
 	auto fileSink{ std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-		FileSystem::ToString(filePath).c_str(),
+		FileSystem::ToString(logFile).c_str(),
 		1048576 * 5,
 		3
 	)};

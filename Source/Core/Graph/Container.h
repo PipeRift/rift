@@ -5,7 +5,7 @@
 #include "CoreStruct.h"
 
 
-class Container : public Struct
+struct Container : public Struct
 {
 	STRUCT(Container, Struct)
 

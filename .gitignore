@@ -10,6 +10,7 @@
 *.vcxproj.filters
 /binaries/**/*.*
 /enc_temp_folder/**/*.*
+/Logs
 
 .vs
 .vscode

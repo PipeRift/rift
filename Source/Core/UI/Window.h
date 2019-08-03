@@ -12,6 +12,7 @@ class Window : public Widget {
 protected:
 
 	bool bOpen;
+	bool bWindowOpened;
 	String displayName;
 	ImGuiWindowFlags windowFlags;
 

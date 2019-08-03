@@ -8,6 +8,8 @@
 
 bool Pipeline::Start()
 {
+	Log::Init();
+
 	{
 		Log::Message("Start-Up");
 		ScopedGameZone("Start-Up");

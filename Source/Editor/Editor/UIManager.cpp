@@ -11,16 +11,12 @@ void UIManager::Prepare()
 {
 	Log::Message("UI Start-Up");
 
-#if WITH_EDITOR
 	editor = Create<EditorManager>(Self());
-#endif
 }
 
 void UIManager::Tick(float deltaTime)
 {
 	ScopedGameZone("UI Logic");
 
-#if WITH_EDITOR
 	editor->Tick(deltaTime);
-#endif
 }

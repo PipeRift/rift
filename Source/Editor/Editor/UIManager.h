@@ -13,9 +13,7 @@
 class UIManager : public Object {
 	CLASS(UIManager, Object)
 
-#if WITH_EDITOR
 	GlobalPtr<EditorManager> editor;
-#endif
 
 
 public:

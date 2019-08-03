@@ -6,6 +6,7 @@
 void Window::Build()
 {
 	bOpen = true;
+	bWindowOpened = true;
 	windowFlags = 0;
 }
 
@@ -14,7 +15,10 @@ void Window::Tick(float deltaTime)
 	if (bOpen)
 	{
 		BeginWindow();
-		TickChilds(deltaTime);
+		if (bWindowOpened)
+		{
+			TickContent(deltaTime);
+		}
 		EndWindow();
 	}
 }
@@ -28,7 +32,7 @@ void Window::BeginWindow()
 	else
 		finalName = GetName().ToString();
 
-	ImGui::Begin(finalName.c_str(), &bOpen, windowFlags);
+	bWindowOpened = ImGui::Begin(finalName.c_str(), &bOpen, windowFlags);
 }
 
 void Window::EndWindow()

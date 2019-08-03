@@ -5,7 +5,7 @@
 #include "CoreStruct.h"
 
 
-class Identifier : public Struct
+struct Identifier : public Struct
 {
 	STRUCT(Identifier, Struct)
 
