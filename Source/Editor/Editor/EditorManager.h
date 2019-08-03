@@ -18,10 +18,15 @@
 class EditorManager : public Object {
 	CLASS(EditorManager, Object)
 
-	TArray<GlobalPtr<Editor>> editors;
+	TArray<GlobalPtr<CodeEditor>> editors;
 
 	GlobalPtr<AssetBrowser> assetBrowser;
 	GlobalPtr<LogWindow> log;
+
+	ImGuiWindowClass mainDockClass;
+	ImGuiID mainDock;
+	// Dock to which recently opened assets dock
+	ImGuiID assetDock;
 
 	bool showDemoWindow = true;
 
@@ -31,11 +36,18 @@ class EditorManager : public Object {
 
 public:
 
+	EditorManager() : Super()
+	{
+		mainDockClass.ClassId = 1;
+	}
+
 	virtual void Construct() override;
 
 	void Tick(float deltaTime);
 
+	void ApplyLayoutPreset();
 	void TickDocking();
+
 	void DrawMainNavBar();
 
 	template<typename EditorType>

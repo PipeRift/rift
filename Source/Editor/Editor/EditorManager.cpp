@@ -20,35 +20,33 @@ void EditorManager::Construct()
 {
 	Super::Construct();
 
-	CreateEditor<Editor>();
-
-	fonts.SetEmptyKey("");
-
 	// Change config file
 	auto& io = ImGui::GetIO();
 	io.IniFilename = configPath.c_str();
 
-	// Setup style
-	AddFont("Karla", FileSystem::GetAssetsPath() / "Fonts/karla_regular.ttf");
-	AddFont("KarlaBold", FileSystem::GetAssetsPath() / "Fonts/karla_bold.ttf");
-	AddFont("KarlaItalic", FileSystem::GetAssetsPath() / "Fonts/karla_italic.ttf");
-	AddFont("KarlaBoldItalic", FileSystem::GetAssetsPath() / "Fonts/karla_bold_italic.ttf");
-	ImGui::StyleColorsDark();
 	ApplyStyle();
 
+	CreateEditor<CodeEditor>();
+
 	assetBrowser = Widget::CreateStandalone<AssetBrowser>(Self());
+	assetBrowser->windowClass = mainDockClass;
 	log = Widget::CreateStandalone<LogWindow>(Self());
+	log->windowClass = mainDockClass;
 }
 
 void EditorManager::Tick(float deltaTime)
 {
 	ZoneScopedNC("Editor", 0x459bd1);
 	DrawMainNavBar();
+
 	TickDocking();
 
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
+
+	assetBrowser->OnTick(deltaTime);
+	log->OnTick(deltaTime);
 
 	editors.RemoveIf([](const auto & editor) { return !editor.IsValid(); });
 	for (const auto& editor : editors)
@@ -56,48 +54,62 @@ void EditorManager::Tick(float deltaTime)
 		editor->OnTick(deltaTime);
 	}
 
-	assetBrowser->OnTick(deltaTime);
-	log->OnTick(deltaTime);
-
 	// Prepares the Draw List
 	ImGui::Render();
 }
 
+void EditorManager::ApplyLayoutPreset()
+{
+	ImGui::DockBuilderRemoveNode(mainDock); // Clear out existing layout
+	ImGui::DockBuilderAddNode(mainDock, ImGuiDockNodeFlags_DockSpace); // Add empty node
+
+	ImVec2 size = ImGui::GetWindowSize();
+	ImGui::DockBuilderSetNodeSize(mainDock, size);
+
+	assetDock = mainDock; // This variable will track the document node, however we are not using it here as we aren't docking anything into it.
+	ImGuiID bottomDock = ImGui::DockBuilderSplitNode(assetDock, ImGuiDir_Down, 0.20f, nullptr, &assetDock);
+
+	const String logName = log->GetWindowID();
+	ImGui::DockBuilderDockWindow(logName.c_str(), bottomDock);
+
+	const String assetBrowserName = assetBrowser->GetWindowID();
+	ImGui::DockBuilderDockWindow(assetBrowserName.c_str(), bottomDock);
+
+	ImGui::DockBuilderFinish(mainDock);
+}
+
 void EditorManager::TickDocking()
 {
-	static bool opt_fullscreen_persistant = true;
-	static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_PassthruCentralNode;
-	bool opt_fullscreen = opt_fullscreen_persistant;
+	// Create a full screen window and add a dockspace inside
+	ImGuiWindowFlags window_flags =
+		ImGuiWindowFlags_MenuBar    | ImGuiWindowFlags_NoDocking |
+		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_NoResize   | ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-	// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-	// because it would be confusing to have two docking targets within each others.
-	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-	if (opt_fullscreen)
-	{
-		ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(viewport->Pos);
-		ImGui::SetNextWindowSize(viewport->Size);
-		ImGui::SetNextWindowViewport(viewport->ID);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-	}
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(viewport->Pos);
+	ImGui::SetNextWindowSize(viewport->Size);
+	ImGui::SetNextWindowViewport(viewport->ID);
 
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
 	bool b_dockspace_open = true;
 	ImGui::Begin("EditorLayoutWindow", &b_dockspace_open, window_flags);
-	ImGui::PopStyleVar();
-
-	if (opt_fullscreen)
-		ImGui::PopStyleVar();
-
-	// Dock space
-	ImGuiIO& io = ImGui::GetIO();
-	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 	{
-		ImGuiID dockspace_id = ImGui::GetID("EditorLayout");
-		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), opt_flags);
+		ImGui::PopStyleVar(2);
+
+		// Dock space
+		mainDock = ImGui::GetID("EditorLayout");
+
+		if (ImGui::DockBuilderGetNode(mainDock) == nullptr)
+		{
+			ApplyLayoutPreset();
+		}
+
+		static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+		ImGui::DockSpace(mainDock, ImVec2(0.0f, 0.0f), opt_flags, &mainDockClass);
 	}
 	ImGui::End();
 }
@@ -143,6 +155,8 @@ void EditorManager::DrawMainNavBar()
 		{
 			if (ImGui::MenuItem("Asset Browser", (const char*)0, assetBrowser->IsOpenedPtr())) {}
 			if (ImGui::MenuItem("Log", (const char*)0, log->IsOpenedPtr())) {}
+			if (ImGui::MenuItem("Assets", (const char*)0, editors[0]->IsOpenedPtr())) {}
+			if (ImGui::MenuItem("Demo", (const char*)0, &showDemoWindow)) {}
 
 			for (const auto& editor : editors)
 			{
@@ -226,8 +240,16 @@ void EditorManager::PopFont()
 
 void EditorManager::ApplyStyle()
 {
-	auto& style = ImGui::GetStyle();
+	fonts.SetEmptyKey("");
+	AddFont("Karla", FileSystem::GetAssetsPath() / "Fonts/karla_regular.ttf");
+	AddFont("KarlaBold", FileSystem::GetAssetsPath() / "Fonts/karla_bold.ttf");
+	AddFont("KarlaItalic", FileSystem::GetAssetsPath() / "Fonts/karla_italic.ttf");
+	AddFont("KarlaBoldItalic", FileSystem::GetAssetsPath() / "Fonts/karla_bold_italic.ttf");
 
+	// Default style
+	ImGui::StyleColorsDark();
+
+	auto& style = ImGui::GetStyle();
 	ImVec4* colors = style.Colors;
 	colors[ImGuiCol_FrameBg] = ImVec4(0.48f, 0.40f, 0.16f, 0.54f);
 	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.98f, 0.77f, 0.26f, 0.40f);

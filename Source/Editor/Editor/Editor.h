@@ -13,9 +13,9 @@
 #include "FunctionGraphWindow.h"
 
 
-class Editor : public Window
+class CodeEditor : public Window
 {
-	CLASS(Editor, Window)
+	CLASS(CodeEditor, Window)
 
 	Ptr<BaseAsset> asset;
 
@@ -24,6 +24,8 @@ class Editor : public Window
 	GlobalPtr<LocalVariablesWindow> localVariables;
 	GlobalPtr<FunctionGraphWindow> functionGraph;
 
+	ImGuiWindowClass codeDockClass;
+	ImGuiID codeDock;
 
 public:
 

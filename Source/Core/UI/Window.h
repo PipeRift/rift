@@ -14,8 +14,11 @@ protected:
 	bool bOpen;
 	bool bWindowOpened;
 	String displayName;
-	ImGuiWindowFlags windowFlags;
 
+public:
+
+	ImGuiWindowFlags windowFlags;
+	ImGuiWindowClass windowClass;
 
 	virtual void Build() override;
 	virtual void Tick(float deltaTime) override;
@@ -29,6 +32,7 @@ public:
 	bool IsOpened() const { return bOpen; }
 	bool* IsOpenedPtr() { return &bOpen; }
 
+	const String GetWindowID() const;
 	const String& GetDisplayName() const {
 		return displayName.empty()? GetName().ToString() : displayName;
 	}

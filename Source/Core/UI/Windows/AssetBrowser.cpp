@@ -11,7 +11,7 @@ void AssetBrowser::Build()
 	Super::Build();
 	bOpen = true;
 	SetName(TX("Asset Browser"));
-	windowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize;
+	windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
 }
 
 void AssetBrowser::Tick(float)

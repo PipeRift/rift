@@ -26,16 +26,23 @@ void Window::Tick(float deltaTime)
 void Window::BeginWindow()
 {
 	// Generate unique name
-	String finalName;
-	if (!displayName.empty())
-		finalName = CString::Printf("%s###%s", displayName.c_str(), GetName().ToString().c_str());
-	else
-		finalName = GetName().ToString();
+	const String finalName = GetWindowID();
 
+	ImGui::SetNextWindowClass(&windowClass);
 	bWindowOpened = ImGui::Begin(finalName.c_str(), &bOpen, windowFlags);
 }
 
 void Window::EndWindow()
 {
 	ImGui::End();
+}
+
+const String Window::GetWindowID() const
+{
+	if (!displayName.empty())
+	{
+		return CString::Printf("%s###%s", displayName.c_str(), GetName().ToString().c_str());
+	}
+	return GetName().ToString();
+
 }

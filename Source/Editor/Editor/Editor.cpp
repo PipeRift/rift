@@ -3,16 +3,18 @@
 #include "Editor.h"
 
 
-void Editor::Build()
+void CodeEditor::Build()
 {
 	Super::Build();
 
+	codeDockClass.ClassId = 2;
+
 	bOpen = true;
-	SetName(TX("Class"));
-	windowFlags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar;
+	SetName(TX("Unit.cv"));
+	windowFlags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_UnsavedDocument;
 }
 
-void Editor::Tick(float deltaTime)
+void CodeEditor::Tick(float deltaTime)
 {
 	if (bOpen)
 	{
@@ -20,8 +22,33 @@ void Editor::Tick(float deltaTime)
 		if (bWindowOpened)
 		{
 			// Create a DockSpace node where any window can be docked
-			ImGuiID dockspace_id = ImGui::GetID("EditorDockspace");
-			ImGui::DockSpace(dockspace_id);
+			ImGuiID dockspace_id = ImGui::GetID("CodeEditor");
+			ImGui::DockSpace(dockspace_id, ImVec2(0,0), 0, &codeDockClass);
+
+			// Create Windows
+			ImGui::SetNextWindowClass(&codeDockClass);
+			ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
+			bool open = true;
+			ImGui::Begin("Function Graph", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
+			ImGui::End();
+
+			ImGui::SetNextWindowClass(&codeDockClass);
+			ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
+			bool open2 = true;
+			ImGui::Begin("Variables", &open2);
+			ImGui::End();
+
+			ImGui::SetNextWindowClass(&codeDockClass);
+			ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
+			bool open3 = true;
+			ImGui::Begin("Functions", &open3);
+			ImGui::End();
+
+			ImGui::SetNextWindowClass(&codeDockClass);
+			ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
+			bool open4 = true;
+			ImGui::Begin("Local Variables", &open4);
+			ImGui::End();
 
 			TickContent(deltaTime);
 		}
@@ -29,7 +56,7 @@ void Editor::Tick(float deltaTime)
 	}
 }
 
-void Editor::TickContent(float deltaTime)
+void CodeEditor::TickContent(float deltaTime)
 {
 	Super::TickContent(deltaTime);
 }
