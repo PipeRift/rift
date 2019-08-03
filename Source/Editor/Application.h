@@ -6,10 +6,10 @@
 #include "Rendering/Renderer.h"
 
 #include "Context.h"
-#include "Core/Input/InputManager.h"
 #include "Core/MultiThreading.h"
 #include "Core/Misc/Time.h"
 
+#include "Input/InputManager.h"
 #include "Editor/UIManager.h"
 #include "Rendering/Renderer.h"
 #include "Rendering/Frame.h"
@@ -45,9 +45,9 @@ public:
 	virtual Ptr<Context> GetContext() const override { return context; }
 	/** End Object interface */
 
-private:
-
 	bool Start();
+
+private:
 
 	void Loop(TaskFlow& frameTasks, bool& bFinish);
 

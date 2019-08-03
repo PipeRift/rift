@@ -10,10 +10,9 @@ class CoreModule : BaseModule
     {
         base.ConfigureAll(conf, target);
 
-        conf.AddPublicDependency<SDL2Library>(target);
         conf.AddPublicDependency<AssimpLibrary>(target);
         conf.AddPublicDependency<CurlLibrary>(target);
-        
+
         conf.SolutionFolder = "Core";
         //conf.IncludePaths.Add(@"[project.SharpmakeCsPath]/Core");
         conf.IncludePaths.Add(@"[project.SharpmakeCsPath]/ThirdParty");

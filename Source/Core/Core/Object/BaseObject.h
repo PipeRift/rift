@@ -17,7 +17,7 @@ template<typename Type>
 class Ptr;
 
 
-class BaseObject : public BaseStruct {
+class CORE_API BaseObject : public BaseStruct {
 protected:
 	BaseObject() : BaseStruct() {}
 

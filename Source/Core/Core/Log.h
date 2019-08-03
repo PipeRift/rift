@@ -3,114 +3,57 @@
 #pragma once
 
 #include "CoreEngine.h"
-#include <SDL_log.h>
+
+#include <mutex>
+#include <spdlog/spdlog.h>
 #include <tracy/Tracy.hpp>
 
 #include "Strings/String.h"
 
-#if WITH_EDITOR
-#include "UI/Windows/LogWindow.h"
-#endif
 
-namespace Log {
+namespace Log
+{
+	void Init();
+
 	template<typename ...Args>
-	inline void Message(const TCHAR* format, Args... args) {
+	inline void Message(const TCHAR* format, Args... args)
+	{
 		if (format)
 		{
-			if constexpr (sizeof...(args) > 0)
-			{
-				const String msg = CString::Printf(format, eastl::forward<Args>(args)...);
-				TracyMessage(msg.c_str(), msg.size()); // Send to profiler
-				SDL_Log(msg.c_str()); // Send to console
-
-				#if WITH_EDITOR
-				if (LogWindow::globalLogWindow.IsValid())
-					LogWindow::globalLogWindow->Log(msg);
-				#endif
-			}
-			else
-			{
-				const size_t size = std::strlen(format);
-				TracyMessage(format, size); // Send to profiler
-				SDL_Log(format); // Send to console
-
-				#if WITH_EDITOR
-				if (LogWindow::globalLogWindow.IsValid())
-				{
-					String msg{ format, size };
-					LogWindow::globalLogWindow->Log(msg);
-				}
-				#endif
-			}
+			spdlog::info(format, eastl::forward<Args>(args)...);
 		}
 	}
 
-	inline void Message(const String msg) {
-		TracyMessage(msg.c_str(), msg.size()); // Send to profiler
-		SDL_Log(msg.c_str()); // Send to console
+	inline void Message(const String& msg)
+	{
+		spdlog::info(msg.data());
 	}
 
 	template<typename ...Args>
-	inline void Warning(const TCHAR* format, Args... args) {
-		if constexpr (sizeof...(args) > 0)
+	inline void Warning(const TCHAR* format, Args... args)
+	{
+		if (format)
 		{
-			String msg{ "Warning> " };
-			msg.append_sprintf(format, eastl::forward<Args>(args)...);
-			TracyMessage(msg.c_str(), msg.size()); // Send to profiler
-			SDL_LogError(SDL_LOG_CATEGORY_ERROR, msg.c_str()); // Send to console
-
-			#if WITH_EDITOR
-			if (LogWindow::globalLogWindow.IsValid())
-				LogWindow::globalLogWindow->Log(msg);
-			#endif
-		}
-		else
-		{
-			String msg{ "Warning> " };
-			msg.append(format);
-			TracyMessage(msg.c_str(), msg.size()); // Send to profiler
-			SDL_LogError(SDL_LOG_CATEGORY_ERROR, msg.c_str()); // Send to console
-
-			#if WITH_EDITOR
-			if (LogWindow::globalLogWindow.IsValid())
-				LogWindow::globalLogWindow->Log(msg);
-			#endif
+			spdlog::warn(format, eastl::forward<Args>(args)...);
 		}
 	}
 
-	inline void Warning(const String msg) {
-		Warning(msg.c_str());
+	inline void Warning(const String& msg)
+	{
+		spdlog::warn(msg.data());
 	}
 
 	template<typename ...Args>
-	inline void Error(const TCHAR* format, Args... args) {
-		if constexpr (sizeof...(args) > 0)
+	inline void Error(const TCHAR* format, Args... args)
+	{
+		if (format)
 		{
-			String msg{ "Error> " };
-			msg.append_sprintf(format, eastl::forward<Args>(args)...);
-			TracyMessage(msg.c_str(), msg.size()); // Send to profiler
-			SDL_LogError(SDL_LOG_CATEGORY_ERROR, msg.c_str()); // Send to console
-
-			#if WITH_EDITOR
-			if (LogWindow::globalLogWindow.IsValid())
-				LogWindow::globalLogWindow->Log(msg);
-			#endif
-		}
-		else
-		{
-			String msg{ "Error> " };
-			msg.append(format);
-			TracyMessage(msg.c_str(), msg.size()); // Send to profiler
-			SDL_LogError(SDL_LOG_CATEGORY_ERROR, msg.c_str()); // Send to console
-
-			#if WITH_EDITOR
-			if (LogWindow::globalLogWindow.IsValid())
-				LogWindow::globalLogWindow->Log(msg);
-			#endif
+			spdlog::error(format, eastl::forward<Args>(args)...);
 		}
 	}
 
-	inline void Error(const String msg) {
-		Error(msg.c_str());
+	inline void Error(const String& msg)
+	{
+		spdlog::error(msg.data());
 	}
 };

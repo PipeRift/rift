@@ -13,7 +13,7 @@ class BaseWeakPtr;
 
 
 /** Non templated version of GlobalPtr that points to all weaks */
-class BaseGlobalPtr {
+class CORE_API BaseGlobalPtr {
 	friend BaseWeakPtr;
 
 	/** MEMBERS */
@@ -132,7 +132,7 @@ public:
 };
 
 /** Non templated version of WeakPtr that points to a globalPtr */
-class BaseWeakPtr {
+class CORE_API BaseWeakPtr {
 	friend BaseGlobalPtr;
 
 	// #TODO: Optimize storing pointer to value

@@ -3,7 +3,7 @@
 
 #include "../Memory/Allocator.h"
 
-struct BaseStruct {
+struct CORE_API BaseStruct {
 	BaseStruct() = default;
 	virtual ~BaseStruct() {}
 

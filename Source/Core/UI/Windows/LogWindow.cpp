@@ -22,6 +22,19 @@ void LogWindow::Log(const String& str)
 	}
 }
 
+void LogWindow::Log(const char* str, size_t len)
+{
+	textBuffer.append(str, str + len);
+	textBuffer.append("\n");
+
+	lineOffsets.Add(lineOffsets.Last() + i32(len) + 1);
+
+	if (bAutoScroll)
+	{
+		bScrollToBottom = true;
+	}
+}
+
 void LogWindow::Build()
 {
 	Super::Build();

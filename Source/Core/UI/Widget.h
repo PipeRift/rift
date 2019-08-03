@@ -3,9 +3,6 @@
 #pragma once
 
 #include "CoreObject.h"
-#include <imgui/imgui.h>
-#include <imgui/imgui_internal.h>
-
 
 #define W(Widget, ...) AddNew<Widget>(__VA_ARGS__)
 
@@ -58,23 +55,7 @@ public:
 		}
 	}
 
-	void OnTick(float deltaTime) {
-		if (bBuilt)
-		{
-			const bool bDisabledNow = bDisabled;
-			if (bDisabledNow)
-			{
-				ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-			}
-			Tick(deltaTime);
-			if (bDisabledNow)
-			{
-				ImGui::PopItemFlag();
-				ImGui::PopStyleVar();
-			}
-		}
-	}
+	void OnTick(float deltaTime);
 
 	void TickChilds(float deltaTime) {
 		for (auto& child : children)

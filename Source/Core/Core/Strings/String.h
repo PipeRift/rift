@@ -18,7 +18,8 @@ using String = eastl::basic_string<TCHAR, StringAllocator>;
 using StringView = eastl::basic_string_view<TCHAR>;
 
 
-struct CString {
+struct CString
+{
 	template<typename ...Args>
 	static String Printf(const TCHAR* format, Args... args) {
 		String str;

@@ -3,6 +3,8 @@
 #pragma once
 
 #include "Time.h"
+#include <thread>
+
 #include "Profiler.h"
 
 
@@ -25,6 +27,8 @@ void FrameTime::PostTick()
 	{
 		// Cap FPS with a delay
 		ScopedZone("Sleep", D15545);
-		SDL_Delay(i32(extraTimeForFPSCAP * 1000.f));
+
+		std::chrono::duration<float, std::chrono::seconds::period> sleepPeriod{ extraTimeForFPSCAP };
+		std::this_thread::sleep_for(sleepPeriod);
 	}
 }

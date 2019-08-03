@@ -1,10 +1,26 @@
 // Copyright 2015-2019 Piperift - All rights reserved
 
-#pragma once
+#include "Widget.h"
 
-#include "CoreObject.h"
+#include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
 
 
-class Window : public Object {
-	CLASS(Window, Object)
-};
+void Widget::OnTick(float deltaTime)
+{
+	if (bBuilt)
+	{
+		const bool bDisabledNow = bDisabled;
+		if (bDisabledNow)
+		{
+			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+		}
+		Tick(deltaTime);
+		if (bDisabledNow)
+		{
+			ImGui::PopItemFlag();
+			ImGui::PopStyleVar();
+		}
+	}
+}

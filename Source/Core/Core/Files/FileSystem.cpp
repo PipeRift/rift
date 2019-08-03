@@ -104,6 +104,14 @@ Path FileSystem::GetConfigPath()
 	return eastl::move(path);
 }
 
+Path FileSystem::GetLogsPath()
+{
+	// Take two folders up. May change for distributed versions / other platforms
+	Path path = fs::current_path().parent_path().parent_path();
+	path /= "Logs";
+	return eastl::move(path);
+}
+
 Path FileSystem::FindMetaFile(Path in)
 {
 	if (!SanitizeAssetPath(in))

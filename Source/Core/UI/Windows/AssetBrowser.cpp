@@ -2,7 +2,6 @@
 
 #include "AssetBrowser.h"
 #include "Core/Files/FileSystem.h"
-#include "SDL_log.h"
 
 
 #if WITH_EDITOR

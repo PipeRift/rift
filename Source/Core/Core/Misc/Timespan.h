@@ -39,11 +39,16 @@ struct Timespan
 	using SysClock = std::chrono::system_clock;
 	using SysDuration = std::chrono::duration<SysClock, decmicroseconds>;
 
+private:
+
+	/** The time span value in 100 nanoseconds resolution. */
+	decmicroseconds duration;
+
 
 public:
 
 	/** Default constructor (no initialization). */
-	Timespan() { }
+	Timespan() : duration{} {}
 
 	/**
 	 * Create and initialize a new time interval with the specified number of ticks.
@@ -65,7 +70,7 @@ public:
 	 * @param Seconds The seconds component.
 	 * @see FromHours, FromMinutes, FromSeconds
 	 */
-	Timespan(i32 Hours, i32 Minutes, i32 Seconds)
+	Timespan(i32 Hours, i32 Minutes, i32 Seconds) : duration{}
 	{
 		Assign(0, Hours, Minutes, Seconds, 0);
 	}
@@ -81,7 +86,7 @@ public:
 	 * @param Seconds The seconds component.
 	 * @see FromDays, FromHours, FromMinutes, FromSeconds
 	 */
-	Timespan(i32 Days, i32 Hours, i32 Minutes, i32 Seconds)
+	Timespan(i32 Days, i32 Hours, i32 Minutes, i32 Seconds) : duration{}
 	{
 		Assign(Days, Hours, Minutes, Seconds, 0);
 	}
@@ -95,7 +100,7 @@ public:
 	 * @param Seconds The seconds component.
 	 * @param FractionNano The fractional seconds (in nanosecond resolution).
 	 */
-	Timespan(i32 Days, i32 Hours, i32 Minutes, i32 Seconds, i32 FractionNano)
+	Timespan(i32 Days, i32 Hours, i32 Minutes, i32 Seconds, i32 FractionNano) : duration{}
 	{
 		Assign(Days, Hours, Minutes, Seconds, FractionNano);
 	}
@@ -609,10 +614,6 @@ protected:
 private:
 	friend struct Z_Construct_UScriptStruct_FTimespan_Statics;
 
-private:
-
-	/** The time span value in 100 nanoseconds resolution. */
-	decmicroseconds duration;
 public:
 	static Timespan FromHours(i32 hours);
 	static Timespan FromMinutes(i32 TzOffsetMinutes);

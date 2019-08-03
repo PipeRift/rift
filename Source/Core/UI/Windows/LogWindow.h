@@ -24,6 +24,7 @@ public:
 	LogWindow() : Super(), filter{} {}
 
 	void Log(const String& str);
+	void Log(const char* str, size_t len);
 
 protected:
 
