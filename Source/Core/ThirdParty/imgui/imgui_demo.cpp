@@ -4497,7 +4497,7 @@ static void ShowExampleAppCustomRendering(bool* p_open)
 // DockSpace() is only useful to construct to a central location for your application.
 void ShowExampleAppDockSpace(bool* p_open)
 {
-    static bool opt_fullscreen_persistant = true;
+    static bool opt_fullscreen_persistant = false;
     bool opt_fullscreen = opt_fullscreen_persistant;
     static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 

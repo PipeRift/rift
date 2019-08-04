@@ -9,4 +9,9 @@
 class FunctionGraphWindow : public Window
 {
 	CLASS(FunctionGraphWindow, Window)
+
+public:
+
+	virtual void Build() override;
+	virtual void Tick(float deltaTime) override;
 };

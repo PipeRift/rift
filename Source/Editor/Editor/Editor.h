@@ -11,29 +11,49 @@
 #include "MemberFunctionsWindow.h"
 #include "LocalVariablesWindow.h"
 #include "FunctionGraphWindow.h"
+#include "Core/Object/ObjectPtr.h"
 
 
-class CodeEditor : public Window
+class Editor : public Window
 {
-	CLASS(CodeEditor, Window)
+	CLASS(Editor, Window)
+};
+
+class NewPageEditor : public Editor
+{
+	CLASS(NewPageEditor, Editor)
+
+public:
+
+	virtual void Build() override;
+};
+
+class CodeEditor : public Editor
+{
+	CLASS(CodeEditor, Editor)
+
+	static u32 codeEditorCount;
+
+	Ptr<MemberVariablesWindow> variables;
+	Ptr<MemberFunctionsWindow> functions;
+	Ptr<LocalVariablesWindow> localVariables;
+	Ptr<FunctionGraphWindow> functionGraph;
 
 	Ptr<BaseAsset> asset;
 
-	GlobalPtr<MemberVariablesWindow> variables;
-	GlobalPtr<MemberFunctionsWindow> functions;
-	GlobalPtr<LocalVariablesWindow> localVariables;
-	GlobalPtr<FunctionGraphWindow> functionGraph;
-
-	ImGuiWindowClass codeDockClass;
 	ImGuiID codeDock;
+	ImGuiWindowClass codeDockClass;
 
 public:
 
 	virtual void Build() override;
 
 	virtual void Tick(float deltaTime) override;
-	virtual void TickContent(float deltaTime) override;
+
+	void ApplyLayoutPreset();
 
 	virtual void ExpandViewsMenu() {}
+
+	const ImGuiWindowClass& GetCodeDockClass() { return codeDockClass; }
 };
 

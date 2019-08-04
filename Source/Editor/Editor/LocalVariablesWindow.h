@@ -9,5 +9,9 @@
 class LocalVariablesWindow : public Window
 {
 	CLASS(LocalVariablesWindow, Window)
+
+public:
+
+	virtual void Build() override;
 };
 

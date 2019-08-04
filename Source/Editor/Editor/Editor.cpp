@@ -1,17 +1,37 @@
 // Copyright 2015-2019 Piperift - All rights reserved
 
 #include "Editor.h"
+#include <imgui/imgui_internal.h>
+
+#include "imgui/ImGuiUtil.h"
+
+
+u32 CodeEditor::codeEditorCount{ 0 };
+
+
+void NewPageEditor::Build()
+{
+	Super::Build();
+	SetName(TX("Start Page"));
+}
 
 
 void CodeEditor::Build()
 {
 	Super::Build();
 
-	codeDockClass.ClassId = 2;
+	codeDockClass.ClassId = 2 + codeEditorCount;
+	++codeEditorCount;
 
 	bOpen = true;
 	SetName(TX("Unit.cv"));
 	windowFlags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_UnsavedDocument;
+
+	// Initialize windows
+	variables      = W(MemberVariablesWindow);
+	functions      = W(MemberFunctionsWindow);
+	localVariables = W(LocalVariablesWindow);
+	functionGraph  = W(FunctionGraphWindow);
 }
 
 void CodeEditor::Tick(float deltaTime)
@@ -21,34 +41,14 @@ void CodeEditor::Tick(float deltaTime)
 		BeginWindow();
 		if (bWindowOpened)
 		{
-			// Create a DockSpace node where any window can be docked
-			ImGuiID dockspace_id = ImGui::GetID("CodeEditor");
-			ImGui::DockSpace(dockspace_id, ImVec2(0,0), 0, &codeDockClass);
+			codeDock = ImGui::GetID("CodeEditor");
 
-			// Create Windows
-			ImGui::SetNextWindowClass(&codeDockClass);
-			ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
-			bool open = true;
-			ImGui::Begin("Function Graph", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
-			ImGui::End();
+			if (ImGui::DockBuilderGetNode(codeDock) == nullptr)
+			{
+				ApplyLayoutPreset();
+			}
 
-			ImGui::SetNextWindowClass(&codeDockClass);
-			ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
-			bool open2 = true;
-			ImGui::Begin("Variables", &open2);
-			ImGui::End();
-
-			ImGui::SetNextWindowClass(&codeDockClass);
-			ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
-			bool open3 = true;
-			ImGui::Begin("Functions", &open3);
-			ImGui::End();
-
-			ImGui::SetNextWindowClass(&codeDockClass);
-			ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
-			bool open4 = true;
-			ImGui::Begin("Local Variables", &open4);
-			ImGui::End();
+			ImGui::DockSpace(codeDock, ImVec2(0, 0), ImGuiDockNodeFlags_NoCloseButton | ImGuiDockNodeFlags_AutoHideTabBar, &codeDockClass);
 
 			TickContent(deltaTime);
 		}
@@ -56,7 +56,24 @@ void CodeEditor::Tick(float deltaTime)
 	}
 }
 
-void CodeEditor::TickContent(float deltaTime)
+void CodeEditor::ApplyLayoutPreset()
 {
-	Super::TickContent(deltaTime);
+	ImGui::DockBuilderRemoveNode(codeDock); // Clear out existing layout
+	ImGui::DockBuilderAddNode(codeDock, ImGuiDockNodeFlags_DockSpace); // Add empty node
+	ImVec2 size = ImGui::GetWindowSize();
+	ImGui::DockBuilderSetNodeSize(codeDock, size);
+
+	ImGuiID centralDock = codeDock; // This variable will track the document node, however we are not using it here as we aren't docking anything into it.
+	ImGuiID leftDock = ImGui::DockBuilderSplitNode(centralDock, ImGuiDir_Left, 0.15f, nullptr, &centralDock);
+	ImGuiID rightDock = ImGui::DockBuilderSplitNode(centralDock, ImGuiDir_Right, 0.20f, nullptr, &centralDock);
+
+	ImGuiID rightTopDock;
+	ImGuiID rightBottomDock = ImGui::DockBuilderSplitNode(rightDock, ImGuiDir_Down, 0.50f, nullptr, &rightTopDock);
+
+	ImGuiUtil::DockBuilderDockWindow(variables, leftDock);
+	ImGuiUtil::DockBuilderDockWindow(functionGraph, centralDock);
+	ImGuiUtil::DockBuilderDockWindow(functions, rightTopDock);
+	ImGuiUtil::DockBuilderDockWindow(localVariables, rightBottomDock);
+
+	ImGui::DockBuilderFinish(codeDock);
 }

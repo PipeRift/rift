@@ -11,6 +11,7 @@
 #include "Core/Assets/AssetPtr.h"
 #include "UI/Widgets/Assets/NewAssetDialog.h"
 #include "UI/Widgets/Assets/SelectAssetDialog.h"
+#include "imgui/ImGuiUtil.h"
 
 
 TMap<Name, ImFont*> EditorManager::fonts {};
@@ -26,10 +27,12 @@ void EditorManager::Construct()
 
 	ApplyStyle();
 
+	newPage = CreateEditor<NewPageEditor>();
 	CreateEditor<CodeEditor>();
 
 	assetBrowser = Widget::CreateStandalone<AssetBrowser>(Self());
 	assetBrowser->windowClass = mainDockClass;
+
 	log = Widget::CreateStandalone<LogWindow>(Self());
 	log->windowClass = mainDockClass;
 }
@@ -62,20 +65,28 @@ void EditorManager::ApplyLayoutPreset()
 {
 	ImGui::DockBuilderRemoveNode(mainDock); // Clear out existing layout
 	ImGui::DockBuilderAddNode(mainDock, ImGuiDockNodeFlags_DockSpace); // Add empty node
-
 	ImVec2 size = ImGui::GetWindowSize();
 	ImGui::DockBuilderSetNodeSize(mainDock, size);
 
 	assetDock = mainDock; // This variable will track the document node, however we are not using it here as we aren't docking anything into it.
 	ImGuiID bottomDock = ImGui::DockBuilderSplitNode(assetDock, ImGuiDir_Down, 0.20f, nullptr, &assetDock);
 
-	const String logName = log->GetWindowID();
-	ImGui::DockBuilderDockWindow(logName.c_str(), bottomDock);
+	ImGuiUtil::DockBuilderDockWindow(log, bottomDock);
+	ImGuiUtil::DockBuilderDockWindow(assetBrowser, bottomDock);
 
-	const String assetBrowserName = assetBrowser->GetWindowID();
-	ImGui::DockBuilderDockWindow(assetBrowserName.c_str(), bottomDock);
+	for (const auto& editor : editors)
+	{
+		ImGuiUtil::DockBuilderDockWindow(editor, assetDock);
+	}
 
 	ImGui::DockBuilderFinish(mainDock);
+}
+
+void EditorManager::RestoreLayoutPreset()
+{
+	// Store the dock at which new page is
+	const String ID = newPage->GetWindowID();
+	assetDock = ImGui::GetWindowDockID(ID.c_str());
 }
 
 void EditorManager::TickDocking()
@@ -106,6 +117,10 @@ void EditorManager::TickDocking()
 		if (ImGui::DockBuilderGetNode(mainDock) == nullptr)
 		{
 			ApplyLayoutPreset();
+		}
+		else
+		{
+			RestoreLayoutPreset();
 		}
 
 		static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_PassthruCentralNode;
@@ -157,11 +172,6 @@ void EditorManager::DrawMainNavBar()
 			if (ImGui::MenuItem("Log", (const char*)0, log->IsOpenedPtr())) {}
 			if (ImGui::MenuItem("Assets", (const char*)0, editors[0]->IsOpenedPtr())) {}
 			if (ImGui::MenuItem("Demo", (const char*)0, &showDemoWindow)) {}
-
-			for (const auto& editor : editors)
-			{
-				editor->ExpandViewsMenu();
-			}
 
 			ImGui::EndMenu();
 		}

@@ -18,15 +18,17 @@
 class EditorManager : public Object {
 	CLASS(EditorManager, Object)
 
-	TArray<GlobalPtr<CodeEditor>> editors;
+	TArray<GlobalPtr<Editor>> editors;
 
 	GlobalPtr<AssetBrowser> assetBrowser;
 	GlobalPtr<LogWindow> log;
 
+	Ptr<NewPageEditor> newPage;
+
 	ImGuiWindowClass mainDockClass;
-	ImGuiID mainDock;
+	ImGuiID mainDock = 0;
 	// Dock to which recently opened assets dock
-	ImGuiID assetDock;
+	ImGuiID assetDock = 0;
 
 	bool showDemoWindow = true;
 
@@ -46,19 +48,26 @@ public:
 	void Tick(float deltaTime);
 
 	void ApplyLayoutPreset();
+	void RestoreLayoutPreset();
 	void TickDocking();
 
 	void DrawMainNavBar();
 
 	template<typename EditorType>
-	void CreateEditor()
+	Ptr<EditorType> CreateEditor()
 	{
 		GlobalPtr<EditorType> editor = Create<EditorType>(Self());
 
 		editor->Configure();
 		editor->OnBuild();
 
+		if (assetDock > 0)
+		{
+			ImGuiUtil::DockBuilderDockWindow(editor, assetDock);
+		}
+
 		editors.Add(MoveTemp(editor));
+		return editors.Last().AsPtr().Cast<EditorType>();
 	}
 
 	static void AddFont(Name name, Path path, u8 size = 14u);

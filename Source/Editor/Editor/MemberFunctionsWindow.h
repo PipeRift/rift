@@ -9,4 +9,8 @@
 class MemberFunctionsWindow : public Window
 {
 	CLASS(MemberFunctionsWindow, Window)
+
+public:
+
+	virtual void Build() override;
 };
