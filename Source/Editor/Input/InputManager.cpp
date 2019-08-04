@@ -47,7 +47,7 @@ bool InputManager::Tick(float deltaTime, u32 windowId)
 
 #if WITH_EDITOR
 		// NOTE: Disabled for causing locking issues in editor. We don't really need it yet
-		//if (!bUICapturedMouse)
+		if (!bUICapturedMouse)
 #endif
 		{
 			switch (event.type)

@@ -13,5 +13,4 @@ class FunctionGraphWindow : public Window
 public:
 
 	virtual void Build() override;
-	virtual void Tick(float deltaTime) override;
 };

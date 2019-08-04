@@ -10,9 +10,9 @@ image: Visual Studio 2017
 cache:
   - binaries
 install:
-  - call "Programs/Sharpmake/Sharpmake.Application.exe" /sources(@"RiftEngine.Solution.cs")
+  - call "Programs/Sharpmake/Sharpmake.Application.exe" /sources(@"VCLang.Solution.cs")
 configuration: Debug Editor
 platform: x64
 build:
-  project: RiftEngine.sln
+  project: VCLang.sln
   verbosity: detailed

@@ -9,7 +9,7 @@
 #include "Assets/BaseAsset.h"
 #include "MemberVariablesWindow.h"
 #include "MemberFunctionsWindow.h"
-#include "LocalVariablesWindow.h"
+#include "FunctionPropertiesWindow.h"
 #include "FunctionGraphWindow.h"
 #include "Core/Object/ObjectPtr.h"
 
@@ -36,7 +36,7 @@ class CodeEditor : public Editor
 
 	Ptr<MemberVariablesWindow> variables;
 	Ptr<MemberFunctionsWindow> functions;
-	Ptr<LocalVariablesWindow> localVariables;
+	Ptr<FunctionPropertiesWindow> functionProperties;
 	Ptr<FunctionGraphWindow> functionGraph;
 
 	Ptr<BaseAsset> asset;

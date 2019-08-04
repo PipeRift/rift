@@ -10,7 +10,10 @@ class MemberFunctionsWindow : public Window
 {
 	CLASS(MemberFunctionsWindow, Window)
 
+	Name selectedFunction;
+
 public:
 
 	virtual void Build() override;
+	virtual void TickContent(float deltaTime) override;
 };

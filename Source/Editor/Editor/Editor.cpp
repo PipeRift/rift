@@ -30,7 +30,7 @@ void CodeEditor::Build()
 	// Initialize windows
 	variables      = W(MemberVariablesWindow);
 	functions      = W(MemberFunctionsWindow);
-	localVariables = W(LocalVariablesWindow);
+	functionProperties = W(FunctionPropertiesWindow);
 	functionGraph  = W(FunctionGraphWindow);
 }
 
@@ -67,13 +67,13 @@ void CodeEditor::ApplyLayoutPreset()
 	ImGuiID leftDock = ImGui::DockBuilderSplitNode(centralDock, ImGuiDir_Left, 0.15f, nullptr, &centralDock);
 	ImGuiID rightDock = ImGui::DockBuilderSplitNode(centralDock, ImGuiDir_Right, 0.20f, nullptr, &centralDock);
 
-	ImGuiID rightTopDock;
-	ImGuiID rightBottomDock = ImGui::DockBuilderSplitNode(rightDock, ImGuiDir_Down, 0.50f, nullptr, &rightTopDock);
+	ImGuiID leftTopDock;
+	ImGuiID leftBottomDock = ImGui::DockBuilderSplitNode(leftDock, ImGuiDir_Down, 0.70f, nullptr, &leftTopDock);
 
-	ImGuiUtil::DockBuilderDockWindow(variables, leftDock);
+	ImGuiUtil::DockBuilderDockWindow(variables, leftTopDock);
+	ImGuiUtil::DockBuilderDockWindow(functions, leftBottomDock);
 	ImGuiUtil::DockBuilderDockWindow(functionGraph, centralDock);
-	ImGuiUtil::DockBuilderDockWindow(functions, rightTopDock);
-	ImGuiUtil::DockBuilderDockWindow(localVariables, rightBottomDock);
+	ImGuiUtil::DockBuilderDockWindow(functionProperties, rightDock);
 
 	ImGui::DockBuilderFinish(codeDock);
 }

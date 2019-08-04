@@ -11,7 +11,9 @@ struct FunctionIdentifier : public Identifier
 {
 	STRUCT(FunctionIdentifier, Identifier)
 
-	TArray<VariableIdentifier> parameters;
+	P(Name, category);
+
+	P(TArray<Name>, parameters);
 
 	P(TArray<VariableIdentifier>, localVariables);
 };

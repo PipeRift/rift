@@ -6,17 +6,17 @@
 #include "UI/Window.h"
 
 
-class MemberVariablesWindow : public Window
+class FunctionPropertiesWindow : public Window
 {
-	CLASS(MemberVariablesWindow, Window)
+	CLASS(FunctionPropertiesWindow, Window)
 
 public:
 
 	virtual void Build() override;
-
 	virtual void TickContent(float deltaTime) override;
 
 private:
 
 	void DrawTypeSelector(const char* label, const char* selected);
 };
+

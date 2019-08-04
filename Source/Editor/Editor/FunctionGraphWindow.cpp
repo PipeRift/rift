@@ -13,8 +13,3 @@ void FunctionGraphWindow::Build()
 	windowClass = codeEditor->GetCodeDockClass();
 	windowFlags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
 }
-
-void FunctionGraphWindow::Tick(float deltaTime)
-{
-	Super::Tick(deltaTime);
-}
