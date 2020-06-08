@@ -7,7 +7,8 @@
 #include "UI/Window.h"
 
 
-class AssetBrowser : public Window {
+class AssetBrowser : public Window
+{
 	CLASS(AssetBrowser, Window)
 
 protected:

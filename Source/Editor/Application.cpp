@@ -48,7 +48,7 @@ bool Application::Start()
 	//frameTime.SetFPSCap(60);
 
 	Log::Message("Start Loop");
-	TaskFlow frameTasks = Tasks().CreateMainFlow();
+	TaskFlow frameTasks;
 	bool bFinish = false;
 	while (!bFinish)
 	{
@@ -82,12 +82,12 @@ void Application::Loop(TaskFlow& frameTasks, bool& bFinish)
 	Task gameTick = frameTasks.emplace([this]() {
 		ScopedGameZone("Tick");
 	});
-	frameTasks.dispatch();
+	auto future = Tasks().RunGameFlow(frameTasks);
 
 	// Do render on main thread while game executes on another
 	renderer->Render();
 
-	frameTasks.wait_for_all();
+	future.wait();
 
 	// UI is rendered on the same frame game does
 	ui->Tick(frameTime.GetDeltaTime());

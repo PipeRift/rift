@@ -5,14 +5,11 @@ public class SDL2Library : Project
 {
     public string BasePath = @"[project.SharpmakeCsPath]/include";
 
-    public SDL2Library() : base(typeof(RiftTarget))
+    public SDL2Library() : base(typeof(VCLang.Target))
     {
         Name = "SDL2";
 
-        AddTargets(new RiftTarget(
-            Editor.Editor | Editor.Game,
-            OutputType.Dll | OutputType.Lib
-        ));
+        AddTargets(new VCLang.Target(OutputType.Lib));
 
         SourceRootPath = "[project.BasePath]";
 
@@ -22,7 +19,7 @@ public class SDL2Library : Project
     [Configure()]
     public void ConfigureAll(Configuration conf, Target target)
     {
-        conf.SolutionFolder = "Core/ThirdParty";
+        conf.SolutionFolder = "Framework/ThirdParty";
         conf.IncludePaths.Add("[project.BasePath]");
         conf.ProjectPath = "[project.SharpmakeCsPath]/../../../Binaries/SDL2";
         conf.PrecompHeader = "SDL.h";

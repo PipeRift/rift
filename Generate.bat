@@ -1,7 +1,5 @@
 @echo off
 call "Programs/Sharpmake/Sharpmake.Application.exe" /sources(@"VCLang.Solution.cs")
-if errorlevel 0  (
-    exit
+if NOT errorlevel 0  (
+    pause
 )
-pause
-exit

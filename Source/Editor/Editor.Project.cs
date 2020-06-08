@@ -8,18 +8,16 @@ class EditorProject : BaseProject
 {
     public EditorProject() : base("Editor") {}
 
-    public override void ConfigureAll(Configuration conf, RiftTarget target)
+    public override void ConfigureAll(Configuration conf, VCLang.Target target)
     {
         base.ConfigureAll(conf, target);
         conf.SolutionFolder = "Projects";
 
-        conf.AddPublicDependency<SDL2Library>(target);
-
         conf.IncludePaths.Add(@"[project.SharpmakeCsPath]");
         conf.IncludePaths.Add(@"[project.SharpmakeCsPath]/ThirdParty");
 
-        conf.Options.Add(Sharpmake.Options.Vc.Linker.SubSystem.Application);
-
+        conf.Defines.Add("WITH_EDITOR");
+        conf.AddPublicDependency<SDL2Library>(target);
         conf.AddPublicDependency<CoreModule>(target);
     }
 }

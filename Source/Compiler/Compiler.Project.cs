@@ -8,14 +8,14 @@ class CompilerProject : BaseProject
 {
     public CompilerProject() : base("Compiler") {}
 
-    public override void ConfigureAll(Configuration conf, RiftTarget target)
+    public override void ConfigureAll(Configuration conf, VCLang.Target target)
     {
         base.ConfigureAll(conf, target);
+
         conf.SolutionFolder = "Projects";
 
         conf.IncludePaths.Add(@"[project.SharpmakeCsPath]");
-    
-        conf.Options.Add(Sharpmake.Options.Vc.Linker.SubSystem.Application);
+        conf.IncludePaths.Add(@"[project.SharpmakeCsPath]/ThirdParty");
 
         conf.AddPublicDependency<CoreModule>(target);
     }

@@ -9,10 +9,10 @@ class BaseModule : BaseProject
         SourceRootPath = @"[project.SharpmakeCsPath]";
         IsFileNameToLower = false;
 
-        AddTargets(new RiftTarget( Editor.Editor | Editor.Game ));
+        AddTargets(new VCLang.Target());
     }
 
-    public override void ConfigureAll(Configuration conf, RiftTarget target)
+    public override void ConfigureAll(Configuration conf, VCLang.Target target)
     {
         base.ConfigureAll(conf, target);
 

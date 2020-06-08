@@ -18,7 +18,7 @@ using SubTaskLambda = eastl::function<void(tf::SubflowBuilder&)>;
 
 
 struct TaskSystem {
-	using ThreadPool = TaskFlow::Executor;
+	using ThreadPool = tf::Executor;
 
 private:
 	// Render & Game thread
@@ -30,14 +30,16 @@ public:
 
 	TaskSystem();
 
-	// Creates a flow in Workers thread pool
-	FORCEINLINE TaskFlow CreateFlow() const {
-		return TaskFlow{ workerPool };
+	// Runs a flow in Workers thread pool
+	std::future<void> RunFlow(TaskFlow& flow) const
+	{
+		return workerPool->run(flow);
 	}
 
 	// Creates a flow in Game thread pool
-	FORCEINLINE TaskFlow CreateMainFlow() const {
-		return TaskFlow{ gamePool };
+	std::future<void> RunGameFlow(TaskFlow& flow) const
+	{
+		return gamePool->run(flow);
 	}
 
 	FORCEINLINE u32 GetNumWorkerThreads() const { return (u32)workerPool->num_workers(); }

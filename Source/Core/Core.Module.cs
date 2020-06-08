@@ -6,17 +6,15 @@ class CoreModule : BaseModule
 {
     public CoreModule() : base("Core") {}
 
-    public override void ConfigureAll(Configuration conf, RiftTarget target)
+    public override void ConfigureAll(Configuration conf, VCLang.Target target)
     {
         base.ConfigureAll(conf, target);
 
-        conf.AddPublicDependency<AssimpLibrary>(target);
-        conf.AddPublicDependency<CurlLibrary>(target);
+        conf.AddPublicDependency<ProfilerModule>(target);
 
-        conf.SolutionFolder = "Core";
-        //conf.IncludePaths.Add(@"[project.SharpmakeCsPath]/Core");
+        conf.SolutionFolder = "Framework";
+
         conf.IncludePaths.Add(@"[project.SharpmakeCsPath]/ThirdParty");
-
         // EA STL
         conf.IncludePaths.Add(@"[project.SharpmakeCsPath]/ThirdParty/EASTL/include");
         conf.IncludePaths.Add(@"[project.SharpmakeCsPath]/ThirdParty/EASTL/test/packages/EAAssert/include");
@@ -32,7 +30,6 @@ class CoreModule : BaseModule
         {
             conf.Defines.Add("GLM_FORCE_XYZW_ONLY");
         }
-        conf.Defines.Add("TRACY_ENABLE");
 
         switch(target.Platform) {
             case Platform.win32:

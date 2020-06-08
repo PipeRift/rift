@@ -18,11 +18,12 @@ TaskSystem::TaskSystem()
 	workerPool = std::make_shared<ThreadPool>(workerPoolSize);
 
 	// Name game thread
-	tracy::SetThreadName(gamePool->_threads[0], "Game");
+	tracy::SetThreadName("Game");
 
-	for (size_t i = 0; i < workerPool->_threads.size(); ++i)
-	{
+	TaskFlow flow;
+	flow.parallel_for(0, i32(GetNumWorkerThreads()) - 1, 1, [](i32 i) {
 		// Name each worker thread in the debugger
-		tracy::SetThreadName(workerPool->_threads[i], CString::Printf("Worker %i", i + 1).c_str());
-	}
+		tracy::SetThreadName(CString::Printf("Worker %i", i + 1).c_str());
+	});
+	RunFlow(flow);
 }

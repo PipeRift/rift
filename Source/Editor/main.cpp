@@ -6,7 +6,7 @@
 #include "Application.h"
 #include "Core/Log.h"
 
-int main(int, char**)
+int main()
 {
 	GlobalPtr<Application> app{ Create<Application>() };
 	app->Start();
