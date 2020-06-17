@@ -7,8 +7,8 @@
 #include <EASTL/allocator_malloc.h>
 #include <EASTL/string_view.h>
 
-#include <tracy/Tracy.hpp>
-#include <tracy/client/tracy_rpmalloc.hpp>
+#include <Tracy.hpp>
+#include <client/tracy_rpmalloc.hpp>
 #include <new>
 
 

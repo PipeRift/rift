@@ -18,7 +18,7 @@ include(CMake/conan.cmake)
 include(CMake/DownloadProject.cmake)
 include(CMake/Util.cmake)
 
-add_subdirectory(Extern/Tracy)
+add_subdirectory(Extern)
 
 # Framework
 add_subdirectory(Libs/Core)

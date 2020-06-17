@@ -2,13 +2,12 @@
 #pragma once
 
 #include "BaseStruct.h"
-#include "Core/Memory/Allocator.h"
-#include "Core/Reflection/Reflection.h"
 #include "CoreEngine.h"
 #include "CoreTypes.h"
+#include "Memory/Allocator.h"
+#include "Reflection/Reflection.h"
 
 #include <EASTL/type_traits.h>
-
 
 
 class Class;
