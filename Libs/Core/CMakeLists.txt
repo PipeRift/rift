@@ -6,9 +6,7 @@ target_include_directories(Core PUBLIC Include)
 target_compile_features(Core PUBLIC cxx_std_17)
 target_define_platform(Core)
 
-conan_cmake_run(REQUIRES eastl/3.16.05 BASIC_SETUP CMAKE_TARGETS BUILD missing)
-
-target_link_libraries(Core PUBLIC CONAN_PKG::eastl Tracy GLM)
+target_link_libraries(Core PUBLIC CONAN_PKG::eastl CONAN_PKG::glm Tracy)
 
 install(TARGETS Core
     EXPORT VCLangTargets

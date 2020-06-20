@@ -1,6 +1,10 @@
 
-# GLM
-add_library(GLM INTERFACE)
+#CONAN PACKAGES
+conan_cmake_run(REQUIRES eastl/3.16.05 BASIC_SETUP CMAKE_TARGETS BUILD missing)
+conan_cmake_run(REQUIRES glm/0.9.9.8 BASIC_SETUP CMAKE_TARGETS BUILD missing)
+
+# Taskflow
+add_library(Taskflow INTERFACE)
 target_include_directories(GLM INTERFACE GLM/glm)
 
 

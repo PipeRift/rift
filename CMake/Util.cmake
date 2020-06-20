@@ -9,7 +9,6 @@ endif()
 function(target_define_platform target)
     if (WINDOWS)
         target_compile_definitions(${target} PRIVATE PLATFORM_WINDOWS=1)
-        
     elseif (LINUX)
         target_compile_definitions(${target} PRIVATE PLATFORM_LINUX=1)
     elseif (MACOSX)

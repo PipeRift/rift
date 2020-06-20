@@ -2,9 +2,9 @@
 
 #include "Platform/PlatformMisc.h"
 
-#include "Core/Misc/DateTime.h"
-#include "Core/Misc/Guid.h"
-#include "Core/Misc/Timespan.h"
+#include "Misc/DateTime.h"
+#include "Misc/Guid.h"
+#include "Misc/Timespan.h"
 #include "PlatformTime.h"
 
 

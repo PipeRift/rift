@@ -1,10 +1,10 @@
 // Copyright 2015-2019 Piperift - All rights reserved
 #pragma once
 
-#include "Core/Platform/Platform.h"
-#include "Core/Strings/String.h"
-#include "Core/Strings/Name.h"
-#include "Core/Reflection/ReflectionTypeTraits.h"
+#include "Platform/Platform.h"
+#include "Strings/String.h"
+#include "Strings/Name.h"
+#include "Reflection/ReflectionTypeTraits.h"
 
 
 /** Registry new editor-supported types here and on "EngineTypes.cpp" */
