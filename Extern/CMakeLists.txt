@@ -1,12 +1,11 @@
 
-#CONAN PACKAGES
-conan_cmake_run(REQUIRES eastl/3.16.05 BASIC_SETUP CMAKE_TARGETS BUILD missing)
-conan_cmake_run(REQUIRES glm/0.9.9.8 BASIC_SETUP CMAKE_TARGETS BUILD missing)
+include(FetchContent)
 
-# Taskflow
-add_library(Taskflow INTERFACE)
-target_include_directories(GLM INTERFACE GLM/glm)
+# Sparse-map & Robin-map
+add_subdirectory(SparseMap)
+add_subdirectory(RobinMap)
 
+add_subdirectory(Taskflow)
 
 # TRACY
 add_library(Tracy STATIC)

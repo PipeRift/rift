@@ -15,3 +15,12 @@ function(target_define_platform target)
         target_compile_definitions(${target} PRIVATE PLATFORM_MAC=1)
     endif()
 endfunction()
+
+function(target_shared_output_directory target)
+    set_target_properties(${target}
+        PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    )
+endfunction()

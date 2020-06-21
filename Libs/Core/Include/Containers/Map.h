@@ -2,77 +2,80 @@
 
 #pragma once
 
-#include <assert.h>
-#include <sparsehash/sparse_hash_map.h>
-#include <sparsehash/dense_hash_map.h>
-#include <EASTL/functional.h>
-
 #include "CoreEngine.h"
-#include "Core/Platform/Platform.h"
+#include "Platform/Platform.h"
 #include "Tuples.h"
 
+#include <EASTL/functional.h>
+#include <assert.h>
+#include <tsl/sparse_map.h>
 
-template<typename Key, typename Value>
-class TMap {
+#include <type_traits>
+
+
+template <typename Key, typename Value>
+class TMap
+{
+	static_assert(std::is_nothrow_move_constructible<Value>::value || std::is_copy_constructible<Value>::value,
+		"Value type must be nothrow move constructible and/or copy constructible.");
+
 public:
 	template <typename OtherKey, typename OtherValue>
 	friend class TMap;
 
 	using KeyType = Key;
 	using ValueType = Value;
-	using HashMapType = google::dense_hash_map<
-		KeyType,
-		ValueType,
-		eastl::hash<KeyType>,
-		eastl::equal_to<KeyType>,
-		google::libc_allocator_with_realloc<TPair<const KeyType, ValueType>>
-	>;
+	using HashMapType = tsl::sparse_map<KeyType, ValueType, eastl::hash<KeyType>, eastl::equal_to<KeyType>>;
 
-	using Iterator           = typename HashMapType::iterator;
-	using ConstIterator      = typename HashMapType::const_iterator;
+	using Iterator = typename HashMapType::iterator;
+	using ConstIterator = typename HashMapType::const_iterator;
 
 
 private:
-
 	HashMapType map;
 
 
 public:
-
 	TMap() = default;
-
-	TMap(const KeyType& empty) : map{} { SetEmptyKey(empty); }
-	TMap(u32 defaultSize) : map{ defaultSize } {}
-	TMap(u32 defaultSize, const KeyType& empty) : map{ defaultSize } { SetEmptyKey(empty); }
-	TMap(const TPair<const KeyType, ValueType>& item, const KeyType& empty) : map{} { SetEmptyKey(empty); Insert(item); }
-	TMap(std::initializer_list<TPair<const KeyType, ValueType>> initList, const KeyType& empty) : map{ initList.begin(), initList.end(), empty } {}
+	TMap(u32 defaultSize) : map{defaultSize} {}
+	TMap(const TPair<const KeyType, ValueType>& item) : map{}
+	{
+		Insert(item);
+	}
+	TMap(std::initializer_list<TPair<const KeyType, ValueType>> initList) : map{initList.begin(), initList.end()} {}
 
 	TMap(TMap&& other) = default;
 	TMap(const TMap& other) = default;
 	TMap& operator=(TMap&& other) = default;
 	TMap& operator=(const TMap& other) = default;
 
-	void Insert(KeyType&& key, ValueType&& value) {
-		map.insert({ MoveTemp(key), MoveTemp(value) });
+	void Insert(KeyType&& key, ValueType&& value)
+	{
+		map.insert({MoveTemp(key), MoveTemp(value)});
 	}
 
-	void Insert(const KeyType& key, ValueType&& value) {
-		map.insert({ key, MoveTemp(value) });
+	void Insert(const KeyType& key, ValueType&& value)
+	{
+		map.insert({key, MoveTemp(value)});
 	}
 
-	void Insert(KeyType&& key, const ValueType& value) {
-		map.insert({ MoveTemp(key), value });
+	void Insert(KeyType&& key, const ValueType& value)
+	{
+		map.insert({MoveTemp(key), value});
 	}
 
-	void Insert(const KeyType& key, const ValueType& value) {
-		map.insert({ key, value });
+	void Insert(const KeyType& key, const ValueType& value)
+	{
+		map.insert({key, value});
 	}
 
-	void Insert(const TPair<KeyType, ValueType>& pair) {
+	void Insert(const TPair<KeyType, ValueType>& pair)
+	{
 		map.insert(pair);
 	}
 
-	void Append(const TMap<KeyType, ValueType>& other) {
+	void Append(const TMap<KeyType, ValueType>& other)
+	{
 		if (other.Size() > 0)
 		{
 			if (Size() <= 0)
@@ -86,7 +89,8 @@ public:
 		}
 	}
 
-	void Append(TMap<KeyType, ValueType>&& other) {
+	void Append(TMap<KeyType, ValueType>&& other)
+	{
 		if (other.Size() > 0)
 		{
 			if (Size() <= 0)
@@ -100,39 +104,49 @@ public:
 		}
 	}
 
-	void Resize (i32 sizeNum) { map.resize(sizeNum); }
+	void Resize(i32 sizeNum)
+	{
+		// map.resize(sizeNum);
+	}
 
-	FORCEINLINE Iterator FindIt(const KeyType& item) {
+	Iterator FindIt(const KeyType& item)
+	{
 		return map.find(item);
 	}
 
-	FORCEINLINE ConstIterator FindIt(const KeyType& item) const {
+	ConstIterator FindIt(const KeyType& item) const
+	{
 		return map.find(item);
 	}
 
-	FORCEINLINE ValueType* Find(const KeyType& key) {
+	ValueType* Find(const KeyType& key)
+	{
 		Iterator it = FindIt(key);
 		return it != end() ? &it->second : nullptr;
 	}
 
-	FORCEINLINE const ValueType* Find(const KeyType& key) const {
+	const ValueType* Find(const KeyType& key) const
+	{
 		ConstIterator it = FindIt(key);
 		return it != end() ? &it->second : nullptr;
 	}
 
-	FORCEINLINE ValueType& FindRef(const KeyType& key) {
+	ValueType& FindRef(const KeyType& key)
+	{
 		ConstIterator it = FindIt(key);
 		assert(it != end() && "Key not found, can't dereference its value");
 		return it->second;
 	}
 
-	FORCEINLINE const ValueType& FindRef(const KeyType& key) const {
+	const ValueType& FindRef(const KeyType& key) const
+	{
 		ConstIterator it = FindIt(key);
 		assert(it != end() && "Key not found, can't dereference its value");
 		return it->second;
 	}
 
-	bool Contains(const KeyType& key) const {
+	bool Contains(const KeyType& key) const
+	{
 		return FindIt(key) != map.end();
 	}
 
@@ -155,9 +169,9 @@ public:
 	/** Empty the array.
 	 * @param bShouldShrink false will not free memory
 	 */
-	void Empty(const bool bShouldShrink = true, i32 sizeNum = 0) {
-
-		if(bShouldShrink)
+	void Empty(const bool bShouldShrink = true, i32 sizeNum = 0)
+	{
+		if (bShouldShrink)
 		{
 			map.clear();
 		}
@@ -171,9 +185,12 @@ public:
 		}
 	}
 
-	FORCEINLINE i32 Size() const { return (i32)map.size(); }
+	i32 Size() const
+	{
+		return (i32) map.size();
+	}
 
-	FORCEINLINE bool IsValidIndex(i32 index) const
+	bool IsValidIndex(i32 index) const
 	{
 		return index >= 0 && index < Size();
 	}
@@ -181,47 +198,65 @@ public:
 
 	/** OPERATORS */
 public:
-
 	/**
 	 * Array bracket operator. Returns reference to value at given key.
 	 *
 	 * @returns Reference to indexed element.
 	 */
-	FORCEINLINE ValueType& operator[](const KeyType& key) { return map[key]; }
-	FORCEINLINE const ValueType& operator[](const KeyType& key) const {
+	ValueType& operator[](const KeyType& key)
+	{
 		return map[key];
 	}
-	FORCEINLINE ValueType& operator[](KeyType&& key) { return map[MoveTemp(key)]; }
-	FORCEINLINE const ValueType& operator[](KeyType&& key) const {
+	const ValueType& operator[](const KeyType& key) const
+	{
+		return map[key];
+	}
+	ValueType& operator[](KeyType&& key)
+	{
+		return map[MoveTemp(key)];
+	}
+	const ValueType& operator[](KeyType&& key) const
+	{
 		return map[MoveTemp(key)];
 	}
 
-	void SetEmptyKey(const KeyType& key) {
-		map.set_empty_key(key);
-	}
-
-	void SetDeletedKey(const KeyType& key) {
-		map.set_deleted_key(key);
-	}
-
 	// Iterator functions
-	FORCEINLINE Iterator      begin()        { return map.begin();  };
-	FORCEINLINE ConstIterator begin()  const { return map.begin();  };
-	FORCEINLINE ConstIterator cbegin() const { return map.cbegin(); };
+	Iterator begin()
+	{
+		return map.begin();
+	};
+	ConstIterator begin() const
+	{
+		return map.begin();
+	};
+	ConstIterator cbegin() const
+	{
+		return map.cbegin();
+	};
 
-	FORCEINLINE Iterator      end()        { return map.end();  };
-	FORCEINLINE ConstIterator end()  const { return map.end();  };
-	FORCEINLINE ConstIterator cend() const { return map.cend(); };
+	Iterator end()
+	{
+		return map.end();
+	};
+	ConstIterator end() const
+	{
+		return map.end();
+	};
+	ConstIterator cend() const
+	{
+		return map.cend();
+	};
 
 
 	/** INTERNAL */
 private:
-
-	FORCEINLINE void CopyFrom(const TMap<KeyType, ValueType>& other) {
+	void CopyFrom(const TMap<KeyType, ValueType>& other)
+	{
 		map = other.map;
 	}
 
-	FORCEINLINE void MoveFrom(TMap<KeyType, ValueType>&& other) {
+	void MoveFrom(TMap<KeyType, ValueType>&& other)
+	{
 		map = MoveTemp(other.map);
 	}
 };

@@ -1,13 +1,20 @@
 // Copyright 2015-2019 Piperift - All rights reserved
 
 #include "Object/ObjectPtr.h"
-#include "Object.h"
+
+#include "Object/Object.h"
 
 
 void BaseGlobalPtr::MoveFrom(BaseGlobalPtr&& other)
 {
-	ptr = eastl::move(other.ptr);
-	weaks = eastl::move(other.weaks);
+	if (other.IsValid())
+	{
+		Reset();
+		return;
+	}
+
+	ptr = MoveTemp(other.ptr);
+	weaks = MoveTemp(other.weaks);
 
 	// Update owned pointers to owner
 	for (BaseWeakPtr* const weak : weaks)
@@ -26,7 +33,7 @@ BaseGlobalPtr::~BaseGlobalPtr()
 }
 
 
-//BaseWeakPtr::~BaseWeakPtr()
+// BaseWeakPtr::~BaseWeakPtr()
 
 void BaseWeakPtr::Set(const BaseGlobalPtr* inGlobal)
 {
@@ -39,9 +46,10 @@ void BaseWeakPtr::Set(const BaseGlobalPtr* inGlobal)
 	globalPtr = inGlobal;
 
 	// Bind into new owner
-	if (globalPtr) {
+	if (globalPtr)
+	{
 		globalPtr->weaks.Add(this);
-		id = (u32)globalPtr->weaks.Size() - 1;
+		id = (u32) globalPtr->weaks.Size() - 1;
 	}
 }
 

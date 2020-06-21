@@ -1,9 +1,9 @@
 // Copyright 2015-2019 Piperift - All rights reserved
 #pragma once
 
+#include "CoreEngine.h"
 #include "Object/BaseObject.h"
 #include "Platform/Platform.h"
-#include "CoreEngine.h"
 
 #include <EASTL/weak_ptr.h>
 
@@ -25,22 +25,20 @@ protected:
 
 	/** METHODS */
 
-	BaseGlobalPtr() : weaks{}, ptr{}
-	{
-	}
+	BaseGlobalPtr() : weaks{}, ptr{} {}
 	BaseGlobalPtr(eastl::unique_ptr<BaseObject>&& inPtr) : BaseGlobalPtr()
 	{
-		ptr = eastl::move(inPtr);
+		ptr = MoveTemp(inPtr);
 	}
 
-	BaseGlobalPtr(BaseGlobalPtr&& other)
+	BaseGlobalPtr(BaseGlobalPtr&& other) noexcept
 	{
-		MoveFrom(eastl::move(other));
+		MoveFrom(MoveTemp(other));
 	}
 
 	BaseGlobalPtr& operator=(BaseGlobalPtr&& other)
 	{
-		MoveFrom(eastl::move(other));
+		MoveFrom(MoveTemp(other));
 		return *this;
 	}
 
@@ -109,11 +107,16 @@ public:
 		Reset();
 	}
 
+	GlobalPtr(GlobalPtr<Type>&& other) noexcept
+	{
+		MoveFrom(MoveTemp(other));
+	}
 
 	template <typename Type2>
 	GlobalPtr(GlobalPtr<Type2>&& other)
 	{
-		operator=<Type2>(eastl::move(other));
+		static_assert(eastl::is_convertible<Type2, Type>::value, "Type is not compatible!");
+		MoveFrom(MoveTemp(other));
 	}
 
 	template <typename Type2>
@@ -121,10 +124,7 @@ public:
 	{
 		static_assert(eastl::is_convertible<Type2, Type>::value, "Type is not compatible!");
 
-		if (!other.IsValid())
-			Reset();
-		else
-			BaseGlobalPtr::operator=(eastl::move(other));
+		MoveFrom(MoveTemp(other));
 		return *this;
 	}
 
@@ -161,12 +161,12 @@ public:
 	template <typename T>
 	GlobalPtr<T> Cast()
 	{
-		if (!IsValid() || dynamic_cast<Type*>(**this) == nullptr)
+		if (!IsValid() || dynamic_cast<T*>(**this) == nullptr)
 			return {};
 		else
 		{
 			GlobalPtr<T> newPtr{};
-			newPtr.MoveFrom(eastl::move(*this));
+			newPtr.MoveFrom(MoveTemp(*this));
 			return newPtr;
 		}
 	}
@@ -185,9 +185,7 @@ class CORE_API BaseWeakPtr
 	u32 id;
 
 protected:
-	BaseWeakPtr() : globalPtr{nullptr}, id{0}
-	{
-	}
+	BaseWeakPtr() : globalPtr{nullptr}, id{0} {}
 
 	~BaseWeakPtr()
 	{
@@ -259,12 +257,8 @@ class CORE_API Ptr : public BaseWeakPtr
 	/** METHODS */
 
 public:
-	Ptr() : BaseWeakPtr()
-	{
-	}
-	Ptr(TYPE_OF_NULLPTR) : BaseWeakPtr()
-	{
-	}
+	Ptr() : BaseWeakPtr() {}
+	Ptr(TYPE_OF_NULLPTR) : BaseWeakPtr() {}
 
 	Ptr(const Ptr& other) : BaseWeakPtr()
 	{
@@ -278,11 +272,11 @@ public:
 
 	Ptr(Ptr&& other) : BaseWeakPtr()
 	{
-		MoveFrom(eastl::move(other));
+		MoveFrom(MoveTemp(other));
 	}
 	Ptr& operator=(Ptr&& other)
 	{
-		MoveFrom(eastl::move(other));
+		MoveFrom(MoveTemp(other));
 		return *this;
 	}
 
@@ -305,13 +299,13 @@ public:
 	Ptr(Ptr<Type2>&& other) : BaseWeakPtr()
 	{
 		static_assert(eastl::is_convertible<Type2, Type>::value, "Type is not compatible!");
-		MoveFrom(eastl::move(other));
+		MoveFrom(MoveTemp(other));
 	}
 	template <typename Type2>
 	Ptr& operator=(Ptr<Type2>&& other)
 	{
 		static_assert(eastl::is_convertible<Type2, Type>::value, "Type is not compatible!");
-		MoveFrom(eastl::move(other));
+		MoveFrom(MoveTemp(other));
 		return *this;
 	}
 
@@ -413,5 +407,5 @@ GlobalPtr<Type> GlobalPtr<Type>::Create(const Ptr<BaseObject>& owner)
 	GlobalPtr<Type> ptr = {eastl::make_unique<Type>()};
 	ptr->PreConstruct(ptr.AsPtr(), Type::StaticClass(), owner);
 	ptr->Construct();
-	return eastl::move(ptr);
+	return MoveTemp(ptr);
 }

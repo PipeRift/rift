@@ -3,7 +3,6 @@
 
 #include "CoreEngine.h"
 
-#include <EABase/eabase.h>
 #include <EASTL/allocator_malloc.h>
 #include <EASTL/string_view.h>
 
@@ -83,13 +82,13 @@ public:
 
 namespace Memory
 {
-EASTL_API Allocator* GetAllocator();
+	Allocator* GetAllocator();
 
-EASTL_API Allocator* GetObjectsAllocator();
+	Allocator* GetObjectsAllocator();
 
-EASTL_API Allocator* GetAssetsAllocator();
+	Allocator* GetAssetsAllocator();
 
-EASTL_API Allocator* GetFrameAllocator();
+	Allocator* GetFrameAllocator();
 }	 // namespace Memory
 
 
@@ -100,9 +99,7 @@ class StringAllocator : public eastl::allocator
 	const TCHAR* name;
 
 public:
-	EASTL_ALLOCATOR_EXPLICIT StringAllocator(const char* pName = EASTL_NAME_VAL(EASTL_ALLOCATOR_DEFAULT_NAME)) : Super(pName)
-	{
-	}
+	EASTL_ALLOCATOR_EXPLICIT StringAllocator(const char* pName = EASTL_NAME_VAL(EASTL_ALLOCATOR_DEFAULT_NAME)) : Super(pName) {}
 
 	void* allocate(size_t n, int flags = 0)
 	{

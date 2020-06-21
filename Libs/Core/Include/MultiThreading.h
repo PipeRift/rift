@@ -44,7 +44,7 @@ public:
 		return gamePool->run(flow);
 	}
 
-	FORCEINLINE u32 GetNumWorkerThreads() const
+	u32 GetNumWorkerThreads() const
 	{
 		return (u32) workerPool->num_workers();
 	}

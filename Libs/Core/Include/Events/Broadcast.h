@@ -4,29 +4,32 @@
 #include "CoreObject.h"
 #include "CoreTypes.h"
 #include "EventHandle.h"
-#include "Core/Log.h"
+#include "Log.h"
 
 
-template<typename... Params>
-class Broadcast {
+template <typename... Params>
+class Broadcast
+{
 protected:
-
 	using Method = void(Params...);
 	using Function = eastl::function<void(Params...)>;
 
-	using MethodPtr = void(*)(Params...);
-	template<typename Type>
-	using MemberMethodPtr = void(Type::*)(Params...);
+	using MethodPtr = void (*)(Params...);
+	template <typename Type>
+	using MemberMethodPtr = void (Type::*)(Params...);
 
 
-	struct BaseListener {
+	struct BaseListener
+	{
 		u64 id;
 		Function method;
 	};
-	struct RawListener : public BaseListener {
+	struct RawListener : public BaseListener
+	{
 		void* instance;
 	};
-	struct ObjListener : public BaseListener {
+	struct ObjListener : public BaseListener
+	{
 		Ptr<Object> object;
 	};
 
@@ -35,11 +38,13 @@ protected:
 
 
 public:
-
-	Broadcast() : rawListeners{}, objListeners{} {}
+	Broadcast() : rawListeners{}, objListeners{}
+	{
+	}
 
 	/** Broadcast to all binded functions */
-	void DoBroadcast(const Params&... params) {
+	void DoBroadcast(const Params&... params)
+	{
 		for (RawListener& listener : rawListeners)
 		{
 			listener.method(params...);
@@ -57,11 +62,12 @@ public:
 	// #TODO: Scoped binding
 
 	/** Binds an static function. Must be unbinded manually. */
-	EventHandle Bind(Function method) const {
+	EventHandle Bind(Function method) const
+	{
 		if (method)
 		{
 			EventHandle handle{};
-			rawListeners.Add({ handle.Id(), eastl::move(method), nullptr });
+			rawListeners.Add({handle.Id(), eastl::move(method), nullptr});
 			return handle;
 		}
 
@@ -70,8 +76,9 @@ public:
 	}
 
 	/** Binds a member function. Must be unbinded manually (unless its an Object). */
-	template<typename Type>
-	EventHandle Bind(Type* instance, MemberMethodPtr<Type> method) const {
+	template <typename Type>
+	EventHandle Bind(Type* instance, MemberMethodPtr<Type> method) const
+	{
 		if (instance && method)
 		{
 			if constexpr (IsObject<Type>::value)
@@ -80,9 +87,7 @@ public:
 			}
 			else
 			{
-				return Bind([instance, method](Params... params) {
-					(instance->*method)(params...);
-				});
+				return Bind([instance, method](Params... params) { (instance->*method)(params...); });
 			}
 		}
 
@@ -91,17 +96,16 @@ public:
 	}
 
 	/** Binds an object's function. Gets unbinded when the objects is destroyed */
-	template<typename Type>
-	EventHandle Bind(Ptr<Type> object, MemberMethodPtr<Type> method) const {
+	template <typename Type>
+	EventHandle Bind(Ptr<Type> object, MemberMethodPtr<Type> method) const
+	{
 		if (object && method)
 		{
 			Type* const instance = *object;
-			Function func = [instance, method](Params... params) {
-				(instance->*method)(params...);
-			};
+			Function func = [instance, method](Params... params) { (instance->*method)(params...); };
 
 			EventHandle handle{};
-			objListeners.Add({ handle.Id(), MoveTemp(func), object });
+			objListeners.Add({handle.Id(), MoveTemp(func), object});
 			return handle;
 		}
 
@@ -114,23 +118,22 @@ public:
 		if (!handle)
 			return false;
 
-		return rawListeners.RemoveIf([handle](const auto& listener) {
-			return listener.id == handle.Id();
-		}) > 0;
+		return rawListeners.RemoveIf([handle](const auto& listener) { return listener.id == handle.Id(); }) > 0;
 	}
 
-	bool UnbindAll(Ptr<Object> object) const {
+	bool UnbindAll(Ptr<Object> object) const
+	{
 		if (object)
 		{
-			return objListeners.RemoveIf([object](const auto& listener) {
-				return !listener.object || listener.object == object;
-			}) > 0;
+			return objListeners.RemoveIf([object](const auto& listener) { return !listener.object || listener.object == object; }) >
+				   0;
 		}
 		return false;
 	}
 
-	template<typename Type>
-	bool UnbindAll(Type* instance) const {
+	template <typename Type>
+	bool UnbindAll(Type* instance) const
+	{
 		if (instance)
 		{
 			if constexpr (IsObject<Type>::value)
@@ -139,9 +142,7 @@ public:
 			}
 			else
 			{
-				return rawListeners.RemoveIf([instance](const auto& listener) {
-					return listener.instance == instance;
-				}) > 0;
+				return rawListeners.RemoveIf([instance](const auto& listener) { return listener.instance == instance; }) > 0;
 			}
 		}
 		return false;

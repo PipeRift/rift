@@ -2,8 +2,8 @@
 
 #include "Object/BaseObject.h"
 
-#include "Core/Reflection/TClass.h"
-#include "Object.h"
+#include "Object/Object.h"
+#include "Reflection/TClass.h"
 
 
 Class* BaseObject::GetClass() const

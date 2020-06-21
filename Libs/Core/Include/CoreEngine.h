@@ -3,7 +3,7 @@
 
 #include "Platform/Platform.h"
 
-#include <EASTL/internal/move_help.h>
+#include <utility>
 
 
 // dllexport boilerplate
@@ -25,4 +25,4 @@
 #	define CORE_API
 #endif
 
-#define MoveTemp(x) eastl::move(x)
+#define MoveTemp(x) std::move(x)

@@ -1,28 +1,32 @@
 // Copyright 2015-2019 Piperift - All rights reserved
 #pragma once
 
+#include "Assets/AssetManager.h"
+#include "Assets/AssetPtr.h"
 #include "CoreObject.h"
-
-#include "Core/Assets/AssetManager.h"
-#include "Core/Assets/AssetPtr.h"
-#include "Core/Events/Broadcast.h"
+#include "Events/Broadcast.h"
 
 
-class CORE_API Context : public Object {
+
+class CORE_API Context : public Object
+{
 	CLASS(Context, Object)
 
 private:
-
 	GlobalPtr<AssetManager> assetManager;
 
 	static GlobalPtr<Context> globalInstance;
 
 
 public:
+	Context() : Super(), assetManager{Create<AssetManager>()}
+	{
+	}
 
-	Context() : Super(), assetManager{Create<AssetManager>()} {}
-
-	Ptr<AssetManager> GetAssetManager() { return assetManager; }
+	Ptr<AssetManager> GetAssetManager()
+	{
+		return assetManager;
+	}
 
 	static void Initialize()
 	{

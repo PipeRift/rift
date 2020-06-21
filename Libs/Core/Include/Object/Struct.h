@@ -2,10 +2,11 @@
 #pragma once
 
 #include "BaseStruct.h"
-#include "Core/Reflection/Reflection.h"
-#include "Core/Reflection/TStruct.h"
-#include "Core/Serialization/Archive.h"
 #include "CoreEngine.h"
+#include "Reflection/Reflection.h"
+#include "Reflection/TStruct.h"
+#include "Serialization/Archive.h"
+
 
 
 struct Struct : public BaseStruct

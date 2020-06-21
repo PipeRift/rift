@@ -4,6 +4,8 @@
 
 #include "CoreEngine.h"
 
+#include <eastl/type_traits.h>
+
 
 struct PlatformMisc
 {

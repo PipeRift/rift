@@ -3,57 +3,58 @@
 #pragma once
 
 #include "CoreEngine.h"
-
-#include <mutex>
-#include <spdlog/spdlog.h>
-#include <tracy/Tracy.hpp>
-
 #include "Strings/String.h"
+
+#include <spdlog/spdlog.h>
+
+#include <Tracy.hpp>
+#include <mutex>
+
 
 
 namespace Log
 {
-	void Init();
+void Init();
 
-	template<typename ...Args>
-	inline void Message(const TCHAR* format, Args... args)
+template <typename... Args>
+inline void Message(const TCHAR* format, Args... args)
+{
+	if (format)
 	{
-		if (format)
-		{
-			spdlog::info(format, eastl::forward<Args>(args)...);
-		}
+		spdlog::info(format, eastl::forward<Args>(args)...);
 	}
+}
 
-	inline void Message(const String& msg)
-	{
-		spdlog::info(msg.data());
-	}
+inline void Message(const String& msg)
+{
+	spdlog::info(msg.data());
+}
 
-	template<typename ...Args>
-	inline void Warning(const TCHAR* format, Args... args)
+template <typename... Args>
+inline void Warning(const TCHAR* format, Args... args)
+{
+	if (format)
 	{
-		if (format)
-		{
-			spdlog::warn(format, eastl::forward<Args>(args)...);
-		}
+		spdlog::warn(format, eastl::forward<Args>(args)...);
 	}
+}
 
-	inline void Warning(const String& msg)
-	{
-		spdlog::warn(msg.data());
-	}
+inline void Warning(const String& msg)
+{
+	spdlog::warn(msg.data());
+}
 
-	template<typename ...Args>
-	inline void Error(const TCHAR* format, Args... args)
+template <typename... Args>
+inline void Error(const TCHAR* format, Args... args)
+{
+	if (format)
 	{
-		if (format)
-		{
-			spdlog::error(format, eastl::forward<Args>(args)...);
-		}
+		spdlog::error(format, eastl::forward<Args>(args)...);
 	}
+}
 
-	inline void Error(const String& msg)
-	{
-		spdlog::error(msg.data());
-	}
-};
+inline void Error(const String& msg)
+{
+	spdlog::error(msg.data());
+}
+};	  // namespace Log

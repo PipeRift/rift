@@ -2,8 +2,9 @@
 
 #include "Object/BaseStruct.h"
 
+#include "Object/Struct.h"
 #include "Reflection/StructType.h"
-#include "Struct.h"
+
 
 
 StructType* BaseStruct::GetStruct() const
