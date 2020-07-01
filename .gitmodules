@@ -3,7 +3,7 @@
 	url = https://github.com/wolfpld/tracy.git
 [submodule "Extern/RobinMap"]
 	path = Extern/RobinMap
-	url = https://github.com/Tessil/robin-map.git
+	url = https://github.com/Piperift/robin-map.git
 [submodule "Extern/SparseMap"]
 	path = Extern/SparseMap
-	url = https://github.com/Tessil/sparse-map.git
+	url = https://github.com/Piperift/sparse-map.git

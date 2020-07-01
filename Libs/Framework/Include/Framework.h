@@ -1,8 +1,21 @@
 
 #pragma once
 
-class VCLang
+#include <Assets/AssetManager.h>
+
+namespace VCLang
 {
-public:
-	static const char a;
-};
+	class Framework
+	{
+		GlobalPtr<AssetManager> assetManager;
+
+	public:
+
+		Framework()
+		{
+			assetManager = Create<AssetManager>();
+		}
+
+		Ptr<AssetManager> GetAssetManager() const { return assetManager; }
+	};
+}

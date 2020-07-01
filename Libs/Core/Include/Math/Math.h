@@ -244,9 +244,14 @@ struct Math
 		return IntegralPow<i32>(value, power);
 	}
 
-	static constexpr size_t Pow(size_t value, u32 power)
+	static constexpr u64 Pow(u64 value, u32 power)
 	{
-		return IntegralPow<size_t>(value, power);
+		return IntegralPow<u64>(value, power);
+	}
+
+	static constexpr i64 Pow(i64 value, u32 power)
+	{
+		return IntegralPow<i64>(value, power);
 	}
 
 	template <typename T, bool bUnsigned = std::is_unsigned_v<T>>

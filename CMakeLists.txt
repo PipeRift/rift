@@ -1,5 +1,5 @@
 # CMake version
-cmake_minimum_required (VERSION 3.13)
+cmake_minimum_required (VERSION 3.12)
 MESSAGE(STATUS "CMAKE_ROOT: " ${CMAKE_ROOT})
 
 option(ENABLE_PROFILER "Should profiler recording be included in the build?" ON)

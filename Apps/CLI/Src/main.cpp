@@ -1,8 +1,14 @@
 
-#include "Framework.h"
+#include <Framework.h>
+#include <Project.h>
+
+using namespace VCLang;
 
 int main()
 {
-	char n = VCLang::a;
+	Framework lang{};
+
+	lang.GetAssetManager();
+	auto project = Create<Project>();
 	return 0;
 }
