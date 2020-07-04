@@ -8,7 +8,7 @@ on:
 
 jobs:
   job:
-    name: ${{ matrix.os }}-${{ matrix.cxx }}-build-and-test
+    name: ${{ matrix.os }} Build
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -28,16 +28,16 @@ jobs:
             os: macos-latest
             cxx: clang++
             cc: clang
-          - name: ubuntu-gcc
-            os: ubuntu-latest
-            cxx: g++
-            cc: gcc
 
     steps:
     - name: Install Conan
       run: pip install conan
 
     - uses: actions/checkout@v2
+    - name: Init Submodules
+      uses: srt32/git-actions@v0.0.3
+      with:
+        args: git submodule update --init --recursive
     
     - uses: lukka/get-cmake@latest
     
