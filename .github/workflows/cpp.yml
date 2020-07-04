@@ -28,7 +28,7 @@ jobs:
             os: macos-latest
             cxx: clang++
             cc: clang
-        python-version: [3.6]
+        python-version: [3.8]
 
     steps:
     - name: Get pip cache dir
