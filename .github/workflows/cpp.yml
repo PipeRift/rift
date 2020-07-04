@@ -52,8 +52,7 @@ jobs:
     - name: Configure and Build
       uses: lukka/run-cmake@v2
       with:
-        cmakeGenerator: 'Ninja'  
         cmakeListsOrSettingsJson: CMakeListsTxt
         cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-        cmakeAppendedArgs: '-DCMAKE_BUILD_TYPE=Release'
+        cmakeAppendedArgs: '-GNinja -DCMAKE_BUILD_TYPE=Release'
         buildDirectory: '${{ github.workspace }}/Build/'
