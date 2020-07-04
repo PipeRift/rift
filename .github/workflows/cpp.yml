@@ -33,8 +33,11 @@ jobs:
     - name: Install Conan
       run: pip install conan
 
-    - uses: actions/checkout@v2
-    - uses: snickerbockers/submodules-init@v4
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Init Submodules
+      uses: snickerbockers/submodules-init@v4
     
     - uses: lukka/get-cmake@latest
     
@@ -45,11 +48,11 @@ jobs:
         CXX: ${{ matrix.cxx }}
         CC: ${{ matrix.cc }}
     
-    - name: configure and build
+    - name: Configure and Build
       uses: lukka/run-cmake@v2
       with:
-        cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+        cmakeGenerator: 'Ninja'  
+        cmakeListsOrSettingsJson: CMakeListsTxt
         cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-        cmakeAppendedArgs: '-GNinja -DCMAKE_BUILD_TYPE=Release'
-        buildWithCMakeArgs: '-- -v'
+        buildWithCMakeArgs: '--config Release'
         buildDirectory: '${{ github.workspace }}/Build/'
