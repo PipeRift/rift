@@ -28,6 +28,7 @@ jobs:
             os: macos-latest
             cxx: clang++
             cc: clang
+        python-version: [3.6]
 
     steps:
     - name: Install Conan
@@ -54,5 +55,5 @@ jobs:
         cmakeGenerator: 'Ninja'  
         cmakeListsOrSettingsJson: CMakeListsTxt
         cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-        buildWithCMakeArgs: '--config Release'
+        cmakeAppendedArgs: '-DCMAKE_BUILD_TYPE=Release'
         buildDirectory: '${{ github.workspace }}/Build/'
