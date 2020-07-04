@@ -8,13 +8,13 @@ on:
 
 jobs:
   job:
-    name: ${{ matrix.os }}-build
+    name: ${{ matrix.os }} Build
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        name: [ubuntu-gcc, macos-clang, windows-msvc, ubuntu-clang]
-        # For Windows msvc, for Linux and macOS let's use the clang compiler, use gcc for Linux.
+        name: [windows-msvc, ubuntu-clang, macos-clang]
+        # For Windows msvc, for Linux and macOS let's use the clang compiler.
         include:
           - name: windows-msvc
             os: windows-latest
