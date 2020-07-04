@@ -1,10 +1,6 @@
 name: C++ CI
 
-on:
-  push:
-    branches: [ '**' ]
-  pull_request:
-    branches: [ '**' ]
+on: [push, pull_request]
 
 jobs:
   job:
@@ -71,5 +67,4 @@ jobs:
         cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
         cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
         cmakeAppendedArgs: '-GNinja -DCMAKE_BUILD_TYPE=Release'
-        buildWithCMakeArgs: '-- -v'
         buildDirectory: '${{ github.workspace }}/Build/'
