@@ -34,10 +34,7 @@ jobs:
       run: pip install conan
 
     - uses: actions/checkout@v2
-    - name: Init Submodules
-      uses: srt32/git-actions@v0.0.3
-      with:
-        args: git submodule update --init --recursive
+    - uses: snickerbockers/submodules-init@v4
     
     - uses: lukka/get-cmake@latest
     
