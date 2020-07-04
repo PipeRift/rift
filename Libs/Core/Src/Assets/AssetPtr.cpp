@@ -1,5 +1,4 @@
-// © 2019 Miguel Fernández Arce - All rights reserved
-
+// Copyright 2015-2020 Piperift - All rights reserved
 #include "Assets/AssetPtr.h"
 
 #if WITH_EDITOR

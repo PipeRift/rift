@@ -16,11 +16,16 @@ include(CMake/DownloadProject.cmake)
 include(CMake/Util.cmake)
 
 #CONAN PACKAGES
-conan_cmake_run(REQUIRES eastl/3.16.05 BASIC_SETUP CMAKE_TARGETS BUILD missing)
-conan_cmake_run(REQUIRES glm/0.9.9.8 BASIC_SETUP CMAKE_TARGETS BUILD missing)
-conan_cmake_run(REQUIRES spdlog/1.6.1 BASIC_SETUP CMAKE_TARGETS BUILD missing)
-conan_cmake_run(REQUIRES nlohmann_json/3.8.0 BASIC_SETUP CMAKE_TARGETS BUILD missing)
-conan_cmake_run(REQUIRES date/2.4.1 BASIC_SETUP CMAKE_TARGETS BUILD missing)
+conan_cmake_run(
+    REQUIRES
+        eastl/3.16.05
+        glm/0.9.9.8
+        spdlog/1.6.1
+        nlohmann_json/3.8.0
+        date/2.4.1
+        imgui/1.76
+    BASIC_SETUP CMAKE_TARGETS BUILD missing OUTPUT_QUIET
+)
 
 add_subdirectory(Extern)
 

@@ -1,10 +1,12 @@
+// Copyright 2015-2020 Piperift - All rights reserved
 
 #pragma once
 
+#include "Assets/ClassAsset.h"
+#include "Assets/StructAsset.h"
+
 #include <CoreObject.h>
 #include <Files/FileSystem.h>
-
-#include "Assets/TypeAsset.h"
 
 
 namespace VCLang
@@ -16,19 +18,22 @@ namespace VCLang
 	{
 		CLASS(Project, Object)
 
-		Path path;
+		Path projectPath;
 
-		// Classes and Structures
-		TArray<GlobalPtr<TypeAsset>> types;
+		TArray<Ptr<ClassAsset>> classes;
+		TArray<Ptr<StructAsset>> structs;
 
 
-public:
-
+	public:
 		Project() : Super() {}
 
-		void Init(Path inPath)
+		void Init(Path path)
 		{
-			path = inPath;
+			projectPath = FileSystem::ToAbsolute(path, FileSystem::GetCurrent());
 		}
+
+		void LoadAllAssets();
+
+		Path ToProjectPath(const Path& path);
 	};
-}
+}	 // namespace VCLang

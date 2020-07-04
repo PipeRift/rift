@@ -1,14 +1,14 @@
 
-#include <Framework.h>
+#include <Context.h>
 #include <Project.h>
 
 using namespace VCLang;
 
 int main()
 {
-	Framework lang{};
-
-	lang.GetAssetManager();
+	Context::Initialize();
 	auto project = Create<Project>();
+	project->Init(".");
+	project->LoadAllAssets();
 	return 0;
 }

@@ -1,15 +1,18 @@
-// Copyright 2015-2019 Piperift - All rights reserved
+// Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
+#include "CoreObject.h"
 #include "AssetData.h"
 #include "Containers/Map.h"
-#include "CoreObject.h"
 #include "Object/ObjectPtr.h"
 
 
 class AssetManager : public Object
 {
 	CLASS(AssetManager, Object)
+
+public:
+	static const StringView assetFormat;
 
 private:
 	TArray<AssetInfo> assetInfos;

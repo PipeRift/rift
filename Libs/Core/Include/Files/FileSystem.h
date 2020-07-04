@@ -1,10 +1,12 @@
-// Copyright 2015-2019 Piperift - All rights reserved
+// Copyright 2015-2020 Piperift - All rights reserved
 
 #pragma once
 
+#include "Assets/AssetInfo.h"
 #include "CoreEngine.h"
 #include "Serialization/Json.h"
 #include "Strings/String.h"
+#include "Containers/Array.h"
 
 #include <filesystem>
 
@@ -18,7 +20,8 @@ class Archive;
 class FileSystem
 {
 public:
-	using FolderIterator = fs::directory_iterator;
+	using Iterator = fs::directory_iterator;
+	using RecursiveIterator = fs::directory_iterator;
 	using SpaceInfo = fs::space_info;
 
 
@@ -49,24 +52,6 @@ public:
 		return SaveStringFile(FromString(path), data);
 	}
 
-	static String GetAssetsPathStr()
-	{
-		return ToString(GetAssetsPath());
-	}
-	static String GetConfigPathStr()
-	{
-		return ToString(GetConfigPath());
-	}
-	static String GetLogsPathStr()
-	{
-		return ToString(GetLogsPath());
-	}
-
-	static bool IsAssetPath(const String& path)
-	{
-		return IsAssetPath(FromString(path));
-	}
-
 
 	/** Path API */
 
@@ -80,28 +65,86 @@ public:
 	static bool LoadStringFile(Path path, String& result);
 	static bool SaveStringFile(Path path, const String& data);
 
-	static Path GetAssetsPath();
-	static void RelativeToAssetsPath(Path& path);
-	static Path GetConfigPath();
-	static Path GetLogsPath();
-
-	static Path FindMetaFile(Path in);
-
-	static Path FindRawFile(Path in);
-
-	static bool IsAssetPath(Path path);
-	static bool IsAssetFilePath(const Path& path)
+	static void CreateFolder(const Path& path)
 	{
-		return IsAssetPath(path) && path.has_extension() && path.extension() == ".meta";
+		if(!Exists(path) && IsFolder(path))
+		{
+			fs::create_directory(path);
+		}
 	}
 
-	static void CreateFolder(const Path path)
+	static Iterator CreateIterator(const Path& path)
 	{
-		fs::create_directory(path);
+		if (!Exists(path) || !IsFolder(path))
+		{
+			return {};
+		}
+		return Iterator(path);
 	}
-
+	static RecursiveIterator CreateRecursiveIterator(const Path& path)
+	{
+		if (!Exists(path) || !IsFolder(path))
+		{
+			return {};
+		}
+		return RecursiveIterator(path);
+	}
 
 	/** HELPERS */
+
+	static bool Exists(const String& path)
+	{
+		return Exists(FromString(path));
+	}
+
+	static bool Exists(const Path& path)
+	{
+		return fs::exists(path);
+	}
+
+	static bool IsFolder(const String& path)
+	{
+		return IsFolder(FromString(path));
+	}
+
+	static bool IsFolder(const Path& path)
+	{
+		return fs::is_directory(path);
+	}
+
+	static bool IsFile(const String& path)
+	{
+		return IsFile(FromString(path));
+	}
+
+	static bool IsFile(const Path& path)
+	{
+		return fs::is_regular_file(path);
+	}
+
+	static Path ToRelative(const Path& path, const Path& parent = GetCurrent())
+	{
+		return fs::relative(path, parent);
+	}
+
+	static Path ToAbsolute(const Path& path, const Path& parent = GetCurrent())
+	{
+		if (path.is_absolute())
+		{
+			return {};
+		}
+		return path / parent;
+	}
+
+	static bool IsInside(const Path& base, const Path& parent)
+	{
+		return !ToRelative(base, parent).empty();
+	}
+
+	static Path GetCurrent()
+	{
+		return fs::current_path();
+	}
 
 	static String ToString(const Path& path)
 	{
@@ -116,22 +159,6 @@ public:
 	}
 
 private:
-	static inline bool SanitizeAssetPath(Path& path)
-	{
-		return path.has_filename() && SanitizeFolderPath(path);
-	}
-
-	static inline bool SanitizeFolderPath(Path& path)
-	{
-		if (path.is_relative())
-		{
-			path = GetAssetsPath() / path;
-			return true;
-		}
-
-		// Ensure path is inside Assets folder
-		return !fs::relative(path, GetAssetsPath()).empty();
-	}
 
 	SpaceInfo Space(Path target)
 	{

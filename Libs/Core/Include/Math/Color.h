@@ -317,7 +317,7 @@ struct LinearColor
 	{
 		String str;
 		str.sprintf(TX("(r=%f,g=%f,b=%f,a=%f)"), r, g, b, a);
-		return eastl::move(str);
+		return MoveTemp(str);
 	}
 
 	// Common colors.
@@ -449,7 +449,7 @@ public:
 	{
 		String str;
 		str.sprintf(TX("%02X%02X%02X%02X"), r, g, b, a);
-		return eastl::move(str);
+		return MoveTemp(str);
 	}
 
 	/**

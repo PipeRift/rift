@@ -1,10 +1,8 @@
-// © 2019 Miguel Fernández Arce - All rights reserved
-
+// Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
 #include "CoreEngine.h"
 #include "CoreTypes.h"
-#include "Files/FileSystem.h"
 #include "Strings/Name.h"
 #include "TypeTraits.h"
 
@@ -12,6 +10,10 @@
 
 class AssetInfo
 {
+protected:
+	Name id;
+
+
 public:
 	AssetInfo() : id(Name::None())
 	{
@@ -20,23 +22,19 @@ public:
 	{
 	}
 
-protected:
-	Name id;
-
-public:
 	/**
 	 * @returns true if this can never be pointed towards an asset
 	 */
 	const bool IsNull() const
 	{
-		return id.IsNone() || !FileSystem::IsAssetPath(GetSPath());
+		return id.IsNone();
 	}
 
 	inline const Name& GetPath() const
 	{
 		return id;
 	}
-	inline const String& GetSPath() const
+	inline const String& GetStrPath() const
 	{
 		return id.ToString();
 	}

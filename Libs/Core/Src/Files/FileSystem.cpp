@@ -1,15 +1,10 @@
-// Copyright 2015-2019 Piperift - All rights reserved
+// Copyright 2015-2020 Piperift - All rights reserved
 
 #include "Files/FileSystem.h"
 
 #include "Profiler.h"
 #include "Serialization/Archive.h"
 
-
-bool FileSystem::FileExists(const Path& path)
-{
-	return fs::exists(path) && fs::is_regular_file(path);
-}
 
 bool FileSystem::FolderExists(const Path& path)
 {
@@ -20,11 +15,12 @@ bool FileSystem::LoadJsonFile(Path path, Json& result)
 {
 	ScopedZone("LoadJsonFile", BB45D1);
 
-	if (!SanitizeAssetPath(path) || !FileExists(path))
+	if (!Exists(path) || !IsFile(path))
+	{
 		return false;
+	}
 
 	std::ifstream file(path);
-
 	result = {};
 	result << file;
 	return true;
@@ -34,8 +30,10 @@ bool FileSystem::SaveJsonFile(Path path, const Json& data, i32 indent)
 {
 	ScopedZone("SaveJsonFile", BB45D1);
 
-	if (!SanitizeAssetPath(path))
+	if (!IsFile(path))
+	{
 		return false;
+	}
 
 	std::ofstream file(path);
 	if (indent >= 0)
@@ -51,8 +49,10 @@ bool FileSystem::LoadStringFile(Path path, String& result)
 {
 	ScopedZone("LoadStringFile", BB45D1);
 
-	if (!SanitizeAssetPath(path) || !FileExists(path))
+	if (!Exists(path) || !IsFile(path))
+	{
 		return false;
+	}
 
 	std::ifstream file(path);
 
@@ -73,84 +73,12 @@ bool FileSystem::SaveStringFile(Path path, const String& data)
 {
 	ScopedZone("SaveStringFile", BB45D1);
 
-	if (!SanitizeAssetPath(path))
+	if (!IsFile(path))
+	{
 		return false;
+	}
 
 	std::ofstream file(path);
 	file.write(data.data(), data.size());
 	return true;
-}
-
-Path FileSystem::GetAssetsPath()
-{
-	// Take two folders up. May change for distributed versions / other platforms
-	Path path = fs::current_path().parent_path().parent_path();
-	path /= "Assets";
-	return eastl::move(path);
-}
-
-void FileSystem::RelativeToAssetsPath(Path& path)
-{
-	if (path.is_absolute())
-	{
-		path = fs::relative(path, GetAssetsPath());
-	}
-}
-
-Path FileSystem::GetConfigPath()
-{
-	// Take two folders up. May change for distributed versions / other platforms
-	Path path = fs::current_path().parent_path().parent_path();
-	path /= "Config";
-	return eastl::move(path);
-}
-
-Path FileSystem::GetLogsPath()
-{
-	// Take two folders up. May change for distributed versions / other platforms
-	Path path = fs::current_path().parent_path().parent_path();
-	path /= "Logs";
-	return eastl::move(path);
-}
-
-Path FileSystem::FindMetaFile(Path in)
-{
-	if (!SanitizeAssetPath(in))
-		return {};
-
-	if (in.extension() != ".meta")
-		in += ".meta";
-
-	return in;
-}
-
-Path FileSystem::FindRawFile(Path in)
-{
-	if (!SanitizeAssetPath(in))
-		return {};
-
-	const Path stem = in.stem();
-	if (!stem.has_extension() || in.extension() != ".meta")
-		return {};
-
-	return in.parent_path() / stem;
-}
-
-bool FileSystem::IsAssetPath(Path path)
-{
-	if (path.is_relative())
-		return true;
-
-	const Path assets = GetAssetsPath();
-	const Path rootPath = path.root_path();
-
-	// Iterate parent directories to find Assets path
-	for (; path != rootPath; path = path.parent_path())
-	{
-		if (path == assets)
-		{
-			return true;
-		}
-	}
-	return false;
 }

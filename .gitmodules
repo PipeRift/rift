@@ -7,3 +7,6 @@
 [submodule "Extern/SparseMap"]
 	path = Extern/SparseMap
 	url = https://github.com/Piperift/sparse-map.git
+[submodule "Extern/CLI11"]
+	path = Extern/CLI11
+	url = https://github.com/CLIUtils/CLI11.git

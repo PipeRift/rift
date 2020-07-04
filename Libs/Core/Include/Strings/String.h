@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Piperift - All rights reserved
+// Copyright 2015-2020 Piperift - All rights reserved
 
 #pragma once
 
@@ -26,7 +26,7 @@ struct CString
 	{
 		String str;
 		str.sprintf(format, eastl::forward<Args>(args)...);
-		return eastl::move(str);
+		return MoveTemp(str);
 	}
 
 	static void ToSentenceCase(const String& str, String& result);
@@ -35,7 +35,7 @@ struct CString
 	{
 		String result = original;
 		Replace(result, searchChar, replacementChar);
-		return eastl::move(result);
+		return MoveTemp(result);
 	}
 
 	static void Replace(String& value, const TCHAR searchChar, const TCHAR replacementChar)

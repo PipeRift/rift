@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Piperift - All rights reserved
+// Copyright 2015-2020 Piperift - All rights reserved
 
 #include "Log.h"
 
@@ -40,20 +40,30 @@ using ProfilerSink_st = ProfilerSink<spdlog::details::null_mutex>;
 #endif
 
 
-void Log::Init()
+void Log::Init(Path logFile)
 {
-	// File logging
-	const Path logsFolder = FileSystem::GetLogsPath();
-	FileSystem::CreateFolder(logsFolder);
-
-	const Path logFile = logsFolder / "log.txt";
-	auto fileSink{std::make_shared<spdlog::sinks::rotating_file_sink_mt>(FileSystem::ToString(logFile).c_str(), 1048576 * 5, 3)};
-
-	auto logger = std::make_shared<spdlog::logger>("Log", fileSink);
+	auto logger = std::make_shared<spdlog::logger>("Log");
 	logger->set_pattern("%^[%D %T][%t][%l]%$ %v");
 
 	std::vector<spdlog::sink_ptr>& sinks = logger->sinks();
 	sinks.reserve(5);
+
+	// File
+	if (!logFile.empty())
+	{
+		Path logFolder = logFile;
+		if(FileSystem::IsFile(logFile))
+		{
+			logFolder.remove_filename();
+		}
+		else
+		{
+			logFile /= "log.txt";
+		}
+		FileSystem::CreateFolder(logFolder);
+
+		sinks.push_back(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(FileSystem::ToString(logFile).c_str(), 1048576 * 5, 3));
+	}
 
 	// Console
 	sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());

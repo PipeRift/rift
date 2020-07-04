@@ -1,21 +1,4 @@
+// Copyright 2015-2020 Piperift - All rights reserved
 
 #pragma once
 
-#include <Assets/AssetManager.h>
-
-namespace VCLang
-{
-	class Framework
-	{
-		GlobalPtr<AssetManager> assetManager;
-
-	public:
-
-		Framework()
-		{
-			assetManager = Create<AssetManager>();
-		}
-
-		Ptr<AssetManager> GetAssetManager() const { return assetManager; }
-	};
-}

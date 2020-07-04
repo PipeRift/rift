@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Piperift - All rights reserved
+// Copyright 2015-2020 Piperift - All rights reserved
 
 #include "Misc/Guid.h"
 
@@ -50,7 +50,7 @@ String Guid::ToString(EGuidFormats Format) const
 			result.sprintf(TX("%08X%08X%08X%08X"), a, b, c, d);
 	}
 
-	return eastl::move(result);
+	return MoveTemp(result);
 }
 
 

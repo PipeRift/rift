@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Piperift - All rights reserved
+// Copyright 2015-2020 Piperift - All rights reserved
 
 #pragma once
 
@@ -74,7 +74,7 @@ public:
 	{
 		const i32 foundIndex = FindIndex(item);
 		if (foundIndex == NO_INDEX)
-			return Add(eastl::move(item));
+			return Add(MoveTemp(item));
 		return foundIndex;
 	}
 
@@ -128,7 +128,7 @@ public:
 
 	void Insert(i32 index, Type&& item)
 	{
-		vector.insert(vector.begin() + index, eastl::move(item));
+		vector.insert(vector.begin() + index, MoveTemp(item));
 	}
 
 	void Insert(i32 index, const Type& item, i32 count = 1)
@@ -170,7 +170,7 @@ public:
 
 	i32 FindIndex(eastl::function<bool(const Type&)> cb) const
 	{
-		ConstIterator it = FindIt(eastl::move(cb));
+		ConstIterator it = FindIt(MoveTemp(cb));
 		if (it != vector.end())
 		{
 			return (i32) eastl::distance(vector.begin(), it);
@@ -186,7 +186,7 @@ public:
 
 	Type* Find(eastl::function<bool(const Type&)> cb) const
 	{
-		Iterator it = FindIt(eastl::move(cb));
+		Iterator it = FindIt(MoveTemp(cb));
 		return it != end() ? it : nullptr;
 	}
 
@@ -197,7 +197,7 @@ public:
 
 	bool Contains(eastl::function<bool(const Type&)> cb) const
 	{
-		return FindIt(eastl::move(cb)) != vector.end();
+		return FindIt(MoveTemp(cb)) != vector.end();
 	}
 
 	/**
@@ -412,7 +412,7 @@ private:
 	}
 	void MoveFrom(TArray&& other)
 	{
-		vector = eastl::move(other.vector);
+		vector = MoveTemp(other.vector);
 	}
 };
 

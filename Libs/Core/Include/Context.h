@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Piperift - All rights reserved
+// Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
 #include "Assets/AssetManager.h"
@@ -30,6 +30,7 @@ public:
 
 	static void Initialize()
 	{
+		Log::Init();
 		globalInstance = Create<Context>();
 	}
 

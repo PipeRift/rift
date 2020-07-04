@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Piperift - All rights reserved
+// Copyright 2015-2020 Piperift - All rights reserved
 
 #include "Assets/AssetManager.h"
 
@@ -8,21 +8,23 @@
 #include "Profiler.h"
 
 
+const StringView AssetManager::assetFormat = "vc";
+
+
 Ptr<AssetData> AssetManager::Load(const AssetInfo& info)
 {
-	Log::Message("Loading asset: %s", info.GetSPath().c_str());
+	Log::Message("Loading asset: %s", info.GetStrPath().c_str());
 
-	if (info.IsNull() || !FileSystem::IsAssetPath(info.GetSPath()))
+	if (info.IsNull() || !FileSystem::IsFile(info.GetStrPath()))
 	{
-		Log::Error("Invalid asset path '%s'.", info.GetSPath().c_str());
+		Log::Error("Invalid asset path '%s'.", info.GetStrPath().c_str());
 		return {};
 	}
 
 	ScopedZone("Asset Load", D19D45);
 
 	Json data;
-	String str = info.GetSPath();
-	if (FileSystem::LoadJsonFile(info.GetSPath(), data))
+	if (FileSystem::LoadJsonFile(info.GetStrPath(), data))
 	{
 		const auto type{data["asset_type"]};
 		if (!type.is_string())
@@ -47,8 +49,8 @@ Ptr<AssetData> AssetManager::Load(const AssetInfo& info)
 			const Ptr<AssetData> newAssetPtr = newAsset;
 
 			// Loading succeeded, registry the asset
-			loadedAssets[info.GetPath()] = eastl::move(newAsset);
-			return eastl::move(newAssetPtr);
+			loadedAssets[info.GetPath()] = MoveTemp(newAsset);
+			return MoveTemp(newAssetPtr);
 		}
 	}
 
@@ -58,8 +60,10 @@ Ptr<AssetData> AssetManager::Load(const AssetInfo& info)
 
 Ptr<AssetData> AssetManager::LoadOrCreate(const AssetInfo& info, Class* assetType)
 {
-	if (info.IsNull() || !FileSystem::IsAssetPath(info.GetSPath()))
+	if (info.IsNull() || !FileSystem::IsFolder(info.GetStrPath()))
+	{
 		return {};
+	}
 
 	Ptr<AssetData> loadedAsset = Load(info);
 	if (loadedAsset)
@@ -77,7 +81,7 @@ Ptr<AssetData> AssetManager::LoadOrCreate(const AssetInfo& info, Class* assetTyp
 		{
 			const Ptr<AssetData> newAssetPtr = newAsset;
 
-			loadedAssets[info.GetPath()] = eastl::move(newAsset);
+			loadedAssets[info.GetPath()] = MoveTemp(newAsset);
 
 			return newAssetPtr;
 		}

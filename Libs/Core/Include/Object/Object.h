@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Piperift - All rights reserved
+// Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
 #include "BaseObject.h"
@@ -75,7 +75,7 @@ public:
 
 	void SetName(Name newName)
 	{
-		name = eastl::move(newName);
+		name = MoveTemp(newName);
 	}
 	Name GetName() const
 	{

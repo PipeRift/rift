@@ -1,5 +1,4 @@
-// © 2019 Miguel Fernández Arce - All rights reserved
-
+// Copyright 2015-2020 Piperift - All rights reserved
 #include "Assets/AssetData.h"
 
 #include "Files/FileSystem.h"
@@ -25,7 +24,7 @@ bool AssetData::OnLoad(const AssetInfo& inInfo, Json& data)
 bool AssetData::SaveToPath(const Name& path)
 {
 	const String& sPath = path.ToString();
-	if (sPath.empty() || !FileSystem::IsAssetPath(sPath))
+	if (sPath.empty() || !FileSystem::IsFolder(sPath))
 		return false;
 
 	JsonArchive ar{};
