@@ -31,9 +31,15 @@ jobs:
         python-version: [3.8]
 
     steps:
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
     - name: Get pip cache dir
       id: pip-cache
       run: echo "::set-output name=dir::$(pip cache dir)"
+
     - name: Pip Cache
       uses: actions/cache@v2
       with:
@@ -62,7 +68,7 @@ jobs:
     - name: Configure and Build
       uses: lukka/run-cmake@v2
       with:
-        cmakeListsOrSettingsJson: CMakeListsTxt
+        cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
         cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
         cmakeAppendedArgs: '-GNinja -DCMAKE_BUILD_TYPE=Release'
         buildWithCMakeArgs: '-- -v'
