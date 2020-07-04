@@ -2,31 +2,37 @@
 
 #pragma once
 
-#include <EASTL/string.h>
-#include <EASTL/string_view.h>
-
-#include <regex>
-
-#pragma warning(disable : 4996)
 
 #include "Containers/Array.h"
 #include "Math/Math.h"
 #include "Memory/Allocator.h"
 #include "Platform/Platform.h"
 
+#include <fmt/format.h>
+#include <fmt/chrono.h>
+#include <regex>
+#include <string>
+#include <string_view>
 
-using String = eastl::basic_string<TCHAR, StringAllocator>;
-using StringView = eastl::basic_string_view<TCHAR>;
+#pragma warning(disable : 4996)
+
+
+using String = std::basic_string<TCHAR>;
+using StringView = std::basic_string_view<TCHAR>;
 
 
 struct CString
 {
 	template <typename... Args>
-	static String Printf(const TCHAR* format, Args... args)
+	static String Format(const TCHAR* format, Args... args)
 	{
-		String str;
-		str.sprintf(format, eastl::forward<Args>(args)...);
-		return MoveTemp(str);
+		return fmt::format(format, std::forward<Args>(args)...);
+	}
+
+	template <typename... Args>
+	static void AppendFormat(String& str, const TCHAR* format, Args... args)
+	{
+		str.append(fmt::format(format, std::forward<Args>(args)...).c_str());
 	}
 
 	static void ToSentenceCase(const String& str, String& result);
@@ -192,72 +198,4 @@ namespace eastl
 			return (size_t) result;
 		}
 	};
-
-
-	/// to_String
-	///
-	/// Converts integral types to an eastl::String with the same content that sprintf produces.  The following
-	/// implementation provides a type safe conversion mechanism which avoids the common bugs associated with sprintf
-	/// style format Strings.
-	///
-	/// http://en.cppreference.com/w/cpp/String/basic_String/to_String
-	///
-	inline String to_String(int value)
-	{
-		return String(String::CtorSprintf(), TX("%d"), value);
-	}
-	inline String to_String(long value)
-	{
-		return String(String::CtorSprintf(), TX("%ld"), value);
-	}
-	inline String to_String(long long value)
-	{
-		return String(String::CtorSprintf(), TX("%lld"), value);
-	}
-	inline String to_String(unsigned value)
-	{
-		return String(String::CtorSprintf(), TX("%u"), value);
-	}
-	inline String to_String(unsigned long value)
-	{
-		return String(String::CtorSprintf(), TX("%lu"), value);
-	}
-	inline String to_String(unsigned long long value)
-	{
-		return String(String::CtorSprintf(), TX("%llu"), value);
-	}
-	inline String to_String(float value)
-	{
-		return String(String::CtorSprintf(), TX("%f"), value);
-	}
-	inline String to_String(double value)
-	{
-		return String(String::CtorSprintf(), TX("%f"), value);
-	}
-	inline String to_String(long double value)
-	{
-		return String(String::CtorSprintf(), TX("%Lf"), value);
-	}
-
-
-/// user defined literals
-///
-/// Converts a character array literal to a basic_string.
-///
-/// Example:
-///   String s = "abcdef"s;
-///
-/// http://en.cppreference.com/w/cpp/String/basic_String/operator%22%22s
-///
-#if EASTL_USER_LITERALS_ENABLED && EASTL_INLINE_NAMESPACES_ENABLED
-	EA_DISABLE_VC_WARNING(
-		4455)	 // disable warning C4455: literal suffix identifiers that do not start with an underscore are reserved
-	inline namespace literals
-	{
-		inline namespace string_literals
-		{
-		}
-	}						   // namespace literals
-	EA_RESTORE_VC_WARNING()	   // warning: 4455
-#endif
 }	 // namespace eastl

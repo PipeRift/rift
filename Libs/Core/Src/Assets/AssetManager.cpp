@@ -13,11 +13,11 @@ const StringView AssetManager::assetFormat = "vc";
 
 Ptr<AssetData> AssetManager::Load(const AssetInfo& info)
 {
-	Log::Message("Loading asset: %s", info.GetStrPath().c_str());
+	Log::Message("Loading asset: {}", info.GetStrPath().c_str());
 
 	if (info.IsNull() || !FileSystem::IsFile(info.GetStrPath()))
 	{
-		Log::Error("Invalid asset path '%s'.", info.GetStrPath().c_str());
+		Log::Error("Invalid asset path '{}'.", info.GetStrPath().c_str());
 		return {};
 	}
 
@@ -37,7 +37,7 @@ Ptr<AssetData> AssetManager::Load(const AssetInfo& info)
 		Class* assetClass = AssetData::StaticClass()->FindChild(Name{type});
 		if (!assetClass)
 		{
-			Log::Error("Asset class('%s') not found.", type.get<String>().c_str());
+			Log::Error("Asset class('{}') not found.", type.get<String>().c_str());
 			return {};	  // Asset doesn't have a valid class
 		}
 

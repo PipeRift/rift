@@ -12,6 +12,7 @@ target_link_libraries(Core PUBLIC
     CONAN_PKG::spdlog
     CONAN_PKG::nlohmann_json
     CONAN_PKG::date
+    CONAN_PKG::fmt
     Tracy
     tsl::robin_map
     tsl::sparse_map

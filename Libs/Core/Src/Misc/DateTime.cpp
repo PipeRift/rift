@@ -157,12 +157,7 @@ String DateTime::ToHttpDate() const
 			break;
 	}
 
-	String timeStr;
-	timeStr.sprintf(TX("%02i:%02i:%02i"), GetHour(), GetMinute(), GetSecond());
-
-	String dateTimeStr;
-	dateTimeStr.sprintf(TX("%s, %02d %s %d %s GMT"), DayStr.c_str(), GetDay(), MonthStr.c_str(), GetYear(), timeStr.c_str());
-	return dateTimeStr;
+	return CString::Format(TX("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT"), DayStr.c_str(), GetDay(), MonthStr.c_str(), GetYear(), GetHour(), GetMinute(), GetSecond());
 }
 
 
@@ -178,69 +173,69 @@ String DateTime::ToString() const
 }
 
 
-String DateTime::ToString(const TCHAR* Format) const
+String DateTime::ToString(const TCHAR* format) const
 {
-	String Result;
+	//return CString::Format(format, *value);
+	String result;
 
-	if (Format != nullptr)
+	if (format != nullptr)
 	{
-		while (*Format != TX('\0'))
+		while (*format != TX('\0'))
 		{
-			if ((*Format == TX('%')) && (*(++Format) != TX('\0')))
+			if ((*format == TX('%')) && (*(++format) != TX('\0')))
 			{
-				switch (*Format)
+				switch (*format)
 				{
 					case TX('a'):
-						Result += IsMorning() ? TX("am") : TX("pm");
+						result += IsMorning() ? TX("am") : TX("pm");
 						break;
 					case TX('A'):
-						Result += IsMorning() ? TX("AM") : TX("PM");
+						result += IsMorning() ? TX("AM") : TX("PM");
 						break;
 					case TX('d'):
-						Result.append_sprintf(TX("%02i"), GetDay());
+						CString::AppendFormat(result, TX("{:02i}"), GetDay());
 						break;
 					case TX('D'):
-						Result.append_sprintf(TX("%03i"), GetDayOfYear());
+						CString::AppendFormat(result, TX("{:03i}"), GetDayOfYear());
 						break;
 					case TX('m'):
-						Result.append_sprintf(TX("%02i"), GetMonth());
+						CString::AppendFormat(result, TX("{:02i}"), GetMonth());
 						break;
 					case TX('y'):
-						Result.append_sprintf(TX("%02i"), GetYear() % 100);
+						CString::AppendFormat(result, TX("{:02i}"), GetYear() % 100);
 						break;
 					case TX('Y'):
-						Result.append_sprintf(TX("%04i"), GetYear());
+						CString::AppendFormat(result, TX("{:04i}"), GetYear());
 						break;
 					case TX('h'):
-						Result.append_sprintf(TX("%02i"), GetHour12());
+						CString::AppendFormat(result, TX("{:02i}"), GetHour12());
 						break;
 					case TX('H'):
-						Result.append_sprintf(TX("%02i"), GetHour());
+						CString::AppendFormat(result, TX("{:02i}"), GetHour());
 						break;
 					case TX('M'):
-						Result.append_sprintf(TX("%02i"), GetMinute());
+						CString::AppendFormat(result, TX("{:02i}"), GetMinute());
 						break;
 					case TX('S'):
-						Result.append_sprintf(TX("%02i"), GetSecond());
+						CString::AppendFormat(result, TX("{:02i}"), GetSecond());
 						break;
 					case TX('s'):
-						Result.append_sprintf(TX("%03i"), GetMillisecond());
+						CString::AppendFormat(result, TX("{:03i}"), GetMillisecond());
 						break;
 					default:
-						Result += *Format;
+						result += *format;
 				}
 			}
 			else
 			{
-				Result += *Format;
+				result += *format;
 			}
 
 			// move to the next one
-			Format++;
+			format++;
 		}
 	}
-
-	return Result;
+	return result;
 }
 
 DateTime DateTime::ToLocal() const

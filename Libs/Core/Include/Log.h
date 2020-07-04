@@ -21,13 +21,13 @@ namespace Log
 	{
 		if (format)
 		{
-			spdlog::info(format, eastl::forward<Args>(args)...);
+			spdlog::info(CString::Format(format, std::forward<Args>(args)...));
 		}
 	}
 
 	inline void Message(const String& msg)
 	{
-		spdlog::info(msg.data());
+		spdlog::info(msg);
 	}
 
 	template <typename... Args>
@@ -35,13 +35,13 @@ namespace Log
 	{
 		if (format)
 		{
-			spdlog::warn(format, eastl::forward<Args>(args)...);
+			spdlog::warn(CString::Format(format, std::forward<Args>(args)...));
 		}
 	}
 
 	inline void Warning(const String& msg)
 	{
-		spdlog::warn(msg.data());
+		spdlog::warn(msg);
 	}
 
 	template <typename... Args>
@@ -49,12 +49,12 @@ namespace Log
 	{
 		if (format)
 		{
-			spdlog::error(format, eastl::forward<Args>(args)...);
+			spdlog::error(CString::Format(format, std::forward<Args>(args)...));
 		}
 	}
 
 	inline void Error(const String& msg)
 	{
-		spdlog::error(msg.data());
+		spdlog::error(msg);
 	}
 };	  // namespace Log

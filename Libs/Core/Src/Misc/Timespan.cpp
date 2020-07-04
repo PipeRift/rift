@@ -17,58 +17,58 @@ String Timespan::ToString() const
 }
 
 
-String Timespan::ToString(const TCHAR* Format) const
+String Timespan::ToString(const TCHAR* format) const
 {
-	String Result;
+	String result;
 
-	Result += (*this < Timespan::Zero()) ? TX('-') : TX('+');
+	result += (*this < Timespan::Zero()) ? TX('-') : TX('+');
 
-	while (*Format != TX('\0'))
+	while (*format != TX('\0'))
 	{
-		if ((*Format == TX('%')) && (*++Format != TX('\0')))
+		if ((*format == TX('%')) && (*++format != TX('\0')))
 		{
-			switch (*Format)
+			switch (*format)
 			{
 				case TX('d'):
-					Result.append_sprintf(TX("%i"), Math::Abs(GetDays()));
+					CString::AppendFormat(result, TX("{}"), Math::Abs(GetDays()));
 					break;
 				case TX('D'):
-					Result.append_sprintf(TX("%08i"), Math::Abs(GetDays()));
+					CString::AppendFormat(result, TX("{:08i}"), Math::Abs(GetDays()));
 					break;
 				case TX('h'):
-					Result.append_sprintf(TX("%02i"), Math::Abs(GetHours()));
+					CString::AppendFormat(result, TX("{:02i}"), Math::Abs(GetHours()));
 					break;
 				case TX('m'):
-					Result.append_sprintf(TX("%02i"), Math::Abs(GetMinutes()));
+					CString::AppendFormat(result, TX("{:02i}"), Math::Abs(GetMinutes()));
 					break;
 				case TX('s'):
-					Result.append_sprintf(TX("%02i"), Math::Abs(GetSeconds()));
+					CString::AppendFormat(result, TX("{:02i}"), Math::Abs(GetSeconds()));
 					break;
 				case TX('f'):
-					Result.append_sprintf(TX("%03i"), Math::Abs(GetFractionMilli()));
+					CString::AppendFormat(result, TX("{:03i}"), Math::Abs(GetFractionMilli()));
 					break;
 				case TX('u'):
-					Result.append_sprintf(TX("%06i"), Math::Abs(GetFractionMicro()));
+					CString::AppendFormat(result, TX("{:06i}"), Math::Abs(GetFractionMicro()));
 					break;
 				case TX('t'):
-					Result.append_sprintf(TX("%07i"), Math::Abs(GetFractionTicks()));
+					CString::AppendFormat(result, TX("{:07i}"), Math::Abs(GetFractionTicks()));
 					break;
 				case TX('n'):
-					Result.append_sprintf(TX("%09i"), Math::Abs(GetFractionNano()));
+					CString::AppendFormat(result, TX("{:09i}"), Math::Abs(GetFractionNano()));
 					break;
 				default:
-					Result += *Format;
+					result += *format;
 			}
 		}
 		else
 		{
-			Result += *Format;
+			result += *format;
 		}
 
-		++Format;
+		++format;
 	}
 
-	return Result;
+	return result;
 }
 
 

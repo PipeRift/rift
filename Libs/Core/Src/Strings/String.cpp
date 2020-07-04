@@ -74,7 +74,7 @@ String CString::ParseMemorySize(size_t size)
 	const u32 scale = u32(Math::FloorToI64(scaleD));
 	const size_t finalSize = size / Math::Pow(size_t(1024), scale);
 
-	return CString::Printf("%i %s", finalSize, sizes[scale]);
+	return CString::Format("{} {}", finalSize, sizes[scale]);
 }
 
 // const std::wstring_convert<std::codecvt_utf8<WIDECHAR>, WIDECHAR, StringAllocator, StringAllocator> CString::converter {};

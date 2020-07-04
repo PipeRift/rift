@@ -65,14 +65,14 @@ inline Name GetReflectableName()
 		if constexpr (IsReflectableType<typename T::ItemType>())
 		{
 			// TArray<Itemtype> name
-			return {CString::Printf(TX("TArray<%s>"), GetReflectableName<typename T::ItemType>().ToString().c_str())};
+			return {CString::Format(TX("TArray<{}>"), GetReflectableName<typename T::ItemType>().ToString().c_str())};
 		}
 		return TX("TArray<Invalid>");
 	}
 	else if constexpr (IsAssetType<T>())
 	{
 		// TAssetPtr<Itemtype> name
-		return {CString::Printf(TX("TAssetPtr<%s>"), GetReflectableName<typename T::ItemType>().ToString().c_str())};
+		return {CString::Format(TX("TAssetPtr<{}>"), GetReflectableName<typename T::ItemType>().ToString().c_str())};
 	}
 	else if constexpr (IsStructType<T>())
 	{

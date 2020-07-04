@@ -24,7 +24,7 @@ TaskSystem::TaskSystem()
 	TaskFlow flow;
 	flow.parallel_for(0, i32(GetNumWorkerThreads()) - 1, 1, [](i32 i) {
 		// Name each worker thread in the debugger
-		tracy::SetThreadName(CString::Printf("Worker %i", i + 1).c_str());
+		tracy::SetThreadName(CString::Format("Worker {}", i + 1).c_str());
 	});
 	RunFlow(flow);
 }

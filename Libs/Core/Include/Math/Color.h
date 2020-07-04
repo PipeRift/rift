@@ -315,9 +315,7 @@ struct LinearColor
 
 	String ToString() const
 	{
-		String str;
-		str.sprintf(TX("(r=%f,g=%f,b=%f,a=%f)"), r, g, b, a);
-		return MoveTemp(str);
+		return CString::Format(TX("(r={},g={},b={},a={})"), r, g, b, a);
 	}
 
 	// Common colors.
@@ -447,9 +445,7 @@ public:
 	 */
 	String ToHex() const
 	{
-		String str;
-		str.sprintf(TX("%02X%02X%02X%02X"), r, g, b, a);
-		return MoveTemp(str);
+		return CString::Format(TX("{:02X}{:02X}{:02X}{:02X}"), r, g, b, a);
 	}
 
 	/**
@@ -460,9 +456,7 @@ public:
 	 */
 	String ToString() const
 	{
-		String str;
-		str.sprintf(TX("(R=%i,G=%i,B=%i,A=%i)"), r, g, b, a);
-		return str;
+		return CString::Format(TX("(R={},G={},B={},A={})"), r, g, b, a);
 	}
 
 	/**
