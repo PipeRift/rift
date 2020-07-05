@@ -1,6 +1,8 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
+#include <cstddef>
+
 #define PLATFORM_MAC_USE_CHAR16 0
 
 /**
@@ -9,7 +11,7 @@
 struct FMacPlatformTypes : public FGenericPlatformTypes
 {
 	using DWORD = unsigned int;
-	using SIZE_T = size_t;
+	using SIZE_T = std::size_t;
 	using TYPE_OF_NULL = decltype(nullptr);
 #if PLATFORM_MAC_USE_CHAR16
 	using WIDECHAR = char16_t;
