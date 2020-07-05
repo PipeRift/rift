@@ -1,7 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#define PLATFORM_LINUX_USE_CHAR16 1
+#define PLATFORM_LINUX_USE_CHAR16 0
 
 /**
 * Linux specific types
@@ -30,7 +30,4 @@ typedef FLinuxPlatformTypes FPlatformTypes;
 #if PLATFORM_LINUX_USE_CHAR16
 #	undef PLATFORM_TCHAR_IS_CHAR16
 #	define PLATFORM_TCHAR_IS_CHAR16 1
-#else
-#	undef PLATFORM_TCHAR_IS_4_BYTES
-#	define PLATFORM_TCHAR_IS_4_BYTES 1
 #endif
