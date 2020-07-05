@@ -10,3 +10,6 @@
 [submodule "Extern/CLI11"]
 	path = Extern/CLI11
 	url = https://github.com/CLIUtils/CLI11.git
+[submodule "Extern/glm"]
+	path = Extern/glm
+	url = https://github.com/g-truc/glm.git

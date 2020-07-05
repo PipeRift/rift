@@ -9,6 +9,8 @@ add_subdirectory(Taskflow)
 
 add_subdirectory(CLI11)
 
+add_subdirectory(glm)
+
 # TRACY
 add_library(Tracy STATIC)
 target_include_directories(Tracy PUBLIC Tracy)

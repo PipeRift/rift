@@ -25,7 +25,7 @@ conan_cmake_run(
         date/2.4.1
         imgui/1.76
         fmt/6.2.1
-    BASIC_SETUP CMAKE_TARGETS BUILD missing
+    BASIC_SETUP CMAKE_TARGETS BUILD missing OUTPUT_QUIET
 )
 
 add_subdirectory(Extern)

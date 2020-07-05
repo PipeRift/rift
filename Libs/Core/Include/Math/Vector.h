@@ -6,14 +6,14 @@
 #include "Math.h"
 #include "Reflection/ReflectionTypeTraits.h"
 #include "Strings/Name.h"
-#include "glm/detail/type_vec3.hpp"
-#include "glm/geometric.hpp"
-#include "glm/gtc/type_ptr.inl"
-#include "glm/gtx/quaternion.hpp"
-#include "glm/matrix.hpp"
-#include "glm/vec3.hpp"
 
 #include <glm/glm.hpp>
+#include <glm/detail/type_vec3.hpp>
+#include <glm/geometric.hpp>
+#include <glm/gtc/type_ptr.inl>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/matrix.hpp>
+#include <glm/vec3.hpp>
 
 
 template <glm::length_t L, typename T>
