@@ -131,11 +131,11 @@ bool Timespan::Parse(const String& TimespanString, Timespan& OutTimespan)
 		}
 	}
 
-	const i32 days = CString::ToI32(Tokens[0]);
-	const i32 hours = CString::ToI32(Tokens[1]);
-	const i32 minutes = CString::ToI32(Tokens[2]);
-	const i32 seconds = CString::ToI32(Tokens[3]);
-	const i32 fractionNano = CString::ToI32(Tokens[4]);
+	const i32 days = *CString::ToI32(Tokens[0]);
+	const i32 hours = *CString::ToI32(Tokens[1]);
+	const i32 minutes = *CString::ToI32(Tokens[2]);
+	const i32 seconds = *CString::ToI32(Tokens[3]);
+	const i32 fractionNano = *CString::ToI32(Tokens[4]);
 
 	// Max days
 	if ((days > floor<date::days>(decmicroseconds::max()).count() - 1))

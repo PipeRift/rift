@@ -2,7 +2,7 @@
 add_executable(CLI Src/main.cpp)
 set_target_properties(CLI PROPERTIES OUTPUT_NAME "VCLang_CLI")
 target_include_directories(CLI PUBLIC Include)
-target_compile_features(CLI PUBLIC cxx_std_17)
+set_property(TARGET CLI PROPERTY CXX_STANDARD 17)
 target_link_libraries(CLI PUBLIC ${PROJECT_NAME} CLI11)
 target_define_platform(CLI)
 

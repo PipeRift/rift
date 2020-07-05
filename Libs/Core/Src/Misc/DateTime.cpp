@@ -308,13 +308,13 @@ bool DateTime::Parse(const String& DateTimeString, DateTime& OutDateTime)
 		return false;
 	}
 
-	const i32 Year = CString::ToI32(Tokens[0]);
-	const i32 Month = CString::ToI32(Tokens[1]);
-	const i32 Day = CString::ToI32(Tokens[2]);
-	const i32 Hour = CString::ToI32(Tokens[3]);
-	const i32 Minute = CString::ToI32(Tokens[4]);
-	const i32 Second = CString::ToI32(Tokens[5]);
-	const i32 Millisecond = Tokens.Size() > 6 ? CString::ToI32(Tokens[6]) : 0;
+	const i32 Year = *CString::ToI32(Tokens[0]);
+	const i32 Month = *CString::ToI32(Tokens[1]);
+	const i32 Day = *CString::ToI32(Tokens[2]);
+	const i32 Hour = *CString::ToI32(Tokens[3]);
+	const i32 Minute = *CString::ToI32(Tokens[4]);
+	const i32 Second = *CString::ToI32(Tokens[5]);
+	const i32 Millisecond = Tokens.Size() > 6 ? *CString::ToI32(Tokens[6]) : 0;
 
 	if (!Validate(Year, Month, Day, Hour, Minute, Second, Millisecond))
 	{
@@ -340,9 +340,9 @@ bool DateTime::ParseHttpDate(const String& HttpDate, DateTime& OutDateTime)
 
 		if (NumTokens == 3)
 		{
-			Hour = CString::ToI32(Tokens[0]);
-			Minute = CString::ToI32(Tokens[1]);
-			Second = CString::ToI32(Tokens[2]);
+			Hour = *CString::ToI32(Tokens[0]);
+			Minute = *CString::ToI32(Tokens[1]);
+			Second = *CString::ToI32(Tokens[2]);
 
 			return (Hour >= 0 && Hour < 24) && (Minute >= 0 && Minute <= 59) && (Second >= 0 && Second <= 59);
 		}
@@ -489,9 +489,9 @@ bool DateTime::ParseHttpDate(const String& HttpDate, DateTime& OutDateTime)
 		// date1 = 2DIGIT SP month SP 4DIGIT
 		// ; day month year(e.g., 02 Jun 1982)
 
-		Day = CString::ToI32(DayStr);
+		Day = *CString::ToI32(DayStr);
 		Month = ParseMonth(MonStr);
-		Year = (YearStr.size() == 4) ? CString::ToI32(YearStr) : -1;
+		Year = (YearStr.size() == 4) ? *CString::ToI32(YearStr) : -1;
 
 		return (Day > 0 && Day <= 31) && (Month > 0 && Month <= 12) && (Year > 0 && Year <= 9999);
 	};
@@ -505,9 +505,9 @@ bool DateTime::ParseHttpDate(const String& HttpDate, DateTime& OutDateTime)
 		i32 NumTokens = CString::Split(Date2, Tokens, TX('-'));
 		if (NumTokens == 3)
 		{
-			Day = CString::ToI32(Tokens[0]);
+			Day = *CString::ToI32(Tokens[0]);
 			Month = ParseMonth(Tokens[1]);
-			Year = CString::ToI32(Tokens[2]);
+			Year = *CString::ToI32(Tokens[2]);
 
 			// Horrible assumption here, but this is a deprecated part of the spec
 			Year += 1900;
@@ -520,7 +520,7 @@ bool DateTime::ParseHttpDate(const String& HttpDate, DateTime& OutDateTime)
 		// date3 = month SP(2DIGIT | (SP 1DIGIT))
 		// ; month day(e.g., Jun  2)
 		const SIZE_T NumDigits = DayStr.size();
-		Day = (NumDigits > 0 && NumDigits <= 2) ? CString::ToI32(DayStr) : -1;
+		Day = (NumDigits > 0 && NumDigits <= 2) ? *CString::ToI32(DayStr) : -1;
 		Month = ParseMonth(MonStr);
 
 		return (Day > 0 && Day <= 31) && (Month > 0 && Month <= 12);
@@ -591,7 +591,7 @@ bool DateTime::ParseHttpDate(const String& HttpDate, DateTime& OutDateTime)
 						{
 							if (Tokens[4].size() == 4)
 							{
-								Year = CString::ToI32(Tokens[4]);
+								Year = *CString::ToI32(Tokens[4]);
 							}
 						}
 					}

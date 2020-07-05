@@ -4,6 +4,7 @@
 
 
 #include "Containers/Array.h"
+#include "Containers/Tuples.h"
 #include "Math/Math.h"
 #include "Memory/Allocator.h"
 #include "Platform/Platform.h"
@@ -13,6 +14,7 @@
 #include <regex>
 #include <string>
 #include <string_view>
+#include <charconv>
 
 #pragma warning(disable : 4996)
 
@@ -80,20 +82,16 @@ struct CString
 	 */
 	static i32 ParseIntoArray(const String& str, TArray<String>& OutArray, const TCHAR* pchDelim, bool InCullEmpty = true);
 
-	static bool StartsWith(const String& str, const String& subStr)
+	static constexpr bool StartsWith(StringView str, StringView subStr)
 	{
-		return StartsWith(str, subStr.c_str());
-	}
-	static bool StartsWith(const String& str, const TCHAR* subStr)
-	{
-		return str.find(subStr) != std::string::npos;
+		return str.size() >= subStr.size() && std::equal(subStr.begin(), subStr.end(), str.begin()) == 0;
 	}
 
-	static bool EndsWith(const String& str, StringView subStr)
+	static bool EndsWith(StringView str, StringView subStr)
 	{
 		return str.size() >= subStr.size() && std::equal(subStr.rbegin(), subStr.rend(), str.rbegin());
 	}
-	static bool EndsWith(const String& str, const TCHAR c)
+	static bool EndsWith(StringView str, const TCHAR c)
 	{
 		return str.size() >= 1 && str.back() == c;
 	}
@@ -140,24 +138,42 @@ struct CString
 
 	static String BackSubstr(const String& str, i32 size);
 
-	static u32 ToU32(const String& str)
+	static TOptional<u32> ToU32(StringView str)
 	{
-		return std::stoul(str);
+		u32 val;
+		if (std::from_chars(str.data(), str.data() + str.size(), val).ec != std::errc())
+		{
+			return val;
+		}
+		return {};
 	}
 
-	static i32 ToI32(const String& str)
+	static TOptional<i32> ToI32(StringView str)
 	{
-		return std::stoi(str);
+		i32 val;
+		if (std::from_chars(str.data(), str.data() + str.size(), val).ec != std::errc())
+		{
+			return val;
+		}
+		return {};
 	}
 
-	static u32 ToU32(const char* str)
+	static TOptional<u32> ToU32(const char* str)
 	{
-		return std::strtoul(str, nullptr, 0);
+		if (str)
+		{
+			return std::strtoul(str, nullptr, 0);
+		}
+		return {};
 	}
 
-	static i32 ToI32(const char* str)
+	static TOptional<i32> ToI32(const char* str)
 	{
-		return std::atoi(str);
+		if(str)
+		{
+			return std::atoi(str);
+		}
+		return {};
 	}
 
 	static bool IsNumeric(const String& str)
