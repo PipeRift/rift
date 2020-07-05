@@ -26,3 +26,9 @@ typedef FLinuxPlatformTypes FPlatformTypes;
 	#define FORCEINLINE inline __attribute__ ((always_inline))
 #endif // BUILD_DEBUG
 #define NOINLINE __attribute__((noinline))
+
+#if PLATFORM_LINUX_USE_CHAR16
+#define PLATFORM_TCHAR_IS_CHAR16 1
+#else
+#define PLATFORM_TCHAR_IS_4_BYTES 1
+#endif

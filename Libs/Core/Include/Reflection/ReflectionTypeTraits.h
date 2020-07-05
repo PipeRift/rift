@@ -3,6 +3,7 @@
 
 #include "Strings/Name.h"
 
+#include <type_traits>
 #include <EASTL/type_traits.h>
 
 struct Struct;
@@ -18,7 +19,7 @@ private:
 	static bool impl(char);
 
 public:
-	static const bool value = eastl::is_void<decltype(impl<T>(0))>::value;
+	static const bool value = std::is_void<decltype(impl<T>(0))>::value;
 };
 
 template <typename T>
@@ -26,8 +27,9 @@ inline constexpr bool IsArrayType()
 {
 	// Check if we are dealing with a TArray
 	if constexpr (HasItemType<T>::value)
-		return eastl::is_same<TArray<typename T::ItemType>, T>::value;
-
+	{
+		return std::is_same<TArray<typename T::ItemType>, T>::value;
+	}
 	return false;
 }
 
@@ -36,15 +38,16 @@ inline constexpr bool IsAssetType()
 {
 	// Check if we are dealing with a TAssetPtr
 	if constexpr (HasItemType<T>::value)
+	{
 		return eastl::is_same<TAssetPtr<typename T::ItemType>, T>::value;
-
+	}
 	return false;
 }
 
 template <typename T>
 inline constexpr bool IsStructType()
 {
-	return eastl::is_convertible<T, Struct>::value;
+	return std::is_convertible<T, Struct>::value;
 }
 
 template <typename T>

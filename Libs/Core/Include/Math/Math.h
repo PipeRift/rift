@@ -85,7 +85,7 @@ struct Math
 
 	/** Returns 1, 0, or -1 depending on relation of Type to 0 */
 	template <typename Type>
-	static constexpr Type Sign(const Type A)
+	static constexpr Type Sign(const Type a)
 	{
 		return (a > (Type) 0) ? (Type) 1 : ((a < (Type) 0) ? (Type) -1 : (Type) 0);
 	}

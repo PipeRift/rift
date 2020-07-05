@@ -89,13 +89,9 @@ struct CString
 		return str.find(subStr) != std::string::npos;
 	}
 
-	static bool EndsWith(const String& str, const String& subStr)
+	static bool EndsWith(const String& str, StringView subStr)
 	{
-		return subStr.size() <= str.size() && eastl::equal(subStr.rbegin(), subStr.rend(), str.rbegin());
-	}
-	static bool EndsWith(const String& str, const TCHAR* subStr)
-	{
-		return EndsWith(str, {subStr});
+		return str.size() >= subStr.size() && std::equal(subStr.rbegin(), subStr.rend(), str.rbegin());
 	}
 	static bool EndsWith(const String& str, const TCHAR c)
 	{
@@ -146,17 +142,17 @@ struct CString
 
 	static u32 ToU32(const String& str)
 	{
-		return std::atoi(str.c_str());
+		return std::stoul(str);
 	}
 
 	static i32 ToI32(const String& str)
 	{
-		return std::atoi(str.c_str());
+		return std::stoi(str);
 	}
 
 	static u32 ToU32(const char* str)
 	{
-		return std::atoi(str);
+		return std::strtoul(str, nullptr, 0);
 	}
 
 	static i32 ToI32(const char* str)

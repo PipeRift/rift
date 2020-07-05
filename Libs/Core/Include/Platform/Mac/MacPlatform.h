@@ -28,3 +28,9 @@ typedef FMacPlatformTypes FPlatformTypes;
 #   define FORCEINLINE inline __attribute__ ((always_inline))				/* Force code to be inline */
 #endif
 #define NOINLINE __attribute__((noinline))
+
+#if PLATFORM_MAC_USE_CHAR16
+	#define PLATFORM_TCHAR_IS_CHAR16 1
+#else
+	#define PLATFORM_TCHAR_IS_4_BYTES 1
+#endif
