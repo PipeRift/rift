@@ -39,7 +39,7 @@ inline constexpr bool IsAssetType()
 	// Check if we are dealing with a TAssetPtr
 	if constexpr (HasItemType<T>::value)
 	{
-		return eastl::is_same<TAssetPtr<typename T::ItemType>, T>::value;
+		return eastl::is_same<class TAssetPtr<typename T::ItemType>, T>::value;
 	}
 	return false;
 }

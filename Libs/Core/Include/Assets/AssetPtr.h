@@ -9,7 +9,7 @@
 #include <EASTL/type_traits.h>
 
 //#include "Serialization/Archive.h"
-#include "../TypeTraits.h"
+#include "TypeTraits.h"
 
 
 class BaseAssetPtr

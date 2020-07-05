@@ -1,15 +1,13 @@
 
 include(FetchContent)
 
-# Sparse-map & Robin-map
+# Submodule libraries
 add_subdirectory(SparseMap)
 add_subdirectory(RobinMap)
-
 add_subdirectory(Taskflow)
-
 add_subdirectory(CLI11)
-
 add_subdirectory(glm)
+add_subdirectory(fmt)
 
 # TRACY
 add_library(Tracy STATIC)

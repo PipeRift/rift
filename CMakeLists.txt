@@ -19,12 +19,10 @@ include(CMake/Util.cmake)
 conan_cmake_run(
     REQUIRES
         eastl/3.16.05
-        glm/0.9.9.8
         spdlog/1.6.1
         nlohmann_json/3.8.0
         date/2.4.1
         imgui/1.76
-        fmt/6.2.1
     BASIC_SETUP CMAKE_TARGETS BUILD missing OUTPUT_QUIET
 )
 
