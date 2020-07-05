@@ -14,6 +14,11 @@ function(target_define_platform target)
     elseif (MACOSX)
         target_compile_definitions(${target} PRIVATE PLATFORM_MAC=1)
     endif()
+
+    target_compile_definitions(${target} PRIVATE
+        $<$<CONFIG:Debug>:BUILD_DEBUG>
+        $<$<CONFIG:Release>:BUILD_RELEASE>
+    )
 endfunction()
 
 function(target_shared_output_directory target)

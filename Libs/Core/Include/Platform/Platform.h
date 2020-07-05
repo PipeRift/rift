@@ -3,10 +3,14 @@
 #pragma once
 
 
-#include "GenericPlatform.h"
+#include "Platform/GenericPlatform.h"
 
 #if PLATFORM_WINDOWS
-#	include "Windows/WindowsPlatform.h"
+#	include "Platform/Windows/WindowsPlatform.h"
+#elif PLATFORM_LINUX
+#	include "Platform/Linux/LinuxPlatform.h"
+#elif PLATFORM_MAC
+#	include "Platform/Mac/MacPlatform.h"
 #else
 #	error Unknown platform
 #endif
