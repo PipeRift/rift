@@ -7,7 +7,7 @@
 
 void BaseGlobalPtr::MoveFrom(BaseGlobalPtr&& other)
 {
-	if (other.IsValid())
+	if (!other.IsValid())
 	{
 		Reset();
 		return;

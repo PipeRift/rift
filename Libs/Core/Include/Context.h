@@ -19,19 +19,22 @@ private:
 
 
 public:
-	Context() : Super(), assetManager{Create<AssetManager>()}
+	Context() : Super(), assetManager{Create<AssetManager>()} {}
+
+	virtual void BeginDestroy()
 	{
+		Log::Shutdown();
+	}
+
+	static void Initialize()
+	{
+		Log::Init("Saved/Logs");
+		globalInstance = Create<Context>();
 	}
 
 	Ptr<AssetManager> GetAssetManager()
 	{
 		return assetManager;
-	}
-
-	static void Initialize()
-	{
-		Log::Init();
-		globalInstance = Create<Context>();
 	}
 
 	static Ptr<Context> Get()

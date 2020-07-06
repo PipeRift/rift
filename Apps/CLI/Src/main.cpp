@@ -8,13 +8,15 @@ using namespace VCLang;
 
 int main()
 {
-	v3 v {};
-	Rotator rotator {};
-	bool val = IsReflectableType<Rotator>();
-
 	Context::Initialize();
-	auto project = Create<Project>();
-	project->Init(".");
+
+	GlobalPtr<Project> project = Create<Project>();
+
+	Log::Message("aass");
+	Log::Warning("warnnnn");
+	Log::Error("errr");
+
+	project->Init(Path("Project"));
 	project->LoadAllAssets();
 	return 0;
 }

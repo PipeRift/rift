@@ -133,7 +133,7 @@ public:
 		{
 			return {};
 		}
-		return path / parent;
+		return parent / path;
 	}
 
 	static bool IsInside(const Path& base, const Path& parent)
@@ -148,14 +148,14 @@ public:
 
 	static String ToString(const Path& path)
 	{
-		std::string pathStr = path.string();
-		std::replace(pathStr.begin(), pathStr.end(), '\\', '/');
-		return String{pathStr.c_str(), pathStr.size()};
+		return path.string();
 	}
 
-	static Path FromString(const String& path)
+	static Path FromString(StringView pathStr)
 	{
-		return {path.begin(), path.end()};
+		Path path;
+		path.assign(pathStr);
+		return path;
 	}
 
 private:

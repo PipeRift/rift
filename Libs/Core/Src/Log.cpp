@@ -42,11 +42,8 @@ using ProfilerSink_st = ProfilerSink<spdlog::details::null_mutex>;
 
 void Log::Init(Path logFile)
 {
-	auto logger = std::make_shared<spdlog::logger>("Log");
-	logger->set_pattern("%^[%D %T][%t][%l]%$ %v");
-
-	std::vector<spdlog::sink_ptr>& sinks = logger->sinks();
-	sinks.reserve(5);
+	std::vector<spdlog::sink_ptr> sinks;
+	sinks.reserve(6);
 
 	// File
 	if (!logFile.empty())
@@ -65,17 +62,38 @@ void Log::Init(Path logFile)
 		sinks.push_back(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(FileSystem::ToString(logFile).c_str(), 1048576 * 5, 3));
 	}
 
-	// Console
-	sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-	sinks.push_back(std::make_shared<spdlog::sinks::stderr_color_sink_mt>());
-
 #if WITH_EDITOR
 	// Log window
 	sinks.push_back(std::make_shared<LogWindowSink_mt>());
 #endif
+
 #if TRACY_ENABLE
 	// Profiler
 	sinks.push_back(std::make_shared<ProfilerSink_mt>());
 #endif
-	spdlog::set_default_logger(logger);
+
+
+	// Console
+
+	generalLogger = std::make_shared<spdlog::logger>("Log", sinks.begin(), sinks.end());
+	errLogger = std::make_shared<spdlog::logger>("Log", sinks.begin(), sinks.end());
+	generalLogger->set_pattern("%^[%D %T][%l]%$ %v");
+	errLogger->set_pattern("%^[%D %T][%t][%l]%$ %v");
+
+	auto cliSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+	generalLogger->sinks().push_back(cliSink);
+	cliSink->set_pattern("%^%v%$");
+	cliSink->set_color(spdlog::level::info, cliSink->WHITE);
+
+	auto cliErrSink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
+	errLogger->sinks().push_back(cliErrSink);
+	cliErrSink->set_pattern("%^[%l] %v%$");
+	cliErrSink->set_color(spdlog::level::warn, cliSink->YELLOW);
+
+	spdlog::enable_backtrace(32);
+}
+
+void Log::Shutdown()
+{
+	spdlog::dump_backtrace();
 }

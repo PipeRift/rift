@@ -5,6 +5,7 @@
 #include "AssetInfo.h"
 #include "AssetManager.h"
 #include "CoreEngine.h"
+#include "Files/FileSystem.h"
 
 #include <EASTL/type_traits.h>
 
@@ -60,6 +61,7 @@ public:
 		CopyFrom(other);
 	}
 
+	TAssetPtr(Path path) : BaseAssetPtr(FileSystem::ToString(path)) {}
 	TAssetPtr(Name path) : BaseAssetPtr(path) {}
 	TAssetPtr(const TCHAR* key) : TAssetPtr(Name{key}) {}
 	TAssetPtr(const AssetInfo& other) : AssetInfo(other) {}

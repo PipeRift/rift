@@ -3,7 +3,6 @@
     "cmake.configureOnOpen": true,
     "cmake.buildDirectory": "${workspaceFolder}/Build",
     "clang-format.language.cpp.style": ".clang-format",
-    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "clang-tidy.buildPath": "Build",
     "files.associations": {
         "cmath": "cpp",
@@ -92,7 +91,9 @@
         "xutility": "cpp",
         "string_view": "cpp",
         "xmemory0": "cpp",
-        "xxatomic": "cpp"
+        "xxatomic": "cpp",
+        "variant": "cpp",
+        "format": "cpp"
     },
     "clang-format.executable": ""
 }

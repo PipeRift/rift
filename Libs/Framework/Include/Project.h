@@ -4,6 +4,8 @@
 
 #include "Assets/ClassAsset.h"
 #include "Assets/StructAsset.h"
+#include "Log.h"
+#include "Strings/String.h"
 
 #include <CoreObject.h>
 #include <Files/FileSystem.h>
@@ -29,7 +31,8 @@ namespace VCLang
 
 		void Init(Path path)
 		{
-			projectPath = FileSystem::ToAbsolute(path, FileSystem::GetCurrent());
+			projectPath = FileSystem::ToAbsolute(path);
+    		Log::Message("Project Path: {}", FileSystem::ToString(projectPath));
 		}
 
 		void LoadAllAssets();

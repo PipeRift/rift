@@ -7,7 +7,7 @@ void VCLang::Project::LoadAllAssets()
 {
     for (const auto& entry : FileSystem::CreateRecursiveIterator(projectPath))
     {
-
+        Log::Message(FileSystem::ToString(entry.path()));
     }
 }
 

@@ -5,7 +5,7 @@
 #include "Object/BaseObject.h"
 #include "Platform/Platform.h"
 
-#include <EASTL/weak_ptr.h>
+#include <memory>
 
 
 class BaseWeakPtr;
@@ -20,13 +20,13 @@ class CORE_API BaseGlobalPtr
 	mutable TArray<BaseWeakPtr*> weaks;
 
 protected:
-	eastl::unique_ptr<BaseObject> ptr;
+	std::unique_ptr<BaseObject> ptr;
 
 
 	/** METHODS */
 
 	BaseGlobalPtr() : weaks{}, ptr{} {}
-	BaseGlobalPtr(eastl::unique_ptr<BaseObject>&& inPtr) : BaseGlobalPtr()
+	BaseGlobalPtr(std::unique_ptr<BaseObject>&& inPtr) : BaseGlobalPtr()
 	{
 		ptr = MoveTemp(inPtr);
 	}
@@ -94,7 +94,7 @@ class CORE_API GlobalPtr : public BaseGlobalPtr
 
 	/** METHODS */
 
-	GlobalPtr(eastl::unique_ptr<Type>&& inPtr) : BaseGlobalPtr()
+	GlobalPtr(std::unique_ptr<Type>&& inPtr) : BaseGlobalPtr()
 	{
 		ptr = std::move(inPtr);
 	}
@@ -404,7 +404,7 @@ public:
 template <typename Type>
 GlobalPtr<Type> GlobalPtr<Type>::Create(const Ptr<BaseObject>& owner)
 {
-	GlobalPtr<Type> ptr = {eastl::make_unique<Type>()};
+	GlobalPtr<Type> ptr = {std::make_unique<Type>()};
 	ptr->PreConstruct(ptr.AsPtr(), Type::StaticClass(), owner);
 	ptr->Construct();
 	return MoveTemp(ptr);

@@ -14,20 +14,25 @@
 
 namespace Log
 {
+	inline std::shared_ptr<spdlog::logger> generalLogger;
+	inline std::shared_ptr<spdlog::logger> errLogger;
+
+
 	void Init(Path logPath = {});
+	void Shutdown();
 
 	template <typename... Args>
 	inline void Message(const TCHAR* format, Args... args)
 	{
 		if (format)
 		{
-			spdlog::info(CString::Format(format, std::forward<Args>(args)...));
+			generalLogger->info(CString::Format(format, std::forward<Args>(args)...));
 		}
 	}
 
 	inline void Message(const String& msg)
 	{
-		spdlog::info(msg);
+		generalLogger->info(msg);
 	}
 
 	template <typename... Args>
@@ -35,13 +40,13 @@ namespace Log
 	{
 		if (format)
 		{
-			spdlog::warn(CString::Format(format, std::forward<Args>(args)...));
+			errLogger->warn(CString::Format(format, std::forward<Args>(args)...));
 		}
 	}
 
 	inline void Warning(const String& msg)
 	{
-		spdlog::warn(msg);
+		errLogger->warn(msg);
 	}
 
 	template <typename... Args>
@@ -49,12 +54,12 @@ namespace Log
 	{
 		if (format)
 		{
-			spdlog::error(CString::Format(format, std::forward<Args>(args)...));
+			errLogger->error(CString::Format(format, std::forward<Args>(args)...));
 		}
 	}
 
 	inline void Error(const String& msg)
 	{
-		spdlog::error(msg);
+		errLogger->error(msg);
 	}
 };	  // namespace Log
