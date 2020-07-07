@@ -9,12 +9,13 @@
 #include "Memory/Allocator.h"
 #include "Platform/Platform.h"
 
-#include <fmt/format.h>
 #include <fmt/chrono.h>
+#include <fmt/format.h>
+
+#include <charconv>
 #include <regex>
 #include <string>
 #include <string_view>
-#include <charconv>
 
 #pragma warning(disable : 4996)
 
@@ -48,25 +49,25 @@ struct CString
 
 	static void Replace(String& value, const TCHAR searchChar, const TCHAR replacementChar)
 	{
-		eastl::replace(value.begin(), value.end(), searchChar, replacementChar);
+		std::replace(value.begin(), value.end(), searchChar, replacementChar);
 	}
 
-	static bool Contains(const String& str, const TCHAR c)
+	static bool Contains(StringView str, const TCHAR c)
 	{
 		return str.find(c) != String::npos;
 	}
 
-	static bool Contains(const String& str, const TCHAR* c)
+	static bool Contains(StringView str, StringView subStr)
 	{
-		return str.find(c) != String::npos;
+		return str.find(subStr) != String::npos;
 	}
 
-	static bool Equals(const String& str, const TCHAR* c, size_t size)
+	static constexpr bool Equals(StringView one, StringView other)
 	{
-		return eastl::Compare(str.c_str(), c, Math::Min(size, str.length())) == 0;
+		return one.size() == other.size() && std::equal(one.begin(), one.end(), other.begin());
 	}
 
-	static bool Equals(const String& str, const TCHAR c)
+	static constexpr bool Equals(StringView str, const TCHAR c)
 	{
 		return str.size() == 1 && str[0] == c;
 	}
@@ -87,11 +88,12 @@ struct CString
 		return str.size() >= subStr.size() && std::equal(subStr.begin(), subStr.end(), str.begin()) == 0;
 	}
 
-	static bool EndsWith(StringView str, StringView subStr)
+	static constexpr bool EndsWith(StringView str, StringView subStr)
 	{
 		return str.size() >= subStr.size() && std::equal(subStr.rbegin(), subStr.rend(), str.rbegin());
 	}
-	static bool EndsWith(StringView str, const TCHAR c)
+
+	static constexpr bool EndsWith(StringView str, const TCHAR c)
 	{
 		return str.size() >= 1 && str.back() == c;
 	}
@@ -169,7 +171,7 @@ struct CString
 
 	static TOptional<i32> ToI32(const char* str)
 	{
-		if(str)
+		if (str)
 		{
 			return std::atoi(str);
 		}

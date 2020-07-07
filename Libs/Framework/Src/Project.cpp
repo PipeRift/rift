@@ -7,9 +7,9 @@
 
 void VCLang::Project::LoadAllAssets()
 {
-	for (const auto& entry : AssetIterator<true>(projectPath))
+	for (const auto& asset : AssetIterator<true>(projectPath))
 	{
-		Log::Message(FileSystem::ToString(entry.path()));
+		Log::Message("Asset {}", asset.GetStrPath());
 	}
 }
 

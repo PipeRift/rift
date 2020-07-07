@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "Assets/AssetInfo.h"
 #include "Containers/Array.h"
 #include "CoreEngine.h"
 #include "Serialization/Json.h"

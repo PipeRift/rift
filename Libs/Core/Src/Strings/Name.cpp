@@ -41,7 +41,7 @@ bool Name::Serialize(Archive& ar, const char* name)
 		String str;
 		ar(name, str);
 
-		if (CString::Equals(str, noneStr.c_str(), noneStr.size()))
+		if (CString::Equals(str, noneStr))
 		{
 			*this = noneId;
 		}

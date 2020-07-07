@@ -2,8 +2,10 @@
 #pragma once
 
 #include "AssetData.h"
+#include "AssetInfo.h"
 #include "Containers/Map.h"
 #include "CoreObject.h"
+#include "Files/FileSystem.h"
 #include "Object/ObjectPtr.h"
 
 
@@ -17,7 +19,7 @@ public:
 private:
 	TArray<AssetInfo> assetInfos;
 
-	TMap<Name, GlobalPtr<AssetData>> loadedAssets{};
+	TMap<AssetInfo, GlobalPtr<AssetData>> loadedAssets{};
 
 
 public:
@@ -25,9 +27,13 @@ public:
 
 	Ptr<AssetData> LoadOrCreate(const AssetInfo& info, Class* assetType);
 
-	inline Ptr<AssetData> GetLoadedAsset(const AssetInfo& id)
+	Ptr<AssetData> GetLoadedAsset(AssetInfo id) const
 	{
-		return loadedAssets[id.GetPath()];
+		if (const auto* asset = loadedAssets.Find(id))
+		{
+			return asset->AsPtr();
+		}
+		return {};
 	}
 
 	static Ptr<AssetManager> Get();
