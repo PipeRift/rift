@@ -1,0 +1,64 @@
+name: Linux CI
+
+on: [push, pull_request]
+
+jobs:
+  job:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [ubuntu-clang, ubuntu-gcc]
+        # For Windows msvc, for Linux and macOS let's use the clang compiler.
+        include:
+          - name: ubuntu-clang
+            os: ubuntu-latest
+            cxx: clang++
+            cc: clang
+          - name: ubuntu-gcc
+            os: ubuntu-latest
+            cxx: g++
+            cc: gcc
+        python-version: [3.8]
+
+    steps:
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Get pip cache dir
+      id: pip-cache
+      run: echo "::set-output name=dir::$(pip cache dir)"
+
+    - name: Pip Cache
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.pip-cache.outputs.dir }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: ${{ runner.os }}-pip-
+
+    - name: Install Conan
+      run: pip install conan
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Init Submodules
+      uses: snickerbockers/submodules-init@v4
+
+    - uses: lukka/get-cmake@latest
+
+    - uses: lukka/set-shell-env@v1
+      with:
+        CXX: ${{ matrix.cxx }}
+        CC: ${{ matrix.cc }}
+
+    - name: Configure and Build
+      uses: lukka/run-cmake@v2
+      with:
+        cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+        cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
+        cmakeAppendedArgs: '-GNinja -DCMAKE_BUILD_TYPE=Release'
+        buildDirectory: '${{ github.workspace }}/Build/'
