@@ -3,10 +3,10 @@
 #pragma once
 
 #include "Assets/AssetInfo.h"
+#include "Containers/Array.h"
 #include "CoreEngine.h"
 #include "Serialization/Json.h"
 #include "Strings/String.h"
-#include "Containers/Array.h"
 
 #include <filesystem>
 
@@ -21,7 +21,7 @@ class FileSystem
 {
 public:
 	using Iterator = fs::directory_iterator;
-	using RecursiveIterator = fs::directory_iterator;
+	using RecursiveIterator = fs::recursive_directory_iterator;
 	using SpaceInfo = fs::space_info;
 
 
@@ -67,7 +67,7 @@ public:
 
 	static void CreateFolder(const Path& path)
 	{
-		if(!Exists(path) && IsFolder(path))
+		if (!Exists(path) && IsFolder(path))
 		{
 			fs::create_directory(path);
 		}
@@ -159,7 +159,6 @@ public:
 	}
 
 private:
-
 	SpaceInfo Space(Path target)
 	{
 		return fs::space(target);

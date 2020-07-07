@@ -8,9 +8,6 @@
 #include "Profiler.h"
 
 
-const StringView AssetManager::assetFormat = "vc";
-
-
 Ptr<AssetData> AssetManager::Load(const AssetInfo& info)
 {
 	Log::Message("Loading asset: {}", info.GetStrPath().c_str());
@@ -26,7 +23,7 @@ Ptr<AssetData> AssetManager::Load(const AssetInfo& info)
 	Json data;
 	if (FileSystem::LoadJsonFile(info.GetStrPath(), data))
 	{
-		const auto type{data["asset_type"]};
+		const auto type = data["asset_type"];
 		if (!type.is_string())
 		{
 			Log::Error("Asset 'Type' must be an string.");
