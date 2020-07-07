@@ -2,8 +2,6 @@
     "editor.formatOnSave": true,
     "cmake.configureOnOpen": true,
     "cmake.buildDirectory": "${workspaceFolder}/Build",
-    "clang-format.language.cpp.style": ".clang-format",
-    "clang-tidy.buildPath": "Build",
     "files.associations": {
         "cmath": "cpp",
         "algorithm": "cpp",
@@ -95,6 +93,5 @@
         "variant": "cpp",
         "format": "cpp"
     },
-    "clang-format.executable": "",
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

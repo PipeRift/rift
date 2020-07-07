@@ -23,9 +23,10 @@ private:
 
 
 public:
-	Ptr<AssetData> Load(const AssetInfo& info);
+	Ptr<AssetData> Load(AssetInfo info);
+	TArray<Ptr<AssetData>> Load(TArray<AssetInfo> infos);
 
-	Ptr<AssetData> LoadOrCreate(const AssetInfo& info, Class* assetType);
+	Ptr<AssetData> LoadOrCreate(AssetInfo info, Class* assetType);
 
 	Ptr<AssetData> GetLoadedAsset(AssetInfo id) const
 	{

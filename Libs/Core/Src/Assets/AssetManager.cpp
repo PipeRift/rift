@@ -8,7 +8,7 @@
 #include "Profiler.h"
 
 
-Ptr<AssetData> AssetManager::Load(const AssetInfo& info)
+Ptr<AssetData> AssetManager::Load(AssetInfo info)
 {
 	Log::Message("Loading asset: {}", info.GetStrPath().c_str());
 
@@ -55,7 +55,12 @@ Ptr<AssetData> AssetManager::Load(const AssetInfo& info)
 	return {};
 }
 
-Ptr<AssetData> AssetManager::LoadOrCreate(const AssetInfo& info, Class* assetType)
+TArray<Ptr<AssetData>> AssetManager::Load(TArray<AssetInfo> infos)
+{
+	return {};
+}
+
+Ptr<AssetData> AssetManager::LoadOrCreate(AssetInfo info, Class* assetType)
 {
 	if (info.IsNull() || !FileSystem::IsFolder(info.GetStrPath()))
 	{

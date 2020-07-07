@@ -7,7 +7,6 @@
 #include "Events/Broadcast.h"
 
 
-
 class CORE_API Context : public Object
 {
 	CLASS(Context, Object)
@@ -19,17 +18,43 @@ private:
 
 
 public:
-	Context() : Super(), assetManager{Create<AssetManager>()} {}
-
-	virtual void BeginDestroy()
-	{
-		Log::Shutdown();
-	}
-
+	/** Called to initialize the global context. */
 	static void Initialize()
 	{
+		if (!globalInstance)
+		{
+			globalInstance = Create<Context>();
+		}
+	}
+
+	/** Called to manually shutdown the global context. */
+	static void Shutdown()
+	{
+		if (globalInstance)
+		{
+			globalInstance.Reset();
+		}
+	}
+
+
+	Context()
+		: Super()
+		, assetManager{Create<AssetManager>()}
+	{}
+
+	virtual void Construct() override
+	{
+		Super::Construct();
+
 		Log::Init("Saved/Logs");
-		globalInstance = Create<Context>();
+		Log::Message("Initialize Context");
+	}
+
+	virtual void BeforeDestroy() override
+	{
+		Super::BeforeDestroy();
+		Log::Message("Context has been destroyed");
+		Log::Shutdown();
 	}
 
 	Ptr<AssetManager> GetAssetManager()

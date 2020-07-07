@@ -27,7 +27,7 @@ using StringView = std::basic_string_view<TCHAR>;
 struct CString
 {
 	template <typename... Args>
-	static String Format(const TCHAR* format, Args... args)
+	static String Format(StringView format, Args... args)
 	{
 		return fmt::format(format, std::forward<Args>(args)...);
 	}
