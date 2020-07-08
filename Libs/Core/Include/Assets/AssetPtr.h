@@ -23,7 +23,8 @@ protected:
 
 public:
 	BaseAssetPtr() = default;
-	BaseAssetPtr(AssetInfo info) : info{info} {}
+	BaseAssetPtr(AssetInfo info) : info{info}
+	{}
 
 	AssetInfo GetInfo() const
 	{
@@ -50,7 +51,8 @@ class TAssetPtr : public BaseAssetPtr
 public:
 	using ItemType = T;
 
-	TAssetPtr() : BaseAssetPtr() {}
+	TAssetPtr() : BaseAssetPtr()
+	{}
 
 	TAssetPtr(TAssetPtr&& other)
 	{
@@ -61,10 +63,14 @@ public:
 		CopyFrom(other);
 	}
 
-	TAssetPtr(Path path) : BaseAssetPtr(FileSystem::ToString(path)) {}
-	TAssetPtr(Name path) : BaseAssetPtr(path) {}
-	TAssetPtr(const TCHAR* key) : TAssetPtr(Name{key}) {}
-	TAssetPtr(const AssetInfo& other) : AssetInfo(other) {}
+	TAssetPtr(Path path) : BaseAssetPtr(FileSystem::ToString(path))
+	{}
+	TAssetPtr(Name path) : BaseAssetPtr(path)
+	{}
+	TAssetPtr(const TCHAR* key) : TAssetPtr(Name{key})
+	{}
+	TAssetPtr(const AssetInfo& other) : AssetInfo(other)
+	{}
 	TAssetPtr(Ptr<ItemType> asset)
 	{
 		if (asset)

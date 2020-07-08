@@ -41,16 +41,14 @@ add_subdirectory(Apps/Editor)
 
 # clang-format
 include(CMake/CheckClangTools.cmake)
-if(CLANG_FORMAT_EXE)
-    # Additional targets to perform clang-format/clang-tidy
-    file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS Apps/**/*.cpp Apps/**/*.h Libs/**/*.cpp Libs/**/*.h)
 
+# Additional targets to perform clang-format/clang-tidy
+file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS Apps/**/*.cpp Apps/**/*.h Libs/**/*.cpp Libs/**/*.h)
+
+if(CLANG_FORMAT_EXE)
     add_custom_target(ClangFormat COMMAND ${CLANG_FORMAT_EXE} -i ${ALL_SOURCE_FILES})
 endif()
 
 if(CLANG_TIDY_EXE)
-    # Additional targets to perform clang-format/clang-tidy
-    file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS Apps/**/*.cpp Apps/**/*.h Libs/**/*.cpp Libs/**/*.h)
-
-    add_custom_target(ClangTidy COMMAND ${CLANG_FORMAT_EXE} -i ${ALL_SOURCE_FILES})
+    add_custom_target(ClangTidy COMMAND ${CLANG_TIDY_EXE} -p ./ ${ALL_SOURCE_FILES} -checks=* -fix)
 endif()

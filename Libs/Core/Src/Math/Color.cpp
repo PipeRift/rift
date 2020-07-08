@@ -60,9 +60,11 @@ LinearColor::LinearColor(const Color& other)
 	a = float(other.a) * OneOver255;
 }
 
-LinearColor::LinearColor(const v3& vector) : r(vector.x), g(vector.y), b(vector.z), a(1.0f) {}
+LinearColor::LinearColor(const v3& vector) : r(vector.x), g(vector.y), b(vector.z), a(1.0f)
+{}
 
-LinearColor::LinearColor(const v4& vector) : r(vector.x), g(vector.y), b(vector.z), a(vector.w) {}
+LinearColor::LinearColor(const v4& vector) : r(vector.x), g(vector.y), b(vector.z), a(vector.w)
+{}
 
 LinearColor LinearColor::FromSRGBColor(const Color& color)
 {

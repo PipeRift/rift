@@ -7,4 +7,4 @@
 [![Linux](https://github.com/PipeRift/vclang/workflows/Linux%20CI/badge.svg?branch=master)](https://github.com/PipeRift/vclang/actions)
 [![MacOS](https://github.com/PipeRift/vclang/workflows/MacOS%20CI/badge.svg?branch=master)](https://github.com/PipeRift/vclang/actions)
 
-VCLang is a compiled visual lenguaje.
+VCLang is a compiled visual lenguage.

@@ -39,8 +39,10 @@ struct LinearColor
 	/** Static lookup table used for FColor -> FLinearColor conversion. sRGB */
 	static double sRGBToLinearTable[256];
 
-	explicit LinearColor() : r(0.f), g(0.f), b(0.f), a(0.f) {}
-	constexpr LinearColor(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a) {}
+	explicit LinearColor() : r(0.f), g(0.f), b(0.f), a(0.f)
+	{}
+	constexpr LinearColor(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a)
+	{}
 
 	/**
 	 * Converts an FColor which is assumed to be in sRGB space, into linear color space.
@@ -371,7 +373,8 @@ public:
 		r = g = b = a = 0;
 	}
 
-	constexpr Color(u8 r, u8 g, u8 b, u8 a = 255) : a(a), r(r), g(g), b(b) {}
+	constexpr Color(u8 r, u8 g, u8 b, u8 a = 255) : a(a), r(r), g(g), b(b)
+	{}
 
 	explicit Color(u32 InColor)
 	{

@@ -5,6 +5,8 @@
 #include "Profiler.h"
 #include "Serialization/Archive.h"
 
+#include <yvals.h>
+
 
 bool FileSystem::FolderExists(const Path& path)
 {
@@ -22,7 +24,15 @@ bool FileSystem::LoadJsonFile(Path path, Json& result)
 
 	std::ifstream file(path);
 	result = {};
-	result << file;
+	try
+	{
+		result << file;
+	}
+	catch (nlohmann::detail::exception ex)
+	{
+		Log::Error("Failed to parse json asset:\n{}", ex.what());
+		return false;
+	}
 	return true;
 }
 

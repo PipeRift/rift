@@ -29,6 +29,7 @@ private:
 	// Worker threads
 	std::shared_ptr<ThreadPool> workerPool;
 
+
 public:
 	TaskSystem();
 
@@ -48,6 +49,8 @@ public:
 	{
 		return (u32) workerPool->num_workers();
 	}
+
+	static TaskSystem& Get();
 };
 
 EA_RESTORE_VC_WARNING()	   // warning: 4267

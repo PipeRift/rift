@@ -99,7 +99,8 @@ class StringAllocator : public eastl::allocator
 	const TCHAR* name;
 
 public:
-	EASTL_ALLOCATOR_EXPLICIT StringAllocator(const char* pName = EASTL_NAME_VAL(EASTL_ALLOCATOR_DEFAULT_NAME)) : Super(pName) {}
+	EASTL_ALLOCATOR_EXPLICIT StringAllocator(const char* pName = EASTL_NAME_VAL(EASTL_ALLOCATOR_DEFAULT_NAME)) : Super(pName)
+	{}
 
 	void* allocate(size_t n, int flags = 0)
 	{

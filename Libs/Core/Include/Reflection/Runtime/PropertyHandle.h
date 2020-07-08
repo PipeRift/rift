@@ -26,10 +26,12 @@ protected:
 		, prop{prop}
 		, instance{nullptr}
 	{}
-	PropertyHandle(BaseStruct* instance, const Property* prop) : instance{instance}, prop{prop} {}
+	PropertyHandle(BaseStruct* instance, const Property* prop) : instance{instance}, prop{prop}
+	{}
 
 public:
-	virtual ~PropertyHandle() {}
+	virtual ~PropertyHandle()
+	{}
 
 
 	String GetName() const

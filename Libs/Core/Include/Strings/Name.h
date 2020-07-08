@@ -22,11 +22,15 @@ private:
 	const String str;
 
 public:
-	NameKey(size_t hash = 0) : hash{hash} {}
-	NameKey(String str) : hash{eastl::hash<String>()(str)}, str{MoveTemp(str)} {}
+	NameKey(size_t hash = 0) : hash{hash}
+	{}
+	NameKey(String str) : hash{eastl::hash<String>()(str)}, str{MoveTemp(str)}
+	{}
 
-	NameKey(const NameKey& other) : hash{other.hash} {}
-	NameKey(NameKey&& other) : hash{other.hash}, str{MoveTemp(other.str)} {}
+	NameKey(const NameKey& other) : hash{other.hash}
+	{}
+	NameKey(NameKey&& other) : hash{other.hash}, str{MoveTemp(other.str)}
+	{}
 	NameKey& operator=(const NameKey& other)
 	{
 		hash = other.hash;
@@ -76,7 +80,8 @@ class NameTable
 	mutable std::shared_mutex editTableMutex;
 
 
-	NameTable() : table{} {}
+	NameTable() : table{}
+	{}
 
 	size_t Register(const String& string);
 	const String& Find(size_t hash) const
@@ -109,17 +114,22 @@ private:
 
 
 public:
-	Name() : id{noneId} {}
+	Name() : id{noneId}
+	{}
 
-	Name(const StringView&& key) : Name(String{key}) {}
-	Name(const TCHAR* key) : Name(String{key}) {}
-	Name(const TCHAR* key, String::size_type size) : Name(String{key, size}) {}
+	Name(const StringView&& key) : Name(String{key})
+	{}
+	Name(const TCHAR* key) : Name(String{key})
+	{}
+	Name(const TCHAR* key, String::size_type size) : Name(String{key, size})
+	{}
 	Name(const String& key)
 	{
 		// Index this name
 		id = NameTable::GetGlobal().Register(key);
 	}
-	Name(const Name& other) : id(other.id) {}
+	Name(const Name& other) : id(other.id)
+	{}
 	Name(Name&& other) noexcept
 	{
 		std::swap(id, other.id);
@@ -167,7 +177,8 @@ public:
 	bool Serialize(class Archive& ar, const char* name);
 
 private:
-	Name(const Id& id) : id(id) {}
+	Name(const Id& id) : id(id)
+	{}
 };
 
 DEFINE_CLASS_TRAITS(Name, HasCustomSerialize = true);

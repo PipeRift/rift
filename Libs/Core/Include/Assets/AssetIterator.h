@@ -15,7 +15,8 @@ public:
 
 	using FormatFileIterator<FileSystem::Iterator>::FormatFileIterator;
 
-	explicit AssetIterator(const Path& path) : FormatFileIterator(AssetManager::assetFormat, path) {}
+	explicit AssetIterator(const Path& path) : FormatFileIterator(AssetManager::assetFormat, path)
+	{}
 
 	const AssetInfo& operator*() const noexcept
 	{
@@ -38,7 +39,8 @@ public:
 
 	using FormatFileIterator<FileSystem::RecursiveIterator>::FormatFileIterator;
 
-	explicit AssetIterator(const Path& path) : FormatFileIterator(AssetManager::assetFormat, path) {}
+	explicit AssetIterator(const Path& path) : FormatFileIterator(AssetManager::assetFormat, path)
+	{}
 
 	const AssetInfo& operator*() const noexcept
 	{

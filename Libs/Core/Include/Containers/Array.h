@@ -6,13 +6,14 @@
 #include "Platform/Platform.h"
 
 #include <EASTL/functional.h>
-#include <EASTL/vector.h>
 #include <assert.h>
+
+#include <vector>
 
 
 constexpr i32 NO_INDEX = -1;
 
-template <typename Type, typename Allocator = EASTLAllocatorType>
+template <typename Type, typename Allocator = std::allocator<Type>>
 class TArray
 {
 public:
@@ -20,7 +21,7 @@ public:
 	friend class TArray;
 
 	using ItemType = Type;
-	using VectorType = eastl::vector<Type, Allocator>;
+	using VectorType = std::vector<Type, Allocator>;
 
 	using Iterator = typename VectorType::iterator;
 	using ConstIterator = typename VectorType::const_iterator;
@@ -32,11 +33,15 @@ private:
 	VectorType vector;
 
 public:
-	TArray() : vector{} {}
+	TArray() : vector{}
+	{}
 
-	TArray(u32 defaultSize) : vector{defaultSize} {}
-	TArray(u32 defaultSize, const Type& defaultValue) : vector{defaultSize, defaultValue} {}
-	TArray(std::initializer_list<Type> initList) : vector{initList} {}
+	TArray(u32 defaultSize) : vector(defaultSize)
+	{}
+	TArray(u32 defaultSize, const Type& defaultValue) : vector(defaultSize, defaultValue)
+	{}
+	TArray(std::initializer_list<Type> initList) : vector{initList}
+	{}
 
 	TArray(TArray<Type>&& other)
 	{
@@ -80,7 +85,7 @@ public:
 
 	i32 AddDefaulted(u32 Amount = 0)
 	{
-		vector.push_back();
+		vector.push_back({});
 		return Size() - 1;
 	}
 

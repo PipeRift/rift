@@ -30,7 +30,8 @@ public:
 		self = inSelf;
 		owner = inOwner;
 	}
-	virtual void Construct() {}
+	virtual void Construct()
+	{}
 
 	virtual bool Serialize(Archive& ar)
 	{

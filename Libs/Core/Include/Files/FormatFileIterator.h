@@ -87,10 +87,10 @@ inline void FormatFileIterator<FileIterator>::FindNext()
 	static const FileIterator endIt{};
 	std::error_code error;
 	// Loop until end or until we find an asset
-	while (fileIterator != endIt)
+	while (true)
 	{
 		fileIterator.increment(error);
-		if (fileIterator->path().extension() == format)
+		if (fileIterator == endIt || fileIterator->path().extension() == format)
 		{
 			return;
 		}

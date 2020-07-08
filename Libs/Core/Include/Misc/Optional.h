@@ -16,11 +16,14 @@ private:
 
 public:
 	/** Construct an Type with no value; i.e. unset */
-	TOptional() : bIsSet(false) {}
+	TOptional() : bIsSet(false)
+	{}
 
 	/** Construct an Type with a valid value. */
-	TOptional(const Type& value) : bIsSet{true}, value{value} {}
-	TOptional(Type&& value) : bIsSet{true}, value{MoveTemp(value)} {}
+	TOptional(const Type& value) : bIsSet{true}, value{value}
+	{}
+	TOptional(Type&& value) : bIsSet{true}, value{MoveTemp(value)}
+	{}
 
 	/** Copy/Move construction */
 	TOptional(const TOptional& other) : bIsSet(other.bIsSet)

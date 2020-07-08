@@ -18,5 +18,6 @@ public:
 	ClassHandle& operator=(const ClassHandle&) = default;
 	virtual ~ClassHandle() = default;
 
-	ClassHandle(const Ptr<BaseObject>& instance) : instance(instance) {}
+	ClassHandle(const Ptr<BaseObject>& instance) : instance(instance)
+	{}
 };

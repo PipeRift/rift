@@ -21,8 +21,10 @@ public:
 	class Context* context;
 
 
-	Archive() : bLoads(false), context{nullptr} {}
-	Archive(bool bLoads) : bLoads(bLoads), context{nullptr} {}
+	Archive() : bLoads(false), context{nullptr}
+	{}
+	Archive(bool bLoads) : bLoads(bLoads), context{nullptr}
+	{}
 	virtual ~Archive() = default;
 
 
@@ -190,10 +192,12 @@ class JsonArchive : public Archive
 
 public:
 	// Save Constructor
-	JsonArchive(const bool bBeautify = true) : Archive(false), baseData(), depthData{}, bBeautify{bBeautify} {}
+	JsonArchive(const bool bBeautify = true) : Archive(false), baseData(), depthData{}, bBeautify{bBeautify}
+	{}
 
 	// Load constructor
-	JsonArchive(const Json& data) : Archive(true), baseData(data), depthData{}, bBeautify{false} {}
+	JsonArchive(const Json& data) : Archive(true), baseData(data), depthData{}, bBeautify{false}
+	{}
 
 	virtual ~JsonArchive() = default;
 

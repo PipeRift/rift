@@ -5,11 +5,14 @@
 #include "Strings/Name.h"
 
 
-Allocator::Allocator(const TCHAR* name /*= "Global"*/) : name{name}, size{0}, malloc_alloc{""} {}
+Allocator::Allocator(const TCHAR* name /*= "Global"*/) : name{name}, size{0}, malloc_alloc{""}
+{}
 
-Allocator::Allocator(const Allocator&) : name{}, size{0}, malloc_alloc{} {}
+Allocator::Allocator(const Allocator&) : name{}, size{0}, malloc_alloc{}
+{}
 
-Allocator::Allocator(const Allocator&, const TCHAR* name) : name{name}, size{0}, malloc_alloc{""} {}
+Allocator::Allocator(const Allocator&, const TCHAR* name) : name{name}, size{0}, malloc_alloc{""}
+{}
 
 Name Allocator::GetName() const
 {

@@ -33,7 +33,8 @@ protected:
 		TracyMessage(formatted.data(), formatted.size());	 // Send to profiler
 	}
 
-	void flush_() override {}
+	void flush_() override
+	{}
 };
 using ProfilerSink_mt = ProfilerSink<std::mutex>;
 using ProfilerSink_st = ProfilerSink<spdlog::details::null_mutex>;
@@ -43,7 +44,7 @@ using ProfilerSink_st = ProfilerSink<spdlog::details::null_mutex>;
 void Log::Init(Path logFile)
 {
 	std::vector<spdlog::sink_ptr> sinks;
-	sinks.reserve(6);
+	sinks.reserve(3);
 
 	// File
 	if (!logFile.empty())
@@ -75,7 +76,6 @@ void Log::Init(Path logFile)
 
 
 	// Console
-
 	generalLogger = std::make_shared<spdlog::logger>("Log", sinks.begin(), sinks.end());
 	errLogger = std::make_shared<spdlog::logger>("Log", sinks.begin(), sinks.end());
 	generalLogger->set_pattern("%^[%D %T][%l]%$ %v");
@@ -90,11 +90,7 @@ void Log::Init(Path logFile)
 	errLogger->sinks().push_back(cliErrSink);
 	cliErrSink->set_pattern("%^[%l] %v%$");
 	cliErrSink->set_color(spdlog::level::warn, cliSink->YELLOW);
-
-	spdlog::enable_backtrace(32);
 }
 
 void Log::Shutdown()
-{
-	spdlog::dump_backtrace();
-}
+{}

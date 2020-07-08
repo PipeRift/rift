@@ -91,7 +91,8 @@
         "xmemory0": "cpp",
         "xxatomic": "cpp",
         "variant": "cpp",
-        "format": "cpp"
+        "format": "cpp",
+        "resumable": "cpp"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

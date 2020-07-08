@@ -46,7 +46,8 @@ private:
 
 public:
 	/** Default constructor (no initialization). */
-	Timespan() : duration{} {}
+	Timespan() : duration{}
+	{}
 
 	/**
 	 * Create and initialize a new time interval with the specified number of ticks.
@@ -56,7 +57,8 @@ public:
 	 * @param duration The number of decimals of microseconds.
 	 * @see MaxValue, MinValue, Zero
 	 */
-	Timespan(decmicroseconds duration) : duration(duration) {}
+	Timespan(decmicroseconds duration) : duration(duration)
+	{}
 
 	/**
 	 * Create and initialize a new time interval with the specified number of hours, minutes and seconds.

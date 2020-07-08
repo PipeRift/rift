@@ -4,6 +4,7 @@
 
 #include "Context.h"
 #include "Files/FileSystem.h"
+#include "Multithreading.h"
 #include "Object/ObjectPtr.h"
 #include "Profiler.h"
 
@@ -55,8 +56,23 @@ Ptr<AssetData> AssetManager::Load(AssetInfo info)
 	return {};
 }
 
-TArray<Ptr<AssetData>> AssetManager::Load(TArray<AssetInfo> infos)
+TArray<Ptr<AssetData>> AssetManager::Load(const TArray<AssetInfo>& infos)
 {
+	if (infos.Size() <= 0)
+	{
+		return {};
+	}
+
+	ScopedStackZone(459bd1);
+
+	TaskFlow loadTask;
+	TArray<Json> assetJsons(infos.Size());
+
+	loadTask.parallel_for(0, infos.Size(), 1, [&assetJsons, &infos](i32 i) {
+		ScopedZone("Load Asset File", D19D45);
+		FileSystem::LoadJsonFile(infos[i].GetStrPath(), assetJsons[i]);
+	});
+	TaskSystem::Get().RunFlow(loadTask).wait();
 	return {};
 }
 
@@ -90,7 +106,6 @@ Ptr<AssetData> AssetManager::LoadOrCreate(AssetInfo info, Class* assetType)
 	}
 	return {};
 }
-
 
 Ptr<AssetManager> AssetManager::Get()
 {

@@ -28,7 +28,8 @@ protected:
 
 
 public:
-	BaseType() : tags{}, parent{nullptr} {}
+	BaseType() : tags{}, parent{nullptr}
+	{}
 	BaseType(const BaseType&) = delete;
 	BaseType& operator=(const BaseType&) = delete;
 	virtual ~BaseType()

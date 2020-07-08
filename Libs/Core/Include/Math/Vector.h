@@ -308,7 +308,8 @@ struct Box
 
 
 	Box() = default;
-	constexpr Box(VectorType min, VectorType max) : min{min}, max{max} {}
+	constexpr Box(VectorType min, VectorType max) : min{min}, max{max}
+	{}
 
 	inline void ExtendPoint(const VectorType& point)
 	{

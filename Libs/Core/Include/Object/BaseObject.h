@@ -20,7 +20,8 @@ class Ptr;
 class CORE_API BaseObject : public BaseStruct
 {
 protected:
-	BaseObject() : BaseStruct() {}
+	BaseObject() : BaseStruct()
+	{}
 
 public:
 	void StartDestroy()
@@ -32,5 +33,6 @@ public:
 	Ptr<Object> Self() const;
 
 protected:
-	virtual void BeforeDestroy() {}
+	virtual void BeforeDestroy()
+	{}
 };

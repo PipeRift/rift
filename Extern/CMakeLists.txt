@@ -15,6 +15,7 @@ target_include_directories(Tracy PUBLIC Tracy)
 target_sources(Tracy PRIVATE Tracy/TracyClient.cpp)
 target_compile_features(Tracy PUBLIC cxx_std_17)
 
+
 if(WINDOWS)
     target_compile_definitions(Tracy PRIVATE _WIN32=1)
 elseif(LINUX)

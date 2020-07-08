@@ -5,6 +5,7 @@
 #include "Assets/AssetPtr.h"
 #include "CoreObject.h"
 #include "Events/Broadcast.h"
+#include "Multithreading.h"
 
 
 class CORE_API Context : public Object
@@ -12,9 +13,11 @@ class CORE_API Context : public Object
 	CLASS(Context, Object)
 
 private:
+	static GlobalPtr<Context> globalInstance;
+
 	GlobalPtr<AssetManager> assetManager;
 
-	static GlobalPtr<Context> globalInstance;
+	TaskSystem tasks;
 
 
 public:
@@ -36,7 +39,8 @@ public:
 		}
 	}
 
-	Context() : Super(), assetManager{Create<AssetManager>()} {}
+	Context() : Super(), assetManager{Create<AssetManager>()}
+	{}
 
 	virtual void Construct() override
 	{
@@ -56,6 +60,11 @@ public:
 	Ptr<AssetManager> GetAssetManager()
 	{
 		return assetManager;
+	}
+
+	TaskSystem& GetTasks()
+	{
+		return tasks;
 	}
 
 	static Ptr<Context> Get()

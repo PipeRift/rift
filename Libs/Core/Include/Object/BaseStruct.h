@@ -7,7 +7,8 @@
 struct BaseStruct
 {
 	BaseStruct() = default;
-	virtual ~BaseStruct() {}
+	virtual ~BaseStruct()
+	{}
 
 	class StructType* GetStruct() const;
 

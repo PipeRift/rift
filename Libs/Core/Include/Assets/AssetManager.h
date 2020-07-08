@@ -24,7 +24,7 @@ private:
 
 public:
 	Ptr<AssetData> Load(AssetInfo info);
-	TArray<Ptr<AssetData>> Load(TArray<AssetInfo> infos);
+	TArray<Ptr<AssetData>> Load(const TArray<AssetInfo>& infos);
 
 	Ptr<AssetData> LoadOrCreate(AssetInfo info, Class* assetType);
 

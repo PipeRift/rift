@@ -90,14 +90,16 @@ protected:
 
 public:
 	/** Default constructor (no initialization). */
-	DateTime() : value{} {}
+	DateTime() : value{}
+	{}
 
 	/**
 	 * Creates and initializes a new instance with the specified number of ticks.
 	 *
 	 * @param Ticks The ticks representing the date and time.
 	 */
-	DateTime(SysTime value) : value{value} {}
+	DateTime(SysTime value) : value{value}
+	{}
 
 	template <typename Precision>
 	DateTime(Chrono::time_point<SysClock, Precision> value)

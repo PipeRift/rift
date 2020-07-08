@@ -25,7 +25,8 @@ protected:
 
 	/** METHODS */
 
-	BaseGlobalPtr() : weaks{}, ptr{} {}
+	BaseGlobalPtr() : weaks{}, ptr{}
+	{}
 	BaseGlobalPtr(std::unique_ptr<BaseObject>&& inPtr) : BaseGlobalPtr()
 	{
 		ptr = MoveTemp(inPtr);
@@ -185,7 +186,8 @@ class CORE_API BaseWeakPtr
 	u32 id;
 
 protected:
-	BaseWeakPtr() : globalPtr{nullptr}, id{0} {}
+	BaseWeakPtr() : globalPtr{nullptr}, id{0}
+	{}
 
 	~BaseWeakPtr()
 	{
@@ -257,8 +259,10 @@ class CORE_API Ptr : public BaseWeakPtr
 	/** METHODS */
 
 public:
-	Ptr() : BaseWeakPtr() {}
-	Ptr(TYPE_OF_NULLPTR) : BaseWeakPtr() {}
+	Ptr() : BaseWeakPtr()
+	{}
+	Ptr(TYPE_OF_NULLPTR) : BaseWeakPtr()
+	{}
 
 	Ptr(const Ptr& other) : BaseWeakPtr()
 	{

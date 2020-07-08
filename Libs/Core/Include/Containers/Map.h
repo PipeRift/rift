@@ -37,12 +37,14 @@ private:
 
 public:
 	TMap() = default;
-	TMap(u32 defaultSize) : map{defaultSize} {}
+	TMap(u32 defaultSize) : map{defaultSize}
+	{}
 	TMap(const TPair<const KeyType, ValueType>& item) : map{}
 	{
 		Insert(item);
 	}
-	TMap(std::initializer_list<TPair<const KeyType, ValueType>> initList) : map{initList.begin(), initList.end()} {}
+	TMap(std::initializer_list<TPair<const KeyType, ValueType>> initList) : map{initList.begin(), initList.end()}
+	{}
 
 	TMap(TMap&& other) = default;
 	TMap(const TMap& other) = default;

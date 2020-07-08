@@ -7,6 +7,7 @@
 #include "Log.h"
 #include "Strings/String.h"
 
+#include <CoreEngine.h>
 #include <CoreObject.h>
 #include <Files/FileSystem.h>
 
@@ -27,7 +28,8 @@ namespace VCLang
 
 
 	public:
-		Project() : Super() {}
+		Project() : Super()
+		{}
 
 		void Init(Path path)
 		{
