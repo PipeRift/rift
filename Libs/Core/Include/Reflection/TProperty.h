@@ -11,7 +11,6 @@
 #include <EASTL/shared_ptr.h>
 
 
-
 /**
  * Static information about a property
  */
@@ -27,9 +26,9 @@ private:
 
 public:
 	TProperty(BaseType* typePtr, Name typeName, Name name, Access&& access, ReflectionTags tags)
-		: Property(typePtr, typeName, name, tags), access(access)
-	{
-	}
+		: Property(typePtr, typeName, name, tags)
+		, access(access)
+	{}
 
 	virtual eastl::shared_ptr<PropertyHandle> CreateHandle(const Ptr<BaseObject>& instance) const override
 	{

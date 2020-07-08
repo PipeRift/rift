@@ -8,7 +8,6 @@
 #include <EASTL/type_traits.h>
 
 
-
 /** TStruct will be specialized for each type at compile time and store
  * the metadata for that type
  */

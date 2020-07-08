@@ -13,7 +13,6 @@
 #include <fstream>
 
 
-
 class Archive
 {
 	const bool bLoads = false;

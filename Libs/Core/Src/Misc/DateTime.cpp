@@ -157,7 +157,8 @@ String DateTime::ToHttpDate() const
 			break;
 	}
 
-	return CString::Format(TX("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT"), DayStr.c_str(), GetDay(), MonthStr.c_str(), GetYear(), GetHour(), GetMinute(), GetSecond());
+	return CString::Format(TX("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT"), DayStr.c_str(), GetDay(), MonthStr.c_str(), GetYear(),
+		GetHour(), GetMinute(), GetSecond());
 }
 
 
@@ -175,7 +176,7 @@ String DateTime::ToString() const
 
 String DateTime::ToString(const TCHAR* format) const
 {
-	//return CString::Format(format, *value);
+	// return CString::Format(format, *value);
 	String result;
 
 	if (format != nullptr)

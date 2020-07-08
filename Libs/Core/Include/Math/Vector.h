@@ -7,9 +7,9 @@
 #include "Reflection/ReflectionTypeTraits.h"
 #include "Strings/Name.h"
 
-#include <glm/glm.hpp>
 #include <glm/detail/type_vec3.hpp>
 #include <glm/geometric.hpp>
+#include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.inl>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/matrix.hpp>

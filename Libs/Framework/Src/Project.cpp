@@ -3,14 +3,18 @@
 #include "Project.h"
 
 #include "Assets/AssetIterator.h"
+#include "Assets/AssetManager.h"
 
 
 void VCLang::Project::LoadAllAssets()
 {
+	TArray<AssetInfo> assetInfos;
 	for (const auto& asset : AssetIterator<true>(projectPath))
 	{
-		Log::Message("Asset {}", asset.GetStrPath());
+		assetInfos.Add(asset);
 	}
+
+	AssetManager::Load(assetInfos);
 }
 
 Path VCLang::Project::ToProjectPath(const Path& path)

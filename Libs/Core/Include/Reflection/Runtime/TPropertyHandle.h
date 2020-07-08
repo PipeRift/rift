@@ -20,14 +20,14 @@ struct TPropertyHandle : public PropertyHandle
 public:
 	TPropertyHandle() : PropertyHandle({}, nullptr) {}
 	TPropertyHandle(const Ptr<BaseObject>& instance, const Property* prop, const Access& access)
-		: PropertyHandle(instance, prop), access{access}
-	{
-	}
+		: PropertyHandle(instance, prop)
+		, access{access}
+	{}
 
 	TPropertyHandle(BaseStruct* instance, const Property* prop, const Access& access)
-		: PropertyHandle(instance, prop), access{access}
-	{
-	}
+		: PropertyHandle(instance, prop)
+		, access{access}
+	{}
 
 	VarType* GetValuePtr() const
 	{

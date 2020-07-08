@@ -25,9 +25,9 @@ typedef FMacPlatformTypes FPlatformTypes;
 
 
 #if BUILD_DEBUG
-#   define FORCEINLINE inline 												/* Don't force code to be inline */
+#	define FORCEINLINE inline /* Don't force code to be inline */
 #else
-#   define FORCEINLINE inline __attribute__ ((always_inline))				/* Force code to be inline */
+#	define FORCEINLINE inline __attribute__((always_inline)) /* Force code to be inline */
 #endif
 #define NOINLINE __attribute__((noinline))
 

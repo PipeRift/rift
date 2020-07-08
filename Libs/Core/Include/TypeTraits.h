@@ -21,13 +21,11 @@ struct IsDefined<T, decltype(typeid(T), void())>
 
 template <class T, size_t size>
 struct IsSmallerType : eastl::integral_constant<bool, (sizeof(T) <= size)>
-{
-};
+{};
 
 template <class T, size_t size>
 struct IsBiggerType : eastl::integral_constant<bool, (sizeof(T) > size)>
-{
-};
+{};
 
 
 #define EnableIfSmallerType(size) typename = eastl::enable_if<IsSmallerType<T, size>::value>

@@ -1,14 +1,13 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "CoreEngine.h"
 #include "BaseType.h"
+#include "CoreEngine.h"
 
 
 class StructType : public BaseType
 {
 public:
-
 	/** Equivalent to "new Type()" */
 	virtual BaseStruct* New() const = 0;
 
@@ -18,18 +17,29 @@ public:
 	//
 	// We can cast safely to BaseType since Structs only inherit Structs
 
-	StructType* GetParent() const { return static_cast<StructType*>(parent); }
+	StructType* GetParent() const
+	{
+		return static_cast<StructType*>(parent);
+	}
 
-	void GetAllChildren(TArray<StructType*>& outChildren) {
+	void GetAllChildren(TArray<StructType*>& outChildren)
+	{
 		__GetAllChildren(reinterpret_cast<TArray<BaseType*>&>(outChildren));
 	}
 
-	StructType* FindChild(Name StructTypeName) const {
+	StructType* FindChild(Name StructTypeName) const
+	{
 		return static_cast<StructType*>(__FindChild(StructTypeName));
 	}
 
-	template<typename Type>
-	bool IsChildOf() const { return BaseType::IsChildOf(Type::StaticStruct()); }
+	template <typename Type>
+	bool IsChildOf() const
+	{
+		return BaseType::IsChildOf(Type::StaticStruct());
+	}
 
-	bool IsA(StructType* other) const { return this == other; }
+	bool IsA(StructType* other) const
+	{
+		return this == other;
+	}
 };

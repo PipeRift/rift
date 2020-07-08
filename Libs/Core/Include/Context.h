@@ -36,11 +36,7 @@ public:
 		}
 	}
 
-
-	Context()
-		: Super()
-		, assetManager{Create<AssetManager>()}
-	{}
+	Context() : Super(), assetManager{Create<AssetManager>()} {}
 
 	virtual void Construct() override
 	{

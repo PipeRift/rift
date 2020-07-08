@@ -21,6 +21,6 @@ elseif(LINUX)
     target_compile_definitions(Tracy PRIVATE __linux__=1)
 endif()
 
-if(ENABLE_PROFILER)
+if(VCLANG_ENABLE_PROFILER)
     target_compile_definitions(Tracy PUBLIC TRACY_ENABLE=1)
 endif()

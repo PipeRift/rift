@@ -4,8 +4,8 @@
 #define PLATFORM_LINUX_USE_CHAR16 0
 
 /**
-* Linux specific types
-**/
+ * Linux specific types
+ **/
 struct FLinuxPlatformTypes : public FGenericPlatformTypes
 {
 	using DWORD = unsigned int;
@@ -21,10 +21,10 @@ typedef FLinuxPlatformTypes FPlatformTypes;
 
 
 #if BUILD_DEBUG
-	#define FORCEINLINE inline
+#	define FORCEINLINE inline
 #else
-	#define FORCEINLINE inline __attribute__ ((always_inline))
-#endif // BUILD_DEBUG
+#	define FORCEINLINE inline __attribute__((always_inline))
+#endif	  // BUILD_DEBUG
 #define NOINLINE __attribute__((noinline))
 
 #if PLATFORM_LINUX_USE_CHAR16

@@ -1,8 +1,8 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "CoreObject.h"
 #include "AssetInfo.h"
+#include "CoreObject.h"
 
 
 class AssetData : public Object
@@ -12,7 +12,6 @@ class AssetData : public Object
 	AssetInfo info;
 
 public:
-
 	AssetData() : Super() {}
 
 	/** Called after an asset is created. Internal usage only. */
@@ -27,18 +26,31 @@ public:
 	bool Save();
 
 
-
 protected:
 	/** Called after the asset was loaded or created */
-	virtual bool PostLoad() { return true; }
-	virtual void BeforeDestroy() override { OnUnload(); }
+	virtual bool PostLoad()
+	{
+		return true;
+	}
+	virtual void BeforeDestroy() override
+	{
+		OnUnload();
+	}
 	virtual void OnUnload() {}
 
 	/** HELPERS */
 public:
+	const AssetInfo& GetInfo() const
+	{
+		return info;
+	}
 
-	const AssetInfo& GetInfo() const { return info; }
-
-	const Name& GetMetaPath() const { return info.GetPath(); }
-	const Name& GetRawPath() const { return info.GetPath(); }
+	const Name& GetMetaPath() const
+	{
+		return info.GetPath();
+	}
+	const Name& GetRawPath() const
+	{
+		return info.GetPath();
+	}
 };

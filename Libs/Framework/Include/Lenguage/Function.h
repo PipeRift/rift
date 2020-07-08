@@ -2,7 +2,7 @@
 #pragma once
 
 #include <CoreEngine.h>
-
+#include <Object/Struct.h>
 
 struct Function : public Struct
 {

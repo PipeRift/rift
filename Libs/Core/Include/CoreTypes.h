@@ -2,9 +2,9 @@
 #pragma once
 
 #include "Platform/Platform.h"
-#include "Strings/String.h"
-#include "Strings/Name.h"
 #include "Reflection/ReflectionTypeTraits.h"
+#include "Strings/Name.h"
+#include "Strings/String.h"
 
 
 /** Registry new editor-supported types here and on "EngineTypes.cpp" */

@@ -14,35 +14,34 @@ private:
 	u32 bitLongs;
 
 	/** The array of uint32s containing the bits */
-	u32 *bits;
+	u32* bits;
 
 public:
-
 	/** Constructors */
 	BitArray(u32 newSize);
 	BitArray(BitArray&& other);
 	BitArray(const BitArray& other);
 
 	BitArray(u32 newSize, bool setClear);
-	BitArray(u32 newSize, u32 *newBits);
+	BitArray(u32 newSize, u32* newBits);
 
 	/** Destructor */
 	~BitArray();
 
 	BitArray& operator=(BitArray&& other);
 	BitArray& operator=(const BitArray& other);
-	BitArray  operator~();
+	BitArray operator~();
 	BitArray& operator^=(const BitArray& other);
 	BitArray& operator&=(const BitArray& other);
 	BitArray& operator|=(const BitArray& other);
-	BitArray  operator^(const BitArray& other);
-	BitArray  operator&(const BitArray& other);
-	BitArray  operator|(const BitArray& other);
+	BitArray operator^(const BitArray& other);
+	BitArray operator&(const BitArray& other);
+	BitArray operator|(const BitArray& other);
 
 	/** @return true if a bit is set */
 	inline bool IsValidIndex(u32 index) const
 	{
-		return bits[(index>>5)] >> (index & 0x0000001f) & 0x00000001;
+		return bits[(index >> 5)] >> (index & 0x0000001f) & 0x00000001;
 	}
 
 	/** Set all bits in this array */
@@ -72,7 +71,7 @@ public:
 	void FillBitArray(u32 pattern);
 
 	/** flip a single bit.
-	*/
+	 */
 	inline void FlipBit(u32 index)
 	{
 		if (IsValidIndex(index))
@@ -81,20 +80,24 @@ public:
 			FillBit(index);
 	};
 
-	inline void Clear() {
-		delete[]bits;
+	inline void Clear()
+	{
+		delete[] bits;
 		arraySize = 0;
 		bitLongs = 0;
 		bits = nullptr;
 	}
 
 	/** Returns index of next set bit in array (wraps around)
-	*/
+	 */
 	i32 GetNextSet(u32 index) const;
 
 	/** @return index of previous set bit in array (wraps around) */
 	i32 GetPreviousSet(u32 index) const;
 
 	/** @return the number of bits in this bit array */
-	u32 Size() { return arraySize; }
+	u32 Size()
+	{
+		return arraySize;
+	}
 };

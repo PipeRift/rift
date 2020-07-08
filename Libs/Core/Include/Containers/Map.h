@@ -2,9 +2,9 @@
 
 #pragma once
 
+#include "Containers/Tuples.h"
 #include "CoreEngine.h"
 #include "Platform/Platform.h"
-#include "Containers/Tuples.h"
 
 #include <EASTL/functional.h>
 #include <assert.h>

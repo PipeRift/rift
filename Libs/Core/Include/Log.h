@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreEngine.h"
-#include "Strings/String.h"
 #include "Files/FileSystem.h"
+#include "Strings/String.h"
 
 #include <spdlog/spdlog.h>
 

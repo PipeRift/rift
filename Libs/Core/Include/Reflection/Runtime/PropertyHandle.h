@@ -22,9 +22,10 @@ protected:
 
 
 	PropertyHandle(const Ptr<BaseObject>& objInstance, const Property* prop)
-		: objInstance{objInstance}, prop{prop}, instance{nullptr}
-	{
-	}
+		: objInstance{objInstance}
+		, prop{prop}
+		, instance{nullptr}
+	{}
 	PropertyHandle(BaseStruct* instance, const Property* prop) : instance{instance}, prop{prop} {}
 
 public:

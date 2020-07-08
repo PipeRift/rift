@@ -7,7 +7,6 @@
 #include "Serialization/Archive.h"
 
 
-
 class Context;
 
 class CORE_API Object : public BaseObject
@@ -31,9 +30,7 @@ public:
 		self = inSelf;
 		owner = inOwner;
 	}
-	virtual void Construct()
-	{
-	}
+	virtual void Construct() {}
 
 	virtual bool Serialize(Archive& ar)
 	{

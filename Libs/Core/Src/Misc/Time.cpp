@@ -9,7 +9,6 @@
 #include <thread>
 
 
-
 void FrameTime::Tick()
 {
 	previousTime = currentTime;

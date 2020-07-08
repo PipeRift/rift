@@ -49,7 +49,7 @@ void Log::Init(Path logFile)
 	if (!logFile.empty())
 	{
 		Path logFolder = logFile;
-		if(FileSystem::IsFile(logFile))
+		if (FileSystem::IsFile(logFile))
 		{
 			logFolder.remove_filename();
 		}
@@ -59,7 +59,8 @@ void Log::Init(Path logFile)
 		}
 		FileSystem::CreateFolder(logFolder);
 
-		sinks.push_back(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(FileSystem::ToString(logFile).c_str(), 1048576 * 5, 3));
+		sinks.push_back(
+			std::make_shared<spdlog::sinks::rotating_file_sink_mt>(FileSystem::ToString(logFile).c_str(), 1048576 * 5, 3));
 	}
 
 #if WITH_EDITOR

@@ -6,44 +6,34 @@
         {
             "label": "Build Release",
             "type": "shell",
-            "command": "cmake",
-            "args": [
-                "-DCMAKE_BUILD_TYPE=Release",
-                "-B",
-                "Build"
-            ],
+            "command": "cmake --build Build -DCMAKE_BUILD_TYPE=Release --target ALL_BUILD",
             "group": {
                 "kind": "build",
                 "isDefault": true
-            },
-            "problemMatcher": []
+            }
         },
         {
             "label": "Build Debug",
             "type": "shell",
-            "command": "cmake",
-            "args": [
-                "-DCMAKE_BUILD_TYPE=Debug",
-                "-B",
-                "Build"
-            ],
+            "command": "cmake -DCMAKE_BUILD_TYPE=Debug --build Build --target ALL_BUILD",
             "group": {
                 "kind": "build",
                 "isDefault": true
-            },
-            "problemMatcher": []
+            }
         },
         {
-            "label": "Install",
+            "label": "Format all files",
             "type": "shell",
-            "command": "cmake",
-            "args": [
-                "-DCMAKE_BUILD_TYPE=Release",ç
-                "-B",
-                "Build",
-                "--target",
-                "install"
-            ],
+            "command": "cmake --build Build --target ClangFormat",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Tidy all files",
+            "type": "shell",
+            "command": "cmake --build Build --target ClangTidy",
             "group": {
                 "kind": "build",
                 "isDefault": true

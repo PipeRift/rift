@@ -8,7 +8,6 @@
 #include "Serialization/Archive.h"
 
 
-
 struct Struct : public BaseStruct
 {
 	ORPHAN_STRUCT(Struct)

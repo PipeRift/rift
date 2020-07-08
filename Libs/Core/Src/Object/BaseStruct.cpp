@@ -6,7 +6,6 @@
 #include "Reflection/StructType.h"
 
 
-
 StructType* BaseStruct::GetStruct() const
 {
 	if (const auto* thisObj = dynamic_cast<const Struct*>(this))

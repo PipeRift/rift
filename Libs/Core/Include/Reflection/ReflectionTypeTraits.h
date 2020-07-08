@@ -3,8 +3,9 @@
 
 #include "Strings/Name.h"
 
-#include <type_traits>
 #include <EASTL/type_traits.h>
+
+#include <type_traits>
 
 struct Struct;
 

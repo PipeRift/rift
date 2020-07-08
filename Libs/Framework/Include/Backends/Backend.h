@@ -3,5 +3,6 @@
 
 namespace VCLang::Backends
 {
-    class Backend {};
-}
+	class Backend
+	{};
+}	 // namespace VCLang::Backends

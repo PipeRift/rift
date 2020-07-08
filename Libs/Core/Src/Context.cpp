@@ -2,4 +2,4 @@
 
 #include "Context.h"
 
-GlobalPtr<Context> Context::globalInstance {};
+GlobalPtr<Context> Context::globalInstance{};

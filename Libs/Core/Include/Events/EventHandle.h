@@ -5,12 +5,13 @@
 #include "CoreTypes.h"
 
 
-struct EventHandle {
+struct EventHandle
+{
 private:
-
 	static u64 counter;
 
-	static u64 NewId() {
+	static u64 NewId()
+	{
 		if (counter == 0)
 			++counter;
 		return counter++;
@@ -22,13 +23,24 @@ private:
 	EventHandle(u64 customId) : id(customId) {}
 
 public:
-
-	static EventHandle Invalid() { return { 0 }; }
+	static EventHandle Invalid()
+	{
+		return {0};
+	}
 
 	EventHandle() : id(NewId()) {}
 
-	u64 Id() const { return id; }
+	u64 Id() const
+	{
+		return id;
+	}
 
-	bool IsValid() const { return id != 0; }
-	operator bool() const { return IsValid(); }
+	bool IsValid() const
+	{
+		return id != 0;
+	}
+	operator bool() const
+	{
+		return IsValid();
+	}
 };

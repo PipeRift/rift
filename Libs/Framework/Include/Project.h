@@ -32,7 +32,7 @@ namespace VCLang
 		void Init(Path path)
 		{
 			projectPath = FileSystem::ToAbsolute(path);
-    		Log::Message("Project Path: {}", FileSystem::ToString(projectPath));
+			Log::Message("Project Path: {}", FileSystem::ToString(projectPath));
 		}
 
 		void LoadAllAssets();

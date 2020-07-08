@@ -2,7 +2,7 @@
 cmake_minimum_required (VERSION 3.12)
 MESSAGE(STATUS "CMAKE_ROOT: " ${CMAKE_ROOT})
 
-option(ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
+option(VCLANG_ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
 
 # Turn on the verbose
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -37,3 +37,20 @@ add_subdirectory(Apps/CLI)
 
 # Editor
 add_subdirectory(Apps/Editor)
+
+
+# clang-format
+include(CMake/CheckClangTools.cmake)
+if(CLANG_FORMAT_EXE)
+    # Additional targets to perform clang-format/clang-tidy
+    file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS Apps/**/*.cpp Apps/**/*.h Libs/**/*.cpp Libs/**/*.h)
+
+    add_custom_target(ClangFormat COMMAND ${CLANG_FORMAT_EXE} -i ${ALL_SOURCE_FILES})
+endif()
+
+if(CLANG_TIDY_EXE)
+    # Additional targets to perform clang-format/clang-tidy
+    file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS Apps/**/*.cpp Apps/**/*.h Libs/**/*.cpp Libs/**/*.h)
+
+    add_custom_target(ClangTidy COMMAND ${CLANG_FORMAT_EXE} -i ${ALL_SOURCE_FILES})
+endif()

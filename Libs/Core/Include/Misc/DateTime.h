@@ -7,7 +7,6 @@
 #include "Platform/PlatformTime.h"
 
 
-
 class Archive;
 
 
@@ -103,8 +102,7 @@ public:
 	template <typename Precision>
 	DateTime(Chrono::time_point<SysClock, Precision> value)
 		: value{Chrono::time_point_cast<decmicroseconds, SysClock, Precision>(value)}
-	{
-	}
+	{}
 
 	/**
 	 * Creates and initializes a new instance with the specified year, month, day, hour, minute, second and millisecond.

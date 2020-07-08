@@ -90,12 +90,10 @@ private:                                                            \
 	static constexpr MetaCounter<0> __meta_Counter(MetaCounter<0>); \
 	template <u32 N>                                                \
 	static void __meta_RegistryProperty(MetaCounter<N>)             \
-	{                                                               \
-	}                                                               \
+	{}                                                              \
 	template <u32 N>                                                \
 	void __meta_SerializeProperty(Archive&, MetaCounter<N>)         \
-	{                                                               \
-	}
+	{}
 
 
 /** Defines an struct */
@@ -144,12 +142,10 @@ private:                                                            \
 	static constexpr MetaCounter<0> __meta_Counter(MetaCounter<0>); \
 	template <u32 N>                                                \
 	static void __meta_RegistryProperty(MetaCounter<N>)             \
-	{                                                               \
-	}                                                               \
+	{}                                                              \
 	template <u32 N>                                                \
 	void __meta_SerializeProperty(Archive&, MetaCounter<N>)         \
-	{                                                               \
-	}                                                               \
+	{}                                                              \
                                                                     \
 	static inline BaseType* StaticType()                            \
 	{                                                               \

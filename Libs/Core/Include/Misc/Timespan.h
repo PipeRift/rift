@@ -12,7 +12,6 @@
 #include <ratio>
 
 
-
 // decimals of microseconds
 using decmicroseconds = std::chrono::duration<i64, std::ratio<1, 10'000'000>>;
 

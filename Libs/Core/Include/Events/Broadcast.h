@@ -38,9 +38,7 @@ protected:
 
 
 public:
-	Broadcast() : rawListeners{}, objListeners{}
-	{
-	}
+	Broadcast() : rawListeners{}, objListeners{} {}
 
 	/** Broadcast to all binded functions */
 	void DoBroadcast(const Params&... params)
@@ -87,7 +85,9 @@ public:
 			}
 			else
 			{
-				return Bind([instance, method](Params... params) { (instance->*method)(params...); });
+				return Bind([instance, method](Params... params) {
+					(instance->*method)(params...);
+				});
 			}
 		}
 
@@ -102,7 +102,9 @@ public:
 		if (object && method)
 		{
 			Type* const instance = *object;
-			Function func = [instance, method](Params... params) { (instance->*method)(params...); };
+			Function func = [instance, method](Params... params) {
+				(instance->*method)(params...);
+			};
 
 			EventHandle handle{};
 			objListeners.Add({handle.Id(), MoveTemp(func), object});
@@ -118,15 +120,18 @@ public:
 		if (!handle)
 			return false;
 
-		return rawListeners.RemoveIf([handle](const auto& listener) { return listener.id == handle.Id(); }) > 0;
+		return rawListeners.RemoveIf([handle](const auto& listener) {
+			return listener.id == handle.Id();
+		}) > 0;
 	}
 
 	bool UnbindAll(Ptr<Object> object) const
 	{
 		if (object)
 		{
-			return objListeners.RemoveIf([object](const auto& listener) { return !listener.object || listener.object == object; }) >
-				   0;
+			return objListeners.RemoveIf([object](const auto& listener) {
+				return !listener.object || listener.object == object;
+			}) > 0;
 		}
 		return false;
 	}
@@ -142,7 +147,9 @@ public:
 			}
 			else
 			{
-				return rawListeners.RemoveIf([instance](const auto& listener) { return listener.instance == instance; }) > 0;
+				return rawListeners.RemoveIf([instance](const auto& listener) {
+					return listener.instance == instance;
+				}) > 0;
 			}
 		}
 		return false;
