@@ -3,7 +3,7 @@
 
 #include "BaseObject.h"
 #include "ObjectPtr.h"
-#include "Reflection/TClass.h"
+#include "Reflection/Class.h"
 #include "Serialization/Archive.h"
 
 
@@ -11,12 +11,13 @@ class Context;
 
 class CORE_API Object : public BaseObject
 {
-	ORPHAN_CLASS(Object)
+	ORPHAN_CLASS(Object, ReflectionTags::None)
 
 private:
-	P(Name, name);
+	PROP(Name, name);
+	Name name;
 
-	Class* ownClass;
+	Refl::Class* ownClass;
 	Ptr<BaseObject> self;
 	Ptr<BaseObject> owner;
 
@@ -24,14 +25,14 @@ private:
 public:
 	Object() : BaseObject(), ownClass{nullptr}, self{}, owner{} {};
 
-	void PreConstruct(Ptr<BaseObject>&& inSelf, Class* inClass, const Ptr<BaseObject>& inOwner)
+	void PreConstruct(
+		Ptr<BaseObject>&& inSelf, Refl::Class* inClass, const Ptr<BaseObject>& inOwner)
 	{
 		ownClass = inClass;
 		self = inSelf;
 		owner = inOwner;
 	}
-	virtual void Construct()
-	{}
+	virtual void Construct() {}
 
 	virtual bool Serialize(Archive& ar)
 	{
@@ -47,7 +48,6 @@ public:
 			global->Reset();
 		}
 	}*/
-
 
 	Ptr<Object> GetOwner() const
 	{
@@ -65,7 +65,7 @@ public:
 		return self.Cast<T>();
 	}
 
-	Class* GetClass() const
+	Refl::Class* GetType() const
 	{
 		return ownClass;
 	}
@@ -85,10 +85,10 @@ public:
 
 
 template <typename Type>
-using IsObject = eastl::is_convertible<Type, Object>;
+using IsObject = std::is_convertible<Type, Object>;
 
 template <class ObjectType>
-static CORE_API GlobalPtr<ObjectType> Create(Class* objectClass, const Ptr<Object> owner = {})
+static CORE_API GlobalPtr<ObjectType> Create(Refl::Class* objectClass, const Ptr<Object> owner = {})
 {
 	static_assert(IsObject<ObjectType>::value, "Type is not an Object!");
 

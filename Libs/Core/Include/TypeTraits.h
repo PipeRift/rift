@@ -1,56 +1,40 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include <EASTL/type_traits.h>
+#include <stddef.h>
 
-
-template <typename T, typename = void>
-struct IsDefined
-{
-	static constexpr bool value = false;
-};
-
-template <typename T>
-struct IsDefined<T, decltype(typeid(T), void())>
-{
-	static constexpr bool value = true;
-};
+#include <type_traits>
 
 
 /** SIZE SELECTORS */
 
 template <class T, size_t size>
-struct IsSmallerType : eastl::integral_constant<bool, (sizeof(T) <= size)>
+struct IsSmallerType : std::integral_constant<bool, (sizeof(T) <= size)>
 {};
 
 template <class T, size_t size>
-struct IsBiggerType : eastl::integral_constant<bool, (sizeof(T) > size)>
+struct IsBiggerType : std::integral_constant<bool, (sizeof(T) > size)>
 {};
 
 
-#define EnableIfSmallerType(size) typename = eastl::enable_if<IsSmallerType<T, size>::value>
-#define EnableIfNotSmallerType(size) typename = eastl::enable_if<!IsSmallerType<T, size>::value>
+#define EnableIfSmallerType(size) typename = std::enable_if<IsSmallerType<T, size>::value>
+#define EnableIfNotSmallerType(size) typename = std::enable_if<!IsSmallerType<T, size>::value>
 
-#define EnableIfBiggerType(size) typename = eastl::enable_if<IsBiggerType<T, size>::value>
-#define EnableIfNotBiggerType(size) typename = eastl::enable_if<!IsBiggerType<T, size>::value>
+#define EnableIfBiggerType(size) typename = std::enable_if<IsBiggerType<T, size>::value>
+#define EnableIfNotBiggerType(size) typename = std::enable_if<!IsBiggerType<T, size>::value>
 
-#define EnableIfPassByValue(T) \
-	typename = eastl::enable_if < IsSmallerType<T, sizeof(size_t)>::value && eastl::is_copy_constructible<T>::type >
+#define EnableIfPassByValue(T)                                             \
+	typename = std::enable_if < IsSmallerType<T, sizeof(size_t)>::value && \
+			   std::is_copy_constructible<T>::type >
 #define EnableIfNotPassByValue(T) \
-	typename = eastl::enable_if<!(IsSmallerType<T, sizeof(size_t)>::value && eastl::is_copy_constructible<T>::type)>
+	typename = std::enable_if<!(  \
+		IsSmallerType<T, sizeof(size_t)>::value && std::is_copy_constructible<T>::type)>
 
 #define EnableIfAll typename = void
 
 
 template <bool B, class T = void>
-using EnableIf = eastl::enable_if<B, T>;
+using EnableIf = std::enable_if<B, T>;
 
 template <bool B, class T = void>
-using DisableIf = eastl::disable_if<B, T>;
-
-
-template <bool B, class T = void>
-using EnableIfT = eastl::enable_if_t<B, T>;
-
-template <bool B, class T = void>
-using DisableIfT = eastl::disable_if_t<B, T>;
+using EnableIfT = std::enable_if_t<B, T>;

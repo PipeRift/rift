@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CoreTypes.h"
+#include "Math/Quaternion.h"
 #include "Math/Vector.h"
 #include "Object/ObjectPtr.h"
 #include "Object/Struct.h"
@@ -13,6 +14,10 @@
 #include <fstream>
 
 
+template <typename T>
+void Serialize(class Archive&, const char* name, T)
+{}
+
 class Archive
 {
 	const bool bLoads = false;
@@ -21,10 +26,8 @@ public:
 	class Context* context;
 
 
-	Archive() : bLoads(false), context{nullptr}
-	{}
-	Archive(bool bLoads) : bLoads(bLoads), context{nullptr}
-	{}
+	Archive() : bLoads(false), context{nullptr} {}
+	Archive(bool bLoads) : bLoads(bLoads), context{nullptr} {}
 	virtual ~Archive() = default;
 
 
@@ -58,7 +61,8 @@ public:
 	void Serialize(const char* name, GlobalPtr<T>& val)
 	{
 		BeginObject(name);
-		// Not yet supported. Hard and soft references need to take care of each other while serializing
+		// Not yet supported. Hard and soft references need to take care of each
+		// other while serializing
 		/*if (IsLoading())
 		{
 			val->Serialize(*this);
@@ -78,49 +82,14 @@ public:
 		if (IsSaving())
 			ptrName = val ? val->GetName() : TX("None");
 
-		Serialize(name, ptrName);
+		// CustomSerializeOrNot(name, ptrName);
 
 		/*if(IsLoading())
 			Find and Assign object */
 	}
 
 	template <typename T>
-	void Serialize(const char* name, TArray<T>& val)
-	{
-		BeginObject(name);
-		if (IsLoading())
-		{
-			u32 size;
-			SerializeArraySize(size);
-			val.Reserve(size);
-
-			for (u32 i = 0; i < size; ++i)
-			{
-				BeginObject(i);
-				{
-					operator()("val", val[i]);
-					// Data() = Data()[""]; // Temporal patch to avoid named properties
-				}
-				EndObject();
-			}
-		}
-		else
-		{
-			u32 size = val.Size();
-			SerializeArraySize(size);
-
-			for (u32 i = 0; i < size; ++i)
-			{
-				BeginObject(i);
-				{
-					// Data()[""] = Data(); // Temporal patch to avoid named properties
-					operator()("val", val[i]);
-				}
-				EndObject();
-			}
-		}
-		EndObject();
-	}
+	void Serialize(const char* name, TArray<T>& val);
 
 	template <typename T>
 	void SerializeStruct(const char* name, T& val)
@@ -155,31 +124,9 @@ public:
 	virtual void SerializeArraySize(u32& Size) = 0;
 
 private:
-	/**
-	 * Selection of Serialize call.
-	 */
-	template <class T>
-	bool CustomSerializeOrNot(const char* name, T& val)
-	{
-		if constexpr (ClassTraits<T>::HasCustomSerialize)
-		{
-			return val.Serialize(*this, name);
-		}
-		else if constexpr (ClassTraits<T>::HasGlobalSerialize)
-		{
-			return ::Serialize(*this, name, val);
-		}
-		else if constexpr (IsStructType<T>())
-		{
-			SerializeStruct(name, val);
-			return true;
-		}
-		else
-		{
-			Serialize(name, val);
-			return true;
-		}
-	}
+	// Selection of 'Serialize' call
+	template <typename T>
+	bool CustomSerializeOrNot(const char* name, T& val);
 };
 
 
@@ -192,12 +139,15 @@ class JsonArchive : public Archive
 
 public:
 	// Save Constructor
-	JsonArchive(const bool bBeautify = true) : Archive(false), baseData(), depthData{}, bBeautify{bBeautify}
+	JsonArchive(const bool bBeautify = true)
+		: Archive(false)
+		, baseData()
+		, depthData{}
+		, bBeautify{bBeautify}
 	{}
 
 	// Load constructor
-	JsonArchive(const Json& data) : Archive(true), baseData(data), depthData{}, bBeautify{false}
-	{}
+	JsonArchive(const Json& data) : Archive(true), baseData(data), depthData{}, bBeautify{false} {}
 
 	virtual ~JsonArchive() = default;
 
@@ -276,3 +226,67 @@ private:
 		}
 	};
 };
+
+
+template <typename T>
+inline void Archive::Serialize(const char* name, TArray<T>& val)
+{
+	BeginObject(name);
+	if (IsLoading())
+	{
+		u32 size;
+		SerializeArraySize(size);
+		val.Reserve(size);
+
+		for (u32 i = 0; i < size; ++i)
+		{
+			BeginObject(i);
+			{
+				operator()("val", val[i]);
+				// Data() = Data()[""]; // Temporal patch to avoid named
+				// properties
+			}
+			EndObject();
+		}
+	}
+	else
+	{
+		u32 size = val.Size();
+		SerializeArraySize(size);
+
+		for (u32 i = 0; i < size; ++i)
+		{
+			BeginObject(i);
+			{
+				// Data()[""] = Data(); // Temporal patch to avoid named
+				// properties
+				operator()("val", val[i]);
+			}
+			EndObject();
+		}
+	}
+	EndObject();
+}
+
+template <typename T>
+bool Archive::CustomSerializeOrNot(const char* name, T& val)
+{
+	if constexpr (ClassTraits<T>::HasCustomSerialize)
+	{
+		return val.Serialize(*this, name);
+	}
+	else if constexpr (ClassTraits<T>::HasGlobalSerialize)
+	{
+		return ::Serialize(*this, name, val);
+	}
+	else if constexpr (IsStructType<T>())
+	{
+		SerializeStruct(name, val);
+		return true;
+	}
+	else
+	{
+		Serialize(name, val);
+		return true;
+	}
+}

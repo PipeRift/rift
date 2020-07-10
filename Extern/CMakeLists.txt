@@ -2,18 +2,33 @@
 include(FetchContent)
 
 # Submodule libraries
+add_subdirectory(CLI11)
+add_subdirectory(EABase)
+add_subdirectory(fmt)
+add_subdirectory(glm)
 add_subdirectory(SparseMap)
 add_subdirectory(RobinMap)
 add_subdirectory(Taskflow)
-add_subdirectory(CLI11)
-add_subdirectory(glm)
-add_subdirectory(fmt)
+
+option(SPDLOG_FMT_EXTERNAL "Use external fmt library instead of bundled" ON)
+add_subdirectory(spdlog)
+add_subdirectory(nlohmann_json)
 
 # TRACY
 add_library(Tracy STATIC)
 target_include_directories(Tracy PUBLIC Tracy)
 target_sources(Tracy PRIVATE Tracy/TracyClient.cpp)
 target_compile_features(Tracy PUBLIC cxx_std_17)
+if(LINUX)
+    find_library(DLPATH dl)
+    target_link_libraries(Tracy PRIVATE ${DLPATH})
+endif()
+
+# EASTL
+file(GLOB_RECURSE EASTL_SOURCES CONFIGURE_DEPENDS EASTL/source/*.cpp)
+add_library(EASTL STATIC ${EASTL_SOURCES})
+target_include_directories(EASTL PUBLIC EASTL/include)
+target_link_libraries(EASTL EABase)
 
 
 if(WINDOWS)

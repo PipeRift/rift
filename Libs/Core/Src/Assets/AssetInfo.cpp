@@ -19,7 +19,7 @@ bool AssetInfo::Serialize(class Archive& ar, const char* name)
 
 Class* AssetInfo::GetDetailsWidgetClass()
 {
-	return AssetInfoPropertyWidget::StaticClass();
+	return AssetInfoPropertyWidget::Type();
 }
 
 #endif

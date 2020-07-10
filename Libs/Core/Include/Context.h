@@ -39,21 +39,20 @@ public:
 		}
 	}
 
-	Context() : Super(), assetManager{Create<AssetManager>()}
-	{}
+	Context() : Super(), assetManager{Create<AssetManager>()} {}
 
 	virtual void Construct() override
 	{
 		Super::Construct();
 
 		Log::Init("Saved/Logs");
-		Log::Message("Initialize Context");
+		Log::Info("Initialize Context");
 	}
 
 	virtual void BeforeDestroy() override
 	{
 		Super::BeforeDestroy();
-		Log::Message("Context has been destroyed");
+		Log::Info("Context has been destroyed");
 		Log::Shutdown();
 	}
 

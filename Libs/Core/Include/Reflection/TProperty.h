@@ -1,52 +1,58 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "Class.h"
 #include "Property.h"
 #include "ReflectionTags.h"
 #include "Runtime/TPropertyHandle.h"
 #include "Strings/Name.h"
-#include "StructType.h"
+#include "Type.h"
 
-#include <EASTL/shared_ptr.h>
+#include <functional>
+#include <memory>
 
 
-/**
- * Static information about a property
- */
-template <typename VarType>
-class TProperty : public Property
+namespace Refl
 {
-public:
-	using Access = eastl::function<VarType*(BaseStruct*)>;
-
-private:
-	Access access;
-
-
-public:
-	TProperty(BaseType* typePtr, Name typeName, Name name, Access&& access, ReflectionTags tags)
-		: Property(typePtr, typeName, name, tags)
-		, access(access)
-	{}
-
-	virtual eastl::shared_ptr<PropertyHandle> CreateHandle(const Ptr<BaseObject>& instance) const override
+	/**
+	 * Static information about a property
+	 */
+	template <typename VariableT>
+	class TProperty : public Property
 	{
-		const BaseType* const type = instance->GetClass();
-		if (type == GetContainerType() || type->IsChildOf(GetContainerType()))
-		{
-			return eastl::shared_ptr<PropertyHandle>(new TPropertyHandle<VarType>(instance, this, access));
-		}
-		return {};
-	}
+	public:
+		using Access = std::function<VariableT*(void*)>;
 
-	virtual eastl::shared_ptr<PropertyHandle> CreateHandle(BaseStruct* instance) const override
-	{
-		const BaseType* const type = instance->GetStruct();
-		if (type == GetContainerType() || type->IsChildOf(GetContainerType()))
+	private:
+		Access access;
+
+
+	public:
+		TProperty(Type* type, Name typeName, Name name, Access&& access, ReflectionTags tags)
+			: Property(type, typeName, name, tags)
+			, access(access)
+		{}
+
+		virtual std::shared_ptr<PropertyHandle> CreateHandle(
+			const Ptr<BaseObject>& instance) const override
 		{
-			return eastl::shared_ptr<PropertyHandle>(new TPropertyHandle<VarType>(instance, this, access));
+			const Type* const type = instance->GetType();
+			if (type == GetContainerType() || type->IsChildOf(GetContainerType()))
+			{
+				return std::shared_ptr<PropertyHandle>(
+					new TPropertyHandle<VariableT>(instance, this, access));
+			}
+			return {};
 		}
-		return {};
-	}
-};
+
+		virtual std::shared_ptr<PropertyHandle> CreateHandle(BaseStruct* instance) const override
+		{
+			const Type* const type = instance->GetType();
+			if (type == GetContainerType() || type->IsChildOf(GetContainerType()))
+			{
+				return std::shared_ptr<PropertyHandle>(
+					new TPropertyHandle<VariableT>(instance, this, access));
+			}
+			return {};
+		}
+	};
+}	 // namespace Refl

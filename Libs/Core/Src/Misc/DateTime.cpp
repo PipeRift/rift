@@ -27,8 +27,9 @@ DateTime::DateTime(i32 year, i32 month, i32 day, i32 hour, i32 minute, i32 secon
 		Log::Warning("Created invalid date format.");
 	}
 
-	value = SysTime{date::sys_days(date::year{year} / month / day) + std::chrono::hours{hour} + std::chrono::minutes{minute} +
-					std::chrono::seconds{second} + std::chrono::milliseconds{millisecond}};
+	value = SysTime{date::sys_days(date::year{year} / month / day) + std::chrono::hours{hour} +
+					std::chrono::minutes{minute} + std::chrono::seconds{second} +
+					std::chrono::milliseconds{millisecond}};
 }
 
 
@@ -59,7 +60,8 @@ u32 DateTime::GetDayOfYear() const
 	auto timeDays = std::chrono::floor<days>(value);
 	const year_month_day ymd{timeDays};
 
-	return (timeDays.time_since_epoch() - local_days{ymd.year() / jan / 1}.time_since_epoch()).count();
+	return (timeDays.time_since_epoch() - local_days{ymd.year() / jan / 1}.time_since_epoch())
+		.count();
 }
 
 
@@ -157,8 +159,8 @@ String DateTime::ToHttpDate() const
 			break;
 	}
 
-	return CString::Format(TX("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT"), DayStr.c_str(), GetDay(), MonthStr.c_str(), GetYear(),
-		GetHour(), GetMinute(), GetSecond());
+	return CString::Format(TX("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT"), DayStr.c_str(),
+		GetDay(), MonthStr.c_str(), GetYear(), GetHour(), GetMinute(), GetSecond());
 }
 
 
@@ -345,14 +347,15 @@ bool DateTime::ParseHttpDate(const String& HttpDate, DateTime& OutDateTime)
 			Minute = *CString::ToI32(Tokens[1]);
 			Second = *CString::ToI32(Tokens[2]);
 
-			return (Hour >= 0 && Hour < 24) && (Minute >= 0 && Minute <= 59) && (Second >= 0 && Second <= 59);
+			return (Hour >= 0 && Hour < 24) && (Minute >= 0 && Minute <= 59) &&
+				   (Second >= 0 && Second <= 59);
 		}
 
 		return false;
 	};
 
 	auto ParseWkday = [](const String& WkDay) -> i32 {
-		const SIZE_T NumChars = WkDay.size();
+		const sizet NumChars = WkDay.size();
 
 		if (NumChars == 3)
 		{
@@ -390,7 +393,7 @@ bool DateTime::ParseHttpDate(const String& HttpDate, DateTime& OutDateTime)
 	};
 
 	auto ParseWeekday = [](const String& WeekDay) -> i32 {
-		const SIZE_T NumChars = WeekDay.size();
+		const sizet NumChars = WeekDay.size();
 
 		if (NumChars >= 6 && NumChars <= 9)
 		{
@@ -428,7 +431,7 @@ bool DateTime::ParseHttpDate(const String& HttpDate, DateTime& OutDateTime)
 	};
 
 	auto ParseMonth = [](const String& Month) -> i32 {
-		const SIZE_T NumChars = Month.size();
+		const sizet NumChars = Month.size();
 
 		if (NumChars == 3)
 		{
@@ -485,8 +488,8 @@ bool DateTime::ParseHttpDate(const String& HttpDate, DateTime& OutDateTime)
 		return -1;
 	};
 
-	auto ParseDate1 = [ParseMonth](const String& DayStr, const String& MonStr, const String& YearStr, i32& Month, i32& Day,
-						  i32& Year) -> bool {
+	auto ParseDate1 = [ParseMonth](const String& DayStr, const String& MonStr,
+						  const String& YearStr, i32& Month, i32& Day, i32& Year) -> bool {
 		// date1 = 2DIGIT SP month SP 4DIGIT
 		// ; day month year(e.g., 02 Jun 1982)
 
@@ -510,17 +513,19 @@ bool DateTime::ParseHttpDate(const String& HttpDate, DateTime& OutDateTime)
 			Month = ParseMonth(Tokens[1]);
 			Year = *CString::ToI32(Tokens[2]);
 
-			// Horrible assumption here, but this is a deprecated part of the spec
+			// Horrible assumption here, but this is a deprecated part of the
+			// spec
 			Year += 1900;
 		}
 
 		return (Day > 0 && Day <= 31) && (Month > 0 && Month <= 12) && (Year > 0 && Year <= 9999);
 	};
 
-	auto ParseDate3 = [ParseMonth](const String& MonStr, const String& DayStr, i32& Month, i32& Day) -> bool {
+	auto ParseDate3 = [ParseMonth](const String& MonStr, const String& DayStr, i32& Month,
+						  i32& Day) -> bool {
 		// date3 = month SP(2DIGIT | (SP 1DIGIT))
 		// ; month day(e.g., Jun  2)
-		const SIZE_T NumDigits = DayStr.size();
+		const sizet NumDigits = DayStr.size();
 		Day = (NumDigits > 0 && NumDigits <= 2) ? *CString::ToI32(DayStr) : -1;
 		Month = ParseMonth(MonStr);
 
@@ -690,7 +695,7 @@ bool DateTime::ParseIso8601(const TCHAR* DateTimeString, DateTime& OutDateTime)
 				return false;
 			}
 
-			for (SIZE_T Digits = Next - ptr; Digits < 3; ++Digits)
+			for (sizet Digits = Next - ptr; Digits < 3; ++Digits)
 			{
 				Millisecond *= 10;
 			}
@@ -743,11 +748,13 @@ bool DateTime::ParseIso8601(const TCHAR* DateTimeString, DateTime& OutDateTime)
 	return true;
 }
 
-bool DateTime::Validate(i32 Year, i32 Month, i32 Day, i32 Hour, i32 Minute, i32 Second, i32 Millisecond)
+bool DateTime::Validate(
+	i32 Year, i32 Month, i32 Day, i32 Hour, i32 Minute, i32 Second, i32 Millisecond)
 {
-	return (Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) && (Day >= 1) && (Day <= DaysInMonth(Year, Month)) &&
-		   (Hour >= 0) && (Hour <= 23) && (Minute >= 0) && (Minute <= 59) && (Second >= 0) && (Second <= 59) &&
-		   (Millisecond >= 0) && (Millisecond <= 999);
+	return (Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) && (Day >= 1) &&
+		   (Day <= DaysInMonth(Year, Month)) && (Hour >= 0) && (Hour <= 23) && (Minute >= 0) &&
+		   (Minute <= 59) && (Second >= 0) && (Second <= 59) && (Millisecond >= 0) &&
+		   (Millisecond <= 999);
 }
 
 void DateTime::InitializeTime()

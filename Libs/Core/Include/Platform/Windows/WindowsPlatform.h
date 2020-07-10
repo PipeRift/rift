@@ -1,21 +1,24 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
+#include "Platform/GenericPlatform.h"
+
+
 /**
  * Windows specific types
  **/
-struct FWindowsPlatformTypes : public FGenericPlatformTypes
+struct WindowsPlatformTypes : public GenericPlatformTypes
 {
 #ifdef _WIN64
-	typedef unsigned __int64 SIZE_T;
-	typedef __int64 SSIZE_T;
+	using sizet = __int64;
+	using ssizet = __int64;
 #else
-	typedef unsigned long SIZE_T;
-	typedef long SSIZE_T;
+	using sizet = unsigned long;
+	using ssizet = long;
 #endif
 };
 
-typedef FWindowsPlatformTypes FPlatformTypes;
+using PlatformTypes = WindowsPlatformTypes;
 
 
 #define FORCEINLINE __forceinline	  /* Force code to be inline */

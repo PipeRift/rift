@@ -8,9 +8,10 @@
 float Math::Atan2(float Y, float X)
 {
 	// return atan2f(Y,X);
-	// atan2f occasionally returns NaN with perfectly valid input (possibly due to a compiler or library bug).
-	// We are replacing it with a minimax approximation with a max relative error of 7.15255737e-007 compared to the C library
-	// function. On PC this has been measured to be 2x faster than the std C version.
+	// atan2f occasionally returns NaN with perfectly valid input (possibly due to a compiler or
+	// library bug). We are replacing it with a minimax approximation with a max relative error
+	// of 7.15255737e-007 compared to the C library function. On PC this has been measured to be 2x
+	// faster than the std C version.
 
 	const float absX = Math::Abs(X);
 	const float absY = Math::Abs(Y);
@@ -24,8 +25,9 @@ float Math::Atan2(float Y, float X)
 	float t3 = t1 / t0;
 	float t4 = t3 * t3;
 
-	static const float c[7] = {+7.2128853633444123e-03f, -3.5059680836411644e-02f, +8.1675882859940430e-02f,
-		-1.3374657325451267e-01f, +1.9856563505717162e-01f, -3.3324998579202170e-01f, +1.0f};
+	static const float c[7] = {+7.2128853633444123e-03f, -3.5059680836411644e-02f,
+		+8.1675882859940430e-02f, -1.3374657325451267e-01f, +1.9856563505717162e-01f,
+		-3.3324998579202170e-01f, +1.0f};
 
 	t0 = c[0];
 	t0 = t0 * t4 + c[1];

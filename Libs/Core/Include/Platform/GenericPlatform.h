@@ -28,38 +28,59 @@ struct SelectIntPointerType<T32BITS, T64BITS, 4>
 /**
  * Generic types for almost all compilers and platforms
  */
-struct FGenericPlatformTypes
+struct GenericPlatformTypes
 {
 	// Unsigned base types.
-	typedef unsigned char uint8;		  // 8-bit  unsigned.
-	typedef unsigned short int uint16;	  // 16-bit unsigned.
-	typedef unsigned int uint32;		  // 32-bit unsigned.
-	typedef unsigned long long uint64;	  // 64-bit unsigned.
+	using uint8 = unsigned char;		  // 8-bit  unsigned.
+	using uint16 = unsigned short int;	  // 16-bit unsigned.
+	using uint32 = unsigned int;		  // 32-bit unsigned.
+	using uint64 = unsigned long long;	  // 64-bit unsigned.
 
 	// Signed base types.
-	typedef signed char int8;		   // 8-bit  signed.
-	typedef signed short int int16;	   // 16-bit signed.
-	typedef signed int int32;		   // 32-bit signed.
-	typedef signed long long int64;	   // 64-bit signed.
+	using int8 = signed char;		   // 8-bit  signed.
+	using int16 = signed short int;	   // 16-bit signed.
+	using int32 = signed int;		   // 32-bit signed.
+	using int64 = signed long long;	   // 64-bit signed.
 
 	// Character types.
-	using ANSICHAR = char;		 // An ANSI character       -                  8-bit fixed-width representation of 7-bit characters.
-	using WIDECHAR = wchar_t;	 // A wide character        - In-memory only.  ?-bit fixed-width representation of the platform's
-								 // natural wide character set.  Could be different sizes on different platforms.
-	using CHAR8 = uint8;	// An 8-bit character type - In-memory only.  8-bit representation.  Should really be char8_t but making
-							// this the generic option is easier for compilers which don't fully support C++11 yet (i.e. MSVC).
-	using CHAR16 =
-		uint16;	   // A 16-bit character type - In-memory only.  16-bit representation.  Should really be char16_t but making this
-				   // the generic option is easier for compilers which don't fully support C++11 yet (i.e. MSVC).
-	using CHAR32 =
-		uint32;	   // A 32-bit character type - In-memory only.  32-bit representation.  Should really be char32_t but making this
-				   // the generic option is easier for compilers which don't fully support C++11 yet (i.e. MSVC).
-	using TCHAR = ANSICHAR;	   // A switchable character  - In-memory only.  Either ANSICHAR or WIDECHAR
+	// An ANSI character - 8-bit fixed-width representation of 7-bit characters.
+	using ANSICHAR = char;
 
-	typedef SelectIntPointerType<uint32, uint64, sizeof(void*)>::TIntPointer UPTRINT;	 // unsigned int the same size as a pointer
-	typedef SelectIntPointerType<int32, int64, sizeof(void*)>::TIntPointer PTRINT;		 // signed int the same size as a pointer
-	typedef UPTRINT SIZE_T;																 // unsigned int the same size as a pointer
-	typedef PTRINT SSIZE_T;																 // signed int the same size as a pointer
+	// A wide character - In-memory only. ?-bit fixed-width representation of
+	// the platform's natural wide character set. Could be different sizes on
+	// different platforms.
+	using WIDECHAR = wchar_t;
+
+	// An 8-bit character type - In-memory only. 8-bit representation. Should
+	// really be char8_t but making this the generic option is easier for
+	// compilers which don't fully support C++11 yet (i.e. MSVC).
+	using CHAR8 = uint8;
+
+	// A 16-bit character type - In-memory only. 16-bit representation. Should
+	// really be char16_t but making this the generic option is easier for
+	// compilers which don't fully support C++11 yet (i.e. MSVC).
+	using CHAR16 = uint16;
+
+	// A 32-bit character type - In-memory only.  32-bit representation.  Should
+	// really be char32_t but making this the generic option is easier for
+	// compilers which don't fully support C++11 yet (i.e. MSVC).
+	using CHAR32 = uint32;
+
+	// A switchable character - In-memory only.
+	// Either ANSICHAR or WIDECHAR
+	using TCHAR = ANSICHAR;
+
+	// unsigned int the same size as a pointer
+	using uPtr = SelectIntPointerType<uint32, uint64, sizeof(void*)>::TIntPointer;
+
+	// signed int the same size as a pointer
+	using iPtr = SelectIntPointerType<int32, int64, sizeof(void*)>::TIntPointer;
+
+	// unsigned int the same size as a pointer
+	using sizet = uPtr;
+
+	// signed int the same size as a pointer
+	using ssizet = iPtr;
 
 	typedef int32 TYPE_OF_NULL;
 	typedef decltype(nullptr) TYPE_OF_NULLPTR;

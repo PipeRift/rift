@@ -5,14 +5,11 @@
 #include "Strings/Name.h"
 
 
-Allocator::Allocator(const TCHAR* name /*= "Global"*/) : name{name}, size{0}, malloc_alloc{""}
-{}
+Allocator::Allocator(const TCHAR* name /*= "Global"*/) : name{name}, size{0}, malloc_alloc{""} {}
 
-Allocator::Allocator(const Allocator&) : name{}, size{0}, malloc_alloc{}
-{}
+Allocator::Allocator(const Allocator&) : name{}, size{0}, malloc_alloc{} {}
 
-Allocator::Allocator(const Allocator&, const TCHAR* name) : name{name}, size{0}, malloc_alloc{""}
-{}
+Allocator::Allocator(const Allocator&, const TCHAR* name) : name{name}, size{0}, malloc_alloc{""} {}
 
 Name Allocator::GetName() const
 {
@@ -58,13 +55,14 @@ namespace Memory
 
 
 // EASTL News
-void* operator new[](size_t size, const char* /*name*/, int flags, unsigned /*debugFlags*/, const char* /*file*/, int /*line*/)
+void* operator new[](size_t size, const char* /*name*/, int flags, unsigned /*debugFlags*/,
+	const char* /*file*/, int /*line*/)
 {
 	return Memory::GetAllocator()->Allocate(size, flags);
 }
 
-void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* /*name*/, int flags,
-	unsigned /*debugFlags*/, const char* /*file*/, int /*line*/)
+void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* /*name*/,
+	int flags, unsigned /*debugFlags*/, const char* /*file*/, int /*line*/)
 {
 	return Memory::GetAllocator()->Allocate(size, alignment, alignmentOffset, flags);
 }

@@ -7,7 +7,7 @@
 
 Class* BaseAssetPtr::GetDetailsWidgetClass()
 {
-	return AssetInfoPropertyWidget::StaticClass();
+	return AssetInfoPropertyWidget::Type();
 }
 
 #endif

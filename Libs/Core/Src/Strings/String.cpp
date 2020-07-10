@@ -22,14 +22,15 @@ void CString::ToSentenceCase(const String& str, String& result)
 	}
 }
 
-i32 CString::ParseIntoArray(const String& str, TArray<String>& OutArray, const TCHAR* pchDelim, bool InCullEmpty /*= true*/)
+i32 CString::ParseIntoArray(
+	const String& str, TArray<String>& OutArray, const TCHAR* pchDelim, bool InCullEmpty /*= true*/)
 {
 	return 0;
 }
 
 String CString::BackSubstr(const String& str, i32 size)
 {
-	return str.substr(Math::Max((SIZE_T) 0u, SIZE_T(str.size() - size)), size);
+	return str.substr(Math::Max(sizet(0u), sizet(str.size() - size)), size);
 }
 
 bool CString::IsNumeric(const TCHAR* Str)
@@ -77,4 +78,5 @@ String CString::ParseMemorySize(size_t size)
 	return CString::Format("{} {}", finalSize, sizes[scale]);
 }
 
-// const std::wstring_convert<std::codecvt_utf8<WIDECHAR>, WIDECHAR, StringAllocator, StringAllocator> CString::converter {};
+// const std::wstring_convert<std::codecvt_utf8<WIDECHAR>, WIDECHAR,
+// StringAllocator, StringAllocator> CString::converter {};

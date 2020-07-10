@@ -15,7 +15,8 @@
 namespace VCLang
 {
 	/**
-	 * A project represents a group of classes, structs and other features of the lenguage that can be edited or compiled
+	 * A project represents a group of classes, structs and other features of the lenguage that can
+	 * be edited or compiled
 	 */
 	class Project : public Object
 	{
@@ -28,13 +29,12 @@ namespace VCLang
 
 
 	public:
-		Project() : Super()
-		{}
+		Project() : Super() {}
 
 		void Init(Path path)
 		{
 			projectPath = FileSystem::ToAbsolute(path);
-			Log::Message("Project Path: {}", FileSystem::ToString(projectPath));
+			Log::Info("Project Path: {}", FileSystem::ToString(projectPath));
 		}
 
 		void LoadAllAssets();

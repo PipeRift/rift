@@ -4,16 +4,15 @@
 #include "BaseStruct.h"
 #include "CoreEngine.h"
 #include "Reflection/Reflection.h"
-#include "Reflection/TStruct.h"
-#include "Serialization/Archive.h"
+#include "Reflection/Struct.h"
 
 
 struct Struct : public BaseStruct
 {
-	ORPHAN_STRUCT(Struct)
+	ORPHAN_STRUCT(Struct, ReflectionTags::None)
 
-	virtual StructType* GetStruct() const
+	virtual Refl::Struct* GetType() const
 	{
-		return StaticStruct();
+		return StaticType();
 	}
 };

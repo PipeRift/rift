@@ -20,8 +20,7 @@ private:
 	u64 id;
 
 	/** Used for invalidation */
-	EventHandle(u64 customId) : id(customId)
-	{}
+	EventHandle(u64 customId) : id(customId) {}
 
 public:
 	static EventHandle Invalid()
@@ -29,8 +28,7 @@ public:
 		return {0};
 	}
 
-	EventHandle() : id(NewId())
-	{}
+	EventHandle() : id(NewId()) {}
 
 	u64 Id() const
 	{

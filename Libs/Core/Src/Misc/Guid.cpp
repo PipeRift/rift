@@ -31,22 +31,22 @@ String Guid::ToString(EGuidFormats Format) const
 	switch (Format)
 	{
 		case EGuidFormats::DigitsWithHyphens:
-			result =
-				CString::Format(TX("{:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X}"), a, b >> 16, b & 0xFFFF, c >> 16, c & 0xFFFF, d);
+			result = CString::Format(TX("{:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X}"), a, b >> 16,
+				b & 0xFFFF, c >> 16, c & 0xFFFF, d);
 
 		case EGuidFormats::DigitsWithHyphensInBraces:
-			result =
-				CString::Format(TX("{{{:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X}}}"), a, b >> 16, b & 0xFFFF, c >> 16, c & 0xFFFF, d);
+			result = CString::Format(TX("{{{:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X}}}"), a, b >> 16,
+				b & 0xFFFF, c >> 16, c & 0xFFFF, d);
 
 		case EGuidFormats::DigitsWithHyphensInParentheses:
-			result =
-				CString::Format(TX("({:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X})"), a, b >> 16, b & 0xFFFF, c >> 16, c & 0xFFFF, d);
+			result = CString::Format(TX("({:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X})"), a, b >> 16,
+				b & 0xFFFF, c >> 16, c & 0xFFFF, d);
 
 		case EGuidFormats::HexValuesInBraces:
-			result = CString::Format(
-				TX("{{0x{:08X},0x{:04X},0x{:04X},{{0x{:02X},0x{:02X},0x{:02X},0x{:02X},0x{:02X},0x{:02X},0x{:02X},0x{:02X}}}}}"), a,
-				b >> 16, b & 0xFFFF, c >> 24, (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0XFF, d >> 24, (d >> 16) & 0XFF,
-				(d >> 8) & 0XFF, d & 0XFF);
+			result = CString::Format(TX("{{0x{:08X},0x{:04X},0x{:04X},{{0x{:02X},0x{:02X},0x{:02X},"
+										"0x{:02X},0x{:02X},0x{:02X},0x{:02X},0x{:02X}}}}}"),
+				a, b >> 16, b & 0xFFFF, c >> 24, (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0XFF,
+				d >> 24, (d >> 16) & 0XFF, (d >> 8) & 0XFF, d & 0XFF);
 
 		case EGuidFormats::UniqueObjectGuid:
 			result = CString::Format(TX("{:08X}-{:08X}-{:08X}-{:08X}"), a, b, c, d);
@@ -72,7 +72,7 @@ Guid Guid::New()
 
 bool Guid::Parse(const String& guidString, Guid& OutGuid)
 {
-	const SIZE_T stringSize = guidString.size();
+	const sizet stringSize = guidString.size();
 	if (stringSize == 32)
 	{
 		return ParseExact(guidString, EGuidFormats::Digits, OutGuid);
@@ -118,7 +118,8 @@ bool Guid::ParseExact(const String& GuidString, EGuidFormats Format, Guid& OutGu
 	}
 	else if (Format == EGuidFormats::DigitsWithHyphens)
 	{
-		if ((GuidString[8] != TX('-')) || (GuidString[13] != TX('-')) || (GuidString[18] != TX('-')) || (GuidString[23] != TX('-')))
+		if ((GuidString[8] != TX('-')) || (GuidString[13] != TX('-')) ||
+			(GuidString[18] != TX('-')) || (GuidString[23] != TX('-')))
 		{
 			return false;
 		}
@@ -131,8 +132,9 @@ bool Guid::ParseExact(const String& GuidString, EGuidFormats Format, Guid& OutGu
 	}
 	else if (Format == EGuidFormats::DigitsWithHyphensInBraces)
 	{
-		if ((GuidString[0] != TX('{')) || (GuidString[9] != TX('-')) || (GuidString[14] != TX('-')) ||
-			(GuidString[19] != TX('-')) || (GuidString[24] != TX('-')) || (GuidString[37] != TX('}')))
+		if ((GuidString[0] != TX('{')) || (GuidString[9] != TX('-')) ||
+			(GuidString[14] != TX('-')) || (GuidString[19] != TX('-')) ||
+			(GuidString[24] != TX('-')) || (GuidString[37] != TX('}')))
 		{
 			return false;
 		}
@@ -145,8 +147,9 @@ bool Guid::ParseExact(const String& GuidString, EGuidFormats Format, Guid& OutGu
 	}
 	else if (Format == EGuidFormats::DigitsWithHyphensInParentheses)
 	{
-		if ((GuidString[0] != TX('(')) || (GuidString[9] != TX('-')) || (GuidString[14] != TX('-')) ||
-			(GuidString[19] != TX('-')) || (GuidString[24] != TX('-')) || (GuidString[37] != TX(')')))
+		if ((GuidString[0] != TX('(')) || (GuidString[9] != TX('-')) ||
+			(GuidString[14] != TX('-')) || (GuidString[19] != TX('-')) ||
+			(GuidString[24] != TX('-')) || (GuidString[37] != TX(')')))
 		{
 			return false;
 		}
@@ -159,17 +162,23 @@ bool Guid::ParseExact(const String& GuidString, EGuidFormats Format, Guid& OutGu
 	}
 	else if (Format == EGuidFormats::HexValuesInBraces)
 	{
-		if ((GuidString[0] != TX('{')) || (GuidString[1] != TX('0')) || (GuidString[2] != TX('x')) || (GuidString[11] != TX(',')) ||
-			(GuidString[12] != TX('0')) || (GuidString[13] != TX('x')) || (GuidString[18] != TX(',')) ||
-			(GuidString[19] != TX('0')) || (GuidString[20] != TX('x')) || (GuidString[25] != TX(',')) ||
-			(GuidString[26] != TX('{')) || (GuidString[27] != TX('0')) || (GuidString[28] != TX('x')) ||
-			(GuidString[31] != TX(',')) || (GuidString[32] != TX('0')) || (GuidString[33] != TX('x')) ||
-			(GuidString[36] != TX(',')) || (GuidString[37] != TX('0')) || (GuidString[38] != TX('x')) ||
-			(GuidString[41] != TX(',')) || (GuidString[42] != TX('0')) || (GuidString[43] != TX('x')) ||
-			(GuidString[46] != TX(',')) || (GuidString[47] != TX('0')) || (GuidString[48] != TX('x')) ||
-			(GuidString[51] != TX(',')) || (GuidString[52] != TX('0')) || (GuidString[53] != TX('x')) ||
-			(GuidString[56] != TX(',')) || (GuidString[57] != TX('0')) || (GuidString[58] != TX('x')) ||
-			(GuidString[61] != TX(',')) || (GuidString[62] != TX('0')) || (GuidString[63] != TX('x')) ||
+		if ((GuidString[0] != TX('{')) || (GuidString[1] != TX('0')) ||
+			(GuidString[2] != TX('x')) || (GuidString[11] != TX(',')) ||
+			(GuidString[12] != TX('0')) || (GuidString[13] != TX('x')) ||
+			(GuidString[18] != TX(',')) || (GuidString[19] != TX('0')) ||
+			(GuidString[20] != TX('x')) || (GuidString[25] != TX(',')) ||
+			(GuidString[26] != TX('{')) || (GuidString[27] != TX('0')) ||
+			(GuidString[28] != TX('x')) || (GuidString[31] != TX(',')) ||
+			(GuidString[32] != TX('0')) || (GuidString[33] != TX('x')) ||
+			(GuidString[36] != TX(',')) || (GuidString[37] != TX('0')) ||
+			(GuidString[38] != TX('x')) || (GuidString[41] != TX(',')) ||
+			(GuidString[42] != TX('0')) || (GuidString[43] != TX('x')) ||
+			(GuidString[46] != TX(',')) || (GuidString[47] != TX('0')) ||
+			(GuidString[48] != TX('x')) || (GuidString[51] != TX(',')) ||
+			(GuidString[52] != TX('0')) || (GuidString[53] != TX('x')) ||
+			(GuidString[56] != TX(',')) || (GuidString[57] != TX('0')) ||
+			(GuidString[58] != TX('x')) || (GuidString[61] != TX(',')) ||
+			(GuidString[62] != TX('0')) || (GuidString[63] != TX('x')) ||
 			(GuidString[66] != TX('}')) || (GuidString[67] != TX('}')))
 		{
 			return false;
@@ -189,7 +198,8 @@ bool Guid::ParseExact(const String& GuidString, EGuidFormats Format, Guid& OutGu
 	}
 	else if (Format == EGuidFormats::UniqueObjectGuid)
 	{
-		if ((GuidString[8] != TX('-')) || (GuidString[17] != TX('-')) || (GuidString[26] != TX('-')))
+		if ((GuidString[8] != TX('-')) || (GuidString[17] != TX('-')) ||
+			(GuidString[26] != TX('-')))
 		{
 			return false;
 		}

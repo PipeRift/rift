@@ -28,7 +28,7 @@ bool AssetData::SaveToPath(const Name& path)
 		return false;
 
 	JsonArchive ar{};
-	Name className = GetClass()->GetName();
+	Name className = GetType()->GetName();
 	ar("asset_type", className);
 	Serialize(ar);
 

@@ -1,15 +1,18 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
+#include "Platform/GenericPlatform.h"
+
 #define PLATFORM_LINUX_USE_CHAR16 0
+
 
 /**
  * Linux specific types
  **/
-struct FLinuxPlatformTypes : public FGenericPlatformTypes
+struct LinuxPlatformTypes : public GenericPlatformTypes
 {
 	using DWORD = unsigned int;
-	using SIZE_T = __SIZE_TYPE__;
+	using sizet = __SIZE_TYPE__;
 	using TYPE_OF_NULL = decltype(__null);
 #if PLATFORM_LINUX_USE_CHAR16
 	using WIDECHAR = char16_t;
@@ -17,7 +20,7 @@ struct FLinuxPlatformTypes : public FGenericPlatformTypes
 #endif
 };
 
-typedef FLinuxPlatformTypes FPlatformTypes;
+using PlatformTypes = LinuxPlatformTypes;
 
 
 #if BUILD_DEBUG

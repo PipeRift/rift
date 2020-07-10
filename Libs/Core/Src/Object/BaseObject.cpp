@@ -3,21 +3,18 @@
 #include "Object/BaseObject.h"
 
 #include "Object/Object.h"
+#include "Reflection/Reflection.h"
 #include "Reflection/TClass.h"
 
 
-Class* BaseObject::GetClass() const
+Refl::Class* BaseObject::GetType() const
 {
 	const auto* thisObj = static_cast<const Object*>(this);
-	if (thisObj)
-		return thisObj->GetClass();
-	return nullptr;
+	return thisObj ? thisObj->GetType() : nullptr;
 }
 
 Ptr<Object> BaseObject::Self() const
 {
 	const auto* thisObj = static_cast<const Object*>(this);
-	if (thisObj)
-		return thisObj->Self();
-	return {};
+	return thisObj ? thisObj->Self() : Ptr<Object>{};
 }

@@ -7,16 +7,18 @@ set_property(TARGET Core PROPERTY CXX_STANDARD 17)
 target_define_platform(Core)
 
 target_link_libraries(Core PUBLIC
-    CONAN_PKG::eastl
-    CONAN_PKG::spdlog
-    CONAN_PKG::nlohmann_json
+    EASTL
     CONAN_PKG::date
-    glm
-    fmt
+    nlohmann_json
+    glm::glm_static
     Tracy
     tsl::robin_map
     tsl::sparse_map
     Taskflow
+    fmt
+)
+target_link_libraries(Core PRIVATE
+    spdlog
 )
 
 target_shared_output_directory(Core)

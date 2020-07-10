@@ -5,14 +5,18 @@
 #include "Reflection/Runtime/PropertyHandle.h"
 
 
-void Property::SetDisplayName(const String& inDisplayName)
+namespace Refl
 {
-	displayName = inDisplayName;
-
-	// Remove bX preffix
-	if (displayName.size() > 1 && CString::StartsWith(displayName, "b") && isupper(displayName[1]))
+	void Property::SetDisplayName(const String& inDisplayName)
 	{
-		CString::RemoveFromStart(displayName, 1);
-		displayName[0] = eastl::CharToLower(displayName[0]);
+		displayName = inDisplayName;
+
+		// Remove bX preffix
+		if (displayName.size() > 1 && CString::StartsWith(displayName, "b") &&
+			isupper(displayName[1]))
+		{
+			CString::RemoveFromStart(displayName, 1);
+			displayName[0] = eastl::CharToLower(displayName[0]);
+		}
 	}
-}
+}	 // namespace Refl

@@ -72,7 +72,7 @@ protected:
 
 Class* Transform::GetDetailsWidgetClass()
 {
-	return TransformPropertyWidget::StaticClass();
+	return TransformPropertyWidget::Type();
 }
 
 #endif

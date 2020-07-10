@@ -5,12 +5,14 @@
 #include "CoreEngine.h"
 #include "CoreTypes.h"
 #include "Memory/Allocator.h"
-#include "Reflection/Reflection.h"
 
 #include <EASTL/type_traits.h>
 
 
-class Class;
+namespace Refl
+{
+	class Class;
+}
 class Object;
 
 template <typename Type>
@@ -20,8 +22,7 @@ class Ptr;
 class CORE_API BaseObject : public BaseStruct
 {
 protected:
-	BaseObject() : BaseStruct()
-	{}
+	BaseObject() : BaseStruct() {}
 
 public:
 	void StartDestroy()
@@ -29,10 +30,9 @@ public:
 		BeforeDestroy();
 	}
 
-	Class* GetClass() const;
+	Refl::Class* GetType() const;
 	Ptr<Object> Self() const;
 
 protected:
-	virtual void BeforeDestroy()
-	{}
+	virtual void BeforeDestroy() {}
 };

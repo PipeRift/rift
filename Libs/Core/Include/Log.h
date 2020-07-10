@@ -6,11 +6,14 @@
 #include "Files/FileSystem.h"
 #include "Strings/String.h"
 
-#include <spdlog/spdlog.h>
-
 #include <Tracy.hpp>
 #include <mutex>
 
+
+namespace spdlog
+{
+	class logger;
+}
 
 namespace Log
 {
@@ -21,45 +24,34 @@ namespace Log
 	void Init(Path logPath = {});
 	void Shutdown();
 
+	void Info(const String& msg);
+	void Warning(const String& msg);
+	void Error(const String& msg);
+
 	template <typename... Args>
-	inline void Message(const TCHAR* format, Args... args)
+	void Info(StringView format, Args... args)
 	{
-		if (format)
+		if (!format.empty())
 		{
-			generalLogger->info(CString::Format(format, std::forward<Args>(args)...));
+			Info(CString::Format(format, std::forward<Args>(args)...));
 		}
 	}
 
-	inline void Message(const String& msg)
-	{
-		generalLogger->info(msg);
-	}
-
 	template <typename... Args>
-	inline void Warning(const TCHAR* format, Args... args)
+	void Warning(StringView format, Args... args)
 	{
-		if (format)
+		if (!format.empty())
 		{
-			errLogger->warn(CString::Format(format, std::forward<Args>(args)...));
+			Warning(CString::Format(format, std::forward<Args>(args)...));
 		}
 	}
 
-	inline void Warning(const String& msg)
-	{
-		errLogger->warn(msg);
-	}
-
 	template <typename... Args>
-	inline void Error(const TCHAR* format, Args... args)
+	void Error(StringView format, Args... args)
 	{
-		if (format)
+		if (!format.empty())
 		{
-			errLogger->error(CString::Format(format, std::forward<Args>(args)...));
+			Error(CString::Format(format, std::forward<Args>(args)...));
 		}
-	}
-
-	inline void Error(const String& msg)
-	{
-		errLogger->error(msg);
 	}
 };	  // namespace Log

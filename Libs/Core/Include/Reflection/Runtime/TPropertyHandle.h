@@ -1,73 +1,76 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "PropertyHandle.h"
-#include "Reflection/Property.h"
+#include "Reflection/Runtime/PropertyHandle.h"
 
 
-/**
- * Base logic implementation for templated property handles.
- * Use TPropertyHandle instead
- */
-template <typename VarType>
-struct TPropertyHandle : public PropertyHandle
+namespace Refl
 {
-	using Access = eastl::function<VarType*(BaseStruct*)>;
-
-	Access access;
-
-
-public:
-	TPropertyHandle() : PropertyHandle({}, nullptr)
-	{}
-	TPropertyHandle(const Ptr<BaseObject>& instance, const Property* prop, const Access& access)
-		: PropertyHandle(instance, prop)
-		, access{access}
-	{}
-
-	TPropertyHandle(BaseStruct* instance, const Property* prop, const Access& access)
-		: PropertyHandle(instance, prop)
-		, access{access}
-	{}
-
-	VarType* GetValuePtr() const
+	/**
+	 * Base logic implementation for templated property handles.
+	 * Use TPropertyHandle instead
+	 */
+	template <typename VariableT>
+	struct TPropertyHandle : public PropertyHandle
 	{
-		if (IsValid())
+		using Access = std::function<VariableT*(void*)>;
+
+		Access access;
+
+
+	public:
+		// TPropertyHandle() : PropertyHandle({}, nullptr) {}
+		// Objects constructor
+		TPropertyHandle(const Ptr<BaseObject>& instance, const Property* prop, const Access& access)
+			: PropertyHandle(instance, prop)
+			, access{access}
+		{}
+
+		// Structs constructor
+		TPropertyHandle(BaseStruct* instance, const Property* prop, const Access& access)
+			: PropertyHandle(instance, prop)
+			, access{access}
+		{}
+
+		VariableT* GetValuePtr() const
 		{
-			return access(GetInstance());
+			if (IsValid())
+			{
+				return access(GetInstance());
+			}
+			return nullptr;
 		}
-		return nullptr;
-	}
-	virtual void* GetRawValuePtr() const override
-	{
-		return GetValuePtr();
-	}
+		virtual void* GetRawValuePtr() const override
+		{
+			return GetValuePtr();
+		}
 
-	bool GetValue(VarType& value) const
-	{
-		VarType* const valuePtr = GetValuePtr();
-		if (valuePtr)
-			value = *valuePtr;
+		bool GetValue(VariableT& value) const
+		{
+			VariableT* const valuePtr = GetValuePtr();
+			if (valuePtr)
+				value = *valuePtr;
 
-		return valuePtr;
-	}
+			return valuePtr;
+		}
 
-	bool SetValue(const VarType& value) const
-	{
-		VarType* const valuePtr = GetValuePtr();
-		if (valuePtr)
-			*valuePtr = value;
+		bool SetValue(const VariableT& value) const
+		{
+			VariableT* const valuePtr = GetValuePtr();
+			if (valuePtr)
+				*valuePtr = value;
 
-		return valuePtr;
-	}
+			return valuePtr;
+		}
 
 #if WITH_EDITOR
-	virtual Class* GetClassDefinedWidgetClass() override
-	{
-		if constexpr (ClassTraits<VarType>::HasDetailsWidget)
-			return VarType::GetDetailsWidgetClass();
-		else
-			return nullptr;
-	}
+		virtual Class* GetTypeDefinedWidgetClass() override
+		{
+			if constexpr (ClassTraits<VariableT>::HasDetailsWidget)
+				return VariableT::GetDetailsWidgetClass();
+			else
+				return nullptr;
+		}
 #endif
-};
+	};
+}	 // namespace Refl

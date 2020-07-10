@@ -6,22 +6,24 @@
 #include "Math.h"
 #include "Reflection/ReflectionTypeTraits.h"
 #include "Strings/Name.h"
+#include "glm/fwd.hpp"
 
-#include <glm/detail/type_vec3.hpp>
+#include <glm/ext.hpp>
 #include <glm/geometric.hpp>
 #include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.inl>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/matrix.hpp>
-#include <glm/vec3.hpp>
+#include <glm/gtx/norm.hpp>
 
 
 template <glm::length_t L, typename T>
-class vec : public glm::vec<L, T>
+class Vec : public glm::vec<L, T, glm::highp>
 {
-	using glm::vec<L, T>::vec;
+	using glm::vec<L, T, glm::highp>::vec;
 
 public:
+	template <glm::qualifier Q>
+	Vec(const glm::vec<L, T, Q>& other) : Vec(*static_cast<const Vec<L, T>*>(&other))
+	{}
+
 	T Length() const
 	{
 		return glm::length<L, T>(*this);
@@ -31,57 +33,63 @@ public:
 		return glm::length2<L, T>(*this);
 	}
 
-	T Distance(const vec<L, T>& other) const
+	T Distance(const Vec<L, T>& other) const
 	{
 		return glm::distance<L, T>(*this, other);
 	}
-	T DistanceSqrt(const vec<L, T>& other) const
+	T DistanceSqrt(const Vec<L, T>& other) const
 	{
 		return glm::distance2<L, T>(*this, other);
 	}
 
-	vec Normalize() const
+	Vec Normalize() const
 	{
 		return glm::normalize<L, T>(*this);
 	}
 
 	T* Data()
 	{
-		return &x;
+		return glm::value_ptr(*this);
 	}
 	const T* Data() const
 	{
-		return &x;
+		return glm::value_ptr(*this);
 	}
 
-	static constexpr vec<L, T> Zero()
+	static constexpr Vec<L, T> Zero()
 	{
-		return glm::zero<vec<L, T>>();
+		return glm::zero<Vec<L, T>>();
 	}
-	static constexpr vec<L, T> One()
+	static constexpr Vec<L, T> One()
 	{
-		return glm::one<vec<L, T>>();
+		return glm::one<Vec<L, T>>();
 	}
 };
 
-class v2 : public vec<2, float>
+class v2 : public Vec<2, float>
 {
-	using vec<2, float>::vec;
+	using Vec<2, float>::Vec;
 
 public:
+	v2(const Vec<2, float>& other) : v2(*static_cast<const v2*>(&other)) {}
+
 	class v3 xz() const;
 	class v3 xy() const;
 };
 DECLARE_REFLECTION_TYPE(v2);
 
-using v2_u32 = vec<2, u32>;
+
+using v2_u32 = Vec<2, u32>;
 DECLARE_REFLECTION_TYPE(v2_u32);
 
-class v3 : public vec<3, float>
+
+class v3 : public Vec<3, float>
 {
-	using vec<3, float>::vec;
+	using Vec<3, float>::Vec;
 
 public:
+	v3(const Vec<3, float>& other) : v3(*static_cast<const v3*>(&other)) {}
+
 	constexpr v3 operator+(const v3& other)
 	{
 		return {x + other.x, y + other.y, z + other.z};
@@ -132,170 +140,18 @@ DECLARE_REFLECTION_TYPE(v3);
 
 /** Non reflected vectors */
 
-using v4 = vec<4, float>;
+using v4 = Vec<4, float>;
 
-using v2_u8 = vec<2, u8>;
-using v3_u8 = vec<3, u8>;
-using v4_u8 = vec<4, u8>;
+using v2_u8 = Vec<2, u8>;
+using v3_u8 = Vec<3, u8>;
+using v4_u8 = Vec<4, u8>;
 
-using v2_i32 = vec<2, i32>;
-using v3_i32 = vec<3, i32>;
-using v4_i32 = vec<4, i32>;
+using v2_i32 = Vec<2, i32>;
+using v3_i32 = Vec<3, i32>;
+using v4_i32 = Vec<4, i32>;
 
-using v3_u32 = vec<3, u32>;
-using v4_u32 = vec<4, u32>;
-
-
-template <glm::length_t X, glm::length_t Y, typename T>
-class Matrix : public glm::mat<X, Y, T, glm::highp>
-{
-	using glm::mat<X, Y, T, glm::highp>::mat;
-
-public:
-	Matrix Inverse() const
-	{
-		return glm::inverse(*this);
-	}
-	Matrix Transpose() const
-	{
-		return glm::transpose(*this);
-	}
-	Matrix InverseTranspose() const
-	{
-		return glm::inverseTranspose(*this);
-	}
-
-	T* Data()
-	{
-		return &operator[](0).x;
-	}
-	const T* Data() const
-	{
-		return &operator[](0).x;
-	}
-
-	static constexpr Matrix Identity()
-	{
-		return glm::identity<glm::mat<X, Y, T, glm::highp>>();
-	}
-};
-
-using Matrix4f = Matrix<4, 4, float>;
-
-
-class Rotator : public v3
-{
-	using v3::v3;
-
-public:
-	float Pitch() const
-	{
-		return y;
-	}
-	float Yaw() const
-	{
-		return z;
-	}
-	float Roll() const
-	{
-		return x;
-	}
-
-	float& Pitch()
-	{
-		return y;
-	}
-	float& Yaw()
-	{
-		return z;
-	}
-	float& Roll()
-	{
-		return x;
-	}
-
-	/**
-	 * Clamps an angle to the range of [0, 360).
-	 *
-	 * @param Angle The angle to clamp.
-	 * @return The clamped angle.
-	 */
-	static float ClampAxis(float Angle);
-
-	/**
-	 * Clamps an angle to the range of (-180, 180].
-	 *
-	 * @param Angle The Angle to clamp.
-	 * @return The clamped angle.
-	 */
-	static float NormalizeAxis(float Angle);
-};
-
-
-class Quat : public glm::qua<float, glm::highp>
-{
-	using glm::qua<float, glm::highp>::qua;
-
-public:
-	v3 Rotate(const v3& vector) const;
-	v3 Unrotate(const v3& vector) const;
-
-	Rotator ToRotator() const;
-
-	Rotator ToRotatorRad() const
-	{
-		return ToRotator() * Math::DEGTORAD;
-	}
-
-	v3 GetForward() const
-	{
-		return *this * v3::Forward;
-	}
-	v3 GetRight() const
-	{
-		return *this * v3::Right;
-	}
-	v3 GetUp() const
-	{
-		return *this * v3::Up;
-	}
-
-	Quat Inverse() const
-	{
-		glm::inverse(*this);
-	}
-
-	float* Data()
-	{
-		return &x;
-	}
-	const float* Data() const
-	{
-		return &x;
-	}
-
-	Matrix4f ToMatrix() const
-	{
-		return glm::mat4_cast<float>(*this);
-	}
-
-	bool Equals(const Quat& other, float tolerance = Math::SMALL_NUMBER) const;
-
-	static Quat FromRotator(Rotator rotator);
-
-	static Quat FromRotatorRad(Rotator rotator)
-	{
-		return FromRotator(rotator * Math::DEGTORAD);
-	}
-
-	static Quat LookAt(const v3& origin, const v3& dest);
-
-	static constexpr Quat Identity()
-	{
-		return glm::quat_identity<value_type, glm::highp>();
-	}
-};
-DECLARE_REFLECTION_TYPE(Quat);
+using v3_u32 = Vec<3, u32>;
+using v4_u32 = Vec<4, u32>;
 
 
 template <typename Type, u32 Dimensions>
@@ -308,8 +164,7 @@ struct Box
 
 
 	Box() = default;
-	constexpr Box(VectorType min, VectorType max) : min{min}, max{max}
-	{}
+	constexpr Box(VectorType min, VectorType max) : min{min}, max{max} {}
 
 	inline void ExtendPoint(const VectorType& point)
 	{

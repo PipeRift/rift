@@ -15,7 +15,8 @@
  */
 enum class EGammaSpace
 {
-	/** No gamma correction is applied to this space, the incoming colors are assumed to already be in linear space. */
+	/** No gamma correction is applied to this space, the incoming colors are assumed to already be
+	   in linear space. */
 	Linear,
 	/** A simplified sRGB gamma correction is applied, pow(1/2.2). */
 	Pow22,
@@ -39,10 +40,8 @@ struct LinearColor
 	/** Static lookup table used for FColor -> FLinearColor conversion. sRGB */
 	static double sRGBToLinearTable[256];
 
-	explicit LinearColor() : r(0.f), g(0.f), b(0.f), a(0.f)
-	{}
-	constexpr LinearColor(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a)
-	{}
+	explicit LinearColor() : r(0.f), g(0.f), b(0.f), a(0.f) {}
+	constexpr LinearColor(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a) {}
 
 	/**
 	 * Converts an FColor which is assumed to be in sRGB space, into linear color space.
@@ -188,8 +187,8 @@ struct LinearColor
 	// Error-tolerant comparison.
 	bool Equals(const LinearColor& other, float Tolerance = Math::SMALL_NUMBER) const
 	{
-		return Math::Abs(r - other.r) < Tolerance && Math::Abs(g - other.g) < Tolerance && Math::Abs(b - other.b) < Tolerance &&
-			   Math::Abs(a - other.a) < Tolerance;
+		return Math::Abs(r - other.r) < Tolerance && Math::Abs(g - other.g) < Tolerance &&
+			   Math::Abs(b - other.b) < Tolerance && Math::Abs(a - other.a) < Tolerance;
 	}
 
 	LinearColor CopyWithNewOpacity(float NewOpacity) const
@@ -228,19 +227,21 @@ struct LinearColor
 	 */
 	static inline float Dist(const LinearColor& one, const LinearColor& other)
 	{
-		return Math::Sqrt(Math::Square(other.r - one.r) + Math::Square(other.g - one.g) + Math::Square(other.b - one.b) +
-						  Math::Square(other.a - one.a));
+		return Math::Sqrt(Math::Square(other.r - one.r) + Math::Square(other.g - one.g) +
+						  Math::Square(other.b - one.b) + Math::Square(other.a - one.a));
 	}
 
 	/**
 	 * Generates a list of sample points on a Bezier curve defined by 2 points.
 	 *
-	 * @param	ControlPoints	Array of 4 Linear Colors (vert1, controlpoint1, controlpoint2, vert2).
+	 * @param	ControlPoints	Array of 4 Linear Colors (vert1, controlpoint1, controlpoint2,
+	 * vert2).
 	 * @param	NumPoints		Number of samples.
 	 * @param	OutPoints		Receives the output samples.
 	 * @return					Path length.
 	 */
-	static float EvaluateBezier(const LinearColor* ControlPoints, i32 NumPoints, TArray<LinearColor>& OutPoints);
+	static float EvaluateBezier(
+		const LinearColor* ControlPoints, i32 NumPoints, TArray<LinearColor>& OutPoints);
 
 	/** Converts a linear space RGB color to an HSV color */
 	LinearColor LinearRGBToHSV() const;
@@ -249,24 +250,29 @@ struct LinearColor
 	LinearColor HSVToLinearRGB() const;
 
 	/**
-	 * Linearly interpolates between two colors by the specified progress amount.  The interpolation is performed in HSV color space
-	 * taking the shortest path to the new color's hue.  This can give better results than Math::Lerp(), but is much more expensive.
-	 * The incoming colors are in RGB space, and the output color will be RGB.  The alpha value will also be interpolated.
+	 * Linearly interpolates between two colors by the specified progress amount.  The interpolation
+	 * is performed in HSV color space taking the shortest path to the new color's hue.  This can
+	 * give better results than Math::Lerp(), but is much more expensive. The incoming colors are in
+	 * RGB space, and the output color will be RGB.  The alpha value will also be interpolated.
 	 *
 	 * @param	From		The color and alpha to interpolate from as linear RGBA
 	 * @param	To			The color and alpha to interpolate to as linear RGBA
 	 * @param	Progress	scalar interpolation amount (usually between 0.0 and 1.0 inclusive)
 	 * @return	The interpolated color in linear RGB space along with the interpolated alpha value
 	 */
-	static LinearColor LerpUsingHSV(const LinearColor& From, const LinearColor& To, const float Progress);
+	static LinearColor LerpUsingHSV(
+		const LinearColor& From, const LinearColor& To, const float Progress);
 
-	/** Quantizes the linear color and returns the result as a FColor.  This bypasses the SRGB conversion. */
+	/** Quantizes the linear color and returns the result as a FColor.  This bypasses the SRGB
+	 * conversion. */
 	Color Quantize() const;
 
-	/** Quantizes the linear color with rounding and returns the result as a FColor.  This bypasses the SRGB conversion. */
+	/** Quantizes the linear color with rounding and returns the result as a FColor.  This bypasses
+	 * the SRGB conversion. */
 	Color QuantizeRound() const;
 
-	/** Quantizes the linear color and returns the result as a FColor with optional sRGB conversion and quality as goal. */
+	/** Quantizes the linear color and returns the result as a FColor with optional sRGB conversion
+	 * and quality as goal. */
 	Color ToColor(const bool bSRGB) const;
 
 	/**
@@ -339,7 +345,8 @@ LinearColor operator*(float scalar, const LinearColor& Color)
 //
 //	FColor
 //	Stores a color with 8 bits of precision per channel.
-//	Note: Linear color values should always be converted to gamma space before stored in an FColor, as 8 bits of precision is not
+//	Note: Linear color values should always be converted to gamma space before stored in an FColor,
+// as 8 bits of precision is not
 // enough to store linear space colors! 	This can be done with FLinearColor::ToFColor(true)
 //
 
@@ -373,8 +380,7 @@ public:
 		r = g = b = a = 0;
 	}
 
-	constexpr Color(u8 r, u8 g, u8 b, u8 a = 255) : a(a), r(r), g(g), b(b)
-	{}
+	constexpr Color(u8 r, u8 g, u8 b, u8 a = 255) : a(a), r(r), g(g), b(b) {}
 
 	explicit Color(u32 InColor)
 	{
@@ -516,11 +522,11 @@ public:
 
 private:
 	/**
-	 * Please use .ToFColor(true) on FLinearColor if you wish to convert from FLinearColor to FColor,
-	 * with proper sRGB conversion applied.
+	 * Please use .ToFColor(true) on FLinearColor if you wish to convert from FLinearColor to
+	 * FColor, with proper sRGB conversion applied.
 	 *
-	 * Note: Do not implement or make public.  We don't want people needlessly and implicitly converting between
-	 * FLinearColor and FColor.  It's not a free conversion.
+	 * Note: Do not implement or make public.  We don't want people needlessly and implicitly
+	 * converting between FLinearColor and FColor.  It's not a free conversion.
 	 */
 	explicit Color(const LinearColor& LinearColor);
 };
@@ -540,7 +546,8 @@ u32 GetTypeHash(const Color& Color)
 
 
 /** Computes a brightness and a fixed point color from a floating point color. */
-extern void ComputeAndFixedColorAndIntensity(const LinearColor& InLinearColor, Color& OutColor, float& OutIntensity);
+extern void ComputeAndFixedColorAndIntensity(
+	const LinearColor& InLinearColor, Color& OutColor, float& OutIntensity);
 
 // These act like a POD
 EASTL_DECLARE_IS_POD(Color, true);

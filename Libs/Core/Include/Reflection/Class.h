@@ -1,47 +1,54 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "BaseType.h"
 #include "CoreEngine.h"
 #include "Object/BaseObject.h"
 #include "Object/ObjectPtr.h"
+#include "Reflection/TProperty.h"
+#include "Type.h"
 
 #include <EASTL/vector.h>
 
 
-class Class : public BaseType
+namespace Refl
 {
-public:
-	virtual GlobalPtr<BaseObject> CreateInstance(const Ptr<BaseObject>& owner) = 0;
-
-	// NOTE: Most of the class comparison functions do actually
-	// call BaseType to reduce complexity and code duplication.
-	//
-	// We can cast safely to BaseType since Classes only inherit Classes
-
-	Class* GetParent() const
+	class Class : public Type
 	{
-		return static_cast<Class*>(parent);
-	}
+	public:
+		virtual GlobalPtr<BaseObject> CreateInstance(const Ptr<BaseObject>& owner) = 0;
 
-	void GetAllChildren(TArray<Class*>& outChildren)
-	{
-		__GetAllChildren(reinterpret_cast<TArray<BaseType*>&>(outChildren));
-	}
+		// NOTE: Most of the class comparison functions do actually
+		// call Type to reduce complexity and code duplication.
+		//
+		// We can cast safely to Type since Classes only inherit Classes
 
-	Class* FindChild(Name className) const
-	{
-		return static_cast<Class*>(__FindChild(className));
-	}
+		Class* GetParent() const
+		{
+			return static_cast<Class*>(parent);
+		}
 
-	template <typename Type>
-	bool IsChildOf() const
-	{
-		return BaseType::IsChildOf(Type::StaticClass());
-	}
+		void GetAllChildren(TArray<Class*>& outChildren)
+		{
+			__GetAllChildren(reinterpret_cast<TArray<Type*>&>(outChildren));
+		}
 
-	bool IsA(Class* other) const
-	{
-		return this == other;
-	}
-};
+		Class* FindChild(Name className) const
+		{
+			return static_cast<Class*>(__FindChild(className));
+		}
+
+		bool IsA(Class* other) const
+		{
+			return this == other;
+		}
+
+		/** Called internally to registry a property of a class */
+		template <typename VariableT>
+		void __RegistryProperty(
+			Name name, std::function<VariableT*(void*)>&& access, ReflectionTags tags)
+		{
+			properties.Insert(name, new TProperty<VariableT>(this, GetReflectableName<VariableT>(),
+										name, MoveTemp(access), tags));
+		}
+	};
+}	 // namespace Refl

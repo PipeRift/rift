@@ -35,17 +35,6 @@ inline constexpr bool IsArrayType()
 }
 
 template <typename T>
-inline constexpr bool IsAssetType()
-{
-	// Check if we are dealing with a TAssetPtr
-	if constexpr (HasItemType<T>::value)
-	{
-		return eastl::is_same<class TAssetPtr<typename T::ItemType>, T>::value;
-	}
-	return false;
-}
-
-template <typename T>
 inline constexpr bool IsStructType()
 {
 	return std::is_convertible<T, Struct>::value;
@@ -58,7 +47,7 @@ inline constexpr bool IsReflectableType()
 	{
 		return IsReflectableType<typename T::ItemType>();
 	}
-	return IsAssetType<T>() || IsStructType<T>();
+	return /*IsAssetType<T>() || */ IsStructType<T>();
 }
 
 template <typename T>
@@ -69,18 +58,20 @@ inline Name GetReflectableName()
 		if constexpr (IsReflectableType<typename T::ItemType>())
 		{
 			// TArray<Itemtype> name
-			return {CString::Format(TX("TArray<{}>"), GetReflectableName<typename T::ItemType>().ToString().c_str())};
+			return {CString::Format(
+				TX("TArray<{}>"), GetReflectableName<typename T::ItemType>().ToString().c_str())};
 		}
 		return TX("TArray<Invalid>");
 	}
-	else if constexpr (IsAssetType<T>())
+	/*else if constexpr (IsAssetType<T>()) // TODO: Simplify container reflected names
 	{
 		// TAssetPtr<Itemtype> name
-		return {CString::Format(TX("TAssetPtr<{}>"), GetReflectableName<typename T::ItemType>().ToString().c_str())};
-	}
+		return {CString::Format(TX("TAssetPtr<{}>"), GetReflectableName<typename
+	T::ItemType>().ToString().c_str())};
+	}*/
 	else if constexpr (IsStructType<T>())
 	{
-		return T::StaticStruct()->GetName();
+		return T::StaticType()->GetName();
 	}
 
 	return TX("Invalid");
@@ -96,5 +87,6 @@ inline Name GetReflectableName()
 	template <>                                     \
 	inline Name GetReflectableName<Type>()          \
 	{                                               \
-		return TX(#Type);                           \
+		static const Name typeName{TX(#Type)};      \
+		return typeName;                            \
 	}

@@ -12,70 +12,71 @@
 class PropertyWidget;
 #endif
 
-
-struct PropertyHandle
+namespace Refl
 {
-protected:
-	BaseStruct* const instance;
-	Ptr<BaseObject> objInstance;
-	const Property* const prop;
-
-
-	PropertyHandle(const Ptr<BaseObject>& objInstance, const Property* prop)
-		: objInstance{objInstance}
-		, prop{prop}
-		, instance{nullptr}
-	{}
-	PropertyHandle(BaseStruct* instance, const Property* prop) : instance{instance}, prop{prop}
-	{}
-
-public:
-	virtual ~PropertyHandle()
-	{}
-
-
-	String GetName() const
+	struct PropertyHandle
 	{
-		if (prop)
-			return prop->GetDisplayName();
-		return "Invalid";
-	}
+	protected:
+		BaseStruct* const structInstance = nullptr;
+		Ptr<BaseObject> objInstance;
+		const Property* const prop;
 
-	bool HasTag(ReflectionTags tag) const
-	{
-		return prop ? prop->HasTag(tag) : false;
-	}
 
-	BaseStruct* GetInstance() const
-	{
-		return UsesObjectPtr() ? *objInstance : instance;
-	}
+	protected:
+		PropertyHandle(const Ptr<BaseObject>& objInstance, const Property* prop)
+			: structInstance{nullptr}
+			, objInstance{objInstance}
+			, prop{prop}
+		{}
+		PropertyHandle(BaseStruct* instance, const Property* prop)
+			: structInstance{instance}
+			, prop{prop}
+		{}
 
-	bool IsValid() const
-	{
-		if (UsesObjectPtr())
+	public:
+		virtual ~PropertyHandle() {}
+
+		String GetName() const
 		{
-			return objInstance && prop != nullptr;
+			if (prop)
+				return prop->GetDisplayName();
+			return "Invalid";
 		}
-		else
+
+		bool HasTag(ReflectionTags tag) const
 		{
-			return instance && prop != nullptr;
+			return prop ? prop->HasTag(tag) : false;
 		}
-	}
-	operator bool() const
-	{
-		return IsValid();
-	}
 
-	bool UsesObjectPtr() const
-	{
-		return objInstance.IsValid();
-	}
+		void* GetInstance() const
+		{
+			if (UsesObjectPtr())
+			{
+				return *objInstance;
+			}
+			return structInstance;
+		}
 
-	virtual Class* GetClassDefinedWidgetClass()
-	{
-		return nullptr;
-	}
+		bool IsValid() const
+		{
+			return prop != nullptr && (UsesObjectPtr() || structInstance);
+		}
 
-	virtual void* GetRawValuePtr() const = 0;
-};
+		bool UsesObjectPtr() const
+		{
+			return objInstance.IsValid();
+		}
+
+		virtual Class* GetTypeDefinedWidgetClass()
+		{
+			return nullptr;
+		}
+
+		virtual void* GetRawValuePtr() const = 0;
+
+		operator bool() const
+		{
+			return IsValid();
+		}
+	};
+}	 // namespace Refl

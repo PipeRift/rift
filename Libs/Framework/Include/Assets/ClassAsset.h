@@ -12,7 +12,6 @@ class ClassAsset : public TypeAsset
 {
 	CLASS(ClassAsset, TypeAsset)
 
-	P(Name, name);
-
-	P(TArray<Function>, functions);
+	PROP(TArray<Function>, functions);
+	TArray<Function> functions;
 };

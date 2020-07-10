@@ -16,3 +16,15 @@
 [submodule "Extern/fmt"]
 	path = Extern/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "Extern/spdlog"]
+	path = Extern/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "Extern/nlohmann_json"]
+	path = Extern/nlohmann_json
+	url = https://github.com/nlohmann/json.git
+[submodule "Extern/EASTL"]
+	path = Extern/EASTL
+	url = https://github.com/electronicarts/EASTL.git
+[submodule "Extern/EABase"]
+	path = Extern/EABase
+	url = https://github.com/electronicarts/EABase.git

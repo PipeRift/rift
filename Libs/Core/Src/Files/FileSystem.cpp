@@ -5,8 +5,6 @@
 #include "Profiler.h"
 #include "Serialization/Archive.h"
 
-#include <yvals.h>
-
 
 bool FileSystem::FolderExists(const Path& path)
 {
@@ -26,7 +24,7 @@ bool FileSystem::LoadJsonFile(Path path, Json& result)
 	result = {};
 	try
 	{
-		result << file;
+		file >> result;
 	}
 	catch (nlohmann::detail::exception ex)
 	{

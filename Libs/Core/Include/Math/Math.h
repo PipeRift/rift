@@ -6,6 +6,9 @@
 #include "TypeTraits.h"
 
 #include <cmath>
+#include <glm/exponential.hpp>
+#include <glm/gtx/integer.hpp>
+#include <glm/integer.hpp>
 
 
 class v3;
@@ -109,8 +112,8 @@ struct Math
 	}
 
 	/**
-	 * Converts a floating point number to an integer which is further from zero, "larger" in absolute value: 0.1 becomes 1, -0.1
-	 * becomes -1
+	 * Converts a floating point number to an integer which is further from zero, "larger" in
+	 * absolute value: 0.1 becomes 1, -0.1 becomes -1
 	 * @param F		Floating point value to convert
 	 * @return		The rounded integer
 	 */
@@ -125,8 +128,8 @@ struct Math
 	}
 
 	/**
-	 * Converts a floating point number to an integer which is closer to zero, "smaller" in absolute value: 0.1 becomes 0, -0.1
-	 * becomes 0
+	 * Converts a floating point number to an integer which is closer to zero, "smaller" in absolute
+	 * value: 0.1 becomes 0, -0.1 becomes 0
 	 * @param F		Floating point value to convert
 	 * @return		The rounded integer
 	 */
@@ -141,7 +144,8 @@ struct Math
 	}
 
 	/**
-	 * Converts a floating point number to an integer which is more negative: 0.1 becomes 0, -0.1 becomes -1
+	 * Converts a floating point number to an integer which is more negative: 0.1 becomes 0, -0.1
+	 * becomes -1
 	 * @param F		Floating point value to convert
 	 * @return		The rounded integer
 	 */
@@ -156,7 +160,8 @@ struct Math
 	}
 
 	/**
-	 * Converts a floating point number to an integer which is more positive: 0.1 becomes 1, -0.1 becomes 0
+	 * Converts a floating point number to an integer which is more positive: 0.1 becomes 1, -0.1
+	 * becomes 0
 	 * @param F		Floating point value to convert
 	 * @return		The rounded integer
 	 */
@@ -222,54 +227,10 @@ struct Math
 		return val * val;
 	}
 
-	template <typename P>
-	static constexpr float Pow(float value, P power)
+	template <typename B, typename P>
+	static constexpr B Pow(B value, P power)
 	{
-		return std::pow(value, power);
-	}
-
-	template <typename P>
-	static constexpr double Pow(double value, P power)
-	{
-		return std::pow(value, power);
-	}
-
-	static constexpr u32 Pow(u32 value, u32 power)
-	{
-		return IntegralPow<u32>(value, power);
-	}
-
-	static constexpr i32 Pow(i32 value, u32 power)
-	{
-		return IntegralPow<i32>(value, power);
-	}
-
-	static constexpr u64 Pow(u64 value, u32 power)
-	{
-		return IntegralPow<u64>(value, power);
-	}
-
-	static constexpr i64 Pow(i64 value, u32 power)
-	{
-		return IntegralPow<i64>(value, power);
-	}
-
-	template <typename T, bool bUnsigned = std::is_unsigned_v<T>>
-	static constexpr T IntegralPow(T value, u32 power)
-	{
-		if (power == 0)
-		{
-			if constexpr (bUnsigned)
-			{
-				return 1u;
-			}
-			return value >= 0 ? 1 : -1;
-		}
-
-		T result = value;
-		for (u32 i = 1; i < power; ++i)
-			result *= value;
-		return result;
+		return glm::pow(value, power);
 	}
 
 	// Same as Max but with N arguments
@@ -306,7 +267,8 @@ struct Math
 
 	// Module for integer types only
 	template <typename Type>
-	static constexpr auto Mod(Type a, Type b) -> decltype(EnableIf<eastl::is_integral_v<Type>, Type>::type)
+	static constexpr auto Mod(Type a, Type b)
+		-> decltype(EnableIf<std::is_integral_v<Type>, Type>::type)
 	{
 		return a % b;
 	}
@@ -352,21 +314,30 @@ struct Math
 		float y2 = y * y;
 
 		// 11-degree minimax approximation
-		*ScalarSin =
-			(((((-2.3889859e-08f * y2 + 2.7525562e-06f) * y2 - 0.00019840874f) * y2 + 0.0083333310f) * y2 - 0.16666667f) * y2 +
-				1.0f) *
-			y;
+		*ScalarSin = (((((-2.3889859e-08f * y2 + 2.7525562e-06f) * y2 - 0.00019840874f) * y2 +
+						   0.0083333310f) *
+							  y2 -
+						  0.16666667f) *
+							 y2 +
+						 1.0f) *
+					 y;
 
 		// 10-degree minimax approximation
-		float p = ((((-2.6051615e-07f * y2 + 2.4760495e-05f) * y2 - 0.0013888378f) * y2 + 0.041666638f) * y2 - 0.5f) * y2 + 1.0f;
+		float p =
+			((((-2.6051615e-07f * y2 + 2.4760495e-05f) * y2 - 0.0013888378f) * y2 + 0.041666638f) *
+					y2 -
+				0.5f) *
+				y2 +
+			1.0f;
 		*ScalarCos = sign * p;
 	}
 
 	static float Atan2(float Y, float X);
 
-	// Note:  We use FASTASIN_HALF_PI instead of HALF_PI inside of FastASin(), since it was the value that accompanied the minimax
-	// coefficients below. It is important to use exactly the same value in all places inside this function to ensure that
-	// FastASin(0.0f) == 0.0f. For comparison:
+	// Note:  We use FASTASIN_HALF_PI instead of HALF_PI inside of FastASin(), since it was the
+	// value that accompanied the minimax coefficients below. It is important to use exactly the
+	// same value in all places inside this function to ensure that FastASin(0.0f) == 0.0f. For
+	// comparison:
 	//		HALF_PI				== 1.57079632679f == 0x3fC90FDB
 	//		FASTASIN_HALF_PI	== 1.5707963050f  == 0x3fC90FDA
 #define FASTASIN_HALF_PI (1.5707963050f)
@@ -389,7 +360,10 @@ struct Math
 		float root = Math::Sqrt(omx);
 		// 7-degree minimax approximation
 		float result =
-			((((((-0.0012624911f * x + 0.0066700901f) * x - 0.0170881256f) * x + 0.0308918810f) * x - 0.0501743046f) * x +
+			((((((-0.0012624911f * x + 0.0066700901f) * x - 0.0170881256f) * x + 0.0308918810f) *
+					  x -
+				  0.0501743046f) *
+					 x +
 				 0.0889789874f) *
 					x -
 				0.2145988016f) *

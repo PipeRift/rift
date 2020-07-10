@@ -3,14 +3,14 @@
 #include "Object/BaseStruct.h"
 
 #include "Object/Struct.h"
-#include "Reflection/StructType.h"
+#include "Reflection/Struct.h"
 
 
-StructType* BaseStruct::GetStruct() const
+Refl::Struct* BaseStruct::GetType() const
 {
 	if (const auto* thisObj = dynamic_cast<const Struct*>(this))
 	{
-		return thisObj->GetStruct();
+		return thisObj->GetType();
 	}
 	return nullptr;
 }

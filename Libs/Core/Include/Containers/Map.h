@@ -16,7 +16,8 @@
 template <typename Key, typename Value>
 class TMap
 {
-	static_assert(std::is_nothrow_move_constructible<Value>::value || std::is_copy_constructible<Value>::value,
+	static_assert(std::is_nothrow_move_constructible<Value>::value ||
+					  std::is_copy_constructible<Value>::value,
 		"Value type must be nothrow move constructible and/or copy constructible.");
 
 public:
@@ -25,7 +26,8 @@ public:
 
 	using KeyType = Key;
 	using ValueType = Value;
-	using HashMapType = tsl::sparse_map<KeyType, ValueType, eastl::hash<KeyType>, eastl::equal_to<KeyType>>;
+	using HashMapType =
+		tsl::sparse_map<KeyType, ValueType, eastl::hash<KeyType>, eastl::equal_to<KeyType>>;
 
 	using Iterator = typename HashMapType::iterator;
 	using ConstIterator = typename HashMapType::const_iterator;
@@ -37,13 +39,13 @@ private:
 
 public:
 	TMap() = default;
-	TMap(u32 defaultSize) : map{defaultSize}
-	{}
+	TMap(u32 defaultSize) : map{defaultSize} {}
 	TMap(const TPair<const KeyType, ValueType>& item) : map{}
 	{
 		Insert(item);
 	}
-	TMap(std::initializer_list<TPair<const KeyType, ValueType>> initList) : map{initList.begin(), initList.end()}
+	TMap(std::initializer_list<TPair<const KeyType, ValueType>> initList)
+		: map{initList.begin(), initList.end()}
 	{}
 
 	TMap(TMap&& other) = default;

@@ -6,11 +6,9 @@
 #include "AssetManager.h"
 #include "CoreEngine.h"
 #include "Files/FileSystem.h"
+#include "TypeTraits.h"
 
 #include <EASTL/type_traits.h>
-
-//#include "Serialization/Archive.h"
-#include "TypeTraits.h"
 
 
 class BaseAssetPtr
@@ -23,8 +21,7 @@ protected:
 
 public:
 	BaseAssetPtr() = default;
-	BaseAssetPtr(AssetInfo info) : info{info}
-	{}
+	BaseAssetPtr(AssetInfo info) : info{info} {}
 
 	AssetInfo GetInfo() const
 	{
@@ -45,14 +42,14 @@ public:
 template <class T>
 class TAssetPtr : public BaseAssetPtr
 {
-	static_assert(eastl::is_base_of<AssetData, T>::value, "AssetPtr type must inherit from AssetData");
+	static_assert(
+		std::is_base_of<AssetData, T>::value, "AssetPtr type must inherit from AssetData");
 
 
 public:
 	using ItemType = T;
 
-	TAssetPtr() : BaseAssetPtr()
-	{}
+	TAssetPtr() : BaseAssetPtr() {}
 
 	TAssetPtr(TAssetPtr&& other)
 	{
@@ -63,14 +60,10 @@ public:
 		CopyFrom(other);
 	}
 
-	TAssetPtr(Path path) : BaseAssetPtr(FileSystem::ToString(path))
-	{}
-	TAssetPtr(Name path) : BaseAssetPtr(path)
-	{}
-	TAssetPtr(const TCHAR* key) : TAssetPtr(Name{key})
-	{}
-	TAssetPtr(const AssetInfo& other) : AssetInfo(other)
-	{}
+	TAssetPtr(Path path) : BaseAssetPtr(FileSystem::ToString(path)) {}
+	TAssetPtr(Name path) : BaseAssetPtr(path) {}
+	TAssetPtr(const TCHAR* key) : TAssetPtr(Name{key}) {}
+	TAssetPtr(const AssetInfo& other) : AssetInfo(other) {}
 	TAssetPtr(Ptr<ItemType> asset)
 	{
 		if (asset)
@@ -125,7 +118,7 @@ public:
 		{
 			if (auto manager = AssetManager::Get())
 			{
-				cachedAsset = manager->LoadOrCreate(info, T::StaticClass());
+				cachedAsset = manager->LoadOrCreate(info, T::Type());
 			}
 		}
 		return cachedAsset.IsValid();
@@ -165,9 +158,9 @@ public:
 	{
 		return info.GetPath();
 	}
-	inline const String& GetSPath() const
+	inline const String& GetStrPath() const
 	{
-		return info.GetSPath();
+		return info.GetStrPath();
 	}
 
 	operator bool() const
@@ -217,3 +210,15 @@ private:
 };
 
 DEFINE_TEMPLATE_CLASS_TRAITS(TAssetPtr, HasCustomSerialize = true, HasDetailsWidget = true);
+
+
+template <typename T>
+inline constexpr bool IsAssetType()
+{
+	// Check if we are dealing with a TAssetPtr
+	if constexpr (HasItemType<T>::value)
+	{
+		return std::is_same<TAssetPtr<typename T::ItemType>, T>::value;
+	}
+	return false;
+}

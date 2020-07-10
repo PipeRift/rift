@@ -12,8 +12,7 @@ class AssetData : public Object
 	AssetInfo info;
 
 public:
-	AssetData() : Super()
-	{}
+	AssetData() : Super() {}
 
 	/** Called after an asset is created. Internal usage only. */
 	bool OnCreate(const AssetInfo& inInfo);
@@ -37,8 +36,7 @@ protected:
 	{
 		OnUnload();
 	}
-	virtual void OnUnload()
-	{}
+	virtual void OnUnload() {}
 
 	/** HELPERS */
 public:

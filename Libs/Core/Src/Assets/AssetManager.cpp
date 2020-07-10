@@ -11,7 +11,7 @@
 
 Ptr<AssetData> AssetManager::Load(AssetInfo info)
 {
-	Log::Message("Loading asset: {}", info.GetStrPath().c_str());
+	Log::Info("Loading asset: {}", info.GetStrPath().c_str());
 
 	if (info.IsNull() || !FileSystem::IsFile(info.GetStrPath()))
 	{
@@ -32,7 +32,8 @@ Ptr<AssetData> AssetManager::Load(AssetInfo info)
 		}
 
 		// Get asset type from json
-		Class* assetClass = AssetData::StaticClass()->FindChild(Name{type});
+		String typeStr = type;
+		Refl::Class* assetClass = AssetData::StaticType()->FindChild(Name{typeStr});
 		if (!assetClass)
 		{
 			Log::Error("Asset class('{}') not found.", type.get<String>().c_str());
@@ -76,7 +77,7 @@ TArray<Ptr<AssetData>> AssetManager::Load(const TArray<AssetInfo>& infos)
 	return {};
 }
 
-Ptr<AssetData> AssetManager::LoadOrCreate(AssetInfo info, Class* assetType)
+Ptr<AssetData> AssetManager::LoadOrCreate(AssetInfo info, Refl::Class* assetType)
 {
 	if (info.IsNull() || !FileSystem::IsFolder(info.GetStrPath()))
 	{

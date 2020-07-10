@@ -66,7 +66,8 @@ private:
 };
 
 template <typename FileIterator>
-inline FormatFileIterator<FileIterator>::FormatFileIterator(StringView format, const Path& path) : format{format}
+inline FormatFileIterator<FileIterator>::FormatFileIterator(StringView format, const Path& path)
+	: format{format}
 {
 	if (!FileSystem::Exists(path) || !FileSystem::IsFolder(path))
 	{

@@ -80,7 +80,8 @@ bool Timespan::Parse(const String& TimespanString, Timespan& OutTimespan)
 	// @todo gmp: implement stricter FTimespan parsing; this implementation is too forgiving
 
 	// get string tokens
-	const bool HasFractional = CString::Contains(TimespanString, TX('.')) || CString::Contains(TimespanString, TX(','));
+	const bool HasFractional =
+		CString::Contains(TimespanString, TX('.')) || CString::Contains(TimespanString, TX(','));
 	String TokenString = TimespanString;
 	CString::Replace(TokenString, TX('.'), TX(':'));
 	CString::Replace(TokenString, TX(','), TX(':'));
@@ -164,8 +165,9 @@ bool Timespan::Parse(const String& TimespanString, Timespan& OutTimespan)
 
 void Timespan::Assign(i32 days, i32 hours, i32 minutes, i32 seconds, i32 fractionNano)
 {
-	duration = floor<decmicroseconds>(date::days{days} + std::chrono::hours{hours} + std::chrono::minutes{minutes} +
-									  std::chrono::seconds{seconds} + std::chrono::nanoseconds{fractionNano});
+	duration = floor<decmicroseconds>(
+		date::days{days} + std::chrono::hours{hours} + std::chrono::minutes{minutes} +
+		std::chrono::seconds{seconds} + std::chrono::nanoseconds{fractionNano});
 }
 
 Timespan Timespan::FromHours(i32 hours)

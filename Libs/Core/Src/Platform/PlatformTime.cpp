@@ -7,5 +7,6 @@
 
 u64 PlatformTime::Cycles64()
 {
-	return date::floor<std::chrono::microseconds>(DateTime::Now().GetTime().time_since_epoch()).count();
+	return date::floor<std::chrono::microseconds>(DateTime::Now().GetTime().time_since_epoch())
+		.count();
 }

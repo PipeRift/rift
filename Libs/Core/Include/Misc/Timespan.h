@@ -28,9 +28,9 @@ using decmicroseconds = std::chrono::duration<i64, std::ratio<1, 10'000'000>>;
  * based arithmetic, such as calculating the difference between two dates or adding a certain amount
  * of time to a given date.
  *
- * When initializing time span values from single components, consider using the FromHours, FromMinutes,
- * FromSeconds, Zero, MinValue and related methods instead of calling the overloaded constructors as
- * they will make your code easier to read and understand.
+ * When initializing time span values from single components, consider using the FromHours,
+ * FromMinutes, FromSeconds, Zero, MinValue and related methods instead of calling the overloaded
+ * constructors as they will make your code easier to read and understand.
  *
  * @see DateTime
  */
@@ -46,8 +46,7 @@ private:
 
 public:
 	/** Default constructor (no initialization). */
-	Timespan() : duration{}
-	{}
+	Timespan() : duration{} {}
 
 	/**
 	 * Create and initialize a new time interval with the specified number of ticks.
@@ -57,11 +56,11 @@ public:
 	 * @param duration The number of decimals of microseconds.
 	 * @see MaxValue, MinValue, Zero
 	 */
-	Timespan(decmicroseconds duration) : duration(duration)
-	{}
+	Timespan(decmicroseconds duration) : duration(duration) {}
 
 	/**
-	 * Create and initialize a new time interval with the specified number of hours, minutes and seconds.
+	 * Create and initialize a new time interval with the specified number of hours, minutes and
+	 * seconds.
 	 *
 	 * For better readability, consider using FromHours, FromMinutes and FromSeconds.
 	 *
@@ -76,7 +75,8 @@ public:
 	}
 
 	/**
-	 * Create and initialize a new time interval with the specified number of days, hours, minutes and seconds.
+	 * Create and initialize a new time interval with the specified number of days, hours, minutes
+	 * and seconds.
 	 *
 	 * For better readability, consider using FromDays, FromHours, FromMinutes and FromSeconds.
 	 *
@@ -92,7 +92,8 @@ public:
 	}
 
 	/**
-	 * Create and initialize a new time interval with the specified number of days, hours, minutes and seconds.
+	 * Create and initialize a new time interval with the specified number of days, hours, minutes
+	 * and seconds.
 	 *
 	 * @param Days The days component.
 	 * @param Hours The hours component.
@@ -130,7 +131,8 @@ public:
 	/**
 	 * Return the inverse of this time span.
 	 *
-	 * The value of this time span must be greater than FTimespan::MinValue(), or else an overflow will occur.
+	 * The value of this time span must be greater than FTimespan::MinValue(), or else an overflow
+	 * will occur.
 	 *
 	 * @return Inverse of this time span.
 	 */
@@ -329,7 +331,8 @@ public:
 	 */
 	i64 GetFractionMicro() const
 	{
-		return (floor<std::chrono::microseconds>(duration) - floor<std::chrono::seconds>(duration)).count();
+		return (floor<std::chrono::microseconds>(duration) - floor<std::chrono::seconds>(duration))
+			.count();
 	}
 
 	/**
@@ -340,7 +343,8 @@ public:
 	 */
 	i64 GetFractionMilli() const
 	{
-		return (floor<std::chrono::milliseconds>(duration) - floor<std::chrono::seconds>(duration)).count();
+		return (floor<std::chrono::milliseconds>(duration) - floor<std::chrono::seconds>(duration))
+			.count();
 	}
 
 	/**
@@ -350,7 +354,8 @@ public:
 	 */
 	i64 GetFractionNano() const
 	{
-		return (floor<std::chrono::nanoseconds>(duration) - floor<std::chrono::seconds>(duration)).count();
+		return (floor<std::chrono::nanoseconds>(duration) - floor<std::chrono::seconds>(duration))
+			.count();
 	}
 
 	/**
@@ -382,7 +387,8 @@ public:
 	 */
 	i32 GetMinutes() const
 	{
-		return (i32)(floor<std::chrono::minutes>(duration) - floor<std::chrono::hours>(duration)).count();
+		return (i32)(floor<std::chrono::minutes>(duration) - floor<std::chrono::hours>(duration))
+			.count();
 	}
 
 	/**
@@ -393,7 +399,8 @@ public:
 	 */
 	i32 GetSeconds() const
 	{
-		return (i32)(floor<std::chrono::seconds>(duration) - floor<std::chrono::minutes>(duration)).count();
+		return (i32)(floor<std::chrono::seconds>(duration) - floor<std::chrono::minutes>(duration))
+			.count();
 	}
 
 	/**
@@ -440,7 +447,8 @@ public:
 	template <typename PrecisionType = float>
 	PrecisionType GetTotalMicroseconds() const
 	{
-		return std::chrono::duration<PrecisionType, std::chrono::microseconds::period>(duration).count();
+		return std::chrono::duration<PrecisionType, std::chrono::microseconds::period>(duration)
+			.count();
 	}
 
 	/**
@@ -452,7 +460,8 @@ public:
 	template <typename PrecisionType = float>
 	PrecisionType GetTotalMilliseconds() const
 	{
-		return std::chrono::duration<PrecisionType, std::chrono::milliseconds::period>(duration).count();
+		return std::chrono::duration<PrecisionType, std::chrono::milliseconds::period>(duration)
+			.count();
 	}
 
 	/**

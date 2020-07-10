@@ -6,6 +6,8 @@
 
 enum class ReflectionTags : u16
 {
+	None = 0,
+
 	// Class only Tags
 	Abstract = 1 << 0,
 

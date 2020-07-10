@@ -1,17 +1,21 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
+#include "Platform/GenericPlatform.h"
+
 #include <cstddef>
 
+
 #define PLATFORM_MAC_USE_CHAR16 0
+
 
 /**
  * Mac specific types
  **/
-struct FMacPlatformTypes : public FGenericPlatformTypes
+struct MacPlatformTypes : public GenericPlatformTypes
 {
 	using DWORD = unsigned int;
-	using SIZE_T = std::size_t;
+	using sizet = std::size_t;
 	using TYPE_OF_NULL = decltype(nullptr);
 #if PLATFORM_MAC_USE_CHAR16
 	using WIDECHAR = char16_t;
@@ -21,7 +25,7 @@ struct FMacPlatformTypes : public FGenericPlatformTypes
 #endif
 };
 
-typedef FMacPlatformTypes FPlatformTypes;
+using PlatformTypes = MacPlatformTypes;
 
 
 #if BUILD_DEBUG

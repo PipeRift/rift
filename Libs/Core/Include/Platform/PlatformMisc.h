@@ -4,7 +4,7 @@
 
 #include "CoreEngine.h"
 
-#include <eastl/type_traits.h>
+#include <type_traits>
 
 
 struct PlatformMisc
@@ -24,7 +24,8 @@ struct PlatformMisc
 template <typename T>
 constexpr T Align(T Val, u64 Alignment)
 {
-	static_assert(eastl::is_integral<T>::value || eastl::is_pointer<T>::value, "Align expects an integer or pointer type");
+	static_assert(std::is_integral<T>::value || std::is_pointer<T>::value,
+		"Align expects an integer or pointer type");
 
 	return (T)(((u64) Val + Alignment - 1) & ~(Alignment - 1));
 }

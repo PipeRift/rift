@@ -5,17 +5,20 @@
 #include "Serialization/Archive.h"
 
 
+const eastl::hash<String> NameKey::hasher{};
+
 const String Name::noneStr{"none"};
 const Name::Id Name::noneId{0};
 
-size_t NameTable::Register(const String& string)
+size_t NameTable::Register(StringView str)
 {
-	if (string.empty())
+	if (str.empty())
+	{
 		return Name::noneId;
+	}
 
 	// Calculate hash once
-	NameKey key{string};
-
+	NameKey key{str};
 	ConstIterator FoundIt = table.find(key);
 	if (FoundIt != table.end())
 	{
@@ -43,7 +46,7 @@ bool Name::Serialize(Archive& ar, const char* name)
 
 		if (CString::Equals(str, noneStr))
 		{
-			*this = noneId;
+			*this = None();
 		}
 		else
 		{

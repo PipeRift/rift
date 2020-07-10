@@ -2,6 +2,8 @@
 cmake_minimum_required (VERSION 3.12)
 MESSAGE(STATUS "CMAKE_ROOT: " ${CMAKE_ROOT})
 
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(BUILD_STATIC_LIBS "Build static libraries" ON)
 option(VCLANG_ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
 
 # Turn on the verbose
@@ -18,12 +20,10 @@ include(CMake/Util.cmake)
 #CONAN PACKAGES
 conan_cmake_run(
     REQUIRES
-        eastl/3.16.05
-        spdlog/1.6.1
-        nlohmann_json/3.8.0
         date/2.4.1
         imgui/1.76
     BASIC_SETUP CMAKE_TARGETS BUILD missing OUTPUT_QUIET
+    SETTINGS compiler.cppstd=17
 )
 
 add_subdirectory(Extern)

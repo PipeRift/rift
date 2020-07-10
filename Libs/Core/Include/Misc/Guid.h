@@ -65,8 +65,7 @@ struct Guid
 {
 public:
 	/** Default constructor. */
-	Guid() : a(0), b(0), c(0), d(0)
-	{}
+	Guid() : a(0), b(0), c(0), d(0) {}
 
 	/**
 	 * Creates and initializes a new GUID from the specified components.
@@ -76,8 +75,7 @@ public:
 	 * @param InC The third component.
 	 * @param InD The fourth component.
 	 */
-	Guid(u32 InA, u32 InB, u32 InC, u32 InD) : a(InA), b(InB), c(InC), d(InD)
-	{}
+	Guid(u32 InA, u32 InB, u32 InC, u32 InD) : a(InA), b(InB), c(InC), d(InD) {}
 
 public:
 	/**
@@ -113,20 +111,24 @@ public:
 	 */
 	friend bool operator<(const Guid& X, const Guid& Y)
 	{
-		return ((X.a < Y.a)
-					? true
-					: ((X.a > Y.a)
-							  ? false
-							  : ((X.b < Y.b)
-										? true
-										: ((X.b > Y.b)
-												  ? false
-												  : ((X.c < Y.c)
-															? true
-															: ((X.c > Y.c) ? false
-																		   : ((X.d < Y.d) ? true
-																						  : ((X.d > Y.d) ? false
-																										 : false))))))));	 //-V583
+		return (
+			(X.a < Y.a)
+				? true
+				: ((X.a > Y.a)
+						  ? false
+						  : ((X.b < Y.b)
+									? true
+									: ((X.b > Y.b)
+											  ? false
+											  : ((X.c < Y.c)
+														? true
+														: ((X.c > Y.c)
+																  ? false
+																  : ((X.d < Y.d)
+																			? true
+																			: ((X.d > Y.d)
+																					  ? false
+																					  : false))))))));	  //-V583
 	}
 
 	/**

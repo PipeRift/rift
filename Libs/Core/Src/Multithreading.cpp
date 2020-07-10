@@ -33,22 +33,23 @@ TaskSystem::TaskSystem()
 	i32 currentWorker = 0;
 
 	TaskFlow flow;
-	flow.parallel_for(0, i32(workerPool->num_workers()), 1, [&mtx, &cv, &currentWorker, workerPoolSize](i32 i) {
-		ScopedZone("Setup thread", 459bd1);
+	flow.parallel_for(
+		0, i32(workerPool->num_workers()), 1, [&mtx, &cv, &currentWorker, workerPoolSize](i32 i) {
+			ScopedZone("Setup thread", 459bd1);
 
-		std::unique_lock<std::mutex> lck(mtx);
-		++currentWorker;
-		cv.notify_all();
-		while (workerPoolSize != currentWorker)
-		{
-			cv.wait(lck);
-		}
-		{
-			ScopedZone("Naming thread", 459bd1);
-			// Name each worker thread in the debugger
-			tracy::SetThreadName(CString::Format("Worker {}", i + 1).c_str());
-		}
-	});
+			std::unique_lock<std::mutex> lck(mtx);
+			++currentWorker;
+			cv.notify_all();
+			while (workerPoolSize != currentWorker)
+			{
+				cv.wait(lck);
+			}
+			{
+				ScopedZone("Naming thread", 459bd1);
+				// Name each worker thread in the debugger
+				tracy::SetThreadName(CString::Format("Worker {}", i + 1).c_str());
+			}
+		});
 	auto future = RunFlow(flow);
 	cv.notify_all();
 	future.wait();

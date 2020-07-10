@@ -5,9 +5,10 @@
 #include "CoreEngine.h"
 #include "Platform/Platform.h"
 
-#include <EASTL/functional.h>
 #include <assert.h>
 
+#include <algorithm>
+#include <functional>
 #include <vector>
 
 
@@ -33,15 +34,11 @@ private:
 	VectorType vector;
 
 public:
-	TArray() : vector{}
-	{}
+	TArray() : vector{} {}
 
-	TArray(u32 defaultSize) : vector(defaultSize)
-	{}
-	TArray(u32 defaultSize, const Type& defaultValue) : vector(defaultSize, defaultValue)
-	{}
-	TArray(std::initializer_list<Type> initList) : vector{initList}
-	{}
+	TArray(u32 defaultSize) : vector(defaultSize) {}
+	TArray(u32 defaultSize, const Type& defaultValue) : vector(defaultSize, defaultValue) {}
+	TArray(std::initializer_list<Type> initList) : vector{initList} {}
 
 	TArray(TArray<Type>&& other)
 	{
@@ -155,12 +152,12 @@ public:
 
 	Iterator FindIt(const Type& item) const
 	{
-		return const_cast<Iterator>(eastl::find(vector.begin(), vector.end(), item));
+		return const_cast<Iterator>(std::find(vector.begin(), vector.end(), item));
 	}
 
-	Iterator FindIt(eastl::function<bool(const Type&)> cb) const
+	Iterator FindIt(std::function<bool(const Type&)> cb) const
 	{
-		return const_cast<Iterator>(eastl::find_if(vector.begin(), vector.end(), cb));
+		return const_cast<Iterator>(std::find_if(vector.begin(), vector.end(), cb));
 	}
 
 	i32 FindIndex(const Type& item) const
@@ -168,17 +165,17 @@ public:
 		ConstIterator found = FindIt(item);
 		if (found != vector.end())
 		{
-			return (i32) eastl::distance(vector.begin(), found);
+			return i32(std::distance(vector.begin(), found));
 		}
 		return NO_INDEX;
 	}
 
-	i32 FindIndex(eastl::function<bool(const Type&)> cb) const
+	i32 FindIndex(std::function<bool(const Type&)> cb) const
 	{
 		ConstIterator it = FindIt(MoveTemp(cb));
 		if (it != vector.end())
 		{
-			return (i32) eastl::distance(vector.begin(), it);
+			return i32(std::distance(vector.begin(), it));
 		}
 		return NO_INDEX;
 	}
@@ -189,7 +186,7 @@ public:
 		return it != end() ? it : nullptr;
 	}
 
-	Type* Find(eastl::function<bool(const Type&)> cb) const
+	Type* Find(std::function<bool(const Type&)> cb) const
 	{
 		Iterator it = FindIt(MoveTemp(cb));
 		return it != end() ? it : nullptr;
@@ -200,7 +197,7 @@ public:
 		return FindIt(item) != vector.end();
 	}
 
-	bool Contains(eastl::function<bool(const Type&)> cb) const
+	bool Contains(std::function<bool(const Type&)> cb) const
 	{
 		return FindIt(MoveTemp(cb)) != vector.end();
 	}
@@ -209,12 +206,12 @@ public:
 	 * Delete all items that match another provided item
 	 * @return number of deleted items
 	 */
-	i32 Remove(const Type& item, const bool shouldShrink = true)
+	i32 Remove(const Type& item, const bool bShouldShrink = true)
 	{
 		const i32 lastSize = Size();
-		eastl::remove(vector.begin(), vector.end(), item);
+		std::remove(vector.begin(), vector.end(), item);
 
-		if (shouldShrink)
+		if (bShouldShrink)
 			Shrink();
 
 		return lastSize - Size();
@@ -263,14 +260,15 @@ public:
 	 * Delete all items that match a delegate
 	 * @return number of deleted items
 	 */
-	i32 RemoveIf(eastl::function<bool(const Type&)>&& callback, const bool shouldShrink = true)
+	i32 RemoveIf(std::function<bool(const Type&)>&& callback, const bool bShouldShrink = true)
 	{
 		const i32 lastSize = Size();
-		vector.erase(eastl::remove_if(vector.begin(), vector.end(), callback), vector.end());
+		vector.erase(std::remove_if(vector.begin(), vector.end(), callback), vector.end());
 
-		if (shouldShrink)
+		if (bShouldShrink)
+		{
 			Shrink();
-
+		}
 		return lastSize - Size();
 	}
 
@@ -425,8 +423,9 @@ private:
 template <typename Type, typename Allocator /*= EASTLAllocatorType*/>
 void TArray<Type, Allocator>::Swap(i32 firstIndex, i32 secondIndex)
 {
-	if (Size() > 1 && firstIndex != secondIndex && IsValidIndex(firstIndex) && IsValidIndex(secondIndex))
+	if (Size() > 1 && firstIndex != secondIndex && IsValidIndex(firstIndex) &&
+		IsValidIndex(secondIndex))
 	{
-		eastl::iter_swap(vector.begin() + firstIndex, vector.begin() + secondIndex);
+		std::iter_swap(vector.begin() + firstIndex, vector.begin() + secondIndex);
 	}
 }

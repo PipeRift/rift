@@ -4,12 +4,14 @@
 
 #include "CoreEngine.h"
 #include "Math.h"
+#include "Matrix.h"
+#include "Quaternion.h"
 #include "Reflection/ClassTraits.h"
 #include "Reflection/ReflectionTypeTraits.h"
+#include "Rotator.h"
 #include "Vector.h"
 
-#include <EASTL/internal/copy_help.h>
-
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/matrix_transform_2d.hpp>
@@ -23,8 +25,8 @@ struct Transform
 	v3 scale;
 
 
-	Transform() : location{v3::Zero()}, rotation{Quat::Identity()}, scale{v3::One()} {};
-	Transform(v3 location) : location{location}, rotation{Quat::Identity()}, scale{v3::One()} {};
+	Transform() : location(v3::Zero()), rotation(Quat::Identity()), scale(v3::One()){};
+	Transform(v3 location) : location(location), rotation(Quat::Identity()), scale(v3::One()){};
 
 
 	Rotator GetRotation()

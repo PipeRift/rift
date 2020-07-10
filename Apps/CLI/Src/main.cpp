@@ -1,6 +1,5 @@
 
 #include <Context.h>
-#include <Math/Vector.h>
 #include <Profiler.h>
 #include <Project.h>
 
@@ -17,6 +16,7 @@ int main()
 
 	project->LoadAllAssets();
 
+	// Live for a second to let the profiler connect. Temporal
 	std::chrono::duration<float, std::chrono::seconds::period> sleepPeriod{1.f};
 	std::this_thread::sleep_for(sleepPeriod);
 	return 0;

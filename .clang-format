@@ -10,7 +10,7 @@ AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortBlocksOnASingleLine: true
 AllowShortCaseLabelsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLambdasOnASingleLine: None
 AllowShortLoopsOnASingleLine: false
@@ -43,7 +43,7 @@ BraceWrapping:
   SplitEmptyFunction: false
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
-ColumnLimit:     132
+ColumnLimit: 100
 CommentPragmas:  '^ IWYU pragma:'
 CompactNamespaces: true
 AllowAllConstructorInitializersOnNextLine: false

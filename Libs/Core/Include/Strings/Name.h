@@ -18,19 +18,17 @@ struct Name;
 struct NameKey
 {
 private:
+	static const eastl::hash<String> hasher;
+
+	String str;
 	size_t hash;
-	const String str;
 
 public:
-	NameKey(size_t hash = 0) : hash{hash}
-	{}
-	NameKey(String str) : hash{eastl::hash<String>()(str)}, str{MoveTemp(str)}
-	{}
+	NameKey(size_t hash = 0) : hash{hash} {}
+	NameKey(StringView inStr) : str{inStr}, hash{eastl::hash<String>()(str)} {}
 
-	NameKey(const NameKey& other) : hash{other.hash}
-	{}
-	NameKey(NameKey&& other) : hash{other.hash}, str{MoveTemp(other.str)}
-	{}
+	NameKey(const NameKey& other) : hash{other.hash} {}
+	NameKey(NameKey&& other) : hash{other.hash}, str{MoveTemp(other.str)} {}
 	NameKey& operator=(const NameKey& other)
 	{
 		hash = other.hash;
@@ -80,10 +78,9 @@ class NameTable
 	mutable std::shared_mutex editTableMutex;
 
 
-	NameTable() : table{}
-	{}
+	NameTable() : table{} {}
 
-	size_t Register(const String& string);
+	size_t Register(StringView string);
 	const String& Find(size_t hash) const
 	{
 		// Ensure no other thread is editing the table
@@ -91,17 +88,18 @@ class NameTable
 		return table.find({hash})->GetString();
 	}
 
-	static NameTable& GetGlobal()
+	static NameTable& Get()
 	{
-		static NameTable global{};
-		return global;
+		static NameTable instance{};
+		return instance;
 	}
 };
 
 
 /**
  * An string identified by id.
- * Searching, comparing and other operations are way cheaper, but creating (indexing) is more expensive.
+ * Searching, comparing and other operations are way cheaper, but creating (indexing) is more
+ * expensive.
  */
 struct Name
 {
@@ -114,27 +112,19 @@ private:
 
 
 public:
-	Name() : id{noneId}
-	{}
-
-	Name(const StringView&& key) : Name(String{key})
-	{}
-	Name(const TCHAR* key) : Name(String{key})
-	{}
-	Name(const TCHAR* key, String::size_type size) : Name(String{key, size})
-	{}
-	Name(const String& key)
+	Name() : id{noneId} {}
+	Name(const TCHAR* key) : Name(StringView{key}) {}
+	Name(StringView key)
 	{
 		// Index this name
-		id = NameTable::GetGlobal().Register(key);
+		id = NameTable::Get().Register(key);
 	}
-	Name(const Name& other) : id(other.id)
-	{}
+	Name(const String& str) : Name(StringView(str)) {}
+	Name(const Name& other) : id(other.id) {}
 	Name(Name&& other) noexcept
 	{
 		std::swap(id, other.id);
 	}
-
 	Name& operator=(const Name& other)
 	{
 		id = other.id;
@@ -148,7 +138,7 @@ public:
 
 	const String& ToString() const
 	{
-		return IsNone() ? noneStr : NameTable::GetGlobal().Find(id);
+		return IsNone() ? noneStr : NameTable::Get().Find(id);
 	}
 
 	bool operator==(const Name& other) const
@@ -177,8 +167,7 @@ public:
 	bool Serialize(class Archive& ar, const char* name);
 
 private:
-	Name(const Id& id) : id(id)
-	{}
+	Name(const Id& id) : id(id) {}
 };
 
 DEFINE_CLASS_TRAITS(Name, HasCustomSerialize = true);
@@ -204,15 +193,15 @@ namespace eastl
 /// http://en.cppreference.com/w/cpp/String/basic_String/operator%22%22s
 ///
 #if EASTL_USER_LITERALS_ENABLED && EASTL_INLINE_NAMESPACES_ENABLED
-	EA_DISABLE_VC_WARNING(
-		4455)	 // disable warning C4455: literal suffix identifiers that do not start with an underscore are reserved
+	EA_DISABLE_VC_WARNING(4455)	   // disable warning C4455: literal suffix identifiers that do not
+								   // start with an underscore are reserved
 	inline namespace literals
 	{
 		inline namespace String_literals
 		{
-			inline Name operator"" n(const TCHAR* str, size_t len) EA_NOEXCEPT
+			inline Name operator"" n(const TCHAR* str) EA_NOEXCEPT
 			{
-				return Name{str, String::size_type(len)};
+				return Name{str};
 			}
 		}					   // namespace String_literals
 	}						   // namespace literals

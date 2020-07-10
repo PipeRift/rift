@@ -38,8 +38,7 @@ protected:
 
 
 public:
-	Broadcast() : rawListeners{}, objListeners{}
-	{}
+	Broadcast() : rawListeners{}, objListeners{} {}
 
 	/** Broadcast to all binded functions */
 	void DoBroadcast(const Params&... params)
@@ -74,7 +73,8 @@ public:
 		return EventHandle::Invalid();
 	}
 
-	/** Binds a member function. Must be unbinded manually (unless its an Object). */
+	/** Binds a member function. Must be unbinded manually (unless its an
+	 * Object). */
 	template <typename Type>
 	EventHandle Bind(Type* instance, MemberMethodPtr<Type> method) const
 	{
@@ -82,7 +82,7 @@ public:
 		{
 			if constexpr (IsObject<Type>::value)
 			{
-				return Bind(instance->Self<Type>(), MoveTemp(method));
+				return Bind<Type>(instance->Self(), MoveTemp(method));
 			}
 			else
 			{
@@ -96,7 +96,8 @@ public:
 		return EventHandle::Invalid();
 	}
 
-	/** Binds an object's function. Gets unbinded when the objects is destroyed */
+	/** Binds an object's function. Gets unbinded when the objects is destroyed
+	 */
 	template <typename Type>
 	EventHandle Bind(Ptr<Type> object, MemberMethodPtr<Type> method) const
 	{
@@ -144,7 +145,7 @@ public:
 		{
 			if constexpr (IsObject<Type>::value)
 			{
-				return UnbindAll(instance->GetSelf());
+				return UnbindAll(instance->Self());
 			}
 			else
 			{

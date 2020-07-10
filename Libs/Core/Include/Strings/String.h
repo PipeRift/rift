@@ -40,7 +40,8 @@ struct CString
 
 	static void ToSentenceCase(const String& str, String& result);
 
-	static String ReplaceCopy(const String& original, const TCHAR searchChar, const TCHAR replacementChar)
+	static String ReplaceCopy(
+		const String& original, const TCHAR searchChar, const TCHAR replacementChar)
 	{
 		String result = original;
 		Replace(result, searchChar, replacementChar);
@@ -81,16 +82,19 @@ struct CString
 	 *
 	 * @return	The number of elements in InArray
 	 */
-	static i32 ParseIntoArray(const String& str, TArray<String>& OutArray, const TCHAR* pchDelim, bool InCullEmpty = true);
+	static i32 ParseIntoArray(const String& str, TArray<String>& OutArray, const TCHAR* pchDelim,
+		bool InCullEmpty = true);
 
 	static constexpr bool StartsWith(StringView str, StringView subStr)
 	{
-		return str.size() >= subStr.size() && std::equal(subStr.begin(), subStr.end(), str.begin()) == 0;
+		return str.size() >= subStr.size() &&
+			   std::equal(subStr.begin(), subStr.end(), str.begin()) == 0;
 	}
 
 	static constexpr bool EndsWith(StringView str, StringView subStr)
 	{
-		return str.size() >= subStr.size() && std::equal(subStr.rbegin(), subStr.rend(), str.rbegin());
+		return str.size() >= subStr.size() &&
+			   std::equal(subStr.rbegin(), subStr.rend(), str.rbegin());
 	}
 
 	static constexpr bool EndsWith(StringView str, const TCHAR c)
@@ -188,11 +192,12 @@ struct CString
 
 private:
 	// #NOTE: EASTL doesn't support codecvt and wstring conversion yet
-	// static std::wstring_convert<std::codecvt_utf8<TCHAR>, TCHAR, StringAllocator, StringAllocator> converter;
+	// static std::wstring_convert<std::codecvt_utf8<TCHAR>, TCHAR, StringAllocator,
+	// StringAllocator> converter;
 
 public:
-	// static String ToString(const UTF8String& str) { return TX(""); /*converter.from_bytes(str);*/ }
-	// static UTF8String ToUTF8(const String& str) { return ""; /*converter.to_bytes(str);*/ }
+	// static String ToString(const UTF8String& str) { return TX(""); /*converter.from_bytes(str);*/
+	// } static UTF8String ToUTF8(const String& str) { return ""; /*converter.to_bytes(str);*/ }
 };
 
 using Regex = std::basic_regex<TCHAR>;
@@ -205,11 +210,28 @@ namespace eastl
 	{
 		size_t operator()(const String& x) const
 		{
-			const TCHAR* p = (const TCHAR*) x.c_str();	  // To consider: limit p to at most 256 chars.
-			unsigned int c, result = 2166136261U;		  // We implement an FNV-like String hash.
-			while ((c = *p++) != 0)						  // Using '!=' disables compiler warnings.
+			// To consider: limit p to at most 256 chars.
+			const TCHAR* p = (const TCHAR*) x.c_str();
+			unsigned int c, result = 2166136261U;	 // We implement an FNV-like String hash.
+			while ((c = *p++) != 0)					 // Using '!=' disables compiler warnings.
 				result = (result * 16777619) ^ c;
 			return (size_t) result;
+		}
+	};
+
+	template <>
+	struct hash<StringView>
+	{
+		size_t operator()(const StringView& x) const
+		{
+			// To consider: limit p to at most 256 chars.
+			const TCHAR* p = (const TCHAR*) x.data();
+			unsigned int c, result = 2166136261U;	 // We implement an FNV-like String hash.
+			while ((c = *p++) != 0)					 // Using '!=' disables compiler warnings.
+			{
+				result = (result * 16777619) ^ c;
+			}
+			return size_t(result);
 		}
 	};
 }	 // namespace eastl

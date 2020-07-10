@@ -4,6 +4,7 @@
 
 #include "CoreEngine.h"
 #include "Misc/Timespan.h"
+#include "Platform/Platform.h"
 #include "Platform/PlatformTime.h"
 
 
@@ -51,19 +52,22 @@ namespace Chrono = std::chrono;
 /**
  * Implements a date and time.
  *
- * Values of this type represent dates and times between Midnight 00:00:00, January 1, 0001 and
- * Midnight 23:59:59.9999999, December 31, 9999 in the Gregorian calendar. Internally, the time
- * values are stored in ticks of 0.1 microseconds (= 100 nanoseconds) since January 1, 0001.
+ * Values of this type represent dates and times between Midnight 00:00:00,
+ * January 1, 0001 and Midnight 23:59:59.9999999, December 31, 9999 in the
+ * Gregorian calendar. Internally, the time values are stored in ticks of 0.1
+ * microseconds (= 100 nanoseconds) since January 1, 0001.
  *
- * To retrieve the current local date and time, use the FDateTime.Now() method. To retrieve the
- * current UTC time, use the FDateTime.UtcNow() method instead.
+ * To retrieve the current local date and time, use the FDateTime.Now() method.
+ * To retrieve the current UTC time, use the FDateTime.UtcNow() method instead.
  *
- * This class also provides methods to convert dates and times from and to string representations,
- * calculate the number of days in a given month and year, check for leap years and determine the
- * time of day, day of week and month of year of a given date and time.
+ * This class also provides methods to convert dates and times from and to
+ * string representations, calculate the number of days in a given month and
+ * year, check for leap years and determine the time of day, day of week and
+ * month of year of a given date and time.
  *
- * The companion struct FTimespan is provided for enabling date and time based arithmetic, such as
- * calculating the difference between two dates or adding a certain amount of time to a given date.
+ * The companion struct FTimespan is provided for enabling date and time based
+ * arithmetic, such as calculating the difference between two dates or adding a
+ * certain amount of time to a given date.
  *
  * Ranges of dates and times can be represented by the FDateRange class.
  *
@@ -84,22 +88,22 @@ protected:
 
 	static SysTime::duration utcToLocal;
 
-	/** Holds the ticks in 100 nanoseconds resolution since January 1, 0001 A.D. */
+	/** Holds the ticks in 100 nanoseconds resolution since January 1, 0001 A.D.
+	 */
 	SysTime value;
 
 
 public:
 	/** Default constructor (no initialization). */
-	DateTime() : value{}
-	{}
+	DateTime() : value{} {}
 
 	/**
-	 * Creates and initializes a new instance with the specified number of ticks.
+	 * Creates and initializes a new instance with the specified number of
+	 * ticks.
 	 *
 	 * @param Ticks The ticks representing the date and time.
 	 */
-	DateTime(SysTime value) : value{value}
-	{}
+	DateTime(SysTime value) : value{value} {}
 
 	template <typename Precision>
 	DateTime(Chrono::time_point<SysClock, Precision> value)
@@ -107,7 +111,8 @@ public:
 	{}
 
 	/**
-	 * Creates and initializes a new instance with the specified year, month, day, hour, minute, second and millisecond.
+	 * Creates and initializes a new instance with the specified year, month,
+	 * day, hour, minute, second and millisecond.
 	 *
 	 * @param Year The year.
 	 * @param Month The month.
@@ -117,13 +122,15 @@ public:
 	 * @param Second The second (optional).
 	 * @param Millisecond The millisecond (optional).
 	 */
-	DateTime(i32 Year, i32 Month, i32 Day, i32 Hour = 0, i32 Minute = 0, i32 Second = 0, i32 Millisecond = 0);
+	DateTime(i32 Year, i32 Month, i32 Day, i32 Hour = 0, i32 Minute = 0, i32 Second = 0,
+		i32 Millisecond = 0);
 
 public:
 	/**
 	 * Returns result of adding the given time span to this date.
 	 *
-	 * @return A date whose value is the sum of this date and the given time span.
+	 * @return A date whose value is the sum of this date and the given time
+	 * span.
 	 * @see FTimespan
 	 */
 	DateTime operator+(const Timespan& other) const
@@ -146,7 +153,8 @@ public:
 	/**
 	 * Returns time span between this date and the given date.
 	 *
-	 * @return A time span whose value is the difference of this date and the given date.
+	 * @return A time span whose value is the difference of this date and the
+	 * given date.
 	 * @see FTimespan
 	 */
 	Timespan operator-(const DateTime& other) const
@@ -157,7 +165,8 @@ public:
 	/**
 	 * Returns result of subtracting the given time span from this date.
 	 *
-	 * @return A date whose value is the difference of this date and the given time span.
+	 * @return A date whose value is the difference of this date and the given
+	 * time span.
 	 * @see FTimespan
 	 */
 	DateTime operator-(const Timespan& Other) const
@@ -280,7 +289,8 @@ public:
 	 * Gets this date's day part (1 to 31).
 	 *
 	 * @return Day of the month.
-	 * @see GetHour, GetHour12, GetMillisecond, GetMinute, GetMonth, GetSecond, GetYear
+	 * @see GetHour, GetHour12, GetMillisecond, GetMinute, GetMonth, GetSecond,
+	 * GetYear
 	 */
 	u32 GetDay() const;
 
@@ -304,7 +314,8 @@ public:
 	 * Gets this date's hour part in 24-hour clock format (0 to 23).
 	 *
 	 * @return The hour.
-	 * @see GetDay, GetDayOfWeek, GetDayOfYear, GetHour12, GetMillisecond, GetMinute, GetMonth, GetSecond, GetYear
+	 * @see GetDay, GetDayOfWeek, GetDayOfYear, GetHour12, GetMillisecond,
+	 * GetMinute, GetMonth, GetSecond, GetYear
 	 */
 	u32 GetHour() const
 	{
@@ -315,7 +326,8 @@ public:
 	 * Gets this date's hour part in 12-hour clock format (1 to 12).
 	 *
 	 * @return The hour in AM/PM format.
-	 * @see GetDay, GetHour, GetMillisecond, GetMinute, GetMonth, GetSecond, GetYear
+	 * @see GetDay, GetHour, GetMillisecond, GetMinute, GetMonth, GetSecond,
+	 * GetYear
 	 */
 	u32 GetHour12() const;
 
@@ -334,7 +346,8 @@ public:
 	 * Gets this date's minute part (0 to 59).
 	 *
 	 * @return The minute.
-	 * @see GetDay, GetHour, GetHour12, GetMillisecond, GetMonth, GetSecond, GetYear
+	 * @see GetDay, GetHour, GetHour12, GetMillisecond, GetMonth, GetSecond,
+	 * GetYear
 	 */
 	i32 GetMinute() const
 	{
@@ -345,7 +358,8 @@ public:
 	 * Gets this date's the month part (1 to 12).
 	 *
 	 * @return The month.
-	 * @see GetDay, GetHour, GetHour12, GetMillisecond, GetMinute, GetSecond, GetYear
+	 * @see GetDay, GetHour, GetHour12, GetMillisecond, GetMinute, GetSecond,
+	 * GetYear
 	 */
 	u32 GetMonth() const;
 
@@ -364,7 +378,8 @@ public:
 	 * Gets this date's second part.
 	 *
 	 * @return The second.
-	 * @see GetDay, GetHour, GetHour12, GetMillisecond, GetMinute, GetMonth, GetYear
+	 * @see GetDay, GetHour, GetHour12, GetMillisecond, GetMinute, GetMonth,
+	 * GetYear
 	 */
 	i32 GetSecond() const
 	{
@@ -386,7 +401,8 @@ public:
 	 * Gets this date's year part.
 	 *
 	 * @return The year.
-	 * @see GetDay, GetHour, GetHour12, GetMillisecond, GetMinute, GetMonth, GetSecond
+	 * @see GetDay, GetHour, GetHour12, GetMillisecond, GetMinute, GetMonth,
+	 * GetSecond
 	 */
 	i32 GetYear() const;
 
@@ -461,7 +477,8 @@ public:
 	String ToString(const TCHAR* Format) const;
 
 	/**
-	 * Returns this date as the number of seconds since the Unix Epoch (January 1st of 1970).
+	 * Returns this date as the number of seconds since the Unix Epoch (January
+	 * 1st of 1970).
 	 *
 	 * @return Time of day.
 	 * @see FromUnixTimestamp
@@ -509,9 +526,10 @@ public:
 	/**
 	 * Checks whether the given year is a leap year.
 	 *
-	 * A leap year is a year containing one additional day in order to keep the calendar synchronized
-	 * with the astronomical year. All years divisible by 4, but not divisible by 100 - except if they
-	 * are also divisible by 400 - are leap years.
+	 * A leap year is a year containing one additional day in order to keep the
+	 * calendar synchronized with the astronomical year. All years divisible by
+	 * 4, but not divisible by 100 - except if they are also divisible by 400 -
+	 * are leap years.
 	 *
 	 * @param Year The year to check.
 	 * @return true if the year is a leap year, false otherwise.
@@ -545,9 +563,10 @@ public:
 	/**
 	 * Gets the local date and time on this computer.
 	 *
-	 * This method takes into account the local computer's time zone and daylight saving
-	 * settings. For time zone independent time comparisons, and when comparing times
-	 * between different computers, please use UtcNow() instead.
+	 * This method takes into account the local computer's time zone and
+	 * daylight saving settings. For time zone independent time comparisons, and
+	 * when comparing times between different computers, please use UtcNow()
+	 * instead.
 	 *
 	 * @return Current date and time.
 	 * @see Today, UtcNow
@@ -565,8 +584,9 @@ public:
 	/**
 	 * Converts a string to a date and time.
 	 *
-	 * Currently, the string must be in the format written by either FDateTime.ToString() or
-	 * FTimeStamp.TimestampToFString(). Other formats are not supported at this time.
+	 * Currently, the string must be in the format written by either
+	 * FDateTime.ToString() or FTimeStamp.TimestampToFString(). Other formats
+	 * are not supported at this time.
 	 *
 	 * @param DateTimeString The string to convert.
 	 * @param OutDateTime Will contain the parsed date and time.
@@ -576,23 +596,26 @@ public:
 	static bool Parse(const String& DateTimeString, DateTime& OutDateTime);
 
 	/**
-	 * Parses a date string in HTTP-date format (rfc1123-date | rfc850-date | asctime-date)
+	 * Parses a date string in HTTP-date format (rfc1123-date | rfc850-date |
+	 * asctime-date)
 	 * https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3.1
 	 *
 	 * HTTP-date    = rfc1123-date | rfc850-date | asctime-date
 	 * rfc1123-date = wkday "," SP date1 SP time SP "GMT"
 	 * rfc850-date  = weekday "," SP date2 SP time SP "GMT"
 	 * asctime-date = wkday SP date3 SP time SP 4DIGIT
-	 * date1        = 2DIGIT SP month SP 4DIGIT ; day month year (e.g., 02 Jun 1982)
-	 * date2        = 2DIGIT "-" month "-" 2DIGIT ; day-month-year (e.g., 02-Jun-82)
-	 * date3        = month SP (2DIGIT | (SP 1DIGIT)) ; month day (e.g., Jun  2)
-	 * time         = 2DIGIT ":" 2DIGIT ":" 2DIGIT ; 00:00:00 - 23:59:59
-	 * wkday        = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun"
-	 * weekday      = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday"
-	 * month        = "Jan" | "Feb" | "Mar" | "Apr" | "May" | "Jun" | "Jul" | "Aug" | "Sep" | "Oct" | "Nov" | "Dec"
+	 * date1        = 2DIGIT SP month SP 4DIGIT ; day month year (e.g., 02 Jun
+	 * 1982) date2        = 2DIGIT "-" month "-" 2DIGIT ; day-month-year (e.g.,
+	 * 02-Jun-82) date3        = month SP (2DIGIT | (SP 1DIGIT)) ; month day
+	 * (e.g., Jun  2) time         = 2DIGIT ":" 2DIGIT ":" 2DIGIT ; 00:00:00 -
+	 * 23:59:59 wkday        = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" |
+	 * "Sun" weekday      = "Monday" | "Tuesday" | "Wednesday" | "Thursday" |
+	 * "Friday" | "Saturday" | "Sunday" month        = "Jan" | "Feb" | "Mar" |
+	 * "Apr" | "May" | "Jun" | "Jul" | "Aug" | "Sep" | "Oct" | "Nov" | "Dec"
 	 *
 	 * @param HttpDate The string to be parsed
-	 * @param OutDateTime FDateTime object (assumes UTC) corresponding to the input string.
+	 * @param OutDateTime FDateTime object (assumes UTC) corresponding to the
+	 * input string.
 	 * @return true if the string was converted successfully, false otherwise.
 	 * @see Parse, ToHttpDate, ParseIso8601
 	 */
@@ -602,7 +625,8 @@ public:
 	 * Parses a date string in ISO-8601 format.
 	 *
 	 * @param DateTimeString The string to be parsed
-	 * @param OutDateTime FDateTime object (in UTC) corresponding to the input string (which may have been in any timezone).
+	 * @param OutDateTime FDateTime object (in UTC) corresponding to the input
+	 * string (which may have been in any timezone).
 	 * @return true if the string was converted successfully, false otherwise.
 	 * @see Parse, ParseHttpDate, ToIso8601
 	 */
@@ -635,7 +659,8 @@ public:
 	 *
 	 * @return true if the components are valid, false otherwise.
 	 */
-	static bool Validate(i32 Year, i32 Month, i32 Day, i32 Hour, i32 Minute, i32 Second, i32 Millisecond);
+	static bool Validate(
+		i32 Year, i32 Month, i32 Day, i32 Hour, i32 Minute, i32 Second, i32 Millisecond);
 
 	static void InitializeTime();
 
@@ -651,8 +676,10 @@ protected:
 	 * This operation may contains small precision errors.
 	 */
 	template <typename DstDuration, typename SrcDuration, typename DstClock, typename SrcClock,
-		typename DstTime = Chrono::time_point<DstClock, DstDuration>, typename SrcTime = Chrono::time_point<SrcClock, SrcDuration> >
-	static DstTime clock_cast(const SrcTime tp, const SrcDuration tolerance = decmicroseconds{1}, const i32 limit = 10)
+		typename DstTime = Chrono::time_point<DstClock, DstDuration>,
+		typename SrcTime = Chrono::time_point<SrcClock, SrcDuration> >
+	static DstTime clock_cast(
+		const SrcTime tp, const SrcDuration tolerance = decmicroseconds{1}, const i32 limit = 10)
 	{
 		assert(limit > 0);
 		auto itercnt = 0;

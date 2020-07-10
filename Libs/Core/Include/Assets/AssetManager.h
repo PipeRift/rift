@@ -26,7 +26,7 @@ public:
 	Ptr<AssetData> Load(AssetInfo info);
 	TArray<Ptr<AssetData>> Load(const TArray<AssetInfo>& infos);
 
-	Ptr<AssetData> LoadOrCreate(AssetInfo info, Class* assetType);
+	Ptr<AssetData> LoadOrCreate(AssetInfo info, Refl::Class* assetType);
 
 	Ptr<AssetData> GetLoadedAsset(AssetInfo id) const
 	{

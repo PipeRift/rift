@@ -7,6 +7,10 @@
 #include <ctype.h>
 #include <wctype.h>
 
+#include <cctype>
+#include <locale>
+
+
 /*-----------------------------------------------------------------------------
 	Character type functions.
 -----------------------------------------------------------------------------*/
@@ -82,9 +86,12 @@ struct LineBreakImplementation
 	typedef T CharType;
 	static inline bool IsLinebreak(CharType c)
 	{
-		return c == TCharBase<CharType, Size>::LineFeed || c == TCharBase<CharType, Size>::VerticalTab ||
-			   c == TCharBase<CharType, Size>::FormFeed || c == TCharBase<CharType, Size>::CarriageReturn ||
-			   c == TCharBase<CharType, Size>::NextLine || c == TCharBase<CharType, Size>::LineSeparator ||
+		return c == TCharBase<CharType, Size>::LineFeed ||
+			   c == TCharBase<CharType, Size>::VerticalTab ||
+			   c == TCharBase<CharType, Size>::FormFeed ||
+			   c == TCharBase<CharType, Size>::CarriageReturn ||
+			   c == TCharBase<CharType, Size>::NextLine ||
+			   c == TCharBase<CharType, Size>::LineSeparator ||
 			   c == TCharBase<CharType, Size>::ParagraphSeparator;
 	}
 };
@@ -96,8 +103,8 @@ struct LineBreakImplementation<T, 1>
 	static inline bool IsLinebreak(CharType c)
 	{
 		return c == TCharBase<CharType, 1>::LineFeed || c == TCharBase<CharType, 1>::VerticalTab ||
-			   c == TCharBase<CharType, 1>::FormFeed || c == TCharBase<CharType, 1>::CarriageReturn ||
-			   c == TCharBase<CharType, 1>::NextLine;
+			   c == TCharBase<CharType, 1>::FormFeed ||
+			   c == TCharBase<CharType, 1>::CarriageReturn || c == TCharBase<CharType, 1>::NextLine;
 	}
 };
 
@@ -109,15 +116,15 @@ struct TChar : public TCharBase<T, sizeof(T)>
 public:
 	static inline CharType ToUpper(CharType c)
 	{
-		return eastl::CharToUpper(c);
+		return std::toupper(c, std::locale());
 	}
 	static inline CharType ToLower(CharType c)
 	{
-		return eastl::CharToLower(c);
+		return std::tolower(c, std::locale());
 	}
 	static inline bool IsUpper(CharType c)
 	{
-		return eastl::upper
+		return std::isupper(c, std::locale());
 	}
 	static inline bool IsLower(CharType c);
 	static inline bool IsAlpha(CharType c);

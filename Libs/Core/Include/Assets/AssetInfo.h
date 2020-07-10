@@ -15,12 +15,9 @@ protected:
 
 
 public:
-	AssetInfo() : id(Name::None())
-	{}
-	AssetInfo(Name id) : id(id)
-	{}
-	AssetInfo(Path path) : id(FileSystem::ToString(path))
-	{}
+	AssetInfo() : id(Name::None()) {}
+	AssetInfo(Name id) : id(id) {}
+	AssetInfo(Path path) : id(FileSystem::ToString(path)) {}
 
 	/**
 	 * @returns true if this can never be pointed towards an asset

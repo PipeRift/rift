@@ -3,14 +3,17 @@
 
 #include "Memory/Allocator.h"
 
+namespace Refl
+{
+	class Struct;
+}
 
 struct BaseStruct
 {
 	BaseStruct() = default;
-	virtual ~BaseStruct()
-	{}
+	virtual ~BaseStruct() {}
 
-	class StructType* GetStruct() const;
+	Refl::Struct* GetType() const;
 
 	void* operator new(size_t size)
 	{
