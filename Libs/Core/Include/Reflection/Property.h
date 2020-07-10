@@ -10,6 +10,7 @@
 template <typename T>
 class Ptr;
 class BaseObject;
+struct BaseStruct;
 
 
 namespace Refl
@@ -80,9 +81,13 @@ namespace Refl
 			return typeName;
 		}
 
-		virtual std::shared_ptr<PropertyHandle> CreateHandle(
-			const Ptr<BaseObject>& instance) const = 0;
-		virtual std::shared_ptr<PropertyHandle> CreateHandle(struct BaseStruct* instance) const = 0;
+		virtual std::shared_ptr<PropertyHandle> CreateHandle(const Ptr<BaseObject>& instance) const = 0;
+		virtual std::shared_ptr<PropertyHandle> CreateHandle(BaseStruct* instance) const = 0;
+
+protected:
+
+		static const Type* GetInstanceType(const Ptr<BaseObject>& instance);
+		static const Type* GetInstanceType(BaseStruct* instance);
 
 	private:
 		void SetDisplayName(const String& inDisplayName);

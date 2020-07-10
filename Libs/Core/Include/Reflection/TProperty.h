@@ -35,7 +35,7 @@ namespace Refl
 		virtual std::shared_ptr<PropertyHandle> CreateHandle(
 			const Ptr<BaseObject>& instance) const override
 		{
-			const Type* const type = instance->GetType();
+			const Type* type = GetInstanceType(instance);
 			if (type == GetContainerType() || type->IsChildOf(GetContainerType()))
 			{
 				return std::shared_ptr<PropertyHandle>(
@@ -46,7 +46,7 @@ namespace Refl
 
 		virtual std::shared_ptr<PropertyHandle> CreateHandle(BaseStruct* instance) const override
 		{
-			const Type* const type = instance->GetType();
+			const Type* type = GetInstanceType(instance);
 			if (type == GetContainerType() || type->IsChildOf(GetContainerType()))
 			{
 				return std::shared_ptr<PropertyHandle>(

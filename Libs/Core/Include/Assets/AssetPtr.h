@@ -62,8 +62,8 @@ public:
 
 	TAssetPtr(Path path) : BaseAssetPtr(FileSystem::ToString(path)) {}
 	TAssetPtr(Name path) : BaseAssetPtr(path) {}
-	TAssetPtr(const TCHAR* key) : TAssetPtr(Name{key}) {}
-	TAssetPtr(const AssetInfo& other) : AssetInfo(other) {}
+	TAssetPtr(StringView key) : TAssetPtr(Name{key}) {}
+	TAssetPtr(const AssetInfo& other) : info(other) {}
 	TAssetPtr(Ptr<ItemType> asset)
 	{
 		if (asset)

@@ -233,6 +233,11 @@ struct Math
 		return glm::pow(value, power);
 	}
 
+	static constexpr u32 Pow(size_t value, u32 power)
+	{
+		return Pow<u32, u32>(u32(value), power);
+	}
+
 	// Same as Max but with N arguments
 	template <typename Type, typename... Args>
 	static constexpr Type Max(Type a, Type b, Args... args)

@@ -3,6 +3,8 @@
 #include "Reflection/Property.h"
 
 #include "Reflection/Runtime/PropertyHandle.h"
+#include "Reflection/Class.h"
+#include "Reflection/Struct.h"
 
 
 namespace Refl
@@ -19,4 +21,14 @@ namespace Refl
 			displayName[0] = eastl::CharToLower(displayName[0]);
 		}
 	}
+
+	const Type* Property::GetInstanceType(const Ptr<BaseObject>& instance)
+	{
+		return instance->GetType();
+	}
+	const Type* Property::GetInstanceType(BaseStruct* instance)
+	{
+		return instance->GetType();
+	}
+
 }	 // namespace Refl
