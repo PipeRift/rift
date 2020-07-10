@@ -8,6 +8,9 @@ using namespace VCLang;
 
 int main()
 {
+	String v = "hey";
+	StringView s = v;
+
 	ScopedZone("CLI Execution", 459bd1);
 	Context::Initialize();
 
