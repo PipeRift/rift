@@ -60,10 +60,9 @@ public:
 		CopyFrom(other);
 	}
 
-	TAssetPtr(Path path) : BaseAssetPtr(FileSystem::ToString(path)) {}
+	TAssetPtr(Path path) : BaseAssetPtr(path) {}
 	TAssetPtr(Name path) : BaseAssetPtr(path) {}
 	TAssetPtr(StringView key) : TAssetPtr(Name{key}) {}
-	TAssetPtr(String key) : TAssetPtr(Name{key}) {}
 	TAssetPtr(const AssetInfo& other) : BaseAssetPtr(other) {}
 	TAssetPtr(Ptr<ItemType> asset)
 	{
