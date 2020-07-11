@@ -64,17 +64,21 @@ public:
 	static bool LoadStringFile(Path path, String& result);
 	static bool SaveStringFile(Path path, const String& data);
 
-	static void CreateFolder(const Path& path)
+	static void CreateFolder(const Path& path, bool bRecursive = false)
 	{
-		if (!Exists(path) && IsFolder(path))
+		if (!path.empty() && !path.has_extension() && !Exists(path))
 		{
+			if (bRecursive)
+			{
+				CreateFolder(path.parent_path(), bRecursive);
+			}
 			fs::create_directory(path);
 		}
 	}
 
 	static Iterator CreateIterator(const Path& path)
 	{
-		if (!Exists(path) || !IsFolder(path))
+		if (!IsFolder(path))
 		{
 			return {};
 		}

@@ -22,7 +22,7 @@ void VCLang::Project::LoadAllAssets()
 	AssetManager::Get()->Load(assetInfos);
 }
 
-Path VCLang::Project::ToProjectPath(const Path& path)
+Path VCLang::Project::ToProjectPath(const Path& path) const
 {
 	if (path.is_relative())
 	{

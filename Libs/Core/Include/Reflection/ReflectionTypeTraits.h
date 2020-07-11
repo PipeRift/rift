@@ -1,11 +1,13 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
+#include "Object/BaseObject.h"
 #include "Strings/Name.h"
 
 #include <EASTL/type_traits.h>
 
 #include <type_traits>
+
 
 struct Struct;
 
@@ -37,7 +39,13 @@ inline constexpr bool IsArrayType()
 template <typename T>
 inline constexpr bool IsStructType()
 {
-	return std::is_convertible<T, Struct>::value;
+	return std::is_same_v<T, Struct> || std::is_convertible_v<T, Struct>;
+}
+
+template <typename T>
+inline constexpr bool IsObjectType()
+{
+	return std::is_convertible_v<T, BaseObject>;
 }
 
 template <typename T>
@@ -69,11 +77,10 @@ inline Name GetReflectableName()
 		return {CString::Format(TX("TAssetPtr<{}>"), GetReflectableName<typename
 	T::ItemType>().ToString().c_str())};
 	}*/
-	else if constexpr (IsStructType<T>())
+	else if constexpr (IsStructType<T>() || IsObjectType<T>())
 	{
 		return T::StaticType()->GetName();
 	}
-
 	return TX("Invalid");
 }
 

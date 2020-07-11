@@ -1,11 +1,15 @@
+// Copyright 2015-2020 Piperift - All rights reserved
 
+#include <Backends/C/Backend_C.h>
 #include <Context.h>
 #include <Profiler.h>
 #include <Project.h>
 
 #include <chrono>
 
+
 using namespace VCLang;
+using Backend_C = VCLang::Backends::C::Backend_C;
 
 
 int main(int argc, char** argv)
@@ -16,7 +20,9 @@ int main(int argc, char** argv)
 	GlobalPtr<Project> project = Create<Project>();
 	project->Init(Path("Project"));
 
-	project->LoadAllAssets();
+	GlobalPtr<Backend_C> backend = Create<Backend_C>();
+	backend->SetProject(project);
+	backend->Compile();
 
 	while (true)
 	{

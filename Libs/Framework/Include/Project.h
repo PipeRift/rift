@@ -39,6 +39,11 @@ namespace VCLang
 
 		void LoadAllAssets();
 
-		Path ToProjectPath(const Path& path);
+		Path ToProjectPath(const Path& path) const;
+
+		Path GetPath() const
+		{
+			return projectPath;
+		}
 	};
 }	 // namespace VCLang

@@ -4,7 +4,6 @@
 
 #include "Assets/ClassAsset.h"
 #include "Backends/Backend.h"
-#include "Project.h"
 
 #include <CoreEngine.h>
 
@@ -15,9 +14,12 @@ namespace VCLang::Backends::C
 	{
 		CLASS(Backend_C, Backend)
 
-		Ptr<Project> project;
+	public:
+		virtual void OnCompile() override;
 
-		void Generate(Ptr<Project> inProject);
+	protected:
+		void Generate();
 		void Build();
+		virtual void OnCleanup() override;
 	};
 }	 // namespace VCLang::Backends::C

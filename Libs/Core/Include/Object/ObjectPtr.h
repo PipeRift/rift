@@ -2,10 +2,13 @@
 #pragma once
 
 #include "CoreEngine.h"
+#include "Log.h"
 #include "Object/BaseObject.h"
 #include "Platform/Platform.h"
+#include "Reflection/ReflectionTypeTraits.h"
 
 #include <memory>
+#include <type_traits>
 
 
 class BaseWeakPtr;
@@ -116,14 +119,16 @@ public:
 	template <typename T2>
 	GlobalPtr(GlobalPtr<T2>&& other)
 	{
-		static_assert(std::is_convertible<T2, T>::value, "Type is not compatible!");
+		static_assert(
+			std::is_same_v<T2, T> || std::is_convertible_v<T2, T>, "Type is not compatible!");
 		MoveFrom(MoveTemp(other));
 	}
 
 	template <typename T2>
 	GlobalPtr& operator=(GlobalPtr<T2>&& other)
 	{
-		static_assert(std::is_convertible<T2, T>::value, "Type is not compatible!");
+		static_assert(
+			std::is_same_v<T2, T> || std::is_convertible_v<T2, T>, "Type is not compatible!");
 
 		MoveFrom(MoveTemp(other));
 		return *this;
@@ -283,13 +288,15 @@ public:
 	template <typename T2>
 	Ptr(const Ptr<T2>& other) : BaseWeakPtr()
 	{
-		static_assert(std::is_convertible<T2, T>::value, "Type is not compatible!");
+		static_assert(
+			std::is_same_v<T2, T> || std::is_convertible_v<T2, T>, "Type is not compatible!");
 		Set(other.GetGlobal());
 	}
 	template <typename T2>
 	Ptr& operator=(const Ptr<T2>& other)
 	{
-		static_assert(std::is_convertible<T2, T>::value, "Type is not compatible!");
+		static_assert(
+			std::is_same_v<T2, T> || std::is_convertible_v<T2, T>, "Type is not compatible!");
 		Set(other.GetGlobal());
 		return *this;
 	};
@@ -297,13 +304,15 @@ public:
 	template <typename T2>
 	Ptr(Ptr<T2>&& other) : BaseWeakPtr()
 	{
-		static_assert(std::is_convertible<T2, T>::value, "Type is not compatible!");
+		static_assert(
+			std::is_same_v<T2, T> || std::is_convertible_v<T2, T>, "Type is not compatible!");
 		MoveFrom(MoveTemp(other));
 	}
 	template <typename T2>
 	Ptr& operator=(Ptr<T2>&& other)
 	{
-		static_assert(std::is_convertible<T2, T>::value, "Type is not compatible!");
+		static_assert(
+			std::is_same_v<T2, T> || std::is_convertible_v<T2, T>, "Type is not compatible!");
 		MoveFrom(MoveTemp(other));
 		return *this;
 	}
@@ -311,14 +320,16 @@ public:
 	template <typename T2>
 	Ptr(const GlobalPtr<T2>& other) : BaseWeakPtr()
 	{
-		static_assert(std::is_convertible<T2, T>::value, "Type is not compatible!");
+		static_assert(
+			std::is_same_v<T2, T> || std::is_convertible_v<T2, T>, "Type is not compatible!");
 		Set(&other);
 	}
 
 	template <typename T2>
 	Ptr(T2* other) : BaseWeakPtr()
 	{
-		static_assert(std::is_convertible<T2, T>::value, "Type is not compatible!");
+		static_assert(
+			std::is_same_v<T2, T> || std::is_convertible_v<T2, T>, "Type is not compatible!");
 		if (!other)
 		{
 			Reset();
@@ -403,8 +414,17 @@ public:
 template <typename T>
 GlobalPtr<T> GlobalPtr<T>::Create(const Ptr<BaseObject>& owner)
 {
-	GlobalPtr<T> ptr{std::make_unique<T>()};
-	ptr->PreConstruct(ptr.AsPtr(), T::StaticType(), owner);
-	ptr->Construct();
-	return MoveTemp(ptr);
+	if constexpr (std::is_abstract_v<T>)
+	{
+		Log::Error("Tried to create an instance of '{}' which is abstract.",
+			GetReflectableName<T>().ToString());
+		return {};
+	}
+	else
+	{
+		GlobalPtr<T> ptr{std::make_unique<T>()};
+		ptr->PreConstruct(ptr.AsPtr(), T::StaticType(), owner);
+		ptr->Construct();
+		return MoveTemp(ptr);
+	}
 }

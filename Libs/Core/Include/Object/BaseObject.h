@@ -3,7 +3,6 @@
 
 #include "BaseStruct.h"
 #include "CoreEngine.h"
-#include "CoreTypes.h"
 #include "Memory/Allocator.h"
 
 #include <EASTL/type_traits.h>

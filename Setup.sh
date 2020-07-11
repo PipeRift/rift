@@ -3,7 +3,9 @@ apt-get -y update
 apt-get -y upgrade
 
 apt-get -y install build-essential xz-utils curl
-apt-get -y install clang clang-tidy clang-format
+apt-get -y install llvm clang clang-tidy clang-format
+
+apt-get -y install gdb
 
 apt-get -y install cmake
 
