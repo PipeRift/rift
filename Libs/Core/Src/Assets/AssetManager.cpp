@@ -4,60 +4,28 @@
 
 #include "Context.h"
 #include "Files/FileSystem.h"
-#include "Tasks.h"
 #include "Object/ObjectPtr.h"
 #include "Profiler.h"
+#include "Tasks.h"
+
+struct FAssetLoadingData
+{
+	Refl::Class* type = nullptr;
+	Json json;
+};
 
 
 Ptr<AssetData> AssetManager::Load(AssetInfo info)
 {
-	Log::Info("Loading asset: {}", info.GetStrPath().c_str());
-
-	if (info.IsNull() || !FileSystem::IsFile(info.GetStrPath()))
+	const auto loaded = Load(TArray<AssetInfo>{info});
+	if (loaded.Size() > 0)
 	{
-		Log::Error("Invalid asset path '{}'.", info.GetStrPath().c_str());
-		return {};
+		return loaded.First();
 	}
-
-	ScopedZone("Asset Load", D19D45);
-
-	Json data;
-	if (FileSystem::LoadJsonFile(info.GetStrPath(), data))
-	{
-		const auto type = data["asset_type"];
-		if (!type.is_string())
-		{
-			Log::Error("Asset 'Type' must be an string.");
-			return {};	  // Asset doesn't have a type
-		}
-
-		// Get asset type from json
-		String typeStr = type;
-		Refl::Class* assetClass = AssetData::StaticType()->FindChild(Name{typeStr});
-		if (!assetClass)
-		{
-			Log::Error("Asset class('{}') not found.", type.get<String>().c_str());
-			return {};	  // Asset doesn't have a valid class
-		}
-
-		// Create asset from json type
-		GlobalPtr<AssetData> newAsset = assetClass->CreateInstance(Self()).Cast<AssetData>();
-
-		if (newAsset->OnLoad(info, data))
-		{
-			const Ptr<AssetData> newAssetPtr = newAsset;
-
-			// Loading succeeded, registry the asset
-			loadedAssets[info.GetPath()] = MoveTemp(newAsset);
-			return MoveTemp(newAssetPtr);
-		}
-	}
-
-	Log::Error("Loading asset failed");
 	return {};
 }
 
-TArray<Ptr<AssetData>> AssetManager::Load(const TArray<AssetInfo>& infos)
+TArray<Ptr<AssetData>> AssetManager::Load(TArray<AssetInfo> infos)
 {
 	if (infos.Size() <= 0)
 	{
@@ -66,15 +34,76 @@ TArray<Ptr<AssetData>> AssetManager::Load(const TArray<AssetInfo>& infos)
 
 	ScopedStackZone(459bd1);
 
-	TaskFlow loadTask;
-	TArray<Json> assetJsons(infos.Size());
+	TArray<Ptr<AssetData>> finalAssets;
+	{
+		ScopedZone("Ignore already loaded assets", D19D45);
+		for (i32 I = 0; I < infos.Size(); ++I)
+		{
+			if (Ptr<AssetData> loadedAsset = GetLoadedAsset(infos[I]))
+			{
+				infos.RemoveAtSwap(I, false);
+				finalAssets.Add(loadedAsset);
+			}
+		}
+	}
 
-	loadTask.parallel_for(0, infos.Size(), 1, [&assetJsons, &infos](i32 i) {
+	TaskFlow loadTask;
+	TArray<FAssetLoadingData> loadedDatas(infos.Size());
+
+	loadTask.parallel_for(0, infos.Size(), 1, [&loadedDatas, &infos](i32 i) {
 		ScopedZone("Load Asset File", D19D45);
-		FileSystem::LoadJsonFile(infos[i].GetStrPath(), assetJsons[i]);
+		auto& info = infos[i];
+		auto& data = loadedDatas[i];
+
+
+		if (!FileSystem::LoadJsonFile(info.GetStrPath(), data.json))
+		{
+			Log::Error("Asset ({}) could not be loaded from disk", info.GetStrPath());
+			return;
+		}
+
+		const auto type = data.json["asset_type"];
+		if (!type.is_string())
+		{
+			Log::Error("Asset ({}) must have a type (asset_type)", info.GetStrPath());
+			return;	   // Asset doesn't have a type
+		}
+
+		// Get asset type from json
+		const String typeStr = type.get<String>();
+		data.type = AssetData::StaticType()->FindChild(typeStr);
+		if (!data.type)
+		{
+			Log::Error("Asset ({}) has unknown asset_type '{}' ", info.GetStrPath(), typeStr);
+		}
 	});
 	TaskSystem::Get().RunFlow(loadTask).wait();
-	return {};
+
+	// Deserialize asset instances
+	for (i32 I = 0; I < infos.Size(); ++I)
+	{
+		auto& data = loadedDatas[I];
+		if (!data.type)
+		{
+			continue;
+		}
+
+		ScopedZone("Deserialize asset", D19D45);
+
+		// Create the asset instance
+		auto newAsset = data.type->CreateInstance(Self()).Cast<AssetData>();
+		const auto& info = infos[I];
+
+		if (newAsset->OnLoad(info, data.json))
+		{
+			// Loading succeeded, registry the asset
+			finalAssets.Add(newAsset);
+			loadedAssets[info] = MoveTemp(newAsset);
+
+			Log::Info("Loaded asset '{}'", info.GetStrPath());
+		}
+	}
+	return finalAssets;
 }
 
 Ptr<AssetData> AssetManager::LoadOrCreate(AssetInfo info, Refl::Class* assetType)

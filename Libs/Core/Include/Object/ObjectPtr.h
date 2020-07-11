@@ -403,7 +403,7 @@ public:
 template <typename T>
 GlobalPtr<T> GlobalPtr<T>::Create(const Ptr<BaseObject>& owner)
 {
-	GlobalPtr<T> ptr = {std::make_unique<T>()};
+	GlobalPtr<T> ptr{std::make_unique<T>()};
 	ptr->PreConstruct(ptr.AsPtr(), T::StaticType(), owner);
 	ptr->Construct();
 	return MoveTemp(ptr);

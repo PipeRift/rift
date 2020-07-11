@@ -1,12 +1,16 @@
 
 include(FetchContent)
 
+set(BUILD_SHARED_LIBS OFF)
+
 # Submodule libraries
 option(CLI11_BUILD_TESTS "Build CLI11 tests" OFF)
 add_subdirectory(CLI11)
 add_subdirectory(date)
 add_subdirectory(EABase)
 add_subdirectory(fmt)
+target_compile_definitions(fmt PUBLIC TRACY_ENABLE=1)
+
 add_subdirectory(glm)
 add_subdirectory(SparseMap)
 add_subdirectory(RobinMap)

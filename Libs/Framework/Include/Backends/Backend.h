@@ -1,8 +1,13 @@
+// Copyright 2015-2020 Piperift - All rights reserved
 
-#include <CoreEngine.h>
+#pragma once
+
+#include <CoreObject.h>
 
 namespace VCLang::Backends
 {
-	class Backend
-	{};
+	class Backend : public Object
+	{
+		CLASS(Backend, Object)
+	};
 }	 // namespace VCLang::Backends
