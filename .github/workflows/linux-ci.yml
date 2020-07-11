@@ -13,11 +13,11 @@ jobs:
         # For Windows msvc, for Linux and macOS let's use the clang compiler.
         include:
           - name: ubuntu-clang
-            os: ubuntu-latest
+            os: ubuntu-20.04
             cxx: clang++
             cc: clang
           - name: ubuntu-gcc
-            os: ubuntu-latest
+            os: ubuntu-20.04
             cxx: g++
             cc: gcc
         python-version: [3.8]
