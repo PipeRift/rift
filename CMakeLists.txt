@@ -13,18 +13,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(VCLang VERSION 0.1 LANGUAGES CXX)
 
-include(CMake/conan.cmake)
 include(CMake/DownloadProject.cmake)
 include(CMake/Util.cmake)
-
-#CONAN PACKAGES
-conan_cmake_run(
-    REQUIRES
-        date/2.4.1
-        imgui/1.76
-    BASIC_SETUP CMAKE_TARGETS BUILD missing OUTPUT_QUIET
-    SETTINGS compiler.cppstd=17
-)
 
 add_subdirectory(Extern)
 

@@ -28,3 +28,9 @@
 [submodule "Extern/EABase"]
 	path = Extern/EABase
 	url = https://github.com/electronicarts/EABase.git
+[submodule "Extern/date"]
+	path = Extern/date
+	url = https://github.com/HowardHinnant/date.git
+[submodule "Extern/imgui"]
+	path = Extern/imgui
+	url = https://github.com/ocornut/imgui.git

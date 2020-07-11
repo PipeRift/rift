@@ -4,6 +4,7 @@ include(FetchContent)
 # Submodule libraries
 option(CLI11_BUILD_TESTS "Build CLI11 tests" OFF)
 add_subdirectory(CLI11)
+add_subdirectory(date)
 add_subdirectory(EABase)
 add_subdirectory(fmt)
 add_subdirectory(glm)
@@ -27,10 +28,24 @@ endif()
 
 # EASTL
 file(GLOB_RECURSE EASTL_SOURCES CONFIGURE_DEPENDS EASTL/source/*.cpp)
-add_library(EASTL STATIC ${EASTL_SOURCES})
+add_library(EASTL STATIC)
 target_include_directories(EASTL PUBLIC EASTL/include)
-target_link_libraries(EASTL EABase)
+target_sources(EASTL PRIVATE ${EASTL_SOURCES})
 set_property(TARGET EASTL PROPERTY CXX_STANDARD 17)
+target_link_libraries(EASTL EABase)
+
+# Imgui
+file(GLOB_RECURSE IMGUI_SOURCES CONFIGURE_DEPENDS imgui/misc/*.cpp)
+add_library(imgui STATIC)
+target_include_directories(imgui PUBLIC imgui)
+target_sources(imgui PRIVATE
+    imgui/imgui.cpp
+    imgui/imgui_demo.cpp
+    imgui/imgui_draw.cpp
+    imgui/imgui_widgets.cpp
+    ${IMGUI_SOURCES}
+)
+set_property(TARGET imgui PROPERTY CXX_STANDARD 17)
 
 
 if(WINDOWS)
