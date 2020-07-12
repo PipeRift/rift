@@ -22,6 +22,29 @@ add_subdirectory(nlohmann_json)
 add_subdirectory(robin_hood)
 
 
+# EASTL
+file(GLOB_RECURSE EASTL_SOURCES CONFIGURE_DEPENDS EASTL/source/*.cpp)
+add_library(EASTL STATIC)
+target_include_directories(EASTL PUBLIC EASTL/include)
+target_sources(EASTL PRIVATE ${EASTL_SOURCES})
+set_property(TARGET EASTL PROPERTY CXX_STANDARD 17)
+target_link_libraries(EASTL EABase)
+
+
+# Imgui
+add_library(imgui STATIC)
+target_include_directories(imgui PUBLIC imgui)
+target_sources(imgui PRIVATE
+    imgui/imgui.cpp
+    imgui/imgui_demo.cpp
+    imgui/imgui_draw.cpp
+    imgui/imgui_widgets.cpp
+    imgui/misc/cpp/imgui_stdlib.cpp
+    imgui/misc/fonts/binary_to_compressed_c.cpp
+)
+set_property(TARGET imgui PROPERTY CXX_STANDARD 17)
+
+
 # TRACY
 add_library(Tracy STATIC)
 target_include_directories(Tracy PUBLIC Tracy)
@@ -31,28 +54,6 @@ if(LINUX)
     find_library(DLPATH dl)
     target_link_libraries(Tracy PRIVATE ${DLPATH})
 endif()
-
-# EASTL
-file(GLOB_RECURSE EASTL_SOURCES CONFIGURE_DEPENDS EASTL/source/*.cpp)
-add_library(EASTL STATIC)
-target_include_directories(EASTL PUBLIC EASTL/include)
-target_sources(EASTL PRIVATE ${EASTL_SOURCES})
-set_property(TARGET EASTL PROPERTY CXX_STANDARD 17)
-target_link_libraries(EASTL EABase)
-
-# Imgui
-file(GLOB_RECURSE IMGUI_SOURCES CONFIGURE_DEPENDS imgui/misc/*.cpp)
-add_library(imgui STATIC)
-target_include_directories(imgui PUBLIC imgui)
-target_sources(imgui PRIVATE
-    imgui/imgui.cpp
-    imgui/imgui_demo.cpp
-    imgui/imgui_draw.cpp
-    imgui/imgui_widgets.cpp
-    ${IMGUI_SOURCES}
-)
-set_property(TARGET imgui PROPERTY CXX_STANDARD 17)
-
 
 if(WINDOWS)
     target_compile_definitions(Tracy PRIVATE _WIN32=1)
