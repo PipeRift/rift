@@ -13,13 +13,13 @@
 
 #include <fstream>
 
+// Placeholder for global serializers to avoid compiler errors
+template <typename T>
+void Serialize(class Archive&, const char* name, T)
+{}
 
 namespace VCLang
 {
-	template <typename T>
-	void Serialize(class Archive&, const char* name, T)
-	{}
-
 	class Archive
 	{
 		const bool bLoads = false;
@@ -272,7 +272,7 @@ namespace VCLang
 	}
 
 	template <typename T>
-	bool Archive::CustomSerializeOrNot(const char* name, T& val)
+	inline bool Archive::CustomSerializeOrNot(const char* name, T& val)
 	{
 		if constexpr (ClassTraits<T>::HasCustomSerialize)
 		{
