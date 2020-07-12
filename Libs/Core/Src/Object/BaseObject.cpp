@@ -7,14 +7,17 @@
 #include "Reflection/TClass.h"
 
 
-Refl::Class* BaseObject::GetType() const
+namespace VCLang
 {
-	const auto* thisObj = static_cast<const Object*>(this);
-	return thisObj ? thisObj->GetType() : nullptr;
-}
+	Refl::Class* BaseObject::GetType() const
+	{
+		const auto* thisObj = static_cast<const Object*>(this);
+		return thisObj ? thisObj->GetType() : nullptr;
+	}
 
-Ptr<Object> BaseObject::Self() const
-{
-	const auto* thisObj = static_cast<const Object*>(this);
-	return thisObj ? thisObj->Self() : Ptr<Object>{};
-}
+	Ptr<Object> BaseObject::Self() const
+	{
+		const auto* thisObj = static_cast<const Object*>(this);
+		return thisObj ? thisObj->Self() : Ptr<Object>{};
+	}
+}	 // namespace VCLang

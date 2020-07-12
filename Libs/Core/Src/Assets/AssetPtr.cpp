@@ -2,12 +2,13 @@
 #include "Assets/AssetPtr.h"
 
 #if WITH_EDITOR
-
 #	include "UI/Widgets/Properties/AssetInfoPropertyWidget.h"
 
-Class* BaseAssetPtr::GetDetailsWidgetClass()
+namespace VCLang
 {
-	return AssetInfoPropertyWidget::Type();
-}
-
+	Class* BaseAssetPtr::GetDetailsWidgetClass()
+	{
+		return AssetInfoPropertyWidget::Type();
+	}
+}	 // namespace VCLang
 #endif

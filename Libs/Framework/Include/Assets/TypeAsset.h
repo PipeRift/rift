@@ -6,7 +6,10 @@
 #include <CoreObject.h>
 
 
-class TypeAsset : public AssetData
+namespace VCLang
 {
-	CLASS(TypeAsset, AssetData)
-};
+	class TypeAsset : public AssetData
+	{
+		CLASS(TypeAsset, AssetData)
+	};
+}	 // namespace VCLang

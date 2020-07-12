@@ -7,42 +7,45 @@
 #include "Serialization/Archive.h"
 
 
-const v3 v3::Forward{0.f, 1.f, 0.f};
-const v3 v3::Right{1.f, 0.f, 0.f};
-const v3 v3::Up{0.f, 0.f, 1.f};
-
-
-float Rotator::ClampAxis(float angle)
+namespace VCLang
 {
-	// returns angle in the range (-360,360)
-	angle = Math::Mod(angle, 360.f);
-	if (angle < 0.f)
-	{
-		// shift to [0,360) range
-		angle += 360.f;
-	}
-	return angle;
-}
+	const v3 v3::Forward{0.f, 1.f, 0.f};
+	const v3 v3::Right{1.f, 0.f, 0.f};
+	const v3 v3::Up{0.f, 0.f, 1.f};
 
-float Rotator::NormalizeAxis(float angle)
-{
-	// returns angle in the range [0,360)
-	angle = ClampAxis(angle);
-	if (angle > 180.f)
+
+	float Rotator::ClampAxis(float angle)
 	{
-		// shift to (-180,180]
-		angle -= 360.f;
+		// returns angle in the range (-360,360)
+		angle = Math::Mod(angle, 360.f);
+		if (angle < 0.f)
+		{
+			// shift to [0,360) range
+			angle += 360.f;
+		}
+		return angle;
 	}
 
-	return angle;
-}
+	float Rotator::NormalizeAxis(float angle)
+	{
+		// returns angle in the range [0,360)
+		angle = ClampAxis(angle);
+		if (angle > 180.f)
+		{
+			// shift to (-180,180]
+			angle -= 360.f;
+		}
 
-v3 v2::xz() const
-{
-	return v3{x, 0.f, y};
-}
+		return angle;
+	}
 
-v3 v2::xy() const
-{
-	return v3{x, y, 0.f};
-}
+	v3 v2::xz() const
+	{
+		return v3{x, 0.f, y};
+	}
+
+	v3 v2::xy() const
+	{
+		return v3{x, y, 0.f};
+	}
+}	 // namespace VCLang

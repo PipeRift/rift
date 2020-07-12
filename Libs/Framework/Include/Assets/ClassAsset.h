@@ -8,10 +8,13 @@
 #include <CoreObject.h>
 
 
-class ClassAsset : public TypeAsset
+namespace VCLang
 {
-	CLASS(ClassAsset, TypeAsset)
+	class ClassAsset : public TypeAsset
+	{
+		CLASS(ClassAsset, TypeAsset)
 
-	PROP(TArray<Function>, functions);
-	TArray<Function> functions;
-};
+		PROP(TArray<Function>, functions);
+		TArray<Function> functions;
+	};
+}	 // namespace VCLang

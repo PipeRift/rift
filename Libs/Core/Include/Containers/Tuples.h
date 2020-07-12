@@ -7,11 +7,15 @@
 #include <optional>
 #include <utility>
 
-template <typename T1, typename T2>
-using TPair = std::pair<T1, T2>;
 
-template <typename... T>
-using TTuple = std::tuple<T...>;
+namespace VCLang
+{
+	template <typename T1, typename T2>
+	using TPair = std::pair<T1, T2>;
 
-template <typename T>
-using TOptional = std::optional<T>;
+	template <typename... T>
+	using TTuple = std::tuple<T...>;
+
+	template <typename T>
+	using TOptional = std::optional<T>;
+}	 // namespace VCLang

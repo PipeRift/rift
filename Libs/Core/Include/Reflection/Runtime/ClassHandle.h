@@ -6,17 +6,20 @@
 #include "Reflection/TPropertyHandle.h"
 
 
-class ClassHandle
+namespace VCLang::Refl
 {
-	const Ptr<BaseObject> instance;
+	class ClassHandle
+	{
+		const Ptr<BaseObject> instance;
 
-public:
-	ClassHandle() = delete;
-	ClassHandle(ClassHandle&&) = default;
-	ClassHandle(const ClassHandle&) = default;
-	ClassHandle& operator=(ClassHandle&&) = default;
-	ClassHandle& operator=(const ClassHandle&) = default;
-	virtual ~ClassHandle() = default;
+	public:
+		ClassHandle() = delete;
+		ClassHandle(ClassHandle&&) = default;
+		ClassHandle(const ClassHandle&) = default;
+		ClassHandle& operator=(ClassHandle&&) = default;
+		ClassHandle& operator=(const ClassHandle&) = default;
+		virtual ~ClassHandle() = default;
 
-	ClassHandle(const Ptr<BaseObject>& instance) : instance(instance) {}
-};
+		ClassHandle(const Ptr<BaseObject>& instance) : instance(instance) {}
+	};
+}	 // namespace VCLang::Refl

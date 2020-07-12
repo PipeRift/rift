@@ -5,7 +5,7 @@
 #include "TProperty.h"
 
 
-namespace Refl
+namespace VCLang::Refl
 {
 	// Class will be specialized for each type at compile time and store
 	// the metadata for that type.
@@ -40,4 +40,4 @@ namespace Refl
 
 	template <typename T>
 	TClass<T> TClass<T>::_class{};
-}	 // namespace Refl
+}	 // namespace VCLang::Refl

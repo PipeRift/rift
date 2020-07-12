@@ -2,4 +2,7 @@
 
 #include "Context.h"
 
-GlobalPtr<Context> Context::globalInstance{};
+namespace VCLang
+{
+	GlobalPtr<Context> Context::globalInstance{};
+}

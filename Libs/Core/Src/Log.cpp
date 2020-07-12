@@ -11,109 +11,111 @@
 #include <spdlog/spdlog.h>
 
 
-#if TRACY_ENABLE
-template <typename Mutex>
-class ProfilerSink : public spdlog::sinks::base_sink<Mutex>
+namespace VCLang::Log
 {
-	using Super = spdlog::sinks::base_sink<Mutex>;
-
-public:
-	ProfilerSink() : Super()
+#if TRACY_ENABLE
+	template <typename Mutex>
+	class ProfilerSink : public spdlog::sinks::base_sink<Mutex>
 	{
-		Super::set_pattern("%^[%t][%l]%$ %v");
-	}
+		using Super = spdlog::sinks::base_sink<Mutex>;
 
-protected:
-	void sink_it_(const spdlog::details::log_msg& msg) override
-	{
-		// log_msg is a struct containing the log entry info like level,
-		// timestamp, thread id etc. msg.raw contains pre formatted log
+	public:
+		ProfilerSink() : Super()
+		{
+			Super::set_pattern("%^[%t][%l]%$ %v");
+		}
 
-		// If needed (very likely but not mandatory), the sink formats the
-		// message before sending it to its final destination:
-		spdlog::memory_buf_t formatted;
-		Super::formatter_->format(msg, formatted);
+	protected:
+		void sink_it_(const spdlog::details::log_msg& msg) override
+		{
+			// log_msg is a struct containing the log entry info like level,
+			// timestamp, thread id etc. msg.raw contains pre formatted log
 
-		TracyMessage(formatted.data(), formatted.size());	 // Send to profiler
-	}
+			// If needed (very likely but not mandatory), the sink formats the
+			// message before sending it to its final destination:
+			spdlog::memory_buf_t formatted;
+			Super::formatter_->format(msg, formatted);
 
-	void flush_() override {}
-};
-using ProfilerSink_mt = ProfilerSink<std::mutex>;
-using ProfilerSink_st = ProfilerSink<spdlog::details::null_mutex>;
+			TracyMessage(formatted.data(), formatted.size());	 // Send to profiler
+		}
+
+		void flush_() override {}
+	};
+	using ProfilerSink_mt = ProfilerSink<std::mutex>;
+	using ProfilerSink_st = ProfilerSink<spdlog::details::null_mutex>;
 #endif
 
 
-void Log::Init(Path logFile)
-{
-	std::vector<spdlog::sink_ptr> sinks;
-	sinks.reserve(3);
-
-	// File
-	if (!logFile.empty())
+	void Init(Path logFile)
 	{
-		Path logFolder = logFile;
-		if (FileSystem::IsFile(logFile))
-		{
-			logFolder.remove_filename();
-		}
-		else
-		{
-			logFile /= "log.txt";
-		}
-		FileSystem::CreateFolder(logFolder);
+		std::vector<spdlog::sink_ptr> sinks;
+		sinks.reserve(3);
 
-		sinks.push_back(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-			FileSystem::ToString(logFile).c_str(), 1048576 * 5, 3));
-	}
+		// File
+		if (!logFile.empty())
+		{
+			Path logFolder = logFile;
+			if (FileSystem::IsFile(logFile))
+			{
+				logFolder.remove_filename();
+			}
+			else
+			{
+				logFile /= "log.txt";
+			}
+			FileSystem::CreateFolder(logFolder);
+
+			sinks.push_back(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+				FileSystem::ToString(logFile).c_str(), 1048576 * 5, 3));
+		}
 
 #if WITH_EDITOR
-	// Log window
-	sinks.push_back(std::make_shared<LogWindowSink_mt>());
+		// Log window
+		sinks.push_back(std::make_shared<LogWindowSink_mt>());
 #endif
 
 #if TRACY_ENABLE
-	// Profiler
-	sinks.push_back(std::make_shared<ProfilerSink_mt>());
+		// Profiler
+		sinks.push_back(std::make_shared<ProfilerSink_mt>());
 #endif
 
+		// Console
+		generalLogger = std::make_shared<spdlog::logger>("Log", sinks.begin(), sinks.end());
+		errLogger = std::make_shared<spdlog::logger>("Log", sinks.begin(), sinks.end());
+		generalLogger->set_pattern("%^[%D %T][%l]%$ %v");
+		errLogger->set_pattern("%^[%D %T][%t][%l]%$ %v");
 
-	// Console
-	generalLogger = std::make_shared<spdlog::logger>("Log", sinks.begin(), sinks.end());
-	errLogger = std::make_shared<spdlog::logger>("Log", sinks.begin(), sinks.end());
-	generalLogger->set_pattern("%^[%D %T][%l]%$ %v");
-	errLogger->set_pattern("%^[%D %T][%t][%l]%$ %v");
+		auto cliSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+		generalLogger->sinks().push_back(cliSink);
+		cliSink->set_pattern("%^%v%$");
 
-	auto cliSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-	generalLogger->sinks().push_back(cliSink);
-	cliSink->set_pattern("%^%v%$");
-
-	auto cliErrSink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
-	errLogger->sinks().push_back(cliErrSink);
-	cliErrSink->set_pattern("%^[%l] %v%$");
+		auto cliErrSink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
+		errLogger->sinks().push_back(cliErrSink);
+		cliErrSink->set_pattern("%^[%l] %v%$");
 
 #if PLATFORM_WINDOWS
-	cliSink->set_color(spdlog::level::info, cliSink->WHITE);
-	cliErrSink->set_color(spdlog::level::warn, cliSink->YELLOW);
+		cliSink->set_color(spdlog::level::info, cliSink->WHITE);
+		cliErrSink->set_color(spdlog::level::warn, cliSink->YELLOW);
 #else
-	cliSink->set_color(spdlog::level::info, cliSink->white);
-	cliErrSink->set_color(spdlog::level::warn, cliSink->yellow);
+		cliSink->set_color(spdlog::level::info, cliSink->white);
+		cliErrSink->set_color(spdlog::level::warn, cliSink->yellow);
 #endif
-}
+	}
 
-void Log::Shutdown() {}
+	void Shutdown() {}
 
-void Log::Info(const String& msg)
-{
-	generalLogger->info(msg);
-}
+	void Info(const String& msg)
+	{
+		generalLogger->info(msg);
+	}
 
-void Log::Warning(const String& msg)
-{
-	errLogger->warn(msg);
-}
+	void Warning(const String& msg)
+	{
+		errLogger->warn(msg);
+	}
 
-void Log::Error(const String& msg)
-{
-	errLogger->error(msg);
-}
+	void Error(const String& msg)
+	{
+		errLogger->error(msg);
+	}
+}	 // namespace VCLang::Log

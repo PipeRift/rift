@@ -5,8 +5,11 @@
 #include "Misc/DateTime.h"
 
 
-u64 PlatformTime::Cycles64()
+namespace VCLang
 {
-	return date::floor<std::chrono::microseconds>(DateTime::Now().GetTime().time_since_epoch())
-		.count();
-}
+	u64 PlatformTime::Cycles64()
+	{
+		return date::floor<std::chrono::microseconds>(DateTime::Now().GetTime().time_since_epoch())
+			.count();
+	}
+}	 // namespace VCLang

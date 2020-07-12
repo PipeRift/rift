@@ -7,60 +7,60 @@
 #include "Strings/Name.h"
 #include "TypeTraits.h"
 
-
-class AssetInfo
+namespace VCLang
 {
-protected:
-	Name id;
-
-
-public:
-	AssetInfo() : id(Name::None()) {}
-	AssetInfo(Name id) : id(id) {}
-	AssetInfo(Path path) : id(FileSystem::ToString(path)) {}
-
-	/**
-	 * @returns true if this can never be pointed towards an asset
-	 */
-	const bool IsNull() const
+	class AssetInfo
 	{
-		return id.IsNone();
-	}
+	protected:
+		Name id;
 
-	inline const Name& GetPath() const
-	{
-		return id;
-	}
-	inline const String& GetStrPath() const
-	{
-		return id.ToString();
-	}
 
-	bool operator==(const AssetInfo& other) const
-	{
-		return id == other.id;
-	}
+	public:
+		AssetInfo() : id(Name::None()) {}
+		AssetInfo(Name id) : id(id) {}
+		AssetInfo(Path path) : id(FileSystem::ToString(path)) {}
 
-	bool Serialize(class Archive& ar, const char* name);
+		/**
+		 * @returns true if this can never be pointed towards an asset
+		 */
+		const bool IsNull() const
+		{
+			return id.IsNone();
+		}
+
+		inline const Name& GetPath() const
+		{
+			return id;
+		}
+		inline const String& GetStrPath() const
+		{
+			return id.ToString();
+		}
+
+		bool operator==(const AssetInfo& other) const
+		{
+			return id == other.id;
+		}
+
+		bool Serialize(class Archive& ar, const char* name);
 
 #if WITH_EDITOR
-	static class Class* GetDetailsWidgetClass();
+		static class Class* GetDetailsWidgetClass();
 #endif
-};
+	};
 
-namespace eastl
-{
+
 	template <>
-	struct hash<AssetInfo>
+	struct Hash<AssetInfo>
 	{
 		size_t operator()(const AssetInfo& k) const
 		{
-			static const eastl::hash<Name> nameHash{};
+			static const Hash<Name> nameHash{};
 			return nameHash(k.GetPath());
 		}
 	};
-}	 // namespace eastl
 
-DEFINE_CLASS_TRAITS(AssetInfo, HasCustomSerialize = true, HasDetailsWidget = true);
+	DEFINE_CLASS_TRAITS(AssetInfo, HasCustomSerialize = true, HasDetailsWidget = true);
 
-DECLARE_REFLECTION_TYPE(AssetInfo);
+	DECLARE_REFLECTION_TYPE(AssetInfo);
+}	 // namespace VCLang

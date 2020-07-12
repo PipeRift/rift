@@ -9,24 +9,26 @@
 #define PLATFORM_MAC_USE_CHAR16 0
 
 
-/**
- * Mac specific types
- **/
-struct MacPlatformTypes : public GenericPlatformTypes
+namespace VCLang
 {
-	using DWORD = unsigned int;
-	using sizet = std::size_t;
-	using TYPE_OF_NULL = decltype(nullptr);
+	/**
+	 * Mac specific types
+	 **/
+	struct MacPlatformTypes : public GenericPlatformTypes
+	{
+		using DWORD = unsigned int;
+		using sizet = std::size_t;
+		using TYPE_OF_NULL = decltype(nullptr);
 #if PLATFORM_MAC_USE_CHAR16
-	using WIDECHAR = char16_t;
-	using TCHAR = WIDECHAR;
+		using WIDECHAR = char16_t;
+		using TCHAR = WIDECHAR;
 #else
-	using CHAR16 = char16_t;
+		using CHAR16 = char16_t;
 #endif
-};
+	};
 
-using PlatformTypes = MacPlatformTypes;
-
+	using PlatformTypes = MacPlatformTypes;
+}	 // namespace VCLang
 
 #if BUILD_DEBUG
 #	define FORCEINLINE inline /* Don't force code to be inline */

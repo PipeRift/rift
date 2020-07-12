@@ -7,7 +7,10 @@
 #include <CoreObject.h>
 
 
-class StructAsset : public TypeAsset
+namespace VCLang
 {
-	CLASS(StructAsset, TypeAsset)
-};
+	class StructAsset : public TypeAsset
+	{
+		CLASS(StructAsset, TypeAsset)
+	};
+}	 // namespace VCLang

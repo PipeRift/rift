@@ -5,10 +5,13 @@
 #include <Object/Struct.h>
 
 
-struct Function : public Struct
+namespace VCLang
 {
-	STRUCT(Function, Struct)
+	struct Function : public Struct
+	{
+		STRUCT(Function, Struct)
 
-	// PROP(Name, name);
-	// Name name;
-};
+		// PROP(Name, name);
+		// Name name;
+	};
+}	 // namespace VCLang

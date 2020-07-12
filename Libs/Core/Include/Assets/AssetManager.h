@@ -9,38 +9,41 @@
 #include "Object/ObjectPtr.h"
 
 
-class AssetManager : public Object
+namespace VCLang
 {
-	CLASS(AssetManager, Object)
-
-public:
-	static constexpr StringView assetFormat{".vc"};
-
-private:
-	TArray<AssetInfo> assetInfos;
-
-	TMap<AssetInfo, GlobalPtr<AssetData>> loadedAssets{};
-
-
-public:
-	Ptr<AssetData> Load(AssetInfo info);
-	TArray<Ptr<AssetData>> Load(TArray<AssetInfo> infos);
-
-	Ptr<AssetData> LoadOrCreate(AssetInfo info, Refl::Class* assetType);
-
-	Ptr<AssetData> GetLoadedAsset(AssetInfo id) const
+	class AssetManager : public Object
 	{
-		if (const auto* asset = loadedAssets.Find(id))
+		CLASS(AssetManager, Object)
+
+	public:
+		static constexpr StringView assetFormat{".vc"};
+
+	private:
+		TArray<AssetInfo> assetInfos;
+
+		TMap<AssetInfo, GlobalPtr<AssetData>> loadedAssets{};
+
+
+	public:
+		Ptr<AssetData> Load(AssetInfo info);
+		TArray<Ptr<AssetData>> Load(TArray<AssetInfo> infos);
+
+		Ptr<AssetData> LoadOrCreate(AssetInfo info, Refl::Class* assetType);
+
+		Ptr<AssetData> GetLoadedAsset(AssetInfo id) const
 		{
-			return asset->AsPtr();
+			if (const auto* asset = loadedAssets.Find(id))
+			{
+				return asset->AsPtr();
+			}
+			return {};
 		}
-		return {};
-	}
 
-	bool IsLoaded(AssetInfo id) const
-	{
-		return loadedAssets.Contains(id);
-	}
+		bool IsLoaded(AssetInfo id) const
+		{
+			return loadedAssets.Contains(id);
+		}
 
-	static Ptr<AssetManager> Get();
-};
+		static Ptr<AssetManager> Get();
+	};
+}	 // namespace VCLang

@@ -17,6 +17,7 @@ target_link_libraries(Core PUBLIC
     tsl::sparse_map
     Taskflow
     fmt
+    robin_hood
 )
 target_link_libraries(Core PRIVATE
     spdlog

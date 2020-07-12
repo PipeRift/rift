@@ -6,22 +6,24 @@
 #define PLATFORM_LINUX_USE_CHAR16 0
 
 
-/**
- * Linux specific types
- **/
-struct LinuxPlatformTypes : public GenericPlatformTypes
+namespace VCLang
 {
-	using DWORD = unsigned int;
-	using sizet = __SIZE_TYPE__;
-	using TYPE_OF_NULL = decltype(__null);
+	/**
+	 * Linux specific types
+	 **/
+	struct LinuxPlatformTypes : public GenericPlatformTypes
+	{
+		using DWORD = unsigned int;
+		using sizet = __SIZE_TYPE__;
+		using TYPE_OF_NULL = decltype(__null);
 #if PLATFORM_LINUX_USE_CHAR16
-	using WIDECHAR = char16_t;
-	using TCHAR = WIDECHAR;
+		using WIDECHAR = char16_t;
+		using TCHAR = WIDECHAR;
 #endif
-};
+	};
 
-using PlatformTypes = LinuxPlatformTypes;
-
+	using PlatformTypes = LinuxPlatformTypes;
+}	 // namespace VCLang
 
 #if BUILD_DEBUG
 #	define FORCEINLINE inline

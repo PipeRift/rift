@@ -7,12 +7,15 @@
 #include "Reflection/Runtime/ClassHandle.h"
 
 
-class HandleHelper
+namespace VCLang::Refl
 {
-public:
-	// #TODO: Move to TClass
-	static eastl::shared_ptr<ClassHandle> CreateClassHandle(const Ptr<BaseObject>& instance)
+	class HandleHelper
 	{
-		return eastl::make_shared<ClassHandle>(instance);
-	}
-};
+	public:
+		// #TODO: Move to TClass
+		static eastl::shared_ptr<ClassHandle> CreateClassHandle(const Ptr<BaseObject>& instance)
+		{
+			return eastl::make_shared<ClassHandle>(instance);
+		}
+	};
+}	 // namespace VCLang::Refl

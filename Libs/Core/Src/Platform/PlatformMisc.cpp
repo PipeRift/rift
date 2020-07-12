@@ -8,29 +8,33 @@
 #include "Platform/PlatformTime.h"
 
 
-void PlatformMisc::CreateGuid(Guid& guid)
+namespace VCLang
 {
-	static u16 IncrementCounter = 0;
-
-	static DateTime InitialDateTime;
-
-	DateTime EstimatedCurrentDateTime;
-
-	if (IncrementCounter == 0)
+	void PlatformMisc::CreateGuid(Guid& guid)
 	{
-		InitialDateTime = DateTime::Now();
-		EstimatedCurrentDateTime = InitialDateTime;
-	}
-	else
-	{
-		EstimatedCurrentDateTime = DateTime::Now();
-	}
+		static u16 IncrementCounter = 0;
 
-	u32 SequentialBits = static_cast<u32>(
-		IncrementCounter++);	// Add sequential bits to ensure sequentially generated guids are
-								// unique even if Cycles is wrong
-	u32 RandBits = Math::Rand() & 0xFFFF;	 // Add randomness to improve uniqueness across machines
+		static DateTime InitialDateTime;
 
-	guid = Guid(RandBits | (SequentialBits << 16), EstimatedCurrentDateTime.GetTicks() >> 32,
-		EstimatedCurrentDateTime.GetTicks() & 0xffffffff, PlatformTime::Cycles());
-}
+		DateTime EstimatedCurrentDateTime;
+
+		if (IncrementCounter == 0)
+		{
+			InitialDateTime = DateTime::Now();
+			EstimatedCurrentDateTime = InitialDateTime;
+		}
+		else
+		{
+			EstimatedCurrentDateTime = DateTime::Now();
+		}
+
+		u32 SequentialBits = static_cast<u32>(
+			IncrementCounter++);	// Add sequential bits to ensure sequentially generated guids
+									// are unique even if Cycles is wrong
+		u32 RandBits =
+			Math::Rand() & 0xFFFF;	  // Add randomness to improve uniqueness across machines
+
+		guid = Guid(RandBits | (SequentialBits << 16), EstimatedCurrentDateTime.GetTicks() >> 32,
+			EstimatedCurrentDateTime.GetTicks() & 0xffffffff, PlatformTime::Cycles());
+	}
+}	 // namespace VCLang

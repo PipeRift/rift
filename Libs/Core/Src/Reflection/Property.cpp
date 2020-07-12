@@ -2,12 +2,12 @@
 
 #include "Reflection/Property.h"
 
-#include "Reflection/Runtime/PropertyHandle.h"
 #include "Reflection/Class.h"
+#include "Reflection/Runtime/PropertyHandle.h"
 #include "Reflection/Struct.h"
 
 
-namespace Refl
+namespace VCLang::Refl
 {
 	void Property::SetDisplayName(const String& inDisplayName)
 	{
@@ -31,4 +31,4 @@ namespace Refl
 		return instance->GetType();
 	}
 
-}	 // namespace Refl
+}	 // namespace VCLang::Refl

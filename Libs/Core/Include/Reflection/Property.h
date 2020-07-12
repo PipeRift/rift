@@ -7,89 +7,93 @@
 
 #include <memory>
 
-template <typename T>
-class Ptr;
-class BaseObject;
-struct BaseStruct;
 
-
-namespace Refl
+namespace VCLang
 {
-	class Type;
-	struct PropertyHandle;
+	template <typename T>
+	class Ptr;
+	class BaseObject;
+	struct BaseStruct;
 
-	/**
-	 * Static information about a property
-	 */
-	class Property
+
+	namespace Refl
 	{
-	private:
-		Type* typePtr;
-		Name typeName;
-		Name name;
-		String displayName;
-		ReflectionTags tags;
+		class Type;
+		struct PropertyHandle;
 
-
-	public:
-		Property() = delete;
-		Property(Property&&) = delete;
-		Property(const Property&) = delete;
-
-	protected:
-		Property(Type* typePtr, Name typeName, Name name, ReflectionTags tags)
-			: typeName(typeName)
-			, typePtr(typePtr)
-			, name(name)
-			, tags(tags)
+		/**
+		 * Static information about a property
+		 */
+		class Property
 		{
-			SetDisplayName(name.ToString());
-		}
+		private:
+			Type* typePtr;
+			Name typeName;
+			Name name;
+			String displayName;
+			ReflectionTags tags;
 
-	public:
-		virtual ~Property() = default;
 
-		const String& GetName() const
-		{
-			return name.ToString();
-		}
-		const String& GetDisplayName() const
-		{
-			return displayName;
-		}
+		public:
+			Property() = delete;
+			Property(Property&&) = delete;
+			Property(const Property&) = delete;
 
-		bool HasTag(ReflectionTags tag) const
-		{
-			return HasAnyTags(tag);
-		}
-		bool HasAllTags(ReflectionTags inTags) const
-		{
-			return (tags & inTags) == inTags;
-		}
-		bool HasAnyTags(ReflectionTags inTags) const
-		{
-			return (tags & inTags) > 0;
-		}
+		protected:
+			Property(Type* typePtr, Name typeName, Name name, ReflectionTags tags)
+				: typeName(typeName)
+				, typePtr(typePtr)
+				, name(name)
+				, tags(tags)
+			{
+				SetDisplayName(name.ToString());
+			}
 
-		Type* GetContainerType() const
-		{
-			return typePtr;
-		}
+		public:
+			virtual ~Property() = default;
 
-		Name GetTypeName() const
-		{
-			return typeName;
-		}
+			const String& GetName() const
+			{
+				return name.ToString();
+			}
+			const String& GetDisplayName() const
+			{
+				return displayName;
+			}
 
-		virtual std::shared_ptr<PropertyHandle> CreateHandle(const Ptr<BaseObject>& instance) const = 0;
-		virtual std::shared_ptr<PropertyHandle> CreateHandle(BaseStruct* instance) const = 0;
+			bool HasTag(ReflectionTags tag) const
+			{
+				return HasAnyTags(tag);
+			}
+			bool HasAllTags(ReflectionTags inTags) const
+			{
+				return (tags & inTags) == inTags;
+			}
+			bool HasAnyTags(ReflectionTags inTags) const
+			{
+				return (tags & inTags) > 0;
+			}
 
-protected:
+			Type* GetContainerType() const
+			{
+				return typePtr;
+			}
 
-		static const Type* GetInstanceType(const Ptr<BaseObject>& instance);
-		static const Type* GetInstanceType(BaseStruct* instance);
+			Name GetTypeName() const
+			{
+				return typeName;
+			}
 
-	private:
-		void SetDisplayName(const String& inDisplayName);
-	};
-}	 // namespace Refl
+			virtual std::shared_ptr<PropertyHandle> CreateHandle(
+				const Ptr<BaseObject>& instance) const = 0;
+			virtual std::shared_ptr<PropertyHandle> CreateHandle(BaseStruct* instance) const = 0;
+
+		protected:
+			static const Type* GetInstanceType(const Ptr<BaseObject>& instance);
+			static const Type* GetInstanceType(BaseStruct* instance);
+
+		private:
+			void SetDisplayName(const String& inDisplayName);
+		};
+	}	 // namespace Refl
+}	 // namespace VCLang

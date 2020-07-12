@@ -8,67 +8,70 @@
 #include "Tasks.h"
 
 
-class CORE_API Context : public Object
+namespace VCLang
 {
-	CLASS(Context, Object)
-
-private:
-	static GlobalPtr<Context> globalInstance;
-
-	GlobalPtr<AssetManager> assetManager;
-
-	TaskSystem tasks;
-
-
-public:
-	/** Called to initialize the global context. */
-	static void Initialize()
+	class CORE_API Context : public Object
 	{
-		if (!globalInstance)
+		CLASS(Context, Object)
+
+	private:
+		static GlobalPtr<Context> globalInstance;
+
+		GlobalPtr<AssetManager> assetManager;
+
+		TaskSystem tasks;
+
+
+	public:
+		/** Called to initialize the global context. */
+		static void Initialize()
 		{
-			globalInstance = Create<Context>();
+			if (!globalInstance)
+			{
+				globalInstance = Create<Context>();
+			}
 		}
-	}
 
-	/** Called to manually shutdown the global context. */
-	static void Shutdown()
-	{
-		if (globalInstance)
+		/** Called to manually shutdown the global context. */
+		static void Shutdown()
 		{
-			globalInstance.Reset();
+			if (globalInstance)
+			{
+				globalInstance.Reset();
+			}
 		}
-	}
 
-	Context() : Super(), assetManager{Create<AssetManager>()} {}
+		Context() : Super(), assetManager{Create<AssetManager>()} {}
 
-	virtual void Construct() override
-	{
-		Super::Construct();
+		virtual void Construct() override
+		{
+			Super::Construct();
 
-		Log::Init("Saved/Logs");
-		Log::Info("Initialize Context");
-	}
+			Log::Init("Saved/Logs");
+			Log::Info("Initialize Context");
+		}
 
-	virtual void BeforeDestroy() override
-	{
-		Super::BeforeDestroy();
-		Log::Info("Context has been destroyed");
-		Log::Shutdown();
-	}
+		virtual void BeforeDestroy() override
+		{
+			Super::BeforeDestroy();
+			Log::Info("Context has been destroyed");
+			Log::Shutdown();
+		}
 
-	Ptr<AssetManager> GetAssetManager()
-	{
-		return assetManager;
-	}
+		Ptr<AssetManager> GetAssetManager()
+		{
+			return assetManager;
+		}
 
-	TaskSystem& GetTasks()
-	{
-		return tasks;
-	}
+		TaskSystem& GetTasks()
+		{
+			return tasks;
+		}
 
-	static Ptr<Context> Get()
-	{
-		assert(globalInstance && "Context is not initilized! Call Context::Initialize().");
-		return globalInstance;
-	}
-};
+		static Ptr<Context> Get()
+		{
+			assert(globalInstance && "Context is not initilized! Call Context::Initialize().");
+			return globalInstance;
+		}
+	};
+}	 // namespace VCLang

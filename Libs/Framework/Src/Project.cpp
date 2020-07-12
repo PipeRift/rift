@@ -3,30 +3,54 @@
 #include "Project.h"
 
 #include "Assets/AssetIterator.h"
-#include "Assets/AssetManager.h"
 
 #include <Profiler.h>
 
 
-void VCLang::Project::LoadAllAssets()
+namespace VCLang
 {
-	ScopedStackZone(459bd1);
-	TArray<AssetInfo> assetInfos;
+	void Project::Init(Path path)
 	{
-		ScopedZone("Find asset files", 459bd1);
-		for (const auto& asset : AssetIterator<true>(projectPath))
+		projectPath = FileSystem::ToAbsolute(path);
+
+		if (!projectPath.empty())
 		{
-			assetInfos.Add(asset);
+			auto assets = AssetManager::Get();
+			asset = assets->Load(AssetInfo(projectPath / projectFile)).Cast<ProjectAsset>();
+
+			if (asset)
+			{
+				SetName(asset->GetName());
+			}
+			else
+			{
+				SetName(FileSystem::ToString(projectPath.filename()));
+			}
+
+			Log::Info("Project: {}", GetName().ToString());
 		}
 	}
-	AssetManager::Get()->Load(assetInfos);
-}
 
-Path VCLang::Project::ToProjectPath(const Path& path) const
-{
-	if (path.is_relative())
+	void Project::LoadAllAssets()
 	{
-		return projectPath / path;
+		ScopedStackZone(459bd1);
+		TArray<AssetInfo> assetInfos;
+		{
+			ScopedZone("Find asset files", 459bd1);
+			for (const auto& asset : AssetIterator<true>(projectPath))
+			{
+				assetInfos.Add(asset);
+			}
+		}
+		AssetManager::Get()->Load(assetInfos);
 	}
-	return FileSystem::IsInside(path, projectPath) ? path : Path{};
-}
+
+	Path Project::ToProjectPath(const Path& path) const
+	{
+		if (path.is_relative())
+		{
+			return projectPath / path;
+		}
+		return FileSystem::IsInside(path, projectPath) ? path : Path{};
+	}
+}	 // namespace VCLang

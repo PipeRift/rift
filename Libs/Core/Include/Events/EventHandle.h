@@ -5,42 +5,45 @@
 #include "CoreTypes.h"
 
 
-struct EventHandle
+namespace VCLang
 {
-private:
-	static u64 counter;
-
-	static u64 NewId()
+	struct EventHandle
 	{
-		if (counter == 0)
-			++counter;
-		return counter++;
-	}
+	private:
+		static u64 counter;
 
-	u64 id;
+		static u64 NewId()
+		{
+			if (counter == 0)
+				++counter;
+			return counter++;
+		}
 
-	/** Used for invalidation */
-	EventHandle(u64 customId) : id(customId) {}
+		u64 id;
 
-public:
-	static EventHandle Invalid()
-	{
-		return {0};
-	}
+		/** Used for invalidation */
+		EventHandle(u64 customId) : id(customId) {}
 
-	EventHandle() : id(NewId()) {}
+	public:
+		static EventHandle Invalid()
+		{
+			return {0};
+		}
 
-	u64 Id() const
-	{
-		return id;
-	}
+		EventHandle() : id(NewId()) {}
 
-	bool IsValid() const
-	{
-		return id != 0;
-	}
-	operator bool() const
-	{
-		return IsValid();
-	}
-};
+		u64 Id() const
+		{
+			return id;
+		}
+
+		bool IsValid() const
+		{
+			return id != 0;
+		}
+		operator bool() const
+		{
+			return IsValid();
+		}
+	};
+}	 // namespace VCLang

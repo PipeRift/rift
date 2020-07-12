@@ -2,11 +2,14 @@
 
 #pragma once
 
+#include "Assets/AssetManager.h"
 #include "Assets/ClassAsset.h"
+#include "Assets/ProjectAsset.h"
 #include "Assets/StructAsset.h"
 #include "Log.h"
 #include "Strings/String.h"
 
+#include <Assets/AssetPtr.h>
 #include <CoreEngine.h>
 #include <CoreObject.h>
 #include <Files/FileSystem.h>
@@ -22,20 +25,20 @@ namespace VCLang
 	{
 		CLASS(Project, Object)
 
+		static constexpr StringView projectFile{"Project.vc"};
+
 		Path projectPath;
 
-		TArray<Ptr<ClassAsset>> classes;
-		TArray<Ptr<StructAsset>> structs;
+		// The asset containing project settings
+		TAssetPtr<ProjectAsset> asset;
+		TArray<TAssetPtr<ClassAsset>> classes;
+		TArray<TAssetPtr<StructAsset>> structs;
 
 
 	public:
 		Project() : Super() {}
 
-		void Init(Path path)
-		{
-			projectPath = FileSystem::ToAbsolute(path);
-			Log::Info("Project Path: {}", FileSystem::ToString(projectPath));
-		}
+		void Init(Path path);
 
 		void LoadAllAssets();
 

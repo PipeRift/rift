@@ -5,96 +5,104 @@
 #include "Strings/Name.h"
 
 
-Allocator::Allocator(const TCHAR* name /*= "Global"*/) : name{name}, size{0}, malloc_alloc{""} {}
-
-Allocator::Allocator(const Allocator&) : name{}, size{0}, malloc_alloc{} {}
-
-Allocator::Allocator(const Allocator&, const TCHAR* name) : name{name}, size{0}, malloc_alloc{""} {}
-
-Name Allocator::GetName() const
+namespace VCLang
 {
-	return {name};
-}
+	Allocator::Allocator(const TCHAR* name /*= "Global"*/) : name{name}, size{0}, malloc_alloc{""}
+	{}
 
-void Allocator::SetName(const TCHAR* newName)
-{
-	name = newName;
-}
+	Allocator::Allocator(const Allocator&) : name{}, size{0}, malloc_alloc{} {}
 
+	Allocator::Allocator(const Allocator&, const TCHAR* name)
+		: name{name}
+		, size{0}
+		, malloc_alloc{""}
+	{}
 
-namespace Memory
-{
-	/// gAllocator
-	/// Default engine allocator instance.
-	EASTL_API Allocator gAllocator{};
-	EASTL_API Allocator* GetAllocator()
+	Name Allocator::GetName() const
 	{
-		return &gAllocator;
+		return {name};
 	}
 
-	/// gAllocator
-	/// Default engine allocator instance.
-	EASTL_API Allocator gObjectsAllocator{TX("Objects")};
-	EASTL_API Allocator* GetObjectsAllocator()
+	void Allocator::SetName(const TCHAR* newName)
 	{
-		return &gObjectsAllocator;
+		name = newName;
 	}
 
-	EASTL_API Allocator gAssetsAllocator{TX("Assets")};
-	EASTL_API Allocator* GetAssetsAllocator()
-	{
-		return &gAssetsAllocator;
-	}
 
-	EASTL_API Allocator gFrameAllocator{TX("Frame")};
-	EASTL_API Allocator* GetFrameAllocator()
+	namespace Memory
 	{
-		return &gFrameAllocator;
-	}
-};	  // namespace Memory
+		/// gAllocator
+		/// Default engine allocator instance.
+		EASTL_API Allocator gAllocator{};
+		EASTL_API Allocator* GetAllocator()
+		{
+			return &gAllocator;
+		}
+
+		/// gAllocator
+		/// Default engine allocator instance.
+		EASTL_API Allocator gObjectsAllocator{TX("Objects")};
+		EASTL_API Allocator* GetObjectsAllocator()
+		{
+			return &gObjectsAllocator;
+		}
+
+		EASTL_API Allocator gAssetsAllocator{TX("Assets")};
+		EASTL_API Allocator* GetAssetsAllocator()
+		{
+			return &gAssetsAllocator;
+		}
+
+		EASTL_API Allocator gFrameAllocator{TX("Frame")};
+		EASTL_API Allocator* GetFrameAllocator()
+		{
+			return &gFrameAllocator;
+		}
+	};	  // namespace Memory
+}	 // namespace VCLang
 
 
 // EASTL News
 void* operator new[](size_t size, const char* /*name*/, int flags, unsigned /*debugFlags*/,
 	const char* /*file*/, int /*line*/)
 {
-	return Memory::GetAllocator()->Allocate(size, flags);
+	return VCLang::Memory::GetAllocator()->Allocate(size, flags);
 }
 
 void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* /*name*/,
 	int flags, unsigned /*debugFlags*/, const char* /*file*/, int /*line*/)
 {
-	return Memory::GetAllocator()->Allocate(size, alignment, alignmentOffset, flags);
+	return VCLang::Memory::GetAllocator()->Allocate(size, alignment, alignmentOffset, flags);
 }
 
 
 // Native News
 void* operator new(size_t size)
 {
-	return Memory::GetAllocator()->Allocate(size);
+	return VCLang::Memory::GetAllocator()->Allocate(size);
 }
 
 void* operator new[](size_t size)
 {
-	return Memory::GetAllocator()->Allocate(size);
+	return VCLang::Memory::GetAllocator()->Allocate(size);
 }
 
 
 // Deletes
 void operator delete(void* p, std::size_t size)
 {
-	Memory::GetAllocator()->Deallocate(p, size);
+	VCLang::Memory::GetAllocator()->Deallocate(p, size);
 }
 void operator delete(void* p)
 {
-	Memory::GetAllocator()->Deallocate(p);
+	VCLang::Memory::GetAllocator()->Deallocate(p);
 }
 
 void operator delete[](void* p, std::size_t size)
 {
-	Memory::GetAllocator()->Deallocate(p, size);
+	VCLang::Memory::GetAllocator()->Deallocate(p, size);
 }
 void operator delete[](void* p)
 {
-	Memory::GetAllocator()->Deallocate(p);
+	VCLang::Memory::GetAllocator()->Deallocate(p);
 }

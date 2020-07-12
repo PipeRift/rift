@@ -9,17 +9,18 @@
 #endif
 
 
-bool AssetInfo::Serialize(class Archive& ar, const char* name)
+namespace VCLang
 {
-	ar(name, id);
-	return true;
-}
+	bool AssetInfo::Serialize(class Archive& ar, const char* name)
+	{
+		ar(name, id);
+		return true;
+	}
 
 #if WITH_EDITOR
-
-Class* AssetInfo::GetDetailsWidgetClass()
-{
-	return AssetInfoPropertyWidget::Type();
-}
-
+	Class* AssetInfo::GetDetailsWidgetClass()
+	{
+		return AssetInfoPropertyWidget::Type();
+	}
 #endif
+}	 // namespace VCLang

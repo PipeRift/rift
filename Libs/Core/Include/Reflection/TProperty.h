@@ -11,7 +11,7 @@
 #include <memory>
 
 
-namespace Refl
+namespace VCLang::Refl
 {
 	/**
 	 * Static information about a property
@@ -55,4 +55,4 @@ namespace Refl
 			return {};
 		}
 	};
-}	 // namespace Refl
+}	 // namespace VCLang::Refl

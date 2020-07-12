@@ -34,3 +34,6 @@
 [submodule "Extern/imgui"]
 	path = Extern/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "Extern/robin_hood"]
+	path = Extern/robin_hood
+	url = https://github.com/martinus/robin-hood-hashing

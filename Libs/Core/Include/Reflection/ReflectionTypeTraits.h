@@ -9,80 +9,82 @@
 #include <type_traits>
 
 
-struct Struct;
-
-
-template <typename T>
-struct HasItemType
+namespace VCLang
 {
-private:
-	template <typename V>
-	static void impl(decltype(typename V::ItemType(), int()));
-	template <typename V>
-	static bool impl(char);
+	struct Struct;
 
-public:
-	static const bool value = std::is_void<decltype(impl<T>(0))>::value;
-};
-
-template <typename T>
-inline constexpr bool IsArrayType()
-{
-	// Check if we are dealing with a TArray
-	if constexpr (HasItemType<T>::value)
+	template <typename T>
+	struct HasItemType
 	{
-		return std::is_same<TArray<typename T::ItemType>, T>::value;
-	}
-	return false;
-}
+	private:
+		template <typename V>
+		static void impl(decltype(typename V::ItemType(), int()));
+		template <typename V>
+		static bool impl(char);
 
-template <typename T>
-inline constexpr bool IsStructType()
-{
-	return std::is_same_v<T, Struct> || std::is_convertible_v<T, Struct>;
-}
+	public:
+		static const bool value = std::is_void<decltype(impl<T>(0))>::value;
+	};
 
-template <typename T>
-inline constexpr bool IsObjectType()
-{
-	return std::is_convertible_v<T, BaseObject>;
-}
-
-template <typename T>
-inline constexpr bool IsReflectableType()
-{
-	if constexpr (IsArrayType<T>())
+	template <typename T>
+	inline constexpr bool IsArrayType()
 	{
-		return IsReflectableType<typename T::ItemType>();
-	}
-	return /*IsAssetType<T>() || */ IsStructType<T>();
-}
-
-template <typename T>
-inline Name GetReflectableName()
-{
-	if constexpr (IsArrayType<T>())
-	{
-		if constexpr (IsReflectableType<typename T::ItemType>())
+		// Check if we are dealing with a TArray
+		if constexpr (HasItemType<T>::value)
 		{
-			// TArray<Itemtype> name
-			return {CString::Format(
-				TX("TArray<{}>"), GetReflectableName<typename T::ItemType>().ToString().c_str())};
+			return std::is_same<TArray<typename T::ItemType>, T>::value;
 		}
-		return TX("TArray<Invalid>");
+		return false;
 	}
-	/*else if constexpr (IsAssetType<T>()) // TODO: Simplify container reflected names
+
+	template <typename T>
+	inline constexpr bool IsStructType()
 	{
-		// TAssetPtr<Itemtype> name
-		return {CString::Format(TX("TAssetPtr<{}>"), GetReflectableName<typename
-	T::ItemType>().ToString().c_str())};
-	}*/
-	else if constexpr (IsStructType<T>() || IsObjectType<T>())
-	{
-		return T::StaticType()->GetName();
+		return std::is_same_v<T, Struct> || std::is_convertible_v<T, Struct>;
 	}
-	return TX("Invalid");
-}
+
+	template <typename T>
+	inline constexpr bool IsObjectType()
+	{
+		return std::is_convertible_v<T, BaseObject>;
+	}
+
+	template <typename T>
+	inline constexpr bool IsReflectableType()
+	{
+		if constexpr (IsArrayType<T>())
+		{
+			return IsReflectableType<typename T::ItemType>();
+		}
+		return /*IsAssetType<T>() || */ IsStructType<T>();
+	}
+
+	template <typename T>
+	inline Name GetReflectableName()
+	{
+		if constexpr (IsArrayType<T>())
+		{
+			if constexpr (IsReflectableType<typename T::ItemType>())
+			{
+				// TArray<Itemtype> name
+				return {CString::Format(TX("TArray<{}>"),
+					GetReflectableName<typename T::ItemType>().ToString().c_str())};
+			}
+			return TX("TArray<Invalid>");
+		}
+		/*else if constexpr (IsAssetType<T>()) // TODO: Simplify container reflected names
+		{
+			// TAssetPtr<Itemtype> name
+			return {CString::Format(TX("TAssetPtr<{}>"), GetReflectableName<typename
+		T::ItemType>().ToString().c_str())};
+		}*/
+		else if constexpr (IsStructType<T>() || IsObjectType<T>())
+		{
+			return T::StaticType()->GetName();
+		}
+		return TX("Invalid");
+	}
+}	 // namespace VCLang
 
 
 #define DECLARE_REFLECTION_TYPE(Type)               \

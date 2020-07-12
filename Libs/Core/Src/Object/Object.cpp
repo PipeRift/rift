@@ -5,7 +5,10 @@
 #include "Context.h"
 
 
-Ptr<Context> Object::GetContext() const
+namespace VCLang
 {
-	return Context::Get();
-}
+	Ptr<Context> Object::GetContext() const
+	{
+		return Context::Get();
+	}
+}	 // namespace VCLang

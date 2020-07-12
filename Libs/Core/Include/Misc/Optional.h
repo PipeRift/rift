@@ -3,142 +3,147 @@
 #pragma once
 
 
-/**
- * When we have an optional value IsSet() returns true, and GetValue() is meaningful.
- * Otherwise GetValue() is not meaningful.
- */
-template <typename Type>
-struct TOptional
+namespace VCLang
 {
-private:
-	Type value;
-	bool bIsSet;
-
-public:
-	/** Construct an Type with no value; i.e. unset */
-	TOptional() : bIsSet(false) {}
-
-	/** Construct an Type with a valid value. */
-	TOptional(const Type& value) : bIsSet{true}, value{value} {}
-	TOptional(Type&& value) : bIsSet{true}, value{MoveTemp(value)} {}
-
-	/** Copy/Move construction */
-	TOptional(const TOptional& other) : bIsSet(other.bIsSet)
+	/**
+	 * When we have an optional value IsSet() returns true, and GetValue() is meaningful.
+	 * Otherwise GetValue() is not meaningful.
+	 */
+	template <typename Type>
+	struct TOptional
 	{
-		if (bIsSet)
-		{
-			value = other.value;
-		}
-	}
-	TOptional(TOptional&& other) : bIsSet(other.bIsSet)
-	{
-		if (bIsSet)
-		{
-			value = MoveTemp(other.value);
-		}
-	}
+	private:
+		Type value;
+		bool bIsSet;
 
-	TOptional& operator=(const TOptional& other)
-	{
-		if (&other != this)
+	public:
+		/** Construct an Type with no value; i.e. unset */
+		TOptional() : bIsSet(false) {}
+
+		/** Construct an Type with a valid value. */
+		TOptional(const Type& value) : bIsSet{true}, value{value} {}
+		TOptional(Type&& value) : bIsSet{true}, value{MoveTemp(value)} {}
+
+		/** Copy/Move construction */
+		TOptional(const TOptional& other) : bIsSet(other.bIsSet)
 		{
-			bIsSet = other.bIsSet;
 			if (bIsSet)
 			{
 				value = other.value;
 			}
 		}
-		return *this;
-	}
-	TOptional& operator=(TOptional&& other)
-	{
-		if (&other != this)
+		TOptional(TOptional&& other) : bIsSet(other.bIsSet)
 		{
-			bIsSet = other.bIsSet;
 			if (bIsSet)
 			{
 				value = MoveTemp(other.value);
 			}
 		}
-		return *this;
-	}
 
-	TOptional& operator=(const Type& otherValue)
-	{
-		if (&value != &otherValue)
+		TOptional& operator=(const TOptional& other)
+		{
+			if (&other != this)
+			{
+				bIsSet = other.bIsSet;
+				if (bIsSet)
+				{
+					value = other.value;
+				}
+			}
+			return *this;
+		}
+		TOptional& operator=(TOptional&& other)
+		{
+			if (&other != this)
+			{
+				bIsSet = other.bIsSet;
+				if (bIsSet)
+				{
+					value = MoveTemp(other.value);
+				}
+			}
+			return *this;
+		}
+
+		TOptional& operator=(const Type& otherValue)
+		{
+			if (&value != &otherValue)
+			{
+				bIsSet = true;
+				value = otherValue;
+			}
+			return *this;
+		}
+		TOptional& operator=(Type&& otherValue)
+		{
+			if (&value != &otherValue)
+			{
+				bIsSet = true;
+				value = MoveTemp(otherValue);
+			}
+			return *this;
+		}
+
+		void Reset()
+		{
+			bIsSet = false;
+		}
+
+		template <typename... ArgsType>
+		void Emplace(ArgsType&&... Args)
 		{
 			bIsSet = true;
-			value = otherValue;
+			value = Type(Forward<ArgsType>(Args)...);
 		}
-		return *this;
-	}
-	TOptional& operator=(Type&& otherValue)
-	{
-		if (&value != &otherValue)
+
+		friend bool operator==(const TOptional& lhs, const TOptional& rhs)
 		{
-			bIsSet = true;
-			value = MoveTemp(otherValue);
+			return lhs.bIsSet == rhs.bIsSet && (!lhs->bIsSet || lhs.value == rhs.value);
 		}
-		return *this;
-	}
+		friend bool operator!=(const TOptional& lhs, const TOptional& rhs)
+		{
+			return !(lhs == rhs);
+		}
 
-	void Reset()
-	{
-		bIsSet = false;
-	}
+		/** @return true when the value is meaningful; false if calling GetValue() is undefined. */
+		bool IsSet() const
+		{
+			return bIsSet;
+		}
+		explicit operator bool() const
+		{
+			return IsSet();
+		}
 
-	template <typename... ArgsType>
-	void Emplace(ArgsType&&... Args)
-	{
-		bIsSet = true;
-		value = Type(Forward<ArgsType>(Args)...);
-	}
+		/** @return The optional value; undefined when IsSet() returns false. */
+		const Type& GetValue() const
+		{
+			check(IsSet(),
+				TX("Called GetValue() on an unset TOptional. Please either check IsSet() or "
+				   "use Get(DefaultValue) instead."));
+			return value;
+		}
+		Type& GetValue()
+		{
+			check(IsSet(),
+				TX("Called GetValue() on an unset TOptional. Please either check IsSet() or "
+				   "use Get(DefaultValue) instead."));
+			return value;
+		}
 
-	friend bool operator==(const TOptional& lhs, const TOptional& rhs)
-	{
-		return lhs.bIsSet == rhs.bIsSet && (!lhs->bIsSet || lhs.value == rhs.value);
-	}
-	friend bool operator!=(const TOptional& lhs, const TOptional& rhs)
-	{
-		return !(lhs == rhs);
-	}
+		const Type* operator->() const
+		{
+			return &GetValue();
+		}
+		Type* operator->()
+		{
+			return &GetValue();
+		}
 
-	/** @return true when the value is meaningful; false if calling GetValue() is undefined. */
-	bool IsSet() const
-	{
-		return bIsSet;
-	}
-	explicit operator bool() const
-	{
-		return IsSet();
-	}
-
-	/** @return The optional value; undefined when IsSet() returns false. */
-	const Type& GetValue() const
-	{
-		check(IsSet(), TX("Called GetValue() on an unset TOptional. Please either check IsSet() or "
-						  "use Get(DefaultValue) instead."));
-		return value;
-	}
-	Type& GetValue()
-	{
-		check(IsSet(), TX("Called GetValue() on an unset TOptional. Please either check IsSet() or "
-						  "use Get(DefaultValue) instead."));
-		return value;
-	}
-
-	const Type* operator->() const
-	{
-		return &GetValue();
-	}
-	Type* operator->()
-	{
-		return &GetValue();
-	}
-
-	/** @return The optional value when set; DefaultValue otherwise. */
-	const Type& Get(const Type& defaultValue) const
-	{
-		return IsSet() ? value : defaultValue;
-	}
-};
+		/** @return The optional value when set; DefaultValue otherwise. */
+		const Type& Get(const Type& defaultValue) const
+		{
+			return IsSet() ? value : defaultValue;
+		}
+	};
+}	 // namespace VCLang

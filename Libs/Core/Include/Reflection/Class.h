@@ -10,7 +10,7 @@
 #include <EASTL/vector.h>
 
 
-namespace Refl
+namespace VCLang::Refl
 {
 	class Class : public Type
 	{
@@ -51,4 +51,4 @@ namespace Refl
 										name, MoveTemp(access), tags));
 		}
 	};
-}	 // namespace Refl
+}	 // namespace VCLang::Refl

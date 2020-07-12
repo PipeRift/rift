@@ -2,4 +2,7 @@
 
 #include "Events/EventHandle.h"
 
-u64 EventHandle::counter{0};
+namespace VCLang
+{
+	u64 EventHandle::counter{0};
+}

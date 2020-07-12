@@ -4,20 +4,22 @@
 #include <EASTL/type_traits.h>
 
 
-/** CLASS TRAITS */
-
-/** Default traits go here */
-template <typename T>
-struct BaseClassTraits
+namespace VCLang
 {
-	enum
+	/** CLASS TRAITS */
+
+	/** Default traits go here */
+	template <typename T>
+	struct BaseClassTraits
 	{
-		HasCustomSerialize = false,
-		HasGlobalSerialize = false,
-		HasDetailsWidget = false,
-		HasPostSerialize = false
+		enum
+		{
+			HasCustomSerialize = false,
+			HasGlobalSerialize = false,
+			HasDetailsWidget = false,
+			HasPostSerialize = false
+		};
 	};
-};
 
 /** Custom traits go here */
 #define DEFINE_CLASS_TRAITS(Class, ...)                       \
@@ -39,6 +41,7 @@ struct BaseClassTraits
 		};                                                          \
 	}
 
-template <typename T>
-struct ClassTraits : public BaseClassTraits<T>
-{};
+	template <typename T>
+	struct ClassTraits : public BaseClassTraits<T>
+	{};
+}	 // namespace VCLang

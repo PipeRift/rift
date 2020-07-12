@@ -7,102 +7,106 @@
 #include "Serialization/Archive.h"
 
 
-class Context;
-
-class CORE_API Object : public BaseObject
+namespace VCLang
 {
-	ORPHAN_CLASS(Object, ReflectionTags::None)
+	class Context;
 
-private:
-	PROP(Name, name);
-	Name name;
-
-	Refl::Class* ownClass;
-	Ptr<BaseObject> self;
-	Ptr<BaseObject> owner;
-
-
-public:
-	Object() : BaseObject(), ownClass{nullptr}, self{}, owner{} {};
-
-	void PreConstruct(
-		Ptr<BaseObject>&& inSelf, Refl::Class* inClass, const Ptr<BaseObject>& inOwner)
+	class CORE_API Object : public BaseObject
 	{
-		ownClass = inClass;
-		self = inSelf;
-		owner = inOwner;
-	}
-	virtual void Construct() {}
+		ORPHAN_CLASS(Object, ReflectionTags::None)
 
-	virtual bool Serialize(Archive& ar)
-	{
-		SerializeReflection(ar);
-		return true;
-	}
+	private:
+		PROP(Name, name);
+		Name name;
 
-	/** Manual destruction is dangerous and a bad practice
-	void Destroy()
-	{
-		if (BaseGlobalPtr* global = Self().__GetGlobal())
+		Refl::Class* ownClass;
+		Ptr<BaseObject> self;
+		Ptr<BaseObject> owner;
+
+
+	public:
+		Object() : BaseObject(), ownClass{nullptr}, self{}, owner{} {};
+
+		void PreConstruct(
+			Ptr<BaseObject>&& inSelf, Refl::Class* inClass, const Ptr<BaseObject>& inOwner)
 		{
-			global->Reset();
+			ownClass = inClass;
+			self = inSelf;
+			owner = inOwner;
 		}
-	}*/
+		virtual void Construct() {}
 
-	Ptr<Object> GetOwner() const
+		virtual bool Serialize(Archive& ar)
+		{
+			SerializeReflection(ar);
+			return true;
+		}
+
+		/** Manual destruction is dangerous and a bad practice
+		void Destroy()
+		{
+			if (BaseGlobalPtr* global = Self().__GetGlobal())
+			{
+				global->Reset();
+			}
+		}*/
+
+		Ptr<Object> GetOwner() const
+		{
+			return owner.Cast<Object>();
+		}
+
+		Ptr<Object> Self() const
+		{
+			return self.Cast<Object>();
+		}
+
+		template <typename T>
+		Ptr<T> Self() const
+		{
+			return self.Cast<T>();
+		}
+
+		Refl::Class* GetType() const
+		{
+			return ownClass;
+		}
+
+
+		void SetName(Name newName)
+		{
+			name = MoveTemp(newName);
+		}
+		Name GetName() const
+		{
+			return name;
+		}
+
+		virtual Ptr<Context> GetContext() const;
+	};
+
+
+	template <typename Type>
+	using IsObject = std::is_convertible<Type, Object>;
+
+	template <class ObjectType>
+	static CORE_API GlobalPtr<ObjectType> Create(
+		Refl::Class* objectClass, const Ptr<Object> owner = {})
 	{
-		return owner.Cast<Object>();
+		static_assert(IsObject<ObjectType>::value, "Type is not an Object!");
+
+		if (objectClass)
+		{
+			return objectClass->CreateInstance(owner).Cast<ObjectType>();
+		}
+		return {};
 	}
 
-	Ptr<Object> Self() const
+	template <class ObjectType>
+	static CORE_API inline GlobalPtr<ObjectType> Create(const Ptr<Object> owner = {})
 	{
-		return self.Cast<Object>();
+		static_assert(IsObject<ObjectType>::value, "Type is not an Object!");
+
+		return GlobalPtr<ObjectType>::Create(owner);
 	}
-
-	template <typename T>
-	Ptr<T> Self() const
-	{
-		return self.Cast<T>();
-	}
-
-	Refl::Class* GetType() const
-	{
-		return ownClass;
-	}
-
-
-	void SetName(Name newName)
-	{
-		name = MoveTemp(newName);
-	}
-	Name GetName() const
-	{
-		return name;
-	}
-
-	virtual Ptr<Context> GetContext() const;
-};
-
-
-template <typename Type>
-using IsObject = std::is_convertible<Type, Object>;
-
-template <class ObjectType>
-static CORE_API GlobalPtr<ObjectType> Create(Refl::Class* objectClass, const Ptr<Object> owner = {})
-{
-	static_assert(IsObject<ObjectType>::value, "Type is not an Object!");
-
-	if (objectClass)
-	{
-		return objectClass->CreateInstance(owner).Cast<ObjectType>();
-	}
-	return {};
-}
-
-template <class ObjectType>
-static CORE_API inline GlobalPtr<ObjectType> Create(const Ptr<Object> owner = {})
-{
-	static_assert(IsObject<ObjectType>::value, "Type is not an Object!");
-
-	return GlobalPtr<ObjectType>::Create(owner);
-}
+}	 // namespace VCLang

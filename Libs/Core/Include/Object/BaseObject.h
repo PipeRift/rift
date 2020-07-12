@@ -8,30 +8,33 @@
 #include <EASTL/type_traits.h>
 
 
-namespace Refl
+namespace VCLang
 {
-	class Class;
-}
-class Object;
-
-template <typename Type>
-class Ptr;
-
-
-class CORE_API BaseObject : public BaseStruct
-{
-protected:
-	BaseObject() : BaseStruct() {}
-
-public:
-	void StartDestroy()
+	namespace Refl
 	{
-		BeforeDestroy();
+		class Class;
 	}
+	class Object;
 
-	Refl::Class* GetType() const;
-	Ptr<Object> Self() const;
+	template <typename Type>
+	class Ptr;
 
-protected:
-	virtual void BeforeDestroy() {}
-};
+
+	class CORE_API BaseObject : public BaseStruct
+	{
+	protected:
+		BaseObject() : BaseStruct() {}
+
+	public:
+		void StartDestroy()
+		{
+			BeforeDestroy();
+		}
+
+		Refl::Class* GetType() const;
+		Ptr<Object> Self() const;
+
+	protected:
+		virtual void BeforeDestroy() {}
+	};
+}	 // namespace VCLang

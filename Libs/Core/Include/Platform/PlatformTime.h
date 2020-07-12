@@ -9,11 +9,15 @@
 
 #include <chrono>
 
-struct PlatformTime
+
+namespace VCLang
 {
-	static u32 Cycles()
+	struct PlatformTime
 	{
-		return u32(Cycles64());
-	}
-	static u64 Cycles64();
-};
+		static u32 Cycles()
+		{
+			return u32(Cycles64());
+		}
+		static u64 Cycles64();
+	};
+}	 // namespace VCLang

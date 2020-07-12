@@ -4,22 +4,24 @@
 #include "Platform/GenericPlatform.h"
 
 
-/**
- * Windows specific types
- **/
-struct WindowsPlatformTypes : public GenericPlatformTypes
+namespace VCLang
 {
+	/**
+	 * Windows specific types
+	 **/
+	struct WindowsPlatformTypes : public GenericPlatformTypes
+	{
 #ifdef _WIN64
-	using sizet = __int64;
-	using ssizet = __int64;
+		using sizet = __int64;
+		using ssizet = __int64;
 #else
-	using sizet = unsigned long;
-	using ssizet = long;
+		using sizet = unsigned long;
+		using ssizet = long;
 #endif
-};
+	};
 
-using PlatformTypes = WindowsPlatformTypes;
-
+	using PlatformTypes = WindowsPlatformTypes;
+}	 // namespace VCLang
 
 #define FORCEINLINE __forceinline	  /* Force code to be inline */
 #define NOINLINE __declspec(noinline) /* Force code to not be inlined */

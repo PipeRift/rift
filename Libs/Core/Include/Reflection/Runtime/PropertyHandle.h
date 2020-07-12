@@ -8,75 +8,78 @@
 #include "Reflection/Property.h"
 
 
+namespace VCLang
+{
 #if WITH_EDITOR
-class PropertyWidget;
+	class PropertyWidget;
 #endif
 
-namespace Refl
-{
-	struct PropertyHandle
+	namespace Refl
 	{
-	protected:
-		BaseStruct* const structInstance = nullptr;
-		Ptr<BaseObject> objInstance;
-		const Property* const prop;
-
-
-	protected:
-		PropertyHandle(const Ptr<BaseObject>& objInstance, const Property* prop)
-			: structInstance{nullptr}
-			, objInstance{objInstance}
-			, prop{prop}
-		{}
-		PropertyHandle(BaseStruct* instance, const Property* prop)
-			: structInstance{instance}
-			, prop{prop}
-		{}
-
-	public:
-		virtual ~PropertyHandle() {}
-
-		String GetName() const
+		struct PropertyHandle
 		{
-			if (prop)
-				return prop->GetDisplayName();
-			return "Invalid";
-		}
+		protected:
+			BaseStruct* const structInstance = nullptr;
+			Ptr<BaseObject> objInstance;
+			const Property* const prop;
 
-		bool HasTag(ReflectionTags tag) const
-		{
-			return prop ? prop->HasTag(tag) : false;
-		}
 
-		void* GetInstance() const
-		{
-			if (UsesObjectPtr())
+		protected:
+			PropertyHandle(const Ptr<BaseObject>& objInstance, const Property* prop)
+				: structInstance{nullptr}
+				, objInstance{objInstance}
+				, prop{prop}
+			{}
+			PropertyHandle(BaseStruct* instance, const Property* prop)
+				: structInstance{instance}
+				, prop{prop}
+			{}
+
+		public:
+			virtual ~PropertyHandle() {}
+
+			String GetName() const
 			{
-				return *objInstance;
+				if (prop)
+					return prop->GetDisplayName();
+				return "Invalid";
 			}
-			return structInstance;
-		}
 
-		bool IsValid() const
-		{
-			return prop != nullptr && (UsesObjectPtr() || structInstance);
-		}
+			bool HasTag(ReflectionTags tag) const
+			{
+				return prop ? prop->HasTag(tag) : false;
+			}
 
-		bool UsesObjectPtr() const
-		{
-			return objInstance.IsValid();
-		}
+			void* GetInstance() const
+			{
+				if (UsesObjectPtr())
+				{
+					return *objInstance;
+				}
+				return structInstance;
+			}
 
-		virtual Class* GetTypeDefinedWidgetClass()
-		{
-			return nullptr;
-		}
+			bool IsValid() const
+			{
+				return prop != nullptr && (UsesObjectPtr() || structInstance);
+			}
 
-		virtual void* GetRawValuePtr() const = 0;
+			bool UsesObjectPtr() const
+			{
+				return objInstance.IsValid();
+			}
 
-		operator bool() const
-		{
-			return IsValid();
-		}
-	};
-}	 // namespace Refl
+			virtual Class* GetTypeDefinedWidgetClass()
+			{
+				return nullptr;
+			}
+
+			virtual void* GetRawValuePtr() const = 0;
+
+			operator bool() const
+			{
+				return IsValid();
+			}
+		};
+	}	 // namespace Refl
+}	 // namespace VCLang

@@ -15,7 +15,7 @@ namespace spdlog
 	class logger;
 }
 
-namespace Log
+namespace VCLang::Log
 {
 	inline std::shared_ptr<spdlog::logger> generalLogger;
 	inline std::shared_ptr<spdlog::logger> errLogger;
@@ -54,4 +54,4 @@ namespace Log
 			Error(CString::Format(format, std::forward<Args>(args)...));
 		}
 	}
-};	  // namespace Log
+};	  // namespace VCLang::Log

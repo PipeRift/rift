@@ -6,11 +6,14 @@
 #include "Reflection/Struct.h"
 
 
-Refl::Struct* BaseStruct::GetType() const
+namespace VCLang
 {
-	if (const auto* thisObj = dynamic_cast<const Struct*>(this))
+	Refl::Struct* BaseStruct::GetType() const
 	{
-		return thisObj->GetType();
+		if (const auto* thisObj = dynamic_cast<const Struct*>(this))
+		{
+			return thisObj->GetType();
+		}
+		return nullptr;
 	}
-	return nullptr;
-}
+}	 // namespace VCLang

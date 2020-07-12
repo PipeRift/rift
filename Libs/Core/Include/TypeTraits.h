@@ -8,13 +8,15 @@
 
 /** SIZE SELECTORS */
 
-template <class T, size_t size>
-struct IsSmallerType : std::integral_constant<bool, (sizeof(T) <= size)>
-{};
+namespace VCLang
+{
+	template <class T, size_t size>
+	struct IsSmallerType : std::integral_constant<bool, (sizeof(T) <= size)>
+	{};
 
-template <class T, size_t size>
-struct IsBiggerType : std::integral_constant<bool, (sizeof(T) > size)>
-{};
+	template <class T, size_t size>
+	struct IsBiggerType : std::integral_constant<bool, (sizeof(T) > size)>
+	{};
 
 
 #define EnableIfSmallerType(size) typename = std::enable_if<IsSmallerType<T, size>::value>
@@ -33,8 +35,9 @@ struct IsBiggerType : std::integral_constant<bool, (sizeof(T) > size)>
 #define EnableIfAll typename = void
 
 
-template <bool B, class T = void>
-using EnableIf = std::enable_if<B, T>;
+	template <bool B, class T = void>
+	using EnableIf = std::enable_if<B, T>;
 
-template <bool B, class T = void>
-using EnableIfT = std::enable_if_t<B, T>;
+	template <bool B, class T = void>
+	using EnableIfT = std::enable_if_t<B, T>;
+}	 // namespace VCLang

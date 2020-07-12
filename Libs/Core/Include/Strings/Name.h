@@ -1,6 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
+#include "Misc/Hash.h"
 #include "Reflection/ClassTraits.h"
 #include "String.h"
 
@@ -12,177 +13,178 @@
 #include <shared_mutex>
 
 
-struct Name;
-
-/** Represents an string with an already hashed value */
-struct NameKey
+namespace VCLang
 {
-private:
-	static const eastl::hash<String> hasher;
+	struct Name;
 
-	String str;
-	size_t hash;
-
-public:
-	NameKey(size_t hash = 0) : hash{hash} {}
-	NameKey(StringView inStr) : str{inStr}, hash{eastl::hash<String>()(str)} {}
-
-	NameKey(const NameKey& other) : hash{other.hash} {}
-	NameKey(NameKey&& other) : hash{other.hash}, str{MoveTemp(other.str)} {}
-	NameKey& operator=(const NameKey& other)
+	/** Represents an string with an already hashed value */
+	struct NameKey
 	{
-		hash = other.hash;
-		return *this;
-	}
+	private:
+		static const Hash<String> hasher;
 
-	const String& GetString() const
-	{
-		return str;
-	}
-	const size_t GetHash() const
-	{
-		return hash;
-	}
+		String str;
+		size_t hash;
 
-	bool operator==(const NameKey& other) const
-	{
-		return hash == other.hash;
-	}
-};
+	public:
+		NameKey(size_t hash = 0) : hash{hash} {}
+		NameKey(StringView inStr) : str{inStr}, hash{hasher(str)} {}
 
-namespace eastl
-{
+		NameKey(const NameKey& other) : hash{other.hash} {}
+		NameKey(NameKey&& other) : hash{other.hash}, str{MoveTemp(other.str)} {}
+		NameKey& operator=(const NameKey& other)
+		{
+			hash = other.hash;
+			return *this;
+		}
+
+		const String& GetString() const
+		{
+			return str;
+		}
+		const size_t GetHash() const
+		{
+			return hash;
+		}
+
+		bool operator==(const NameKey& other) const
+		{
+			return hash == other.hash;
+		}
+	};
+
 	template <>
-	struct hash<NameKey>
+	struct Hash<NameKey>
 	{
 		size_t operator()(const NameKey& x) const
 		{
 			return x.GetHash();
 		}
 	};
-}	 // namespace eastl
 
 
-/** Global table storing all names */
-class NameTable
-{
-	friend Name;
-
-	// #TODO: Move to TSet
-	using Container = tsl::robin_set<NameKey, eastl::hash<NameKey>, eastl::equal_to<NameKey>>;
-	using Iterator = Container::iterator;
-	using ConstIterator = Container::const_iterator;
-
-	Container table;
-	// Mutex that allows sync reads but waits for registries
-	mutable std::shared_mutex editTableMutex;
-
-
-	NameTable() : table{} {}
-
-	size_t Register(StringView string);
-	const String& Find(size_t hash) const
+	/** Global table storing all names */
+	class NameTable
 	{
-		// Ensure no other thread is editing the table
-		std::shared_lock lock{editTableMutex};
-		return table.find({hash})->GetString();
-	}
+		friend Name;
 
-	static NameTable& Get()
-	{
-		static NameTable instance{};
-		return instance;
-	}
-};
+		// #TODO: Move to TSet
+		using Container = tsl::robin_set<NameKey, Hash<NameKey>, eastl::equal_to<NameKey>>;
+		using Iterator = Container::iterator;
+		using ConstIterator = Container::const_iterator;
 
-
-/**
- * An string identified by id.
- * Searching, comparing and other operations are way cheaper, but creating (indexing) is more
- * expensive.
- */
-struct Name
-{
-	friend NameTable;
-	using Id = size_t;
-
-private:
-	static const String noneStr;
-	Id id;
+		Container table;
+		// Mutex that allows sync reads but waits for registries
+		mutable std::shared_mutex editTableMutex;
 
 
-public:
-	Name() : id{noneId} {}
-	Name(const TCHAR* key) : Name(StringView{key}) {}
-	Name(StringView key)
-	{
-		// Index this name
-		id = NameTable::Get().Register(key);
-	}
-	Name(const String& str) : Name(StringView(str)) {}
-	Name(const Name& other) : id(other.id) {}
-	Name(Name&& other) noexcept
-	{
-		std::swap(id, other.id);
-	}
-	Name& operator=(const Name& other)
-	{
-		id = other.id;
-		return *this;
-	}
-	Name& operator=(Name&& other)
-	{
-		std::swap(id, other.id);
-		return *this;
-	}
+		NameTable() : table{} {}
 
-	const String& ToString() const
-	{
-		return IsNone() ? noneStr : NameTable::Get().Find(id);
-	}
+		size_t Register(StringView string);
+		const String& Find(size_t hash) const
+		{
+			// Ensure no other thread is editing the table
+			std::shared_lock lock{editTableMutex};
+			return table.find({hash})->GetString();
+		}
 
-	bool operator==(const Name& other) const
-	{
-		return id == other.id;
-	}
-
-	bool IsNone() const
-	{
-		return id == noneId;
-	}
-
-	const Id& GetId() const
-	{
-		return id;
-	}
-
-
-	static const Name None()
-	{
-		static Name none{noneId};
-		return none;
+		static NameTable& Get()
+		{
+			static NameTable instance{};
+			return instance;
+		}
 	};
-	static const Id noneId;
 
-	bool Serialize(class Archive& ar, const char* name);
 
-private:
-	Name(const Id& id) : id(id) {}
-};
+	/**
+	 * An string identified by id.
+	 * Searching, comparing and other operations are way cheaper, but creating (indexing) is more
+	 * expensive.
+	 */
+	struct Name
+	{
+		friend NameTable;
+		using Id = size_t;
 
-DEFINE_CLASS_TRAITS(Name, HasCustomSerialize = true);
+	private:
+		static const String noneStr;
+		Id id;
 
-namespace eastl
-{
+
+	public:
+		Name() : id{noneId} {}
+		Name(const TCHAR* key) : Name(StringView{key}) {}
+		Name(StringView key)
+		{
+			// Index this name
+			id = NameTable::Get().Register(key);
+		}
+		Name(const String& str) : Name(StringView(str)) {}
+		Name(const Name& other) : id(other.id) {}
+		Name(Name&& other) noexcept
+		{
+			std::swap(id, other.id);
+		}
+		Name& operator=(const Name& other)
+		{
+			id = other.id;
+			return *this;
+		}
+		Name& operator=(Name&& other)
+		{
+			std::swap(id, other.id);
+			return *this;
+		}
+
+		const String& ToString() const
+		{
+			return IsNone() ? noneStr : NameTable::Get().Find(id);
+		}
+
+		bool operator==(const Name& other) const
+		{
+			return id == other.id;
+		}
+
+		bool IsNone() const
+		{
+			return id == noneId;
+		}
+
+		const Id& GetId() const
+		{
+			return id;
+		}
+
+
+		static const Name None()
+		{
+			static Name none{noneId};
+			return none;
+		};
+		static const Id noneId;
+
+		bool Serialize(class Archive& ar, const char* name);
+
+	private:
+		Name(const Id& id) : id(id) {}
+	};
+
+	DEFINE_CLASS_TRAITS(Name, HasCustomSerialize = true);
+
 	template <>
-	struct hash<Name>
+	struct Hash<Name>
 	{
 		size_t operator()(const Name& k) const
 		{
 			return k.GetId();
 		}
 	};
+}	 // namespace VCLang
 
+
+namespace eastl
+{
 /// user defined literals
 ///
 /// Converts a character array literal to a basic_string.
@@ -193,15 +195,15 @@ namespace eastl
 /// http://en.cppreference.com/w/cpp/String/basic_String/operator%22%22s
 ///
 #if EASTL_USER_LITERALS_ENABLED && EASTL_INLINE_NAMESPACES_ENABLED
-	EA_DISABLE_VC_WARNING(4455)	   // disable warning C4455: literal suffix identifiers that do not
-								   // start with an underscore are reserved
+	EA_DISABLE_VC_WARNING(4455)	   // disable warning C4455: literal suffix identifiers that do
+								   // not start with an underscore are reserved
 	inline namespace literals
 	{
 		inline namespace String_literals
 		{
-			inline Name operator"" n(const TCHAR* str) EA_NOEXCEPT
+			inline VCLang::Name operator"" n(const VCLang::TCHAR* str) EA_NOEXCEPT
 			{
-				return Name{str};
+				return VCLang::Name{str};
 			}
 		}					   // namespace String_literals
 	}						   // namespace literals

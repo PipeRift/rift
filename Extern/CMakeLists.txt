@@ -19,6 +19,8 @@ option(SPDLOG_FMT_EXTERNAL "Use external fmt library instead of bundled" ON)
 add_subdirectory(spdlog)
 option(JSON_BuildTests "Build the unit tests when BUILD_TESTING is enabled." OFF)
 add_subdirectory(nlohmann_json)
+add_subdirectory(robin_hood)
+
 
 # TRACY
 add_library(Tracy STATIC)

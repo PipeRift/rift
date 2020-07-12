@@ -7,12 +7,15 @@
 #include "Reflection/Struct.h"
 
 
-struct Struct : public BaseStruct
+namespace VCLang
 {
-	ORPHAN_STRUCT(Struct, ReflectionTags::None)
-
-	virtual Refl::Struct* GetType() const
+	struct Struct : public BaseStruct
 	{
-		return StaticType();
-	}
-};
+		ORPHAN_STRUCT(Struct, ReflectionTags::None)
+
+		virtual Refl::Struct* GetType() const
+		{
+			return StaticType();
+		}
+	};
+}	 // namespace VCLang

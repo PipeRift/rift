@@ -10,47 +10,51 @@
 
 EA_DISABLE_VC_WARNING(4267)
 
-using TaskFlow = tf::Taskflow;
-using Task = tf::Task;
-using Flow = tf::FlowBuilder;
-using SubFlow = tf::SubflowBuilder;
 
-using TaskLambda = eastl::function<void()>;
-using SubTaskLambda = eastl::function<void(tf::SubflowBuilder&)>;
-
-
-struct TaskSystem
+namespace VCLang
 {
-	using ThreadPool = tf::Executor;
+	using TaskFlow = tf::Taskflow;
+	using Task = tf::Task;
+	using Flow = tf::FlowBuilder;
+	using SubFlow = tf::SubflowBuilder;
 
-private:
-	// Render & Game thread
-	std::shared_ptr<ThreadPool> gamePool;
-	// Worker threads
-	std::shared_ptr<ThreadPool> workerPool;
+	using TaskLambda = eastl::function<void()>;
+	using SubTaskLambda = eastl::function<void(tf::SubflowBuilder&)>;
 
 
-public:
-	TaskSystem();
-
-	// Runs a flow in Workers thread pool
-	std::future<void> RunFlow(TaskFlow& flow) const
+	struct TaskSystem
 	{
-		return workerPool->run(flow);
-	}
+		using ThreadPool = tf::Executor;
 
-	// Creates a flow in Game thread pool
-	std::future<void> RunGameFlow(TaskFlow& flow) const
-	{
-		return gamePool->run(flow);
-	}
+	private:
+		// Render & Game thread
+		std::shared_ptr<ThreadPool> gamePool;
+		// Worker threads
+		std::shared_ptr<ThreadPool> workerPool;
 
-	u32 GetNumWorkerThreads() const
-	{
-		return (u32) workerPool->num_workers();
-	}
 
-	static TaskSystem& Get();
-};
+	public:
+		TaskSystem();
 
-EA_RESTORE_VC_WARNING()	   // warning: 4267
+		// Runs a flow in Workers thread pool
+		std::future<void> RunFlow(TaskFlow& flow) const
+		{
+			return workerPool->run(flow);
+		}
+
+		// Creates a flow in Game thread pool
+		std::future<void> RunGameFlow(TaskFlow& flow) const
+		{
+			return gamePool->run(flow);
+		}
+
+		u32 GetNumWorkerThreads() const
+		{
+			return (u32) workerPool->num_workers();
+		}
+
+		static TaskSystem& Get();
+	};
+
+	EA_RESTORE_VC_WARNING()	   // warning: 4267
+}	 // namespace VCLang

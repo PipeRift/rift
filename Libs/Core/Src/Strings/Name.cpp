@@ -5,53 +5,56 @@
 #include "Serialization/Archive.h"
 
 
-const eastl::hash<String> NameKey::hasher{};
-
-const String Name::noneStr{"none"};
-const Name::Id Name::noneId{0};
-
-size_t NameTable::Register(StringView str)
+namespace VCLang
 {
-	if (str.empty())
-	{
-		return Name::noneId;
-	}
+	const Hash<String> NameKey::hasher{};
 
-	// Calculate hash once
-	NameKey key{str};
-	ConstIterator FoundIt = table.find(key);
-	if (FoundIt != table.end())
-	{
-		std::shared_lock lock{editTableMutex};
-		return FoundIt->GetHash();
-	}
-	else
-	{
-		std::unique_lock lock{editTableMutex};
-		return table.insert(MoveTemp(key)).first->GetHash();
-	}
-}
+	const String Name::noneStr{"none"};
+	const Name::Id Name::noneId{0};
 
-bool Name::Serialize(Archive& ar, const char* name)
-{
-	if (ar.IsSaving())
+	size_t NameTable::Register(StringView str)
 	{
-		String str = ToString();
-		ar(name, str);
-	}
-	else
-	{
-		String str;
-		ar(name, str);
-
-		if (CString::Equals(str, noneStr))
+		if (str.empty())
 		{
-			*this = None();
+			return Name::noneId;
+		}
+
+		// Calculate hash once
+		NameKey key{str};
+		ConstIterator FoundIt = table.find(key);
+		if (FoundIt != table.end())
+		{
+			std::shared_lock lock{editTableMutex};
+			return FoundIt->GetHash();
 		}
 		else
 		{
-			*this = str;
+			std::unique_lock lock{editTableMutex};
+			return table.insert(MoveTemp(key)).first->GetHash();
 		}
 	}
-	return true;
-}
+
+	bool Name::Serialize(Archive& ar, const char* name)
+	{
+		if (ar.IsSaving())
+		{
+			String str = ToString();
+			ar(name, str);
+		}
+		else
+		{
+			String str;
+			ar(name, str);
+
+			if (CString::Equals(str, noneStr))
+			{
+				*this = None();
+			}
+			else
+			{
+				*this = str;
+			}
+		}
+		return true;
+	}
+}	 // namespace VCLang

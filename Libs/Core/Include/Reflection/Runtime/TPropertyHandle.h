@@ -4,7 +4,7 @@
 #include "Reflection/Runtime/PropertyHandle.h"
 
 
-namespace Refl
+namespace VCLang::Refl
 {
 	/**
 	 * Base logic implementation for templated property handles.
@@ -73,4 +73,4 @@ namespace Refl
 		}
 #endif
 	};
-}	 // namespace Refl
+}	 // namespace VCLang::Refl

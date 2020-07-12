@@ -3,24 +3,28 @@
 
 #include "Memory/Allocator.h"
 
-namespace Refl
+
+namespace VCLang
 {
-	class Struct;
-}
-
-struct BaseStruct
-{
-	BaseStruct() = default;
-	virtual ~BaseStruct() {}
-
-	Refl::Struct* GetType() const;
-
-	void* operator new(size_t size)
+	namespace Refl
 	{
-		return Memory::GetObjectsAllocator()->Allocate(size);
+		class Struct;
 	}
-	void operator delete(void* p, std::size_t size)
+
+	struct BaseStruct
 	{
-		Memory::GetObjectsAllocator()->Deallocate(p, size);
-	}
-};
+		BaseStruct() = default;
+		virtual ~BaseStruct() {}
+
+		Refl::Struct* GetType() const;
+
+		void* operator new(size_t size)
+		{
+			return Memory::GetObjectsAllocator()->Allocate(size);
+		}
+		void operator delete(void* p, std::size_t size)
+		{
+			Memory::GetObjectsAllocator()->Deallocate(p, size);
+		}
+	};
+}	 // namespace VCLang

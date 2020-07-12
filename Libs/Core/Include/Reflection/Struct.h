@@ -6,7 +6,7 @@
 #include "Type.h"
 
 
-namespace Refl
+namespace VCLang::Refl
 {
 	class Struct : public Type
 	{
@@ -49,4 +49,4 @@ namespace Refl
 										name, MoveTemp(access), tags));
 		}
 	};
-}	 // namespace Refl
+}	 // namespace VCLang::Refl

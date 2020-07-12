@@ -2,8 +2,6 @@
 #pragma once
 
 #include "CoreEngine.h"
-
-//#include "Property.h"
 #include "Macros.h"
 #include "Platform/Platform.h"
 #include "Reflection/TClass.h"
@@ -11,7 +9,8 @@
 #include "ReflectionTags.h"
 
 
-namespace Refl
+
+namespace VCLang::Refl
 {
 	/**
 	 * There are 3 types of reflected data structures:
@@ -47,7 +46,7 @@ namespace Refl
 	{
 		return instance->GetType();
 	}*/
-}	 // namespace Refl
+}	 // namespace VCLang::Refl
 
 /** Defines a Class */
 #define __CLASS_NO_TAGS(type, parent) __CLASS_TAGS(type, parent, ReflectionTags::None)
