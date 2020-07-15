@@ -27,15 +27,7 @@ namespace VCLang
 
 
 		/** String API */
-
-		static bool FileExists(const String& path)
-		{
-			return FileExists(FromString(path));
-		}
-		static bool FolderExists(const String& path)
-		{
-			return FolderExists(FromString(path));
-		}
+		
 		static bool LoadJsonFile(const String& path, Json& result)
 		{
 			return LoadJsonFile(FromString(path), result);
@@ -56,10 +48,6 @@ namespace VCLang
 
 		/** Path API */
 
-		static bool FileExists(const Path& path);
-		static bool FolderExists(const Path& path);
-
-
 		static bool LoadJsonFile(Path path, Json& result);
 		static bool SaveJsonFile(Path path, const Json& data, i32 indent = -1);
 
@@ -68,7 +56,7 @@ namespace VCLang
 
 		static void CreateFolder(const Path& path, bool bRecursive = false)
 		{
-			if (!path.empty() && !path.has_extension() && !Exists(path))
+			if (IsFolder(path) && !Exists(path))
 			{
 				if (bRecursive)
 				{
@@ -114,7 +102,7 @@ namespace VCLang
 
 		static bool IsFolder(const Path& path)
 		{
-			return fs::is_directory(path);
+			return !path.empty() && !path.has_extension();
 		}
 
 		static bool IsFile(const String& path)
@@ -122,9 +110,19 @@ namespace VCLang
 			return IsFile(FromString(path));
 		}
 
-		static bool IsFile(const Path& path)
+		static bool IsFile(const Path& path, bool bCheckOnDisk = true)
+		{
+			return !path.empty() && path.has_extension();
+		}
+
+		static bool ExistsAsFile(const Path& path)
 		{
 			return fs::is_regular_file(path);
+		}
+		
+		static bool ExistsAsFolder(const Path& path)
+		{
+			return fs::is_directory(path);
 		}
 
 		static Path ToRelative(const Path& path, const Path& parent = GetCurrent())

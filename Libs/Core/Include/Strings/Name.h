@@ -31,7 +31,7 @@ namespace VCLang
 		NameKey(StringView inStr) : str{inStr}, hash{hasher(str)} {}
 
 		NameKey(const NameKey& other) : hash{other.hash} {}
-		NameKey(NameKey&& other) : hash{other.hash}, str{MoveTemp(other.str)} {}
+		NameKey(NameKey&& other) : str{MoveTemp(other.str)}, hash{other.hash} {}
 		NameKey& operator=(const NameKey& other)
 		{
 			hash = other.hash;

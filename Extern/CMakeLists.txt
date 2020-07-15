@@ -46,9 +46,10 @@ set_property(TARGET imgui PROPERTY CXX_STANDARD 17)
 
 
 # TRACY
+file(GLOB_RECURSE TRACY_SOURCES CONFIGURE_DEPENDS Tracy/TracyClient.cpp Tracy/client/*.cpp Tracy/common/*.cpp)
 add_library(Tracy STATIC)
 target_include_directories(Tracy PUBLIC Tracy)
-target_sources(Tracy PRIVATE Tracy/TracyClient.cpp)
+target_sources(Tracy PRIVATE ${TRACY_SOURCES})
 set_property(TARGET Tracy PROPERTY CXX_STANDARD 17)
 if(LINUX)
     find_library(DLPATH dl)

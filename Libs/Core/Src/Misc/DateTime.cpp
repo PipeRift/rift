@@ -200,34 +200,34 @@ namespace VCLang
 							result += IsMorning() ? TX("AM") : TX("PM");
 							break;
 						case TX('d'):
-							CString::AppendFormat(result, TX("{:02i}"), GetDay());
+							CString::FormatTo(result, TX("{:02i}"), GetDay());
 							break;
 						case TX('D'):
-							CString::AppendFormat(result, TX("{:03i}"), GetDayOfYear());
+							CString::FormatTo(result, TX("{:03i}"), GetDayOfYear());
 							break;
 						case TX('m'):
-							CString::AppendFormat(result, TX("{:02i}"), GetMonth());
+							CString::FormatTo(result, TX("{:02i}"), GetMonth());
 							break;
 						case TX('y'):
-							CString::AppendFormat(result, TX("{:02i}"), GetYear() % 100);
+							CString::FormatTo(result, TX("{:02i}"), GetYear() % 100);
 							break;
 						case TX('Y'):
-							CString::AppendFormat(result, TX("{:04i}"), GetYear());
+							CString::FormatTo(result, TX("{:04i}"), GetYear());
 							break;
 						case TX('h'):
-							CString::AppendFormat(result, TX("{:02i}"), GetHour12());
+							CString::FormatTo(result, TX("{:02i}"), GetHour12());
 							break;
 						case TX('H'):
-							CString::AppendFormat(result, TX("{:02i}"), GetHour());
+							CString::FormatTo(result, TX("{:02i}"), GetHour());
 							break;
 						case TX('M'):
-							CString::AppendFormat(result, TX("{:02i}"), GetMinute());
+							CString::FormatTo(result, TX("{:02i}"), GetMinute());
 							break;
 						case TX('S'):
-							CString::AppendFormat(result, TX("{:02i}"), GetSecond());
+							CString::FormatTo(result, TX("{:02i}"), GetSecond());
 							break;
 						case TX('s'):
-							CString::AppendFormat(result, TX("{:03i}"), GetMillisecond());
+							CString::FormatTo(result, TX("{:03i}"), GetMillisecond());
 							break;
 						default:
 							result += *format;
