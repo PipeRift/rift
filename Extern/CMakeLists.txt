@@ -3,14 +3,17 @@ include(FetchContent)
 
 set(BUILD_SHARED_LIBS OFF)
 
+if(VCLANG_ENABLE_PROFILER)
+    set(ENABLE_STATISTICS On)
+endif()
+
+
 # Submodule libraries
 option(CLI11_BUILD_TESTS "Build CLI11 tests" OFF)
 add_subdirectory(CLI11)
 add_subdirectory(date)
-add_subdirectory(EABase)
 add_subdirectory(fmt)
 target_compile_definitions(fmt PUBLIC TRACY_ENABLE=1)
-
 add_subdirectory(glm)
 add_subdirectory(SparseMap)
 add_subdirectory(RobinMap)
@@ -20,9 +23,11 @@ add_subdirectory(spdlog)
 option(JSON_BuildTests "Build the unit tests when BUILD_TESTING is enabled." OFF)
 add_subdirectory(nlohmann_json)
 add_subdirectory(robin_hood)
+add_subdirectory(rpmalloc)
 
 
 # EASTL
+add_subdirectory(EABase)
 file(GLOB_RECURSE EASTL_SOURCES CONFIGURE_DEPENDS EASTL/source/*.cpp)
 add_library(EASTL STATIC)
 target_include_directories(EASTL PUBLIC EASTL/include)

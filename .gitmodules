@@ -37,3 +37,9 @@
 [submodule "Extern/robin_hood"]
 	path = Extern/robin_hood
 	url = https://github.com/martinus/robin-hood-hashing
+[submodule "Extern/rpmalloc"]
+	path = Extern/rpmalloc
+	url = https://github.com/mjansson/rpmalloc.git
+[submodule "Extern/memory"]
+	path = Extern/memory
+	url = https://github.com/foonathan/memory.git
