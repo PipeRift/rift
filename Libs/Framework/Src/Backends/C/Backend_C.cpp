@@ -37,16 +37,23 @@ namespace VCLang::Backends::C
 	void Backend_C::Generate()
 	{
 		ScopedZone(0x459bd1);
-
-		String code;
+		code = "";
 
 		// Includes
-		code += "#include <stdint.h>\n";
+		AddInclude("stdint.h");
 
 		// Generate class
 		{
-			StringView className = "MyClass";
-			CString::FormatTo(code, "struct {} {{}};", className);
+			ForwardDeclareClass("MyClass");
+			ForwardDeclareClass("MyClass33");
+			ForwardDeclareStruct("MyStruct");
+
+			BeginClass("MyClass");
+			EndClass();
+			BeginClass("MyClass33");
+			EndClass();
+			BeginStruct("MyStruct");
+			EndStruct();
 		}
 
 		FileSystem::SaveStringFile(intermediatesPath / "code.h", code);
@@ -61,5 +68,39 @@ namespace VCLang::Backends::C
 	{
 		ScopedZone(0x459bd1);
 		Super::OnCleanup();
+	}
+
+
+	void Backend_C::AddInclude(StringView name)
+	{
+		CString::FormatTo(code, "#include <{}>\n", name);
+	}
+
+	void Backend_C::ForwardDeclareClass(StringView name)
+	{
+		CString::FormatTo(code, "class {};\n\n", name);
+	}
+
+	void Backend_C::BeginClass(StringView name)
+	{
+		CString::FormatTo(code, "class {}\n{{\n", name);
+	}
+	void Backend_C::EndClass()
+	{
+		CString::FormatTo(code, "}};\n\n");
+	}
+
+	void Backend_C::ForwardDeclareStruct(StringView name)
+	{
+		CString::FormatTo(code, "struct {};\n\n", name);
+	}
+	void Backend_C::BeginStruct(StringView name)
+	{
+		CString::FormatTo(code, "struct {}\n{{\n", name);
+	}
+
+	void Backend_C::EndStruct()
+	{
+		CString::FormatTo(code, "}};\n\n");
 	}
 }	 // namespace VCLang::Backends::C

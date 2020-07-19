@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "Assets/ClassAsset.h"
 #include "Backends/Backend.h"
 
 #include <CoreEngine.h>
@@ -14,6 +13,8 @@ namespace VCLang::Backends::C
 	{
 		CLASS(Backend_C, Backend)
 
+		String code;
+
 	public:
 		virtual void OnCompile() override;
 
@@ -21,5 +22,16 @@ namespace VCLang::Backends::C
 		void Generate();
 		void Build();
 		virtual void OnCleanup() override;
+
+
+		void AddInclude(StringView name);
+
+		void ForwardDeclareClass(StringView name);
+		void BeginClass(StringView name);
+		void EndClass();
+
+		void ForwardDeclareStruct(StringView name);
+		void BeginStruct(StringView name);
+		void EndStruct();
 	};
 }	 // namespace VCLang::Backends::C
