@@ -41,8 +41,8 @@ namespace VCLang
 
 		protected:
 			Property(Type* typePtr, Name typeName, Name name, ReflectionTags tags)
-				: typeName(typeName)
-				, typePtr(typePtr)
+				: typePtr(typePtr)
+				, typeName(typeName)
 				, name(name)
 				, tags(tags)
 			{

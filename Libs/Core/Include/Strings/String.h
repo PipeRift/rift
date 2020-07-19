@@ -36,9 +36,9 @@ namespace VCLang
 		}
 
 		template <typename... Args>
-		static void AppendFormat(String& str, const TCHAR* format, Args... args)
+		static void FormatTo(String& buffer, StringView format, Args... args)
 		{
-			str.append(fmt::format(format, std::forward<Args>(args)...).c_str());
+			fmt::format_to(std::back_inserter(buffer), format, std::forward<Args>(args)...);
 		}
 
 		static void ToSentenceCase(const String& str, String& result);
@@ -48,7 +48,7 @@ namespace VCLang
 		{
 			String result = original;
 			Replace(result, searchChar, replacementChar);
-			return MoveTemp(result);
+			return result;
 		}
 
 		static void Replace(String& value, const TCHAR searchChar, const TCHAR replacementChar)

@@ -32,31 +32,31 @@ namespace VCLang
 				switch (*format)
 				{
 					case TX('d'):
-						CString::AppendFormat(result, TX("{}"), Math::Abs(GetDays()));
+						CString::FormatTo(result, TX("{}"), Math::Abs(GetDays()));
 						break;
 					case TX('D'):
-						CString::AppendFormat(result, TX("{:08i}"), Math::Abs(GetDays()));
+						CString::FormatTo(result, TX("{:08i}"), Math::Abs(GetDays()));
 						break;
 					case TX('h'):
-						CString::AppendFormat(result, TX("{:02i}"), Math::Abs(GetHours()));
+						CString::FormatTo(result, TX("{:02i}"), Math::Abs(GetHours()));
 						break;
 					case TX('m'):
-						CString::AppendFormat(result, TX("{:02i}"), Math::Abs(GetMinutes()));
+						CString::FormatTo(result, TX("{:02i}"), Math::Abs(GetMinutes()));
 						break;
 					case TX('s'):
-						CString::AppendFormat(result, TX("{:02i}"), Math::Abs(GetSeconds()));
+						CString::FormatTo(result, TX("{:02i}"), Math::Abs(GetSeconds()));
 						break;
 					case TX('f'):
-						CString::AppendFormat(result, TX("{:03i}"), Math::Abs(GetFractionMilli()));
+						CString::FormatTo(result, TX("{:03i}"), Math::Abs(GetFractionMilli()));
 						break;
 					case TX('u'):
-						CString::AppendFormat(result, TX("{:06i}"), Math::Abs(GetFractionMicro()));
+						CString::FormatTo(result, TX("{:06i}"), Math::Abs(GetFractionMicro()));
 						break;
 					case TX('t'):
-						CString::AppendFormat(result, TX("{:07i}"), Math::Abs(GetFractionTicks()));
+						CString::FormatTo(result, TX("{:07i}"), Math::Abs(GetFractionTicks()));
 						break;
 					case TX('n'):
-						CString::AppendFormat(result, TX("{:09i}"), Math::Abs(GetFractionNano()));
+						CString::FormatTo(result, TX("{:09i}"), Math::Abs(GetFractionNano()));
 						break;
 					default:
 						result += *format;

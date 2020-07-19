@@ -63,7 +63,7 @@ namespace VCLang::Log
 			{
 				logFile /= "log.txt";
 			}
-			FileSystem::CreateFolder(logFolder);
+			FileSystem::CreateFolder(logFolder, true);
 
 			sinks.push_back(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
 				FileSystem::ToString(logFile).c_str(), 1048576 * 5, 3));
