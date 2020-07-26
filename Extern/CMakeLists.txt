@@ -23,7 +23,7 @@ add_subdirectory(spdlog)
 option(JSON_BuildTests "Build the unit tests when BUILD_TESTING is enabled." OFF)
 add_subdirectory(nlohmann_json)
 add_subdirectory(robin_hood)
-add_subdirectory(rpmalloc)
+#add_subdirectory(rpmalloc)
 
 
 # EASTL
