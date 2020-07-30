@@ -43,3 +43,6 @@
 [submodule "Extern/memory"]
 	path = Extern/memory
 	url = https://github.com/foonathan/memory.git
+[submodule "Extern/Bandit"]
+	path = Extern/Bandit
+	url = https://github.com/banditcpp/bandit

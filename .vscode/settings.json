@@ -96,5 +96,33 @@
         "bitset": "cpp",
         "codecvt": "cpp"
     },
-    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "banditTestExplorer.testsuites": [
+        {
+            "name": "VCLang",
+            "cwd": "${workspaceFolder}/Build/Bin",
+            "windows": {
+                "cmd": "Tests.exe",
+                "watches": [
+                    "VCLang.lib",
+                    "Core.lib"
+                ]
+            },
+            "linux": {
+                "cmd": "Tests",
+                "watches": [
+                    "VCLang.so",
+                    "Core.so"
+                ]
+            },
+            "osx": {
+                "cmd": "Tests",
+                "watches": [
+                    "VCLang.dylib",
+                    "Core.dylib"
+                ]
+            },
+            "parallelProcessLimit": 10
+        }
+    ],
 }

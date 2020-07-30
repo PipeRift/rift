@@ -28,6 +28,14 @@ add_subdirectory(Apps/CLI)
 # Editor
 add_subdirectory(Apps/Editor)
 
+# Tests
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    include(CTest)
+
+    if(BUILD_TESTING)
+        add_subdirectory(Tests)
+    endif()
+endif()
 
 # clang-format
 include(CMake/CheckClangTools.cmake)
