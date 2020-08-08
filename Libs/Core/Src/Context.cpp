@@ -4,5 +4,5 @@
 
 namespace VCLang
 {
-	GlobalPtr<Context> Context::globalInstance{};
+	ObjectPtr<Context> Context::globalInstance{};
 }

@@ -4,7 +4,7 @@
 #include "CoreTypes.h"
 #include "Object/BaseObject.h"
 #include "Object/BaseStruct.h"
-#include "Object/ObjectPtr.h"
+#include "Pointers/PtrOwner.h"
 #include "Reflection/Property.h"
 
 

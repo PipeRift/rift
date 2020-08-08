@@ -1,6 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
+#include "Pointers/PtrOwner.h"
 #include "ReflectionTags.h"
 #include "Strings/Name.h"
 #include "Strings/String.h"
@@ -10,8 +11,6 @@
 
 namespace VCLang
 {
-	template <typename T>
-	class Ptr;
 	class BaseObject;
 	struct BaseStruct;
 

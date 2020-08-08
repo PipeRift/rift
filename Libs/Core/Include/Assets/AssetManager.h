@@ -6,7 +6,6 @@
 #include "Containers/Map.h"
 #include "CoreObject.h"
 #include "Files/FileSystem.h"
-#include "Object/ObjectPtr.h"
 
 
 namespace VCLang
@@ -21,7 +20,7 @@ namespace VCLang
 	private:
 		TArray<AssetInfo> assetInfos;
 
-		TMap<AssetInfo, GlobalPtr<AssetData>> loadedAssets{};
+		TMap<AssetInfo, ObjectPtr<AssetData>> loadedAssets{};
 
 
 	public:

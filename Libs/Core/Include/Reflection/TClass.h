@@ -2,7 +2,11 @@
 #pragma once
 
 #include "Class.h"
+#include "Object/ObjectBuilder.h"
+#include "Pointers/PtrOwner.h"
 #include "TProperty.h"
+
+#include <type_traits>
 
 
 namespace VCLang::Refl
@@ -26,10 +30,15 @@ namespace VCLang::Refl
 		}
 
 	public:
-		virtual GlobalPtr<BaseObject> CreateInstance(const Ptr<BaseObject>& owner) override
+		virtual PtrOwner<BaseObject, ObjectBuilder> CreateInstance(
+			const Ptr<BaseObject>& owner) override
 		{
-			GlobalPtr<BaseObject> ptr = GlobalPtr<T>::Create(owner);
-			return ptr;
+			if constexpr (std::is_same_v<T, BaseObject>)
+			{
+				return {};
+			}
+			auto instance = MakeOwned<T, ObjectBuilder>(owner);
+			return MoveTemp(instance);
 		}
 
 		static TClass* GetStatic()

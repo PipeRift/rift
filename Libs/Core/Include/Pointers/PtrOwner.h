@@ -3,37 +3,17 @@
 #pragma once
 
 #include "CoreEngine.h"
-#include "Platform/Platform.h"
+#include "Pointers/PtrBuilder.h"
 #include "TypeTraits.h"
 
 #include <atomic>
+#include <memory>
 
 
 namespace VCLang
 {
 	namespace Impl
 	{
-		template <typename T>
-		struct PtrBuilder
-		{
-			template <typename... Args>
-			static T* New(Args&&... args)
-			{
-				return new T(std::forward<Args>(args)...);
-			}
-
-			static T* NewArray(size_t size)
-			{
-				using Elem = std::remove_extent_t<T>;
-				return new Elem[size]();
-			}
-
-			static void Delete(void* ptr)
-			{
-				delete static_cast<T*>(ptr);
-			}
-		};
-
 		// Container that lives from when an owner is created to when the last weak has been reset
 		struct PtrWeakCounter
 		{
@@ -63,6 +43,11 @@ namespace VCLang
 			{
 				return IsValid();
 			};
+
+			const PtrWeakCounter* GetCounter() const
+			{
+				return counter;
+			}
 
 		protected:
 			PtrOwner() = default;
@@ -97,106 +82,63 @@ namespace VCLang
 				Reset();
 			}
 
-			void Reset()
-			{
-				if (counter)
-				{
-					value = nullptr;
-
-					if (--counter->weaks <= 0 && !counter->bIsSet)
-					{
-						delete counter;
-					}
-					counter = nullptr;
-				}
-			}
-
-			bool IsValid() const
-			{
-				return counter && counter->bIsSet;
-			}
+			void Reset();
+			bool IsValid() const;
 
 			operator bool() const
 			{
 				return IsValid();
 			};
 
+			const PtrWeakCounter* GetCounter() const
+			{
+				return counter;
+			}
+
+			Ptr& operator=(TYPE_OF_NULLPTR)
+			{
+				Reset();
+				return *this;
+			};
+
 		protected:
 			Ptr() = default;
-			Ptr(const PtrOwner& owner)
-			{
-				value = owner.value;
-				counter = owner.counter;
-				++counter->weaks;
-			}
-			Ptr(const Ptr& other)
-			{
-				value = other.value;
-				counter = other.counter;
-				++counter->weaks;
-			}
-			Ptr(Ptr&& other)
-			{
-				value = other.value;
-				counter = other.counter;
-				other.counter = nullptr;
-			}
+			Ptr(const PtrOwner& owner);
+			Ptr(const Ptr& other);
+			Ptr(Ptr&& other);
 
-			void MoveFrom(Ptr&& other)
-			{
-				if (counter != other.counter)
-				{
-					Reset();
-					value = other.value;
-					counter = other.counter;
-					other.counter = nullptr;
-				}
-				else	// If equals, we reset previous anyway
-				{
-					other.Reset();
-				}
-			}
+			void MoveFrom(Ptr&& other);
+			void CopyFrom(const Ptr& other);
 
-			void CopyFrom(const Ptr& other)
-			{
-				if (counter != other.counter)
-				{
-					Reset();
-					value = other.value;
-					counter = other.counter;
-					++counter->weaks;
-				}
-			}
+		private:
+			void __ResetNoCheck(const bool bIsSet);
 		};
 	}	 // namespace Impl
 
 
 	template <typename T>
-	struct Ptr2;
+	struct Ptr;
 
 
-	template <typename T, typename TBuilder = Impl::PtrBuilder<T>>
+	/**
+	 * Pointer Owner
+	 * Contains an unique instance of T that is kept automatically removed on owner destruction.
+	 */
+	template <typename T, template <typename BT> typename Builder = PtrBuilder>
 	struct PtrOwner : public Impl::PtrOwner
 	{
 		using Super = Impl::PtrOwner;
+		using TBuilder = Builder<T>;
 
-		template <typename T2, typename TBuilder2>
+		template <typename T2, template <typename BT2> typename Builder2>
 		friend struct PtrOwner;
 
 	public:
 		PtrOwner() = default;
-		PtrOwner(T* value) : Super(value) {}
+		explicit PtrOwner(T* value) : Super(value) {}
 
 		PtrOwner(PtrOwner&& other) noexcept
 		{
-			MoveFrom(MoveTemp(other));
-		}
-
-		template <typename T2>
-		PtrOwner(PtrOwner<T2, TBuilder>&& other)
-		{
-			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
-				"Type is not down-castable!");
 			MoveFrom(MoveTemp(other));
 		}
 
@@ -206,8 +148,16 @@ namespace VCLang
 			return *this;
 		}
 
+		/** Templates for down-casting */
 		template <typename T2>
-		PtrOwner& operator=(PtrOwner<T2, TBuilder>&& other)
+		PtrOwner(PtrOwner<T2, Builder>&& other)
+		{
+			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
+				"Type is not down-castable!");
+			MoveFrom(MoveTemp(other));
+		}
+		template <typename T2>
+		PtrOwner& operator=(PtrOwner<T2, Builder>&& other)
 		{
 			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
 				"Type is not down-castable!");
@@ -227,27 +177,28 @@ namespace VCLang
 
 		/** Cast a global pointer into another type. Will invalidate previous owner on success */
 		template <typename T2>
-		PtrOwner<T2, TBuilder> Cast()
+		PtrOwner<T2, Builder> Cast()
 		{
-			static_assert(std::is_same_v<T2, T>, "Don't try to Cast using the same type");
 			// If can be casted statically or dynamically
 			if (IsValid() && (std::is_convertible_v<T2, T> || dynamic_cast<T2*>(**this) != nullptr))
 			{
-				PtrOwner<T2, TBuilder> newPtr{};
+				PtrOwner<T2, Builder> newPtr{};
 				newPtr.MoveFrom(MoveTemp(*this));
 				return newPtr;
 			}
 			return {};
 		}
 
-		/** Cast a global pointer into another type. Will invalidate previous owner on success */
-		template <typename T2>
-		Ptr2<T2> Cast()
+		template <typename T2 = T>
+		Ptr<T2> AsPtr() const
 		{
-			// If can be casted statically or dynamically
-			if (IsValid())
+			if constexpr (std::is_same_v<T2, T> || std::is_convertible_v<T2, T>)
 			{
-				Ptr2<T> ptr{*this};
+				return {*this};
+			}
+			else if (IsValid() && dynamic_cast<T2*>(**this) != nullptr)
+			{
+				Ptr<T> ptr{*this};
 				return ptr.template Cast<T2>();
 			}
 			return {};
@@ -284,62 +235,88 @@ namespace VCLang
 			return **this == other;
 		}
 		template <typename T2>
-		bool operator==(const PtrOwner<T2, TBuilder>& other) const
+		bool operator==(const PtrOwner<T2, Builder>& other) const
 		{
 			return operator==(*other);
 		}
 		template <typename T2>
-		bool operator==(const Ptr2<T2>& other) const
+		bool operator==(const Ptr<T2>& other) const
 		{
 			return operator==(*other);
+		}
+		template <typename T2>
+		bool operator!=(T2* other) const
+		{
+			return **this != other;
+		}
+		template <typename T2>
+		bool operator!=(const PtrOwner<T2, Builder>& other) const
+		{
+			return operator!=(*other);
+		}
+		template <typename T2>
+		bool operator!=(const Ptr<T2>& other) const
+		{
+			return operator!=(*other);
 		}
 	};
 
 
+	/**
+	 * Weak pointers
+	 * Instances will be removed if their ptr owner is released. In this case all Ptrs will be
+	 * invalidated.
+	 */
 	template <typename T>
-	struct Ptr2 : public Impl::Ptr
+	struct Ptr : public Impl::Ptr
 	{
+		template <typename T2>
+		friend struct Ptr;
+
 		using Super = Impl::Ptr;
 
-		Ptr2() = default;
-		Ptr2(const Ptr2& other) : Super(other) {}
-		Ptr2(Ptr2&& other) : Super(MoveTemp(other)) {}
+		Ptr() = default;
+		Ptr(const Ptr& other) : Super(other) {}
+		Ptr(Ptr&& other) : Super(MoveTemp(other)) {}
 
-		template <typename T2, typename TBuilder>
-		Ptr2(const PtrOwner<T2, TBuilder>& owner) : Super(owner)
-		{
-			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
-				"Type is not down-castable!");
-		}
-
-		template <typename T2>
-		Ptr2(const Ptr2<T2>& other) : Super(other)
-		{
-			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
-				"Type is not down-castable!");
-		}
-
-		template <typename T2>
-		Ptr2(Ptr2<T2>&& other) : Super(MoveTemp(other))
-		{
-			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
-				"Type is not down-castable!");
-		}
-
-		Ptr2& operator=(const Ptr2& other)
+		Ptr& operator=(const Ptr& other)
 		{
 			CopyFrom(other);
 			return *this;
 		}
 
-		Ptr2& operator=(Ptr2&& other)
+		Ptr& operator=(Ptr&& other)
 		{
 			MoveFrom(MoveTemp(other));
 			return *this;
 		}
 
+
+		/** Templates for down-casting */
+
+		template <typename T2, template <typename BT> typename Builder>
+		Ptr(const PtrOwner<T2, Builder>& owner) : Super(owner)
+		{
+			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
+				"Type is not down-castable!");
+		}
+
 		template <typename T2>
-		Ptr2& operator=(const Ptr2<T2>& other)
+		Ptr(const Ptr<T2>& other) : Super(other)
+		{
+			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
+				"Type is not down-castable!");
+		}
+
+		template <typename T2>
+		Ptr(Ptr<T2>&& other) : Super(MoveTemp(other))
+		{
+			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
+				"Type is not down-castable!");
+		}
+
+		template <typename T2>
+		Ptr& operator=(const Ptr<T2>& other)
 		{
 			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
 				"Type is not down-castable!");
@@ -348,13 +325,14 @@ namespace VCLang
 		}
 
 		template <typename T2>
-		Ptr2& operator=(Ptr2<T2>&& other)
+		Ptr& operator=(Ptr<T2>&& other)
 		{
 			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
 				"Type is not down-castable!");
 			MoveFrom(MoveTemp(other));
 			return *this;
 		}
+
 
 		T* operator*() const
 		{
@@ -371,11 +349,11 @@ namespace VCLang
 		}
 
 		template <typename T2>
-		Ptr2<T2> Cast() const
+		Ptr<T2> Cast() const
 		{
 			if (IsValid() && (std::is_convertible_v<T2, T> || dynamic_cast<T2*>(**this) == nullptr))
 			{
-				Ptr2<T2> ptr{};
+				Ptr<T2> ptr{};
 				ptr.CopyFrom(*this);
 				return ptr;
 			}
@@ -387,35 +365,50 @@ namespace VCLang
 		{
 			return **this == other;
 		}
-		template <typename T2, typename TBuilder>
-		bool operator==(const PtrOwner<T2, TBuilder>& other) const
+		template <typename T2, template <typename BT> typename Builder>
+		bool operator==(const PtrOwner<T2, Builder>& other) const
 		{
 			return operator==(*other);
 		}
 		template <typename T2>
-		bool operator==(const Ptr2<T2>& other) const
+		bool operator==(const Ptr<T2>& other) const
 		{
 			return operator==(*other);
+		}
+		template <typename T2>
+		bool operator!=(T2* other) const
+		{
+			return **this != other;
+		}
+		template <typename T2, template <typename BT> typename Builder>
+		bool operator!=(const PtrOwner<T2, Builder>& other) const
+		{
+			return operator!=(*other);
+		}
+		template <typename T2>
+		bool operator!=(const Ptr<T2>& other) const
+		{
+			return operator!=(*other);
 		}
 	};
 
 
-	template <typename T, typename TBuilder = Impl::PtrBuilder<T>, typename... Args,
+	template <typename T, template <typename BT> typename Builder = PtrBuilder, typename... Args,
 		EnableIfT<!std::is_array_v<T>, i32> = 0>
-	PtrOwner<T, TBuilder> MakeOwned(Args&&... args)
+	PtrOwner<T, Builder> MakeOwned(Args&&... args)
 	{
-		return {TBuilder::New(std::forward<Args>(args)...)};
+		return PtrOwner<T, Builder>(Builder<T>::New(std::forward<Args>(args)...));
 	}
 
-	template <typename T, typename TBuilder = Impl::PtrBuilder<T>,
+	template <typename T, template <typename BT> typename Builder = PtrBuilder,
 		EnableIfT<std::is_array_v<T> && std::extent_v<T> == 0, i32> = 0>
-	PtrOwner<T, TBuilder> MakeOwned(size_t size)
+	PtrOwner<T, Builder> MakeOwned(size_t size)
 	{
 		using Elem = std::remove_extent_t<T>;
-		return {TBuilder::NewArray(size)};
+		return {Builder<T>::NewArray(size)};
 	}
 
-	template <typename T, typename TBuilder = Impl::PtrBuilder<T>, typename... Args,
+	template <typename T, typename TBuilder = PtrBuilder<T>, typename... Args,
 		EnableIfT<std::extent_v<T> != 0, i32> = 0>
 	void MakeOwned(Args&&...) = delete;
 }	 // namespace VCLang

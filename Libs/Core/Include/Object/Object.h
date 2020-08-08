@@ -2,7 +2,8 @@
 #pragma once
 
 #include "BaseObject.h"
-#include "ObjectPtr.h"
+#include "Log.h"
+#include "ObjectBuilder.h"
 #include "Reflection/Class.h"
 #include "Serialization/Archive.h"
 
@@ -42,15 +43,6 @@ namespace VCLang
 			return true;
 		}
 
-		/** Manual destruction is dangerous and a bad practice
-		void Destroy()
-		{
-			if (BaseGlobalPtr* global = Self().__GetGlobal())
-			{
-				global->Reset();
-			}
-		}*/
-
 		Ptr<Object> GetOwner() const
 		{
 			return owner.Cast<Object>();
@@ -86,27 +78,20 @@ namespace VCLang
 	};
 
 
-	template <typename Type>
-	using IsObject = std::is_convertible<Type, Object>;
+	// BEGIN - Pointer helpers
+	template <typename T>
+	using ObjectPtr = PtrOwner<T, ObjectBuilder>;
 
-	template <class ObjectType>
-	static CORE_API GlobalPtr<ObjectType> Create(
-		Refl::Class* objectClass, const Ptr<Object> owner = {})
+	template <class T>
+	static CORE_API ObjectPtr<T> Create(Refl::Class* objectClass, const Ptr<Object> owner = {})
 	{
-		static_assert(IsObject<ObjectType>::value, "Type is not an Object!");
-
-		if (objectClass)
-		{
-			return objectClass->CreateInstance(owner).Cast<ObjectType>();
-		}
-		return {};
+		return MakeOwned<T, ObjectBuilder>(objectClass, owner);
 	}
 
-	template <class ObjectType>
-	static CORE_API inline GlobalPtr<ObjectType> Create(const Ptr<Object> owner = {})
+	template <class T>
+	static CORE_API ObjectPtr<T> Create(const Ptr<Object> owner = {})
 	{
-		static_assert(IsObject<ObjectType>::value, "Type is not an Object!");
-
-		return GlobalPtr<ObjectType>::Create(owner);
+		return MakeOwned<T, ObjectBuilder>(owner);
 	}
+	// END - Pointer helpers
 }	 // namespace VCLang

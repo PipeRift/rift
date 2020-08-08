@@ -3,19 +3,25 @@
 
 #include "CoreEngine.h"
 #include "Object/BaseObject.h"
-#include "Object/ObjectPtr.h"
 #include "Reflection/TProperty.h"
 #include "Type.h"
 
 #include <EASTL/vector.h>
 
 
+namespace VCLang
+{
+	template <typename T>
+	struct ObjectBuilder;
+}
+
 namespace VCLang::Refl
 {
 	class Class : public Type
 	{
 	public:
-		virtual GlobalPtr<BaseObject> CreateInstance(const Ptr<BaseObject>& owner) = 0;
+		virtual PtrOwner<BaseObject, ObjectBuilder> CreateInstance(
+			const Ptr<BaseObject>& owner) = 0;
 
 		// NOTE: Most of the class comparison functions do actually
 		// call Type to reduce complexity and code duplication.

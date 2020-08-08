@@ -3,7 +3,6 @@
 
 #include "CoreTypes.h"
 #include "Object/BaseObject.h"
-#include "Object/ObjectPtr.h"
 #include "Reflection/Runtime/ClassHandle.h"
 
 

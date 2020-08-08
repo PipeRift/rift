@@ -4,7 +4,6 @@
 #include "CoreTypes.h"
 #include "Math/Quaternion.h"
 #include "Math/Vector.h"
-#include "Object/ObjectPtr.h"
 #include "Object/Struct.h"
 #include "Serialization/Json.h"
 #include "TypeTraits.h"
@@ -13,9 +12,15 @@
 
 #include <fstream>
 
+
+namespace VCLang
+{
+	class Archive;
+};
+
 // Placeholder for global serializers to avoid compiler errors
 template <typename T>
-void Serialize(class Archive&, const char* name, T)
+void Serialize(VCLang::Archive&, const char* name, T)
 {}
 
 namespace VCLang
@@ -60,7 +65,7 @@ namespace VCLang
 		void Serialize(const char* name, Quat& val);
 
 		template <typename T>
-		void Serialize(const char* name, GlobalPtr<T>& val)
+		void Serialize(const char* name, PtrOwner<T>& val)
 		{
 			BeginObject(name);
 			// Not yet supported. Hard and soft references need to take care of each

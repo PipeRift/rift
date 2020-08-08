@@ -15,9 +15,9 @@ namespace VCLang
 		CLASS(Context, Object)
 
 	private:
-		static GlobalPtr<Context> globalInstance;
+		static ObjectPtr<Context> globalInstance;
 
-		GlobalPtr<AssetManager> assetManager;
+		ObjectPtr<AssetManager> assetManager;
 
 		TaskSystem tasks;
 
@@ -37,7 +37,7 @@ namespace VCLang
 		{
 			if (globalInstance)
 			{
-				globalInstance.Reset();
+				globalInstance.Release();
 			}
 		}
 

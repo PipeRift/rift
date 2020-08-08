@@ -26,7 +26,7 @@
 #define NOT(x) CHECK_1(PRIMITIVE_CAT(NOT_, x))
 #define NOT_0 PROBE(~)
 
-#define BOOL(x) COMPL(NOT(x))
+#define MBOOL(x) COMPL(NOT(x))
 
-#define IF(c) IIF(BOOL(COMPL(c)))
-#define IFNOT(c) IIF(NOT(BOOL(COMPL(c))))
+#define IF(c) IIF(MBOOL(COMPL(c)))
+#define IFNOT(c) IIF(NOT(MBOOL(COMPL(c))))

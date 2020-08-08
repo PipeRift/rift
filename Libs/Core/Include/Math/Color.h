@@ -385,7 +385,7 @@ namespace VCLang
 			r = g = b = a = 0;
 		}
 
-		constexpr Color(u8 r, u8 g, u8 b, u8 a = 255) : a(a), r(r), g(g), b(b) {}
+		constexpr Color(u8 r, u8 g, u8 b, u8 a = 255) : r(r), g(g), b(b), a(a) {}
 
 		explicit Color(u32 InColor)
 		{

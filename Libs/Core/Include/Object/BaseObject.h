@@ -17,7 +17,7 @@ namespace VCLang
 	class Object;
 
 	template <typename Type>
-	class Ptr;
+	struct Ptr;
 
 
 	class CORE_API BaseObject : public BaseStruct
@@ -37,4 +37,8 @@ namespace VCLang
 	protected:
 		virtual void BeforeDestroy() {}
 	};
+
+
+	template <typename Type>
+	using IsObject = std::is_base_of<BaseObject, Type>;
 }	 // namespace VCLang

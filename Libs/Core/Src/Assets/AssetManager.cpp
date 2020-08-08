@@ -4,7 +4,6 @@
 
 #include "Context.h"
 #include "Files/FileSystem.h"
-#include "Object/ObjectPtr.h"
 #include "Profiler.h"
 #include "Tasks.h"
 
@@ -127,7 +126,7 @@ namespace VCLang
 
 		if (assetType->IsChildOf<AssetData>())
 		{
-			GlobalPtr<AssetData> newAsset = assetType->CreateInstance(Self()).Cast<AssetData>();
+			auto newAsset = Create<AssetData>(assetType, Self());
 			if (newAsset->OnCreate(info))
 			{
 				const Ptr<AssetData> newAssetPtr = newAsset;

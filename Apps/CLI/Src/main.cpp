@@ -17,10 +17,10 @@ int main(int argc, char** argv)
 	ScopedZone("CLI Execution", 0x459bd1);
 	Context::Initialize();
 
-	GlobalPtr<Project> project = Create<Project>();
+	auto project = Create<Project>();
 	project->Init(Path("Project"));
 
-	GlobalPtr<Backend_C> backend = Create<Backend_C>();
+	auto backend = Create<Backend_C>();
 	backend->SetProject(project);
 	backend->Compile();
 
