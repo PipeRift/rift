@@ -40,4 +40,18 @@ namespace VCLang
 
 	template <bool B, class T = void>
 	using EnableIfT = std::enable_if_t<B, T>;
+
+
+	template <typename T>
+	struct HasItemType
+	{
+	private:
+		template <typename V>
+		static void impl(decltype(typename V::ItemType(), int()));
+		template <typename V>
+		static bool impl(char);
+
+	public:
+		static const bool value = std::is_void<decltype(impl<T>(0))>::value;
+	};
 }	 // namespace VCLang

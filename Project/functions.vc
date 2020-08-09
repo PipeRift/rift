@@ -1,0 +1,13 @@
+{
+    "asset_type": "FunctionAsset",
+    "functions": [
+        {
+            "name": "Main",
+            "arguments": [
+                {
+                    "name": "args"
+                }
+            ]
+        }
+    ]
+}

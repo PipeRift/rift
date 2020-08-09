@@ -9,7 +9,7 @@ namespace VCLang::Backends::C
 {
 	void Backend_C::OnCompile()
 	{
-		ScopedZone(0x459bd1);
+		ZoneScopedC(0x459bd1);
 		if (!project)
 		{
 			return;
@@ -36,7 +36,7 @@ namespace VCLang::Backends::C
 
 	void Backend_C::Generate()
 	{
-		ScopedZone(0x459bd1);
+		ZoneScopedC(0x459bd1);
 		code = "";
 
 		// Includes
@@ -61,12 +61,12 @@ namespace VCLang::Backends::C
 
 	void Backend_C::Build()
 	{
-		ScopedZone(0x459bd1);
+		ZoneScopedC(0x459bd1);
 	}
 
 	void Backend_C::OnCleanup()
 	{
-		ScopedZone(0x459bd1);
+		ZoneScopedC(0x459bd1);
 		Super::OnCleanup();
 	}
 

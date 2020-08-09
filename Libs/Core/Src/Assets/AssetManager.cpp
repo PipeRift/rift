@@ -34,11 +34,11 @@ namespace VCLang
 			return {};
 		}
 
-		ScopedZone(0x459bd1);
+		ZoneScopedC(0x459bd1);
 
 		TArray<Ptr<AssetData>> finalAssets;
 		{
-			ScopedZone("Ignore already loaded assets", 0xD19D45);
+			ZoneScopedNC("Ignore already loaded assets", 0xD19D45);
 			for (i32 I = 0; I < infos.Size(); ++I)
 			{
 				if (Ptr<AssetData> loadedAsset = GetLoadedAsset(infos[I]))
@@ -53,7 +53,7 @@ namespace VCLang
 		TArray<FAssetLoadingData> loadedDatas(infos.Size());
 
 		loadTask.parallel_for(0, infos.Size(), 1, [&loadedDatas, &infos](i32 i) {
-			ScopedZone("Load Asset File", 0xD19D45);
+			ZoneScopedNC("Load Asset File", 0xD19D45);
 			auto& info = infos[i];
 			auto& data = loadedDatas[i];
 
@@ -90,7 +90,7 @@ namespace VCLang
 				continue;
 			}
 
-			ScopedZone("Deserialize asset", 0xD19D45);
+			ZoneScopedNC("Deserialize asset", 0xD19D45);
 
 			// Create the asset instance
 			auto newAsset = data.type->CreateInstance(Self()).Cast<AssetData>();

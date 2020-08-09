@@ -28,7 +28,7 @@ namespace VCLang
 		if (extraTimeForFPSCAP > 0.0f)
 		{
 			// Cap FPS with a delay
-			ScopedZone("Sleep", 0xD15545);
+			ZoneScopedNC("Sleep", 0xD15545);
 
 			std::chrono::duration<float, std::chrono::seconds::period> sleepPeriod{
 				extraTimeForFPSCAP};

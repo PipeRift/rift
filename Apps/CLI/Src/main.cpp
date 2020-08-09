@@ -14,7 +14,7 @@ using Backend_C = VCLang::Backends::C::Backend_C;
 
 int main(int argc, char** argv)
 {
-	ScopedZone("CLI Execution", 0x459bd1);
+	ZoneScopedNC("CLI Execution", 0x459bd1);
 	Context::Initialize();
 
 	auto project = Create<Project>();

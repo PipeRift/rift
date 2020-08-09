@@ -33,10 +33,10 @@ namespace VCLang
 
 	void Project::LoadAllAssets()
 	{
-		ScopedZone(0x459bd1);
+		ZoneScopedC(0x459bd1);
 		TArray<AssetInfo> assetInfos;
 		{
-			ScopedZone("Find asset files", 0x459bd1);
+			ZoneScopedNC("Find asset files", 0x459bd1);
 			for (const auto& asset : AssetIterator<true>(projectPath))
 			{
 				assetInfos.Add(asset);

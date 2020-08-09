@@ -8,33 +8,6 @@
 #include <Tracy.hpp>
 
 
-namespace VCLang
-{
-#if TRACY_ENABLE
-	inline void ScopedZone(const char* name, u32 color)
-	{
-		ZoneScopedNC(name, color);
-	}
-
-	inline void ScopedZone(const char* name)
-	{
-		ZoneScopedN(name);
-	}
-
-	inline void ScopedZone(u32 color)
-	{
-		ZoneScopedC(color);
-	}
-#elif
-	inline void ScopedZone(const char* name, u32 color) {}
-
-	inline void ScopedZone(const char* name) {}
-
-	inline void ScopedZone(u32 color) {}
-#endif
-}	 // namespace VCLang
-
-
 #define Ensure(condition, ...)   \
 	if (!(condition))            \
 	{                            \

@@ -38,7 +38,7 @@ namespace VCLang
 		TaskFlow flow;
 		flow.parallel_for(0, i32(workerPool->num_workers()), 1,
 			[&mtx, &cv, &currentWorker, workerPoolSize](i32 i) {
-				ScopedZone("Setup thread", 0x459bd1);
+				ZoneScopedNC("Setup thread", 0x459bd1);
 
 				std::unique_lock<std::mutex> lck(mtx);
 				++currentWorker;
@@ -48,7 +48,7 @@ namespace VCLang
 					cv.wait(lck);
 				}
 				{
-					ScopedZone("Naming thread", 0x459bd1);
+					ZoneScopedNC("Naming thread", 0x459bd1);
 					// Name each worker thread in the debugger
 					tracy::SetThreadName(CString::Format("Worker {}", i + 1).c_str());
 				}

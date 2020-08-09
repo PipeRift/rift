@@ -3,8 +3,7 @@
 
 #include "Object/BaseObject.h"
 #include "Strings/Name.h"
-
-#include <EASTL/type_traits.h>
+#include "TypeTraits.h"
 
 #include <type_traits>
 
@@ -14,17 +13,7 @@ namespace VCLang
 	struct Struct;
 
 	template <typename T>
-	struct HasItemType
-	{
-	private:
-		template <typename V>
-		static void impl(decltype(typename V::ItemType(), int()));
-		template <typename V>
-		static bool impl(char);
-
-	public:
-		static const bool value = std::is_void<decltype(impl<T>(0))>::value;
-	};
+	class TAssetPtr;
 
 	template <typename T>
 	inline constexpr bool IsArrayType()
@@ -50,13 +39,24 @@ namespace VCLang
 	}
 
 	template <typename T>
+	inline constexpr bool IsAssetType()
+	{
+		// Check if we are dealing with a TAssetPtr
+		if constexpr (HasItemType<T>::value)
+		{
+			return std::is_same<TAssetPtr<typename T::ItemType>, T>::value;
+		}
+		return false;
+	}
+
+	template <typename T>
 	inline constexpr bool IsReflectableType()
 	{
 		if constexpr (IsArrayType<T>())
 		{
 			return IsReflectableType<typename T::ItemType>();
 		}
-		return /*IsAssetType<T>() || */ IsStructType<T>();
+		return IsAssetType<T>() || IsStructType<T>();
 	}
 
 	template <typename T>
@@ -67,17 +67,17 @@ namespace VCLang
 			if constexpr (IsReflectableType<typename T::ItemType>())
 			{
 				// TArray<Itemtype> name
-				return {CString::Format(TX("TArray<{}>"),
-					GetReflectableName<typename T::ItemType>().ToString().c_str())};
+				return {CString::Format(
+					TX("TArray<{}>"), GetReflectableName<typename T::ItemType>().ToString())};
 			}
 			return TX("TArray<Invalid>");
 		}
-		/*else if constexpr (IsAssetType<T>()) // TODO: Simplify container reflected names
+		else if constexpr (IsAssetType<T>())
 		{
 			// TAssetPtr<Itemtype> name
-			return {CString::Format(TX("TAssetPtr<{}>"), GetReflectableName<typename
-		T::ItemType>().ToString().c_str())};
-		}*/
+			return {CString::Format(
+				TX("TAssetPtr<{}>"), GetReflectableName<typename T::ItemType>().ToString())};
+		}
 		else if constexpr (IsStructType<T>() || IsObjectType<T>())
 		{
 			return T::StaticType()->GetName();

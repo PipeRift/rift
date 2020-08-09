@@ -212,16 +212,4 @@ namespace VCLang
 	};
 
 	DEFINE_TEMPLATE_CLASS_TRAITS(TAssetPtr, HasCustomSerialize = true, HasDetailsWidget = true);
-
-
-	template <typename T>
-	inline constexpr bool IsAssetType()
-	{
-		// Check if we are dealing with a TAssetPtr
-		if constexpr (HasItemType<T>::value)
-		{
-			return std::is_same<TAssetPtr<typename T::ItemType>, T>::value;
-		}
-		return false;
-	}
 }	 // namespace VCLang

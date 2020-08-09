@@ -70,7 +70,7 @@ namespace VCLang
 
 		static Ptr<Context> Get()
 		{
-			assert(globalInstance && "Context is not initilized! Call Context::Initialize().");
+			assert(globalInstance && "Context is not initialized! Call Context::Initialize().");
 			return globalInstance;
 		}
 	};

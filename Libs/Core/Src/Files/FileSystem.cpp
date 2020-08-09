@@ -10,7 +10,7 @@ namespace VCLang
 {
 	bool FileSystem::LoadJsonFile(Path path, Json& result)
 	{
-		ScopedZone("LoadJsonFile", 0xBB45D1);
+		ZoneScopedNC("LoadJsonFile", 0xBB45D1);
 
 		if (!Exists(path) || !IsFile(path))
 		{
@@ -33,7 +33,7 @@ namespace VCLang
 
 	bool FileSystem::SaveJsonFile(Path path, const Json& data, i32 indent)
 	{
-		ScopedZone("SaveJsonFile", 0xBB45D1);
+		ZoneScopedNC("SaveJsonFile", 0xBB45D1);
 
 		if (!IsFile(path))
 		{
@@ -52,7 +52,7 @@ namespace VCLang
 
 	bool FileSystem::LoadStringFile(Path path, String& result)
 	{
-		ScopedZone("LoadStringFile", 0xBB45D1);
+		ZoneScopedNC("LoadStringFile", 0xBB45D1);
 
 		if (!Exists(path) || !IsFile(path))
 		{
@@ -76,7 +76,7 @@ namespace VCLang
 
 	bool FileSystem::SaveStringFile(Path path, const String& data)
 	{
-		ScopedZone("SaveStringFile", 0xBB45D1);
+		ZoneScopedNC("SaveStringFile", 0xBB45D1);
 
 		if (!IsFile(path))
 		{
