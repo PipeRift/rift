@@ -73,6 +73,8 @@ jobs:
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
         with:
+          workflow: cicd.yml
+          workflow_conclusion: in_progress
           name: windows-msvc-build
           path: ${{ runner.workspace }}
 
