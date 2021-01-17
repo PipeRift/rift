@@ -46,3 +46,6 @@
 [submodule "Extern/Bandit"]
 	path = Extern/Bandit
 	url = https://github.com/banditcpp/bandit
+[submodule "rift-core"]
+	path = rift-core
+	url = https://github.com/PipeRift/rift-core.git
