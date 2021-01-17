@@ -31,8 +31,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-            submodules: recursive
+
+      - name: Init Submodules
+        uses: snickerbockers/submodules-init@v4
 
       - name: Get CMake
         uses: lukka/get-cmake@latest
