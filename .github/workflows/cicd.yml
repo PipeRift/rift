@@ -3,7 +3,7 @@ name: CI/CD
 on: [push, pull_request]
 
 jobs:
-  job:
+  Build:
     name: Build ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -44,6 +44,12 @@ jobs:
           CXX: ${{ matrix.cxx }}
           CC: ${{ matrix.cc }}
 
+      - name: Cache Build
+        uses: actions/cache@v2
+        with:
+          path: ${{ runner.workspace }}/Build/
+          key: ${{ matrix.name }}-build
+
       - name: Configure and Build
         uses: lukka/run-cmake@main
         id: runcmake
@@ -53,3 +59,22 @@ jobs:
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
           buildDirectory: '${{ runner.workspace }}/Build/'
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.name }}-build
+          path: ${{ runner.workspace }}/Build/Bin
+
+  Test:
+    needs: Build
+    name: Test (Windows)
+    runs-on: windows-latest
+    steps:
+      - name: Download artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: windows-msvc-build
+          path: ${{ runner.workspace }}
+
+      - name: Run tests
+        run: 'Tests.exe --report-timing --reporter=spec'
