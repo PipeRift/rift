@@ -72,9 +72,10 @@ jobs:
     steps:
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           workflow: cicd.yml
-          workflow_conclusion: in_progress
           name: windows-msvc-build
           path: ${{ runner.workspace }}
 
