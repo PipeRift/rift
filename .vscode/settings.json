@@ -99,26 +99,26 @@
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "banditTestExplorer.testsuites": [
         {
-            "name": "VCLang",
+            "name": "Rift",
             "cwd": "${workspaceFolder}/Build/Bin",
             "windows": {
                 "cmd": "Tests.exe",
                 "watches": [
-                    "VCLang.lib",
+                    "Rift.lib",
                     "Core.lib"
                 ]
             },
             "linux": {
                 "cmd": "Tests",
                 "watches": [
-                    "VCLang.so",
+                    "Rift.so",
                     "Core.so"
                 ]
             },
             "osx": {
                 "cmd": "Tests",
                 "watches": [
-                    "VCLang.dylib",
+                    "Rift.dylib",
                     "Core.dylib"
                 ]
             },

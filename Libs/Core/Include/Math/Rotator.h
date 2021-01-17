@@ -5,7 +5,7 @@
 #include "Vector.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	class Rotator : public Vec<3, float>
 	{
@@ -54,4 +54,4 @@ namespace VCLang
 		 */
 		static float NormalizeAxis(float Angle);
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

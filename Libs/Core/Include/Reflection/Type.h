@@ -9,7 +9,7 @@
 #include "Reflection/ReflectionTags.h"
 
 
-namespace VCLang::Refl
+namespace Rift::Refl
 {
 	using PropertyMap = TMap<Name, Property*>;
 
@@ -106,4 +106,4 @@ namespace VCLang::Refl
 			children.Add(child);
 		}
 	};
-}	 // namespace VCLang::Refl
+}	 // namespace Rift::Refl

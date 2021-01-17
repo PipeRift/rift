@@ -17,7 +17,7 @@
 #endif
 
 
-namespace VCLang
+namespace Rift
 {
 	bool Transform::Serialize(Archive& ar, const char* name)
 	{
@@ -77,4 +77,4 @@ namespace VCLang
 	}
 
 #endif
-}	 // namespace VCLang
+}	 // namespace Rift

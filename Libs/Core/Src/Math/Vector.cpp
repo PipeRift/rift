@@ -7,7 +7,7 @@
 #include "Serialization/Archive.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	const v3 v3::Forward{0.f, 1.f, 0.f};
 	const v3 v3::Right{1.f, 0.f, 0.f};
@@ -48,4 +48,4 @@ namespace VCLang
 	{
 		return v3{x, y, 0.f};
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

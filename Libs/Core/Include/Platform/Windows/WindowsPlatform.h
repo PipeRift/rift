@@ -4,7 +4,7 @@
 #include "Platform/GenericPlatform.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	/**
 	 * Windows specific types
@@ -21,7 +21,7 @@ namespace VCLang
 	};
 
 	using PlatformTypes = WindowsPlatformTypes;
-}	 // namespace VCLang
+}	 // namespace Rift
 
 #define FORCEINLINE __forceinline	  /* Force code to be inline */
 #define NOINLINE __declspec(noinline) /* Force code to not be inlined */

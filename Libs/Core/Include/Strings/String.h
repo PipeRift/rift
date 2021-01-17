@@ -22,7 +22,7 @@
 #pragma warning(disable : 4996)
 
 
-namespace VCLang
+namespace Rift
 {
 	using String = std::basic_string<TCHAR>;
 	using StringView = std::basic_string_view<TCHAR>;
@@ -240,4 +240,4 @@ namespace VCLang
 			return size_t(result);*/
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

@@ -9,7 +9,7 @@
 #define PLATFORM_MAC_USE_CHAR16 0
 
 
-namespace VCLang
+namespace Rift
 {
 	/**
 	 * Mac specific types
@@ -28,7 +28,7 @@ namespace VCLang
 	};
 
 	using PlatformTypes = MacPlatformTypes;
-}	 // namespace VCLang
+}	 // namespace Rift
 
 #if BUILD_DEBUG
 #	define FORCEINLINE inline /* Don't force code to be inline */

@@ -9,7 +9,7 @@
 #include "Strings/Name.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	/**
 	 * Enumerates known GUID formats.
@@ -308,4 +308,4 @@ namespace VCLang
 			return Crc::MemCrc32(&k, sizeof(Guid));
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

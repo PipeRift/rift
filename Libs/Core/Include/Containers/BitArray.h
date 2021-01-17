@@ -4,7 +4,7 @@
 #include "Platform/Platform.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	class BitArray
 	{
@@ -103,4 +103,4 @@ namespace VCLang
 			return arraySize;
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

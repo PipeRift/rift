@@ -6,7 +6,7 @@
 #define PLATFORM_LINUX_USE_CHAR16 0
 
 
-namespace VCLang
+namespace Rift
 {
 	/**
 	 * Linux specific types
@@ -23,7 +23,7 @@ namespace VCLang
 	};
 
 	using PlatformTypes = LinuxPlatformTypes;
-}	 // namespace VCLang
+}	 // namespace Rift
 
 #if BUILD_DEBUG
 #	define FORCEINLINE inline

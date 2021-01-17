@@ -6,7 +6,7 @@
 #include "Misc/Char.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	void CString::ToSentenceCase(const String& str, String& result)
 	{
@@ -79,4 +79,4 @@ namespace VCLang
 
 		return CString::Format("{} {}", finalSize, sizes[scale]);
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

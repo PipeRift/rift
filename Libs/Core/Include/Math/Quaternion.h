@@ -10,7 +10,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 
-namespace VCLang
+namespace Rift
 {
 	class v3;
 	class Rotator;
@@ -72,4 +72,4 @@ namespace VCLang
 		const auto result = glm::inverse<float, glm::highp>(*this);
 		return *static_cast<const Quat*>(&result);
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

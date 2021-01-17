@@ -10,7 +10,7 @@
 #include <filesystem>
 
 
-namespace VCLang
+namespace Rift
 {
 	namespace fs = std::filesystem;
 
@@ -167,4 +167,4 @@ namespace VCLang
 			return fs::space(target);
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

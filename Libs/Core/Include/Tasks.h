@@ -11,7 +11,7 @@
 EA_DISABLE_VC_WARNING(4267)
 
 
-namespace VCLang
+namespace Rift
 {
 	using TaskFlow = tf::Taskflow;
 	using Task = tf::Task;
@@ -57,4 +57,4 @@ namespace VCLang
 	};
 
 	EA_RESTORE_VC_WARNING()	   // warning: 4267
-}	 // namespace VCLang
+}	 // namespace Rift

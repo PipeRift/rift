@@ -5,7 +5,7 @@
 #include "Serialization/Archive.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	const Hash<String> NameKey::hasher{};
 
@@ -57,4 +57,4 @@ namespace VCLang
 		}
 		return true;
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

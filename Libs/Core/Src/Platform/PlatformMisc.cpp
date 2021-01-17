@@ -8,7 +8,7 @@
 #include "Platform/PlatformTime.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	void PlatformMisc::CreateGuid(Guid& guid)
 	{
@@ -37,4 +37,4 @@ namespace VCLang
 		guid = Guid(RandBits | (SequentialBits << 16), EstimatedCurrentDateTime.GetTicks() >> 32,
 			EstimatedCurrentDateTime.GetTicks() & 0xffffffff, PlatformTime::Cycles());
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

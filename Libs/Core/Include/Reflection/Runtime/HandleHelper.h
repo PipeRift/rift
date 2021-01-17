@@ -6,7 +6,7 @@
 #include "Reflection/Runtime/ClassHandle.h"
 
 
-namespace VCLang::Refl
+namespace Rift::Refl
 {
 	class HandleHelper
 	{
@@ -17,4 +17,4 @@ namespace VCLang::Refl
 			return eastl::make_shared<ClassHandle>(instance);
 		}
 	};
-}	 // namespace VCLang::Refl
+}	 // namespace Rift::Refl

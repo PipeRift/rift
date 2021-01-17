@@ -10,7 +10,7 @@
 #include <chrono>
 
 
-namespace VCLang
+namespace Rift
 {
 	struct PlatformTime
 	{
@@ -20,4 +20,4 @@ namespace VCLang
 		}
 		static u64 Cycles64();
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

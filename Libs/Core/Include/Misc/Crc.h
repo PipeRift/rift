@@ -6,7 +6,7 @@
 #include "Platform/Platform.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	/**
 	 * CRC hash generation for different types of input data
@@ -19,4 +19,4 @@ namespace VCLang
 		/** generates CRC hash of the memory area */
 		static u32 MemCrc32(const void* Data, i32 Length, u32 CRC = 0);
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

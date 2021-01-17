@@ -8,7 +8,7 @@
 #include "Tasks.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	class CORE_API Context : public Object
 	{
@@ -74,4 +74,4 @@ namespace VCLang
 			return globalInstance;
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

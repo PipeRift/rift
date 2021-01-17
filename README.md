@@ -1,10 +1,10 @@
-# VCLang
+# Rift
 
-[![release](https://img.shields.io/github/release/PipeRift/vclang?labelColor=394047)](https://github.com/PipeRift/vclang/releases)
-![license](https://img.shields.io/github/license/PipeRift/vclang?labelColor=394047)
+[![release](https://img.shields.io/github/release/PipeRift/rift?labelColor=394047)](https://github.com/PipeRift/rift/releases)
+![license](https://img.shields.io/github/license/PipeRift/rift?labelColor=394047)
 
-[![Windows](https://github.com/PipeRift/vclang/workflows/Windows%20CI/badge.svg?branch=master)](https://github.com/PipeRift/vclang/actions)
-[![Linux](https://github.com/PipeRift/vclang/workflows/Linux%20CI/badge.svg?branch=master)](https://github.com/PipeRift/vclang/actions)
-[![MacOS](https://github.com/PipeRift/vclang/workflows/MacOS%20CI/badge.svg?branch=master)](https://github.com/PipeRift/vclang/actions)
+[![Windows](https://github.com/PipeRift/rift/workflows/Windows%20CI/badge.svg?branch=master)](https://github.com/PipeRift/rift/actions)
+[![Linux](https://github.com/PipeRift/rift/workflows/Linux%20CI/badge.svg?branch=master)](https://github.com/PipeRift/rift/actions)
+[![MacOS](https://github.com/PipeRift/rift/workflows/MacOS%20CI/badge.svg?branch=master)](https://github.com/PipeRift/rift/actions)
 
-VCLang is a compiled visual lenguage.
+Rift is a compiled visual lenguage.

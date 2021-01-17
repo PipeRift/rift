@@ -6,7 +6,7 @@
 #include "Reflection/Class.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	template <typename T>
 	struct ObjectBuilder
@@ -47,4 +47,4 @@ namespace VCLang
 			delete ptr;
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

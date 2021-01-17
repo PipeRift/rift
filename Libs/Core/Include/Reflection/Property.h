@@ -9,7 +9,7 @@
 #include <memory>
 
 
-namespace VCLang
+namespace Rift
 {
 	class BaseObject;
 	struct BaseStruct;
@@ -95,4 +95,4 @@ namespace VCLang
 			void SetDisplayName(const String& inDisplayName);
 		};
 	}	 // namespace Refl
-}	 // namespace VCLang
+}	 // namespace Rift

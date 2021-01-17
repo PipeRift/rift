@@ -8,7 +8,7 @@
 #include "Serialization/Archive.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	class Context;
 
@@ -94,4 +94,4 @@ namespace VCLang
 		return MakeOwned<T, ObjectBuilder>(owner);
 	}
 	// END - Pointer helpers
-}	 // namespace VCLang
+}	 // namespace Rift

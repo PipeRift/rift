@@ -6,7 +6,7 @@
 #include "Strings/String.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	template <typename FileIterator = FileSystem::Iterator>
 	class FormatFileIterator
@@ -99,4 +99,4 @@ namespace VCLang
 			}
 		}
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

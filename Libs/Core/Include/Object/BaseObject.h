@@ -8,7 +8,7 @@
 #include <EASTL/type_traits.h>
 
 
-namespace VCLang
+namespace Rift
 {
 	namespace Refl
 	{
@@ -41,4 +41,4 @@ namespace VCLang
 
 	template <typename Type>
 	using IsObject = std::is_base_of<BaseObject, Type>;
-}	 // namespace VCLang
+}	 // namespace Rift

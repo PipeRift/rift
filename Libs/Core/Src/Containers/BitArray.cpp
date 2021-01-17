@@ -3,7 +3,7 @@
 #include "Containers/BitArray.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	BitArray::BitArray(u32 newSize)
 	{
@@ -193,4 +193,4 @@ namespace VCLang
 		}
 		return -1;
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

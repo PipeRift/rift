@@ -10,7 +10,7 @@
 #include <memory>
 
 
-namespace VCLang
+namespace Rift
 {
 	namespace Impl
 	{
@@ -411,4 +411,4 @@ namespace VCLang
 	template <typename T, typename TBuilder = PtrBuilder<T>, typename... Args,
 		EnableIfT<std::extent_v<T> != 0, i32> = 0>
 	void MakeOwned(Args&&...) = delete;
-}	 // namespace VCLang
+}	 // namespace Rift

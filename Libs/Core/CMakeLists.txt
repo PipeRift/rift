@@ -27,7 +27,7 @@ target_link_libraries(Core PRIVATE
 target_shared_output_directory(Core)
 
 install(TARGETS Core
-    EXPORT VCLangTargets
+    EXPORT RiftTargets
     LIBRARY DESTINATION Lib
     ARCHIVE DESTINATION Lib
     RUNTIME DESTINATION Bin

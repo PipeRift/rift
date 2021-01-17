@@ -14,8 +14,7 @@
 #include <type_traits>
 
 
-
-namespace VCLang
+namespace Rift
 {
 	template <typename Key, typename Value>
 	class TMap
@@ -268,4 +267,4 @@ namespace VCLang
 			map = MoveTemp(other.map);
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

@@ -7,7 +7,7 @@
 #include "Reflection/Struct.h"
 
 
-namespace VCLang::Refl
+namespace Rift::Refl
 {
 	void Property::SetDisplayName(const String& inDisplayName)
 	{
@@ -31,4 +31,4 @@ namespace VCLang::Refl
 		return instance->GetType();
 	}
 
-}	 // namespace VCLang::Refl
+}	 // namespace Rift::Refl

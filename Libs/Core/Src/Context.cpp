@@ -2,7 +2,7 @@
 
 #include "Context.h"
 
-namespace VCLang
+namespace Rift
 {
 	ObjectPtr<Context> Context::globalInstance{};
 }

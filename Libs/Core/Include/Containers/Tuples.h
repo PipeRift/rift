@@ -8,7 +8,7 @@
 #include <utility>
 
 
-namespace VCLang
+namespace Rift
 {
 	template <typename T1, typename T2>
 	using TPair = std::pair<T1, T2>;
@@ -18,4 +18,4 @@ namespace VCLang
 
 	template <typename T>
 	using TOptional = std::optional<T>;
-}	 // namespace VCLang
+}	 // namespace Rift

@@ -6,7 +6,7 @@
 #include "Files/FormatFileIterator.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	template <bool bRecursive = false>
 	class AssetIterator : public FormatFileIterator<FileSystem::Iterator>
@@ -70,4 +70,4 @@ namespace VCLang
 	{
 		return {};
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

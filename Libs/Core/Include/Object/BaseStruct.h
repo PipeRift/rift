@@ -4,7 +4,7 @@
 #include "Memory/Allocator.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	namespace Refl
 	{
@@ -27,4 +27,4 @@ namespace VCLang
 			Memory::GetObjectsAllocator()->Deallocate(p, size);
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

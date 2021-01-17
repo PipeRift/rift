@@ -3,7 +3,7 @@ include(FetchContent)
 
 set(BUILD_SHARED_LIBS OFF)
 
-if(VCLANG_ENABLE_PROFILER)
+if(RIFT_ENABLE_PROFILER)
     set(ENABLE_STATISTICS On)
 endif()
 
@@ -51,25 +51,14 @@ set_property(TARGET imgui PROPERTY CXX_STANDARD 17)
 
 
 # TRACY
-file(GLOB_RECURSE TRACY_SOURCES CONFIGURE_DEPENDS Tracy/TracyClient.cpp Tracy/client/*.cpp Tracy/common/*.cpp)
 add_library(Tracy STATIC)
 target_include_directories(Tracy PUBLIC Tracy)
+file(GLOB_RECURSE TRACY_SOURCES CONFIGURE_DEPENDS Tracy/TracyClient.cpp)
 target_sources(Tracy PRIVATE ${TRACY_SOURCES})
-set_property(TARGET Tracy PROPERTY CXX_STANDARD 17)
-if(LINUX)
-    find_library(DLPATH dl)
-    target_link_libraries(Tracy PRIVATE ${DLPATH})
-endif()
 
-if(WINDOWS)
-    target_compile_definitions(Tracy PRIVATE _WIN32=1)
-elseif(LINUX)
-    target_compile_definitions(Tracy PRIVATE __linux__=1 TRACY_TIMER_QPC=1)
-endif()
-
-if(VCLANG_ENABLE_PROFILER)
-    target_compile_definitions(Tracy PUBLIC TRACY_ENABLE=1)
-endif()
+set(TRACY_ENABLE ${RIFT_ENABLE_PROFILER})
+target_compile_definitions(Tracy PUBLIC TRACY_ENABLE)
+target_compile_definitions(Tracy PRIVATE _CRT_SECURE_NO_WARNINGS)
 
 # Bandit (Tests)
 add_library(Bandit INTERFACE)

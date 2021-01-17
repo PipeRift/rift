@@ -7,7 +7,7 @@
 #include <robin_hood.h>
 
 
-namespace VCLang
+namespace Rift
 {
 	template <typename T>
 	struct Hash : robin_hood::hash<T>
@@ -22,4 +22,4 @@ namespace VCLang
 	{
 		return robin_hood::hash_bytes(ptr, len);
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

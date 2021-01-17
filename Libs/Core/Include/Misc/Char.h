@@ -11,7 +11,7 @@
 #include <locale>
 
 
-namespace VCLang
+namespace Rift
 {
 	/*-----------------------------------------------------------------------------
 		Character type functions.
@@ -286,4 +286,4 @@ namespace VCLang
 	{
 		return ::strtol(str, end, radix);
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

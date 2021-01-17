@@ -4,7 +4,7 @@
 #include "Files/FileSystem.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	bool AssetData::OnCreate(const AssetInfo& inInfo)
 	{
@@ -41,4 +41,4 @@ namespace VCLang
 	{
 		return SaveToPath(info.GetPath());
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

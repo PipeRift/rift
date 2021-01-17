@@ -5,7 +5,7 @@
 #include "Math/Vector.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	float Math::Atan2(float Y, float X)
 	{
@@ -67,4 +67,4 @@ namespace VCLang
 
 		return safeReciprocalScale;
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

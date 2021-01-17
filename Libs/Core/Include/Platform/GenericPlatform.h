@@ -2,7 +2,7 @@
 #pragma once
 
 
-namespace VCLang
+namespace Rift
 {
 	//---------------------------------------------------------------------
 	// Utility for automatically setting up the pointer-sized integer type
@@ -87,7 +87,7 @@ namespace VCLang
 		typedef int32 TYPE_OF_NULL;
 		typedef decltype(nullptr) TYPE_OF_NULLPTR;
 	};
-}	 // namespace VCLang
+}	 // namespace Rift
 
 
 #ifndef PLATFORM_TCHAR_IS_1_BYTE

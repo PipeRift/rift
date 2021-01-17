@@ -7,7 +7,7 @@
 #include <type_traits>
 
 
-namespace VCLang::Refl
+namespace Rift::Refl
 {
 	/** TStruct will be specialized for each type at compile time and store
 	 * the metadata for that type
@@ -15,8 +15,7 @@ namespace VCLang::Refl
 	template <typename T>
 	class TStruct : public Struct
 	{
-		static_assert(
-			std::is_convertible<T, VCLang::Struct>::value, "Type does not inherit Struct!");
+		static_assert(std::is_convertible<T, Rift::Struct>::value, "Type does not inherit Struct!");
 
 	private:
 		static TStruct _struct;
@@ -42,4 +41,4 @@ namespace VCLang::Refl
 
 	template <typename T>
 	TStruct<T> TStruct<T>::_struct{};
-}	 // namespace VCLang::Refl
+}	 // namespace Rift::Refl

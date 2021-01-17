@@ -9,8 +9,7 @@
 #include "ReflectionTags.h"
 
 
-
-namespace VCLang::Refl
+namespace Rift::Refl
 {
 	/**
 	 * There are 3 types of reflected data structures:
@@ -46,7 +45,7 @@ namespace VCLang::Refl
 	{
 		return instance->GetType();
 	}*/
-}	 // namespace VCLang::Refl
+}	 // namespace Rift::Refl
 
 /** Defines a Class */
 #define __CLASS_NO_TAGS(type, parent) __CLASS_TAGS(type, parent, ReflectionTags::None)

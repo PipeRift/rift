@@ -13,7 +13,7 @@
 #endif
 
 
-namespace VCLang
+namespace Rift
 {
 	//------------------------------------------------------------------
 	// Transfer the platform types to global types
@@ -73,7 +73,7 @@ namespace VCLang
 	typedef PlatformTypes::TYPE_OF_NULL TYPE_OF_NULL;
 	/// The type of the C++ nullptr keyword.
 	typedef PlatformTypes::TYPE_OF_NULLPTR TYPE_OF_NULLPTR;
-}	 // namespace VCLang
+}	 // namespace Rift
 
 #if !defined(TX)
 #	if PLATFORM_TCHAR_IS_1_BYTE

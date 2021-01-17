@@ -5,7 +5,7 @@
 #include "CoreTypes.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	struct EventHandle
 	{
@@ -46,4 +46,4 @@ namespace VCLang
 			return IsValid();
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

@@ -8,7 +8,7 @@
 #include <Profiler.h>
 
 
-namespace VCLang::Backends
+namespace Rift::Backends
 {
 	struct CompileError : public Struct
 	{
@@ -55,4 +55,4 @@ namespace VCLang::Backends
 		virtual void OnCompile() = 0;
 		virtual void OnCleanup(){};
 	};
-}	 // namespace VCLang::Backends
+}	 // namespace Rift::Backends

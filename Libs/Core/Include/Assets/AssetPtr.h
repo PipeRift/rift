@@ -11,7 +11,7 @@
 #include <EASTL/type_traits.h>
 
 
-namespace VCLang
+namespace Rift
 {
 	class BaseAssetPtr
 	{
@@ -212,4 +212,4 @@ namespace VCLang
 	};
 
 	DEFINE_TEMPLATE_CLASS_TRAITS(TAssetPtr, HasCustomSerialize = true, HasDetailsWidget = true);
-}	 // namespace VCLang
+}	 // namespace Rift

@@ -3,7 +3,7 @@
 #include "Serialization/Archive.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	void Archive::Serialize(const char* name, v2& val)
 	{
@@ -155,4 +155,4 @@ namespace VCLang
 			Data()[name] = val;
 		}
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

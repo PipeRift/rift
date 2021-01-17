@@ -8,8 +8,8 @@
 #include <chrono>
 
 
-using namespace VCLang;
-using Backend_C = VCLang::Backends::C::Backend_C;
+using namespace Rift;
+using Backend_C = Rift::Backends::C::Backend_C;
 
 
 int main(int argc, char** argv)

@@ -8,7 +8,7 @@
 
 /** SIZE SELECTORS */
 
-namespace VCLang
+namespace Rift
 {
 	template <class T, size_t size>
 	struct IsSmallerType : std::integral_constant<bool, (sizeof(T) <= size)>
@@ -54,4 +54,4 @@ namespace VCLang
 	public:
 		static const bool value = std::is_void<decltype(impl<T>(0))>::value;
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

@@ -12,7 +12,7 @@
 #include <ratio>
 
 
-namespace VCLang
+namespace Rift
 {
 	// decimals of microseconds
 	using decmicroseconds = std::chrono::duration<i64, std::ratio<1, 10'000'000>>;
@@ -646,4 +646,4 @@ namespace VCLang
 	{
 		return Timespan.operator*(Scalar);
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

@@ -7,7 +7,7 @@
 #include <Profiler.h>
 
 
-namespace VCLang
+namespace Rift
 {
 	void Project::Init(Path path)
 	{
@@ -53,4 +53,4 @@ namespace VCLang
 		}
 		return FileSystem::IsInside(path, projectPath) ? path : Path{};
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

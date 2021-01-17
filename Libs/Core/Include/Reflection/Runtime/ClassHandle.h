@@ -6,7 +6,7 @@
 #include "Reflection/TPropertyHandle.h"
 
 
-namespace VCLang::Refl
+namespace Rift::Refl
 {
 	class ClassHandle
 	{
@@ -22,4 +22,4 @@ namespace VCLang::Refl
 
 		ClassHandle(const Ptr<BaseObject>& instance) : instance(instance) {}
 	};
-}	 // namespace VCLang::Refl
+}	 // namespace Rift::Refl

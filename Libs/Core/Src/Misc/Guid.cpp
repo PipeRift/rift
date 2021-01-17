@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 
-namespace VCLang
+namespace Rift
 {
 	/* Guid interface
 	 *****************************************************************************/
@@ -231,4 +231,4 @@ namespace VCLang
 	{
 		return ar; /* << G.A << G.B << G.C << G.D;*/
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

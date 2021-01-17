@@ -14,7 +14,7 @@
 #include <glm/gtx/norm.hpp>
 
 
-namespace VCLang
+namespace Rift
 {
 	template <glm::length_t L, typename T>
 	class Vec : public glm::vec<L, T, glm::highp>
@@ -227,4 +227,4 @@ namespace VCLang
 	using box3 = Box<float, 3>;
 	using box2_i32 = Box<i32, 2>;
 	using box3_i32 = Box<i32, 3>;
-}	 // namespace VCLang
+}	 // namespace Rift

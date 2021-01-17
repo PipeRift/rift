@@ -5,7 +5,7 @@
 #include "CoreTypes.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	enum class ReflectionTags : u16
 	{
@@ -77,4 +77,4 @@ namespace VCLang
 	{
 		static constexpr ReflectionTags value = tags;
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

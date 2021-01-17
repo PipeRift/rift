@@ -21,7 +21,7 @@
 #endif
 
 
-namespace VCLang
+namespace Rift
 {
 	// Common colors.
 	const LinearColor LinearColor::White{1.f, 1.f, 1.f};
@@ -750,4 +750,4 @@ namespace VCLang
 		0.991102093719252,
 		1.0,
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

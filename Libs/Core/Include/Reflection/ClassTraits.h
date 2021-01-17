@@ -4,7 +4,7 @@
 #include <EASTL/type_traits.h>
 
 
-namespace VCLang
+namespace Rift
 {
 	/** CLASS TRAITS */
 
@@ -44,4 +44,4 @@ namespace VCLang
 	template <typename T>
 	struct ClassTraits : public BaseClassTraits<T>
 	{};
-}	 // namespace VCLang
+}	 // namespace Rift

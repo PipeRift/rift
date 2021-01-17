@@ -3,7 +3,7 @@
 #pragma once
 
 
-namespace VCLang
+namespace Rift
 {
 	/**
 	 * When we have an optional value IsSet() returns true, and GetValue() is meaningful.
@@ -146,4 +146,4 @@ namespace VCLang
 			return IsSet() ? value : defaultValue;
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

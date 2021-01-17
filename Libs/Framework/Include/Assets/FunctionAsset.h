@@ -8,7 +8,7 @@
 #include <CoreObject.h>
 
 
-namespace VCLang
+namespace Rift
 {
 	class FunctionAsset : public AssetData
 	{
@@ -17,4 +17,4 @@ namespace VCLang
 		PROP(TArray<Function>, functions);
 		TArray<Function> functions;
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

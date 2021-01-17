@@ -6,7 +6,7 @@
 #include "Reflection/Struct.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	Refl::Struct* BaseStruct::GetType() const
 	{
@@ -16,4 +16,4 @@ namespace VCLang
 		}
 		return nullptr;
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

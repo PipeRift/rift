@@ -6,7 +6,7 @@
 #include "Math/Vector.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	v3 Quat::Rotate(const v3& v) const
 	{
@@ -122,4 +122,4 @@ namespace VCLang
 	{
 		return glm::lookAt(origin, dest, v3::Forward);
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

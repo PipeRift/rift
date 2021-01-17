@@ -8,7 +8,7 @@
 #include <type_traits>
 
 
-namespace VCLang
+namespace Rift
 {
 	struct Struct;
 
@@ -84,7 +84,7 @@ namespace VCLang
 		}
 		return TX("Invalid");
 	}
-}	 // namespace VCLang
+}	 // namespace Rift
 
 
 #define DECLARE_REFLECTION_TYPE(Type)               \

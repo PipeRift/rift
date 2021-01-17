@@ -3,7 +3,7 @@
 #include "Misc/Timespan.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	/* FTimespan interface
 	 *****************************************************************************/
@@ -186,4 +186,4 @@ namespace VCLang
 	{
 		return Timespan{0, 0, seconds};
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

@@ -7,7 +7,7 @@
 #include "Log.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	template <typename... Params>
 	class Broadcast
@@ -159,4 +159,4 @@ namespace VCLang
 			return false;
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

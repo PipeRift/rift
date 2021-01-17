@@ -6,7 +6,7 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace VCLang;
+using namespace Rift;
 
 struct EmptyStruct
 {};
@@ -18,7 +18,7 @@ struct MockStruct
 };
 
 template <typename T>
-struct TestPtrBuilder : VCLang::PtrBuilder<T>
+struct TestPtrBuilder : Rift::PtrBuilder<T>
 {
 	template <typename... Args>
 	static T* New(Args&&... args)

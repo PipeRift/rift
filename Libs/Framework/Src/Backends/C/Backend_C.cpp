@@ -5,7 +5,7 @@
 #include "Files/FileSystem.h"
 
 
-namespace VCLang::Backends::C
+namespace Rift::Backends::C
 {
 	void Backend_C::OnCompile()
 	{
@@ -103,4 +103,4 @@ namespace VCLang::Backends::C
 	{
 		CString::FormatTo(code, "}};\n\n");
 	}
-}	 // namespace VCLang::Backends::C
+}	 // namespace Rift::Backends::C

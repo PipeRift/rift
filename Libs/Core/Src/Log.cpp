@@ -11,7 +11,7 @@
 #include <spdlog/spdlog.h>
 
 
-namespace VCLang::Log
+namespace Rift::Log
 {
 #if TRACY_ENABLE
 	template <typename Mutex>
@@ -118,4 +118,4 @@ namespace VCLang::Log
 	{
 		errLogger->error(msg);
 	}
-}	 // namespace VCLang::Log
+}	 // namespace Rift::Log

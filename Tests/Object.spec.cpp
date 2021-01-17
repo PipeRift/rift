@@ -6,7 +6,7 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace VCLang;
+using namespace Rift;
 
 
 class TestObject : public Object

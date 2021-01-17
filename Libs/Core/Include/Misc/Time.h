@@ -6,7 +6,7 @@
 #include "DateTime.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	struct CORE_API FrameTime
 	{
@@ -50,4 +50,4 @@ namespace VCLang
 			return deltaTime;
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

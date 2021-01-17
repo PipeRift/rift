@@ -4,15 +4,16 @@ MESSAGE(STATUS "CMAKE_ROOT: " ${CMAKE_ROOT})
 
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(BUILD_STATIC_LIBS "Build static libraries" ON)
-option(VCLANG_ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
+option(RIFT_ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
 
 # Turn on the verbose
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 # Export commands for Clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project(VCLang VERSION 0.1 LANGUAGES CXX)
+project(Rift VERSION 0.1 LANGUAGES CXX)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(CMake/DownloadProject.cmake)
 include(CMake/Util.cmake)
 

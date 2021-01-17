@@ -6,7 +6,7 @@
 #include "Platform/PlatformMisc.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	/** CRC 32 polynomial */
 	enum
@@ -355,4 +355,4 @@ namespace VCLang
 
 		return ~CRC;
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

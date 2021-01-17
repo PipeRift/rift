@@ -8,7 +8,7 @@
 #include "Reflection/Property.h"
 
 
-namespace VCLang
+namespace Rift
 {
 #if WITH_EDITOR
 	class PropertyWidget;
@@ -82,4 +82,4 @@ namespace VCLang
 			}
 		};
 	}	 // namespace Refl
-}	 // namespace VCLang
+}	 // namespace Rift

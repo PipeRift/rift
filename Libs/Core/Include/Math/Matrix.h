@@ -7,7 +7,7 @@
 #include <glm/matrix.hpp>
 
 
-namespace VCLang
+namespace Rift
 {
 	template <glm::length_t X, glm::length_t Y, typename T>
 	class Matrix : public glm::mat<X, Y, T, glm::highp>
@@ -50,4 +50,4 @@ namespace VCLang
 	};
 
 	using Matrix4f = Matrix<4, 4, float>;
-}	 // namespace VCLang
+}	 // namespace Rift

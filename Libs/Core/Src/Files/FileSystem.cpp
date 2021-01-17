@@ -6,7 +6,7 @@
 #include "Serialization/Archive.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	bool FileSystem::LoadJsonFile(Path path, Json& result)
 	{
@@ -87,4 +87,4 @@ namespace VCLang
 		file.write(data.data(), data.size());
 		return true;
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

@@ -7,7 +7,7 @@
 #include "Reflection/TClass.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	Refl::Class* BaseObject::GetType() const
 	{
@@ -20,4 +20,4 @@ namespace VCLang
 		const auto* thisObj = static_cast<const Object*>(this);
 		return thisObj ? thisObj->Self() : Ptr<Object>{};
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

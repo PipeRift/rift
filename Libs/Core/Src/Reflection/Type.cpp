@@ -5,7 +5,7 @@
 #include "Reflection/Property.h"
 
 
-namespace VCLang::Refl
+namespace Rift::Refl
 {
 	void Type::__GetAllChildren(TArray<Type*>& outChildren)
 	{
@@ -76,4 +76,4 @@ namespace VCLang::Refl
 		}
 		GetOwnProperties(outProperties);
 	}
-}	 // namespace VCLang::Refl
+}	 // namespace Rift::Refl

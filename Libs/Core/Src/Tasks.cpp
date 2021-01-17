@@ -13,7 +13,7 @@
 #include <mutex>
 
 
-namespace VCLang
+namespace Rift
 {
 	TaskSystem::TaskSystem()
 	{
@@ -62,4 +62,4 @@ namespace VCLang
 	{
 		return Context::Get()->GetTasks();
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

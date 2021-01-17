@@ -12,7 +12,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Core)
 target_shared_output_directory(${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME}
-    EXPORT VCLangTargets
+    EXPORT RiftTargets
     LIBRARY DESTINATION Lib
     ARCHIVE DESTINATION Lib
     RUNTIME DESTINATION Bin

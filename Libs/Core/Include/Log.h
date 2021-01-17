@@ -15,7 +15,7 @@ namespace spdlog
 	class logger;
 }
 
-namespace VCLang::Log
+namespace Rift::Log
 {
 	inline std::shared_ptr<spdlog::logger> generalLogger;
 	inline std::shared_ptr<spdlog::logger> errLogger;
@@ -54,4 +54,4 @@ namespace VCLang::Log
 			Error(CString::Format(format, std::forward<Args>(args)...));
 		}
 	}
-};	  // namespace VCLang::Log
+};	  // namespace Rift::Log

@@ -18,7 +18,7 @@
 #include <glm/gtx/transform.hpp>
 
 
-namespace VCLang
+namespace Rift
 {
 	struct Transform
 	{
@@ -120,4 +120,4 @@ namespace VCLang
 	DEFINE_CLASS_TRAITS(Transform, HasCustomSerialize = true, HasDetailsWidget = true);
 
 	DECLARE_REFLECTION_TYPE(Transform);
-}	 // namespace VCLang
+}	 // namespace Rift

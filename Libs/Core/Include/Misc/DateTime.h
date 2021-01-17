@@ -8,7 +8,7 @@
 #include "Platform/PlatformTime.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	class Archive;
 
@@ -712,4 +712,4 @@ namespace VCLang
 	private:
 		friend struct Z_Construct_UScriptStruct_FDateTime_Statics;
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

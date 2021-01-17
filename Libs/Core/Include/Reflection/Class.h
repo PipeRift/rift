@@ -9,13 +9,13 @@
 #include <EASTL/vector.h>
 
 
-namespace VCLang
+namespace Rift
 {
 	template <typename T>
 	struct ObjectBuilder;
 }
 
-namespace VCLang::Refl
+namespace Rift::Refl
 {
 	class Class : public Type
 	{
@@ -57,4 +57,4 @@ namespace VCLang::Refl
 										name, MoveTemp(access), tags));
 		}
 	};
-}	 // namespace VCLang::Refl
+}	 // namespace Rift::Refl

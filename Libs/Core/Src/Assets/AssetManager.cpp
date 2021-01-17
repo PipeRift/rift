@@ -8,7 +8,7 @@
 #include "Tasks.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	struct FAssetLoadingData
 	{
@@ -143,4 +143,4 @@ namespace VCLang
 	{
 		return Context::Get()->GetAssetManager();
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

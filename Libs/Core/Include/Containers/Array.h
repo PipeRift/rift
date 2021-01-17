@@ -12,7 +12,7 @@
 #include <vector>
 
 
-namespace VCLang
+namespace Rift
 {
 	constexpr i32 NO_INDEX = -1;
 
@@ -431,4 +431,4 @@ namespace VCLang
 			std::iter_swap(vector.begin() + firstIndex, vector.begin() + secondIndex);
 		}
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

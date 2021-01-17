@@ -10,7 +10,7 @@
 #include "Vector.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	/**
 	 * Enum for the different kinds of gamma spaces we expect to need to convert from/to.
@@ -617,12 +617,12 @@ namespace VCLang
 		FDXT1 DXT1;
 	};
 
-}	 // namespace VCLang
+}	 // namespace Rift
 
 // These act like a POD
-EASTL_DECLARE_IS_POD(VCLang::Color, true);
-EASTL_DECLARE_IS_POD(VCLang::LinearColor, true);
-EASTL_DECLARE_IS_POD(VCLang::FDXT1, true);
-EASTL_DECLARE_IS_POD(VCLang::FDXT5, true);
-EASTL_DECLARE_IS_POD(VCLang::FDXTColor16, true);
-EASTL_DECLARE_IS_POD(VCLang::FDXTColor565, true);
+EASTL_DECLARE_IS_POD(Rift::Color, true);
+EASTL_DECLARE_IS_POD(Rift::LinearColor, true);
+EASTL_DECLARE_IS_POD(Rift::FDXT1, true);
+EASTL_DECLARE_IS_POD(Rift::FDXT5, true);
+EASTL_DECLARE_IS_POD(Rift::FDXTColor16, true);
+EASTL_DECLARE_IS_POD(Rift::FDXTColor565, true);

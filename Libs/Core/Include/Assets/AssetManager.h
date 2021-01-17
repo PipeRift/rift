@@ -8,7 +8,7 @@
 #include "Files/FileSystem.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	class AssetManager : public Object
 	{
@@ -45,4 +45,4 @@ namespace VCLang
 
 		static Ptr<AssetManager> Get();
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

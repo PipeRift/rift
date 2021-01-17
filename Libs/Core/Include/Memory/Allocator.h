@@ -11,7 +11,7 @@
 #include <new>
 
 
-namespace VCLang
+namespace Rift
 {
 	///////////////////////////////////////////////////////////////////////////////
 	// Allocator
@@ -130,4 +130,4 @@ namespace VCLang
 			name = inName;
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

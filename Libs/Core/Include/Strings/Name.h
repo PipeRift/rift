@@ -13,7 +13,7 @@
 #include <shared_mutex>
 
 
-namespace VCLang
+namespace Rift
 {
 	struct Name;
 
@@ -180,7 +180,7 @@ namespace VCLang
 			return k.GetId();
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift
 
 
 namespace eastl
@@ -201,9 +201,9 @@ namespace eastl
 	{
 		inline namespace String_literals
 		{
-			inline VCLang::Name operator"" n(const VCLang::TCHAR* str) EA_NOEXCEPT
+			inline Rift::Name operator"" n(const Rift::TCHAR* str) EA_NOEXCEPT
 			{
-				return VCLang::Name{str};
+				return Rift::Name{str};
 			}
 		}					   // namespace String_literals
 	}						   // namespace literals

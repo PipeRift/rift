@@ -6,10 +6,10 @@
 #include <CoreObject.h>
 
 
-namespace VCLang
+namespace Rift
 {
 	class TypeAsset : public AssetData
 	{
 		CLASS(TypeAsset, AssetData)
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

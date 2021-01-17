@@ -7,7 +7,7 @@
 #include "Reflection/Struct.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	struct Struct : public BaseStruct
 	{
@@ -18,4 +18,4 @@ namespace VCLang
 			return StaticType();
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

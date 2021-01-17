@@ -15,7 +15,7 @@
 #include <Files/FileSystem.h>
 
 
-namespace VCLang
+namespace Rift
 {
 	/**
 	 * A project represents a group of classes, structs and other features of the lenguage that can
@@ -49,4 +49,4 @@ namespace VCLang
 			return projectPath;
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

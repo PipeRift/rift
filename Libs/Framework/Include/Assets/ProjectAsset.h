@@ -7,10 +7,10 @@
 #include <CoreObject.h>
 
 
-namespace VCLang
+namespace Rift
 {
 	class ProjectAsset : public TypeAsset
 	{
 		CLASS(ProjectAsset, TypeAsset)
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

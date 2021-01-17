@@ -8,7 +8,7 @@
 #include <Object/Struct.h>
 
 
-namespace VCLang
+namespace Rift
 {
 	struct FunctionArgument : public Struct
 	{
@@ -34,4 +34,4 @@ namespace VCLang
 		PROP(TAssetPtr<TypeAsset>, returnType);
 		TAssetPtr<TypeAsset> returnType;
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

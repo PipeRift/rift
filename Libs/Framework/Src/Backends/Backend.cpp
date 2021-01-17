@@ -2,7 +2,7 @@
 
 #include "Backends/Backend.h"
 
-namespace VCLang::Backends
+namespace Rift::Backends
 {
 	void Backend::SetProject(Ptr<Project> inProject)
 	{
@@ -23,4 +23,4 @@ namespace VCLang::Backends
 		OnCompile();
 		OnCleanup();
 	}
-}	 // namespace VCLang::Backends
+}	 // namespace Rift::Backends

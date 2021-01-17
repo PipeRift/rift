@@ -7,7 +7,7 @@
 #include "TypeTraits.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	template <typename T>
 	struct PtrBuilder
@@ -34,4 +34,4 @@ namespace VCLang
 			delete ptr;
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

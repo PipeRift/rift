@@ -4,11 +4,11 @@
 #if WITH_EDITOR
 #	include "UI/Widgets/Properties/AssetInfoPropertyWidget.h"
 
-namespace VCLang
+namespace Rift
 {
 	Class* BaseAssetPtr::GetDetailsWidgetClass()
 	{
 		return AssetInfoPropertyWidget::Type();
 	}
-}	 // namespace VCLang
+}	 // namespace Rift
 #endif

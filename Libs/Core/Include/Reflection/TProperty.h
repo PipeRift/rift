@@ -11,7 +11,7 @@
 #include <memory>
 
 
-namespace VCLang::Refl
+namespace Rift::Refl
 {
 	/**
 	 * Static information about a property
@@ -55,4 +55,4 @@ namespace VCLang::Refl
 			return {};
 		}
 	};
-}	 // namespace VCLang::Refl
+}	 // namespace Rift::Refl

@@ -3,7 +3,7 @@
 #include "Pointers/PtrOwner.h"
 
 
-namespace VCLang::Impl
+namespace Rift::Impl
 {
 	void Ptr::Reset()
 	{
@@ -89,4 +89,4 @@ namespace VCLang::Impl
 		counter = nullptr;
 		value = nullptr;
 	}
-}	 // namespace VCLang::Impl
+}	 // namespace Rift::Impl

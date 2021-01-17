@@ -5,10 +5,10 @@
 #include "Context.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	Ptr<Context> Object::GetContext() const
 	{
 		return Context::Get();
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

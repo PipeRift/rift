@@ -5,7 +5,7 @@
 #include "Strings/Name.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	Allocator::Allocator(const TCHAR* name /*= "Global"*/) : name{name}, size{0}, malloc_alloc{""}
 	{}
@@ -59,50 +59,50 @@ namespace VCLang
 			return &gFrameAllocator;
 		}
 	};	  // namespace Memory
-}	 // namespace VCLang
+}	 // namespace Rift
 
 
 // EASTL News
 void* operator new[](size_t size, const char* /*name*/, int flags, unsigned /*debugFlags*/,
 	const char* /*file*/, int /*line*/)
 {
-	return VCLang::Memory::GetAllocator()->Allocate(size, flags);
+	return Rift::Memory::GetAllocator()->Allocate(size, flags);
 }
 
 void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* /*name*/,
 	int flags, unsigned /*debugFlags*/, const char* /*file*/, int /*line*/)
 {
-	return VCLang::Memory::GetAllocator()->Allocate(size, alignment, alignmentOffset, flags);
+	return Rift::Memory::GetAllocator()->Allocate(size, alignment, alignmentOffset, flags);
 }
 
 
 // Native News
 void* operator new(size_t size)
 {
-	return VCLang::Memory::GetAllocator()->Allocate(size);
+	return Rift::Memory::GetAllocator()->Allocate(size);
 }
 
 void* operator new[](size_t size)
 {
-	return VCLang::Memory::GetAllocator()->Allocate(size);
+	return Rift::Memory::GetAllocator()->Allocate(size);
 }
 
 
 // Deletes
 void operator delete(void* p, std::size_t size)
 {
-	VCLang::Memory::GetAllocator()->Deallocate(p, size);
+	Rift::Memory::GetAllocator()->Deallocate(p, size);
 }
 void operator delete(void* p)
 {
-	VCLang::Memory::GetAllocator()->Deallocate(p);
+	Rift::Memory::GetAllocator()->Deallocate(p);
 }
 
 void operator delete[](void* p, std::size_t size)
 {
-	VCLang::Memory::GetAllocator()->Deallocate(p, size);
+	Rift::Memory::GetAllocator()->Deallocate(p, size);
 }
 void operator delete[](void* p)
 {
-	VCLang::Memory::GetAllocator()->Deallocate(p);
+	Rift::Memory::GetAllocator()->Deallocate(p);
 }

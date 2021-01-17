@@ -5,7 +5,7 @@
 #include "CoreObject.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	class AssetData : public Object
 	{
@@ -56,4 +56,4 @@ namespace VCLang
 			return info.GetPath();
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

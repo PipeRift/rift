@@ -6,7 +6,7 @@
 #include "Type.h"
 
 
-namespace VCLang::Refl
+namespace Rift::Refl
 {
 	class Struct : public Type
 	{
@@ -49,4 +49,4 @@ namespace VCLang::Refl
 										name, MoveTemp(access), tags));
 		}
 	};
-}	 // namespace VCLang::Refl
+}	 // namespace Rift::Refl

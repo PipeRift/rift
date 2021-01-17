@@ -7,7 +7,7 @@
 #include <type_traits>
 
 
-namespace VCLang
+namespace Rift
 {
 	struct PlatformMisc
 	{
@@ -31,4 +31,4 @@ namespace VCLang
 
 		return (T)(((u64) Val + Alignment - 1) & ~(Alignment - 1));
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

@@ -2,7 +2,7 @@
 
 #include "Events/EventHandle.h"
 
-namespace VCLang
+namespace Rift
 {
 	u64 EventHandle::counter{0};
 }

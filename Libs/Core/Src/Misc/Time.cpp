@@ -7,7 +7,7 @@
 #include <thread>
 
 
-namespace VCLang
+namespace Rift
 {
 	void FrameTime::Tick()
 	{
@@ -35,4 +35,4 @@ namespace VCLang
 			std::this_thread::sleep_for(sleepPeriod);
 		}
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

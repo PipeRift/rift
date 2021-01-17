@@ -7,7 +7,7 @@
 #include "Strings/String.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	/** Registry new editor-supported types here and on "EngineTypes.cpp" */
 
@@ -27,4 +27,4 @@ namespace VCLang
 
 	DECLARE_REFLECTION_TYPE(String);
 	DECLARE_REFLECTION_TYPE(Name);
-}	 // namespace VCLang
+}	 // namespace Rift

@@ -7,7 +7,7 @@
 #include <CoreEngine.h>
 
 
-namespace VCLang::Backends::C
+namespace Rift::Backends::C
 {
 	class Backend_C : public Backend
 	{
@@ -34,4 +34,4 @@ namespace VCLang::Backends::C
 		void BeginStruct(StringView name);
 		void EndStruct();
 	};
-}	 // namespace VCLang::Backends::C
+}	 // namespace Rift::Backends::C

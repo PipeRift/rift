@@ -13,17 +13,17 @@
 #include <fstream>
 
 
-namespace VCLang
+namespace Rift
 {
 	class Archive;
 };
 
 // Placeholder for global serializers to avoid compiler errors
 template <typename T>
-void Serialize(VCLang::Archive&, const char* name, T)
+void Serialize(Rift::Archive&, const char* name, T)
 {}
 
-namespace VCLang
+namespace Rift
 {
 	class Archive
 	{
@@ -298,4 +298,4 @@ namespace VCLang
 			return true;
 		}
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

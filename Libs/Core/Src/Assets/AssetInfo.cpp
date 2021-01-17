@@ -9,7 +9,7 @@
 #endif
 
 
-namespace VCLang
+namespace Rift
 {
 	bool AssetInfo::Serialize(class Archive& ar, const char* name)
 	{
@@ -23,4 +23,4 @@ namespace VCLang
 		return AssetInfoPropertyWidget::Type();
 	}
 #endif
-}	 // namespace VCLang
+}	 // namespace Rift

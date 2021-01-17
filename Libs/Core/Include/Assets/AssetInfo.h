@@ -7,7 +7,7 @@
 #include "Strings/Name.h"
 #include "TypeTraits.h"
 
-namespace VCLang
+namespace Rift
 {
 	class AssetInfo
 	{
@@ -63,4 +63,4 @@ namespace VCLang
 	DEFINE_CLASS_TRAITS(AssetInfo, HasCustomSerialize = true, HasDetailsWidget = true);
 
 	DECLARE_REFLECTION_TYPE(AssetInfo);
-}	 // namespace VCLang
+}	 // namespace Rift

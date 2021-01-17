@@ -9,7 +9,7 @@
 #include <type_traits>
 
 
-namespace VCLang::Refl
+namespace Rift::Refl
 {
 	// Class will be specialized for each type at compile time and store
 	// the metadata for that type.
@@ -49,4 +49,4 @@ namespace VCLang::Refl
 
 	template <typename T>
 	TClass<T> TClass<T>::_class{};
-}	 // namespace VCLang::Refl
+}	 // namespace Rift::Refl

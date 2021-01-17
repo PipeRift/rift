@@ -11,7 +11,7 @@
 #include <glm/integer.hpp>
 
 
-namespace VCLang
+namespace Rift
 {
 	class v3;
 
@@ -412,4 +412,4 @@ namespace VCLang
 			return log(k) / log(base);
 		}
 	};
-}	 // namespace VCLang
+}	 // namespace Rift

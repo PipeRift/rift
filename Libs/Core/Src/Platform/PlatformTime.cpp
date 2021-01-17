@@ -5,11 +5,11 @@
 #include "Misc/DateTime.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	u64 PlatformTime::Cycles64()
 	{
 		return date::floor<std::chrono::microseconds>(DateTime::Now().GetTime().time_since_epoch())
 			.count();
 	}
-}	 // namespace VCLang
+}	 // namespace Rift

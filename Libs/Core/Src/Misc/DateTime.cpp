@@ -6,7 +6,7 @@
 #include "Misc/Char.h"
 
 
-namespace VCLang
+namespace Rift
 {
 	/* FDateTime constants
 	 *****************************************************************************/
@@ -774,4 +774,4 @@ namespace VCLang
 			)
 		};*/
 	}
-}	 // namespace VCLang
+}	 // namespace Rift
