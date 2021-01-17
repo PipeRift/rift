@@ -52,5 +52,4 @@ jobs:
           cmakeBuildType: Release
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-          buildWithCMakeArgs: '-- -v'
           buildDirectory: '${{ runner.workspace }}/Build/'
