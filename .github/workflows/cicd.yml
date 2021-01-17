@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [windows-msvc, ubuntu-clang, ubuntu-gcc, macos-clang]
+        name: [windows-msvc, ubuntu-clang, ubuntu-gcc]
         include:
           - name: windows-msvc
             os: windows-latest
@@ -23,10 +23,10 @@ jobs:
             os: ubuntu-20.04
             cxx: g++
             cc: gcc
-          #- name: macos-clang
-          #  os: macos-latest
-          #  cxx: clang++
-          #  cc: clang
+          - name: macos-clang
+            os: macos-latest
+            cxx: clang++
+            cc: clang
 
     steps:
       - name: Checkout repository
