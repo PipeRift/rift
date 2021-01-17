@@ -1,0 +1,55 @@
+name: CI/CD
+
+on: [push, pull_request]
+
+jobs:
+  job:
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [windows-msvc, ubuntu-clang, ubuntu-gcc, macos-clang]
+        include:
+          - name: windows-msvc
+            os: windows-latest
+            cxx: cl.exe
+            cc: cl.exe
+          - name: ubuntu-clang
+            os: ubuntu-20.04
+            cxx: clang++
+            cc: clang
+          - name: ubuntu-gcc
+            os: ubuntu-20.04
+            cxx: g++
+            cc: gcc
+          - name: macos-clang
+            os: macos-latest
+            cxx: clang++
+            cc: clang
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+            submodules: recursive
+
+      - name: Get CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Set compiler to ${{ matrix.cxx }}
+      - uses: lukka/set-shell-env@v1
+        with:
+          CXX: ${{ matrix.cxx }}
+          CC: ${{ matrix.cc }}
+
+      - name: Configure and Build
+        uses: lukka/run-cmake@main
+        id: runcmake
+        with:
+          cmakeGenerator: 'Ninja'
+          cmakeBuildType: Release
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
+          buildWithCMakeArgs: '-- -v'
+          buildDirectory: '${{ runner.workspace }}/Build/'
