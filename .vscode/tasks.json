@@ -6,7 +6,7 @@
         {
             "label": "Build Release",
             "type": "shell",
-            "command": "cmake --build Build -DCMAKE_BUILD_TYPE=Release --target ALL_BUILD",
+            "command": "cmake --build Build --config Release",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -15,7 +15,7 @@
         {
             "label": "Build Debug",
             "type": "shell",
-            "command": "cmake -DCMAKE_BUILD_TYPE=Debug --build Build --target ALL_BUILD",
+            "command": "cmake --build Build --config Debug",
             "group": {
                 "kind": "build",
                 "isDefault": true

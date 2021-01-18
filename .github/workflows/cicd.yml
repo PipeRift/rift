@@ -80,4 +80,4 @@ jobs:
           path: ${{ runner.workspace }}
 
       - name: Run tests
-        run: 'Tests.exe --report-timing --reporter=spec'
+        run: 'Debug/Tests.exe --report-timing --reporter=spec'
