@@ -12,9 +12,9 @@ namespace Rift::Refl
 	{
 	public:
 		// #TODO: Move to TClass
-		static eastl::shared_ptr<ClassHandle> CreateClassHandle(const Ptr<BaseObject>& instance)
+		static std::shared_ptr<ClassHandle> CreateClassHandle(const Ptr<BaseObject>& instance)
 		{
-			return eastl::make_shared<ClassHandle>(instance);
+			return std::make_shared<ClassHandle>(instance);
 		}
 	};
 }	 // namespace Rift::Refl

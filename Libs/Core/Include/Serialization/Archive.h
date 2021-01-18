@@ -1,14 +1,13 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
+#include "Containers/Array.h"
 #include "CoreTypes.h"
 #include "Math/Quaternion.h"
 #include "Math/Vector.h"
 #include "Object/Struct.h"
 #include "Serialization/Json.h"
 #include "TypeTraits.h"
-
-#include <EASTL/stack.h>
 
 #include <fstream>
 
@@ -32,11 +31,9 @@ namespace Rift
 	public:
 		class Context* context;
 
-
 		Archive() : bLoads(false), context{nullptr} {}
 		Archive(bool bLoads) : bLoads(bLoads), context{nullptr} {}
 		virtual ~Archive() = default;
-
 
 		template <typename T>
 		Archive& operator()(const char* name, T& val)
@@ -140,7 +137,7 @@ namespace Rift
 	class JsonArchive : public Archive
 	{
 		Json baseData;
-		eastl::stack<Json*> depthData;
+		TArray<Json*> depthData;
 
 		const bool bBeautify;
 
@@ -190,12 +187,12 @@ namespace Rift
 
 		Json& Data()
 		{
-			return !depthData.empty() ? *depthData.top() : baseData;
+			return !depthData.IsEmpty() ? *depthData.Last() : baseData;
 		}
 
 		virtual void BeginObject(const char* name) override
 		{
-			depthData.push(&Data()[name]);
+			depthData.Add(&Data()[name]);
 		}
 
 		virtual bool HasObject(const char* name) override
@@ -205,7 +202,7 @@ namespace Rift
 
 		virtual void BeginObject(u32 index) override
 		{
-			depthData.push(&Data()[index]);
+			depthData.Add(&Data()[index]);
 		}
 
 		virtual bool IsObjectValid() override
@@ -215,7 +212,7 @@ namespace Rift
 
 		virtual void EndObject() override
 		{
-			depthData.pop();
+			depthData.RemoveAt(depthData.Size() - 1, false);
 		}
 
 		virtual void SerializeArraySize(u32& size) override

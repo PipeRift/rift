@@ -3,12 +3,11 @@
 
 #include "CoreEngine.h"
 
-#include <EASTL/memory.h>
-
+#include <memory>
 #include <taskflow/taskflow.hpp>
 
 
-EA_DISABLE_VC_WARNING(4267)
+// EA_DISABLE_VC_WARNING(4267);
 
 
 namespace Rift
@@ -18,8 +17,8 @@ namespace Rift
 	using Flow = tf::FlowBuilder;
 	using SubFlow = tf::SubflowBuilder;
 
-	using TaskLambda = eastl::function<void()>;
-	using SubTaskLambda = eastl::function<void(tf::SubflowBuilder&)>;
+	using TaskLambda = std::function<void()>;
+	using SubTaskLambda = std::function<void(tf::SubflowBuilder&)>;
 
 
 	struct TaskSystem
@@ -55,6 +54,4 @@ namespace Rift
 
 		static TaskSystem& Get();
 	};
-
-	EA_RESTORE_VC_WARNING()	   // warning: 4267
 }	 // namespace Rift

@@ -14,7 +14,7 @@ namespace Rift
 	{
 	protected:
 		using Method = void(Params...);
-		using Function = eastl::function<void(Params...)>;
+		using Function = std::function<void(Params...)>;
 
 		using MethodPtr = void (*)(Params...);
 		template <typename Type>

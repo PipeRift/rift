@@ -4,8 +4,7 @@
 #include "BaseStruct.h"
 #include "CoreEngine.h"
 #include "Memory/Allocator.h"
-
-#include <EASTL/type_traits.h>
+#include "TypeTraits.h"
 
 
 namespace Rift

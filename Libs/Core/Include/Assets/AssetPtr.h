@@ -8,8 +8,6 @@
 #include "Files/FileSystem.h"
 #include "TypeTraits.h"
 
-#include <EASTL/type_traits.h>
-
 
 namespace Rift
 {
@@ -200,8 +198,8 @@ namespace Rift
 
 		void MoveFrom(TAssetPtr&& other)
 		{
-			eastl::swap(info, other.info);
-			eastl::swap(cachedAsset, other.cachedAsset);
+			std::swap(info, other.info);
+			std::swap(cachedAsset, other.cachedAsset);
 		}
 
 		void CopyFrom(const TAssetPtr& other)

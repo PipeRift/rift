@@ -1,8 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Strings/Name.h"
-
 #include "Serialization/Archive.h"
+#include "Strings/Name.h"
 
 
 namespace Rift

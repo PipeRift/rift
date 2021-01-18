@@ -7,7 +7,6 @@
 #include "Misc/Hash.h"
 #include "Platform/Platform.h"
 
-#include <EASTL/functional.h>
 #include <assert.h>
 #include <tsl/sparse_map.h>
 
@@ -30,7 +29,7 @@ namespace Rift
 		using KeyType = Key;
 		using ValueType = Value;
 		using HashMapType =
-			tsl::sparse_map<KeyType, ValueType, Hash<KeyType>, eastl::equal_to<KeyType>>;
+			tsl::sparse_map<KeyType, ValueType, Hash<KeyType>, std::equal_to<KeyType>>;
 
 		using Iterator = typename HashMapType::iterator;
 		using ConstIterator = typename HashMapType::const_iterator;

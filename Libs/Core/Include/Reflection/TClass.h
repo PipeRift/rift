@@ -5,8 +5,7 @@
 #include "Object/ObjectBuilder.h"
 #include "Pointers/PtrOwner.h"
 #include "TProperty.h"
-
-#include <type_traits>
+#include "TypeTraits.h"
 
 
 namespace Rift::Refl
@@ -16,7 +15,7 @@ namespace Rift::Refl
 	template <typename T>
 	class TClass : public Class
 	{
-		static_assert(std::is_convertible<T, BaseObject>::value, "Type is not an Object!");
+		static_assert(IsObject<T>::value, "Type is not an Object!");
 
 	private:
 		static TClass _class;

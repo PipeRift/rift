@@ -299,6 +299,11 @@ namespace Rift
 			return (i32) vector.size();
 		}
 
+		bool IsEmpty() const
+		{
+			return Size() == 0;
+		}
+
 		bool IsValidIndex(i32 index) const
 		{
 			return index >= 0 && index < Size();
@@ -422,7 +427,7 @@ namespace Rift
 	};
 
 
-	template <typename Type, typename Allocator /*= EASTLAllocatorType*/>
+	template <typename Type, typename Allocator>
 	void TArray<Type, Allocator>::Swap(i32 firstIndex, i32 secondIndex)
 	{
 		if (Size() > 1 && firstIndex != secondIndex && IsValidIndex(firstIndex) &&

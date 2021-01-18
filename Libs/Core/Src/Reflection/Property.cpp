@@ -1,8 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Reflection/Property.h"
-
 #include "Reflection/Class.h"
+#include "Reflection/Property.h"
 #include "Reflection/Runtime/PropertyHandle.h"
 #include "Reflection/Struct.h"
 
@@ -18,7 +17,7 @@ namespace Rift::Refl
 			isupper(displayName[1]))
 		{
 			CString::RemoveFromStart(displayName, 1);
-			displayName[0] = eastl::CharToLower(displayName[0]);
+			displayName[0] = std::tolower(displayName[0]);
 		}
 	}
 

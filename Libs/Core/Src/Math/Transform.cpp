@@ -1,19 +1,14 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Math/Transform.h"
-
 #include "Math/Math.h"
+#include "Math/Transform.h"
 #include "Serialization/Archive.h"
-
 
 #if WITH_EDITOR
 #	include "Reflection/Class.h"
 #	include "Reflection/Runtime/TPropertyHandle.h"
 #	include "UI/Widgets/PropertyWidget.h"
-
-#	include <EASTL/shared_ptr.h>
 #	include <imgui/imgui.h>
-
 #endif
 
 

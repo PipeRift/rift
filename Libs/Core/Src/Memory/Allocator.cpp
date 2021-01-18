@@ -1,8 +1,8 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
 #include "Memory/Allocator.h"
-
 #include "Strings/Name.h"
+
 
 
 namespace Rift
@@ -33,28 +33,28 @@ namespace Rift
 	{
 		/// gAllocator
 		/// Default engine allocator instance.
-		EASTL_API Allocator gAllocator{};
-		EASTL_API Allocator* GetAllocator()
+		CORE_API Allocator gAllocator{};
+		CORE_API Allocator* GetAllocator()
 		{
 			return &gAllocator;
 		}
 
 		/// gAllocator
 		/// Default engine allocator instance.
-		EASTL_API Allocator gObjectsAllocator{TX("Objects")};
-		EASTL_API Allocator* GetObjectsAllocator()
+		CORE_API Allocator gObjectsAllocator{TX("Objects")};
+		CORE_API Allocator* GetObjectsAllocator()
 		{
 			return &gObjectsAllocator;
 		}
 
-		EASTL_API Allocator gAssetsAllocator{TX("Assets")};
-		EASTL_API Allocator* GetAssetsAllocator()
+		CORE_API Allocator gAssetsAllocator{TX("Assets")};
+		CORE_API Allocator* GetAssetsAllocator()
 		{
 			return &gAssetsAllocator;
 		}
 
-		EASTL_API Allocator gFrameAllocator{TX("Frame")};
-		EASTL_API Allocator* GetFrameAllocator()
+		CORE_API Allocator gFrameAllocator{TX("Frame")};
+		CORE_API Allocator* GetFrameAllocator()
 		{
 			return &gFrameAllocator;
 		}

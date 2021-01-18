@@ -619,10 +619,10 @@ namespace Rift
 
 }	 // namespace Rift
 
-// These act like a POD
-EASTL_DECLARE_IS_POD(Rift::Color, true);
-EASTL_DECLARE_IS_POD(Rift::LinearColor, true);
-EASTL_DECLARE_IS_POD(Rift::FDXT1, true);
-EASTL_DECLARE_IS_POD(Rift::FDXT5, true);
-EASTL_DECLARE_IS_POD(Rift::FDXTColor16, true);
-EASTL_DECLARE_IS_POD(Rift::FDXTColor565, true);
+// These types act like a POD
+RIFT_DECLARE_IS_POD(Rift::Color, true);
+RIFT_DECLARE_IS_POD(Rift::LinearColor, true);
+RIFT_DECLARE_IS_POD(Rift::FDXT1, true);
+RIFT_DECLARE_IS_POD(Rift::FDXT5, true);
+RIFT_DECLARE_IS_POD(Rift::FDXTColor16, true);
+RIFT_DECLARE_IS_POD(Rift::FDXTColor565, true);

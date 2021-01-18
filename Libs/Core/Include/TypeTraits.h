@@ -54,4 +54,22 @@ namespace Rift
 	public:
 		static const bool value = std::is_void<decltype(impl<T>(0))>::value;
 	};
+
 }	 // namespace Rift
+
+#define RIFT_DECLARE_IS_POD(T, isPod)                                                \
+	namespace std                                                                    \
+	{                                                                                \
+		template <>                                                                  \
+		struct is_pod<T> : public std::integral_constant<bool, isPod>                \
+		{};                                                                          \
+		template <>                                                                  \
+		struct is_pod<const T> : public std::integral_constant<bool, isPod>          \
+		{};                                                                          \
+		template <>                                                                  \
+		struct is_pod<volatile T> : public std::integral_constant<bool, isPod>       \
+		{};                                                                          \
+		template <>                                                                  \
+		struct is_pod<const volatile T> : public std::integral_constant<bool, isPod> \
+		{};                                                                          \
+	}

@@ -192,16 +192,6 @@ namespace Rift
 		static bool IsNumeric(const TCHAR* Str);
 
 		static String ParseMemorySize(size_t size);
-
-	private:
-		// #NOTE: EASTL doesn't support codecvt and wstring conversion yet
-		// static std::wstring_convert<std::codecvt_utf8<TCHAR>, TCHAR, StringAllocator,
-		// StringAllocator> converter;
-
-	public:
-		// static String ToString(const UTF8String& str) { return TX("");
-		// /*converter.from_bytes(str);*/ } static UTF8String ToUTF8(const String& str) { return "";
-		// /*converter.to_bytes(str);*/ }
 	};
 
 	using Regex = std::basic_regex<TCHAR>;

@@ -5,19 +5,14 @@
 =============================================================================*/
 
 #include "Math/Color.h"
-
 #include "Math/Vector.h"
 #include "Serialization/Archive.h"
-
 
 #if WITH_EDITOR
 #	include "Reflection/Class.h"
 #	include "Reflection/Runtime/TPropertyHandle.h"
 #	include "UI/Widgets/PropertyWidget.h"
-
-#	include <EASTL/shared_ptr.h>
 #	include <imgui/imgui.h>
-
 #endif
 
 

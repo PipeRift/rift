@@ -5,8 +5,6 @@
 #include "Reflection/ClassTraits.h"
 #include "String.h"
 
-#include <EASTL/functional.h>
-#include <EASTL/unordered_set.h>
 #include <tsl/robin_set.h>
 
 #include <mutex>
@@ -69,7 +67,7 @@ namespace Rift
 		friend Name;
 
 		// #TODO: Move to TSet
-		using Container = tsl::robin_set<NameKey, Hash<NameKey>, eastl::equal_to<NameKey>>;
+		using Container = tsl::robin_set<NameKey, Hash<NameKey>, std::equal_to<NameKey>>;
 		using Iterator = Container::iterator;
 		using ConstIterator = Container::const_iterator;
 
@@ -180,33 +178,5 @@ namespace Rift
 			return k.GetId();
 		}
 	};
+
 }	 // namespace Rift
-
-
-namespace eastl
-{
-/// user defined literals
-///
-/// Converts a character array literal to a basic_string.
-///
-/// Example:
-///   Name s = "abcdef"n;
-///
-/// http://en.cppreference.com/w/cpp/String/basic_String/operator%22%22s
-///
-#if EASTL_USER_LITERALS_ENABLED && EASTL_INLINE_NAMESPACES_ENABLED
-	EA_DISABLE_VC_WARNING(4455)	   // disable warning C4455: literal suffix identifiers that do
-								   // not start with an underscore are reserved
-	inline namespace literals
-	{
-		inline namespace String_literals
-		{
-			inline Rift::Name operator"" n(const Rift::TCHAR* str) EA_NOEXCEPT
-			{
-				return Rift::Name{str};
-			}
-		}					   // namespace String_literals
-	}						   // namespace literals
-	EA_RESTORE_VC_WARNING()	   // warning: 4455
-#endif
-}	 // namespace eastl

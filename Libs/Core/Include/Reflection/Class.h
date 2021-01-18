@@ -6,8 +6,6 @@
 #include "Reflection/TProperty.h"
 #include "Type.h"
 
-#include <EASTL/vector.h>
-
 
 namespace Rift
 {
