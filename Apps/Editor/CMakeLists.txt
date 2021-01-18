@@ -1,6 +1,6 @@
 
 add_executable(Editor Src/main.cpp)
-set_target_properties(Editor PROPERTIES OUTPUT_NAME "Rift_Editor")
+set_target_properties(Editor PROPERTIES OUTPUT_NAME "RiftEditor")
 target_include_directories(Editor PUBLIC Include)
 set_property(TARGET Editor PROPERTY CXX_STANDARD 17)
 target_link_libraries(Editor PUBLIC ${PROJECT_NAME} imgui)
