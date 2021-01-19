@@ -18,7 +18,7 @@ target_link_libraries(Core PUBLIC
     Taskflow
     fmt
     robin_hood
-    #rpmalloc
+    mimalloc-static
 )
 target_link_libraries(Core PRIVATE
     spdlog

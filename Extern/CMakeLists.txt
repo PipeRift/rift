@@ -10,6 +10,7 @@ endif()
 
 # Submodule libraries
 option(CLI11_BUILD_TESTS "Build CLI11 tests" OFF)
+set(CMAKE_POLICY_DEFAULT_CMP0054 NEW)
 add_subdirectory(CLI11)
 add_subdirectory(date)
 add_subdirectory(fmt)
@@ -23,8 +24,7 @@ add_subdirectory(spdlog)
 option(JSON_BuildTests "Build the unit tests when BUILD_TESTING is enabled." OFF)
 add_subdirectory(nlohmann_json)
 add_subdirectory(robin_hood)
-#add_subdirectory(rpmalloc)
-
+add_subdirectory(mimalloc)
 
 # EASTL
 add_subdirectory(EABase)

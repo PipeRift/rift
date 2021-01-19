@@ -4,7 +4,7 @@
 #include "CoreEngine.h"
 
 #include <EASTL/allocator_malloc.h>
-#include <EASTL/string_view.h>
+#include <mimalloc.h>
 
 #include <Tracy.hpp>
 #include <client/tracy_rpmalloc.hpp>
@@ -92,42 +92,4 @@ namespace Rift
 
 		Allocator* GetFrameAllocator();
 	}	 // namespace Memory
-
-
-	class StringAllocator : public eastl::allocator
-	{
-		using Super = eastl::allocator;
-
-		const TCHAR* name;
-
-	public:
-		EASTL_ALLOCATOR_EXPLICIT StringAllocator(
-			const char* pName = EASTL_NAME_VAL(EASTL_ALLOCATOR_DEFAULT_NAME))
-			: Super(pName)
-		{}
-
-		void* allocate(size_t n, int flags = 0)
-		{
-			return Memory::GetAllocator()->Allocate(n, flags);
-		}
-
-		void* allocate(size_t n, size_t alignment, size_t offset, int flags = 0)
-		{
-			return Memory::GetAllocator()->Allocate(n, alignment, offset, flags);
-		}
-
-		void deallocate(void* p, size_t n)
-		{
-			Memory::GetAllocator()->Deallocate(p, n);
-		}
-
-		const TCHAR* GetName() const
-		{
-			return name;
-		}
-		void SetName(const TCHAR* inName)
-		{
-			name = inName;
-		}
-	};
 }	 // namespace Rift

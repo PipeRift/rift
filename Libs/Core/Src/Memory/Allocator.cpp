@@ -3,6 +3,7 @@
 #include "Memory/Allocator.h"
 #include "Strings/Name.h"
 
+#include <Tracy.hpp>
 
 
 namespace Rift
@@ -61,48 +62,107 @@ namespace Rift
 	};	  // namespace Memory
 }	 // namespace Rift
 
+#if defined(__cplusplus)
+#	include <mimalloc.h>
+#	include <new>
 
-// EASTL News
-void* operator new[](size_t size, const char* /*name*/, int flags, unsigned /*debugFlags*/,
-	const char* /*file*/, int /*line*/)
+void operator delete(void* p) noexcept
 {
-	return Rift::Memory::GetAllocator()->Allocate(size, flags);
+	TracyFreeS(p, 8);
+	mi_free(p);
+};
+void operator delete[](void* p) noexcept
+{
+	TracyFreeS(p, 8);
+	mi_free(p);
+};
+
+void* operator new(std::size_t n) noexcept(false)
+{
+	void* const p = mi_new(n);
+	TracyAllocS(p, n, 8);
+	return p;
+}
+void* operator new[](std::size_t n) noexcept(false)
+{
+	void* const p = mi_new(n);
+	TracyAllocS(p, n, 8);
+	return p;
 }
 
-void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* /*name*/,
-	int flags, unsigned /*debugFlags*/, const char* /*file*/, int /*line*/)
+void* operator new(std::size_t n, const std::nothrow_t& tag) noexcept
 {
-	return Rift::Memory::GetAllocator()->Allocate(size, alignment, alignmentOffset, flags);
+	(void) (tag);
+	void* const p = mi_new_nothrow(n);
+	TracyAllocS(p, n, 8);
+	return p;
+}
+void* operator new[](std::size_t n, const std::nothrow_t& tag) noexcept
+{
+	(void) (tag);
+	void* const p = mi_new_nothrow(n);
+	TracyAllocS(p, n, 8);
+	return p;
 }
 
+#	if (__cplusplus >= 201402L || _MSC_VER >= 1916)
+void operator delete(void* p, std::size_t n) noexcept
+{
+	TracyFreeS(p, 8);
+	mi_free_size(p, n);
+};
+void operator delete[](void* p, std::size_t n) noexcept
+{
+	TracyFreeS(p, 8);
+	mi_free_size(p, n);
+};
+#	endif
 
-// Native News
-void* operator new(size_t size)
+#	if (__cplusplus > 201402L || defined(__cpp_aligned_new))
+void operator delete(void* p, std::align_val_t al) noexcept
 {
-	return Rift::Memory::GetAllocator()->Allocate(size);
+	TracyFreeS(p, 8);
+	mi_free_aligned(p, static_cast<size_t>(al));
 }
+void operator delete[](void* p, std::align_val_t al) noexcept
+{
+	TracyFreeS(p, 8);
+	mi_free_aligned(p, static_cast<size_t>(al));
+}
+void operator delete(void* p, std::size_t n, std::align_val_t al) noexcept
+{
+	TracyFreeS(p, 8);
+	mi_free_size_aligned(p, n, static_cast<size_t>(al));
+};
+void operator delete[](void* p, std::size_t n, std::align_val_t al) noexcept
+{
+	TracyFreeS(p, 8);
+	mi_free_size_aligned(p, n, static_cast<size_t>(al));
+};
 
-void* operator new[](size_t size)
+void* operator new(std::size_t n, std::align_val_t al) noexcept(false)
 {
-	return Rift::Memory::GetAllocator()->Allocate(size);
+	void* const p = mi_new_aligned(n, static_cast<size_t>(al));
+	TracyAllocS(p, n, 8);
+	return p;
 }
-
-
-// Deletes
-void operator delete(void* p, std::size_t size)
+void* operator new[](std::size_t n, std::align_val_t al) noexcept(false)
 {
-	Rift::Memory::GetAllocator()->Deallocate(p, size);
+	void* const p = mi_new_aligned(n, static_cast<size_t>(al));
+	TracyAllocS(p, n, 8);
+	return p;
 }
-void operator delete(void* p)
+void* operator new(std::size_t n, std::align_val_t al, const std::nothrow_t&) noexcept
 {
-	Rift::Memory::GetAllocator()->Deallocate(p);
+	void* const p = mi_new_aligned_nothrow(n, static_cast<size_t>(al));
+	TracyAllocS(p, n, 8);
+	return p;
 }
-
-void operator delete[](void* p, std::size_t size)
+void* operator new[](std::size_t n, std::align_val_t al, const std::nothrow_t&) noexcept
 {
-	Rift::Memory::GetAllocator()->Deallocate(p, size);
+	void* const p = mi_new_aligned_nothrow(n, static_cast<size_t>(al));
+	TracyAllocS(p, n, 8);
+	return p;
 }
-void operator delete[](void* p)
-{
-	Rift::Memory::GetAllocator()->Deallocate(p);
-}
+#	endif
+#endif
