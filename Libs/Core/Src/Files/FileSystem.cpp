@@ -23,7 +23,7 @@ namespace Rift
 		{
 			file >> result;
 		}
-		catch (nlohmann::detail::exception ex)
+		catch (nlohmann::detail::exception& ex)
 		{
 			Log::Error("Failed to parse json asset:\n{}", ex.what());
 			return false;

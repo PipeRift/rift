@@ -9,12 +9,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [windows-msvc, ubuntu-clang, ubuntu-gcc]
+        name: [windows-msvc, windows-clang, ubuntu-clang, ubuntu-gcc]
         include:
           - name: windows-msvc
             os: windows-latest
             cxx: cl.exe
             cc: cl.exe
+          - name: windows-clang
+            os: windows-latest
+            cxx: clang-cl.exe
+            cc: clang-cl.exe
           - name: ubuntu-clang
             os: ubuntu-20.04
             cxx: clang++
@@ -61,6 +65,8 @@ jobs:
           buildDirectory: '${{ runner.workspace }}/Build/'
 
       - uses: actions/upload-artifact@v2
+        # Only clang artifacts are stored
+        if: ${{ runner.name == 'windows-clang' || runner.name == 'ubuntu-clang' }}
         with:
           name: ${{ matrix.name }}-build
           path: ${{ runner.workspace }}/Build/Bin
@@ -71,13 +77,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Download artifact
-        uses: dawidd6/action-download-artifact@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/action-download-artifact@v2
         with:
-          workflow: cicd.yml
-          name: windows-msvc-build
+          name: windows-clang-build
           path: ${{ runner.workspace }}
 
       - name: Run tests
-        run: './Debug/Tests.exe --report-timing --reporter=spec'
+        run: 'Tests.exe --report-timing --reporter=spec'

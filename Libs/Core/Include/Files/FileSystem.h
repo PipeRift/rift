@@ -27,7 +27,7 @@ namespace Rift
 
 
 		/** String API */
-		
+
 		static bool LoadJsonFile(const String& path, Json& result)
 		{
 			return LoadJsonFile(FromString(path), result);
