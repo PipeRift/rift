@@ -77,7 +77,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Download artifact
-        uses: actions/action-download-artifact@v2
+        uses: actions/download-artifact@v2
         with:
           name: windows-clang-build
           path: ${{ runner.workspace }}
