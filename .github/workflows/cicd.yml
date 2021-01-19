@@ -66,7 +66,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         # Only clang artifacts are stored
-        if: ${{ runner.name == 'windows-clang' || runner.name == 'ubuntu-clang' }}
+        if: ${{ matrix.name == 'windows-clang' || matrix.name == 'ubuntu-clang' }}
         with:
           name: ${{ matrix.name }}-build
           path: ${{ runner.workspace }}/Build/Bin
