@@ -1,8 +1,6 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "Memory/Allocator.h"
-
 
 namespace Rift
 {
@@ -18,13 +16,12 @@ namespace Rift
 
 		Refl::Struct* GetType() const;
 
+		/* TODO: Support different arenas for object/struct types
 		void* operator new(size_t size)
 		{
-			return Memory::GetObjectsAllocator()->Allocate(size);
 		}
 		void operator delete(void* p, std::size_t size)
 		{
-			Memory::GetObjectsAllocator()->Deallocate(p, size);
-		}
+		}*/
 	};
 }	 // namespace Rift

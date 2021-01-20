@@ -26,15 +26,6 @@ add_subdirectory(nlohmann_json)
 add_subdirectory(robin_hood)
 add_subdirectory(mimalloc)
 
-# EASTL
-add_subdirectory(EABase)
-file(GLOB_RECURSE EASTL_SOURCES CONFIGURE_DEPENDS EASTL/source/*.cpp)
-add_library(EASTL STATIC)
-target_include_directories(EASTL PUBLIC EASTL/include)
-target_sources(EASTL PRIVATE ${EASTL_SOURCES})
-set_property(TARGET EASTL PROPERTY CXX_STANDARD 17)
-target_link_libraries(EASTL EABase)
-
 
 # Imgui
 add_library(imgui STATIC)

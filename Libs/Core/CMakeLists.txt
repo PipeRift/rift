@@ -8,7 +8,6 @@ set_property(TARGET Core PROPERTY CXX_STANDARD 17)
 target_define_platform(Core)
 
 target_link_libraries(Core PUBLIC
-    EASTL
     date::date
     nlohmann_json
     glm::glm_static

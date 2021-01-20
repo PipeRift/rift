@@ -22,12 +22,6 @@
 [submodule "Extern/nlohmann_json"]
 	path = Extern/nlohmann_json
 	url = https://github.com/nlohmann/json.git
-[submodule "Extern/EASTL"]
-	path = Extern/EASTL
-	url = https://github.com/electronicarts/EASTL.git
-[submodule "Extern/EABase"]
-	path = Extern/EABase
-	url = https://github.com/electronicarts/EABase.git
 [submodule "Extern/date"]
 	path = Extern/date
 	url = https://github.com/HowardHinnant/date.git
