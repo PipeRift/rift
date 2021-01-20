@@ -48,19 +48,20 @@ jobs:
       - name: Get CMake
         uses: lukka/get-cmake@latest
 
-      - name: Install llvm
-        if: matrix.cxx == 'clang-cl'
-        shell: powershell
-        run: |
-          Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
-          scoop install llvm --global
-          #echo "::set-env name=PATH::$env:PATH"
-
-      - name: Set compiler to ${{ matrix.cxx }}
-        uses: lukka/set-shell-env@v1
+      - name: Cache LLVM and Clang
+        if: matrix.compiler == 'clang'
+        id: cache-llvm
+        uses: actions/cache@v2
         with:
-          CXX: ${{ matrix.cxx }}
-          CC: ${{ matrix.cc }}
+          path: ${{ runner.temp }}/llvm
+          key: llvm-11.0
+      - name: Install LLVM and Clang
+        if: matrix.compiler == 'clang'
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "11.0"
+          directory: ${{ runner.temp }}/llvm
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
       - name: Cache Build
         uses: actions/cache@v2
@@ -69,13 +70,13 @@ jobs:
           key: ${{ matrix.name }}-${{ matrix.build-type }}-build
 
       - name: Configure and Build
-        uses: lukka/run-cmake@main
+        uses: lukka/run-cmake@v3.3
         id: runcmake
         with:
           cmakeGenerator: 'Ninja'
-          cmakeBuildType: ${{ matrix.build-type }}
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeListsTxtPath: 'CMakeLists.txt'
+          cmakeAppendedArgs: -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
           buildDirectory: 'Build'
 
       - uses: actions/upload-artifact@v2
