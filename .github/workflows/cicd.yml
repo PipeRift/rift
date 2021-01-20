@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   Build:
-    name: Build ${{ matrix.name }}
+    name: Build ${{ matrix.name }}(${{ matrix.debug-type }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -13,22 +13,27 @@ jobs:
         build-type: [Release, Debug]
         include:
           - name: windows-msvc
+            compiler: msvc
             os: windows-latest
             cxx: cl
             cc: cl
           - name: windows-clang
+            compiler: clang
             os: windows-latest
             cxx: clang-cl
             cc: clang-cl
           - name: ubuntu-clang
+            compiler: clang
             os: ubuntu-20.04
             cxx: clang++
             cc: clang
           - name: ubuntu-gcc
+            compiler: gcc
             os: ubuntu-20.04
             cxx: g++
             cc: gcc
           - name: macos-clang
+            compiler: clang
             os: macos-latest
             cxx: clang++
             cc: clang
@@ -61,7 +66,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: Build
-          key: ${{ matrix.name }}-build
+          key: ${{ matrix.name }}-${{ matrix.debug-type }}-build
 
       - name: Configure and Build
         uses: lukka/run-cmake@main
@@ -75,10 +80,10 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         # Only clang artifacts are stored
-        if: ${{ matrix.name == 'windows-clang' || matrix.name == 'ubuntu-clang' }}
+        if: ${{ matrix.compiler == 'clang' && matrix.build-type == 'Release' }}
         with:
           name: ${{ matrix.name }}-build
-          path: ${{ runner.workspace }}/Build/Bin
+          path: Build/Bin
 
   Test:
     needs: Build
@@ -92,4 +97,4 @@ jobs:
           path: ${{ runner.workspace }}
 
       - name: Run tests
-        run: 'Debug/Tests.exe --report-timing --reporter=spec'
+        run: 'Tests.exe --report-timing --reporter=spec'
