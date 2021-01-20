@@ -10,15 +10,16 @@ jobs:
       fail-fast: false
       matrix:
         name: [windows-msvc, windows-clang, ubuntu-clang, ubuntu-gcc, macos-clang]
+        build-type: [Release, Debug]
         include:
           - name: windows-msvc
             os: windows-latest
-            cxx: cl.exe
-            cc: cl.exe
+            cxx: cl
+            cc: cl
           - name: windows-clang
             os: windows-latest
-            cxx: clang-cl.exe
-            cc: clang-cl.exe
+            cxx: clang-cl
+            cc: clang-cl
           - name: ubuntu-clang
             os: ubuntu-20.04
             cxx: clang++
@@ -42,6 +43,14 @@ jobs:
       - name: Get CMake
         uses: lukka/get-cmake@latest
 
+      - name: Install llvm
+        if: matrix.config.cxx == 'clang-cl'
+        shell: powershell
+        run: |
+          Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
+          scoop install llvm --global
+          #echo "::set-env name=PATH::$env:PATH"
+
       - name: Set compiler to ${{ matrix.cxx }}
         uses: lukka/set-shell-env@v1
         with:
@@ -59,10 +68,10 @@ jobs:
         id: runcmake
         with:
           cmakeGenerator: 'Ninja'
-          cmakeBuildType: Release
+          cmakeBuildType: ${{ matrix.build-type }}
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-          cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-          buildDirectory: '${{ runner.workspace }}/Build/'
+          cmakeListsTxtPath: 'CMakeLists.txt'
+          buildDirectory: 'Build'
 
       - uses: actions/upload-artifact@v2
         # Only clang artifacts are stored
