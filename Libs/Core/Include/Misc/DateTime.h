@@ -274,7 +274,7 @@ namespace Rift
 		 */
 		DateTime GetDate() const
 		{
-			return DateTime(floor<days>(value));
+			return DateTime(Chrono::floor<days>(value));
 		}
 
 		/**
@@ -320,7 +320,7 @@ namespace Rift
 		 */
 		u32 GetHour() const
 		{
-			return (floor<Chrono::hours>(value) - floor<days>(value)).count();
+			return (Chrono::floor<Chrono::hours>(value) - floor<days>(value)).count();
 		}
 
 		/**
@@ -340,7 +340,8 @@ namespace Rift
 		 */
 		i32 GetMillisecond() const
 		{
-			return (i32)(floor<Chrono::milliseconds>(value) - floor<Chrono::seconds>(value))
+			return (i32)(
+				Chrono::floor<Chrono::milliseconds>(value) - Chrono::floor<Chrono::seconds>(value))
 				.count();
 		}
 
@@ -353,7 +354,8 @@ namespace Rift
 		 */
 		i32 GetMinute() const
 		{
-			return (floor<Chrono::minutes>(value) - floor<Chrono::hours>(value)).count();
+			return (Chrono::floor<Chrono::minutes>(value) - Chrono::floor<Chrono::hours>(value))
+				.count();
 		}
 
 		/**
@@ -385,7 +387,9 @@ namespace Rift
 		 */
 		i32 GetSecond() const
 		{
-			return (i32)(floor<Chrono::seconds>(value) - floor<Chrono::minutes>(value)).count();
+			return (i32)(
+				Chrono::floor<Chrono::seconds>(value) - Chrono::floor<Chrono::minutes>(value))
+				.count();
 		}
 
 		/**
@@ -396,7 +400,7 @@ namespace Rift
 		 */
 		Timespan GetTimeOfDay() const
 		{
-			return Timespan(value - floor<days>(value));
+			return Timespan(value - Chrono::floor<days>(value));
 		}
 
 		/**
@@ -487,7 +491,7 @@ namespace Rift
 		 */
 		i64 ToUnixTimestamp() const
 		{
-			return floor<Chrono::seconds>(value).time_since_epoch().count();
+			return Chrono::floor<Chrono::seconds>(value).time_since_epoch().count();
 		}
 
 		DateTime ToLocal() const;
