@@ -369,7 +369,7 @@ namespace Rift
 		 */
 		i64 GetFractionTicks() const
 		{
-			return (duration - floor<Chrono::seconds>(duration)).count();
+			return (duration - Chrono::floor<Chrono::seconds>(duration)).count();
 		}
 
 		/**
