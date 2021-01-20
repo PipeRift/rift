@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   Build:
-    name: Build ${{ matrix.name }}(${{ matrix.debug-type }})
+    name: Build ${{ matrix.name }}(${{ matrix.build-type }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -49,7 +49,7 @@ jobs:
         uses: lukka/get-cmake@latest
 
       - name: Install llvm
-        if: matrix.config.cxx == 'clang-cl'
+        if: matrix.cxx == 'clang-cl'
         shell: powershell
         run: |
           Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
@@ -66,7 +66,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: Build
-          key: ${{ matrix.name }}-${{ matrix.debug-type }}-build
+          key: ${{ matrix.name }}-${{ matrix.build-type }}-build
 
       - name: Configure and Build
         uses: lukka/run-cmake@main
