@@ -141,7 +141,7 @@ namespace Rift
 		const i32 fractionNano = *CString::ToI32(Tokens[4]);
 
 		// Max days
-		if ((days > floor<date::days>(decmicroseconds::max()).count() - 1))
+		if ((days > Chrono::floor<Days>(decmicroseconds::max()).count() - 1))
 		{
 			return false;
 		}
@@ -167,9 +167,9 @@ namespace Rift
 
 	void Timespan::Assign(i32 days, i32 hours, i32 minutes, i32 seconds, i32 fractionNano)
 	{
-		duration = floor<decmicroseconds>(
-			date::days{days} + std::chrono::hours{hours} + std::chrono::minutes{minutes} +
-			std::chrono::seconds{seconds} + std::chrono::nanoseconds{fractionNano});
+		duration = Chrono::floor<decmicroseconds>(
+			Days{days} + Chrono::hours{hours} + Chrono::minutes{minutes} +
+			Chrono::seconds{seconds} + Chrono::nanoseconds{fractionNano});
 	}
 
 	Timespan Timespan::FromHours(i32 hours)

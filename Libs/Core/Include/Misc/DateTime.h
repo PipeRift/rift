@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreEngine.h"
+#include "Misc/Chrono.h"
 #include "Misc/Timespan.h"
 #include "Platform/Platform.h"
 #include "Platform/PlatformTime.h"
@@ -45,9 +46,6 @@ namespace Rift
 		November,
 		December
 	};
-
-	using namespace date;
-	namespace Chrono = std::chrono;
 
 
 	/**
@@ -274,7 +272,7 @@ namespace Rift
 		 */
 		DateTime GetDate() const
 		{
-			return DateTime(Chrono::floor<days>(value));
+			return DateTime(Chrono::floor<date::days>(value));
 		}
 
 		/**
@@ -284,7 +282,7 @@ namespace Rift
 		 * @param OutMonth Will contain the number of the month (1-12).
 		 * @param OutDay Will contain the number of the day (1-31).
 		 */
-		year_month_day GetDateComponents() const;
+		YearMonthDay GetDateComponents() const;
 
 		/**
 		 * Gets this date's day part (1 to 31).
@@ -320,7 +318,7 @@ namespace Rift
 		 */
 		u32 GetHour() const
 		{
-			return (Chrono::floor<Chrono::hours>(value) - floor<days>(value)).count();
+			return (Chrono::floor<Chrono::hours>(value) - Chrono::floor<date::days>(value)).count();
 		}
 
 		/**
@@ -400,7 +398,7 @@ namespace Rift
 		 */
 		Timespan GetTimeOfDay() const
 		{
-			return Timespan(value - Chrono::floor<days>(value));
+			return Timespan(value - Chrono::floor<date::days>(value));
 		}
 
 		/**

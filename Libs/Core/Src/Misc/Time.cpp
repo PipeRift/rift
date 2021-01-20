@@ -30,8 +30,7 @@ namespace Rift
 			// Cap FPS with a delay
 			ZoneScopedNC("Sleep", 0xD15545);
 
-			std::chrono::duration<float, std::chrono::seconds::period> sleepPeriod{
-				extraTimeForFPSCAP};
+			Chrono::duration<float, Chrono::seconds::period> sleepPeriod{extraTimeForFPSCAP};
 			std::this_thread::sleep_for(sleepPeriod);
 		}
 	}

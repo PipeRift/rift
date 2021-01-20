@@ -31,9 +31,8 @@ namespace Rift
 			Log::Warning("Created invalid date format.");
 		}
 
-		value = SysTime{date::sys_days(date::year{year} / month / day) + std::chrono::hours{hour} +
-						std::chrono::minutes{minute} + std::chrono::seconds{second} +
-						std::chrono::milliseconds{millisecond}};
+		value = SysTime{SysDays(Year{year} / month / day) + Hours{hour} + Minutes{minute} +
+						Seconds{second} + Milliseconds{millisecond}};
 	}
 
 
@@ -41,9 +40,9 @@ namespace Rift
 	 *****************************************************************************/
 
 
-	year_month_day DateTime::GetDateComponents() const
+	YearMonthDay DateTime::GetDateComponents() const
 	{
-		return {floor<days>(value)};
+		return {Chrono::floor<Days>(value)};
 	}
 
 	u32 DateTime::GetDay() const
@@ -53,7 +52,7 @@ namespace Rift
 
 	EDayOfWeek DateTime::GetDayOfWeek() const
 	{
-		const weekday wd{floor<days>(value)};
+		const WeekDay wd{Chrono::floor<Days>(value)};
 
 		// January 1, 0001 was a Monday
 		return static_cast<EDayOfWeek>((wd - Sunday).count());
@@ -61,10 +60,10 @@ namespace Rift
 
 	u32 DateTime::GetDayOfYear() const
 	{
-		auto timeDays = std::chrono::floor<days>(value);
-		const year_month_day ymd{timeDays};
+		auto timeDays = Chrono::floor<Days>(value);
+		const YearMonthDay ymd{timeDays};
 
-		return (timeDays.time_since_epoch() - local_days{ymd.year() / jan / 1}.time_since_epoch())
+		return (timeDays.time_since_epoch() - LocalDays{ymd.year() / Jan / 1}.time_since_epoch())
 			.count();
 	}
 
@@ -85,7 +84,7 @@ namespace Rift
 
 	u32 DateTime::GetMonth() const
 	{
-		return (u32) year_month_day{floor<days>(value)}.month();
+		return (u32) YearMonthDay{Chrono::floor<Days>(value)}.month();
 	}
 
 	i32 DateTime::GetYear() const
@@ -295,7 +294,7 @@ namespace Rift
 
 	DateTime DateTime::UtcNow()
 	{
-		return {floor<SysTime::duration>(SysClock::now())};
+		return {Chrono::floor<SysTime::duration>(SysClock::now())};
 	}
 
 	bool DateTime::Parse(const String& DateTimeString, DateTime& OutDateTime)
@@ -768,7 +767,7 @@ namespace Rift
 	{
 		/* Crashes while failing to obtain database
 		utcToLocal = {
-			floor<SysTime::duration>(
+			Chrono::floor<SysTime::duration>(
 				date::make_zoned(date::current_zone(), SysClock::now())
 				.get_info().offset
 			)

@@ -4,18 +4,16 @@
 
 #include "CoreEngine.h"
 #include "Math/Math.h"
+#include "Misc/Chrono.h"
 #include "Strings/String.h"
 
-#include <date/date.h>
-
-#include <chrono>
 #include <ratio>
 
 
 namespace Rift
 {
 	// decimals of microseconds
-	using decmicroseconds = std::chrono::duration<i64, std::ratio<1, 10'000'000>>;
+	using decmicroseconds = Chrono::duration<i64, std::ratio<1, 10'000'000>>;
 
 
 	/**
@@ -38,8 +36,8 @@ namespace Rift
 	 */
 	struct Timespan
 	{
-		using SysClock = std::chrono::system_clock;
-		using SysDuration = std::chrono::duration<SysClock, decmicroseconds>;
+		using SysClock = Chrono::system_clock;
+		using SysDuration = Chrono::duration<SysClock, decmicroseconds>;
 
 	private:
 		/** The time span value in 100 nanoseconds resolution. */
@@ -310,7 +308,7 @@ namespace Rift
 		 */
 		i32 GetDays() const
 		{
-			return floor<date::days>(duration).count();
+			return Chrono::floor<Days>(duration).count();
 		}
 
 		/**
@@ -334,8 +332,8 @@ namespace Rift
 		 */
 		i64 GetFractionMicro() const
 		{
-			return (
-				floor<std::chrono::microseconds>(duration) - floor<std::chrono::seconds>(duration))
+			return (Chrono::floor<Chrono::microseconds>(duration) -
+					Chrono::floor<Chrono::seconds>(duration))
 				.count();
 		}
 
@@ -347,8 +345,8 @@ namespace Rift
 		 */
 		i64 GetFractionMilli() const
 		{
-			return (
-				floor<std::chrono::milliseconds>(duration) - floor<std::chrono::seconds>(duration))
+			return (Chrono::floor<Chrono::milliseconds>(duration) -
+					Chrono::floor<Chrono::seconds>(duration))
 				.count();
 		}
 
@@ -359,8 +357,8 @@ namespace Rift
 		 */
 		i64 GetFractionNano() const
 		{
-			return (
-				floor<std::chrono::nanoseconds>(duration) - floor<std::chrono::seconds>(duration))
+			return (Chrono::floor<Chrono::nanoseconds>(duration) -
+					Chrono::floor<Chrono::seconds>(duration))
 				.count();
 		}
 
@@ -371,7 +369,7 @@ namespace Rift
 		 */
 		i64 GetFractionTicks() const
 		{
-			return (duration - floor<std::chrono::seconds>(duration)).count();
+			return (duration - floor<Chrono::seconds>(duration)).count();
 		}
 
 		/**
@@ -382,7 +380,8 @@ namespace Rift
 		 */
 		i32 GetHours() const
 		{
-			return (i32)(floor<std::chrono::hours>(duration) - floor<date::days>(duration)).count();
+			return (i32)(Chrono::floor<Chrono::hours>(duration) - Chrono::floor<Days>(duration))
+				.count();
 		}
 
 		/**
@@ -394,7 +393,7 @@ namespace Rift
 		i32 GetMinutes() const
 		{
 			return (i32)(
-				floor<std::chrono::minutes>(duration) - floor<std::chrono::hours>(duration))
+				Chrono::floor<Chrono::minutes>(duration) - Chrono::floor<Chrono::hours>(duration))
 				.count();
 		}
 
@@ -407,7 +406,7 @@ namespace Rift
 		i32 GetSeconds() const
 		{
 			return (i32)(
-				floor<std::chrono::seconds>(duration) - floor<std::chrono::minutes>(duration))
+				Chrono::floor<Chrono::seconds>(duration) - Chrono::floor<Chrono::minutes>(duration))
 				.count();
 		}
 
@@ -431,7 +430,7 @@ namespace Rift
 		template <typename PrecisionType = float>
 		PrecisionType GetTotalDays() const
 		{
-			return std::chrono::duration<PrecisionType, date::days::period>(duration).count();
+			return Chrono::duration<PrecisionType, Days::period>(duration).count();
 		}
 
 		/**
@@ -443,8 +442,7 @@ namespace Rift
 		template <typename PrecisionType = float>
 		PrecisionType GetTotalHours() const
 		{
-			return std::chrono::duration<PrecisionType, std::chrono::hours::period>(duration)
-				.count();
+			return Chrono::duration<PrecisionType, Chrono::hours::period>(duration).count();
 		}
 
 		/**
@@ -456,8 +454,7 @@ namespace Rift
 		template <typename PrecisionType = float>
 		PrecisionType GetTotalMicroseconds() const
 		{
-			return std::chrono::duration<PrecisionType, std::chrono::microseconds::period>(duration)
-				.count();
+			return Chrono::duration<PrecisionType, Chrono::microseconds::period>(duration).count();
 		}
 
 		/**
@@ -469,8 +466,7 @@ namespace Rift
 		template <typename PrecisionType = float>
 		PrecisionType GetTotalMilliseconds() const
 		{
-			return std::chrono::duration<PrecisionType, std::chrono::milliseconds::period>(duration)
-				.count();
+			return Chrono::duration<PrecisionType, Chrono::milliseconds::period>(duration).count();
 		}
 
 		/**
@@ -482,8 +478,7 @@ namespace Rift
 		template <typename PrecisionType = float>
 		PrecisionType GetTotalMinutes() const
 		{
-			return std::chrono::duration<PrecisionType, std::chrono::minutes::period>(duration)
-				.count();
+			return Chrono::duration<PrecisionType, Chrono::minutes::period>(duration).count();
 		}
 
 		/**
@@ -495,8 +490,7 @@ namespace Rift
 		template <typename PrecisionType = float>
 		PrecisionType GetTotalSeconds() const
 		{
-			return std::chrono::duration<PrecisionType, std::chrono::seconds::period>(duration)
-				.count();
+			return Chrono::duration<PrecisionType, Chrono::seconds::period>(duration).count();
 		}
 
 		/**

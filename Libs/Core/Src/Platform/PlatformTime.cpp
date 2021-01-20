@@ -9,7 +9,7 @@ namespace Rift
 {
 	u64 PlatformTime::Cycles64()
 	{
-		return date::floor<std::chrono::microseconds>(DateTime::Now().GetTime().time_since_epoch())
+		return Chrono::floor<Chrono::microseconds>(DateTime::Now().GetTime().time_since_epoch())
 			.count();
 	}
 }	 // namespace Rift
