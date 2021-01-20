@@ -24,6 +24,8 @@ add_subdirectory(spdlog)
 option(JSON_BuildTests "Build the unit tests when BUILD_TESTING is enabled." OFF)
 add_subdirectory(nlohmann_json)
 add_subdirectory(robin_hood)
+set(MI_OVERRIDE OFF CACHE BOOL "Override the standard malloc interface (e.g. define entry points for malloc() etc)")
+set(MI_BUILD_TESTS OFF CACHE BOOL "Build test executables")
 add_subdirectory(mimalloc)
 
 

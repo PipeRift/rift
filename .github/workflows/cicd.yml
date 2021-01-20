@@ -51,7 +51,7 @@ jobs:
       - name: Cache Build
         uses: actions/cache@v2
         with:
-          path: ${{ runner.workspace }}/Build/
+          path: Build
           key: ${{ matrix.name }}-build
 
       - name: Configure and Build
