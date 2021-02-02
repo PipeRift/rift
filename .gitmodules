@@ -40,3 +40,6 @@
 [submodule "Extern/mimalloc"]
 	path = Extern/mimalloc
 	url = https://github.com/microsoft/mimalloc.git
+[submodule "Libs/Core"]
+	path = Libs/Core
+	url = https://github.com/PipeRift/rift-core.git
