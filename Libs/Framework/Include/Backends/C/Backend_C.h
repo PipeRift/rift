@@ -4,8 +4,6 @@
 
 #include "Backends/Backend.h"
 
-#include <CoreEngine.h>
-
 
 namespace Rift::Backends::C
 {

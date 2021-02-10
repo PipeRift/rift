@@ -15,6 +15,7 @@ project(Rift VERSION 0.1 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(CMake/DownloadProject.cmake)
+include(Libs/Core/CMake/Util.cmake)
 include(CMake/Util.cmake)
 
 add_subdirectory(Extern)

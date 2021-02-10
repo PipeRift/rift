@@ -2,11 +2,10 @@
 add_executable(Editor Src/main.cpp)
 set_target_properties(Editor PROPERTIES OUTPUT_NAME "RiftEditor")
 target_include_directories(Editor PUBLIC Include)
-set_property(TARGET Editor PROPERTY CXX_STANDARD 17)
+set_property(TARGET Editor PROPERTY CXX_STANDARD 20)
 target_link_libraries(Editor PUBLIC ${PROJECT_NAME} imgui)
-target_define_platform(Editor)
-
-target_shared_output_directory(Editor)
+rift_target_define_platform(Editor)
+rift_target_shared_output_directory(Editor)
 
 install(TARGETS Editor
     EXPORT RiftTargets

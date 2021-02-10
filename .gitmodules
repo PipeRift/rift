@@ -1,45 +1,9 @@
-[submodule "Extern/Tracy"]
-	path = Extern/Tracy
-	url = https://github.com/wolfpld/tracy.git
-[submodule "Extern/RobinMap"]
-	path = Extern/RobinMap
-	url = https://github.com/Piperift/robin-map.git
-[submodule "Extern/SparseMap"]
-	path = Extern/SparseMap
-	url = https://github.com/Piperift/sparse-map.git
 [submodule "Extern/CLI11"]
 	path = Extern/CLI11
 	url = https://github.com/CLIUtils/CLI11.git
-[submodule "Extern/glm"]
-	path = Extern/glm
-	url = https://github.com/g-truc/glm.git
-[submodule "Extern/fmt"]
-	path = Extern/fmt
-	url = https://github.com/fmtlib/fmt.git
-[submodule "Extern/spdlog"]
-	path = Extern/spdlog
-	url = https://github.com/gabime/spdlog.git
-[submodule "Extern/nlohmann_json"]
-	path = Extern/nlohmann_json
-	url = https://github.com/nlohmann/json.git
-[submodule "Extern/date"]
-	path = Extern/date
-	url = https://github.com/HowardHinnant/date.git
 [submodule "Extern/imgui"]
 	path = Extern/imgui
 	url = https://github.com/ocornut/imgui.git
-[submodule "Extern/robin_hood"]
-	path = Extern/robin_hood
-	url = https://github.com/martinus/robin-hood-hashing
-[submodule "Extern/memory"]
-	path = Extern/memory
-	url = https://github.com/foonathan/memory.git
-[submodule "Extern/Bandit"]
-	path = Extern/Bandit
-	url = https://github.com/banditcpp/bandit
-[submodule "Extern/mimalloc"]
-	path = Extern/mimalloc
-	url = https://github.com/microsoft/mimalloc.git
 [submodule "Libs/Core"]
 	path = Libs/Core
 	url = https://github.com/PipeRift/rift-core.git

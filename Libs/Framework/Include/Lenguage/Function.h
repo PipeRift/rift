@@ -4,7 +4,6 @@
 #include "Assets/TypeAsset.h"
 
 #include <Assets/AssetPtr.h>
-#include <CoreEngine.h>
 #include <Object/Struct.h>
 
 

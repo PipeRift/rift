@@ -2,15 +2,14 @@
 
 #pragma once
 
-#include "Assets/AssetManager.h"
 #include "Assets/ClassAsset.h"
 #include "Assets/ProjectAsset.h"
 #include "Assets/StructAsset.h"
 #include "Log.h"
 #include "Strings/String.h"
 
+#include <Assets/AssetManager.h>
 #include <Assets/AssetPtr.h>
-#include <CoreEngine.h>
 #include <CoreObject.h>
 #include <Files/FileSystem.h>
 
