@@ -7,3 +7,6 @@
 [submodule "Libs/Core"]
 	path = Libs/Core
 	url = https://github.com/PipeRift/rift-core.git
+[submodule "Extern/sokol"]
+	path = Extern/sokol
+	url = https://github.com/floooh/sokol.git

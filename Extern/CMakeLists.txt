@@ -21,8 +21,13 @@ target_sources(imgui PRIVATE
     imgui/imgui.cpp
     imgui/imgui_demo.cpp
     imgui/imgui_draw.cpp
+    imgui/imgui_tables.cpp
     imgui/imgui_widgets.cpp
     imgui/misc/cpp/imgui_stdlib.cpp
     imgui/misc/fonts/binary_to_compressed_c.cpp
 )
 set_property(TARGET imgui PROPERTY CXX_STANDARD 17)
+
+# Sokol
+add_library(sokol INTERFACE)
+target_include_directories(sokol INTERFACE sokol)
