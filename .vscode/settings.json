@@ -94,7 +94,9 @@
         "format": "cpp",
         "resumable": "cpp",
         "bitset": "cpp",
-        "codecvt": "cpp"
+        "codecvt": "cpp",
+        "compare": "cpp",
+        "coroutine": "cpp"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "banditTestExplorer.testsuites": [
