@@ -1,9 +1,12 @@
 
 file(GLOB_RECURSE TESTS_SOURCE_FILES CONFIGURE_DEPENDS *.cpp *.h)
 
-add_executable(Tests ${TESTS_SOURCE_FILES})
-target_include_directories(Tests PUBLIC .)
-set_property(TARGET Tests PROPERTY CXX_STANDARD 20)
-rift_target_define_platform(Tests)
-rift_target_shared_output_directory(Tests)
-target_link_libraries(Tests PUBLIC ${PROJECT_NAME} Bandit)
+add_executable(RiftTests ${TESTS_SOURCE_FILES})
+target_include_directories(RiftTests PUBLIC .)
+set_target_properties (RiftTests PROPERTIES
+    CXX_STANDARD 20
+    FOLDER Rift
+)
+rift_target_define_platform(RiftTests)
+rift_target_shared_output_directory(RiftTests)
+target_link_libraries(RiftTests PUBLIC ${PROJECT_NAME} Bandit)

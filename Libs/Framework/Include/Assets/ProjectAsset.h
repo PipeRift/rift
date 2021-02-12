@@ -9,8 +9,14 @@
 
 namespace Rift
 {
+	/**
+	 * ProjectAssets represents the asset that defines
+	 */
 	class ProjectAsset : public TypeAsset
 	{
 		CLASS(ProjectAsset, TypeAsset)
+
+		PROP(String, version)
+		String version;
 	};
 }	 // namespace Rift

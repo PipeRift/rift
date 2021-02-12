@@ -2,6 +2,7 @@
 cmake_minimum_required (VERSION 3.12)
 MESSAGE(STATUS "CMAKE_ROOT: " ${CMAKE_ROOT})
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(BUILD_STATIC_LIBS "Build static libraries" ON)
 option(RIFT_ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
@@ -47,8 +48,10 @@ file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS Apps/**/*.cpp Apps/**/*.h L
 
 if(CLANG_FORMAT_EXE)
     add_custom_target(ClangFormat COMMAND ${CLANG_FORMAT_EXE} -i ${ALL_SOURCE_FILES})
+    set_target_properties (ClangFormat PROPERTIES FOLDER Util)
 endif()
 
 if(CLANG_TIDY_EXE)
     add_custom_target(ClangTidy COMMAND ${CLANG_TIDY_EXE} -p ./ ${ALL_SOURCE_FILES} -checks=* -fix)
+    set_target_properties (ClangTidy PROPERTIES FOLDER Util)
 endif()
