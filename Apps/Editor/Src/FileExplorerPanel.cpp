@@ -10,9 +10,17 @@
 void FileExplorerPanel::Draw()
 {
 	ImGui::SetNextWindowDockID(editor.fileExplorerDockID);
-	if (ImGui::Begin("File Explorer", &bOpen))
+	if (ImGui::Begin("File Explorer", &bOpen, ImGuiWindowFlags_NoCollapse))
 	{
-		if (ImGui::Button("I work!")) {}
+		if (!editor.project.IsValid())
+		{
+			ImGui::Text("No active project.");
+			if (ImGui::Button("Open Project")) {}
+		}
+		else
+		{
+			if (ImGui::Button("List all files and folders here!")) {}
+		}
 	}
 	ImGui::End();
 }

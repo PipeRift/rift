@@ -79,7 +79,7 @@ void Window::Tick(float /*deltaTime*/)
 
 	project.Draw();
 
-	bool open = true;
+	static bool open = true;
 	ImGui::ShowDemoWindow(&open);
 }
 

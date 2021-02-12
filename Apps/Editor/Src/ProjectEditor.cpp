@@ -74,10 +74,10 @@ void ProjectEditor::ResetLayout()
 	ImGui::DockBuilderSplitNode(
 		dockspaceID, ImGuiDir_Left, 0.2f, &fileExplorerDockID, &filesDockID);
 
-	ImGui::DockBuilderFinish(dockspaceID);
+	ImGui::DockBuilderGetNode(fileExplorerDockID)->LocalFlags |= ImGuiDockNodeFlags_AutoHideTabBar;
+	ImGui::DockBuilderGetNode(filesDockID)->LocalFlags |= ImGuiDockNodeFlags_CentralNode;
 
-	ImGui::DockBuilderDockWindow("FileExplorer", fileExplorerDockID);
-	ImGui::DockBuilderDockWindow("File", filesDockID);
+	ImGui::DockBuilderFinish(dockspaceID);
 }
 
 void ProjectEditor::CreateDockspace()
@@ -90,11 +90,10 @@ void ProjectEditor::CreateDockspace()
 	ImGui::SetNextWindowSize(viewport->WorkSize);
 	ImGui::SetNextWindowViewport(viewport->ID);
 
-	ImGuiWindowFlags hostWindowFlags = 0;
-	hostWindowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-					   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-					   ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBringToFrontOnFocus |
-					   ImGuiWindowFlags_NoNavFocus;
+	ImGuiWindowFlags hostWindowFlags =
+		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking |
+		ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 	if (dockingFlags & ImGuiDockNodeFlags_PassthruCentralNode)
 	{
 		hostWindowFlags |= ImGuiWindowFlags_NoBackground;
