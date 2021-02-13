@@ -17,7 +17,6 @@ void Window::Init()
 	sg_setup(desc);
 
 	simgui_desc_t imgui_desc{};
-	imgui_desc.ini_filename = "config.ini";
 	simgui_setup(imgui_desc);
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	ApplyStyle();

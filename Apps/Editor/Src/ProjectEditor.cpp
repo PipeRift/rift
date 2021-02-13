@@ -12,9 +12,28 @@ void ProjectEditor::SetProject(Path path)
 		return;	   // Same project, ignore call
 	}
 
+	// TODO: Clear project if no path
+
 	assetEditors.Empty();	 // Close previously opened editors
 	project = Create<Project>();
 	project->Init(path);
+
+	if (project && project->IsValid())
+	{
+		// Set config path to project folder and save or load manually
+		Path configPath = path / "Saved" / "ui.ini";
+		String configStr = FileSystem::ToString(configPath);
+		ImGui::GetIO().IniFilename = configStr.c_str();
+		if (FileSystem::ExistsAsFile(configPath))
+		{
+			// FIX: Delay this until new frame (essentially, not while already drawing)
+			// ImGui::LoadIniSettingsFromDisk(configStr.c_str());
+		}
+		else
+		{
+			ImGui::SaveIniSettingsToDisk(configStr.c_str());
+		}
+	}
 }
 
 void ProjectEditor::OpenType(TAssetPtr<TypeAsset> asset)

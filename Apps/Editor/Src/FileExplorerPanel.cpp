@@ -18,7 +18,7 @@ void FileExplorerPanel::Draw()
 			ImGui::Text("No active project.");
 			if (ImGui::Button("Open Project"))
 			{
-				editor.SetProject(Path("Project"));
+				editor.SetProject(Path("."));
 			}
 		}
 		else
