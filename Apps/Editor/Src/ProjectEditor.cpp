@@ -7,13 +7,14 @@
 
 void ProjectEditor::SetProject(Path path)
 {
-	if (project->GetPath() == path)
+	if (project && project->GetPath() == path)
 	{
 		return;	   // Same project, ignore call
 	}
 
 	assetEditors.Empty();	 // Close previously opened editors
 	project = Create<Project>();
+	project->Init(path);
 }
 
 void ProjectEditor::OpenType(TAssetPtr<TypeAsset> asset)

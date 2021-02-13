@@ -15,12 +15,12 @@ namespace Rift
 
 		if (!projectPath.empty())
 		{
-			auto assets = AssetManager::Get();
-			asset = assets->Load(AssetInfo(projectPath / projectFile)).Cast<ProjectAsset>();
+			auto manager = AssetManager::Get();
+			projectAsset = manager->Load(AssetInfo(projectPath / projectFile)).Cast<ProjectAsset>();
 
-			if (asset)
+			if (projectAsset)
 			{
-				SetName(asset->GetName());
+				SetName(projectAsset->GetName());
 			}
 			else
 			{
@@ -31,18 +31,20 @@ namespace Rift
 		}
 	}
 
+	void Project::ScanAssets()
+	{
+		ZoneScopedNC("Find asset files", 0x459bd1);
+		for (const auto& asset : AssetIterator<true>(projectPath))
+		{
+			allTypes.Add(asset);
+		}
+	}
+
 	void Project::LoadAllAssets()
 	{
 		ZoneScopedC(0x459bd1);
-		TArray<AssetInfo> assetInfos;
-		{
-			ZoneScopedNC("Find asset files", 0x459bd1);
-			for (const auto& asset : AssetIterator<true>(projectPath))
-			{
-				assetInfos.Add(asset);
-			}
-		}
-		AssetManager::Get()->Load(assetInfos);
+		ScanAssets();
+		AssetManager::Get()->Load(allTypes);
 	}
 
 	Path Project::ToProjectPath(const Path& path) const

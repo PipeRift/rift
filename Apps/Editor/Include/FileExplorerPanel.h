@@ -6,8 +6,13 @@ class FileExplorerPanel
 {
 	ProjectEditor& editor;
 	bool bOpen = true;
+	bool bDirty = true;
 
 public:
 	FileExplorerPanel(ProjectEditor& editor) : editor(editor) {}
 	void Draw();
+
+	void DrawList();
+
+	void CacheProjectFiles();
 };

@@ -104,24 +104,48 @@
             "name": "Rift",
             "cwd": "${workspaceFolder}/Build/Bin",
             "windows": {
-                "cmd": "Tests.exe",
+                "cmd": "RiftTests.exe",
                 "watches": [
                     "Rift.lib",
-                    "Core.lib"
+                    "RiftCore.lib"
                 ]
             },
             "linux": {
-                "cmd": "Tests",
+                "cmd": "RiftTests",
                 "watches": [
                     "Rift.so",
-                    "Core.so"
+                    "RiftCore.so"
                 ]
             },
             "osx": {
-                "cmd": "Tests",
+                "cmd": "RiftTests",
                 "watches": [
                     "Rift.dylib",
-                    "Core.dylib"
+                    "RiftCore.dylib"
+                ]
+            },
+            "parallelProcessLimit": 10
+        },
+        {
+            "name": "RiftCore",
+            "cwd": "${workspaceFolder}/Build/Bin",
+            "windows": {
+                "cmd": "RiftCoreTests.exe",
+                "watches": [
+                    "RiftCore.lib",
+                    "RiftCore.dll"
+                ]
+            },
+            "linux": {
+                "cmd": "RiftCoreTests",
+                "watches": [
+                    "RiftCore.so"
+                ]
+            },
+            "osx": {
+                "cmd": "RiftCoreTests",
+                "watches": [
+                    "RiftCore.dylib"
                 ]
             },
             "parallelProcessLimit": 10

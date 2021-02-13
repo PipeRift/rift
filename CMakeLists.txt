@@ -22,6 +22,7 @@ include(CMake/Util.cmake)
 add_subdirectory(Extern)
 
 # Framework
+set(RIFT_BUILD_TESTS ON CACHE BOOL "Build RiftCore tests")
 add_subdirectory(Libs/Core)
 add_subdirectory(Libs/Framework)
 

@@ -2,6 +2,7 @@
 
 #include "Window.h"
 
+#include <Context.h>
 #include <Platform/Platform.h>
 #include <imgui.h>
 
@@ -12,6 +13,7 @@ Window window{};
 
 void Init()
 {
+	Context::Initialize();
 	window.Init();
 }
 

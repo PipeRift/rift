@@ -34,6 +34,11 @@ struct ProjectEditor
 
 	void ResetLayout();
 
+	bool HasValidProject()
+	{
+		return project && project->IsValid();
+	}
+
 protected:
 	void CreateDockspace();
 };

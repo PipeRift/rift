@@ -24,12 +24,12 @@ namespace Rift
 	{
 		CLASS(Project, Object)
 
-		static constexpr StringView projectFile{"Project.vc"};
+		static constexpr StringView projectFile{"Project.rf"};
 
 		Path projectPath;
 
-		// The asset containing project settings
-		TAssetPtr<ProjectAsset> asset;
+		TAssetPtr<ProjectAsset> projectAsset;
+		TArray<AssetInfo> allTypes;
 		TArray<TAssetPtr<ClassAsset>> classes;
 		TArray<TAssetPtr<StructAsset>> structs;
 
@@ -39,6 +39,7 @@ namespace Rift
 
 		void Init(Path path);
 
+		void ScanAssets();
 		void LoadAllAssets();
 
 		Path ToProjectPath(const Path& path) const;
@@ -46,6 +47,16 @@ namespace Rift
 		Path GetPath() const
 		{
 			return projectPath;
+		}
+
+		bool IsValid() const
+		{
+			return projectAsset.IsValid();
+		}
+
+		const TArray<AssetInfo>& GetAllTypeAssets() const
+		{
+			return allTypes;
 		}
 	};
 }	 // namespace Rift
