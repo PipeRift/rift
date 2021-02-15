@@ -1,4 +1,4 @@
-# Rift Lenguaje specification
+# Rift Languaje specification
 
 ## Structs
 **Structs** represent a group of variables together in memory.
