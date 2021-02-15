@@ -6,6 +6,7 @@
 
 #include <Assets/AssetPtr.h>
 #include <Assets/TypeAsset.h>
+#include <CoreObject.h>
 #include <Project.h>
 #include <imgui.h>
 
@@ -13,8 +14,11 @@
 using namespace Rift;
 
 
-struct ProjectEditor
+class ProjectEditor : public Rift::Object
 {
+	CLASS(ProjectEditor, Rift::Object)
+
+public:
 	ObjectPtr<Project> project;
 
 	ImGuiID dockspaceID        = 0;
@@ -23,10 +27,16 @@ struct ProjectEditor
 	TArray<ObjectPtr<AssetEditor>> assetEditors;
 
 	FileExplorerPanel fileExplorer{*this};
+	bool bWantsToResetLayout = false;
+
+protected:
+	bool bSkipFrameAfterMenu = false;
 
 
+public:
 	ProjectEditor() = default;
 
+	void BeforeDestroy() override;
 	void SetProject(Path path);
 	void OpenType(TAssetPtr<TypeAsset> asset);
 
@@ -34,11 +44,13 @@ struct ProjectEditor
 
 	void ResetLayout();
 
-	bool HasValidProject()
+	bool HasProject()
 	{
 		return project && project->IsValid();
 	}
 
 protected:
 	void CreateDockspace();
+
+	void DrawMenuBar();
 };

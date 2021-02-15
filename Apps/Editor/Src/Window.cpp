@@ -3,7 +3,6 @@
 #include "Style.h"
 #include "Window.h"
 
-#include <Files/FileDialog.h>
 
 #define SOKOL_IMPL
 #define SOKOL_GLCORE33
@@ -57,50 +56,9 @@ void Window::Shutdown()
 
 void Window::Tick(float /*deltaTime*/)
 {
-	if (configFileChanged)
-	{
-		ImGui::GetIO().IniFilename = configFile.c_str();
-		if (FileSystem::ExistsAsFile(configFile))
-		{
-			// FIX: Delay this until new frame (essentially, not while already drawing)
-			ImGui::LoadIniSettingsFromDisk(configFile.c_str());
-		}
-		else
-		{
-			ImGui::SaveIniSettingsToDisk(configFile.c_str());
-		}
-		configFileChanged = false;
-	}
+	UpdateConfig();
 
-	if (ImGui::BeginMainMenuBar())
-	{
-		if (ImGui::BeginMenu("File"))
-		{
-			if (ImGui::MenuItem("Open Project"))
-			{
-				Path folder =
-				    Dialogs::SelectFolder("Select project folder", FileSystem::GetCurrent());
-				Log::Info(folder.string());
-			}
-			if (ImGui::MenuItem("Open File")) {}
-			if (ImGui::MenuItem("Save File", "CTRL+S")) {}
-			if (ImGui::MenuItem("Save All", "CTRL+SHFT+S")) {}
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("Edit"))
-		{
-			if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-			if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}    // Disabled item
-			ImGui::Separator();
-			if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-			if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-			if (ImGui::MenuItem("Paste", "CTRL+V")) {}
-			ImGui::EndMenu();
-		}
-		ImGui::EndMainMenuBar();
-	}
-
-	project.Draw();
+	rootEditor.Draw();
 
 	static bool open = true;
 	ImGui::ShowDemoWindow(&open);
@@ -116,4 +74,27 @@ void Window::SetUIConfigFile(Path path)
 	configFileChanged          = true;
 	configFile                 = FileSystem::ToString(path);
 	ImGui::GetIO().IniFilename = configFile.c_str();
+}
+
+void Window::UpdateConfig()
+{
+	if (configFileChanged)
+	{
+		ImGui::GetIO().IniFilename = configFile.c_str();
+		if (configFile.empty())
+		{
+			return;
+		}
+
+		if (FileSystem::ExistsAsFile(configFile))
+		{
+			// FIX: Delay this until new frame (essentially, not while already drawing)
+			ImGui::LoadIniSettingsFromDisk(configFile.c_str());
+		}
+		else
+		{
+			ImGui::SaveIniSettingsToDisk(configFile.c_str());
+		}
+		configFileChanged = false;
+	}
 }

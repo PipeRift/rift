@@ -10,17 +10,18 @@
 
 void FileExplorerPanel::Draw()
 {
-	ImGui::SetNextWindowDockID(editor.fileExplorerDockID);
+	if (editor.fileExplorerDockID > 0)
+	{
+		ImGui::SetNextWindowDockID(editor.fileExplorerDockID,
+		    editor.bWantsToResetLayout ? ImGuiCond_Always : ImGuiCond_FirstUseEver);
+	}
+
 	if (ImGui::Begin(
 	        "File Explorer", &bOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar))
 	{
-		if (!editor.HasValidProject())
+		if (!editor.HasProject())
 		{
 			ImGui::Text("No active project.");
-			if (ImGui::Button("Open Project"))
-			{
-				editor.SetProject(Path("."));
-			}
 		}
 		else
 		{

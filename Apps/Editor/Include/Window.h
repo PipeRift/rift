@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "ProjectEditor.h"
+#include "RootEditor.h"
 
 #include <Misc/Time.h>
 #include <imgui.h>
@@ -17,7 +17,7 @@ class Window
 	FrameTime frameTime;
 	sg_pass_action pass_action;
 
-	ProjectEditor project;
+	RootEditor rootEditor;
 
 	bool configFileChanged = false;
 	String configFile;
@@ -45,4 +45,12 @@ public:
 		static Window instance{};
 		return instance;
 	}
+
+	RootEditor& GetRootEditor()
+	{
+		return rootEditor;
+	}
+
+private:
+	void UpdateConfig();
 };

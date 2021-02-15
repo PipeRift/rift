@@ -1,11 +1,19 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "ProjectEditor.h"
-
 #include "Window.h"
 
+#include <Files/FileDialog.h>
 #include <imgui_internal.h>
 
+
+void ProjectEditor::BeforeDestroy()
+{
+	Super::BeforeDestroy();
+
+	// Set config path to project folder and save or load manually=
+	Window::Get().SetUIConfigFile({});
+}
 
 void ProjectEditor::SetProject(Path path)
 {
@@ -20,7 +28,7 @@ void ProjectEditor::SetProject(Path path)
 	project = Create<Project>();
 	project->Init(path);
 
-	if (project && project->IsValid())
+	if (HasProject())
 	{
 		// Set config path to project folder and save or load manually=
 		Window::Get().SetUIConfigFile(path / "Saved" / "ui.ini");
@@ -38,17 +46,27 @@ void ProjectEditor::OpenType(TAssetPtr<TypeAsset> asset)
 		return;
 	}
 
-	assetEditors.Add(Create<AssetEditor>());
+	assetEditors.Add(Create<AssetEditor>(Self()));
 	assetEditors.Last()->SetAsset(asset);
 }
 
 void ProjectEditor::Draw()
 {
-	CreateDockspace();
-	static bool doOnce = true;
-	if (doOnce || ImGui::DockBuilderGetNode(dockspaceID) == nullptr)
+	String projectPath = FileSystem::ToString(project->GetPath());
+	ImGui::PushID(Hash<String>()(projectPath));
+
+	DrawMenuBar();
+
+	if (bSkipFrameAfterMenu)    // We could have closed the project
 	{
-		doOnce = false;
+		bSkipFrameAfterMenu = false;
+		ImGui::PopID();
+		return;
+	}
+
+	CreateDockspace();
+	if (bWantsToResetLayout || ImGui::DockBuilderGetNode(dockspaceID) == nullptr)
+	{
 		ResetLayout();    // Initialize default layout if layout was not set
 	}
 
@@ -60,6 +78,9 @@ void ProjectEditor::Draw()
 			editor->Draw();
 		}
 	}
+
+	ImGui::PopID();
+	bWantsToResetLayout = false;
 }
 
 
@@ -67,7 +88,7 @@ void ProjectEditor::ResetLayout()
 {
 	ImVec2 dockspaceSize = ImGui::GetMainViewport()->Size;
 	ImGui::DockBuilderRemoveNode(dockspaceID);                          // Clear out existing layout
-	ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_None);    // Add empty node
+	ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);    // Add empty node
 	ImGui::DockBuilderSetNodeSize(dockspaceID, dockspaceSize);
 
 	// ============================================== //
@@ -122,4 +143,53 @@ void ProjectEditor::CreateDockspace()
 	dockspaceID = ImGui::GetID("DockSpace");
 	ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), dockingFlags, nullptr);
 	ImGui::End();
+}
+
+void ProjectEditor::DrawMenuBar()
+{
+	if (ImGui::BeginMainMenuBar())
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("Open Project"))
+			{
+				Path folder =
+				    Dialogs::SelectFolder("Select project folder", FileSystem::GetCurrent());
+				if (Window::Get().GetRootEditor().OpenProject(folder))
+				{
+					bSkipFrameAfterMenu = true;
+				}
+			}
+			if (ImGui::MenuItem("Close current"))
+			{
+				Window::Get().GetRootEditor().CloseProject();
+				bSkipFrameAfterMenu = true;
+			}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Open File")) {}
+			if (ImGui::MenuItem("Save File", "CTRL+S")) {}
+			if (ImGui::MenuItem("Save All", "CTRL+SHFT+S")) {}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Edit"))
+		{
+			if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
+			if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}    // Disabled item
+			ImGui::Separator();
+			if (ImGui::MenuItem("Cut", "CTRL+X")) {}
+			if (ImGui::MenuItem("Copy", "CTRL+C")) {}
+			if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Layout"))
+		{
+			if (ImGui::MenuItem("Reset layout"))
+			{
+				bWantsToResetLayout = true;
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();
+	}
 }

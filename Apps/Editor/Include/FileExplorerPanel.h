@@ -2,14 +2,18 @@
 #pragma once
 
 class ProjectEditor;
+
 class FileExplorerPanel
 {
 	ProjectEditor& editor;
 	bool bOpen  = true;
 	bool bDirty = true;
 
+
 public:
 	FileExplorerPanel(ProjectEditor& editor) : editor(editor) {}
+
+	void BuildLayout();
 	void Draw();
 
 	void DrawList();
