@@ -1,8 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Style.h"
 #include "Window.h"
 
-#include "Style.h"
+#include <Files/FileDialog.h>
 
 #define SOKOL_IMPL
 #define SOKOL_GLCORE33
@@ -75,7 +76,12 @@ void Window::Tick(float /*deltaTime*/)
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("Open Project")) {}
+			if (ImGui::MenuItem("Open Project"))
+			{
+				Path folder =
+				    Dialogs::SelectFolder("Select project folder", FileSystem::GetCurrent());
+				Log::Info(folder.string());
+			}
 			if (ImGui::MenuItem("Open File")) {}
 			if (ImGui::MenuItem("Save File", "CTRL+S")) {}
 			if (ImGui::MenuItem("Save All", "CTRL+SHFT+S")) {}
