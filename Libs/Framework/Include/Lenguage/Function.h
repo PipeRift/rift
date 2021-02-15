@@ -33,4 +33,4 @@ namespace Rift
 		PROP(TAssetPtr<TypeAsset>, returnType);
 		TAssetPtr<TypeAsset> returnType;
 	};
-}	 // namespace Rift
+}    // namespace Rift

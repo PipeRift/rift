@@ -9,7 +9,7 @@
 
 namespace Rift
 {
-	void Project::Init(Path path)
+	void Project::Init(const Path& path)
 	{
 		projectPath = FileSystem::ToAbsolute(path);
 
@@ -55,4 +55,4 @@ namespace Rift
 		}
 		return FileSystem::IsInside(path, projectPath) ? path : Path{};
 	}
-}	 // namespace Rift
+}    // namespace Rift

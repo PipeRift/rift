@@ -17,4 +17,4 @@ namespace Rift
 		PROP(TArray<Function>, functions);
 		TArray<Function> functions;
 	};
-}	 // namespace Rift
+}    // namespace Rift

@@ -32,4 +32,4 @@ namespace Rift::Backends::C
 		void BeginStruct(StringView name);
 		void EndStruct();
 	};
-}	 // namespace Rift::Backends::C
+}    // namespace Rift::Backends::C

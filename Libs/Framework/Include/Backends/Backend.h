@@ -55,4 +55,4 @@ namespace Rift::Backends
 		virtual void OnCompile() = 0;
 		virtual void OnCleanup(){};
 	};
-}	 // namespace Rift::Backends
+}    // namespace Rift::Backends

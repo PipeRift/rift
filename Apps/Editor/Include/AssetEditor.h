@@ -22,7 +22,7 @@ public:
 	{
 		if (asset)
 		{
-			return;	   // Can only assign an asset once
+			return;    // Can only assign an asset once
 		}
 		asset = inAsset;
 	}

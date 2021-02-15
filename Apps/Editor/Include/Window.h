@@ -19,6 +19,9 @@ class Window
 
 	ProjectEditor project;
 
+	bool configFileChanged = false;
+	String configFile;
+
 
 public:
 	Window()
@@ -35,6 +38,11 @@ public:
 
 	void Close();
 
-protected:
-	void ApplyStyle();
+	void SetUIConfigFile(Path path);
+
+	static Window& Get()
+	{
+		static Window instance{};
+		return instance;
+	}
 };

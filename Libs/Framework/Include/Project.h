@@ -37,7 +37,7 @@ namespace Rift
 	public:
 		Project() : Super() {}
 
-		void Init(Path path);
+		void Init(const Path& path);
 
 		void ScanAssets();
 		void LoadAllAssets();
@@ -59,4 +59,4 @@ namespace Rift
 			return allTypes;
 		}
 	};
-}	 // namespace Rift
+}    // namespace Rift

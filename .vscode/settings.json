@@ -100,5 +100,55 @@
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "banditTestExplorer.testsuites": [
+        {
+            "name": "Rift",
+            "cwd": "${workspaceFolder}/Build/Bin",
+            "windows": {
+                "cmd": "RiftTests.exe",
+                "watches": [
+                    "Rift.lib",
+                    "RiftCore.lib"
+                ]
+            },
+            "linux": {
+                "cmd": "RiftTests",
+                "watches": [
+                    "Rift.so",
+                    "RiftCore.so"
+                ]
+            },
+            "osx": {
+                "cmd": "RiftTests",
+                "watches": [
+                    "Rift.dylib",
+                    "RiftCore.dylib"
+                ]
+            },
+            "parallelProcessLimit": 10
+        },
+        {
+            "name": "RiftCore",
+            "cwd": "${workspaceFolder}/Build/Bin",
+            "windows": {
+                "cmd": "RiftCoreTests.exe",
+                "watches": [
+                    "RiftCore.lib",
+                    "RiftCore.dll"
+                ]
+            },
+            "linux": {
+                "cmd": "RiftCoreTests",
+                "watches": [
+                    "RiftCore.so"
+                ]
+            },
+            "osx": {
+                "cmd": "RiftCoreTests",
+                "watches": [
+                    "RiftCore.dylib"
+                ]
+            },
+            "parallelProcessLimit": 10
+        }
     ]
 }

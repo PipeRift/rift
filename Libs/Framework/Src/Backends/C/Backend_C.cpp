@@ -103,4 +103,4 @@ namespace Rift::Backends::C
 	{
 		CString::FormatTo(code, "}};\n\n");
 	}
-}	 // namespace Rift::Backends::C
+}    // namespace Rift::Backends::C

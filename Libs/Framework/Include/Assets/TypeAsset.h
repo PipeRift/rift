@@ -12,4 +12,4 @@ namespace Rift
 	{
 		CLASS(TypeAsset, AssetData)
 	};
-}	 // namespace Rift
+}    // namespace Rift

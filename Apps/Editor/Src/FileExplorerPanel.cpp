@@ -1,6 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "FileExplorerPanel.h"
+
 #include "ProjectEditor.h"
 
 #include <imgui.h>
@@ -11,7 +12,7 @@ void FileExplorerPanel::Draw()
 {
 	ImGui::SetNextWindowDockID(editor.fileExplorerDockID);
 	if (ImGui::Begin(
-			"File Explorer", &bOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar))
+	        "File Explorer", &bOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar))
 	{
 		if (!editor.HasValidProject())
 		{
@@ -27,8 +28,8 @@ void FileExplorerPanel::Draw()
 			{
 				if (ImGui::BeginMenu("Filter"))
 				{
-					static bool bClasses = true;
-					static bool bStructs = true;
+					static bool bClasses   = true;
+					static bool bStructs   = true;
 					static bool bFunctions = true;
 					ImGui::Checkbox("Classes", &bClasses);
 					ImGui::Checkbox("Structs", &bStructs);
@@ -56,13 +57,13 @@ void FileExplorerPanel::DrawList()
 		if (ImGui::TreeNodeEx("Directories", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Selectable(
-				"Project.rf", false, 0, ImVec2(ImGui::GetWindowContentRegionWidth(), 0));
+			    "Project.rf", false, 0, ImVec2(ImGui::GetWindowContentRegionWidth(), 0));
 			ImGui::TreePop();
 		}
 		for (const auto& asset : editor.project->GetAllTypeAssets())
 		{
 			ImGui::Selectable(asset.GetStrPath().c_str(), false, 0,
-				ImVec2(ImGui::GetWindowContentRegionWidth(), 0));
+			    ImVec2(ImGui::GetWindowContentRegionWidth(), 0));
 		}
 		ImGui::EndChild();
 	}

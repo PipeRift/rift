@@ -17,9 +17,9 @@ struct ProjectEditor
 {
 	ObjectPtr<Project> project;
 
-	ImGuiID dockspaceID = 0;
+	ImGuiID dockspaceID        = 0;
 	ImGuiID fileExplorerDockID = 0;
-	ImGuiID filesDockID = 0;
+	ImGuiID filesDockID        = 0;
 	TArray<ObjectPtr<AssetEditor>> assetEditors;
 
 	FileExplorerPanel fileExplorer{*this};

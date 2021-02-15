@@ -19,4 +19,4 @@ namespace Rift
 		PROP(String, version)
 		String version;
 	};
-}	 // namespace Rift
+}    // namespace Rift

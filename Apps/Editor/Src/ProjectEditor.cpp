@@ -2,6 +2,8 @@
 
 #include "ProjectEditor.h"
 
+#include "Window.h"
+
 #include <imgui_internal.h>
 
 
@@ -9,38 +11,27 @@ void ProjectEditor::SetProject(Path path)
 {
 	if (project && project->GetPath() == path)
 	{
-		return;	   // Same project, ignore call
+		return;    // Same project, ignore call
 	}
 
 	// TODO: Clear project if no path
 
-	assetEditors.Empty();	 // Close previously opened editors
+	assetEditors.Empty();    // Close previously opened editors
 	project = Create<Project>();
 	project->Init(path);
 
 	if (project && project->IsValid())
 	{
-		// Set config path to project folder and save or load manually
-		Path configPath = path / "Saved" / "ui.ini";
-		String configStr = FileSystem::ToString(configPath);
-		ImGui::GetIO().IniFilename = configStr.c_str();
-		if (FileSystem::ExistsAsFile(configPath))
-		{
-			// FIX: Delay this until new frame (essentially, not while already drawing)
-			// ImGui::LoadIniSettingsFromDisk(configStr.c_str());
-		}
-		else
-		{
-			ImGui::SaveIniSettingsToDisk(configStr.c_str());
-		}
+		// Set config path to project folder and save or load manually=
+		Window::Get().SetUIConfigFile(path / "Saved" / "ui.ini");
 	}
 }
 
 void ProjectEditor::OpenType(TAssetPtr<TypeAsset> asset)
 {
 	if (assetEditors.Contains([asset](const auto& editor) {
-			return editor->GetAsset() == asset;
-		}))
+		    return editor->GetAsset() == asset;
+	    }))
 	{
 		// Cant open the same asset twice. We just focus it
 		// TODO: Focus on the already oppenned asset editor
@@ -58,7 +49,7 @@ void ProjectEditor::Draw()
 	if (doOnce || ImGui::DockBuilderGetNode(dockspaceID) == nullptr)
 	{
 		doOnce = false;
-		ResetLayout();	  // Initialize default layout if layout was not set
+		ResetLayout();    // Initialize default layout if layout was not set
 	}
 
 	fileExplorer.Draw();
@@ -75,8 +66,8 @@ void ProjectEditor::Draw()
 void ProjectEditor::ResetLayout()
 {
 	ImVec2 dockspaceSize = ImGui::GetMainViewport()->Size;
-	ImGui::DockBuilderRemoveNode(dockspaceID);							// Clear out existing layout
-	ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_None);	// Add empty node
+	ImGui::DockBuilderRemoveNode(dockspaceID);                          // Clear out existing layout
+	ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_None);    // Add empty node
 	ImGui::DockBuilderSetNodeSize(dockspaceID, dockspaceSize);
 
 	// ============================================== //
@@ -92,7 +83,7 @@ void ProjectEditor::ResetLayout()
 	// ============================================== //
 
 	ImGui::DockBuilderSplitNode(
-		dockspaceID, ImGuiDir_Left, 0.2f, &fileExplorerDockID, &filesDockID);
+	    dockspaceID, ImGuiDir_Left, 0.2f, &fileExplorerDockID, &filesDockID);
 
 	ImGui::DockBuilderGetNode(fileExplorerDockID)->LocalFlags |= ImGuiDockNodeFlags_AutoHideTabBar;
 	ImGui::DockBuilderGetNode(filesDockID)->LocalFlags |= ImGuiDockNodeFlags_CentralNode;
@@ -111,9 +102,9 @@ void ProjectEditor::CreateDockspace()
 	ImGui::SetNextWindowViewport(viewport->ID);
 
 	ImGuiWindowFlags hostWindowFlags =
-		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking |
-		ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+	    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+	    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking |
+	    ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 	if (dockingFlags & ImGuiDockNodeFlags_PassthruCentralNode)
 	{
 		hostWindowFlags |= ImGuiWindowFlags_NoBackground;

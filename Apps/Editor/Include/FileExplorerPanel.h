@@ -5,7 +5,7 @@ class ProjectEditor;
 class FileExplorerPanel
 {
 	ProjectEditor& editor;
-	bool bOpen = true;
+	bool bOpen  = true;
 	bool bDirty = true;
 
 public:

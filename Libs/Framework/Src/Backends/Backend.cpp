@@ -9,9 +9,9 @@ namespace Rift::Backends
 		project = inProject;
 		if (project.IsValid())
 		{
-			buildPath = project->GetPath() / "Build";
+			buildPath         = project->GetPath() / "Build";
 			intermediatesPath = buildPath / "Intermediates";
-			binariesPath = buildPath / "Binaries";
+			binariesPath      = buildPath / "Binaries";
 		}
 	}
 
@@ -23,4 +23,4 @@ namespace Rift::Backends
 		OnCompile();
 		OnCleanup();
 	}
-}	 // namespace Rift::Backends
+}    // namespace Rift::Backends
