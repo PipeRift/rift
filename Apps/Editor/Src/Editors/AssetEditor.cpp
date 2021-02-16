@@ -3,14 +3,60 @@
 #include "Editors/AssetEditor.h"
 #include "Window.h"
 
-#include <imgui.h>
+#include <imgui_internal.h>
 
+
+const Name AssetEditor::rightNode{"rightNode"};
+const Name AssetEditor::centralNode{"centralNode"};
+
+
+AssetEditor::AssetEditor() : Super()
+{
+	layout.OnBuild([](auto& builder) {
+		// =================================== //
+		//                           |         //
+		//                           |         //
+		//          Central          |  Right  //
+		//          (Graph)          |(Details)//
+		//                           |         //
+		//                           |         //
+		// =================================== //
+		builder.Split(builder.GetRootNode(), ImGuiDir_Right, 0.2f, rightNode, centralNode);
+
+		builder.GetNodeLocalFlags(rightNode) |= ImGuiDockNodeFlags_AutoHideTabBar;
+		builder.GetNodeLocalFlags(centralNode) |= ImGuiDockNodeFlags_CentralNode;
+	});
+}
 
 void AssetEditor::Draw()
 {
-	if (ImGui::Begin("File", nullptr))
+	if (Ptr<ProjectEditor> owner = GetOwner<ProjectEditor>())
 	{
+		owner->layout.BindNextWindowToNode(ProjectEditor::centralNode);
+	}
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	if (ImGui::Begin(asset.GetStrPath().data(), nullptr))
+	{
+		ImGui::PopStyleVar(3);
+
+		CreateDockspace();
+		layout.Tick(dockspaceID);
 		ImGui::DockSpace(ImGui::GetID(this));
 	}
+	else
+	{
+		ImGui::PopStyleVar(3);
+	}
 	ImGui::End();
+}
+
+void AssetEditor::CreateDockspace()
+{
+	ImGuiDockNodeFlags dockingFlags = ImGuiDockNodeFlags_None;
+
+	dockspaceID = ImGui::GetID(asset.GetStrPath().data());
+	ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), dockingFlags, nullptr);
 }

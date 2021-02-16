@@ -24,13 +24,12 @@ public:
 	static const Name centralNode;
 
 	ObjectPtr<Project> project;
-	ImGuiID dockspaceID        = 0;
+	ImGuiID dockspaceID = 0;
 
 	TArray<ObjectPtr<AssetEditor>> assetEditors;
 
 	FileExplorerPanel fileExplorer{*this};
 	DockSpaceLayout layout;
-	bool bWantsToResetLayout = false;
 
 protected:
 	bool bSkipFrameAfterMenu = false;

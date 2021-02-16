@@ -53,6 +53,9 @@ void ProjectEditor::SetProject(Path path)
 	{
 		// Set config path to project folder and save or load manually=
 		Window::Get().SetUIConfigFile(path / "Saved" / "ui.ini");
+
+		// Just for testing
+		assetEditors.Add(Create<AssetEditor>(Self()));
 	}
 }
 
@@ -63,7 +66,7 @@ void ProjectEditor::OpenType(TAssetPtr<TypeAsset> asset)
 	    }))
 	{
 		// Cant open the same asset twice. We just focus it
-		// TODO: Focus on the already oppenned asset editor
+		// TODO: Focus on the already oppened asset editor
 		return;
 	}
 
@@ -98,7 +101,6 @@ void ProjectEditor::Draw()
 	}
 
 	ImGui::PopID();
-	bWantsToResetLayout = false;
 }
 
 void ProjectEditor::CreateDockspace()
@@ -175,7 +177,6 @@ void ProjectEditor::DrawMenuBar()
 		{
 			if (ImGui::MenuItem("Reset layout"))
 			{
-				bWantsToResetLayout = true;
 				layout.Reset();
 			}
 			ImGui::EndMenu();

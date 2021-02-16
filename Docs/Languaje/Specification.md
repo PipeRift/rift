@@ -8,14 +8,13 @@ If decided (manually) structs can be passed by reference.
 
 Structs can have functions, but they are prohibited from modifying external memory (not part of the struct), and they are never virtual.
 
-Structs's memory is inlined in the type that contains it. (This also means, the same struct cant contain itself, or loop struct types)
+Structs's memory is inlined in the type that contains it. (This also means that an struct can't contain itself as a nested struct)
 
 
 ## Classes
 **Classes** are similar to structs, with the difference that they get passed-by-reference or pointer by default, and their functions have no limitations.
-
-Classes can (optionally) be virtual, as well as their functions.
+Class functions can be marked as virtual.
 
 
 ## Function Libraries
-**Function Libraries** only contain functions and don't have any representation in memory.
+**Function Libraries** only contain static functions and don't have any representation in memory.

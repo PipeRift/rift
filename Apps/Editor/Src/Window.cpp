@@ -21,7 +21,8 @@ void Window::Init()
 
 	simgui_desc_t imgui_desc{};
 	simgui_setup(imgui_desc);
-	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	// TODO: Multi-viewport doesn't have any effect. Maybe Sokol doesnt support it?
+	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
 	Style::ApplyStyle();
 
 	pass_action           = sg_pass_action();
