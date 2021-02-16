@@ -15,6 +15,7 @@ class AssetEditor : public BaseEditor
 
 	TAssetPtr<TypeAsset> asset;
 
+
 public:
 	AssetEditor() : Super() {}
 

@@ -7,6 +7,27 @@
 #include <imgui_internal.h>
 
 
+const Name ProjectEditor::leftNode{"leftNode"};
+const Name ProjectEditor::centralNode{"centralNode"};
+
+ProjectEditor::ProjectEditor() : Super()
+{
+	layout.OnBuild([](auto& builder) {
+		// ==================================== //
+		//          |                           //
+		//          |                           //
+		//   Left   |          Central          //
+		//(Explorer)|          (Types)          //
+		//          |                           //
+		//          |                           //
+		// ==================================== //
+		builder.Split(builder.GetRootNode(), ImGuiDir_Left, 0.2f, leftNode, centralNode);
+
+		builder.GetNodeLocalFlags(leftNode) |= ImGuiDockNodeFlags_AutoHideTabBar;
+		builder.GetNodeLocalFlags(centralNode) |= ImGuiDockNodeFlags_CentralNode;
+	});
+}
+
 void ProjectEditor::BeforeDestroy()
 {
 	Super::BeforeDestroy();
@@ -65,10 +86,7 @@ void ProjectEditor::Draw()
 	}
 
 	CreateDockspace();
-	if (bWantsToResetLayout || ImGui::DockBuilderGetNode(dockspaceID) == nullptr)
-	{
-		ResetLayout();    // Initialize default layout if layout was not set
-	}
+	layout.Tick(dockspaceID);
 
 	fileExplorer.Draw();
 	for (const auto& editor : assetEditors)
@@ -81,35 +99,6 @@ void ProjectEditor::Draw()
 
 	ImGui::PopID();
 	bWantsToResetLayout = false;
-}
-
-
-void ProjectEditor::ResetLayout()
-{
-	ImVec2 dockspaceSize = ImGui::GetMainViewport()->Size;
-	ImGui::DockBuilderRemoveNode(dockspaceID);    // Clear out existing layout
-	ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);    // Add empty node
-	ImGui::DockBuilderSetNodeSize(dockspaceID, dockspaceSize);
-
-	// ============================================== //
-	//          |                                     //
-	//          |                                     //
-	//          |                                     //
-	//   File   |                Files                //
-	// Explorer |                                     //
-	//          |                                     //
-	//          |                                     //
-	//          |                                     //
-	//          |                                     //
-	// ============================================== //
-
-	ImGui::DockBuilderSplitNode(
-	    dockspaceID, ImGuiDir_Left, 0.2f, &fileExplorerDockID, &filesDockID);
-
-	ImGui::DockBuilderGetNode(fileExplorerDockID)->LocalFlags |= ImGuiDockNodeFlags_AutoHideTabBar;
-	ImGui::DockBuilderGetNode(filesDockID)->LocalFlags |= ImGuiDockNodeFlags_CentralNode;
-
-	ImGui::DockBuilderFinish(dockspaceID);
 }
 
 void ProjectEditor::CreateDockspace()
@@ -187,6 +176,7 @@ void ProjectEditor::DrawMenuBar()
 			if (ImGui::MenuItem("Reset layout"))
 			{
 				bWantsToResetLayout = true;
+				layout.Reset();
 			}
 			ImGui::EndMenu();
 		}

@@ -1,6 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "DockSpaceLayout.h"
 #include "Editors/AssetEditor.h"
 #include "Editors/BaseEditor.h"
 #include "Editors/Projects/FileExplorerPanel.h"
@@ -19,14 +20,16 @@ class ProjectEditor : public BaseEditor
 	CLASS(ProjectEditor, BaseEditor)
 
 public:
-	ObjectPtr<Project> project;
+	static const Name leftNode;
+	static const Name centralNode;
 
+	ObjectPtr<Project> project;
 	ImGuiID dockspaceID        = 0;
-	ImGuiID fileExplorerDockID = 0;
-	ImGuiID filesDockID        = 0;
+
 	TArray<ObjectPtr<AssetEditor>> assetEditors;
 
 	FileExplorerPanel fileExplorer{*this};
+	DockSpaceLayout layout;
 	bool bWantsToResetLayout = false;
 
 protected:
@@ -34,15 +37,12 @@ protected:
 
 
 public:
-	ProjectEditor() = default;
-
+	ProjectEditor();
 	void BeforeDestroy() override;
 	void SetProject(Path path);
 	void OpenType(TAssetPtr<TypeAsset> asset);
 
 	void Draw();
-
-	void ResetLayout();
 
 	bool HasProject()
 	{

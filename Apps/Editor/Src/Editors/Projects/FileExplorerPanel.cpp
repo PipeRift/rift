@@ -10,12 +10,7 @@
 
 void FileExplorerPanel::Draw()
 {
-	if (editor.fileExplorerDockID > 0)
-	{
-		ImGui::SetNextWindowDockID(editor.fileExplorerDockID,
-		    editor.bWantsToResetLayout ? ImGuiCond_Always : ImGuiCond_FirstUseEver);
-	}
-
+	editor.layout.BindNextWindowToNode(editor.leftNode);
 	if (ImGui::Begin(
 	        "File Explorer", &bOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar))
 	{
