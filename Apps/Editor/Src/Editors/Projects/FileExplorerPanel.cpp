@@ -1,11 +1,11 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "FileExplorerPanel.h"
-
-#include "ProjectEditor.h"
+#include "Editors/ProjectEditor.h"
+#include "Editors/Projects/FileExplorerPanel.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
+
 
 
 void FileExplorerPanel::Draw()

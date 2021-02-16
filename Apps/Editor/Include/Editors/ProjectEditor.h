@@ -1,12 +1,12 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "AssetEditor.h"
-#include "FileExplorerPanel.h"
+#include "Editors/AssetEditor.h"
+#include "Editors/BaseEditor.h"
+#include "Editors/Projects/FileExplorerPanel.h"
 
 #include <Assets/AssetPtr.h>
 #include <Assets/TypeAsset.h>
-#include <CoreObject.h>
 #include <Project.h>
 #include <imgui.h>
 
@@ -14,9 +14,9 @@
 using namespace Rift;
 
 
-class ProjectEditor : public Rift::Object
+class ProjectEditor : public BaseEditor
 {
-	CLASS(ProjectEditor, Rift::Object)
+	CLASS(ProjectEditor, BaseEditor)
 
 public:
 	ObjectPtr<Project> project;

@@ -1,6 +1,6 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "ProjectEditor.h"
+#include "Editors/ProjectEditor.h"
 #include "Window.h"
 
 #include <Files/FileDialog.h>
@@ -87,7 +87,7 @@ void ProjectEditor::Draw()
 void ProjectEditor::ResetLayout()
 {
 	ImVec2 dockspaceSize = ImGui::GetMainViewport()->Size;
-	ImGui::DockBuilderRemoveNode(dockspaceID);                          // Clear out existing layout
+	ImGui::DockBuilderRemoveNode(dockspaceID);    // Clear out existing layout
 	ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);    // Add empty node
 	ImGui::DockBuilderSetNodeSize(dockspaceID, dockspaceSize);
 

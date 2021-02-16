@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "BaseEditor.h"
+#include "Editors/BaseEditor.h"
 
 #include <Assets/AssetPtr.h>
 #include <Assets/TypeAsset.h>

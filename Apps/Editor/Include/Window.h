@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "RootEditor.h"
+#include "Editors/RootEditor.h"
 
 #include <Misc/Time.h>
 #include <imgui.h>

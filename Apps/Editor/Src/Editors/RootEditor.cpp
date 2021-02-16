@@ -1,6 +1,6 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "RootEditor.h"
+#include "Editors/RootEditor.h"
 
 #include <Files/FileDialog.h>
 #include <imgui.h>

@@ -1,8 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "NodeGraphPanel.h"
+#include "Editors/Assets/DetailsPanel.h"
 
 #include <imgui.h>
 
 
-void NodeGraphPanel::Draw() {}
+void DetailsPanel::Draw() {}

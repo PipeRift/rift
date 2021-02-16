@@ -8,10 +8,6 @@ class BaseEditor : public Rift::Object
 {
 	CLASS(BaseEditor, Rift::Object)
 
-protected:
-	bool bOpen = true;
-
-
 public:
 	BaseEditor() : Super() {}
 };
