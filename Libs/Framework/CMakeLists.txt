@@ -5,11 +5,8 @@ add_library(Rift STATIC)
 add_library(Rift::Rift ALIAS Rift)
 target_include_directories(Rift PUBLIC Include)
 target_sources(Rift PRIVATE ${FRAMEWORK_SOURCE_FILES})
-set_property(TARGET Rift PROPERTY CXX_STANDARD 20)
-set_target_properties (Rift PROPERTIES
-    CXX_STANDARD 20
-    FOLDER Rift
-)
+rift_target_enable_CPP20(Rift)
+set_target_properties (Rift PROPERTIES FOLDER Rift)
 rift_target_define_platform(Rift)
 rift_target_shared_output_directory(Rift)
 target_link_libraries(Rift PUBLIC Rift::Core)

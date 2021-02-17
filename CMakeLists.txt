@@ -3,9 +3,18 @@ cmake_minimum_required (VERSION 3.12)
 MESSAGE(STATUS "CMAKE_ROOT: " ${CMAKE_ROOT})
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    set(RIFT_IS_PROJECT ON)
+else()
+    set(RIFT_IS_PROJECT OFF)
+endif()
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(BUILD_STATIC_LIBS "Build static libraries" ON)
+option(RIFT_BUILD_TESTS "Build RiftCore tests" ${RIFT_IS_PROJECT})
 option(RIFT_ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
+
 
 # Turn on the verbose
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -22,7 +31,7 @@ include(CMake/Util.cmake)
 add_subdirectory(Extern)
 
 # Framework
-set(RIFT_BUILD_TESTS ON CACHE BOOL "Build RiftCore tests")
+set(RIFT_CORE_BUILD_TESTS ${RIFT_BUILD_TESTS} CACHE BOOL "Build RiftCore tests")
 add_subdirectory(Libs/Core)
 add_subdirectory(Libs/Framework)
 
@@ -33,12 +42,9 @@ add_subdirectory(Apps/CLI)
 add_subdirectory(Apps/Editor)
 
 # Tests
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+if(BUILD_TESTING AND RIFT_BUILD_TESTS)
     include(CTest)
-
-    if(BUILD_TESTING)
-        add_subdirectory(Tests)
-    endif()
+    add_subdirectory(Tests)
 endif()
 
 # clang-format

@@ -1,42 +1,27 @@
-name: CI/CD
+name: windows-cicd
 
 on: [push, pull_request]
 
 jobs:
   Build:
-    name: Build ${{ matrix.name }}(${{ matrix.build-type }})
+    name: Build ${{ matrix.name }} (${{ matrix.build-type }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        name: [windows-msvc, windows-clang, ubuntu-clang, ubuntu-gcc, macos-clang]
+        name: [MSVC, Clang]
         build-type: [Release, Debug]
         include:
-          - name: windows-msvc
+          - name: MSVC
             compiler: msvc
             os: windows-latest
             cxx: cl
             cc: cl
-          - name: windows-clang
+          - name: Clang
             compiler: clang
             os: windows-latest
             cxx: clang-cl
             cc: clang-cl
-          - name: ubuntu-clang
-            compiler: clang
-            os: ubuntu-20.04
-            cxx: clang++
-            cc: clang
-          - name: ubuntu-gcc
-            compiler: gcc
-            os: ubuntu-20.04
-            cxx: g++
-            cc: gcc
-          - name: macos-clang
-            compiler: clang
-            os: macos-latest
-            cxx: clang++
-            cc: clang
 
     steps:
       - name: Checkout repository
@@ -67,7 +52,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: Build
-          key: ${{ matrix.name }}-${{ matrix.build-type }}-build
+          key: windows-${{ matrix.compiler }}-${{ matrix.build-type }}-build-${{ secrets.VCACHE}}
 
       - name: Configure and Build
         uses: lukka/run-cmake@v3.3
@@ -76,26 +61,19 @@ jobs:
           cmakeGenerator: 'Ninja'
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeListsTxtPath: 'CMakeLists.txt'
-          cmakeAppendedArgs: -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+          cmakeBuildType: ${{ matrix.build-type }}
+          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+          buildWithCMakeArgs: --config ${{ matrix.build-type }}
           buildDirectory: 'Build'
 
       - uses: actions/upload-artifact@v2
         # Only clang artifacts are stored
-        if: ${{ matrix.compiler == 'clang' && matrix.build-type == 'Release' }}
+        if: ${{ matrix.compiler == 'msvc' && matrix.build-type == 'Release' }}
         with:
-          name: ${{ matrix.name }}-build
+          name: windows-${{ matrix.compiler }}-build
           path: Build/Bin
 
-  Test:
-    needs: Build
-    name: Test (Windows)
-    runs-on: windows-latest
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: windows-clang-build
-          path: ${{ runner.workspace }}
-
-      - name: Run tests
-        run: 'Tests.exe --report-timing --reporter=spec'
+      - name: Run Tests
+        run: |
+          cd Build
+          ctest --output-on-failure -j2 -C ${{ matrix.build-type }}
