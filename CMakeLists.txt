@@ -21,7 +21,7 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 # Export commands for Clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project(Rift VERSION 0.1 LANGUAGES CXX)
+project(Rift VERSION 0.1 LANGUAGES CXX C)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(CMake/DownloadProject.cmake)

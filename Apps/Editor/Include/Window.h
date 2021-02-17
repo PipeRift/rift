@@ -4,9 +4,6 @@
 #include "Editors/RootEditor.h"
 
 #include <Misc/Time.h>
-#include <imgui.h>
-#include <sokol_app.h>
-#include <sokol_gfx.h>
 
 
 using namespace Rift;
@@ -14,8 +11,8 @@ using namespace Rift;
 
 class Window
 {
+	struct GLFWwindow* window = nullptr;
 	FrameTime frameTime;
-	sg_pass_action pass_action;
 
 	RootEditor rootEditor;
 
@@ -29,12 +26,9 @@ public:
 		frameTime.SetFPSCap(60);
 	}
 
-	void Init();
-	void Frame();
-	void Event(const struct sapp_event* ev);
-	void Shutdown();
+	~Window();
 
-	void Tick(float deltaTime);
+	int Run();
 
 	void Close();
 
@@ -51,6 +45,10 @@ public:
 		return rootEditor;
 	}
 
-private:
+protected:
+	void Tick(float deltaTime);
+
 	void UpdateConfig();
+
+	static void OnGl3WError(int error, const char* description);
 };

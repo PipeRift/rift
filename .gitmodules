@@ -10,3 +10,6 @@
 [submodule "Extern/sokol"]
 	path = Extern/sokol
 	url = https://github.com/floooh/sokol.git
+[submodule "Extern/glfw"]
+	path = Extern/glfw
+	url = https://github.com/glfw/glfw.git
