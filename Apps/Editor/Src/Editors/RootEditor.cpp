@@ -61,7 +61,7 @@ void RootEditor::DrawProjectPickerPopup()
 		ImGui::SetItemDefaultFocus();
 		ImGui::Separator();
 		ImGui::Text("Recent Projects");
-		static const char* recentProjects[]{};
+		static const char* recentProjects[]{"One recent project"};
 		static int selected = 0;
 		if (ImGui::BeginListBox("##RecentProjects"))
 		{
