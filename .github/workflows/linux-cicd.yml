@@ -31,7 +31,7 @@ jobs:
         uses: snickerbockers/submodules-init@v4
 
       - name: Install dependencies
-        run: sudo apt-get install build-essential xz-utils curl libx11-dev libglu1-mesa-dev libxrandr-dev
+        run: sudo apt-get install build-essential xz-utils curl libx11-dev xorg-dev libglu1-mesa-dev
 
       - name: Get CMake
         uses: lukka/get-cmake@latest
