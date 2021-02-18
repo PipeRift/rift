@@ -30,8 +30,8 @@ jobs:
       - name: Init Submodules
         uses: snickerbockers/submodules-init@v4
 
-      - name: Install OpenGL
-        run: sudo apt-get install libgl1-mesa-dev
+      - name: Install dependencies
+        run: sudo apt-get install build-essential xz-utils curl libx11-dev
 
       - name: Get CMake
         uses: lukka/get-cmake@latest
