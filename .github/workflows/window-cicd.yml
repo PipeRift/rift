@@ -74,6 +74,5 @@ jobs:
           path: Build/Bin
 
       - name: Run Tests
-        run: |
-          cd Build
-          ctest --output-on-failure -j2 -C ${{ matrix.build-type }}
+        working-directory: ./Build
+        run: ctest --output-on-failure -j2 -C ${{ matrix.build-type }}

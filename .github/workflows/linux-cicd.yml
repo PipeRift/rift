@@ -30,6 +30,9 @@ jobs:
       - name: Init Submodules
         uses: snickerbockers/submodules-init@v4
 
+      - name: Install OpenGL
+        run: sudo apt-get install libgl1-mesa-dev
+
       - name: Get CMake
         uses: lukka/get-cmake@latest
 
@@ -74,6 +77,5 @@ jobs:
           path: Build/Bin
 
       - name: Run Tests
-        run: |
-          cd Build
-          ctest --output-on-failure -j2 -C ${{ matrix.build-type }}
+        working-directory: ./Build
+        run: ctest --output-on-failure -j2 -C ${{ matrix.build-type }}
