@@ -5,6 +5,13 @@ MESSAGE(STATUS "CMAKE_ROOT: " ${CMAKE_ROOT})
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 
+# Turn on the verbose
+set(CMAKE_VERBOSE_MAKEFILE OFF)
+# Export commands for Clangd
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+project(Rift VERSION 0.1 LANGUAGES CXX C)
+
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(RIFT_IS_PROJECT ON)
 else()
@@ -16,12 +23,7 @@ option(RIFT_BUILD_TESTS "Build RiftCore tests" ${RIFT_IS_PROJECT})
 option(RIFT_ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
 
 
-# Turn on the verbose
-set(CMAKE_VERBOSE_MAKEFILE OFF)
-# Export commands for Clangd
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project(Rift VERSION 0.1 LANGUAGES CXX C)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(CMake/DownloadProject.cmake)
