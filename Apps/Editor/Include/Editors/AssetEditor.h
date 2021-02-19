@@ -43,6 +43,15 @@ public:
 		return asset;
 	}
 
+	DockSpaceLayout& GetLayout()
+	{
+		return layout;
+	}
+	const DockSpaceLayout& GetLayout() const
+	{
+		return layout;
+	}
+
 private:
 	void CreateDockspace();
 };
