@@ -10,14 +10,12 @@
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
 {
 	Rift::Context::Initialize();
-	Window window{};
-	return window.Run();
+	return Window::Get().Run();
 }
 #else
 int main(int, char**)
 {
 	Rift::Context::Initialize();
-	Window window{};
-	return window.Run();
+	return Window::Get().Run();
 }
 #endif

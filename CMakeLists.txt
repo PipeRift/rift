@@ -19,10 +19,7 @@ else()
 endif()
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(BUILD_STATIC_LIBS "Build static libraries" ON)
-option(RIFT_BUILD_TESTS "Build RiftCore tests" ${RIFT_IS_PROJECT})
-option(RIFT_ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
-
-
+option(RIFT_BUILD_TESTS "Build Rift and Core tests" ${RIFT_IS_PROJECT})
 
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -42,6 +39,10 @@ add_subdirectory(Apps/CLI)
 
 # Editor
 add_subdirectory(Apps/Editor)
+
+file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/Resources)
+file(GLOB_RECURSE RESOURCE_FILES CONFIGURE_DEPENDS Resources/**/*.*)
+file(COPY ${RESOURCE_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Resources)
 
 # Tests
 if(BUILD_TESTING AND RIFT_BUILD_TESTS)

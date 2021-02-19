@@ -3,11 +3,6 @@ include(FetchContent)
 
 set(BUILD_SHARED_LIBS OFF)
 
-if(RIFT_ENABLE_PROFILER)
-    set(ENABLE_STATISTICS On)
-endif()
-
-
 # Submodule libraries
 set(CLI11_BUILD_TESTS OFF CACHE BOOL "Build CLI11 tests")
 set(CMAKE_POLICY_DEFAULT_CMP0054 NEW)
@@ -38,5 +33,3 @@ target_sources(imgui PRIVATE
 rift_target_enable_CPP20(imgui)
 set_target_properties (imgui PROPERTIES FOLDER Extern)
 target_link_libraries(imgui PRIVATE glfw gl3w)
-
-

@@ -44,7 +44,6 @@ void AssetEditor::Draw()
 
 		CreateDockspace();
 		layout.Tick(dockspaceID);
-		ImGui::DockSpace(ImGui::GetID(this));
 	}
 	else
 	{
