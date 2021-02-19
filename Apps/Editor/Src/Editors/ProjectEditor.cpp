@@ -100,7 +100,7 @@ void ProjectEditor::Draw()
 	fileExplorer.Draw();
 	for (const auto& editor : assetEditors)
 	{
-		if (editor.IsValid())
+		if (editor)
 		{
 			editor->Draw();
 		}
@@ -186,6 +186,13 @@ void ProjectEditor::DrawMenuBar()
 			if (ImGui::MenuItem("Reset layout"))
 			{
 				layout.Reset();
+				for (const auto& editor : assetEditors)
+				{
+					if (editor)
+					{
+						editor->GetLayout().Reset();
+					}
+				}
 			}
 			ImGui::EndMenu();
 		}
