@@ -50,6 +50,10 @@ void RootEditor::Draw()
 
 void RootEditor::DrawProjectPickerPopup()
 {
+	// Center modal when appearing
+	ImGui::SetNextWindowPos(
+	    ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
 	if (ImGui::BeginPopupModal("Project Picker", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 	{
 		if (ImGui::Button("Open Project..."))
