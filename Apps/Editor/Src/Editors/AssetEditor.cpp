@@ -44,6 +44,8 @@ void AssetEditor::Draw()
 
 		CreateDockspace();
 		layout.Tick(dockspaceID);
+
+		nodeGraph.Draw(layout);
 	}
 	else
 	{

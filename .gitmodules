@@ -13,3 +13,6 @@
 [submodule "Extern/glfw"]
 	path = Extern/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "Extern/imnodes"]
+	path = Extern/imnodes
+	url = https://github.com/PipeRift/imnodes.git
