@@ -7,7 +7,6 @@
 #include <imgui_internal.h>
 
 
-
 void FileExplorerPanel::Draw()
 {
 	editor.layout.BindNextWindowToNode(editor.leftNode);
@@ -47,20 +46,14 @@ void FileExplorerPanel::DrawList()
 		CacheProjectFiles();
 	}
 
+	const TArray<AssetInfo>& assets = editor.project->GetAllTypeAssets();
+
 	// Directories
 	{
 		ImGui::BeginChild("Files");
-		if (ImGui::TreeNodeEx("Directories", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::Selectable(
-			    "Project.rf", false, 0, ImVec2(ImGui::GetWindowContentRegionWidth(), 0));
-			ImGui::TreePop();
-		}
-		for (const auto& asset : editor.project->GetAllTypeAssets())
-		{
-			ImGui::Selectable(asset.GetStrPath().c_str(), false, 0,
-			    ImVec2(ImGui::GetWindowContentRegionWidth(), 0));
-		}
+		
+		CreateFolderNode(projectFolder);
+
 		ImGui::EndChild();
 	}
 }
@@ -68,5 +61,85 @@ void FileExplorerPanel::DrawList()
 void FileExplorerPanel::CacheProjectFiles()
 {
 	editor.project->ScanAssets();
+
+	// TODO: the name of the project should be the same as the one in the project file
+	projectFolder.name = "Project Name";
+	OrganizeProjectFiles();
+
 	bDirty = false;
+}
+
+void FileExplorerPanel::OrganizeProjectFiles()
+{
+	const TArray<AssetInfo>& assets = editor.project->GetAllTypeAssets();
+
+	for(auto& asset : assets)
+	{
+		Path path = FileSystem::FromString(asset.GetStrPath());
+		Path relative = FileSystem::ToRelative(path, editor.project->GetPath());
+		String st = FileSystem::ToString(relative);
+
+		// Check if the asset is a rift file (.rf)
+		// TODO: move the file extensions to a config file or something
+		static String extension = ".rf";
+
+		if(CString::EndsWith(st, extension))
+		{
+			Folder* current = &projectFolder;
+
+			for(auto it = relative.begin(); it != relative.end(); ++it)
+			{
+				String name = FileSystem::ToString(*it);
+				if(CString::EndsWith(name, extension))
+				{
+					current->files.Add({name, asset});
+				}
+				else
+				{
+					bool exists = false;
+					for(size_t i = 0; !exists && i < current->folders.Size(); ++i)
+					{
+						Folder* folder = &current->folders[i];
+						if(folder->name == name)
+						{
+							exists = true;
+							current = folder;
+						}
+					}
+
+					if(!exists)
+					{
+						current->folders.Add({name});
+						current = &current->folders.Last();
+					}
+				}
+			}
+
+		}
+
+	}
+
+}
+
+void FileExplorerPanel::CreateFolderNode(const Folder& folder)
+{
+	if(ImGui::TreeNode(folder.name.c_str()))
+	{
+		for(auto& childFolder : folder.folders)
+		{
+			CreateFolderNode(childFolder);
+		}
+
+		for(auto& file : folder.files)
+		{
+			CreateFileNode(file);
+		}
+
+		ImGui::TreePop();
+	}
+}
+
+void FileExplorerPanel::CreateFileNode(const File& file)
+{
+	ImGui::Selectable(file.name.c_str());
 }
