@@ -38,7 +38,7 @@ namespace Rift::Backends
 
 		void Compile();
 
-		bool HasErrors() const
+		[[nodiscard]] bool HasErrors() const
 		{
 			return errors.Size() > 0;
 		}
