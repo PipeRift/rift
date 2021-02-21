@@ -1,0 +1,5 @@
+---
+Checks: '-*, clang-analyzer-*, clang-analyzer-cplusplus*, performance-*, bugprone-*, modernize-*, misc-unused-*,-bugprone-macro-parentheses, -modernize-use-trailing-return-type, -modernize-use-nodiscard, -modernize-use-default-member-init, -modernize-use-equals-default, -performance-unnecessary-value-param, -misc-unused-parameters, -bugprone-branch-clone'
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+FormatStyle: file

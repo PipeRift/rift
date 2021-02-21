@@ -1,6 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Editors/ProjectEditor.h"
+
 #include "Window.h"
 
 #include <Files/FileDialog.h>
