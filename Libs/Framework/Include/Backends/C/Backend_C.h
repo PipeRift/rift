@@ -14,12 +14,12 @@ namespace Rift::Backends::C
 		String code;
 
 	public:
-		virtual void OnCompile() override;
+		void OnCompile() override;
 
 	protected:
 		void Generate();
 		void Build();
-		virtual void OnCleanup() override;
+		void OnCleanup() override;
 
 
 		void AddInclude(StringView name);
