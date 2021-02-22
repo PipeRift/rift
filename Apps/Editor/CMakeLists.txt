@@ -6,7 +6,13 @@ file(GLOB_RECURSE RiftEditor_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
 target_sources(RiftEditor PRIVATE ${RiftEditor_SOURCE_FILES})
 rift_target_enable_CPP20(RiftEditor)
 set_target_properties (RiftEditor PROPERTIES FOLDER Rift)
-target_link_libraries(RiftEditor PUBLIC Rift::Rift glfw gl3w imgui)
+target_link_libraries(RiftEditor PUBLIC
+    Rift::Rift
+    glfw
+    gl3w
+    imgui
+    imnodes
+)
 rift_target_define_platform(RiftEditor)
 rift_target_shared_output_directory(RiftEditor)
 

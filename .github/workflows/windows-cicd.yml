@@ -1,4 +1,4 @@
-name: linux-cicd
+name: windows-cicd
 
 on: [push, pull_request]
 
@@ -9,19 +9,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [Clang, GCC]
+        name: [MSVC, Clang]
         build-type: [Release, Debug]
         include:
+          - name: MSVC
+            compiler: msvc
+            os: windows-latest
+            cxx: cl
+            cc: cl
           - name: Clang
             compiler: clang
-            os: ubuntu-20.04
-            cxx: clang++
-            cc: clang
-          - name: GCC
-            compiler: gcc
-            os: ubuntu-20.04
-            cxx: g++
-            cc: gcc
+            os: windows-latest
+            cxx: clang-cl
+            cc: clang-cl
 
     steps:
       - name: Checkout repository
@@ -29,9 +29,6 @@ jobs:
 
       - name: Init Submodules
         uses: snickerbockers/submodules-init@v4
-
-      - name: Install dependencies
-        run: sudo apt -y install build-essential xz-utils curl libx11-dev xorg-dev libglu1-mesa-dev
 
       - name: Get CMake
         uses: lukka/get-cmake@latest
@@ -55,7 +52,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: Build
-          key: linux-${{ matrix.compiler }}-${{ matrix.build-type }}-build-${{ secrets.VCACHE}}
+          key: windows-${{ matrix.compiler }}-${{ matrix.build-type }}-build-${{ secrets.VCACHE}}
 
       - name: Configure and Build
         uses: lukka/run-cmake@v3.3
@@ -71,9 +68,9 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         # Only clang artifacts are stored
-        if: ${{ matrix.compiler == 'clang' && matrix.build-type == 'Release' }}
+        if: ${{ matrix.compiler == 'msvc' && matrix.build-type == 'Release' }}
         with:
-          name: linux-${{ matrix.compiler }}-build
+          name: windows-${{ matrix.compiler }}-build
           path: Build/Bin
 
       - name: Run Tests

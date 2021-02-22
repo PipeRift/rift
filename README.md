@@ -6,7 +6,7 @@ Rift is a **compiled**, **typed** and **visual** programming language.
 
 ## Software Quality
 
-[![Windows](https://img.shields.io/github/workflow/status/piperift/rift/windows-cicd?label=Windows)](https://github.com/PipeRift/rift/actions?query=workflow%3Awindows-cicd) [![Linux](https://img.shields.io/github/workflow/status/piperift/rift/linux-cicd?label=Linux)](https://github.com/PipeRift/rift/actions?query=workflow%3Alinux-cicd) [![MacOS](https://img.shields.io/github/workflow/status/piperift/rift/macos-cicd?label=MacOS)](https://github.com/PipeRift/rift/actions?query=workflow%3Amacos-cicd)
+[![Windows](https://img.shields.io/github/workflow/status/piperift/rift/windows-cicd?label=Windows)](https://github.com/PipeRift/rift/actions/workflows/windows-cicd.yml) [![Linux](https://img.shields.io/github/workflow/status/piperift/rift/linux-cicd?label=Linux)](https://github.com/PipeRift/rift/actions/workflows/linux-cicd.yml) [![MacOS](https://img.shields.io/github/workflow/status/piperift/rift/macos-cicd?label=MacOS)](https://github.com/PipeRift/rift/actions/workflows/macos-cicd.yml)
 
 The code is validated on the following platforms/compilers:
 
@@ -14,3 +14,5 @@ The code is validated on the following platforms/compilers:
 | ------- | ------ | ----- |
 | clang   | clang  | clang |
 | msvc    | gcc    |       |
+
+Architectures **X64** and **ARM64** are supported.

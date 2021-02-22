@@ -1,9 +1,11 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Editors/ProjectEditor.h"
+
 #include "Window.h"
 
 #include <Files/FileDialog.h>
+#include <Profiler.h>
 #include <imgui_internal.h>
 
 
@@ -56,6 +58,8 @@ void ProjectEditor::SetProject(Path path)
 
 		// Just for testing
 		assetEditors.Add(Create<AssetEditor>(Self()));
+
+		project->LoadAllAssets();
 	}
 }
 
@@ -76,6 +80,8 @@ void ProjectEditor::OpenType(TAssetPtr<TypeAsset> asset)
 
 void ProjectEditor::Draw()
 {
+	ZoneScoped;
+
 	String projectPath = FileSystem::ToString(project->GetPath());
 	ImGui::PushID(Hash<String>()(projectPath));
 
@@ -94,7 +100,7 @@ void ProjectEditor::Draw()
 	fileExplorer.Draw();
 	for (const auto& editor : assetEditors)
 	{
-		if (editor.IsValid())
+		if (editor)
 		{
 			editor->Draw();
 		}
@@ -105,6 +111,7 @@ void ProjectEditor::Draw()
 
 void ProjectEditor::CreateDockspace()
 {
+	ZoneScoped;
 	ImGuiDockNodeFlags dockingFlags = ImGuiDockNodeFlags_None;
 
 	const auto& viewport = ImGui::GetMainViewport();
@@ -138,6 +145,7 @@ void ProjectEditor::CreateDockspace()
 
 void ProjectEditor::DrawMenuBar()
 {
+	ZoneScoped;
 	if (ImGui::BeginMainMenuBar())
 	{
 		if (ImGui::BeginMenu("File"))
@@ -178,6 +186,13 @@ void ProjectEditor::DrawMenuBar()
 			if (ImGui::MenuItem("Reset layout"))
 			{
 				layout.Reset();
+				for (const auto& editor : assetEditors)
+				{
+					if (editor)
+					{
+						editor->GetLayout().Reset();
+					}
+				}
 			}
 			ImGui::EndMenu();
 		}

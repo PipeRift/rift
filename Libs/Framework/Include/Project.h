@@ -42,19 +42,19 @@ namespace Rift
 		void ScanAssets();
 		void LoadAllAssets();
 
-		Path ToProjectPath(const Path& path) const;
+		[[nodiscard]] Path ToProjectPath(const Path& path) const;
 
-		Path GetPath() const
+		[[nodiscard]] Path GetPath() const
 		{
 			return projectPath;
 		}
 
-		bool IsValid() const
+		[[nodiscard]] bool IsValid() const
 		{
 			return projectAsset.IsValid();
 		}
 
-		const TArray<AssetInfo>& GetAllTypeAssets() const
+		[[nodiscard]] const TArray<AssetInfo>& GetAllTypeAssets() const
 		{
 			return allTypes;
 		}

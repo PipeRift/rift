@@ -5,9 +5,12 @@
 #include "Style.h"
 
 #include <Math/Color.h>
+#include <Profiler.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-#include <stdio.h>
+#include <imnodes.h>
+
+#include <cstdio>
 
 // OpenGL loader
 #include <GL/gl3w.h>
@@ -60,6 +63,7 @@ int Window::Run()
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
+	imnodes::Initialize();
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;    // Enable Keyboard Controls
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -99,50 +103,48 @@ int Window::Run()
 	// ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL,
 	// io.Fonts->GetGlyphRangesJapanese()); IM_ASSERT(font != NULL);
 
-
 	while (!glfwWindowShouldClose(window))
 	{
 		frameTime.Tick();
+		{
+			ZoneScopedN("PreFrame");
+			glfwPollEvents();
 
-		// Poll and handle events (inputs, window resize, etc.)
-		// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui
-		// wants to use your inputs.
-		// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main
-		// application.
-		// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main
-		// application. Generally you may always pass all inputs to dear imgui, and hide them from
-		// your application based on those two flags.
-		glfwPollEvents();
-
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+		}
 
 		Tick(frameTime.GetDeltaTime());
 
-		ImGui::Render();
-		i32 display_w, display_h;
-		glfwGetFramebufferSize(window, &display_w, &display_h);
-		glViewport(0, 0, display_w, display_h);
-
-		static constexpr Rift::LinearColor clearColor{0.1f, 0.1f, 0.1f, 1.00f};
-		glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-		glClear(GL_COLOR_BUFFER_BIT);
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-		// Update and Render additional Platform Windows
-		// (Platform functions may change the current OpenGL context, so we save/restore it to make
-		// it easier to paste this code elsewhere.
-		//  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
-			GLFWwindow* backup_current_context = glfwGetCurrentContext();
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent(backup_current_context);
-		}
+			ZoneScopedNC("Render", 0xA245D1);
 
-		glfwSwapBuffers(window);
+			ImGui::Render();
+			i32 display_w, display_h;
+			glfwGetFramebufferSize(window, &display_w, &display_h);
+			glViewport(0, 0, display_w, display_h);
+
+			static constexpr Rift::LinearColor clearColor{0.1f, 0.1f, 0.1f, 1.00f};
+			glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+			glClear(GL_COLOR_BUFFER_BIT);
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+			// Update and Render additional Platform Windows
+			// (Platform functions may change the current OpenGL context, so we save/restore it to
+			// make it easier to paste this code elsewhere.
+			//  For this specific demo app we could also call glfwMakeContextCurrent(window)
+			//  directly)
+			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+			{
+				GLFWwindow* backup_current_context = glfwGetCurrentContext();
+				ImGui::UpdatePlatformWindows();
+				ImGui::RenderPlatformWindowsDefault();
+				glfwMakeContextCurrent(backup_current_context);
+			}
+			glfwSwapBuffers(window);
+		}
+		FrameMark;
 
 		frameTime.PostTick();
 	}
@@ -156,10 +158,12 @@ Window::~Window()
 		// Cleanup
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
+		imnodes::Shutdown();
 		ImGui::DestroyContext();
 
 		glfwDestroyWindow(window);
 		glfwTerminate();
+		window = nullptr;
 	}
 }
 
@@ -180,6 +184,7 @@ void Window::SetUIConfigFile(Path path)
 
 void Window::Tick(float /*deltaTime*/)
 {
+	ZoneScopedN("Tick");
 	UpdateConfig();
 
 	rootEditor.Draw();

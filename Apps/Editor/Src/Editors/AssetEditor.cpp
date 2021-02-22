@@ -1,6 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Editors/AssetEditor.h"
+
 #include "Window.h"
 
 #include <imgui_internal.h>
@@ -44,7 +45,8 @@ void AssetEditor::Draw()
 
 		CreateDockspace();
 		layout.Tick(dockspaceID);
-		ImGui::DockSpace(ImGui::GetID(this));
+
+		nodeGraph.Draw(layout);
 	}
 	else
 	{

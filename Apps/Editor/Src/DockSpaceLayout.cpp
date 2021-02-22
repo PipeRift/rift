@@ -44,6 +44,9 @@ ImGuiDockNodeFlags& DockSpaceLayout::Builder::GetNodeSharedFlags(Rift::Name node
 
 void DockSpaceLayout::Tick(ImGuiID dockSpaceID)
 {
+	// Keep root id always updated
+	nameToDockNodeId.Insert(rootNodeId, dockSpaceID);
+
 	if (bCurrentlyReseting)
 	{
 		bCurrentlyReseting = false;
@@ -78,9 +81,6 @@ void DockSpaceLayout::BindNextWindowToNode(Rift::Name nodeId)
 
 void DockSpaceLayout::DoReset(ImGuiID dockSpaceID)
 {
-	// Keep root id always updated
-	nameToDockNodeId.Insert(rootNodeId, dockSpaceID);
-
 	// Clear out existing layout
 	ImGui::DockBuilderRemoveNode(dockSpaceID);
 

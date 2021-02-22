@@ -44,7 +44,7 @@ private:
 
 
 public:
-	DockSpaceLayout() {}
+	DockSpaceLayout() = default;
 
 	DockSpaceLayout& OnBuild(Rift::TFunction<void(Builder&)> callback)
 	{
