@@ -8,6 +8,7 @@
 #include <Profiler.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <imnodes.h>
 
 #include <cstdio>
 
@@ -62,6 +63,7 @@ int Window::Run()
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
+	imnodes::Initialize();
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;    // Enable Keyboard Controls
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -156,6 +158,7 @@ Window::~Window()
 		// Cleanup
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
+		imnodes::Shutdown();
 		ImGui::DestroyContext();
 
 		glfwDestroyWindow(window);
