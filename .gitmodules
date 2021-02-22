@@ -15,4 +15,4 @@
 	url = https://github.com/glfw/glfw.git
 [submodule "Extern/imnodes"]
 	path = Extern/imnodes
-	url = https://github.com/PipeRift/imnodes.git
+	url = https://github.com/Piperift/imnodes.git
