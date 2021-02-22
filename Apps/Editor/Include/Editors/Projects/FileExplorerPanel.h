@@ -1,6 +1,13 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "Strings/String.h"
+#include "Assets/TypeAsset.h"
+#include "Assets/AssetPtr.h"
+#include "Containers/Array.h"
+
+using namespace Rift;
+
 // Forward declarations
 class ProjectEditor;
 
