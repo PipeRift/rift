@@ -1,8 +1,11 @@
 #!/bin/bash
-sudo apt-get install xorg-dev libglu1-mesa-dev
-apt-get -y install build-essential xz-utils curl libx11-dev xorg-dev libglu1-mesa-dev
-apt-get -y install llvm clang clang-tidy clang-format
+sudo apt -y update
+sudo apt -y upgrade
 
-apt-get -y install gdb
+sudo apt -y install build-essential xz-utils curl
+sudo apt -y install libx11-dev xorg-dev libglu1-mesa-devz
+sudo apt -y install llvm clang clang-tidy clang-format
 
-apt-get -y install cmake
+sudo apt -y install gdb
+
+sudo apt -y install cmake

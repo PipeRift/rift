@@ -5,7 +5,6 @@
 
 #include <Misc/Time.h>
 
-
 using namespace Rift;
 
 
@@ -21,10 +20,7 @@ class Window
 
 
 public:
-	Window()
-	{
-		frameTime.SetFPSCap(60);
-	}
+	Window() = default;
 
 	~Window();
 

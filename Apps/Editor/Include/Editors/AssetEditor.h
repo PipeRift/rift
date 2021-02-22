@@ -3,6 +3,7 @@
 
 #include "DockSpaceLayout.h"
 #include "Editors/BaseEditor.h"
+#include "NodeGraph/NodeGraphPanel.h"
 
 #include <Assets/AssetPtr.h>
 #include <Assets/TypeAsset.h>
@@ -14,14 +15,17 @@ using namespace Rift;
 class AssetEditor : public BaseEditor
 {
 	CLASS(AssetEditor, BaseEditor)
-
+public:
 	static const Name rightNode;
 	static const Name centralNode;
 
+private:
 	TAssetPtr<TypeAsset> asset;
 
 	ImGuiID dockspaceID = 0;
 	DockSpaceLayout layout;
+
+	NodeGraphPanel nodeGraph{};
 
 
 public:
@@ -41,6 +45,15 @@ public:
 	TAssetPtr<TypeAsset> GetAsset() const
 	{
 		return asset;
+	}
+
+	DockSpaceLayout& GetLayout()
+	{
+		return layout;
+	}
+	const DockSpaceLayout& GetLayout() const
+	{
+		return layout;
 	}
 
 private:
