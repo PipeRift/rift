@@ -9,16 +9,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ubuntu-20.04
         name: [Clang, GCC]
         build-type: [Release, Debug]
         architecture: [X64, ARM64]
         include:
           - name: Clang
+            os: ubuntu-20.04
             compiler: clang
             cxx: clang++
             cc: clang
           - name: GCC
+            os: ubuntu-20.04
             compiler: gcc
             cxx: g++
             cc: gcc
