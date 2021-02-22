@@ -55,59 +55,54 @@ void FileExplorerPanel::DrawList()
 
 void FileExplorerPanel::CacheProjectFiles()
 {
+	bDirty = false;
 	editor.project->ScanAssets();
 
 	// TODO: the name of the project should be the same as the one in the project file
 	projectFolder.name = "Project Name";
+	
 	OrganizeProjectFiles();
-
-	bDirty = false;
 }
 
 void FileExplorerPanel::OrganizeProjectFiles()
 {
-	const TArray<AssetInfo>& assets = editor.project->GetAllTypeAssets();
-	for(auto& asset : assets)
+	for(auto& asset : editor.project->GetAllTypeAssets())
 	{
 		const Path path = FileSystem::FromString(asset.GetStrPath());
 		const Path relative = FileSystem::ToRelative(path, editor.project->GetPath());
 		const String relativeString = FileSystem::ToString(relative);
-
-		// Check if the asset is a rift file (.rf)
-		// TODO: move the file extensions to a config file or something
-		static StringView extension = ".rf";
-
-		if(CString::EndsWith(relativeString, extension))
+		Folder* current = &projectFolder;
+		
+		for(auto it = relative.begin(); it != relative.end(); ++it)
 		{
-			Folder* current = &projectFolder;
-			for(auto it = relative.begin(); it != relative.end(); ++it)
-			{
-				const String name = FileSystem::ToString(*it);
-				if(CString::EndsWith(name, extension))
-				{
-					current->files.Add({name, asset});
-				}
-				else
-				{
-					bool exists = false;
-					for(i32 i = 0; i < current->folders.Size(); ++i)
-					{
-						Folder& folder = current->folders[i];
-						if(folder.name == name)
-						{
-							current = &folder;
-							break;
-						}
-					}
+			// TODO: move the file extensions to a config file or something
+			static StringView extension = ".rf";
 
-					if(!exists)
+			const String name = FileSystem::ToString(*it);
+			if(CString::EndsWith(name, extension))
+			{
+				current->files.Add({name, asset});
+			}
+			else
+			{
+				bool exists = false;
+				for(i32 i = 0; i < current->folders.Size(); ++i)
+				{
+					Folder& folder = current->folders[i];
+					if(folder.name == name)
 					{
-						current->folders.Add({name});
-						current = &current->folders.Last();
+						current = &folder;
+						exists = true;
+						break;
 					}
+				}
+
+				if(!exists)
+				{
+					current->folders.Add({name});
+					current = &current->folders.Last();
 				}
 			}
-
 		}
 
 	}
