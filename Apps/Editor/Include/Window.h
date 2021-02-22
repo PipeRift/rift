@@ -20,7 +20,7 @@ class Window
 
 
 public:
-	Window() {}
+	Window() = default;
 
 	~Window();
 

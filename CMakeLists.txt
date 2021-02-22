@@ -69,6 +69,6 @@ if(CLANG_FORMAT_EXE)
 endif()
 
 if(CLANG_TIDY_EXE)
-    add_custom_target(ClangTidy COMMAND ${CLANG_TIDY_EXE} -p ./ ${ALL_SOURCE_FILES} -checks=* -fix)
+    add_custom_target(ClangTidy COMMAND ${CLANG_TIDY_EXE} -p=./Build ${ALL_SOURCE_FILES} --fix)
     set_target_properties (ClangTidy PROPERTIES FOLDER Util)
 endif()

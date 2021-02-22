@@ -96,7 +96,8 @@
         "bitset": "cpp",
         "codecvt": "cpp",
         "compare": "cpp",
-        "coroutine": "cpp"
+        "coroutine": "cpp",
+        "*.tcc": "cpp"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "banditTestExplorer.testsuites": [

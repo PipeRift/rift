@@ -8,7 +8,8 @@
 #include <Profiler.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-#include <stdio.h>
+
+#include <cstdio>
 
 // OpenGL loader
 #include <GL/gl3w.h>
