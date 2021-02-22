@@ -1,7 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editors/ProjectEditor.h"
 #include "Editors/Projects/FileExplorerPanel.h"
+
+#include "Editors/ProjectEditor.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -46,16 +47,11 @@ void FileExplorerPanel::DrawList()
 		CacheProjectFiles();
 	}
 
-	const TArray<AssetInfo>& assets = editor.project->GetAllTypeAssets();
+	ImGui::BeginChild("Files");
+	
+	CreateFolderNode(projectFolder);
 
-	// Directories
-	{
-		ImGui::BeginChild("Files");
-		
-		CreateFolderNode(projectFolder);
-
-		ImGui::EndChild();
-	}
+	ImGui::EndChild();
 }
 
 void FileExplorerPanel::CacheProjectFiles()
@@ -72,24 +68,22 @@ void FileExplorerPanel::CacheProjectFiles()
 void FileExplorerPanel::OrganizeProjectFiles()
 {
 	const TArray<AssetInfo>& assets = editor.project->GetAllTypeAssets();
-
 	for(auto& asset : assets)
 	{
-		Path path = FileSystem::FromString(asset.GetStrPath());
-		Path relative = FileSystem::ToRelative(path, editor.project->GetPath());
-		String st = FileSystem::ToString(relative);
+		const Path path = FileSystem::FromString(asset.GetStrPath());
+		const Path relative = FileSystem::ToRelative(path, editor.project->GetPath());
+		const String relativeString = FileSystem::ToString(relative);
 
 		// Check if the asset is a rift file (.rf)
 		// TODO: move the file extensions to a config file or something
-		static String extension = ".rf";
+		static StringView extension = ".rf";
 
-		if(CString::EndsWith(st, extension))
+		if(CString::EndsWith(relativeString, extension))
 		{
 			Folder* current = &projectFolder;
-
 			for(auto it = relative.begin(); it != relative.end(); ++it)
 			{
-				String name = FileSystem::ToString(*it);
+				const String name = FileSystem::ToString(*it);
 				if(CString::EndsWith(name, extension))
 				{
 					current->files.Add({name, asset});
@@ -97,13 +91,13 @@ void FileExplorerPanel::OrganizeProjectFiles()
 				else
 				{
 					bool exists = false;
-					for(size_t i = 0; !exists && i < current->folders.Size(); ++i)
+					for(i32 i = 0; i < current->folders.Size(); ++i)
 					{
-						Folder* folder = &current->folders[i];
-						if(folder->name == name)
+						Folder& folder = current->folders[i];
+						if(folder.name == name)
 						{
-							exists = true;
-							current = folder;
+							current = &folder;
+							break;
 						}
 					}
 

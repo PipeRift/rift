@@ -4,21 +4,21 @@
 // Forward declarations
 class ProjectEditor;
 
-struct File
-{
-	String name;
-	TAssetPtr<TypeAsset> info;
-};
-
-struct Folder
-{
-	String name;
-	TArray<Folder> folders;
-	TArray<File> files;
-};
-
 class FileExplorerPanel
 {
+	struct File
+	{
+		String name;
+		TAssetPtr<TypeAsset> info;
+	};
+
+	struct Folder
+	{
+		String name;
+		TArray<Folder> folders;
+		TArray<File> files;
+	};
+
 	ProjectEditor& editor;
 	Folder projectFolder;
 	bool bOpen  = true;
@@ -35,8 +35,8 @@ public:
 
 	void CacheProjectFiles();
 
+private:
 	void OrganizeProjectFiles();
-
 	void CreateFolderNode(const Folder& folder);
 	void CreateFileNode(const File& file);
 };

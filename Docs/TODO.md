@@ -1,11 +1,13 @@
-# Features
+# TODOs
+
+## Features
 
 ---
 
-# Improvements
+## Improvements
 - Move file extensions (.rf & .rift) to somewhere more accesible
 
 ---
 
-## File system
+### File system
 - Get the project name from the project file (.rift)
