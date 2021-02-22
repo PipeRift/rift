@@ -4,22 +4,22 @@ on: [push, pull_request]
 
 jobs:
   Build:
-    name: Build ${{ matrix.name }} (${{ matrix.build-type }})
-    runs-on: ${{ matrix.os }}
+    name: Build ${{ matrix.name }} (${{ matrix.build-type }}-${{ matrix.architecture }})
+    runs-on: [self-hosted, linux]
     strategy:
       fail-fast: false
       matrix:
+        os: ubuntu-20.04
         name: [Clang, GCC]
         build-type: [Release, Debug]
+        architecture: [X64, ARM64]
         include:
           - name: Clang
             compiler: clang
-            os: ubuntu-20.04
             cxx: clang++
             cc: clang
           - name: GCC
             compiler: gcc
-            os: ubuntu-20.04
             cxx: g++
             cc: gcc
 
@@ -55,7 +55,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: Build
-          key: linux-${{ matrix.compiler }}-${{ matrix.build-type }}-build-${{ secrets.VCACHE}}
+          key: linux-${{ matrix.compiler }}-${{ matrix.build-type }}-${{ matrix.architecture }}-build-${{ secrets.VCACHE}}
 
       - name: Configure and Build
         uses: lukka/run-cmake@v3.3
@@ -73,7 +73,7 @@ jobs:
         # Only clang artifacts are stored
         if: ${{ matrix.compiler == 'clang' && matrix.build-type == 'Release' }}
         with:
-          name: linux-${{ matrix.compiler }}-build
+          name: linux-${{ matrix.compiler }}-${{ matrix.architecture }}-build
           path: Build/Bin
 
       - name: Run Tests
