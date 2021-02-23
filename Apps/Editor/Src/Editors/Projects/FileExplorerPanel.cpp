@@ -71,7 +71,6 @@ void FileExplorerPanel::OrganizeProjectFiles()
 	{
 		const Path path = FileSystem::FromString(asset.GetStrPath());
 		const Path relative = FileSystem::ToRelative(path, editor.project->GetPath());
-		const String relativeString = FileSystem::ToString(relative);
 		Folder* current = &projectFolder;
 		
 		for(auto it = relative.begin(); it != relative.end(); ++it)
