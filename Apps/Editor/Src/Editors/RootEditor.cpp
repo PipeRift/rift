@@ -2,8 +2,9 @@
 
 #include "Editors/RootEditor.h"
 
+#include "Misc/Imgui.h"
+
 #include <Files/FileDialog.h>
-#include <imgui.h>
 
 
 bool RootEditor::OpenProject(Path path)
@@ -45,7 +46,24 @@ void RootEditor::Draw()
 	{
 		ImGui::OpenPopup("Project Picker");
 	}
+
+	DrawMenuBar();
 	DrawProjectPickerPopup();
+
+	memoryDebugger.Draw();
+}
+
+void RootEditor::DrawMenuBar()
+{
+	if (ImGui::BeginMainMenuBar())
+	{
+		if (ImGui::BeginMenu("Views"))
+		{
+			ImGui::MenuItem("Memory", nullptr, &memoryDebugger.open);
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();
+	}
 }
 
 void RootEditor::DrawProjectPickerPopup()

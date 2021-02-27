@@ -1,8 +1,12 @@
 
 #include "Style.h"
 
-#include <imgui.h>
+#include "Misc/Imgui.h"
 
+#include <Math/Color.h>
+
+
+using namespace Rift;
 
 namespace Style
 {
@@ -12,7 +16,7 @@ namespace Style
 		auto& style = ImGui::GetStyle();
 
 		ImVec4* colors                      = style.Colors;
-		colors[ImGuiCol_FrameBg]            = ImVec4(0.48f, 0.40f, 0.16f, 0.54f);
+		colors[ImGuiCol_FrameBg]            = Color(0.48f, 0.40f, 0.16f, 0.54f);
 		colors[ImGuiCol_FrameBgHovered]     = ImVec4(0.98f, 0.77f, 0.26f, 0.40f);
 		colors[ImGuiCol_FrameBgActive]      = ImVec4(0.98f, 0.77f, 0.26f, 0.67f);
 		colors[ImGuiCol_TitleBgActive]      = ImVec4(0.48f, 0.40f, 0.16f, 1.00f);
@@ -40,6 +44,7 @@ namespace Style
 		colors[ImGuiCol_NavHighlight]       = ImVec4(0.98f, 0.77f, 0.26f, 1.00f);
 
 		style.WindowRounding    = 2;
+		style.TabRounding       = 1;
 		style.ScrollbarRounding = 2;
 	}
 }    // namespace Style

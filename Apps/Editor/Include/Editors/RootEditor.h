@@ -2,12 +2,14 @@
 #pragma once
 
 #include "ProjectEditor.h"
+#include "Tools/BestFitArenaDebugger.h"
 
 
 struct RootEditor
 {
 private:
 	ObjectPtr<ProjectEditor> projectEditor;
+	Rift::BestFitArenaDebugger memoryDebugger;
 
 
 public:
@@ -17,5 +19,6 @@ public:
 	void Draw();
 
 private:
+	void DrawMenuBar();
 	void DrawProjectPickerPopup();
 };
