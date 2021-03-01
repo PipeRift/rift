@@ -2,7 +2,7 @@
 
 #include "Editors/Assets/DetailsPanel.h"
 
-#include "Misc/Imgui.h"
+#include "UI/UI.h"
 
 
 void DetailsPanel::Draw() {}

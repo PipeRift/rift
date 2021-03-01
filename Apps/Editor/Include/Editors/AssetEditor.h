@@ -3,8 +3,8 @@
 
 #include "DockSpaceLayout.h"
 #include "Editors/BaseEditor.h"
-#include "Misc/Imgui.h"
 #include "NodeGraph/NodeGraphPanel.h"
+#include "UI/UI.h"
 
 #include <Assets/AssetPtr.h>
 #include <Assets/TypeAsset.h>

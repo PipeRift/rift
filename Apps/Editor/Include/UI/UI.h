@@ -7,7 +7,7 @@
 
 #define IM_VEC2_CLASS_EXTRA                                      \
 	constexpr ImVec2(Rift::v2 other) : x(other.x), y(other.y) {} \
-	constexpr ImVec2& operator=(Rift::v2 other)                  \
+	constexpr ImVec2& operator=(Rift::Vec<2, float> other)       \
 	{                                                            \
 		x = other.x;                                             \
 		y = other.y;                                             \
@@ -77,5 +77,12 @@
 		return newVector;                                                                         \
 	}
 
+
 #include <imgui.h>
 #include <imgui_internal.h>
+
+
+namespace Rift::UI
+{
+	using namespace ImGui;
+}
