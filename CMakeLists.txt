@@ -38,6 +38,7 @@ add_subdirectory(Libs/Framework)
 add_subdirectory(Apps/CLI)
 
 # Editor
+add_subdirectory(Libs/UI)
 add_subdirectory(Apps/Editor)
 
 file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/Resources)

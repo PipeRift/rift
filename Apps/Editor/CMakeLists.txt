@@ -8,10 +8,7 @@ rift_target_enable_CPP20(RiftEditor)
 set_target_properties (RiftEditor PROPERTIES FOLDER Rift)
 target_link_libraries(RiftEditor PUBLIC
     Rift::Rift
-    glfw
-    gl3w
-    imgui
-    imnodes
+    Rift::UI
 )
 rift_target_define_platform(RiftEditor)
 rift_target_shared_output_directory(RiftEditor)
