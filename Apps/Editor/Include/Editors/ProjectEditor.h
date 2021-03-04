@@ -5,11 +5,11 @@
 #include "Editors/AssetEditor.h"
 #include "Editors/BaseEditor.h"
 #include "Editors/Projects/FileExplorerPanel.h"
-#include "UI/UI.h"
 
 #include <Assets/AssetPtr.h>
 #include <Assets/TypeAsset.h>
 #include <Project.h>
+#include <UI/UI.h>
 
 
 using namespace Rift;

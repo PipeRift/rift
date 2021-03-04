@@ -2,7 +2,7 @@
 
 #include "Editors/ProjectEditor.h"
 
-#include "Window.h"
+#include "Editor.h"
 
 #include <Files/FileDialog.h>
 #include <Profiler.h>
@@ -35,7 +35,7 @@ void ProjectEditor::BeforeDestroy()
 	Super::BeforeDestroy();
 
 	// Set config path to project folder and save or load manually=
-	Window::Get().SetUIConfigFile({});
+	Editor::Get().SetUIConfigFile({});
 }
 
 void ProjectEditor::SetProject(Path path)
@@ -54,7 +54,7 @@ void ProjectEditor::SetProject(Path path)
 	if (HasProject())
 	{
 		// Set config path to project folder and save or load manually=
-		Window::Get().SetUIConfigFile(path / "Saved" / "ui.ini");
+		Editor::Get().SetUIConfigFile(path / "Saved" / "ui.ini");
 
 		// Just for testing
 		assetEditors.Add(Create<AssetEditor>(Self()));
@@ -154,14 +154,14 @@ void ProjectEditor::DrawMenuBar()
 			{
 				Path folder =
 				    Dialogs::SelectFolder("Select project folder", FileSystem::GetCurrent());
-				if (Window::Get().GetRootEditor().OpenProject(folder))
+				if (Editor::Get().GetRootEditor().OpenProject(folder))
 				{
 					bSkipFrameAfterMenu = true;
 				}
 			}
 			if (ImGui::MenuItem("Close current"))
 			{
-				Window::Get().GetRootEditor().CloseProject();
+				Editor::Get().GetRootEditor().CloseProject();
 				bSkipFrameAfterMenu = true;
 			}
 			ImGui::Separator();

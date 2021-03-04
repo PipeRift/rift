@@ -4,10 +4,13 @@
 #include <Platform/Platform.h>
 
 
-class NodeGraphPanel
+namespace Rift
 {
-public:
-	NodeGraphPanel();
-	~NodeGraphPanel();
-	void Draw(struct DockSpaceLayout& layout);
-};
+	class NodeGraphPanel
+	{
+	public:
+		NodeGraphPanel();
+		~NodeGraphPanel();
+		void Draw(struct DockSpaceLayout& layout);
+	};
+}    // namespace Rift

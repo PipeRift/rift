@@ -10,52 +10,53 @@
 #include <Assets/TypeAsset.h>
 
 
-using namespace Rift;
-
-class AssetEditor : public BaseEditor
+namespace Rift
 {
-	CLASS(AssetEditor, BaseEditor)
-public:
-	static const Name rightNode;
-	static const Name centralNode;
-
-private:
-	TAssetPtr<TypeAsset> asset;
-
-	ImGuiID dockspaceID = 0;
-	DockSpaceLayout layout;
-
-	NodeGraphPanel nodeGraph{};
-
-
-public:
-	AssetEditor();
-
-	void SetAsset(TAssetPtr<TypeAsset> inAsset)
+	class AssetEditor : public BaseEditor
 	{
-		if (asset)
+		CLASS(AssetEditor, BaseEditor)
+	public:
+		static const Name rightNode;
+		static const Name centralNode;
+
+	private:
+		TAssetPtr<TypeAsset> asset;
+
+		ImGuiID dockspaceID = 0;
+		DockSpaceLayout layout;
+
+		NodeGraphPanel nodeGraph{};
+
+
+	public:
+		AssetEditor();
+
+		void SetAsset(TAssetPtr<TypeAsset> inAsset)
 		{
-			return;    // Can only assign an asset once
+			if (asset)
+			{
+				return;    // Can only assign an asset once
+			}
+			asset = inAsset;
 		}
-		asset = inAsset;
-	}
 
-	void Draw();
+		void Draw();
 
-	TAssetPtr<TypeAsset> GetAsset() const
-	{
-		return asset;
-	}
+		TAssetPtr<TypeAsset> GetAsset() const
+		{
+			return asset;
+		}
 
-	DockSpaceLayout& GetLayout()
-	{
-		return layout;
-	}
-	const DockSpaceLayout& GetLayout() const
-	{
-		return layout;
-	}
+		DockSpaceLayout& GetLayout()
+		{
+			return layout;
+		}
+		const DockSpaceLayout& GetLayout() const
+		{
+			return layout;
+		}
 
-private:
-	void CreateDockspace();
-};
+	private:
+		void CreateDockspace();
+	};
+}    // namespace Rift

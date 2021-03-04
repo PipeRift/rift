@@ -31,6 +31,7 @@ namespace Rift::UI
 		return size * currentFrame;
 	}
 
+
 	bool SpriteButton(AnimatedSprite& sprite, i32 framePadding, const LinearColor& bgColor,
 	    const LinearColor& tintColor)
 	{

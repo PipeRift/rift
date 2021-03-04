@@ -9,50 +9,53 @@
 #include <imnodes.h>
 
 
-NodeGraphPanel::NodeGraphPanel() {}
-NodeGraphPanel::~NodeGraphPanel() {}
-
-void NodeGraphPanel::Draw(DockSpaceLayout& layout)
+namespace Rift
 {
-	imnodes::PushStyleVar(imnodes::StyleVar_PinLineThickness, 2.5f);
-	imnodes::PushStyleVar(imnodes::StyleVar_GridSpacing, 8.f);
+	NodeGraphPanel::NodeGraphPanel() {}
+	NodeGraphPanel::~NodeGraphPanel() {}
 
-	layout.BindNextWindowToNode(AssetEditor::centralNode);
-	if (ImGui::Begin("Graph"))
+	void NodeGraphPanel::Draw(DockSpaceLayout& layout)
 	{
-		imnodes::BeginNodeEditor();
+		imnodes::PushStyleVar(imnodes::StyleVar_PinLineThickness, 2.5f);
+		imnodes::PushStyleVar(imnodes::StyleVar_GridSpacing, 8.f);
 
-		{    // Node
-			imnodes::PushColorStyle(imnodes::ColorStyle_TitleBar, IM_COL32(11, 109, 191, 255));
-			imnodes::BeginNode(1);
+		layout.BindNextWindowToNode(AssetEditor::centralNode);
+		if (ImGui::Begin("Graph"))
+		{
+			imnodes::BeginNodeEditor();
 
-			imnodes::BeginNodeTitleBar();
-			ImGui::Text("If");
-			imnodes::EndNodeTitleBar();
+			{    // Node
+				imnodes::PushColorStyle(imnodes::ColorStyle_TitleBar, IM_COL32(11, 109, 191, 255));
+				imnodes::BeginNode(1);
 
-			imnodes::BeginInputAttribute(2, imnodes::PinShape_Triangle);
-			ImGui::Text("");
-			imnodes::EndInputAttribute();
+				imnodes::BeginNodeTitleBar();
+				ImGui::Text("If");
+				imnodes::EndNodeTitleBar();
 
-			ImGui::SameLine();
+				imnodes::BeginInputAttribute(2, imnodes::PinShape_Triangle);
+				ImGui::Text("");
+				imnodes::EndInputAttribute();
 
-			imnodes::BeginOutputAttribute(4, imnodes::PinShape_Triangle);
-			ImGui::Text("True");
-			imnodes::EndOutputAttribute();
+				ImGui::SameLine();
 
-			imnodes::BeginInputAttribute(3, imnodes::PinShape_CircleFilled);
-			ImGui::Text("Value");
-			imnodes::EndInputAttribute();
+				imnodes::BeginOutputAttribute(4, imnodes::PinShape_Triangle);
+				ImGui::Text("True");
+				imnodes::EndOutputAttribute();
 
-			ImGui::SameLine();
+				imnodes::BeginInputAttribute(3, imnodes::PinShape_CircleFilled);
+				ImGui::Text("Value");
+				imnodes::EndInputAttribute();
 
-			imnodes::BeginOutputAttribute(5, imnodes::PinShape_Triangle);
-			ImGui::Text("False");
-			imnodes::EndOutputAttribute();
+				ImGui::SameLine();
 
-			imnodes::EndNode();
+				imnodes::BeginOutputAttribute(5, imnodes::PinShape_Triangle);
+				ImGui::Text("False");
+				imnodes::EndOutputAttribute();
+
+				imnodes::EndNode();
+			}
+			imnodes::EndNodeEditor();
 		}
-		imnodes::EndNodeEditor();
+		ImGui::End();
 	}
-	ImGui::End();
-}
+}    // namespace Rift

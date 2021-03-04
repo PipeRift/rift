@@ -2,9 +2,8 @@
 
 #include "Editors/RootEditor.h"
 
-#include "UI/UI.h"
-
 #include <Files/FileDialog.h>
+#include <UI/UI.h>
 
 
 bool RootEditor::OpenProject(Path path)
