@@ -49,7 +49,7 @@ void FileExplorerPanel::DrawList()
 
 	ImGui::BeginChild("Files");
 
-	CreateFolderNode(projectFolder);
+	DrawFolderItems(projectFolder);
 
 	ImGui::EndChild();
 }
@@ -58,9 +58,6 @@ void FileExplorerPanel::CacheProjectFiles()
 {
 	bDirty = false;
 	editor.project->ScanAssets();
-
-	// TODO: the name of the project should be the same as the one in the project file
-	projectFolder.name = "Project Name";
 
 	OrganizeProjectFiles();
 }
@@ -107,25 +104,30 @@ void FileExplorerPanel::OrganizeProjectFiles()
 	}
 }
 
-void FileExplorerPanel::CreateFolderNode(const Folder& folder)
+void FileExplorerPanel::DrawFolderItems(const Folder& folder)
 {
-	if (ImGui::TreeNode(folder.name.c_str()))
+	for (auto& childFolder : folder.folders)
 	{
-		for (auto& childFolder : folder.folders)
+		if (ImGui::TreeNode(childFolder.name.c_str()))
 		{
-			CreateFolderNode(childFolder);
+			DrawFolderItems(childFolder);
+			ImGui::TreePop();
 		}
+	}
 
-		for (auto& file : folder.files)
-		{
-			CreateFileNode(file);
-		}
-
-		ImGui::TreePop();
+	for (auto& file : folder.files)
+	{
+		DrawFile(file);
 	}
 }
 
-void FileExplorerPanel::CreateFileNode(const File& file)
+void FileExplorerPanel::DrawFile(const File& file)
 {
-	ImGui::Selectable(file.name.c_str());
+	if (ImGui::Selectable(file.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick))
+	{
+		if (ImGui::IsMouseDoubleClicked(0))
+		{
+			editor.OpenType(file.info);
+		}
+	}
 }

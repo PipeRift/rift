@@ -58,9 +58,6 @@ namespace Rift
 		UpdateConfig();
 
 		rootEditor.Draw();
-
-		static bool open = true;
-		ImGui::ShowDemoWindow(&open);
 	}
 
 	void Editor::UpdateConfig()

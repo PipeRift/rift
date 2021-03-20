@@ -50,6 +50,13 @@ void RootEditor::Draw()
 	DrawProjectPickerPopup();
 
 	memoryDebugger.Draw();
+
+#if BUILD_DEBUG
+	if (showDemo)
+	{
+		ImGui::ShowDemoWindow(&showDemo);
+	}
+#endif
 }
 
 void RootEditor::DrawMenuBar()
@@ -61,6 +68,11 @@ void RootEditor::DrawMenuBar()
 			ImGui::MenuItem("Memory", nullptr, &memoryDebugger.open);
 			ImGui::EndMenu();
 		}
+
+#if BUILD_DEBUG
+		ImGui::MenuItem("Demo", nullptr, &showDemo);
+#endif
+
 		ImGui::EndMainMenuBar();
 	}
 }

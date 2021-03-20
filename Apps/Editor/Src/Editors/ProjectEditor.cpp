@@ -56,10 +56,7 @@ void ProjectEditor::SetProject(Path path)
 		// Set config path to project folder and save or load manually=
 		Editor::Get().SetUIConfigFile(path / "Saved" / "ui.ini");
 
-		// Just for testing
-		assetEditors.Add(Create<AssetEditor>(Self()));
-
-		project->LoadAllAssets();
+		// project->LoadAllAssets();
 	}
 }
 
@@ -74,8 +71,19 @@ void ProjectEditor::OpenType(TAssetPtr<TypeAsset> asset)
 		return;
 	}
 
+	if (!asset.Load())
+	{
+		Log::Error("Couldn't open type editor. File can't be loaded.");
+		return;
+	}
+
 	assetEditors.Add(Create<AssetEditor>(Self()));
 	assetEditors.Last()->SetAsset(asset);
+}
+
+void ProjectEditor::CloseType(TAssetPtr<TypeAsset> asset)
+{
+	pendingTypesToClose.Add(asset);
 }
 
 void ProjectEditor::Draw()
@@ -98,12 +106,17 @@ void ProjectEditor::Draw()
 	layout.Tick(dockspaceID);
 
 	fileExplorer.Draw();
+
+
+	// Close editors if needed
+	assetEditors.RemoveIf([this](const auto& item) {
+		return !item || pendingTypesToClose.Contains(item->GetAsset());
+	});
+	pendingTypesToClose.Empty();
+
 	for (const auto& editor : assetEditors)
 	{
-		if (editor)
-		{
-			editor->Draw();
-		}
+		editor->Draw();
 	}
 
 	ImGui::PopID();

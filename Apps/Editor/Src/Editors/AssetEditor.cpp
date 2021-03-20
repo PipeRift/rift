@@ -33,15 +33,17 @@ namespace Rift
 
 	void AssetEditor::Draw()
 	{
-		if (Ptr<ProjectEditor> owner = GetOwner<ProjectEditor>())
-		{
-			owner->layout.BindNextWindowToNode(ProjectEditor::centralNode);
-		}
+		auto owner = GetOwner<ProjectEditor>();
+		assert(owner);
+		owner->layout.BindNextWindowToNode(ProjectEditor::centralNode);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		if (ImGui::Begin(asset.GetStrPath().data(), nullptr))
+
+		bool isOpen = true;
+		ImGui::PushID(asset.GetStrPath().data());
+		if (ImGui::Begin(asset.GetFilename().c_str(), &isOpen))
 		{
 			ImGui::PopStyleVar(3);
 
@@ -55,6 +57,12 @@ namespace Rift
 			ImGui::PopStyleVar(3);
 		}
 		ImGui::End();
+		ImGui::PopID();
+
+		if (!isOpen)
+		{
+			owner->CloseType(asset);
+		}
 	}
 
 	void AssetEditor::CreateDockspace()

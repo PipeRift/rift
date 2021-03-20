@@ -11,6 +11,9 @@ private:
 	ObjectPtr<ProjectEditor> projectEditor;
 	Rift::BestFitArenaDebugger memoryDebugger;
 
+#if BUILD_DEBUG
+	bool showDemo = false;
+#endif
 
 public:
 	bool OpenProject(Path path);

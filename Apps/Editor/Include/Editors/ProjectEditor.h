@@ -27,6 +27,7 @@ public:
 	ImGuiID dockspaceID = 0;
 
 	TArray<ObjectPtr<AssetEditor>> assetEditors;
+	TArray<TAssetPtr<TypeAsset>> pendingTypesToClose;
 
 	FileExplorerPanel fileExplorer{*this};
 	DockSpaceLayout layout;
@@ -40,6 +41,7 @@ public:
 	void BeforeDestroy() override;
 	void SetProject(Path path);
 	void OpenType(TAssetPtr<TypeAsset> asset);
+	void CloseType(TAssetPtr<TypeAsset> asset);
 
 	void Draw();
 

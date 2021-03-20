@@ -44,6 +44,6 @@ public:
 
 private:
 	void OrganizeProjectFiles();
-	void CreateFolderNode(const Folder& folder);
-	void CreateFileNode(const File& file);
+	void DrawFolderItems(const Folder& folder);
+	void DrawFile(const File& file);
 };
