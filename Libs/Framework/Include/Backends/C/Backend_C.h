@@ -7,29 +7,12 @@
 
 namespace Rift::Backends::C
 {
-	class Backend_C : public Backend
+	struct CCompilerContext : public CompilerContext
 	{
-		CLASS(Backend_C, Backend)
-
-		String code;
-
-	public:
-		void OnCompile() override;
-
-	protected:
-		void Generate();
-		void Build();
-		void OnCleanup() override;
-
-
-		void AddInclude(StringView name);
-
-		void ForwardDeclareClass(StringView name);
-		void BeginClass(StringView name);
-		void EndClass();
-
-		void ForwardDeclareStruct(StringView name);
-		void BeginStruct(StringView name);
-		void EndStruct();
+		STRUCT(CCompilerContext, CompilerContext)
 	};
+
+
+	void GenerateCode(const CCompilerContext& config);
+	void Compile(Ptr<Project> project, const CompilerConfig& config);
 }    // namespace Rift::Backends::C

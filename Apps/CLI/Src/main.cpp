@@ -9,7 +9,6 @@
 
 
 using namespace Rift;
-using Backend_C = Rift::Backends::C::Backend_C;
 
 
 int main(int argc, char** argv)
@@ -20,9 +19,8 @@ int main(int argc, char** argv)
 	auto project = Create<Project>();
 	project->Init(Path("Project"));
 
-	auto backend = Create<Backend_C>();
-	backend->SetProject(project);
-	backend->Compile();
+	Rift::Backends::CompilerConfig config;
+	Rift::Backends::C::Compile(project, config);
 
 	while (true)
 	{

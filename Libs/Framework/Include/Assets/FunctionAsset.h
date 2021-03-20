@@ -1,7 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "Language/Function.h"
+#include "Language/TypeFunction.h"
 
 #include <Assets/AssetData.h>
 #include <Assets/AssetPtr.h>

@@ -11,6 +11,8 @@ namespace Rift
 {
 	void Project::Init(const Path& path)
 	{
+		bool specialized = isSpecialized<Rift::Refl::TStaticEnumInitializer<EOther>>::value;
+
 		projectPath = FileSystem::ToAbsolute(path);
 
 		if (!projectPath.empty())

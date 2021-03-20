@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Project.h"
+#include "Reflection/Reflection.h"
 
 #include <CoreObject.h>
 #include <Profiler.h>
@@ -10,49 +11,45 @@
 
 namespace Rift::Backends
 {
-	struct CompileError : public Struct
+	struct CompilerConfig : public Struct
 	{
-		STRUCT(CompileError, Struct)
-
-		String text;
-	};
-
-
-	class Backend : public Object
-	{
-		CLASS(Backend, Object)
-
-	protected:
-		Ptr<Project> project;
+		STRUCT(CompilerConfig, Struct)
 
 		Path buildPath;
 		Path intermediatesPath;
 		Path binariesPath;
 
+
+		void Init(Ptr<Project> rootProject);
+	};
+
+
+	struct CompileError : public Struct
+	{
+		STRUCT(CompileError, Struct)
+
+		PROP(String, text)
+		String text;
+	};
+
+
+	struct CompilerContext : public Struct
+	{
+		STRUCT(CompilerContext, Struct)
+
+		PROP(CompilerConfig, config)
+		CompilerConfig config;
+
+		Ptr<Project> project;
+
 		PROP(TArray<CompileError>, errors)
 		TArray<CompileError> errors;
 
 
-	public:
-		void SetProject(Ptr<Project> inProject);
-
-		void Compile();
-
-		[[nodiscard]] bool HasErrors() const
+		void AddError(StringView str);
+		bool HasErrors() const
 		{
 			return errors.Size() > 0;
 		}
-
-		void AddError(StringView str)
-		{
-			Log::Error(str);
-			CompileError newError{};
-			newError.text = str;
-			errors.Add(newError);
-		}
-
-	protected:
-		virtual void OnCompile() = 0;
-		virtual void OnCleanup(){};
 	};
 }    // namespace Rift::Backends

@@ -16,6 +16,21 @@
 
 namespace Rift
 {
+	enum class EProjectTargetType : u8
+	{
+		Executable,
+		SharedLibrary,
+		StaticLibrary
+	};
+	ENUM(EProjectTargetType)
+
+	enum class EOther : u8
+	{
+		Executable,
+		SharedLibrary,
+		StaticLibrary
+	};
+
 	/**
 	 * A project represents a group of classes, structs and other features of the lenguage that can
 	 * be edited or compiled

@@ -2,6 +2,7 @@
 
 #include "Editor.h"
 
+#include <Profiler.h>
 #include <UI/Window.h>
 
 

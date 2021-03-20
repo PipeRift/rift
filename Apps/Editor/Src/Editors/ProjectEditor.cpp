@@ -1,9 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Editor.h"
 #include "Editors/ProjectEditor.h"
 
-#include "Editor.h"
-
+#include <Backends/C/Backend_C.h>
 #include <Files/FileDialog.h>
 #include <Profiler.h>
 #include <imgui_internal.h>
@@ -170,6 +170,22 @@ void ProjectEditor::DrawMenuBar()
 			if (ImGui::MenuItem("Save All", "CTRL+SHFT+S")) {}
 			ImGui::EndMenu();
 		}
+
+		if (ImGui::BeginMenu("Build"))
+		{
+			if (ImGui::MenuItem("Build current"))
+			{
+				Rift::Backends::CompilerConfig config;
+				Rift::Backends::C::Compile(project, config);
+			}
+			if (ImGui::MenuItem("Build all"))
+			{
+				Rift::Backends::CompilerConfig config;
+				Rift::Backends::C::Compile(project, config);
+			}
+			ImGui::EndMenu();
+		}
+
 		if (ImGui::BeginMenu("Edit"))
 		{
 			if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
@@ -196,6 +212,7 @@ void ProjectEditor::DrawMenuBar()
 			}
 			ImGui::EndMenu();
 		}
+
 		ImGui::EndMainMenuBar();
 	}
 }

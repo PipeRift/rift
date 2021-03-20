@@ -4,23 +4,21 @@
 
 namespace Rift::Backends
 {
-	void Backend::SetProject(Ptr<Project> inProject)
+	void CompilerConfig::Init(Ptr<Project> rootProject)
 	{
-		project = inProject;
-		if (project.IsValid())
+		if (rootProject.IsValid())
 		{
-			buildPath         = project->GetPath() / "Build";
+			buildPath         = rootProject->GetPath() / "Build";
 			intermediatesPath = buildPath / "Intermediates";
 			binariesPath      = buildPath / "Binaries";
 		}
 	}
 
-	void Backend::Compile()
+	void CompilerContext::AddError(StringView str)
 	{
-		// Reset any previous errors
-		errors.Empty();
-
-		OnCompile();
-		OnCleanup();
+		Log::Error(str);
+		CompileError newError{};
+		newError.text = str;
+		errors.Add(newError);
 	}
 }    // namespace Rift::Backends
