@@ -13,7 +13,7 @@ namespace Rift::Backends::C
 
 	void ForwardDeclareStruct(String& code, StringView name)
 	{
-		CString::FormatTo(code, "struct {};\n", name);
+		CString::FormatTo(code, "typedef struct {}S {};\n", name, name);
 	}
 	void AddStruct(String& code, StringView name, StringView super = {},
 	    TFunction<void(String&)> buildContent = {})
@@ -26,11 +26,12 @@ namespace Rift::Backends::C
 
 		if (!super.empty())
 		{
-			CString::FormatTo(code, "struct {}\n{{\n{} super;\n{}}};\n\n", name, super, innerCode);
+			CString::FormatTo(
+			    code, "struct {}S\n{{\n{} super;\n{}}};\n\n", name, super, innerCode);
 		}
 		else
 		{
-			CString::FormatTo(code, "struct {}\n{{\n{}}};\n\n", name, innerCode);
+			CString::FormatTo(code, "struct {}S\n{{\n{}}};\n\n", name, innerCode);
 		}
 	}
 
@@ -51,6 +52,7 @@ namespace Rift::Backends::C
 
 		ForwardDeclareStruct(code, "MyStruct");
 		ForwardDeclareStruct(code, "ChildrenStruct");
+		ForwardDeclareStruct(code, "Another");
 
 		AddStruct(code, "MyStruct", {}, [](String& innerCode) {
 			AddVariable(innerCode, "char", "alive");
@@ -58,6 +60,10 @@ namespace Rift::Backends::C
 
 		AddStruct(code, "ChildrenStruct", "MyStruct", [](String& innerCode) {
 			AddVariable(innerCode, "char", "done");
+		});
+
+		AddStruct(code, "Another", {}, [](String& innerCode) {
+			AddVariable(innerCode, "ChildrenStruct", "data");
 		});
 
 		Path codePath = config.intermediatesPath / "code.h";
