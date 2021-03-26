@@ -9,6 +9,7 @@ rift_target_enable_CPP20(RiftUI)
 set_target_properties (RiftUI PROPERTIES FOLDER Rift)
 rift_target_define_platform(RiftUI)
 rift_target_shared_output_directory(RiftUI)
+target_compile_definitions(RiftUI PRIVATE NOMINMAX)
 target_link_libraries(RiftUI PUBLIC
     Rift::Core
     glfw

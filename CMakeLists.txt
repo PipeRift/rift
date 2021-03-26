@@ -41,9 +41,9 @@ add_subdirectory(Apps/CLI)
 add_subdirectory(Libs/UI)
 add_subdirectory(Apps/Editor)
 
-file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/Resources)
-file(GLOB_RECURSE RESOURCE_FILES CONFIGURE_DEPENDS Resources/**/*.*)
-file(COPY ${RESOURCE_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Resources)
+# Resources folder
+file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/Bin/Resources)
+file(COPY Resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Bin)
 
 # Tests
 if(BUILD_TESTING AND RIFT_BUILD_TESTS)

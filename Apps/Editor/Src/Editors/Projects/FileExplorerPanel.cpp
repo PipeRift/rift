@@ -66,8 +66,8 @@ void FileExplorerPanel::OrganizeProjectFiles()
 {
 	for (auto& asset : editor.project->GetAllTypeAssets())
 	{
-		const Path path     = FileSystem::FromString(asset.GetStrPath());
-		const Path relative = FileSystem::ToRelative(path, editor.project->GetPath());
+		const Path path     = Paths::FromString(asset.GetStrPath());
+		const Path relative = Paths::ToRelative(path, editor.project->GetPath());
 		Folder* current     = &projectFolder;
 
 		for (auto it = relative.begin(); it != relative.end(); ++it)
@@ -75,7 +75,7 @@ void FileExplorerPanel::OrganizeProjectFiles()
 			// TODO: move the file extensions to a config file or something
 			static StringView extension = ".rf";
 
-			const String name = FileSystem::ToString(*it);
+			const String name = Paths::ToString(*it);
 			if (CString::EndsWith(name, extension))
 			{
 				current->files.Add({name, asset});

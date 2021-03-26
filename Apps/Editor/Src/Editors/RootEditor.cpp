@@ -87,7 +87,7 @@ void RootEditor::DrawProjectPickerPopup()
 	{
 		if (ImGui::Button("Open Project..."))
 		{
-			Path folder = Dialogs::SelectFolder("Select project folder", FileSystem::GetCurrent());
+			Path folder = Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
 			OpenProject(folder);
 			ImGui::CloseCurrentPopup();
 		}

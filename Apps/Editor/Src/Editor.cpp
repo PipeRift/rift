@@ -47,7 +47,7 @@ namespace Rift
 		if (UI::GetWindow())
 		{
 			configFileChanged          = true;
-			configFile                 = FileSystem::ToString(path);
+			configFile                 = Paths::ToString(path);
 			ImGui::GetIO().IniFilename = configFile.c_str();
 		}
 	}
@@ -70,7 +70,7 @@ namespace Rift
 				return;
 			}
 
-			if (FileSystem::ExistsAsFile(configFile))
+			if (Files::ExistsAsFile(configFile))
 			{
 				// FIX: Delay this until new frame (essentially, not while already drawing)
 				ImGui::LoadIniSettingsFromDisk(configFile.c_str());

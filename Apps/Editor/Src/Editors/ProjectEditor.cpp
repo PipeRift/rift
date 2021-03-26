@@ -1,7 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editor.h"
 #include "Editors/ProjectEditor.h"
+
+#include "Editor.h"
 
 #include <Backends/C/Backend_C.h>
 #include <Files/FileDialog.h>
@@ -90,7 +91,7 @@ void ProjectEditor::Draw()
 {
 	ZoneScoped;
 
-	String projectPath = FileSystem::ToString(project->GetPath());
+	String projectPath = Paths::ToString(project->GetPath());
 	ImGui::PushID(Hash<String>()(projectPath));
 
 	DrawMenuBar();
@@ -165,8 +166,7 @@ void ProjectEditor::DrawMenuBar()
 		{
 			if (ImGui::MenuItem("Open Project"))
 			{
-				Path folder =
-				    Dialogs::SelectFolder("Select project folder", FileSystem::GetCurrent());
+				Path folder = Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
 				if (Editor::Get().GetRootEditor().OpenProject(folder))
 				{
 					bSkipFrameAfterMenu = true;

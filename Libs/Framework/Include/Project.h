@@ -11,7 +11,7 @@
 #include <Assets/AssetManager.h>
 #include <Assets/AssetPtr.h>
 #include <CoreObject.h>
-#include <Files/FileSystem.h>
+#include <Files/Files.h>
 
 
 namespace Rift

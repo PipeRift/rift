@@ -4,6 +4,7 @@
 
 #include <Events/Function.h>
 #include <Platform/Platform.h>
+#include <Strings/Name.h>
 
 
 struct GLFWwindow;

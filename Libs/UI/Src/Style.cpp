@@ -1,15 +1,143 @@
+// Copyright 2015-2021 Piperift - All rights reserved
 
+#include "UI/Paths.h"
 #include "UI/Style.h"
-
 #include "UI/UI.h"
 
+#include <Containers/Array.h>
+#include <Containers/Tuples.h>
+#include <Log.h>
 #include <Math/Color.h>
+#include <Math/Math.h>
 
 
 using namespace Rift;
 
 namespace Style
 {
+	struct FontType
+	{
+		TArray<TPair<float, ImFont*>> sizes{};
+
+		void Add(float size, ImFont* imFont)
+		{
+			if (sizes.Contains([size](const auto& font) {
+				    return Math::NearlyEqual(font.first, size);
+			    }))
+			{
+				Log::Error(
+				    "Tried to register the same font with the same size and mode twice (size: {})",
+				    size);
+				return;
+			}
+			sizes.Add({size, imFont});
+		}
+
+		ImFont* Get(float desiredSize = 0.f) const
+		{
+			if (sizes.IsEmpty())
+			{
+				return nullptr;
+			}
+			if (desiredSize <= 0.f)
+			{
+				return sizes.First().second;
+			}
+			const TPair<float, ImFont*>* foundFont = sizes.Find([desiredSize](const auto& font) {
+				return Math::NearlyEqual(font.first, desiredSize);
+			});
+			return foundFont ? foundFont->second : nullptr;
+		}
+	};
+
+	struct FontDescriptor
+	{
+		std::array<FontType, Rift::Refl::GetEnumSize<FontMode>()> modes{};
+
+		FontType& operator[](FontMode mode)
+		{
+			return modes[u8(mode)];
+		}
+		const FontType& operator[](FontMode mode) const
+		{
+			return modes[u8(mode)];
+		}
+	};
+
+	static TMap<Rift::Name, FontDescriptor> fonts{};
+
+
+	void AddFont(Name name, FontMode mode, float size, Path file)
+	{
+		FontDescriptor* font = fonts.Find(name);
+		if (!font)
+		{
+			fonts.Insert(name, {});
+			font = &fonts[name];
+		}
+
+		auto& io = ImGui::GetIO();
+		(*font)[mode].Add(size, io.Fonts->AddFontFromFileTTF(Paths::ToString(file).data(), size));
+	}
+
+	void LoadFonts()
+	{
+		auto& io = ImGui::GetIO();
+		io.Fonts->AddFontDefault();
+
+		auto resources = Paths::GetResourcesPath() / "Editor";
+
+		// Work Sans
+		AddFont("WorkSans", FontMode::Bold, 14.f, resources / "Fonts/WorkSans-Bold.ttf");
+		AddFont(
+		    "WorkSans", FontMode::BoldItalic, 14.f, resources / "Fonts/WorkSans-BoldItalic.ttf");
+		AddFont("WorkSans", FontMode::Italic, 14.f, resources / "Fonts/WorkSans-Italic.ttf");
+		AddFont("WorkSans", FontMode::Light, 14.f, resources / "Fonts/WorkSans-Light.ttf");
+		AddFont(
+		    "WorkSans", FontMode::LightItalic, 14.f, resources / "Fonts/WorkSans-LightItalic.ttf");
+		AddFont("WorkSans", FontMode::Regular, 14.f, resources / "Fonts/WorkSans-Regular.ttf");
+
+		// Karla
+		AddFont("Karla", FontMode::Bold, 14.f, resources / "Fonts/Karla-Bold.ttf");
+		AddFont("Karla", FontMode::BoldItalic, 14.f, resources / "Fonts/Karla-BoldItalic.ttf");
+		AddFont("Karla", FontMode::Italic, 14.f, resources / "Fonts/Karla-Italic.ttf");
+		AddFont("Karla", FontMode::Light, 14.f, resources / "Fonts/Karla-Light.ttf");
+		AddFont("Karla", FontMode::LightItalic, 14.f, resources / "Fonts/Karla-LightItalic.ttf");
+		AddFont("Karla", FontMode::Regular, 14.f, resources / "Fonts/Karla-Regular.ttf");
+	}
+
+	ImFont* FindFont(Rift::Name name, FontMode mode, float size)
+	{
+		const FontDescriptor* const font = fonts.Find(name);
+		return font ? (*font)[mode].Get(size) : nullptr;
+	}
+
+	void SetDefaultFont(Rift::Name name, FontMode mode, float size)
+	{
+		ImFont* font = FindFont(name, mode, size);
+		if (!font && !name.IsNone())
+		{
+			Log::Error("Tried to set inexistent font '{}' as default", name);
+		}
+		ImGui::GetIO().FontDefault = font;
+	}
+
+	void PushFont(Rift::Name name, FontMode mode, float size)
+	{
+		ImFont* font = FindFont(name, mode, size);
+		if (!font && !name.IsNone())
+		{
+			Log::Error("Tried to push inexistent font '{}' (mode: {}, size: {})", name,
+			    Refl::GetEnumName(mode), size);
+		}
+		ImGui::PushFont(font);
+	}
+
+	void PopFont()
+	{
+		ImGui::PopFont();
+	}
+
 	void ApplyStyle()
 	{
 		ImGui::StyleColorsDark();
@@ -46,5 +174,8 @@ namespace Style
 		style.WindowRounding    = 2;
 		style.TabRounding       = 1;
 		style.ScrollbarRounding = 2;
+
+		LoadFonts();
+		Style::SetDefaultFont("WorkSans");
 	}
 }    // namespace Style

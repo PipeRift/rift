@@ -142,6 +142,7 @@ namespace Rift
 
 	BestFitArenaDebugger::BestFitArenaDebugger()
 	{
+		// TODO: Remove this. Testing the debugger
 		auto& arena = GetGlobalArena();
 
 		void* a = arena.Allocate(120);

@@ -3,6 +3,7 @@
 #include "Project.h"
 
 #include "Assets/AssetIterator.h"
+#include "Files/Paths.h"
 
 #include <Profiler.h>
 
@@ -11,9 +12,7 @@ namespace Rift
 {
 	void Project::Init(const Path& path)
 	{
-		bool specialized = isSpecialized<Rift::Refl::TStaticEnumInitializer<EOther>>::value;
-
-		projectPath = FileSystem::ToAbsolute(path);
+		projectPath = Paths::ToAbsolute(path);
 
 		if (!projectPath.empty())
 		{
@@ -26,7 +25,7 @@ namespace Rift
 			}
 			else
 			{
-				SetName(FileSystem::ToString(projectPath.filename()));
+				SetName(Paths::ToString(projectPath.filename()));
 			}
 
 			Log::Info("Project: {}", GetName().ToString());
@@ -55,6 +54,6 @@ namespace Rift
 		{
 			return projectPath / path;
 		}
-		return FileSystem::IsInside(path, projectPath) ? path : Path{};
+		return Paths::IsInside(path, projectPath) ? path : Path{};
 	}
 }    // namespace Rift

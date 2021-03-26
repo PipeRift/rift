@@ -1,7 +1,8 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
 #include "Backends/C/Backend_C.h"
-#include "Files/FileSystem.h"
+
+#include "Files/Files.h"
 
 
 namespace Rift::Backends::C
@@ -26,8 +27,7 @@ namespace Rift::Backends::C
 
 		if (!super.empty())
 		{
-			CString::FormatTo(
-			    code, "struct {}S\n{{\n{} super;\n{}}};\n\n", name, super, innerCode);
+			CString::FormatTo(code, "struct {}S\n{{\n{} super;\n{}}};\n\n", name, super, innerCode);
 		}
 		else
 		{
@@ -67,10 +67,10 @@ namespace Rift::Backends::C
 		});
 
 		Path codePath = config.intermediatesPath / "code.h";
-		if (!FileSystem::SaveStringFile(codePath, code))
+		if (!Files::SaveStringFile(codePath, code))
 		{
-			context.AddError(CString::Format(
-			    "Couldn't save generated code at '{}'", FileSystem::ToString(codePath)));
+			context.AddError(
+			    CString::Format("Couldn't save generated code at '{}'", Paths::ToString(codePath)));
 		}
 	}
 	void Build() {}
@@ -91,10 +91,10 @@ namespace Rift::Backends::C
 		context.config  = config;
 		context.config.Init(project);
 
-		FileSystem::Delete(config.intermediatesPath, true, false);
-		FileSystem::Delete(config.binariesPath, true, false);
-		FileSystem::CreateFolder(config.intermediatesPath, true);
-		FileSystem::CreateFolder(config.binariesPath, true);
+		Files::Delete(config.intermediatesPath, true, false);
+		Files::Delete(config.binariesPath, true, false);
+		Files::CreateFolder(config.intermediatesPath, true);
+		Files::CreateFolder(config.binariesPath, true);
 
 		project->LoadAllAssets();
 
