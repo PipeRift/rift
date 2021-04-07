@@ -1,10 +1,8 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "TypeAsset.h"
-
-#include <Assets/AssetPtr.h>
-#include <CoreObject.h>
+#include "Assets/TypeAsset.h"
+#include "Lang/Declarations/StructDecl.h"
 
 
 namespace Rift
@@ -12,5 +10,7 @@ namespace Rift
 	class StructAsset : public TypeAsset
 	{
 		CLASS(StructAsset, TypeAsset)
+
+		TOwnPtr<StructDecl> declaration;
 	};
 }    // namespace Rift

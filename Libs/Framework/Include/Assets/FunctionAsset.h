@@ -1,7 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "Language/TypeFunction.h"
+#include "Lang/Declarations/FunctionDecl.h"
 
 #include <Assets/AssetData.h>
 #include <Assets/AssetPtr.h>
@@ -10,11 +10,10 @@
 
 namespace Rift
 {
-	class FunctionAsset : public AssetData
+	class FunctionLibraryAsset : public AssetData
 	{
-		CLASS(FunctionAsset, AssetData)
+		CLASS(FunctionLibraryAsset, AssetData)
 
-		PROP(TArray<Function>, functions);
-		TArray<Function> functions;
+		TArray<TOwnPtr<FunctionDecl>> functionDecls;
 	};
 }    // namespace Rift

@@ -34,7 +34,7 @@ go_bandit([]() {
 			Json json{{"asset_type", "ProjectAsset"}};
 			Files::SaveJsonFile(testProjectPath / "Project.rf", json);
 
-			OwnPtr<Project> project = Create<Project>();
+			TOwnPtr<Project> project = Create<Project>();
 			AssertThat(project.IsValid(), Equals(true));
 
 			project->Init(testProjectPath);

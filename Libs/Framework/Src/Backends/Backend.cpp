@@ -4,7 +4,7 @@
 
 namespace Rift::Backends
 {
-	void CompilerConfig::Init(Ptr<Project> rootProject)
+	void CompilerConfig::Init(TPtr<Project> rootProject)
 	{
 		if (rootProject.IsValid())
 		{

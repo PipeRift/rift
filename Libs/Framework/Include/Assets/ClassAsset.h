@@ -1,7 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "Language/TypeFunction.h"
+#include "Lang/Declarations/ClassDecl.h"
 #include "TypeAsset.h"
 
 #include <Assets/AssetPtr.h>
@@ -14,7 +14,6 @@ namespace Rift
 	{
 		CLASS(ClassAsset, TypeAsset)
 
-		PROP(TArray<TypeFunction>, functions);
-		TArray<TypeFunction> functions;
+		TOwnPtr<ClassDecl> declaration;
 	};
 }    // namespace Rift

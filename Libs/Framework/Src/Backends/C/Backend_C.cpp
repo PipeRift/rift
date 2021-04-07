@@ -75,7 +75,7 @@ namespace Rift::Backends::C
 	}
 	void Build() {}
 
-	void Compile(Ptr<Project> project, const CompilerConfig& config)
+	void Compile(TPtr<Project> project, const CompilerConfig& config)
 	{
 		ZoneScopedC(0x459bd1);
 

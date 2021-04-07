@@ -20,7 +20,7 @@ namespace Rift::Backends
 		Path binariesPath;
 
 
-		void Init(Ptr<Project> rootProject);
+		void Init(TPtr<Project> rootProject);
 	};
 
 
@@ -40,7 +40,7 @@ namespace Rift::Backends
 		PROP(CompilerConfig, config)
 		CompilerConfig config;
 
-		Ptr<Project> project;
+		TPtr<Project> project;
 
 		PROP(TArray<CompileError>, errors)
 		TArray<CompileError> errors;

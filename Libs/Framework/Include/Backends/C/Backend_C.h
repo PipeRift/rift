@@ -14,5 +14,5 @@ namespace Rift::Backends::C
 
 
 	void GenerateCode(const CCompilerContext& config);
-	void Compile(Ptr<Project> project, const CompilerConfig& config);
+	void Compile(TPtr<Project> project, const CompilerConfig& config);
 }    // namespace Rift::Backends::C

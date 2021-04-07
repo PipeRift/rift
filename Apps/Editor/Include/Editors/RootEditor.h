@@ -2,14 +2,14 @@
 #pragma once
 
 #include "ProjectEditor.h"
-#include "Tools/BestFitArenaDebugger.h"
+#include "Tools/BigBestFitArenaDebugger.h"
 
 
 struct RootEditor
 {
 private:
 	ObjectPtr<ProjectEditor> projectEditor;
-	Rift::BestFitArenaDebugger memoryDebugger;
+	Rift::BigBestFitArenaDebugger memoryDebugger;
 
 #if BUILD_DEBUG
 	bool showDemo = false;

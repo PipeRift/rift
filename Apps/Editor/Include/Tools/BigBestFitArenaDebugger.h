@@ -2,7 +2,7 @@
 #pragma once
 
 #include <Math/Vector.h>
-#include <Memory/Arenas/BestFitArena.h>
+#include <Memory/Arenas/BigBestFitArena.h>
 #include <Memory/Blocks/Block.h>
 #include <Platform/Platform.h>
 #include <Strings/StringView.h>
@@ -25,7 +25,7 @@ namespace Rift
 
 		void UpdateGridScale(float availableWidth);
 
-		void Draw(const TArray<Memory::BestFitArena::Slot>& freeSlots);
+		void Draw(const TArray<Memory::BigBestFitArena::Slot>& freeSlots);
 
 		float GetHeight()
 		{
@@ -48,14 +48,14 @@ namespace Rift
 	};
 
 
-	struct BestFitArenaDebugger
+	struct BigBestFitArenaDebugger
 	{
 		bool open = true;
 
 		MemoryGrid blockGrid;
 
 
-		BestFitArenaDebugger();
+		BigBestFitArenaDebugger();
 		void Draw();
 	};
 }    // namespace Rift

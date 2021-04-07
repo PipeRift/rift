@@ -5,10 +5,10 @@
 #include "UI/UI.h"
 
 #include <Containers/Array.h>
-#include <Containers/Tuples.h>
 #include <Log.h>
 #include <Math/Color.h>
 #include <Math/Math.h>
+#include <Templates/Tuples.h>
 
 
 using namespace Rift;

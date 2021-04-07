@@ -2,7 +2,6 @@
 #pragma once
 
 #include <Assets/AssetData.h>
-#include <Assets/AssetPtr.h>
 #include <CoreObject.h>
 
 

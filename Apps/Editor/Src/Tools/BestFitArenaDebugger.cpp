@@ -1,6 +1,6 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Tools/BestFitArenaDebugger.h"
+#include "Tools/BigBestFitArenaDebugger.h"
 
 #include <Math/Math.h>
 #include <Memory/Arenas/GlobalArena.h>
@@ -25,7 +25,7 @@ namespace Rift
 	}
 
 	i32 DrawMemoryBlock(StringView label, MemoryGrid& grid,
-	    const TArray<BestFitArena::Slot>& freeSlots, v2 graphSize = v2::Zero())
+	    const TArray<BigBestFitArena::Slot>& freeSlots, v2 graphSize = v2::Zero())
 	{
 		ImGuiContext& g     = *GImGui;
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -125,7 +125,7 @@ namespace Rift
 		numRows     = u32(block->GetSize() / bytesPerRow);
 	}
 
-	void MemoryGrid::Draw(const TArray<BestFitArena::Slot>& freeSlots)
+	void MemoryGrid::Draw(const TArray<BigBestFitArena::Slot>& freeSlots)
 	{
 		String scaleStr      = CString::ParseMemorySize(memoryScale);
 		u32 scaleMultiplier  = u32(Math::Log(memoryScale, 2.f));
@@ -140,7 +140,7 @@ namespace Rift
 		ImGui::EndChild();
 	}
 
-	BestFitArenaDebugger::BestFitArenaDebugger()
+	BigBestFitArenaDebugger::BigBestFitArenaDebugger()
 	{
 		// TODO: Remove this. Testing the debugger
 		auto& arena = GetGlobalArena();
@@ -153,14 +153,14 @@ namespace Rift
 		void* f = arena.Allocate(344);
 		void* g = arena.Allocate(33445);
 
-		arena.Free(a);
-		arena.Free(c);
-		arena.Free(e);
+		arena.Free(a, 120);
+		arena.Free(c, 68);
+		arena.Free(e, 1522);
 
 		void* h = arena.Allocate(894345, 64);
 	}
 
-	void BestFitArenaDebugger::Draw()
+	void BigBestFitArenaDebugger::Draw()
 	{
 		if (open)
 		{
