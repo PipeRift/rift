@@ -101,7 +101,12 @@
         "cwctype": "cpp",
         "*.rh": "cpp",
         "bit": "cpp",
-        "stop_token": "cpp"
+        "stop_token": "cpp",
+        "cinttypes": "cpp",
+        "memory_resource": "cpp",
+        "ranges": "cpp",
+        "scoped_allocator": "cpp",
+        "cfenv": "cpp"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "banditTestExplorer.testsuites": [

@@ -76,7 +76,7 @@ void FileExplorerPanel::OrganizeProjectFiles()
 			static StringView extension = ".rf";
 
 			const String name = Paths::ToString(*it);
-			if (CString::EndsWith(name, extension))
+			if (Strings::EndsWith(name, extension))
 			{
 				current->files.Add({name, asset});
 			}

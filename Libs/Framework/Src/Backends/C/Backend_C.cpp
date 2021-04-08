@@ -9,12 +9,12 @@ namespace Rift::Backends::C
 {
 	void AddInclude(String& code, StringView name)
 	{
-		CString::FormatTo(code, "#include <{}>\n", name);
+		Strings::FormatTo(code, "#include <{}>\n", name);
 	}
 
 	void ForwardDeclareStruct(String& code, StringView name)
 	{
-		CString::FormatTo(code, "typedef struct {}S {};\n", name, name);
+		Strings::FormatTo(code, "typedef struct {}S {};\n", name, name);
 	}
 	void AddStruct(String& code, StringView name, StringView super = {},
 	    TFunction<void(String&)> buildContent = {})
@@ -27,17 +27,17 @@ namespace Rift::Backends::C
 
 		if (!super.empty())
 		{
-			CString::FormatTo(code, "struct {}S\n{{\n{} super;\n{}}};\n\n", name, super, innerCode);
+			Strings::FormatTo(code, "struct {}S\n{{\n{} super;\n{}}};\n\n", name, super, innerCode);
 		}
 		else
 		{
-			CString::FormatTo(code, "struct {}S\n{{\n{}}};\n\n", name, innerCode);
+			Strings::FormatTo(code, "struct {}S\n{{\n{}}};\n\n", name, innerCode);
 		}
 	}
 
 	void AddVariable(String& code, StringView type, StringView name)
 	{
-		CString::FormatTo(code, "{} {};\n", type, name);
+		Strings::FormatTo(code, "{} {};\n", type, name);
 	}
 
 
@@ -70,7 +70,7 @@ namespace Rift::Backends::C
 		if (!Files::SaveStringFile(codePath, code))
 		{
 			context.AddError(
-			    CString::Format("Couldn't save generated code at '{}'", Paths::ToString(codePath)));
+			    Strings::Format("Couldn't save generated code at '{}'", Paths::ToString(codePath)));
 		}
 	}
 	void Build() {}

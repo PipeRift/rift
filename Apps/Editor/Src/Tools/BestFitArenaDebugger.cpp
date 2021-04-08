@@ -127,7 +127,7 @@ namespace Rift
 
 	void MemoryGrid::Draw(const TArray<BigBestFitArena::Slot>& freeSlots)
 	{
-		String scaleStr      = CString::ParseMemorySize(memoryScale);
+		String scaleStr      = Strings::ParseMemorySize(memoryScale);
 		u32 scaleMultiplier  = u32(Math::Log(memoryScale, 2.f));
 		static const u32 min = 2, max = 8;
 		ImGui::SliderScalar(
@@ -168,9 +168,9 @@ namespace Rift
 
 			ImGui::Begin("Memory", &open);
 
-			String size = CString::ParseMemorySize(arena.GetBlock().GetSize());
-			String used = CString::ParseMemorySize(arena.GetUsedSize());
-			String free = CString::ParseMemorySize(arena.GetFreeSize());
+			String size = Strings::ParseMemorySize(arena.GetBlock().GetSize());
+			String used = Strings::ParseMemorySize(arena.GetUsedSize());
+			String free = Strings::ParseMemorySize(arena.GetFreeSize());
 
 			{    // Progress bar
 				const float usedPct = float(arena.GetUsedSize()) / arena.GetBlock().GetSize();
@@ -186,7 +186,7 @@ namespace Rift
 				ImGui::ProgressBar(usedPct, ImVec2(0.f, 0.0f), "");
 
 				const String usedPctLabel =
-				    CString::Format("{:.0f}%% used ({})", usedPct * 100.f, used);
+				    Strings::Format("{:.0f}%% used ({})", usedPct * 100.f, used);
 				const float pctFontSize = (ImGui::GetFontSize() * usedPctLabel.size()) / 2.f;
 				ImGui::SameLine(ImGui::GetWindowContentRegionWidth() / 2 - pctFontSize / 2,
 				    ImGui::GetStyle().ItemInnerSpacing.x / 2);
