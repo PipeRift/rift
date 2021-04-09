@@ -20,8 +20,8 @@ jobs:
           - name: GCC
             compiler: gcc
             os: ubuntu-20.04
-            cxx: g++
-            cc: gcc
+            cxx: g++-10
+            cc: gcc-10
 
     steps:
       - name: Checkout repository
