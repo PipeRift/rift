@@ -7,12 +7,12 @@
 [submodule "Libs/Core"]
 	path = Libs/Core
 	url = https://github.com/PipeRift/rift-core.git
-[submodule "Extern/sokol"]
-	path = Extern/sokol
-	url = https://github.com/floooh/sokol.git
 [submodule "Extern/glfw"]
 	path = Extern/glfw
 	url = https://github.com/glfw/glfw.git
 [submodule "Extern/imnodes"]
 	path = Extern/imnodes
 	url = https://github.com/Piperift/imnodes.git
+[submodule "Extern/flecs"]
+	path = Extern/flecs
+	url = https://github.com/SanderMertens/flecs.git
