@@ -6,12 +6,8 @@
 
 namespace Rift
 {
-	struct VariableDecl : public Declaration
+	struct CVariableDecl : public CDeclaration
 	{
-		STRUCT(VariableDecl, Declaration)
-
-		// TypeRef type;
-
-		Name name;
+		STRUCT(CVariableDecl, CDeclaration)
 	};
 }    // namespace Rift

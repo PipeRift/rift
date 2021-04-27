@@ -6,8 +6,8 @@
 
 namespace Rift
 {
-	struct ParameterDecl : public Declaration
+	struct CParameterDecl : public Declaration
 	{
-		STRUCT(ParameterDecl, Declaration)
+		STRUCT(CParameterDecl, Declaration)
 	};
 }    // namespace Rift

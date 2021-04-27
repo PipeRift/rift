@@ -2,15 +2,17 @@
 #pragma once
 
 #include "Lang/Declaration.h"
-#include "Lang/Declarations/VariableDecl.h"
+
+#include <ECS.h>
 
 
 namespace Rift
 {
-	struct RecordDecl : public Declaration
+	struct CRecordDecl : public CDeclaration
 	{
-		STRUCT(RecordDecl, Declaration)
+		STRUCT(CRecordDecl, CDeclaration)
 
-		TArray<TOwnPtr<VariableDecl>> variables;
+		// AST nodes representing data fields of this record
+		TArray<ECS::EntityId> data;
 	};
 }    // namespace Rift

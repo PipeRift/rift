@@ -3,11 +3,21 @@
 
 #include "Lang/Declaration.h"
 
+#include <ECS.h>
+
 
 namespace Rift
 {
-	struct FunctionDecl : public Declaration
+	struct CFunctionDecl : public Declaration
 	{
-		STRUCT(FunctionDecl, Declaration)
+		STRUCT(CFunctionDecl, Declaration)
+
+		// AST nodes representing function parameters
+		TArray<ECS::EntityId> parameterNodes;
+
+		// Ordered list of AST nodes that constitute the function's body
+		TArray<ECS::EntityId> bodyNodes;
+
+		TOptional<ECS::EntityId> returnNode;
 	};
 }    // namespace Rift

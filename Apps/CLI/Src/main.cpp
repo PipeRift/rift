@@ -1,6 +1,6 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include <Backends/C/Backend_C.h>
+#include <Compiler/Compiler.h>
 #include <Context.h>
 #include <Profiler.h>
 #include <Project.h>
@@ -19,8 +19,8 @@ int main(int argc, char** argv)
 	auto project = Create<Project>();
 	project->Init(Path("Project"));
 
-	Rift::Backends::CompilerConfig config;
-	Rift::Backends::C::Compile(project, config);
+	Rift::Compiler::Config config;
+	Rift::Compiler::Build(project, config, Rift::Compiler::EBackend::C);
 
 	while (true)
 	{

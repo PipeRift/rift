@@ -13,6 +13,6 @@
 [submodule "Extern/imnodes"]
 	path = Extern/imnodes
 	url = https://github.com/Piperift/imnodes.git
-[submodule "Extern/flecs"]
-	path = Extern/flecs
-	url = https://github.com/SanderMertens/flecs.git
+[submodule "Extern/entt"]
+	path = Extern/entt
+	url = https://github.com/skypjack/entt.git

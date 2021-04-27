@@ -6,8 +6,11 @@
 
 namespace Rift
 {
-	struct CDeclaration : public Struct
+	struct CIdentifier : public Struct
 	{
-		STRUCT(CDeclaration, Struct)
+		STRUCT(CIdentifier, Struct)
+
+		PROP(Name, name);
+		Name name;
 	};
 }    // namespace Rift

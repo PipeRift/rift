@@ -9,7 +9,10 @@ rift_target_enable_CPP20(Rift)
 set_target_properties (Rift PROPERTIES FOLDER Rift)
 rift_target_define_platform(Rift)
 rift_target_shared_output_directory(Rift)
-target_link_libraries(Rift PUBLIC Rift::Core)
+target_link_libraries(Rift PUBLIC
+    Rift::Core
+    Rift::ECS
+)
 
 install(TARGETS Rift
     EXPORT RiftTargets

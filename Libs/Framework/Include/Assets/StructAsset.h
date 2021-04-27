@@ -2,7 +2,8 @@
 #pragma once
 
 #include "Assets/TypeAsset.h"
-#include "Lang/Declarations/StructDecl.h"
+
+#include <ECS.h>
 
 
 namespace Rift
@@ -11,6 +12,6 @@ namespace Rift
 	{
 		CLASS(StructAsset, TypeAsset)
 
-		TOwnPtr<StructDecl> declaration;
+		ECS::EntityId declaration;
 	};
 }    // namespace Rift

@@ -6,8 +6,8 @@
 
 namespace Rift
 {
-	struct StructDecl : public RecordDecl
+	struct CStructDecl : public CRecordDecl
 	{
-		STRUCT(StructDecl, RecordDecl)
+		STRUCT(CStructDecl, CRecordDecl)
 	};
 }    // namespace Rift

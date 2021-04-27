@@ -1,11 +1,9 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "Lang/Declarations/ClassDecl.h"
 #include "TypeAsset.h"
 
-#include <Assets/AssetPtr.h>
-#include <CoreObject.h>
+#include <ECS.h>
 
 
 namespace Rift
@@ -14,6 +12,6 @@ namespace Rift
 	{
 		CLASS(ClassAsset, TypeAsset)
 
-		TOwnPtr<ClassDecl> declaration;
+		ECS::EntityId astDeclaration;
 	};
 }    // namespace Rift

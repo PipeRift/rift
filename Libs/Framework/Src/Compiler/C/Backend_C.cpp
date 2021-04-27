@@ -1,11 +1,12 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Backends/C/Backend_C.h"
-
+#include "Compiler/C/Backend_C.h"
 #include "Files/Files.h"
+#include "Lang/Declarations/ClassDecl.h"
+#include "Lang/Identifiers/Identifier.h"
 
 
-namespace Rift::Backends::C
+namespace Rift::Compiler::C
 {
 	void AddInclude(String& code, StringView name)
 	{
@@ -41,7 +42,7 @@ namespace Rift::Backends::C
 	}
 
 
-	void GenerateCode(CCompilerContext& context)
+	void GenerateCode(Context& context)
 	{
 		ZoneScopedC(0x459bd1);
 		auto& config = context.config;
@@ -73,20 +74,14 @@ namespace Rift::Backends::C
 			    Strings::Format("Couldn't save generated code at '{}'", Paths::ToString(codePath)));
 		}
 	}
-	void Build() {}
 
-	void Compile(TPtr<Project> project, const CompilerConfig& config)
+	void Build(TPtr<Project> project, const Config& config)
 	{
 		ZoneScopedC(0x459bd1);
 
-		if (!project)
-		{
-			return;
-		}
-
 		Log::Info("Building project '{}'", project->GetName());
 
-		CCompilerContext context{};
+		Context context{};
 		context.project = project;
 		context.config  = config;
 		context.config.Init(project);
@@ -106,10 +101,10 @@ namespace Rift::Backends::C
 		}
 		Log::Info("Generated C code");
 
-		Build();
+		// BuildCode();
 		if (context.HasErrors())
 		{
 			context.AddError("Failed to compile C code.");
 		}
 	}
-}    // namespace Rift::Backends::C
+}    // namespace Rift::Compiler::C
