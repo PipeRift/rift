@@ -5,6 +5,7 @@
 #include "Assets/ClassAsset.h"
 #include "Assets/ProjectAsset.h"
 #include "Assets/StructAsset.h"
+#include "Lang/AST.h"
 #include "Log.h"
 #include "Strings/String.h"
 
@@ -47,31 +48,44 @@ namespace Rift
 		TArray<AssetInfo> allTypes;
 		TArray<TAssetPtr<ClassAsset>> classes;
 		TArray<TAssetPtr<StructAsset>> structs;
+		AST ast;
 
 
 	public:
-		Project() : Super() {}
+		Project() : Super()
+		{
+			ast.CreateClass("SomeClass");    // Test
+		}
 
 		void Init(const Path& path);
 
 		void ScanAssets();
 		void LoadAllAssets();
 
-		[[nodiscard]] Path ToProjectPath(const Path& path) const;
+		Path ToProjectPath(const Path& path) const;
 
-		[[nodiscard]] Path GetPath() const
+		Path GetPath() const
 		{
 			return projectPath;
 		}
 
-		[[nodiscard]] bool IsValid() const
+		bool IsValid() const
 		{
 			return projectAsset.IsValid();
 		}
 
-		[[nodiscard]] const TArray<AssetInfo>& GetAllTypeAssets() const
+		const TArray<AssetInfo>& GetAllTypeAssets() const
 		{
 			return allTypes;
+		}
+
+		AST& GetAST()
+		{
+			return ast;
+		}
+		const AST& GetAST() const
+		{
+			return ast;
 		}
 	};
 }    // namespace Rift

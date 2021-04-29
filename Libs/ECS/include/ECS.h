@@ -3,6 +3,7 @@
 
 #include <Misc/Utility.h>
 
+#include <entt/entity/view.hpp>
 #include <entt/entt.hpp>
 
 
@@ -21,11 +22,72 @@ namespace Rift::ECS
 	struct View<TExclude<Exclude...>, Component...>
 	{
 	private:
-		using EnTTView = entt::basic_view<EntityId, Exclude..., Component...>;
+		using EnTTView        = entt::basic_view<EntityId, TExclude<Exclude...>, Component...>;
+		using Iterator        = typename EnTTView::iterator;
+		using ReverseIterator = typename EnTTView::reverse_iterator;
+
 		EnTTView view;
 
 	public:
 		View(EnTTView view) : view(view) {}
+
+		Iterator begin() const
+		{
+			return view.begin();
+		}
+
+		Iterator end() const
+		{
+			return view.end();
+		}
+
+		ReverseIterator rbegin() const
+		{
+			return view.rbegin();
+		}
+
+		ReverseIterator rend() const
+		{
+			return view.rend();
+		}
+
+		EntityId Front() const
+		{
+			return view.front();
+		}
+
+		EntityId Back() const
+		{
+			return view.back();
+		}
+
+		Iterator Find(const EntityId entity) const
+		{
+			return view.find(entt);
+		}
+
+		template <typename Func>
+		void Each(Func func) const
+		{
+			view.Each(func);
+		}
+
+		template <typename Comp, typename Func>
+		void Each(Func func) const
+		{
+			view.Each<Comp>(func);
+		}
+
+		bool Contains(const EntityId entity) const
+		{
+			return view.contains(entity);
+		}
+
+		template <typename... Comp>
+		decltype(auto) Get([[maybe_unused]] const EntityId entity) const
+		{
+			return view.get<Comp...>(entity);
+		}
 	};
 
 
@@ -57,7 +119,7 @@ namespace Rift::ECS
 		template <typename Component, typename... Args>
 		auto Emplace(EntityId entity, Args&&... args)
 		{
-			return registry.emplace(entity, Forward<Args>(args)...);
+			return registry.emplace<Component>(entity, Forward<Args>(args)...);
 		}
 
 		template <typename... Component>
@@ -96,21 +158,15 @@ namespace Rift::ECS
 		}
 
 		template <typename... Component, typename... Exclude>
-		View<TExclude<Exclude...>, Component...> MakeView(TExclude<Exclude...> excluded = {}) const
+		auto MakeView(TExclude<Exclude...> excluded = {}) const
 		{
-			return
-			{
-				registry.view<Component..., Exclude...>(excluded);
-			};
+			return View<TExclude<Exclude...>, Component...>{registry.view<Component...>(excluded)};
 		}
 
 		template <typename... Component, typename... Exclude>
-		View<TExclude<Exclude...>, Component...> MakeView(TExclude<Exclude...> excluded = {})
+		auto MakeView(TExclude<Exclude...> excluded = {})
 		{
-			return
-			{
-				registry.view<Component..., Exclude...>(excluded);
-			};
+			return View<TExclude<Exclude...>, Component...>{registry.view<Component...>(excluded)};
 		}
 	};
 }    // namespace Rift::ECS

@@ -2,6 +2,7 @@
 #pragma once
 
 #include <Object/Struct.h>
+#include <Strings/Name.h>
 
 
 namespace Rift
@@ -12,5 +13,8 @@ namespace Rift
 
 		PROP(Name, name);
 		Name name;
+
+
+		CIdentifier(Name name) : name(name) {}
 	};
 }    // namespace Rift

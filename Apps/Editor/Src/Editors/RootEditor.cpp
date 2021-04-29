@@ -51,6 +51,11 @@ void RootEditor::Draw()
 
 	memoryDebugger.Draw();
 
+	if (projectEditor && projectEditor->project)
+	{
+		astDebugger.Draw(projectEditor->project->GetAST());
+	}
+
 #if BUILD_DEBUG
 	if (showDemo)
 	{

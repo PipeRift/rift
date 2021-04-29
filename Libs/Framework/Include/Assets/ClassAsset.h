@@ -12,6 +12,6 @@ namespace Rift
 	{
 		CLASS(ClassAsset, TypeAsset)
 
-		ECS::EntityId astDeclaration;
+		ECS::EntityId declaration;
 	};
 }    // namespace Rift
