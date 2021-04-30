@@ -1,13 +1,13 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "Lang/Declaration.h"
+#include "Lang/CExpression.h"
 
 
 namespace Rift
 {
-	struct CParameterDecl : public Declaration
+	struct CCallExpr : public CExpression
 	{
-		STRUCT(CParameterDecl, Declaration)
+		STRUCT(CCallExpr, CExpression)
 	};
 }    // namespace Rift

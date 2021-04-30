@@ -1,16 +1,16 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "Lang/Declaration.h"
+#include "Lang/CDeclaration.h"
 
 #include <ECS.h>
 
 
 namespace Rift
 {
-	struct CFunctionDecl : public Declaration
+	struct CFunctionDecl : public CDeclaration
 	{
-		STRUCT(CFunctionDecl, Declaration)
+		STRUCT(CFunctionDecl, CDeclaration)
 
 		// AST nodes representing function parameters
 		TArray<ECS::EntityId> parameterNodes;

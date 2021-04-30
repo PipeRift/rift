@@ -2,9 +2,9 @@
 
 #include "Lang/AST.h"
 #include "Lang/CChildren.h"
-#include "Lang/Declarations/ClassDecl.h"
-#include "Lang/Declarations/StructDecl.h"
-#include "Lang/Identifiers/Identifier.h"
+#include "Lang/Declarations/CClassDecl.h"
+#include "Lang/Declarations/CStructDecl.h"
+#include "Lang/Identifiers/CIdentifier.h"
 
 namespace Rift
 {

@@ -1,7 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "Lang/Declarations/RecordDecl.h"
+#include "Lang/Declarations/CRecordDecl.h"
 
 
 namespace Rift

@@ -2,8 +2,8 @@
 
 #include "Compiler/C/Backend_C.h"
 #include "Files/Files.h"
-#include "Lang/Declarations/ClassDecl.h"
-#include "Lang/Identifiers/Identifier.h"
+#include "Lang/Declarations/CClassDecl.h"
+#include "Lang/Identifiers/CIdentifier.h"
 
 
 namespace Rift::Compiler::C
