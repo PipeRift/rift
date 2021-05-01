@@ -20,6 +20,10 @@ namespace Rift
 
 
 		ASTDebugger();
-		void Draw(AST& ast);
+
+		void Draw(AST::AbstractSyntaxTree& ast);
+
+	private:
+		void DrawEntity(AST::AbstractSyntaxTree& ast, AST::Id entity);
 	};
 }    // namespace Rift

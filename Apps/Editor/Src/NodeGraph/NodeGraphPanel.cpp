@@ -16,45 +16,47 @@ namespace Rift
 
 	void NodeGraphPanel::Draw(DockSpaceLayout& layout)
 	{
-		imnodes::PushStyleVar(imnodes::StyleVar_PinLineThickness, 2.5f);
-		imnodes::PushStyleVar(imnodes::StyleVar_GridSpacing, 8.f);
+		ImNodes::PushStyleVar(ImNodesStyleVar_PinLineThickness, 2.5f);
+		ImNodes::PushStyleVar(ImNodesStyleVar_GridSpacing, 8.f);
+		ImNodes::PushStyleVar(ImNodesStyleVar_NodeCornerRounding, 2.f);
+		ImNodes::PushStyleVar(ImNodesStyleVar_PinQuadSideLength, 10.f);
 
 		layout.BindNextWindowToNode(AssetEditor::centralNode);
 		if (ImGui::Begin("Graph"))
 		{
-			imnodes::BeginNodeEditor();
+			ImNodes::BeginNodeEditor();
 
 			{    // Node
-				imnodes::PushColorStyle(imnodes::ColorStyle_TitleBar, IM_COL32(11, 109, 191, 255));
-				imnodes::BeginNode(1);
+				ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(11, 109, 191, 255));
+				ImNodes::BeginNode(1);
 
-				imnodes::BeginNodeTitleBar();
+				ImNodes::BeginNodeTitleBar();
 				ImGui::Text("If");
-				imnodes::EndNodeTitleBar();
+				ImNodes::EndNodeTitleBar();
 
-				imnodes::BeginInputAttribute(2, imnodes::PinShape_Triangle);
+				ImNodes::BeginInputAttribute(2, ImNodesPinShape_QuadFilled);
 				ImGui::Text("");
-				imnodes::EndInputAttribute();
+				ImNodes::EndInputAttribute();
 
 				ImGui::SameLine();
 
-				imnodes::BeginOutputAttribute(4, imnodes::PinShape_Triangle);
+				ImNodes::BeginOutputAttribute(4, ImNodesPinShape_QuadFilled);
 				ImGui::Text("True");
-				imnodes::EndOutputAttribute();
+				ImNodes::EndOutputAttribute();
 
-				imnodes::BeginInputAttribute(3, imnodes::PinShape_CircleFilled);
+				ImNodes::BeginInputAttribute(3, ImNodesPinShape_CircleFilled);
 				ImGui::Text("Value");
-				imnodes::EndInputAttribute();
+				ImNodes::EndInputAttribute();
 
 				ImGui::SameLine();
 
-				imnodes::BeginOutputAttribute(5, imnodes::PinShape_Triangle);
+				ImNodes::BeginOutputAttribute(5, ImNodesPinShape_QuadFilled);
 				ImGui::Text("False");
-				imnodes::EndOutputAttribute();
+				ImNodes::EndOutputAttribute();
 
-				imnodes::EndNode();
+				ImNodes::EndNode();
 			}
-			imnodes::EndNodeEditor();
+			ImNodes::EndNodeEditor();
 		}
 		ImGui::End();
 	}

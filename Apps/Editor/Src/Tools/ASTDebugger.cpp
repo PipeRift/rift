@@ -2,7 +2,7 @@
 
 #include "Tools/ASTDebugger.h"
 
-#include <ECS.h>
+#include <Lang/AST.h>
 #include <Lang/CChildren.h>
 #include <Lang/CParent.h>
 #include <Lang/Identifiers/CIdentifier.h>
@@ -15,7 +15,7 @@ namespace Rift
 
 	ASTDebugger::ASTDebugger() {}
 
-	void ASTDebugger::Draw(AST& ast)
+	void ASTDebugger::Draw(AST::AbstractSyntaxTree& ast)
 	{
 		if (!open)
 		{
@@ -24,20 +24,37 @@ namespace Rift
 
 		ImGui::Begin("Abstract Syntax Tree", &open);
 		{
-			auto& registry = ast.GetRegistry();
-
-			auto rootEntities = registry.MakeView<CIdentifier>();
+			auto rootEntities = ast.MakeView<CChildren>();
 			for (auto root : rootEntities)
 			{
-				CIdentifier& id    = rootEntities.Get<CIdentifier>(root);
-				const String& name = id.name.ToString();
-				if (ImGui::TreeNode(name.c_str()))
+				if (ast.HasComponent<CParent>(root))
 				{
-					ImGui::TreePop();
+					continue;
 				}
+
+				DrawEntity(ast, root);
 			}
 			ImGui::Separator();
 		}
 		ImGui::End();
+	}
+
+	void ASTDebugger::DrawEntity(AST::AbstractSyntaxTree& ast, AST::Id entity)
+	{
+		CIdentifier* id     = ast.GetComponentPtr<CIdentifier>(entity);
+		CChildren* children = ast.GetComponentPtr<CChildren>(entity);
+
+		static const String none{""};
+		const String& name = id ? id->name.ToString() : none;
+
+		const bool hasChildren = children && !children->children.IsEmpty();
+		if (ImGui::TreeNodeEx(name.c_str(), hasChildren ? 0 : ImGuiTreeNodeFlags_Leaf))
+		{
+			for (auto child : children->children)
+			{
+				DrawEntity(ast, child);
+			}
+			ImGui::TreePop();
+		}
 	}
 }    // namespace Rift

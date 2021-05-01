@@ -1,7 +1,8 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include <ECS.h>
+#include <Containers/Set.h>
+#include <Lang/AST.h>
 #include <Object/Struct.h>
 
 
@@ -11,6 +12,6 @@ namespace Rift
 	{
 		STRUCT(CChildren, Struct)
 
-		TArray<ECS::EntityId> children;
+		TArray<AST::Id> children;
 	};
 }    // namespace Rift

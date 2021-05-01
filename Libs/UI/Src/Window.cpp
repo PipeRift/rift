@@ -68,7 +68,8 @@ namespace Rift::UI
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		imnodes::Initialize();
+		ImNodes::CreateContext();
+
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;    // Enable Keyboard Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -96,7 +97,7 @@ namespace Rift::UI
 			// Cleanup
 			ImGui_ImplOpenGL3_Shutdown();
 			ImGui_ImplGlfw_Shutdown();
-			imnodes::Shutdown();
+			ImNodes::DestroyContext();
 			ImGui::DestroyContext();
 
 			glfwDestroyWindow(window);

@@ -144,7 +144,7 @@ namespace Style
 		auto& style = ImGui::GetStyle();
 
 		ImVec4* colors                      = style.Colors;
-		colors[ImGuiCol_FrameBg]            = Color(0.48f, 0.40f, 0.16f, 0.54f);
+		colors[ImGuiCol_FrameBg]            = LinearColor(0.48f, 0.40f, 0.16f, 0.54f);
 		colors[ImGuiCol_FrameBgHovered]     = ImVec4(0.98f, 0.77f, 0.26f, 0.40f);
 		colors[ImGuiCol_FrameBgActive]      = ImVec4(0.98f, 0.77f, 0.26f, 0.67f);
 		colors[ImGuiCol_TitleBgActive]      = ImVec4(0.48f, 0.40f, 0.16f, 1.00f);

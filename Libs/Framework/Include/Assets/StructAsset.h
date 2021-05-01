@@ -3,7 +3,7 @@
 
 #include "Assets/TypeAsset.h"
 
-#include <ECS.h>
+#include <Lang/AST.h>
 
 
 namespace Rift
@@ -12,6 +12,6 @@ namespace Rift
 	{
 		CLASS(StructAsset, TypeAsset)
 
-		ECS::EntityId declaration;
+		AST::Id declaration;
 	};
 }    // namespace Rift

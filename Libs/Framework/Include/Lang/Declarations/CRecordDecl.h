@@ -3,7 +3,7 @@
 
 #include "Lang/CDeclaration.h"
 
-#include <ECS.h>
+#include <Lang/AST.h>
 
 
 namespace Rift
@@ -13,6 +13,6 @@ namespace Rift
 		STRUCT(CRecordDecl, CDeclaration)
 
 		// AST nodes representing data fields of this record
-		TArray<ECS::EntityId> data;
+		TArray<AST::Id> data;
 	};
 }    // namespace Rift

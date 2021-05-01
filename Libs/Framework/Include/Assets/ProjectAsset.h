@@ -16,6 +16,10 @@ namespace Rift
 	{
 		CLASS(ProjectAsset, TypeAsset)
 
+	public:
+		PROP(Name, name);
+		Name name;
+
 		PROP(String, version)
 		String version;
 	};

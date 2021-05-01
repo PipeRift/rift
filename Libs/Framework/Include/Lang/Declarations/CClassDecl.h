@@ -3,7 +3,7 @@
 
 #include "Lang/Declarations/CRecordDecl.h"
 
-#include <ECS.h>
+#include <Lang/AST.h>
 
 
 namespace Rift
@@ -13,6 +13,6 @@ namespace Rift
 		STRUCT(CClassDecl, CRecordDecl)
 
 		// List of AST function declarations
-		TArray<ECS::EntityId> functions;
+		TArray<AST::Id> functions;
 	};
 }    // namespace Rift

@@ -42,19 +42,24 @@ namespace Rift
 
 		static constexpr StringView projectFile{"Project.rf"};
 
+		PROP(Name, name);
+		Name name;
+
 		Path projectPath;
 
 		TAssetPtr<ProjectAsset> projectAsset;
 		TArray<AssetInfo> allTypes;
 		TArray<TAssetPtr<ClassAsset>> classes;
 		TArray<TAssetPtr<StructAsset>> structs;
-		AST ast;
+		AST::AbstractSyntaxTree ast;
 
 
 	public:
 		Project() : Super()
 		{
-			ast.CreateClass("SomeClass");    // Test
+			auto testClass    = ast.CreateClass("AClass");            // Test
+			auto testFunction = ast.CreateFunction("DoSomething");    // Test
+			ast.AddChild(testClass, testFunction);
 		}
 
 		void Init(const Path& path);
@@ -79,13 +84,22 @@ namespace Rift
 			return allTypes;
 		}
 
-		AST& GetAST()
+		AST::AbstractSyntaxTree& GetAST()
 		{
 			return ast;
 		}
-		const AST& GetAST() const
+		const AST::AbstractSyntaxTree& GetAST() const
 		{
 			return ast;
+		}
+
+		void SetName(Name newName)
+		{
+			name = Move(newName);
+		}
+		Name GetName() const
+		{
+			return name;
 		}
 	};
 }    // namespace Rift

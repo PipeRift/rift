@@ -32,7 +32,6 @@ add_subdirectory(Extern)
 # Framework
 set(RIFT_CORE_BUILD_TESTS ${RIFT_BUILD_TESTS} CACHE BOOL "Build RiftCore tests")
 add_subdirectory(Libs/Core)
-add_subdirectory(Libs/ECS)
 add_subdirectory(Libs/Framework)
 
 # CLI

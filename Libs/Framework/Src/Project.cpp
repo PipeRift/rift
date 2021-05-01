@@ -21,7 +21,7 @@ namespace Rift
 
 			if (projectAsset)
 			{
-				SetName(projectAsset->GetName());
+				SetName(projectAsset->name);
 			}
 			else
 			{

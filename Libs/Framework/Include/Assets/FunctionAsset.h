@@ -4,7 +4,7 @@
 #include <Assets/AssetData.h>
 #include <Assets/AssetPtr.h>
 #include <CoreObject.h>
-#include <ECS.h>
+#include <Lang/AST.h>
 
 
 namespace Rift
@@ -13,6 +13,6 @@ namespace Rift
 	{
 		CLASS(FunctionLibraryAsset, AssetData)
 
-		TArray<ECS::EntityId> functionDeclarations;
+		TArray<AST::Id> functionDeclarations;
 	};
 }    // namespace Rift

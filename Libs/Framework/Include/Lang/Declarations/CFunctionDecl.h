@@ -3,7 +3,7 @@
 
 #include "Lang/CDeclaration.h"
 
-#include <ECS.h>
+#include <Lang/AST.h>
 
 
 namespace Rift
@@ -13,11 +13,11 @@ namespace Rift
 		STRUCT(CFunctionDecl, CDeclaration)
 
 		// AST nodes representing function parameters
-		TArray<ECS::EntityId> parameterNodes;
+		TArray<AST::Id> parameterNodes;
 
 		// Ordered list of AST nodes that constitute the function's body
-		TArray<ECS::EntityId> bodyNodes;
+		TArray<AST::Id> bodyNodes;
 
-		TOptional<ECS::EntityId> returnNode;
+		TOptional<AST::Id> returnNode;
 	};
 }    // namespace Rift

@@ -1,6 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
 #include "Compiler/C/Backend_C.h"
+
 #include "Files/Files.h"
 #include "Lang/Declarations/CClassDecl.h"
 #include "Lang/Identifiers/CIdentifier.h"

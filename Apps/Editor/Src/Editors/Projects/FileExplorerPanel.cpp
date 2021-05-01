@@ -123,9 +123,11 @@ void FileExplorerPanel::DrawFolderItems(const Folder& folder)
 
 void FileExplorerPanel::DrawFile(const File& file)
 {
-	if (ImGui::Selectable(file.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick))
+	ImGui::TreeNodeEx(
+	    file.name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+	if (ImGui::IsItemClicked())
 	{
-		if (ImGui::IsMouseDoubleClicked(0))
+		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 		{
 			editor.OpenType(file.info);
 		}
