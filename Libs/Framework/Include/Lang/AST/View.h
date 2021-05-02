@@ -64,13 +64,13 @@ namespace Rift::AST
 		template <typename Func>
 		void Each(Func func) const
 		{
-			view.Each(func);
+			view.each(func);
 		}
 
 		template <typename Comp, typename Func>
 		void Each(Func func) const
 		{
-			view.Each<Comp>(func);
+			view.template each<Comp>(func);
 		}
 
 		bool Contains(const Id node) const
@@ -81,13 +81,13 @@ namespace Rift::AST
 		template <typename Comp>
 		decltype(auto) GetComponent(const Id node) const
 		{
-			return view.get<Comp>(node);
+			return view.template get<Comp>(node);
 		}
 
 		template <typename... Comp>
 		decltype(auto) GetComponents(const Id node) const
 		{
-			return view.get<Comp...>(node);
+			return view.template get<Comp...>(node);
 		}
 	};
 }    // namespace Rift::AST
