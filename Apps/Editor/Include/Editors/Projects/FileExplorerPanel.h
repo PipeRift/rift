@@ -40,10 +40,11 @@ public:
 
 	void DrawList();
 
+	void DrawContextMenu(Path path, TAssetPtr<TypeAsset> asset);
+
 	void CacheProjectFiles();
 
 private:
-	void OrganizeProjectFiles();
 	void DrawFolderItems(const Folder& folder);
 	void DrawFile(const File& file);
 };

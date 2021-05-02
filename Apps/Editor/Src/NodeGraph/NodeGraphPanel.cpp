@@ -16,8 +16,10 @@ namespace Rift
 
 	void NodeGraphPanel::Draw(StringView baseId, DockSpaceLayout& layout)
 	{
+		ImNodes::GetStyle().Flags |=
+		    ImNodesStyleFlags_GridLinesPrimary | ImNodesStyleFlags_GridSnappingOnRelease;
+		ImNodes::PushStyleVar(ImNodesStyleVar_GridSpacing, 12.f);
 		ImNodes::PushStyleVar(ImNodesStyleVar_PinLineThickness, 2.5f);
-		ImNodes::PushStyleVar(ImNodesStyleVar_GridSpacing, 8.f);
 		ImNodes::PushStyleVar(ImNodesStyleVar_NodeCornerRounding, 2.f);
 		ImNodes::PushStyleVar(ImNodesStyleVar_PinQuadSideLength, 10.f);
 
@@ -86,7 +88,6 @@ namespace Rift
 					ImNodes::BeginOutputAttribute(4, ImNodesPinShape_QuadFilled);
 					ImGui::Text("True");
 					ImNodes::EndOutputAttribute();
-
 
 					ImNodes::BeginOutputAttribute(5, ImNodesPinShape_QuadFilled);
 					ImGui::Text("False");

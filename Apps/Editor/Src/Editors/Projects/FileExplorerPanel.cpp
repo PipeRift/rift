@@ -48,10 +48,34 @@ void FileExplorerPanel::DrawList()
 	}
 
 	ImGui::BeginChild("Files");
+	if (ImGui::BeginPopupContextWindow())
+	{
+		DrawContextMenu({}, {});
+		ImGui::EndPopup();
+	}
 
 	DrawFolderItems(projectFolder);
 
 	ImGui::EndChild();
+}
+
+void FileExplorerPanel::DrawContextMenu(Path path, TAssetPtr<TypeAsset> asset)
+{
+	if (asset)
+	{
+		if (ImGui::MenuItem("Rename")) {}
+		if (ImGui::MenuItem("Delete")) {}
+	}
+	else
+	{
+		if (ImGui::BeginMenu("Create"))
+		{
+			ImGui::MenuItem("Class");
+			ImGui::MenuItem("Struct");
+			ImGui::MenuItem("Function Library");
+			ImGui::EndMenu();
+		}
+	}
 }
 
 void FileExplorerPanel::CacheProjectFiles()
@@ -59,11 +83,6 @@ void FileExplorerPanel::CacheProjectFiles()
 	bDirty = false;
 	editor.project->ScanAssets();
 
-	OrganizeProjectFiles();
-}
-
-void FileExplorerPanel::OrganizeProjectFiles()
-{
 	for (auto& asset : editor.project->GetAllTypeAssets())
 	{
 		const Path path     = Paths::FromString(asset.GetStrPath());
@@ -113,6 +132,12 @@ void FileExplorerPanel::DrawFolderItems(const Folder& folder)
 			DrawFolderItems(childFolder);
 			ImGui::TreePop();
 		}
+		if (ImGui::BeginPopupContextItem())
+		{
+			const Path path = Paths::FromString(childFolder.name);
+			DrawContextMenu(path, {});
+			ImGui::EndPopup();
+		}
 	}
 
 	for (auto& file : folder.files)
@@ -125,11 +150,19 @@ void FileExplorerPanel::DrawFile(const File& file)
 {
 	ImGui::TreeNodeEx(
 	    file.name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+
 	if (ImGui::IsItemClicked())
 	{
 		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 		{
 			editor.OpenType(file.info);
 		}
+	}
+
+	if (ImGui::BeginPopupContextItem())
+	{
+		const Path path = Paths::FromString(file.info.GetStrPath());
+		DrawContextMenu(path, file.info);
+		ImGui::EndPopup();
 	}
 }
