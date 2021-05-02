@@ -6,55 +6,57 @@
 #include <UI/UI.h>
 
 
-bool RootEditor::OpenProject(Path path)
+namespace Rift
 {
-	if (path.empty())
+	bool RootEditor::OpenProject(Path path)
 	{
-		return false;
+		if (path.empty())
+		{
+			return false;
+		}
+
+		if (projectEditor)
+		{
+			CloseProject();
+		}
+
+		projectEditor = Create<ProjectEditor>();
+		projectEditor->SetProject(path);
+
+		if (!projectEditor->HasProject())
+		{
+			// TODO: Show loading error popup
+			projectEditor.Release();
+			return false;
+		}
+		return true;
 	}
 
-	if (projectEditor)
+	void RootEditor::CloseProject()
 	{
-		CloseProject();
-	}
-
-	projectEditor = Create<ProjectEditor>();
-	projectEditor->SetProject(path);
-
-	if (!projectEditor->HasProject())
-	{
-		// TODO: Show loading error popup
 		projectEditor.Release();
-		return false;
 	}
-	return true;
-}
 
-void RootEditor::CloseProject()
-{
-	projectEditor.Release();
-}
-
-void RootEditor::Draw()
-{
-	if (projectEditor && projectEditor->HasProject())
+	void RootEditor::Draw()
 	{
-		projectEditor->Draw();
-	}
-	else
-	{
-		ImGui::OpenPopup("Project Picker");
-	}
+		if (projectEditor && projectEditor->HasProject())
+		{
+			projectEditor->Draw();
+		}
+		else
+		{
+			ImGui::OpenPopup("Project Picker");
+		}
 
-	DrawMenuBar();
-	DrawProjectPickerPopup();
+		DrawMenuBar();
+		DrawProjectPickerPopup();
 
-	memoryDebugger.Draw();
+		memoryDebugger.Draw();
 
-	if (projectEditor && projectEditor->project)
-	{
-		astDebugger.Draw(projectEditor->project->GetAST());
-	}
+		if (projectEditor && projectEditor->project)
+		{
+			astDebugger.Draw(projectEditor->project->GetAST());
+		}
 
 #if BUILD_DEBUG
 	if (showDemo)
@@ -123,3 +125,4 @@ void RootEditor::DrawProjectPickerPopup()
 		ImGui::EndPopup();
 	}
 }
+}    // namespace Rift

@@ -12,46 +12,46 @@
 #include <UI/UI.h>
 
 
-using namespace Rift;
-
-
-class ProjectEditor : public BaseEditor
+namespace Rift
 {
-	CLASS(ProjectEditor, BaseEditor)
-
-public:
-	static const Name leftNode;
-	static const Name centralNode;
-
-	ObjectPtr<Project> project;
-	ImGuiID dockspaceID = 0;
-
-	TArray<ObjectPtr<AssetEditor>> assetEditors;
-	TArray<TAssetPtr<TypeAsset>> pendingTypesToClose;
-
-	FileExplorerPanel fileExplorer{*this};
-	DockSpaceLayout layout;
-
-protected:
-	bool bSkipFrameAfterMenu = false;
-
-
-public:
-	ProjectEditor();
-	void BeforeDestroy() override;
-	void SetProject(Path path);
-	void OpenType(TAssetPtr<TypeAsset> asset);
-	void CloseType(TAssetPtr<TypeAsset> asset);
-
-	void Draw();
-
-	bool HasProject()
+	class ProjectEditor : public BaseEditor
 	{
-		return project && project->IsValid();
-	}
+		CLASS(ProjectEditor, BaseEditor)
 
-protected:
-	void CreateDockspace();
+	public:
+		static const Name leftNode;
+		static const Name centralNode;
 
-	void DrawMenuBar();
-};
+		ObjectPtr<Project> project;
+		ImGuiID dockspaceID = 0;
+
+		TArray<ObjectPtr<AssetEditor>> assetEditors;
+		TArray<TAssetPtr<TypeAsset>> pendingTypesToClose;
+
+		FileExplorerPanel fileExplorer{*this};
+		DockSpaceLayout layout;
+
+	protected:
+		bool bSkipFrameAfterMenu = false;
+
+
+	public:
+		ProjectEditor();
+		void BeforeDestroy() override;
+		void SetProject(Path path);
+		void OpenType(TAssetPtr<TypeAsset> asset);
+		void CloseType(TAssetPtr<TypeAsset> asset);
+
+		void Draw();
+
+		bool HasProject()
+		{
+			return project && project->IsValid();
+		}
+
+	protected:
+		void CreateDockspace();
+
+		void DrawMenuBar();
+	};
+}    // namespace Rift

@@ -6,25 +6,28 @@
 #include "Tools/BigBestFitArenaDebugger.h"
 
 
-struct RootEditor
+namespace Rift
 {
-private:
-	ObjectPtr<ProjectEditor> projectEditor;
-	Rift::BigBestFitArenaDebugger memoryDebugger;
-	Rift::ASTDebugger astDebugger;
+	struct RootEditor
+	{
+	private:
+		ObjectPtr<ProjectEditor> projectEditor;
+		Rift::BigBestFitArenaDebugger memoryDebugger;
+		Rift::ASTDebugger astDebugger;
 
-#if BUILD_DEBUG
-	bool showDemo = false;
-#endif
+	#if BUILD_DEBUG
+		bool showDemo = false;
+	#endif
 
 
-public:
-	bool OpenProject(Path path);
-	void CloseProject();
+	public:
+		bool OpenProject(Path path);
+		void CloseProject();
 
-	void Draw();
+		void Draw();
 
-private:
-	void DrawMenuBar();
-	void DrawProjectPickerPopup();
-};
+	private:
+		void DrawMenuBar();
+		void DrawProjectPickerPopup();
+	};
+}    // namespace Rift

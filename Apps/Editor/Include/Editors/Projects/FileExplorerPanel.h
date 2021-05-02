@@ -6,45 +6,65 @@
 #include "Containers/Array.h"
 #include "Strings/String.h"
 
-using namespace Rift;
-
-// Forward declarations
-class ProjectEditor;
-
-class FileExplorerPanel
+namespace Rift
 {
-	struct File
+	// Forward declarations
+	class ProjectEditor;
+
+	class FileExplorerPanel
 	{
-		String name;
-		TAssetPtr<TypeAsset> info;
+	public:
+		enum class Filter : u32
+		{
+			None = 0,
+			Classes = 1 << 0,
+			Structs = 1 << 1,
+			FunctionLibraries = 1 << 2,
+			All = UINT_MAX
+		};
+
+		struct File
+		{
+			String name;
+			TAssetPtr<TypeAsset> info;
+		};
+
+		struct Folder
+		{
+			String name;
+			TArray<Folder> folders;
+			TArray<File> files;
+		};
+
+	private:
+		ProjectEditor& editor;
+		Folder projectFolder;
+		bool bOpen  = true;
+		bool bDirty = true;
+
+		Filter filter = Filter::All;
+
+
+	public:
+		FileExplorerPanel(ProjectEditor& editor) : editor(editor) {}
+
+		void BuildLayout();
+		void Draw();
+
+		void DrawList();
+
+		void DrawContextMenu(Path path, TAssetPtr<TypeAsset> asset);
+
+		void CacheProjectFiles();
+
+	private:
+		void DrawFolderItems(const Folder& folder);
+		void DrawFile(const File& file);
 	};
 
-	struct Folder
+
+	inline const u32 operator*(FileExplorerPanel::Filter filter)
 	{
-		String name;
-		TArray<Folder> folders;
-		TArray<File> files;
-	};
-
-	ProjectEditor& editor;
-	Folder projectFolder;
-	bool bOpen  = true;
-	bool bDirty = true;
-
-
-public:
-	FileExplorerPanel(ProjectEditor& editor) : editor(editor) {}
-
-	void BuildLayout();
-	void Draw();
-
-	void DrawList();
-
-	void DrawContextMenu(Path path, TAssetPtr<TypeAsset> asset);
-
-	void CacheProjectFiles();
-
-private:
-	void DrawFolderItems(const Folder& folder);
-	void DrawFile(const File& file);
-};
+		return static_cast<u32>(filter);
+	}
+}    // namespace Rift    // namespace Rift
