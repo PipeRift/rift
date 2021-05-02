@@ -2,6 +2,7 @@
 #pragma once
 
 #include <Platform/Platform.h>
+#include <Strings/StringView.h>
 
 
 namespace Rift
@@ -11,6 +12,6 @@ namespace Rift
 	public:
 		NodeGraphPanel();
 		~NodeGraphPanel();
-		void Draw(struct DockSpaceLayout& layout);
+		void Draw(StringView baseId, struct DockSpaceLayout& layout);
 	};
 }    // namespace Rift
