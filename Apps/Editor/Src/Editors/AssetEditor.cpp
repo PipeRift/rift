@@ -35,19 +35,27 @@ namespace Rift
 	{
 		auto owner = GetOwner<ProjectEditor>();
 		assert(owner);
-		owner->layout.BindNextWindowToNode(ProjectEditor::centralNode);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-		bool isOpen = true;
-		ImGui::PushID(asset.GetStrPath().data());
-		if (ImGui::Begin(asset.GetFilename().c_str(), &isOpen))
+		bool isOpen       = true;
+		String windowName = asset.GetFilename();
+		Strings::FormatTo(windowName, TX("###{}"), asset.GetStrPath());
+
+		if (pendingFocus)
+		{
+			ImGui::SetWindowFocus(windowName.c_str());
+			pendingFocus = false;
+		}
+
+		owner->layout.BindNextWindowToNode(ProjectEditor::centralNode);
+		if (ImGui::Begin(windowName.c_str(), &isOpen))
 		{
 			ImGui::PopStyleVar(3);
 
-			CreateDockspace();
+			CreateDockspace(windowName.c_str());
 			layout.Tick(dockspaceID);
 
 			nodeGraph.Draw(layout);
@@ -57,7 +65,6 @@ namespace Rift
 			ImGui::PopStyleVar(3);
 		}
 		ImGui::End();
-		ImGui::PopID();
 
 		if (!isOpen)
 		{
@@ -65,11 +72,11 @@ namespace Rift
 		}
 	}
 
-	void AssetEditor::CreateDockspace()
+	void AssetEditor::CreateDockspace(const char* id)
 	{
 		ImGuiDockNodeFlags dockingFlags = ImGuiDockNodeFlags_None;
 
-		dockspaceID = ImGui::GetID(asset.GetStrPath().data());
+		dockspaceID = ImGui::GetID(id);
 		ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), dockingFlags, nullptr);
 	}
 }    // namespace Rift

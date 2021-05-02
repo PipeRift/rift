@@ -26,6 +26,7 @@ namespace Rift
 		DockSpaceLayout layout;
 
 		NodeGraphPanel nodeGraph{};
+		bool pendingFocus = false;
 
 
 	public:
@@ -56,7 +57,12 @@ namespace Rift
 			return layout;
 		}
 
+		void MarkPendingFocus()
+		{
+			pendingFocus = true;
+		}
+
 	private:
-		void CreateDockspace();
+		void CreateDockspace(const char* id);
 	};
 }    // namespace Rift

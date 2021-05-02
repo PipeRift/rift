@@ -63,12 +63,13 @@ void ProjectEditor::SetProject(Path path)
 
 void ProjectEditor::OpenType(TAssetPtr<TypeAsset> asset)
 {
-	if (assetEditors.Contains([asset](const auto& editor) {
+	auto* existingEditor = assetEditors.Find([asset](const auto& editor) {
 		    return editor->GetAsset() == asset;
-	    }))
+	    });
+	if (existingEditor)
 	{
 		// Cant open the same asset twice. We just focus it
-		// TODO: Focus on the already oppened asset editor
+		(*existingEditor)->MarkPendingFocus();
 		return;
 	}
 
