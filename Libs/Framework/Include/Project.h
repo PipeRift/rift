@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include "Assets/ClassAsset.h"
 #include "Assets/ProjectAsset.h"
-#include "Assets/StructAsset.h"
+#include "Assets/TypeAsset.h"
 #include "Lang/AST.h"
 #include "Log.h"
 #include "Strings/String.h"
@@ -49,8 +48,6 @@ namespace Rift
 
 		TAssetPtr<ProjectAsset> projectAsset;
 		TArray<AssetInfo> allTypes;
-		TArray<TAssetPtr<ClassAsset>> classes;
-		TArray<TAssetPtr<StructAsset>> structs;
 		AST::AbstractSyntaxTree ast;
 
 

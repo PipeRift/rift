@@ -5,4 +5,7 @@
 #include <UI/UI.h>
 
 
-void DetailsPanel::Draw() {}
+namespace Rift
+{
+	void DetailsPanel::Draw() {}
+}    // namespace Rift    // namespace Rift

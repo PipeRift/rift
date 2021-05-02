@@ -2,10 +2,13 @@
 #pragma once
 
 
-class DetailsPanel
+namespace Rift
 {
-	bool bOpen = true;
+	class DetailsPanel
+	{
+		bool bOpen = true;
 
-public:
-	void Draw();
-};
+	public:
+		void Draw();
+	};
+}    // namespace Rift

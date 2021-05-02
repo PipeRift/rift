@@ -14,7 +14,7 @@ namespace Rift::AST
 	struct AbstractSyntaxTree
 	{
 	private:
-		entt::registry registry;
+		entt::basic_registry<Id> registry;
 
 
 	public:
