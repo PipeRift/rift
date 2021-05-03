@@ -4,6 +4,7 @@
 #include <Assets/AssetData.h>
 #include <CoreObject.h>
 #include <Lang/AST.h>
+#include <Reflection/ClassTraits.h>
 
 
 namespace Rift
@@ -12,6 +13,13 @@ namespace Rift
 	{
 		CLASS(TypeAsset, AssetData)
 
+	public:
 		AST::Id declaration;
+
+
+		void Serialize(Archive& ar, StringView name);
 	};
+
+	DEFINE_CLASS_TRAITS(TypeAsset, HasCustomSerialize = true);
 }    // namespace Rift
+

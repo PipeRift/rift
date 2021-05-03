@@ -59,6 +59,7 @@ namespace Rift
 			layout.Tick(dockspaceID);
 
 			nodeGraph.Draw(asset.GetStrPath(), layout);
+			properties.Draw(asset.GetStrPath(), layout);
 		}
 		else
 		{

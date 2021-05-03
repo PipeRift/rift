@@ -11,13 +11,18 @@ namespace Rift
 	{
 		bool bOpen = true;
 
-		TAssetPtr<TypeAsset> asset;
+		class AssetEditor* owner;
 
 
 	public:
-		void Draw();
+		TypePropertiesPanel() {}
+		void Draw(StringView baseId, struct DockSpaceLayout& layout);
 
 		void DrawVariables();
 		void DrawFunctions();
+
+		void DrawVariable(StringView name);
+
+		AST::Id GetOwnerNode() const;
 	};
 }    // namespace Rift

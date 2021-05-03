@@ -11,6 +11,8 @@ namespace Rift::AST
 	enum class Id : u32
 	{
 	};
+
+	constexpr entt::null_t NoId = entt::null;
 }    // namespace Rift::AST
 
 

@@ -1,6 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "Assets/TypePropertiesPanel.h"
 #include "DockSpaceLayout.h"
 #include "Editors/BaseEditor.h"
 #include "NodeGraph/NodeGraphPanel.h"
@@ -26,6 +27,7 @@ namespace Rift
 		DockSpaceLayout layout;
 
 		NodeGraphPanel nodeGraph{};
+		TypePropertiesPanel properties;
 		bool pendingFocus = false;
 
 
