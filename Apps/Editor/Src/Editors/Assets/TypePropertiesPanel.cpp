@@ -33,8 +33,8 @@ namespace Rift
 	{
 		if (ImGui::CollapsingHeader("Variables"))
 		{
-			ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, {0.f, 0.f});
-			if (ImGui::BeginTable("##variable", 3))
+			ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 1.f});
+			if (ImGui::BeginTable("##variable", 3, ImGuiTableFlags_SizingStretchSame))
 			{
 				ImGui::TableNextRow();
 				DrawVariable("alive");
@@ -78,8 +78,9 @@ namespace Rift
 		}
 	}
 
-	void TypePropertiesPanel::DrawVariable(StringView name)
+	void TypePropertiesPanel::DrawVariable(StringView)
 	{
+		static FixedString<50> name{"alive"};
 		static constexpr Color color{230, 69, 69};
 		static constexpr Color frameBG{122, 59, 41, 138};
 		static constexpr float frameHeight = 20.f;
@@ -88,10 +89,11 @@ namespace Rift
 
 		auto* window = ImGui::GetCurrentWindow();
 		ImRect frame;
-		frame.Min.x = window->WorkRect.Min.x;    // window->DC.CursorPos.x;
-		frame.Min.y = window->DC.CursorPos.y;
-		frame.Max.x = window->WorkRect.Max.x;
-		frame.Max.y = window->DC.CursorPos.y + frameHeight;
+		auto cellPadding = ImGui::GetStyle().CellPadding;
+		frame.Min.x      = window->DC.CursorPos.x;    // window->DC.CursorPos.x;
+		frame.Min.y      = window->DC.CursorPos.y;
+		frame.Max.x      = window->WorkRect.Max.x + cellPadding.x * 2;
+		frame.Max.y      = window->DC.CursorPos.y + frameHeight + cellPadding.y * 2;
 
 		// Framed header expand a little outside the default padding, to the edge of InnerClipRect
 		// (FIXME: May remove this at some point and make InnerClipRect align with WindowPadding.x
@@ -103,15 +105,31 @@ namespace Rift
 
 
 		ImGui::TableNextColumn();
+		ImGui::PushItemWidth(-FLT_MIN);
 		TypeCombo();
-		ImGui::TableNextColumn();
 
-		ImGui::Text(name.data());
+		ImGui::TableNextColumn();
+		ImGui::PushItemWidth(-FLT_MIN);
+		static bool editing   = false;
+		const bool wasEditing = editing;
+		if (!wasEditing)
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, {16.f, 4.f});
+			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(Color::Transparent));
+		}
+		ImGui::InputText("##name", name.data(), name.size());
+		editing = ImGui::IsItemActive();
+		if (!wasEditing)
+		{
+			ImGui::PopStyleColor();
+			ImGui::PopStyleVar();
+		}
 
 		ImGui::TableNextColumn();
 
 		static float value = 2.f;
-		ImGui::InputFloat("##defaultValue", &value);
+		ImGui::PushItemWidth(-FLT_MIN);
+		ImGui::InputFloat("##defaultValue", &value, 0.f, 0.f, "%.1f");
 
 		ImGui::PopStyleColor();
 	}
