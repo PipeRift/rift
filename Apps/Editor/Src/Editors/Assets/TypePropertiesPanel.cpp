@@ -1,19 +1,22 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Editors/Assets/TypePropertiesPanel.h"
+
 #include "DockSpaceLayout.h"
 #include "Editors/AssetEditor.h"
-#include "Editors/Assets/TypePropertiesPanel.h"
 
 #include <UI/UI.h>
 
 
 namespace Rift
 {
-	void TypePropertiesPanel::Draw(StringView baseId, DockSpaceLayout& layout)
+	TypePropertiesPanel::TypePropertiesPanel(AssetEditor& editor) : editor(editor) {}
+
+	void TypePropertiesPanel::Draw(DockSpaceLayout& layout)
 	{
 		layout.BindNextWindowToNode(AssetEditor::rightNode);
 
-		const String name = Strings::Format(TX("Properties##{}"), baseId);
+		const String name = Strings::Format(TX("Properties##{}"), editor.GetWindowId());
 		if (ImGui::Begin(name.c_str()))
 		{
 			if (true)    // IsStruct || IsClass
@@ -90,17 +93,13 @@ namespace Rift
 		auto* window = ImGui::GetCurrentWindow();
 		ImRect frame;
 		auto cellPadding = ImGui::GetStyle().CellPadding;
-		frame.Min.x      = window->DC.CursorPos.x;    // window->DC.CursorPos.x;
+		frame.Min.x      = window->DC.CursorPos.x;
 		frame.Min.y      = window->DC.CursorPos.y;
 		frame.Max.x      = window->WorkRect.Max.x + cellPadding.x * 2;
 		frame.Max.y      = window->DC.CursorPos.y + frameHeight + cellPadding.y * 2;
-
 		// Framed header expand a little outside the default padding, to the edge of InnerClipRect
-		// (FIXME: May remove this at some point and make InnerClipRect align with WindowPadding.x
-		// instead of WindowPadding.x*0.5f)
 		frame.Min.x -= IM_FLOOR(window->WindowPadding.x * 0.5f - 1.0f);
 		frame.Max.x += IM_FLOOR(window->WindowPadding.x * 0.5f);
-
 		window->DrawList->AddRectFilled(frame.Min, frame.Max, color.DWColor());
 
 
@@ -132,22 +131,5 @@ namespace Rift
 		ImGui::InputFloat("##defaultValue", &value, 0.f, 0.f, "%.1f");
 
 		ImGui::PopStyleColor();
-	}
-
-
-	AST::Id TypePropertiesPanel::GetOwnerNode() const
-	{
-		if (!owner)
-		{
-			return AST::NoId;
-		}
-
-		TAssetPtr<TypeAsset> asset = owner->GetAsset();
-		if (!asset.IsValid())
-		{
-			return AST::NoId;
-		}
-
-		return asset->declaration;
 	}
 }    // namespace Rift

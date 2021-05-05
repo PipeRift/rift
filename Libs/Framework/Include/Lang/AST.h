@@ -44,6 +44,12 @@ namespace Rift::AST
 			return registry.emplace<Component>(node, Forward<Args>(args)...);
 		}
 
+		template <typename... Component>
+		void AddComponents(Id node)
+		{
+			(AddComponent<Component>(node), ...);
+		}
+
 		/**
 		 * If the entity has Component, it will be replaced)
 		 */

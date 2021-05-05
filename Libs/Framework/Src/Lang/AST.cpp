@@ -17,8 +17,7 @@ namespace Rift::AST
 	{
 		Id id = Create();
 		AddComponent<CIdentifier>(id, name);
-		AddComponent<CClassDecl>(id);
-		AddComponent<CChildren>(id);
+		AddComponents<CClassDecl, CChildren>(id);
 		return id;
 	}
 
@@ -26,8 +25,7 @@ namespace Rift::AST
 	{
 		Id id = Create();
 		AddComponent<CIdentifier>(id, name);
-		AddComponent<CStructDecl>(id);
-		AddComponent<CChildren>(id);
+		AddComponents<CStructDecl, CChildren>(id);
 		return id;
 	}
 
@@ -35,8 +33,7 @@ namespace Rift::AST
 	{
 		Id id = Create();
 		AddComponent<CIdentifier>(id, name);
-		AddComponent<CVariableDecl>(id);
-		AddComponent<CChildren>(id);
+		AddComponents<CVariableDecl, CChildren>(id);
 		return id;
 	}
 
@@ -44,8 +41,7 @@ namespace Rift::AST
 	{
 		Id id = Create();
 		AddComponent<CIdentifier>(id, name);
-		AddComponent<CFunctionDecl>(id);
-		AddComponent<CChildren>(id);
+		AddComponents<CFunctionDecl, CChildren>(id);
 		return id;
 	}
 

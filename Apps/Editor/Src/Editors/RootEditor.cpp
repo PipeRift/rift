@@ -59,70 +59,70 @@ namespace Rift
 		}
 
 #if BUILD_DEBUG
-	if (showDemo)
-	{
-		ImGui::ShowDemoWindow(&showDemo);
-	}
-#endif
-}
-
-void RootEditor::DrawMenuBar()
-{
-	if (ImGui::BeginMainMenuBar())
-	{
-		if (ImGui::BeginMenu("Views"))
+		if (showDemo)
 		{
-			ImGui::MenuItem("Memory", nullptr, &memoryDebugger.open);
-			ImGui::EndMenu();
+			ImGui::ShowDemoWindow(&showDemo);
 		}
+#endif
+	}
+
+	void RootEditor::DrawMenuBar()
+	{
+		if (ImGui::BeginMainMenuBar())
+		{
+			if (ImGui::BeginMenu("Views"))
+			{
+				ImGui::MenuItem("Memory", nullptr, &memoryDebugger.open);
+				ImGui::EndMenu();
+			}
 
 #if BUILD_DEBUG
-		ImGui::MenuItem("Demo", nullptr, &showDemo);
+			ImGui::MenuItem("Demo", nullptr, &showDemo);
 #endif
 
-		ImGui::EndMainMenuBar();
+			ImGui::EndMainMenuBar();
+		}
 	}
-}
 
-void RootEditor::DrawProjectPickerPopup()
-{
-	// Center modal when appearing
-	ImGui::SetNextWindowPos(
-	    ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-
-	if (ImGui::BeginPopupModal("Project Picker", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+	void RootEditor::DrawProjectPickerPopup()
 	{
-		if (ImGui::Button("Open Project..."))
-		{
-			Path folder = Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
-			OpenProject(folder);
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::SetItemDefaultFocus();
-		ImGui::Separator();
-		ImGui::Text("Recent Projects");
-		static const char* recentProjects[]{"One recent project"};
-		static int selected = 0;
-		if (ImGui::BeginListBox("##RecentProjects"))
-		{
-			for (int n = 0; n < IM_ARRAYSIZE(recentProjects); ++n)
-			{
-				const bool is_selected = (selected == n);
-				if (ImGui::Selectable(recentProjects[n], is_selected))
-				{
-					selected = n;
-				}
+		// Center modal when appearing
+		ImGui::SetNextWindowPos(
+		    ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
-				// Set the initial focus when opening the combo (scrolling + keyboard navigation
-				// focus)
-				if (is_selected)
-				{
-					ImGui::SetItemDefaultFocus();
-				}
+		if (ImGui::BeginPopupModal("Project Picker", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			if (ImGui::Button("Open Project..."))
+			{
+				Path folder = Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
+				OpenProject(folder);
+				ImGui::CloseCurrentPopup();
 			}
-			ImGui::EndListBox();
+			ImGui::SetItemDefaultFocus();
+			ImGui::Separator();
+			ImGui::Text("Recent Projects");
+			static const char* recentProjects[]{"One recent project"};
+			static int selected = 0;
+			if (ImGui::BeginListBox("##RecentProjects"))
+			{
+				for (int n = 0; n < IM_ARRAYSIZE(recentProjects); ++n)
+				{
+					const bool is_selected = (selected == n);
+					if (ImGui::Selectable(recentProjects[n], is_selected))
+					{
+						selected = n;
+					}
+
+					// Set the initial focus when opening the combo (scrolling + keyboard navigation
+					// focus)
+					if (is_selected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndListBox();
+			}
+			ImGui::EndPopup();
 		}
-		ImGui::EndPopup();
 	}
-}
 }    // namespace Rift

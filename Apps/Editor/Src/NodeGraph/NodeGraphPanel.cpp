@@ -11,10 +11,9 @@
 
 namespace Rift
 {
-	NodeGraphPanel::NodeGraphPanel() {}
-	NodeGraphPanel::~NodeGraphPanel() {}
+	NodeGraphPanel::NodeGraphPanel(AssetEditor& editor) : editor(editor) {}
 
-	void NodeGraphPanel::Draw(StringView baseId, DockSpaceLayout& layout)
+	void NodeGraphPanel::Draw(DockSpaceLayout& layout)
 	{
 		ImNodes::GetStyle().Flags |=
 		    ImNodesStyleFlags_GridLinesPrimary | ImNodesStyleFlags_GridSnappingOnRelease;
@@ -25,7 +24,7 @@ namespace Rift
 
 		layout.BindNextWindowToNode(AssetEditor::centralNode);
 
-		const String name = Strings::Format(TX("Graph##{}"), baseId);
+		const String name = Strings::Format(TX("Graph##{}"), editor.GetWindowId());
 		if (ImGui::Begin(name.c_str()))
 		{
 			ImNodes::BeginNodeEditor();

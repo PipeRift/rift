@@ -61,6 +61,18 @@ namespace Rift
 
 	void FileExplorerPanel::DrawContextMenu(Path path, TAssetPtr<TypeAsset> asset)
 	{
+		static FixedString<50> newName;
+		if (ImGui::BeginPopup("New Type"))
+		{
+			ImGui::InputText("##newname", newName.data(), newName.size());
+
+			if (ImGui::Button("Close"))
+			{
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+
 		if (asset)
 		{
 			if (ImGui::MenuItem("Rename")) {}
@@ -70,7 +82,11 @@ namespace Rift
 		{
 			if (ImGui::BeginMenu("Create"))
 			{
-				ImGui::MenuItem("Class");
+				if (ImGui::MenuItem("Class"))
+				{
+					newName = "";
+					ImGui::OpenPopup("New Type");
+				}
 				ImGui::MenuItem("Struct");
 				ImGui::MenuItem("Function Library");
 				ImGui::EndMenu();

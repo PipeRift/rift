@@ -22,4 +22,3 @@ namespace Rift
 
 	DEFINE_CLASS_TRAITS(TypeAsset, HasCustomSerialize = true);
 }    // namespace Rift
-

@@ -66,7 +66,7 @@ namespace Rift
 	void ProjectEditor::OpenType(TAssetPtr<TypeAsset> asset)
 	{
 		auto* existingEditor = assetEditors.Find([asset](const auto& editor) {
-		    return editor->GetAsset() == asset;
+			return editor->GetAsset() == asset;
 		});
 		if (existingEditor)
 		{

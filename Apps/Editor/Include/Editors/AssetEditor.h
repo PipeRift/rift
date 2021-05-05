@@ -26,8 +26,8 @@ namespace Rift
 		ImGuiID dockspaceID = 0;
 		DockSpaceLayout layout;
 
-		NodeGraphPanel nodeGraph{};
-		TypePropertiesPanel properties;
+		NodeGraphPanel nodeGraph{*this};
+		TypePropertiesPanel properties{*this};
 		bool pendingFocus = false;
 
 
@@ -62,6 +62,11 @@ namespace Rift
 		void MarkPendingFocus()
 		{
 			pendingFocus = true;
+		}
+
+		StringView GetWindowId() override
+		{
+			return asset.GetStrPath();
 		}
 
 	private:

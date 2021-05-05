@@ -8,4 +8,4 @@
 namespace Rift
 {
 	void DetailsPanel::Draw() {}
-}    // namespace Rift    // namespace Rift
+}    // namespace Rift

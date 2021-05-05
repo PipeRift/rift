@@ -7,22 +7,23 @@
 
 namespace Rift
 {
+	class AssetEditor;
+
+
 	class TypePropertiesPanel
 	{
 		bool bOpen = true;
 
-		class AssetEditor* owner;
+		AssetEditor& editor;
 
 
 	public:
-		TypePropertiesPanel() {}
-		void Draw(StringView baseId, struct DockSpaceLayout& layout);
+		TypePropertiesPanel(AssetEditor& editor);
+		void Draw(struct DockSpaceLayout& layout);
 
 		void DrawVariables();
 		void DrawFunctions();
 
 		void DrawVariable(StringView name);
-
-		AST::Id GetOwnerNode() const;
 	};
 }    // namespace Rift

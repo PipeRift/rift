@@ -16,11 +16,11 @@ namespace Rift
 	public:
 		enum class Filter : u32
 		{
-			None = 0,
-			Classes = 1 << 0,
-			Structs = 1 << 1,
+			None              = 0,
+			Classes           = 1 << 0,
+			Structs           = 1 << 1,
 			FunctionLibraries = 1 << 2,
-			All = UINT_MAX
+			All               = UINT_MAX
 		};
 
 		struct File
@@ -67,4 +67,4 @@ namespace Rift
 	{
 		return static_cast<u32>(filter);
 	}
-}    // namespace Rift    // namespace Rift
+}    // namespace Rift

@@ -15,9 +15,9 @@ namespace Rift
 		Rift::BigBestFitArenaDebugger memoryDebugger;
 		Rift::ASTDebugger astDebugger;
 
-	#if BUILD_DEBUG
+#if BUILD_DEBUG
 		bool showDemo = false;
-	#endif
+#endif
 
 
 	public:

@@ -42,7 +42,7 @@ namespace Rift
 
 		bool isOpen       = true;
 		String windowName = asset.GetFilename();
-		Strings::FormatTo(windowName, TX("###{}"), asset.GetStrPath());
+		Strings::FormatTo(windowName, TX("###{}"), GetWindowId());
 
 		if (pendingFocus)
 		{
@@ -58,8 +58,8 @@ namespace Rift
 			CreateDockspace(windowName.c_str());
 			layout.Tick(dockspaceID);
 
-			nodeGraph.Draw(asset.GetStrPath(), layout);
-			properties.Draw(asset.GetStrPath(), layout);
+			nodeGraph.Draw(layout);
+			properties.Draw(layout);
 		}
 		else
 		{
