@@ -27,6 +27,7 @@ namespace Rift
 		{
 			String name;
 			TAssetPtr<TypeAsset> info;
+			bool renaming = false;
 		};
 
 		struct Folder
@@ -53,13 +54,13 @@ namespace Rift
 
 		void DrawList();
 
-		void DrawContextMenu(Path path, TAssetPtr<TypeAsset> asset);
+		void DrawContextMenu(Path path, File* file);
 
 		void CacheProjectFiles();
 
 	private:
-		void DrawFolderItems(const Folder& folder);
-		void DrawFile(const File& file);
+		void DrawFolderItems(Folder& folder);
+		void DrawFile(File& file);
 	};
 
 

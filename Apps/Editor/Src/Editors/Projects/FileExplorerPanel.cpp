@@ -1,11 +1,12 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editors/Projects/FileExplorerPanel.h"
-
 #include "Editors/ProjectEditor.h"
+#include "Editors/Projects/FileExplorerPanel.h"
 #include "UI/UI.h"
+#include "UI/Style.h"
 
 #include <imgui_internal.h>
+#include <GLFW/glfw3.h>
 
 
 namespace Rift
@@ -38,6 +39,25 @@ namespace Rift
 			}
 		}
 		ImGui::End();
+
+
+		if (ImGui::BeginPopupModal("New", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			static FixedString<50> newName;
+			ImGui::InputText("Name", newName.data(), newName.size());
+
+			if (ImGui::Button("Create", ImVec2(120, 0)))
+			{
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SetItemDefaultFocus();
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel", ImVec2(120, 0)))
+			{
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
 	}
 
 	void FileExplorerPanel::DrawList()
@@ -59,23 +79,14 @@ namespace Rift
 		ImGui::EndChild();
 	}
 
-	void FileExplorerPanel::DrawContextMenu(Path path, TAssetPtr<TypeAsset> asset)
+	void FileExplorerPanel::DrawContextMenu(Path path, File* file)
 	{
-		static FixedString<50> newName;
-		if (ImGui::BeginPopup("New Type"))
+		if (file && file->info)
 		{
-			ImGui::InputText("##newname", newName.data(), newName.size());
-
-			if (ImGui::Button("Close"))
+			if (ImGui::MenuItem("Rename"))
 			{
-				ImGui::CloseCurrentPopup();
+				file->renaming = true;
 			}
-			ImGui::EndPopup();
-		}
-
-		if (asset)
-		{
-			if (ImGui::MenuItem("Rename")) {}
 			if (ImGui::MenuItem("Delete")) {}
 		}
 		else
@@ -84,8 +95,7 @@ namespace Rift
 			{
 				if (ImGui::MenuItem("Class"))
 				{
-					newName = "";
-					ImGui::OpenPopup("New Type");
+					ImGui::OpenPopup("New");
 				}
 				ImGui::MenuItem("Struct");
 				ImGui::MenuItem("Function Library");
@@ -139,7 +149,7 @@ namespace Rift
 		}
 	}
 
-	void FileExplorerPanel::DrawFolderItems(const Folder& folder)
+	void FileExplorerPanel::DrawFolderItems(Folder& folder)
 	{
 		for (auto& childFolder : folder.folders)
 		{
@@ -151,7 +161,7 @@ namespace Rift
 			if (ImGui::BeginPopupContextItem())
 			{
 				const Path path = Paths::FromString(childFolder.name);
-				DrawContextMenu(path, {});
+				DrawContextMenu(path, nullptr);
 				ImGui::EndPopup();
 			}
 		}
@@ -162,10 +172,37 @@ namespace Rift
 		}
 	}
 
-	void FileExplorerPanel::DrawFile(const File& file)
+	void FileExplorerPanel::DrawFile(File& file)
 	{
-		ImGui::TreeNodeEx(
-		    file.name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+		if (!file.renaming)
+		{
+			ImGui::TreeNodeEx(
+		    	file.name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+			if (ImGui::IsItemHovered() && ImGui::IsKeyReleased(GLFW_KEY_F2))
+			{
+				file.renaming = true;
+			}
+		}
+		else
+		{
+			UI::Indent();
+			Style::PushStyleCompact();
+			// TODO: Implement UI functions for string types
+			TFixedString<128> buffer;
+			ImGui::SetKeyboardFocusHere();
+			if (UI::InputText("##newname", buffer.data(), buffer.size(),
+			        ImGuiInputTextFlags_EnterReturnsTrue))
+			{
+				file.renaming = false;
+			}
+			//if (!UI::IsItemActive())
+			//{
+			//	file.renaming = false;
+			//}
+			Style::PopStyleCompact();
+			UI::Unindent();
+		}
+
 
 		if (ImGui::IsItemClicked())
 		{
@@ -178,7 +215,7 @@ namespace Rift
 		if (ImGui::BeginPopupContextItem())
 		{
 			const Path path = Paths::FromString(file.info.GetStrPath());
-			DrawContextMenu(path, file.info);
+			DrawContextMenu(path, &file);
 			ImGui::EndPopup();
 		}
 	}

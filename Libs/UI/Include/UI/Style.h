@@ -5,7 +5,7 @@
 #include <Reflection/Static/EnumType.h>
 
 
-namespace Style
+namespace Rift::Style
 {
 	enum class FontMode : Rift::u8
 	{
@@ -34,4 +34,7 @@ namespace Style
 	void PopFont();
 
 	void ApplyStyle();
+
+	void PushStyleCompact();
+	void PopStyleCompact();
 };
