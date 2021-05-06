@@ -3,8 +3,10 @@
 
 #include "Assets/AssetPtr.h"
 #include "Assets/TypeAsset.h"
-#include "Containers/Array.h"
-#include "Strings/String.h"
+
+#include <Containers/Array.h>
+#include <Strings/String.h>
+
 
 namespace Rift
 {
@@ -61,6 +63,8 @@ namespace Rift
 	private:
 		void DrawFolderItems(Folder& folder);
 		void DrawFile(File& file);
+
+		void CreateAsset(StringView title, TypeAsset::Type type, Path path);
 	};
 
 

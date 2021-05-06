@@ -10,6 +10,11 @@ namespace Rift
 	void TypeAsset::Serialize(Archive& ar, StringView name)
 	{
 		ar.BeginObject(name);
+
+		u8 typeValue = ar.IsLoading() ? 0 : u8(type);
+		ar("type", typeValue);
+		type = Type(typeValue);
+
 		SerializeReflection(ar);
 
 		ASTArchive astArchive{ar};

@@ -35,6 +35,7 @@ namespace Rift
 	void Project::ScanAssets()
 	{
 		ZoneScopedNC("Find asset files", 0x459bd1);
+		allTypes.Empty();
 		for (const auto& asset : AssetIterator<true>(projectPath))
 		{
 			allTypes.Add(asset);

@@ -2,11 +2,12 @@
 
 #include "Editors/ProjectEditor.h"
 #include "Editors/Projects/FileExplorerPanel.h"
-#include "UI/UI.h"
 #include "UI/Style.h"
+#include "UI/UI.h"
 
-#include <imgui_internal.h>
+#include <Files/FileDialog.h>
 #include <GLFW/glfw3.h>
+#include <imgui_internal.h>
 
 
 namespace Rift
@@ -39,25 +40,6 @@ namespace Rift
 			}
 		}
 		ImGui::End();
-
-
-		if (ImGui::BeginPopupModal("New", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-		{
-			static FixedString<50> newName;
-			ImGui::InputText("Name", newName.data(), newName.size());
-
-			if (ImGui::Button("Create", ImVec2(120, 0)))
-			{
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::SetItemDefaultFocus();
-			ImGui::SameLine();
-			if (ImGui::Button("Cancel", ImVec2(120, 0)))
-			{
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::EndPopup();
-		}
 	}
 
 	void FileExplorerPanel::DrawList()
@@ -95,10 +77,17 @@ namespace Rift
 			{
 				if (ImGui::MenuItem("Class"))
 				{
-					ImGui::OpenPopup("New");
+					CreateAsset("Create Class file", TypeAsset::Type::Class, path);
 				}
-				ImGui::MenuItem("Struct");
-				ImGui::MenuItem("Function Library");
+				if (ImGui::MenuItem("Struct"))
+				{
+					CreateAsset("Create Struct file", TypeAsset::Type::Struct, path);
+				}
+				if (ImGui::MenuItem("Function Library"))
+				{
+					CreateAsset(
+					    "Create Function Library file", TypeAsset::Type::FunctionLibrary, path);
+				}
 				ImGui::EndMenu();
 			}
 		}
@@ -108,6 +97,9 @@ namespace Rift
 	{
 		bDirty = false;
 		editor.project->ScanAssets();
+
+		// Reset cached data
+		projectFolder = {};
 
 		for (auto& asset : editor.project->GetAllTypeAssets())
 		{
@@ -189,6 +181,7 @@ namespace Rift
 			Style::PushStyleCompact();
 			// TODO: Implement UI functions for string types
 			TFixedString<128> buffer;
+
 			ImGui::SetKeyboardFocusHere();
 			if (UI::InputText("##newname", buffer.data(), buffer.size(),
 			        ImGuiInputTextFlags_EnterReturnsTrue))
@@ -217,6 +210,24 @@ namespace Rift
 			const Path path = Paths::FromString(file.info.GetStrPath());
 			DrawContextMenu(path, &file);
 			ImGui::EndPopup();
+		}
+	}
+
+
+	void FileExplorerPanel::CreateAsset(StringView title, TypeAsset::Type type, Path path)
+	{
+		const Path filename = Dialogs::SaveFile(title, path, {{"Rift file", "*.rf"}}, true);
+		TAssetPtr<TypeAsset> newAsset{filename};
+		if (newAsset.LoadOrCreate())
+		{
+			newAsset->type = type;
+			newAsset->Save();
+			bDirty = true;
+		}
+		else
+		{
+			const String filenameStr = Paths::ToString(filename);
+			Log::Error("Couldn't create file '{}'", filenameStr);
 		}
 	}
 }    // namespace Rift

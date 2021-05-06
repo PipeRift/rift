@@ -14,10 +14,21 @@ namespace Rift
 		CLASS(TypeAsset, AssetData)
 
 	public:
+		enum class Type : u8
+		{
+			None,
+			Class,
+			Struct,
+			FunctionLibrary
+		};
+
+		Type type = Type::None;
 		AST::Id declaration;
 
-
+		// FIX: Not being called
 		void Serialize(Archive& ar, StringView name);
+
+		// void InitializeDeclaration();
 	};
 
 	DEFINE_CLASS_TRAITS(TypeAsset, HasCustomSerialize = true);
