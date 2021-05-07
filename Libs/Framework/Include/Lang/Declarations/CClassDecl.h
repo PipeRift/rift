@@ -11,8 +11,5 @@ namespace Rift
 	struct CClassDecl : public CRecordDecl
 	{
 		STRUCT(CClassDecl, CRecordDecl)
-
-		// List of AST function declarations
-		TArray<AST::Id> functions;
 	};
 }    // namespace Rift

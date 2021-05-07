@@ -221,6 +221,7 @@ namespace Rift
 		if (newAsset.LoadOrCreate())
 		{
 			newAsset->type = type;
+			newAsset->InitializeDeclaration(editor.project->GetAST());
 			newAsset->Save();
 			bDirty = true;
 		}
