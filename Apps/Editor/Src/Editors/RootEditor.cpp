@@ -3,43 +3,15 @@
 #include "Editors/RootEditor.h"
 
 #include <Files/FileDialog.h>
+#include <RiftContext.h>
 #include <UI/UI.h>
 
 
 namespace Rift
 {
-	bool RootEditor::OpenProject(Path path)
-	{
-		if (path.empty())
-		{
-			return false;
-		}
-
-		if (projectEditor)
-		{
-			CloseProject();
-		}
-
-		projectEditor = Create<ProjectEditor>();
-		projectEditor->SetProject(path);
-
-		if (!projectEditor->HasProject())
-		{
-			// TODO: Show loading error popup
-			projectEditor.Release();
-			return false;
-		}
-		return true;
-	}
-
-	void RootEditor::CloseProject()
-	{
-		projectEditor.Release();
-	}
-
 	void RootEditor::Draw()
 	{
-		if (projectEditor && projectEditor->HasProject())
+		if (GetContext<RiftContext>()->HasProject())
 		{
 			projectEditor->Draw();
 		}
@@ -52,11 +24,6 @@ namespace Rift
 		DrawProjectPickerPopup();
 
 		memoryDebugger.Draw();
-
-		if (projectEditor && projectEditor->project)
-		{
-			astDebugger.Draw(projectEditor->project->GetAST());
-		}
 
 #if BUILD_DEBUG
 		if (showDemo)
@@ -95,8 +62,11 @@ namespace Rift
 			if (ImGui::Button("Open Project..."))
 			{
 				Path folder = Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
-				OpenProject(folder);
-				ImGui::CloseCurrentPopup();
+
+				if (GetContext<RiftContext>()->OpenProject(folder))
+				{
+					ImGui::CloseCurrentPopup();
+				}
 			}
 			ImGui::SetItemDefaultFocus();
 			ImGui::Separator();

@@ -2,7 +2,6 @@
 #pragma once
 
 #include "ProjectEditor.h"
-#include "Tools/ASTDebugger.h"
 #include "Tools/BigBestFitArenaDebugger.h"
 
 
@@ -11,9 +10,8 @@ namespace Rift
 	struct RootEditor
 	{
 	private:
-		ObjectPtr<ProjectEditor> projectEditor;
+		TOwnPtr<ProjectEditor> projectEditor = Create<ProjectEditor>();
 		Rift::BigBestFitArenaDebugger memoryDebugger;
-		Rift::ASTDebugger astDebugger;
 
 #if BUILD_DEBUG
 		bool showDemo = false;
@@ -21,9 +19,6 @@ namespace Rift
 
 
 	public:
-		bool OpenProject(Path path);
-		void CloseProject();
-
 		void Draw();
 
 	private:

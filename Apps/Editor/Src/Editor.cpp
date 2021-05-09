@@ -3,6 +3,7 @@
 #include "Editor.h"
 
 #include <Profiler.h>
+#include <RiftContext.h>
 #include <UI/Window.h>
 
 
@@ -10,6 +11,8 @@ namespace Rift
 {
 	int Editor::Run()
 	{
+		InitializeContext<RiftContext>();
+
 		// Setup window
 		if (!Rift::UI::Init(Editor::OnGl3WError))
 		{
@@ -29,6 +32,7 @@ namespace Rift
 		}
 
 		UI::Shutdown();
+		ShutdownContext();
 		return 0;
 	}
 

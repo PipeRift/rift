@@ -5,6 +5,7 @@
 #include "Editors/AssetEditor.h"
 #include "Editors/BaseEditor.h"
 #include "Editors/Projects/FileExplorerPanel.h"
+#include "Tools/ASTDebugger.h"
 
 #include <Assets/AssetPtr.h>
 #include <Assets/TypeAsset.h>
@@ -22,14 +23,15 @@ namespace Rift
 		static const Name leftNode;
 		static const Name centralNode;
 
-		ObjectPtr<Project> project;
 		ImGuiID dockspaceID = 0;
 
-		TArray<ObjectPtr<AssetEditor>> assetEditors;
+		TPtr<Project> currentProject;
+		TArray<TOwnPtr<AssetEditor>> assetEditors;
 		TArray<TAssetPtr<TypeAsset>> pendingTypesToClose;
 
 		FileExplorerPanel fileExplorer{*this};
 		DockSpaceLayout layout;
+		Rift::ASTDebugger astDebugger;
 
 	protected:
 		bool bSkipFrameAfterMenu = false;
@@ -38,20 +40,16 @@ namespace Rift
 	public:
 		ProjectEditor();
 		void BeforeDestroy() override;
-		void SetProject(Path path);
 		void OpenType(TAssetPtr<TypeAsset> asset);
 		void CloseType(TAssetPtr<TypeAsset> asset);
 
 		void Draw();
 
-		bool HasProject()
-		{
-			return project && project->IsValid();
-		}
-
 	protected:
 		void CreateDockspace();
 
 		void DrawMenuBar();
+
+		void OnProjectChanged(TPtr<Project> newProject);
 	};
 }    // namespace Rift

@@ -2,12 +2,9 @@
 
 #include "Editor.h"
 
-#include <Context.h>
-
 
 int RunCLI()
 {
-	Rift::Context::Initialize();
 	return Rift::Editor::Get().Run();
 }
 

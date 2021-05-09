@@ -1,12 +1,12 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editors/ProjectEditor.h"
-
 #include "Editor.h"
+#include "Editors/ProjectEditor.h"
 
 #include <Compiler/Compiler.h>
 #include <Files/FileDialog.h>
 #include <Profiler.h>
+#include <RiftContext.h>
 #include <imgui_internal.h>
 
 
@@ -41,28 +41,6 @@ namespace Rift
 		Editor::Get().SetUIConfigFile({});
 	}
 
-	void ProjectEditor::SetProject(Path path)
-	{
-		if (project && project->GetPath() == path)
-		{
-			return;    // Same project, ignore call
-		}
-
-		// TODO: Clear project if no path
-
-		assetEditors.Empty();    // Close previously opened editors
-		project = Create<Project>();
-		project->Init(path);
-
-		if (HasProject())
-		{
-			// Set config path to project folder and save or load manually=
-			Editor::Get().SetUIConfigFile(path / "Saved" / "ui.ini");
-
-			// project->LoadAllAssets();
-		}
-	}
-
 	void ProjectEditor::OpenType(TAssetPtr<TypeAsset> asset)
 	{
 		auto* existingEditor = assetEditors.Find([asset](const auto& editor) {
@@ -94,6 +72,12 @@ namespace Rift
 	{
 		ZoneScoped;
 
+		TPtr<Project> project = RiftContext::GetProject();
+		if (project != currentProject)
+		{
+			OnProjectChanged(project);
+		}
+
 		String projectPath = Paths::ToString(project->GetPath());
 		ImGui::PushID(Hash<String>()(projectPath));
 
@@ -123,6 +107,7 @@ namespace Rift
 			editor->Draw();
 		}
 
+		astDebugger.Draw(RiftContext::GetProject()->GetAST());
 		ImGui::PopID();
 	}
 
@@ -163,6 +148,8 @@ namespace Rift
 	void ProjectEditor::DrawMenuBar()
 	{
 		ZoneScoped;
+
+		auto context = GetContext<RiftContext>();
 		if (ImGui::BeginMainMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
@@ -171,14 +158,14 @@ namespace Rift
 				{
 					Path folder =
 					    Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
-					if (Editor::Get().GetRootEditor().OpenProject(folder))
+					if (context->OpenProject(folder))
 					{
 						bSkipFrameAfterMenu = true;
 					}
 				}
 				if (ImGui::MenuItem("Close current"))
 				{
-					Editor::Get().GetRootEditor().CloseProject();
+					context->CloseProject();
 					bSkipFrameAfterMenu = true;
 				}
 				ImGui::Separator();
@@ -193,12 +180,14 @@ namespace Rift
 				if (ImGui::MenuItem("Build current"))
 				{
 					Rift::Compiler::Config config;
-					Rift::Compiler::Build(project, config, Rift::Compiler::EBackend::C);
+					Rift::Compiler::Build(
+					    context->GetRootProject(), config, Rift::Compiler::EBackend::C);
 				}
 				if (ImGui::MenuItem("Build all"))
 				{
 					Rift::Compiler::Config config;
-					Rift::Compiler::Build(project, config, Rift::Compiler::EBackend::C);
+					Rift::Compiler::Build(
+					    context->GetRootProject(), config, Rift::Compiler::EBackend::C);
 				}
 				ImGui::EndMenu();
 			}
@@ -231,6 +220,24 @@ namespace Rift
 			}
 
 			ImGui::EndMainMenuBar();
+		}
+	}
+
+
+	void ProjectEditor::OnProjectChanged(TPtr<Project> newProject)
+	{
+		currentProject = newProject;
+		assetEditors.Empty();
+
+		if (currentProject)
+		{
+			// Set config path to project folder and save or load manually
+			Editor::Get().SetUIConfigFile(currentProject->GetPath() / "Saved" / "ui.ini");
+		}
+		else
+		{
+			// Set default config path
+			Editor::Get().SetUIConfigFile({});
 		}
 	}
 }    // namespace Rift

@@ -7,6 +7,7 @@
 
 #include <Files/FileDialog.h>
 #include <GLFW/glfw3.h>
+#include <RiftContext.h>
 #include <imgui_internal.h>
 
 
@@ -18,26 +19,19 @@ namespace Rift
 		if (ImGui::Begin(
 		        "File Explorer", &bOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar))
 		{
-			if (!editor.HasProject())
+			if (ImGui::BeginMenuBar())
 			{
-				ImGui::Text("No active project.");
-			}
-			else
-			{
-				if (ImGui::BeginMenuBar())
+				if (ImGui::BeginMenu("Filter"))
 				{
-					if (ImGui::BeginMenu("Filter"))
-					{
-						ImGui::CheckboxFlags("Classes", (u32*) &filter, *Filter::Classes);
-						ImGui::CheckboxFlags("Structs", (u32*) &filter, *Filter::Structs);
-						ImGui::CheckboxFlags(
-						    "Function Libraries", (u32*) &filter, *Filter::FunctionLibraries);
-						ImGui::EndMenu();
-					}
-					ImGui::EndMenuBar();
+					ImGui::CheckboxFlags("Classes", (u32*) &filter, *Filter::Classes);
+					ImGui::CheckboxFlags("Structs", (u32*) &filter, *Filter::Structs);
+					ImGui::CheckboxFlags(
+					    "Function Libraries", (u32*) &filter, *Filter::FunctionLibraries);
+					ImGui::EndMenu();
 				}
-				DrawList();
+				ImGui::EndMenuBar();
 			}
+			DrawList();
 		}
 		ImGui::End();
 	}
@@ -96,15 +90,18 @@ namespace Rift
 	void FileExplorerPanel::CacheProjectFiles()
 	{
 		bDirty = false;
-		editor.project->ScanAssets();
+		auto project = RiftContext::GetProject();
+		assert(project);
+
+		project->ScanAssets();
 
 		// Reset cached data
 		projectFolder = {};
 
-		for (auto& asset : editor.project->GetAllTypeAssets())
+		for (auto& asset : project->GetAllTypeAssets())
 		{
 			const Path path     = Paths::FromString(asset.GetStrPath());
-			const Path relative = Paths::ToRelative(path, editor.project->GetPath());
+			const Path relative = Paths::ToRelative(path, project->GetPath());
 			Folder* current     = &projectFolder;
 
 			for (auto it = relative.begin(); it != relative.end(); ++it)
@@ -221,7 +218,7 @@ namespace Rift
 		if (newAsset.LoadOrCreate())
 		{
 			newAsset->type = type;
-			newAsset->InitializeDeclaration(editor.project->GetAST());
+			newAsset->InitializeDeclaration(RiftContext::GetProject()->GetAST());
 			newAsset->Save();
 			bDirty = true;
 		}

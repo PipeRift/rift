@@ -17,7 +17,7 @@ Path testProjectPath = Paths::GetCurrent() / "TestProject";
 go_bandit([]() {
 	describe("Project", []() {
 		before_each([]() {
-			Context::Initialize();
+			InitializeContext();
 			Files::Delete(testProjectPath, true, false);
 
 			if (!Files::ExistsAsFolder(testProjectPath))
@@ -28,6 +28,7 @@ go_bandit([]() {
 
 		after_each([]() {
 			Files::Delete(testProjectPath);
+			ShutdownContext();
 		});
 
 		it("Can load empty descriptor", [&]() {
