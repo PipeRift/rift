@@ -1,3 +1,4 @@
 {
-    "asset_type": "ClassAsset"
+    "asset_type": "TypeAsset",
+    "type": "Class"
 }

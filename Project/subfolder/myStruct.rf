@@ -1,3 +1,4 @@
 {
-    "asset_type": "StructAsset"
+    "asset_type": "TypeAsset",
+    "type": "Struct"
 }

@@ -26,12 +26,10 @@ namespace Rift
 		AST::Id declaration;
 
 
-		// FIX: Not being called
-		void Serialize(Archive& ar, StringView name);
-
 		// TODO: Eventually remove this or provide the type with access to the project
 		void InitializeDeclaration(AST::AbstractSyntaxTree& ast);
-	};
 
-	DEFINE_CLASS_TRAITS(TypeAsset, HasCustomSerialize = true);
+	protected:
+		bool Serialize(Archive& ar) override;
+	};
 }    // namespace Rift

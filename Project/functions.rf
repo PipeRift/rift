@@ -1,13 +1,4 @@
 {
-    "asset_type": "FunctionAsset",
-    "functions": [
-        {
-            "name": "Main",
-            "arguments": [
-                {
-                    "name": "args"
-                }
-            ]
-        }
-    ]
+    "asset_type": "TypeAsset",
+    "type": "FunctionLibrary"
 }

@@ -6,7 +6,7 @@
 
 namespace Rift
 {
-	class ASTArchive : public NestedArchive
+	class CORE_API ASTArchive : public NestedArchive
 	{
 	public:
 		ASTArchive(Archive& inParent) : NestedArchive(inParent) {}

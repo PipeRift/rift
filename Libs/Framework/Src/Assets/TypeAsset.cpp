@@ -10,24 +10,31 @@
 #include "Lang/Misc/CTypeAssetRef.h"
 
 #include <Lang/AST/ASTArchive.h>
+#include <Reflection/Static/EnumType.h>
 
 
 namespace Rift
 {
-	void TypeAsset::Serialize(Archive& ar, StringView name)
+	bool TypeAsset::Serialize(Archive& ar)
 	{
-		ar.BeginObject(name);
+		Super::Serialize(ar);
 
-		u8 typeValue = ar.IsLoading() ? 0 : u8(type);
-		ar("type", typeValue);
-		type = Type(typeValue);
+		if (ar.IsLoading())
+		{
+			String typeStr;
+			ar("type", typeStr);
+			type = Refl::GetEnumValue<Type>(typeStr).value_or(Type::None);
+		}
+		else
+		{
+			String typeValue = String(Refl::GetEnumName(type));
+			ar("type", typeValue);
+		}
 
-		SerializeReflection(ar);
-
-		ASTArchive astArchive{ar};
+		// ASTArchive astArchive{ar};
 		// astArchive("declaration", declaration);
 
-		ar.EndObject();
+		return true;
 	}
 
 	void TypeAsset::InitializeDeclaration(AST::AbstractSyntaxTree& ast)
