@@ -4,7 +4,7 @@
 #include <Assets/AssetData.h>
 #include <CoreObject.h>
 #include <Lang/AST.h>
-#include <Reflection/ClassTraits.h>
+#include <Reflection/TypeFlags.h>
 
 
 namespace Rift
@@ -30,6 +30,6 @@ namespace Rift
 		void InitializeDeclaration(AST::AbstractSyntaxTree& ast);
 
 	protected:
-		bool Serialize(Archive& ar) override;
+		void Serialize(Serl::CommonContext& ct) override;
 	};
 }    // namespace Rift

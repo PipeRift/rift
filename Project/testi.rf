@@ -1,4 +1,31 @@
 {
     "asset_type": "TypeAsset",
-    "type": "Class"
+    "type": "Class",
+    "ast": {
+        "nodeCount": 2,
+        "components": {
+            "CChildren": {
+                "0": {
+                    "children": [
+                        1
+                    ]
+                }
+            },
+            "CParent": {
+                "1": {
+                    "parent": 0
+                }
+            },
+            "CIdentifier": {
+                "0": {"name": "Class"},
+                "1": {"name": "DoSomething"}
+            },
+            "CClassDecl": {
+                "0": {}
+            },
+            "CFunctionDecl": {
+                "1": {}
+            }
+        }
+    }
 }

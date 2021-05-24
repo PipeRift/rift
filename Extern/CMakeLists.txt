@@ -15,6 +15,9 @@ add_library(gl3w STATIC gl3w/GL/gl3w.c)
 target_include_directories(gl3w PUBLIC gl3w)
 target_link_libraries(gl3w INTERFACE OpenGL::GL OpenGL::GLU)
 
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Build the GLFW example programs")
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "Build the GLFW test programs")
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "Build the GLFW documentation")
 add_subdirectory(glfw)
 
 # Imgui

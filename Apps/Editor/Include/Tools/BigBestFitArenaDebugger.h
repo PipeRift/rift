@@ -34,7 +34,7 @@ namespace Rift
 
 		u32 GetY(sizet offset)
 		{
-			return offset / bytesPerRow;
+			return u32(offset / bytesPerRow);
 		}
 
 		u32 GetX(sizet offset)

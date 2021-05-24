@@ -104,7 +104,7 @@ namespace Rift::AST
 		}
 
 		template <typename... Component>
-		decltype(auto) GetComponentsPtr(const Id node)
+		decltype(auto) GetComponentPtrs(const Id node)
 		{
 			return registry.try_get<Component...>(node);
 		}
@@ -124,13 +124,13 @@ namespace Rift::AST
 		template <typename Component>
 		const auto* GetComponentPtr(const Id node) const
 		{
-			return GetComponentsPtr<Component>(node);
+			return GetComponentPtrs<Component>(node);
 		}
 
 		template <typename Component>
 		auto* GetComponentPtr(const Id node)
 		{
-			return GetComponentsPtr<Component>(node);
+			return GetComponentPtrs<Component>(node);
 		}
 
 		template <typename Component, typename... Args>
@@ -141,32 +141,34 @@ namespace Rift::AST
 
 
 		template <typename... Component>
-		bool HasAnyComponents(Id node) const
+		bool HasAny(Id node) const
 		{
 			return registry.any_of<Component...>(node);
 		}
 
 		template <typename... Component>
-		bool HasAllComponents(Id node) const
+		bool HasAll(Id node) const
 		{
 			return registry.all_of<Component...>(node);
 		}
 
 		template <typename Component>
-		bool HasComponent(Id node) const
+		bool Has(Id node) const
 		{
-			return HasAnyComponents<Component>(node);
+			return HasAny<Component>(node);
 		}
 
 
 		template <typename... Component, typename... Exclude>
 		auto MakeView(TExclude<Exclude...> excluded = {}) const
+		    -> View<TExclude<Exclude...>, Component...>
 		{
 			return View<TExclude<Exclude...>, Component...>{registry.view<Component...>(excluded)};
 		}
 
 		template <typename... Component, typename... Exclude>
 		auto MakeView(TExclude<Exclude...> excluded = {})
+		    -> View<TExclude<Exclude...>, Component...>
 		{
 			return View<TExclude<Exclude...>, Component...>{registry.view<Component...>(excluded)};
 		}

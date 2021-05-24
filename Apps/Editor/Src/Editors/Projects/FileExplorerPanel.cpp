@@ -1,7 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editors/ProjectEditor.h"
 #include "Editors/Projects/FileExplorerPanel.h"
+
+#include "Editors/ProjectEditor.h"
 #include "UI/Style.h"
 #include "UI/UI.h"
 
@@ -89,7 +90,7 @@ namespace Rift
 
 	void FileExplorerPanel::CacheProjectFiles()
 	{
-		bDirty = false;
+		bDirty       = false;
 		auto project = RiftContext::GetProject();
 		assert(project);
 
@@ -166,7 +167,7 @@ namespace Rift
 		if (!file.renaming)
 		{
 			ImGui::TreeNodeEx(
-		    	file.name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+			    file.name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
 			if (ImGui::IsItemHovered() && ImGui::IsKeyReleased(GLFW_KEY_F2))
 			{
 				file.renaming = true;
@@ -185,7 +186,7 @@ namespace Rift
 			{
 				file.renaming = false;
 			}
-			//if (!UI::IsItemActive())
+			// if (!UI::IsItemActive())
 			//{
 			//	file.renaming = false;
 			//}

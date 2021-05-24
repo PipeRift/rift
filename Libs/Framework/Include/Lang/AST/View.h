@@ -73,21 +73,15 @@ namespace Rift::AST
 			view.template each<Comp>(func);
 		}
 
-		bool Contains(const Id node) const
+		bool Has(const Id node) const
 		{
 			return view.contains(node);
 		}
 
-		template <typename Comp>
-		decltype(auto) GetComponent(const Id node) const
-		{
-			return view.template get<Comp>(node);
-		}
-
 		template <typename... Comp>
-		decltype(auto) GetComponents(const Id node) const
+		decltype(auto) Get(const Id node) const
 		{
-			return view.template get<Comp...>(node);
+			return view.get<Comp...>(node);
 		}
 	};
 }    // namespace Rift::AST

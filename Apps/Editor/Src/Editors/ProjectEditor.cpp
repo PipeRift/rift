@@ -1,7 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editor.h"
 #include "Editors/ProjectEditor.h"
+
+#include "Editor.h"
 
 #include <Compiler/Compiler.h>
 #include <Files/FileDialog.h>

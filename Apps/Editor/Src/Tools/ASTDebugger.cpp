@@ -24,10 +24,13 @@ namespace Rift
 
 		ImGui::Begin("Abstract Syntax Tree", &open);
 		{
-			auto rootEntities = ast.MakeView<CChildren>();
-			for (auto root : rootEntities)
+			auto childrenView = ast.MakeView<CChildren>();
+			auto parentView   = ast.MakeView<CParent>();
+			// auto identifierView = ast.MakeView<CIdentifier>();
+
+			for (auto root : childrenView)
 			{
-				if (ast.HasComponent<CParent>(root))
+				if (parentView.Has(root))
 				{
 					continue;
 				}

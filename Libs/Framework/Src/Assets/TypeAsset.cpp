@@ -15,26 +15,24 @@
 
 namespace Rift
 {
-	bool TypeAsset::Serialize(Archive& ar)
+	void TypeAsset::Serialize(Serl::CommonContext& ct)
 	{
-		Super::Serialize(ar);
+		Super::Serialize(ct);
 
-		if (ar.IsLoading())
+		if (ct.IsReading())
 		{
 			String typeStr;
-			ar("type", typeStr);
+			ct.Next("type", typeStr);
 			type = Refl::GetEnumValue<Type>(typeStr).value_or(Type::None);
 		}
 		else
 		{
-			String typeValue = String(Refl::GetEnumName(type));
-			ar("type", typeValue);
+			String typeStr{Refl::GetEnumName(type)};
+			ct.Next("type", typeStr);
 		}
 
 		// ASTArchive astArchive{ar};
 		// astArchive("declaration", declaration);
-
-		return true;
 	}
 
 	void TypeAsset::InitializeDeclaration(AST::AbstractSyntaxTree& ast)

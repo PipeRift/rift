@@ -106,7 +106,11 @@
         "memory_resource": "cpp",
         "ranges": "cpp",
         "scoped_allocator": "cpp",
-        "cfenv": "cpp"
+        "cfenv": "cpp",
+        "fft": "cpp",
+        "nonlinearoptimization": "cpp",
+        "alignedvector3": "cpp",
+        "core": "cpp"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "banditTestExplorer.testsuites": [
