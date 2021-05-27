@@ -172,6 +172,18 @@ namespace Rift::AST
 		{
 			return View<TExclude<Exclude...>, Component...>{registry.view<Component...>(excluded)};
 		}
+
+		template <typename Callback>
+		void Each(Callback cb) const
+		{
+			registry.each(cb);
+		}
+
+		template <typename Callback>
+		void EachOrphan(Callback cb) const
+		{
+			registry.orphans(cb);
+		}
 #pragma endregion ECS API
 
 		void RemoveChildFromCChildren(Id parent, Id child);

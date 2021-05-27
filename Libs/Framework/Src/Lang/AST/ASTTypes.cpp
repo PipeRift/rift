@@ -15,7 +15,7 @@ namespace Rift::Serl
 		{
 			u32 dataId;
 			astCt->Serialize(dataId);
-			val = astCt->GetIndexToASTIds()[dataId];
+			val = astCt->GetASTIds()[dataId];
 		}
 	}
 

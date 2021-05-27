@@ -54,9 +54,9 @@ namespace Rift
 	public:
 		Project() : Super()
 		{
-			auto testClass    = ast.CreateClass("AClass");            // Test
-			auto testFunction = ast.CreateFunction("DoSomething");    // Test
-			ast.AddChild(testClass, testFunction);
+			// auto testClass    = ast.CreateClass("AClass");            // Test
+			// auto testFunction = ast.CreateFunction("DoSomething");    // Test
+			// ast.AddChild(testClass, testFunction);
 		}
 
 		void Init(const Path& path);

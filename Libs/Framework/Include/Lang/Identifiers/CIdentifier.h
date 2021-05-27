@@ -15,6 +15,7 @@ namespace Rift
 		Name name;
 
 
+		CIdentifier() = default;
 		CIdentifier(Name name) : name(name) {}
 	};
 }    // namespace Rift

@@ -2,6 +2,7 @@
 #pragma once
 
 #include <Platform/Platform.h>
+#include <Reflection/Registry/NativeTypeBuilder.h>
 #include <Serialization/ContextsFwd.h>
 
 #include <entt/entt.hpp>
@@ -24,6 +25,8 @@ namespace Rift
 		void Write(Serl::WriteContext& ct, AST::Id val);
 	}    // namespace Serl
 }    // namespace Rift
+
+REFLECT_NATIVE_TYPE(Rift::AST::Id);
 
 
 namespace entt

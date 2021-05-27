@@ -12,6 +12,7 @@ namespace Rift
 	{
 		STRUCT(CChildren, Struct)
 
+		PROP(TArray<AST::Id>, children)
 		TArray<AST::Id> children;
 	};
 }    // namespace Rift

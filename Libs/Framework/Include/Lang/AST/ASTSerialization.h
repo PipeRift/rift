@@ -13,7 +13,7 @@ namespace Rift
 
 		// While serializing we create ids as AST::Ids appear and link them.
 		u32 nodeCount = 0;
-		TMap<u32, AST::Id> indexToASTIds;    // Only available when Loading
+		TArray<AST::Id> ASTIds;
 
 
 	public:
@@ -25,16 +25,16 @@ namespace Rift
 
 		void SerializeRoot(AST::Id& root);
 
-		const TMap<u32, AST::Id>& GetIndexToASTIds() const
+		const TArray<AST::Id>& GetASTIds() const
 		{
-			return indexToASTIds;
+			return ASTIds;
 		}
 	};
 
 
 	class ASTWriteContext : public Serl::WriteContext
 	{
-		AST::AbstractSyntaxTree& ast;
+		const AST::AbstractSyntaxTree& ast;
 
 		// While serializing we create ids as AST::Ids appear and link them.
 		u32 nodeCount = 0;

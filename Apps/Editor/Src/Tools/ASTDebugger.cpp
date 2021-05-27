@@ -24,19 +24,17 @@ namespace Rift
 
 		ImGui::Begin("Abstract Syntax Tree", &open);
 		{
-			auto childrenView = ast.MakeView<CChildren>();
-			auto parentView   = ast.MakeView<CParent>();
+			auto rootView = ast.MakeView<CChildren>(AST::TExclude<CParent>{});
 			// auto identifierView = ast.MakeView<CIdentifier>();
 
-			for (auto root : childrenView)
+			for (auto root : rootView)
 			{
-				if (parentView.Has(root))
-				{
-					continue;
-				}
-
 				DrawEntity(ast, root);
 			}
+
+			ast.EachOrphan([&ast](AST::Id ent) {
+				DrawEntity(ast, ent);
+			});
 			ImGui::Separator();
 		}
 		ImGui::End();
@@ -44,18 +42,27 @@ namespace Rift
 
 	void ASTDebugger::DrawEntity(AST::AbstractSyntaxTree& ast, AST::Id entity)
 	{
-		CIdentifier* id     = ast.GetComponentPtr<CIdentifier>(entity);
-		CChildren* children = ast.GetComponentPtr<CChildren>(entity);
+		static String name;
+		name.clear();
+		if (CIdentifier* id = ast.GetComponentPtr<CIdentifier>(entity))
+		{
+			Strings::FormatTo(name, "{}  (id:{})", id->name, entity);
+		}
+		else
+		{
+			Strings::FormatTo(name, "(id:{})", entity);
+		}
 
-		static const String none{""};
-		const String& name = id ? id->name.ToString() : none;
-
+		const CChildren* children = ast.GetComponentPtr<CChildren>(entity);
 		const bool hasChildren = children && !children->children.IsEmpty();
 		if (ImGui::TreeNodeEx(name.c_str(), hasChildren ? 0 : ImGuiTreeNodeFlags_Leaf))
 		{
-			for (auto child : children->children)
+			if (hasChildren)
 			{
-				DrawEntity(ast, child);
+				for (AST::Id child : children->children)
+				{
+					DrawEntity(ast, child);
+				}
 			}
 			ImGui::TreePop();
 		}
