@@ -2,18 +2,28 @@
 #pragma once
 
 #include <Platform/Platform.h>
+#include <Serialization/ContextsFwd.h>
 
 #include <entt/entt.hpp>
 
 
-namespace Rift::AST
+namespace Rift
 {
-	enum class Id : u32
+	namespace AST
 	{
-	};
+		enum class Id : u32
+		{
+		};
 
-	constexpr entt::null_t NoId = entt::null;
-}    // namespace Rift::AST
+		constexpr entt::null_t NoId = entt::null;
+	}    // namespace AST
+
+	namespace Serl
+	{
+		void Read(Serl::ReadContext& ct, AST::Id& val);
+		void Write(Serl::WriteContext& ct, AST::Id val);
+	}    // namespace Serl
+}    // namespace Rift
 
 
 namespace entt
