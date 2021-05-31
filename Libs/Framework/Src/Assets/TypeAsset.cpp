@@ -46,7 +46,7 @@ namespace Rift
 		}
 	}
 
-	void TypeAsset::InitializeDeclaration(AST::AbstractSyntaxTree& ast)
+	void TypeAsset::InitializeDeclaration(AST::Tree& ast)
 	{
 		declaration = ast.Create();
 		// TODO: Use file name

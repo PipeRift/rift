@@ -44,7 +44,7 @@ namespace Rift
 
 	void ProjectEditor::OpenType(TAssetPtr<TypeAsset> asset)
 	{
-		auto* existingEditor = assetEditors.Find([asset](const auto& editor) {
+		auto* existingEditor = TypeAssetEditors.Find([asset](const auto& editor) {
 			return editor->GetAsset() == asset;
 		});
 		if (existingEditor)
@@ -60,8 +60,8 @@ namespace Rift
 			return;
 		}
 
-		assetEditors.Add(Create<AssetEditor>(Self()));
-		assetEditors.Last()->SetAsset(asset);
+		TypeAssetEditors.Add(Create<TypeAssetEditor>(Self()));
+		TypeAssetEditors.Last()->SetAsset(asset);
 	}
 
 	void ProjectEditor::CloseType(TAssetPtr<TypeAsset> asset)
@@ -98,17 +98,17 @@ namespace Rift
 
 
 		// Close editors if needed
-		assetEditors.RemoveIf([this](const auto& item) {
+		TypeAssetEditors.RemoveIf([this](const auto& item) {
 			return !item || pendingTypesToClose.Contains(item->GetAsset());
 		});
 		pendingTypesToClose.Empty();
 
-		for (const auto& editor : assetEditors)
+		for (const auto& editor : TypeAssetEditors)
 		{
 			editor->Draw();
 		}
 
-		astDebugger.Draw(RiftContext::GetProject()->GetAST());
+		astDebugger.Draw(*RiftContext::GetAST());
 		ImGui::PopID();
 	}
 
@@ -209,7 +209,7 @@ namespace Rift
 				if (ImGui::MenuItem("Reset layout"))
 				{
 					layout.Reset();
-					for (const auto& editor : assetEditors)
+					for (const auto& editor : TypeAssetEditors)
 					{
 						if (editor)
 						{
@@ -228,7 +228,7 @@ namespace Rift
 	void ProjectEditor::OnProjectChanged(TPtr<Project> newProject)
 	{
 		currentProject = newProject;
-		assetEditors.Empty();
+		TypeAssetEditors.Empty();
 
 		if (currentProject)
 		{

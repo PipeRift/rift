@@ -15,7 +15,7 @@ namespace Rift
 
 	ASTDebugger::ASTDebugger() {}
 
-	void ASTDebugger::Draw(AST::AbstractSyntaxTree& ast)
+	void ASTDebugger::Draw(AST::Tree& ast)
 	{
 		if (!open)
 		{
@@ -40,7 +40,7 @@ namespace Rift
 		ImGui::End();
 	}
 
-	void ASTDebugger::DrawEntity(AST::AbstractSyntaxTree& ast, AST::Id entity)
+	void ASTDebugger::DrawEntity(AST::Tree& ast, AST::Id entity)
 	{
 		static String name;
 		name.clear();

@@ -1,17 +1,17 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "NodeGraph/NodeGraphPanel.h"
-
 #include "DockSpaceLayout.h"
-#include "Editors/AssetEditor.h"
+#include "Editors/TypeAssetEditor.h"
+#include "NodeGraph/NodeGraphPanel.h"
 #include "UI/UI.h"
 
 #include <imnodes.h>
 
 
+
 namespace Rift
 {
-	NodeGraphPanel::NodeGraphPanel(AssetEditor& editor) : editor(editor) {}
+	NodeGraphPanel::NodeGraphPanel(TypeAssetEditor& editor) : editor(editor) {}
 
 	void NodeGraphPanel::Draw(DockSpaceLayout& layout)
 	{
@@ -22,7 +22,7 @@ namespace Rift
 		ImNodes::PushStyleVar(ImNodesStyleVar_NodeCornerRounding, 2.f);
 		ImNodes::PushStyleVar(ImNodesStyleVar_PinQuadSideLength, 10.f);
 
-		layout.BindNextWindowToNode(AssetEditor::centralNode);
+		layout.BindNextWindowToNode(TypeAssetEditor::centralNode);
 
 		const String name = Strings::Format(TX("Graph##{}"), editor.GetWindowId());
 		if (ImGui::Begin(name.c_str()))

@@ -7,18 +7,18 @@
 
 namespace Rift
 {
-	class AssetEditor;
+	class TypeAssetEditor;
 
 
 	class TypePropertiesPanel
 	{
 		bool bOpen = true;
 
-		AssetEditor& editor;
+		TypeAssetEditor& editor;
 
 
 	public:
-		TypePropertiesPanel(AssetEditor& editor);
+		TypePropertiesPanel(TypeAssetEditor& editor);
 		void Draw(struct DockSpaceLayout& layout);
 
 		void DrawVariables();

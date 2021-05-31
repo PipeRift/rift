@@ -10,4 +10,14 @@ namespace Rift
 	{
 		STRUCT(CDeclaration, Struct)
 	};
+
 }    // namespace Rift
+
+namespace std
+{
+	template <Rift::Derived<Rift::CDeclaration> T>
+	struct is_empty<T>
+	{
+		static constexpr bool value = false;
+	};
+}    // namespace std

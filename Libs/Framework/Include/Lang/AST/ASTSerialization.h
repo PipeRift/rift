@@ -9,7 +9,7 @@ namespace Rift
 {
 	class ASTReadContext : public Serl::ReadContext
 	{
-		AST::AbstractSyntaxTree& ast;
+		AST::Tree& ast;
 
 		// While serializing we create ids as AST::Ids appear and link them.
 		u32 nodeCount = 0;
@@ -17,7 +17,7 @@ namespace Rift
 
 
 	public:
-		ASTReadContext(const Serl::ReadContext& parent, AST::AbstractSyntaxTree& ast)
+		ASTReadContext(const Serl::ReadContext& parent, AST::Tree& ast)
 		    : Serl::ReadContext(parent)
 		    , ast(ast)
 		{}
@@ -34,7 +34,7 @@ namespace Rift
 
 	class ASTWriteContext : public Serl::WriteContext
 	{
-		const AST::AbstractSyntaxTree& ast;
+		const AST::Tree& ast;
 
 		// While serializing we create ids as AST::Ids appear and link them.
 		u32 nodeCount = 0;
@@ -42,7 +42,7 @@ namespace Rift
 
 
 	public:
-		ASTWriteContext(const Serl::WriteContext& parent, AST::AbstractSyntaxTree& ast)
+		ASTWriteContext(const Serl::WriteContext& parent, AST::Tree& ast)
 		    : Serl::WriteContext(parent)
 		    , ast(ast)
 		{}

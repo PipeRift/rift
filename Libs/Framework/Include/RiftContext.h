@@ -42,5 +42,11 @@ namespace Rift
 		{
 			return GetContext<RiftContext>()->GetRootProject();
 		}
+
+		static AST::Tree* GetAST()
+		{
+			const TPtr<Project> project = GetProject();
+			return project ? &project->GetAST() : nullptr;
+		}
 	};
 }    // namespace Rift

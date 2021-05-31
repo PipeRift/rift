@@ -3,6 +3,8 @@
 
 #include "Lang/AST/ASTTypes.h"
 #include "Lang/AST/View.h"
+#include "Lang/CChildren.h"
+#include "Lang/CParent.h"
 
 #include <Strings/Name.h>
 
@@ -11,23 +13,18 @@
 
 namespace Rift::AST
 {
-	struct AbstractSyntaxTree
+	struct Tree
 	{
+	public:
+		View<TExclude<>, CParent> parentView;
+		View<TExclude<>, CChildren> childrenView;
+
 	private:
 		entt::basic_registry<Id> registry;
 
 
 	public:
-		// This helpers simplify the creation of language elements
-		Id CreateClass(Name name);
-		Id CreateStruct(Name name);
-		Id CreateVariable(Name name);
-		Id CreateFunction(Name name);
-
-
-		void AddChild(Id parent, Id child);
-		void RemoveChild(Id parent, Id child);
-
+		Tree() : registry{}, parentView{MakeView<CParent>()}, childrenView{MakeView<CChildren>()} {}
 
 #pragma region ECS API
 		Id Create();
@@ -110,13 +107,13 @@ namespace Rift::AST
 		}
 
 		template <typename Component>
-		const auto& GetComponent(const Id node) const
+		auto GetComponent(const Id node) const
 		{
 			return GetComponents<Component>(node);
 		}
 
 		template <typename Component>
-		auto& GetComponent(const Id node)
+		auto GetComponent(const Id node)
 		{
 			return GetComponents<Component>(node);
 		}
@@ -156,6 +153,11 @@ namespace Rift::AST
 		bool Has(Id node) const
 		{
 			return HasAny<Component>(node);
+		}
+
+		bool IsValid(Id node) const
+		{
+			return registry.valid(node);
 		}
 
 

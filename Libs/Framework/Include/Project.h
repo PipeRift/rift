@@ -48,7 +48,7 @@ namespace Rift
 
 		TAssetPtr<ProjectAsset> projectAsset;
 		TArray<AssetInfo> allTypes;
-		AST::AbstractSyntaxTree ast;
+		AST::Tree ast;
 
 
 	public:
@@ -81,11 +81,11 @@ namespace Rift
 			return allTypes;
 		}
 
-		AST::AbstractSyntaxTree& GetAST()
+		AST::Tree& GetAST()
 		{
 			return ast;
 		}
-		const AST::AbstractSyntaxTree& GetAST() const
+		const AST::Tree& GetAST() const
 		{
 			return ast;
 		}

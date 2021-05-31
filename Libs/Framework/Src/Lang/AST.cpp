@@ -2,69 +2,29 @@
 
 #include "Lang/AST.h"
 
-#include "Lang/CChildren.h"
-#include "Lang/CParent.h"
-#include "Lang/Declarations/CClassDecl.h"
-#include "Lang/Declarations/CFunctionDecl.h"
-#include "Lang/Declarations/CStructDecl.h"
-#include "Lang/Declarations/CVariableDecl.h"
-#include "Lang/Identifiers/CIdentifier.h"
-
 
 namespace Rift::AST
 {
-	Id AbstractSyntaxTree::CreateClass(Name name)
-	{
-		Id id = Create();
-		AddComponent<CIdentifier>(id, name);
-		AddComponents<CClassDecl, CChildren>(id);
-		return id;
-	}
-
-	Id AbstractSyntaxTree::CreateStruct(Name name)
-	{
-		Id id = Create();
-		AddComponent<CIdentifier>(id, name);
-		AddComponents<CStructDecl, CChildren>(id);
-		return id;
-	}
-
-	Id AbstractSyntaxTree::CreateVariable(Name name)
-	{
-		Id id = Create();
-		AddComponent<CIdentifier>(id, name);
-		AddComponents<CVariableDecl, CChildren>(id);
-		return id;
-	}
-
-	Id AbstractSyntaxTree::CreateFunction(Name name)
-	{
-		Id id = Create();
-		AddComponent<CIdentifier>(id, name);
-		AddComponents<CFunctionDecl, CChildren>(id);
-		return id;
-	}
-
-	Id AbstractSyntaxTree::Create()
+	Id Tree::Create()
 	{
 		return registry.create();
 	}
-	Id AbstractSyntaxTree::Create(const Id hint)
+	Id Tree::Create(const Id hint)
 	{
 		return registry.create(Move(hint));
 	}
 
-	void AbstractSyntaxTree::Destroy(const Id node)
+	void Tree::Destroy(const Id node)
 	{
 		registry.destroy(node);
 	}
 
-	void AbstractSyntaxTree::Destroy(const Id node, const VersionType version)
+	void Tree::Destroy(const Id node, const VersionType version)
 	{
 		registry.destroy(node, version);
 	}
 
-	void AbstractSyntaxTree::RemoveChildFromCChildren(Id parent, Id child)
+	void Tree::RemoveChildFromCChildren(Id parent, Id child)
 	{
 		if (CChildren* children = GetComponentPtr<CChildren>(parent))
 		{
@@ -74,25 +34,5 @@ namespace Rift::AST
 				RemoveComponent<CChildren>(parent);
 			}
 		}
-	}
-
-	void AbstractSyntaxTree::AddChild(Id parent, Id child)
-	{
-		if (CParent* oldParentComp = GetComponentPtr<CParent>(child))
-		{
-			// Remove old linkage
-			RemoveChildFromCChildren(oldParentComp->parent, child);
-			oldParentComp->parent = parent;
-		}
-		else
-		{
-			AddComponent<CParent>(child).parent = parent;
-		}
-		GetOrAddComponent<CChildren>(parent).children.Add(child);
-	}
-	void AbstractSyntaxTree::RemoveChild(Id parent, Id child)
-	{
-		RemoveChildFromCChildren(parent, child);
-		RemoveComponent<CParent>(child);
 	}
 }    // namespace Rift::AST

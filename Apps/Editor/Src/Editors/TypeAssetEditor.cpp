@@ -1,19 +1,19 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editors/AssetEditor.h"
-
 #include "Editors/ProjectEditor.h"
+#include "Editors/TypeAssetEditor.h"
 
 #include <imgui_internal.h>
 
 
+
 namespace Rift
 {
-	const Name AssetEditor::rightNode{"rightNode"};
-	const Name AssetEditor::centralNode{"centralNode"};
+	const Name TypeAssetEditor::rightNode{"rightNode"};
+	const Name TypeAssetEditor::centralNode{"centralNode"};
 
 
-	AssetEditor::AssetEditor() : Super()
+	TypeAssetEditor::TypeAssetEditor() : Super()
 	{
 		layout.OnBuild([](auto& builder) {
 			// =================================== //
@@ -31,7 +31,7 @@ namespace Rift
 		});
 	}
 
-	void AssetEditor::Draw()
+	void TypeAssetEditor::Draw()
 	{
 		auto owner = GetOwner<ProjectEditor>();
 		assert(owner);
@@ -73,7 +73,7 @@ namespace Rift
 		}
 	}
 
-	void AssetEditor::CreateDockspace(const char* id)
+	void TypeAssetEditor::CreateDockspace(const char* id)
 	{
 		ImGuiDockNodeFlags dockingFlags = ImGuiDockNodeFlags_None;
 

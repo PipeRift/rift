@@ -83,5 +83,25 @@ namespace Rift::AST
 		{
 			return view.get<Comp...>(node);
 		}
+
+		template <typename Comp>
+		Comp* TryGet(const Id node)
+		{
+			if (Has(node))
+			{
+				return &view.get<Comp>(node);
+			}
+			return nullptr;
+		}
+
+		template <typename Comp>
+		const Comp* TryGet(const Id node) const
+		{
+			if (Has(node))
+			{
+				return &view.get<Comp>(node);
+			}
+			return nullptr;
+		}
 	};
 }    // namespace Rift::AST

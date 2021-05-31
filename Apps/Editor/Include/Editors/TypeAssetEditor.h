@@ -13,9 +13,9 @@
 
 namespace Rift
 {
-	class AssetEditor : public BaseEditor
+	class TypeAssetEditor : public BaseEditor
 	{
-		CLASS(AssetEditor, BaseEditor)
+		CLASS(TypeAssetEditor, BaseEditor)
 	public:
 		static const Name rightNode;
 		static const Name centralNode;
@@ -32,7 +32,7 @@ namespace Rift
 
 
 	public:
-		AssetEditor();
+		TypeAssetEditor();
 
 		void SetAsset(TAssetPtr<TypeAsset> inAsset)
 		{
@@ -67,6 +67,11 @@ namespace Rift
 		StringView GetWindowId() override
 		{
 			return asset.GetStrPath();
+		}
+
+		AST::Id GetNode()
+		{
+			return GetAsset()->declaration;
 		}
 
 	private:

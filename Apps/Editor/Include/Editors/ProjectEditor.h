@@ -2,9 +2,9 @@
 #pragma once
 
 #include "DockSpaceLayout.h"
-#include "Editors/AssetEditor.h"
 #include "Editors/BaseEditor.h"
 #include "Editors/Projects/FileExplorerPanel.h"
+#include "Editors/TypeAssetEditor.h"
 #include "Tools/ASTDebugger.h"
 
 #include <Assets/AssetPtr.h>
@@ -26,7 +26,7 @@ namespace Rift
 		ImGuiID dockspaceID = 0;
 
 		TPtr<Project> currentProject;
-		TArray<TOwnPtr<AssetEditor>> assetEditors;
+		TArray<TOwnPtr<TypeAssetEditor>> TypeAssetEditors;
 		TArray<TAssetPtr<TypeAsset>> pendingTypesToClose;
 
 		FileExplorerPanel fileExplorer{*this};

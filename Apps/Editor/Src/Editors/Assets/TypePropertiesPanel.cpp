@@ -1,30 +1,35 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editors/Assets/TypePropertiesPanel.h"
-
 #include "DockSpaceLayout.h"
-#include "Editors/AssetEditor.h"
+#include "Editors/Assets/TypePropertiesPanel.h"
+#include "Editors/TypeAssetEditor.h"
 
+#include <Lang/Declarations/CClassDecl.h>
+#include <Lang/Declarations/CStructDecl.h>
+#include <RiftContext.h>
 #include <UI/UI.h>
 
 
 namespace Rift
 {
-	TypePropertiesPanel::TypePropertiesPanel(AssetEditor& editor) : editor(editor) {}
+	TypePropertiesPanel::TypePropertiesPanel(TypeAssetEditor& editor) : editor(editor) {}
 
 	void TypePropertiesPanel::Draw(DockSpaceLayout& layout)
 	{
-		layout.BindNextWindowToNode(AssetEditor::rightNode);
+		const auto* ast = RiftContext::GetAST();
+		AST::Id node    = editor.GetNode();
+
+		layout.BindNextWindowToNode(TypeAssetEditor::rightNode);
 
 		const String name = Strings::Format(TX("Properties##{}"), editor.GetWindowId());
 		if (ImGui::Begin(name.c_str()))
 		{
-			if (true)    // IsStruct || IsClass
+			if (ast->HasAny<CClassDecl, CStructDecl>(node))    // IsStruct || IsClass
 			{
 				DrawVariables();
 			}
 
-			if (true)    // IsClass || IsFunctionLibrary
+			if (ast->HasAny<CClassDecl>(node))    // IsClass || IsFunctionLibrary
 			{
 				DrawFunctions();
 			}

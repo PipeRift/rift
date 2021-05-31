@@ -44,3 +44,9 @@ namespace Rift::AST
 	template <typename... Type>
 	using TExclude = entt::exclude_t<Type...>;
 }    // namespace Rift::AST
+
+
+constexpr bool IsValid(Rift::AST::Id id)
+{
+	return id == Rift::AST::NoId;
+}

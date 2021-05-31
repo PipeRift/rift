@@ -27,7 +27,7 @@ namespace Rift
 
 
 		// TODO: Eventually remove this or provide the type with access to the project
-		void InitializeDeclaration(AST::AbstractSyntaxTree& ast);
+		void InitializeDeclaration(AST::Tree& ast);
 
 	protected:
 		void Serialize(Serl::CommonContext& ct) override;

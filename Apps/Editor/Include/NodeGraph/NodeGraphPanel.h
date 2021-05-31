@@ -7,14 +7,14 @@
 
 namespace Rift
 {
-	class AssetEditor;
+	class TypeAssetEditor;
 
 	class NodeGraphPanel
 	{
-		AssetEditor& editor;
+		TypeAssetEditor& editor;
 
 	public:
-		NodeGraphPanel(AssetEditor& editor);
+		NodeGraphPanel(TypeAssetEditor& editor);
 		void Draw(struct DockSpaceLayout& layout);
 	};
 }    // namespace Rift
