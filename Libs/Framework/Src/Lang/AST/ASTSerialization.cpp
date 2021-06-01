@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Lang/AST/ASTLinkage.h"
 #include "Lang/AST/ASTSerialization.h"
-#include "Lang/AST/ASTHelpers.h"
 #include "Lang/CChildren.h"
 #include "Lang/CParent.h"
 #include "Lang/Declarations/CClassDecl.h"

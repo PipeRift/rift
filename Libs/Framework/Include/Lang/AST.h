@@ -15,16 +15,16 @@ namespace Rift::AST
 {
 	struct Tree
 	{
+	private:
+		entt::basic_registry<Id> registry;
+
 	public:
 		View<TExclude<>, CParent> parentView;
 		View<TExclude<>, CChildren> childrenView;
 
-	private:
-		entt::basic_registry<Id> registry;
-
 
 	public:
-		Tree() : registry{}, parentView{MakeView<CParent>()}, childrenView{MakeView<CChildren>()} {}
+		Tree() : registry{}, parentView(MakeView<CParent>()), childrenView(MakeView<CChildren>()) {}
 
 #pragma region ECS API
 		Id Create();

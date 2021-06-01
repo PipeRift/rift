@@ -1,5 +1,5 @@
 // Copyright 2015-2020 Piperift - All rights reserved
-#include "Lang/AST/ASTHelpers.h"
+#include "Lang/AST/ASTLinkage.h"
 #include "Lang/CChildren.h"
 #include "Lang/CParent.h"
 #include "Lang/Declarations/CClassDecl.h"
@@ -85,15 +85,6 @@ namespace Rift::AST
 	}
 
 	void TransferAllLinks(Tree& ast, Id origin, Id destination) {}
-
-	void Link(Tree& ast, Id node, const TArrayView<Id>& children)
-	{
-		auto* rootChildren = GetCParent(ast, node);
-		if (!rootChildren)
-		{
-			return;
-		}
-	}
 
 	void TransferLinks(Tree& ast, Id node, Id child) {}
 

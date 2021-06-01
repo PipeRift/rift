@@ -3,11 +3,17 @@
 #include "DockSpaceLayout.h"
 #include "Editors/Assets/TypePropertiesPanel.h"
 #include "Editors/TypeAssetEditor.h"
+#include "Lang/AST/ASTLinkage.h"
 
 #include <Lang/Declarations/CClassDecl.h>
+#include <Lang/Declarations/CFunctionDecl.h>
 #include <Lang/Declarations/CStructDecl.h>
+#include <Lang/Declarations/CVariableDecl.h>
+#include <Lang/Identifiers/CIdentifier.h>
 #include <RiftContext.h>
+#include <UI/Style.h>
 #include <UI/UI.h>
+#include <UI/Widgets.h>
 
 
 namespace Rift
@@ -16,46 +22,103 @@ namespace Rift
 
 	void TypePropertiesPanel::Draw(DockSpaceLayout& layout)
 	{
-		const auto* ast = RiftContext::GetAST();
-		AST::Id node    = editor.GetNode();
+		// TODO: Get AST from project or asset
+		auto* ast = RiftContext::GetAST();
+		if (!ast)
+		{
+			return;
+		}
+
+		AST::Id node = editor.GetNode();
 
 		layout.BindNextWindowToNode(TypeAssetEditor::rightNode);
 
 		const String name = Strings::Format(TX("Properties##{}"), editor.GetWindowId());
-		if (ImGui::Begin(name.c_str()))
+		if (UI::Begin(name.c_str()))
 		{
 			if (ast->HasAny<CClassDecl, CStructDecl>(node))    // IsStruct || IsClass
 			{
-				DrawVariables();
+				DrawVariables(*ast, node);
 			}
 
 			if (ast->HasAny<CClassDecl>(node))    // IsClass || IsFunctionLibrary
 			{
-				DrawFunctions();
+				DrawFunctions(*ast, node);
 			}
 		}
-		ImGui::End();
+		UI::End();
 	}
 
-	void TypePropertiesPanel::DrawVariables()
+	void TypePropertiesPanel::DrawVariables(AST::Tree& ast, AST::Id node)
 	{
-		if (ImGui::CollapsingHeader("Variables"))
+		auto* children = AST::GetLinked(ast, node);
+		if (!Ensure(children))
 		{
-			ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 1.f});
-			if (ImGui::BeginTable("##variable", 3, ImGuiTableFlags_SizingStretchSame))
+			return;
+		}
+
+		auto variableView = ast.MakeView<CVariableDecl>();
+		if (UI::CollapsingHeader("Variables"))
+		{
+			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
+			if (UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingStretchSame))
 			{
-				ImGui::TableNextRow();
-				DrawVariable("alive");
-				ImGui::EndTable();
+				for (AST::Id child : *children)
+				{
+					if (variableView.Has(child))
+					{
+						UI::TableNextRow();
+						DrawVariable(ast, child);
+					}
+				}
+				UI::EndTable();
 			}
-			ImGui::PopStyleVar();
+			UI::PopStyleVar();
+
+			Style::PushStyleCompact();
+			if (UI::Button("Add##Variable", ImVec2(-FLT_MIN, 0.0f)))
+			{
+				AST::Id newVariable = AST::CreateVariable(ast, "NewVariable");
+				AST::Link(ast, node, newVariable);
+			}
+			Style::PopStyleCompact();
+			UI::Spacing();
 		}
 	}
-	void TypePropertiesPanel::DrawFunctions()
+	void TypePropertiesPanel::DrawFunctions(AST::Tree& ast, AST::Id node)
 	{
-		if (ImGui::CollapsingHeader("Functions"))
+		auto functionView = ast.MakeView<CFunctionDecl>();
+		if (UI::CollapsingHeader("Functions"))
 		{
-			ImGui::Button("Add");
+			auto* children = AST::GetLinked(ast, node);
+			if (!Ensure(children))
+			{
+				return;
+			}
+
+			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
+			if (UI::BeginTable("##functionTable", 1, ImGuiTableFlags_SizingStretchSame))
+			{
+				for (AST::Id child : *children)
+				{
+					if (functionView.Has(child))
+					{
+						UI::TableNextRow();
+						DrawFunction(ast, child);
+					}
+				}
+				UI::EndTable();
+			}
+			UI::PopStyleVar();
+
+			Style::PushStyleCompact();
+			if (UI::Button("Add##Function", ImVec2(-FLT_MIN, 0.0f)))
+			{
+				AST::Id newFunction = AST::CreateFunction(ast, "NewFunction");
+				AST::Link(ast, node, newFunction);
+			}
+			Style::PopStyleCompact();
+			UI::Spacing();
 		}
 	}
 
@@ -64,77 +127,164 @@ namespace Rift
 		static StringView types[]{"bool", "i8", "u8", "i32", "u32", "float"};
 		static i32 index = 5;
 
-		if (ImGui::BeginCombo("##type", types[index].data(), ImGuiComboFlags_NoArrowButton))
+		if (UI::BeginCombo("##type", types[index].data(), ImGuiComboFlags_NoArrowButton))
 		{
 			for (int i = 0; i < 6; ++i)
 			{
-				ImGui::PushID((void*) (intptr_t) i);
+				UI::PushID((void*) (intptr_t) i);
 				const bool itemSelected = i == index;
 				const char* item_text   = types[i].data();
-				if (ImGui::Selectable(item_text, itemSelected))
+				if (UI::Selectable(item_text, itemSelected))
 				{
 					// value_changed = true;
 					index = i;
 				}
 				if (itemSelected)
 				{
-					ImGui::SetItemDefaultFocus();
+					UI::SetItemDefaultFocus();
 				}
-				ImGui::PopID();
+				UI::PopID();
 			}
-			ImGui::EndCombo();
+			UI::EndCombo();
 		}
 	}
 
-	void TypePropertiesPanel::DrawVariable(StringView)
+	void TypePropertiesPanel::DrawVariable(AST::Tree& ast, AST::Id id)
 	{
-		static FixedString<50> name{"alive"};
+		CIdentifier* identifier = ast.GetComponentPtr<CIdentifier>(id);
+		if (!identifier)
+		{
+			return;
+		}
+
+		UI::PushID(identifier);
+
 		static constexpr Color color{230, 69, 69};
 		static constexpr Color frameBG{122, 59, 41, 138};
-		static constexpr float frameHeight = 20.f;
+		static constexpr float frameHeight = 26.f;
 
-		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(frameBG));
+		auto* table = UI::GetCurrentTable();
+		auto& style = ImGui::GetStyle();
+		ImRect rowRect;
+		rowRect.Min.x = table->WorkRect.Min.x + style.CellPadding.x;
+		rowRect.Min.y = table->RowPosY1 + style.CellPadding.y;
+		rowRect.Max.x = table->WorkRect.Max.x - style.CellPadding.x;
+		rowRect.Max.y = table->RowPosY1 + frameHeight - style.CellPadding.y;
+		ImGui::RenderFrame(rowRect.Min, rowRect.Max, color.DWColor(), false, style.FrameRounding);
 
-		auto* window = ImGui::GetCurrentWindow();
-		ImRect frame;
-		auto cellPadding = ImGui::GetStyle().CellPadding;
-		frame.Min.x      = window->DC.CursorPos.x;
-		frame.Min.y      = window->DC.CursorPos.y;
-		frame.Max.x      = window->WorkRect.Max.x + cellPadding.x * 2;
-		frame.Max.y      = window->DC.CursorPos.y + frameHeight + cellPadding.y * 2;
-		// Framed header expand a little outside the default padding, to the edge of InnerClipRect
-		frame.Min.x -= IM_FLOOR(window->WindowPadding.x * 0.5f - 1.0f);
-		frame.Max.x += IM_FLOOR(window->WindowPadding.x * 0.5f);
-		window->DrawList->AddRectFilled(frame.Min, frame.Max, color.DWColor());
+		UI::PushStyleColor(ImGuiCol_FrameBg, ImVec4(frameBG));
+		UI::PushStyleVar(ImGuiStyleVar_CellPadding, style.CellPadding + ImVec2{0.f, 2.f});
 
-
-		ImGui::TableNextColumn();
-		ImGui::PushItemWidth(-FLT_MIN);
-		TypeCombo();
-
-		ImGui::TableNextColumn();
-		ImGui::PushItemWidth(-FLT_MIN);
-		static bool editing   = false;
-		const bool wasEditing = editing;
-		if (!wasEditing)
+		UI::TableNextColumn();
 		{
-			ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, {16.f, 4.f});
-			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(Color::Transparent));
-		}
-		ImGui::InputText("##name", name.data(), name.size());
-		editing = ImGui::IsItemActive();
-		if (!wasEditing)
-		{
-			ImGui::PopStyleColor();
-			ImGui::PopStyleVar();
+			UI::PushItemWidth(-FLT_MIN);
+			TypeCombo();
 		}
 
-		ImGui::TableNextColumn();
+		UI::TableNextColumn();
+		{
+			UI::PushItemWidth(-FLT_MIN);
+			DrawRenameInput(id, identifier);
+		}
 
-		static float value = 2.f;
-		ImGui::PushItemWidth(-FLT_MIN);
-		ImGui::InputFloat("##defaultValue", &value, 0.f, 0.f, "%.1f");
+		UI::TableNextColumn();
+		{
+			static float value = 2.f;
+			UI::PushItemWidth(-FLT_MIN);
+			UI::InputFloat("##defaultValue", &value, 0.f, 0.f, "%.1f");
+		}
 
-		ImGui::PopStyleColor();
+		UI::PopStyleVar();
+		UI::PopStyleColor();
+
+		UI::PopID();
+	}
+
+	void TypePropertiesPanel::DrawFunction(AST::Tree& ast, AST::Id id)
+	{
+		CIdentifier* identifier = ast.GetComponentPtr<CIdentifier>(id);
+		if (!identifier)
+		{
+			return;
+		}
+
+		UI::PushID(identifier);
+
+		static constexpr Color color{68, 135, 229};
+		static constexpr Color frameBG{41, 75, 122, 138};
+		static constexpr float frameHeight = 26.f;
+
+		auto* table = UI::GetCurrentTable();
+		auto& style = ImGui::GetStyle();
+		ImRect rowRect;
+		rowRect.Min.x = table->WorkRect.Min.x + style.CellPadding.x;
+		rowRect.Min.y = table->RowPosY1 + style.CellPadding.y;
+		rowRect.Max.x = table->WorkRect.Max.x - style.CellPadding.x;
+		rowRect.Max.y = table->RowPosY1 + frameHeight - style.CellPadding.y;
+		ImGui::RenderFrame(rowRect.Min, rowRect.Max, color.DWColor(), false, style.FrameRounding);
+
+		UI::PushStyleColor(ImGuiCol_FrameBg, ImVec4(frameBG));
+		UI::PushStyleVar(ImGuiStyleVar_CellPadding, style.CellPadding + ImVec2{0.f, 2.f});
+
+		// Name
+		UI::TableNextColumn();
+		{
+			UI::PushItemWidth(-FLT_MIN);
+			DrawRenameInput(id, identifier);
+		}
+
+		UI::PopStyleVar();
+		UI::PopStyleColor();
+
+		UI::PopID();
+	}
+
+	void TypePropertiesPanel::DrawRenameInput(AST::Id id, CIdentifier* identifier)
+	{
+		String* name;
+		String currentName;
+
+		const bool wasEditing = renameNode == id;
+		if (!wasEditing)
+		{
+			currentName = identifier->name.ToString();
+			name        = &currentName;
+
+			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {16.f, 4.f});
+			UI::PushStyleColor(ImGuiCol_FrameBg, ImVec4(Color::Transparent));
+		}
+		else
+		{
+			name = &renameBuffer;
+		}
+
+		UI::InputText("##rename", name);
+
+		if (UI::IsItemDeactivatedAfterEdit())
+		{
+			identifier->name = Name{renameBuffer};
+			ResetRename();
+		}
+		else if (UI::IsItemActive())
+		{
+			renameNode   = id;
+			renameBuffer = identifier->name.ToString();
+		}
+		else if (wasEditing)    // If not active and editing, stop
+		{
+			ResetRename();
+		}
+
+		if (!wasEditing)
+		{
+			UI::PopStyleColor();
+			UI::PopStyleVar();
+		}
+	}
+
+	void TypePropertiesPanel::ResetRename()
+	{
+		renameNode   = AST::NoId;
+		renameBuffer = {};
 	}
 }    // namespace Rift
