@@ -75,7 +75,7 @@ namespace Rift::UI
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-		Style::ApplyStyle();
+		Style::PushGeneralStyle();
 
 		ImGuiStyle& style = ImGui::GetStyle();
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -92,6 +92,7 @@ namespace Rift::UI
 
 	void Shutdown()
 	{
+		Style::PopGeneralStyle();
 		if (window)
 		{
 			// Cleanup

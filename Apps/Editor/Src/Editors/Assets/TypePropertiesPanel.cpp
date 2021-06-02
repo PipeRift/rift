@@ -11,9 +11,7 @@
 #include <Lang/Declarations/CVariableDecl.h>
 #include <Lang/Identifiers/CIdentifier.h>
 #include <RiftContext.h>
-#include <UI/Style.h>
 #include <UI/UI.h>
-#include <UI/Widgets.h>
 
 
 namespace Rift
@@ -60,6 +58,7 @@ namespace Rift
 		auto variableView = ast.MakeView<CVariableDecl>();
 		if (UI::CollapsingHeader("Variables"))
 		{
+			UI::Indent(10.f);
 			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
 			if (UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingStretchSame))
 			{
@@ -82,20 +81,23 @@ namespace Rift
 				AST::Link(ast, node, newVariable);
 			}
 			Style::PopStyleCompact();
-			UI::Spacing();
+			UI::Unindent(10.f);
+			UI::Dummy(ImVec2(0.0f, 10.0f));
 		}
 	}
 	void TypePropertiesPanel::DrawFunctions(AST::Tree& ast, AST::Id node)
 	{
-		auto functionView = ast.MakeView<CFunctionDecl>();
-		if (UI::CollapsingHeader("Functions"))
+		auto* children = AST::GetLinked(ast, node);
+		if (!Ensure(children))
 		{
-			auto* children = AST::GetLinked(ast, node);
-			if (!Ensure(children))
-			{
-				return;
-			}
+			return;
+		}
 
+		auto functionView = ast.MakeView<CFunctionDecl>();
+		if (UI::CollapsingHeader("Functions", ImGuiTreeNodeFlags_AllowItemOverlap |
+		                                          ImGuiTreeNodeFlags_ClipLabelForTrailingButton))
+		{
+			UI::Indent(10.f);
 			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
 			if (UI::BeginTable("##functionTable", 1, ImGuiTableFlags_SizingStretchSame))
 			{
@@ -118,7 +120,8 @@ namespace Rift
 				AST::Link(ast, node, newFunction);
 			}
 			Style::PopStyleCompact();
-			UI::Spacing();
+			UI::Unindent(10.f);
+			UI::Dummy(ImVec2(0.0f, 10.0f));
 		}
 	}
 
@@ -258,7 +261,7 @@ namespace Rift
 			name = &renameBuffer;
 		}
 
-		UI::InputText("##rename", name);
+		UI::InputText("##rename", *name);
 
 		if (UI::IsItemDeactivatedAfterEdit())
 		{

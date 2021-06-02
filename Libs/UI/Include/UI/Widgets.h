@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "UI/UI.h"
+#include "UI/Style.h"
+#include "UI/UIImGui.h"
 
 
 namespace Rift::UI
@@ -32,14 +33,48 @@ namespace Rift::UI
 	static bool SpriteButton(AnimatedSprite& sprite, i32 framePadding, const LinearColor& bgColor,
 	    const LinearColor& tintColor);
 
+
+	inline bool InputText(const char* label, char* buf, size_t buf_size,
+	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL,
+	    void* user_data = NULL)
+	{
+		return ImGui::InputText(label, buf, buf_size, flags, callback, user_data);
+	}
+	inline bool InputTextMultiline(const char* label, char* buf, size_t buf_size,
+	    const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0,
+	    ImGuiInputTextCallback callback = NULL, void* user_data = NULL)
+	{
+		return ImGui::InputTextMultiline(label, buf, buf_size, size, flags, callback, user_data);
+	}
+	inline bool InputTextWithHint(const char* label, const char* hint, char* buf, size_t buf_size,
+	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL,
+	    void* user_data = NULL)
+	{
+		return ImGui::InputTextWithHint(label, hint, buf, buf_size, flags, callback, user_data);
+	}
+
 	// ImGui::InputText() with String
 	// Because text input needs dynamic resizing, we need to setup a callback to grow the capacity
-	bool InputText(const char* label, String* str, ImGuiInputTextFlags flags = 0,
+	bool InputText(const char* label, String& str, ImGuiInputTextFlags flags = 0,
 	    ImGuiInputTextCallback callback = NULL, void* userData = NULL);
-	bool InputTextMultiline(const char* label, String* str, const ImVec2& size = ImVec2(0, 0),
+	bool InputTextMultiline(const char* label, String& str, const ImVec2& size = ImVec2(0, 0),
 	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL,
 	    void* userData = NULL);
-	bool InputTextWithHint(const char* label, const char* hint, String* str,
+	bool InputTextWithHint(const char* label, const char* hint, String& str,
 	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL,
 	    void* userData = NULL);
+
+
+	static bool Begin(const char* name, bool* p_open = NULL, ImGuiWindowFlags flags = 0)
+	{
+		const bool value = ImGui::Begin(name, p_open, flags);
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.f, 3.f));
+		return value;
+	}
+
+	static void End()
+	{
+		ImGui::PopStyleVar();
+		ImGui::End();
+	}
 }    // namespace Rift::UI

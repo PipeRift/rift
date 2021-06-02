@@ -25,7 +25,7 @@ namespace Rift
 		layout.BindNextWindowToNode(TypeAssetEditor::centralNode);
 
 		const String name = Strings::Format(TX("Graph##{}"), editor.GetWindowId());
-		if (ImGui::Begin(name.c_str()))
+		if (UI::Begin(name.c_str()))
 		{
 			ImNodes::BeginNodeEditor();
 
@@ -34,27 +34,27 @@ namespace Rift
 				ImNodes::BeginNode(1);
 
 				ImNodes::BeginNodeTitleBar();
-				ImGui::Text("If");
+				UI::Text("If");
 				ImNodes::EndNodeTitleBar();
 
 				ImNodes::BeginInputAttribute(2, ImNodesPinShape_QuadFilled);
-				ImGui::Text("");
+				UI::Text("");
 				ImNodes::EndInputAttribute();
 
-				ImGui::SameLine();
+				UI::SameLine();
 
 				ImNodes::BeginOutputAttribute(4, ImNodesPinShape_QuadFilled);
-				ImGui::Text("True");
+				UI::Text("True");
 				ImNodes::EndOutputAttribute();
 
 				ImNodes::BeginInputAttribute(3, ImNodesPinShape_CircleFilled);
-				ImGui::Text("Value");
+				UI::Text("Value");
 				ImNodes::EndInputAttribute();
 
-				ImGui::SameLine();
+				UI::SameLine();
 
 				ImNodes::BeginOutputAttribute(5, ImNodesPinShape_QuadFilled);
-				ImGui::Text("False");
+				UI::Text("False");
 				ImNodes::EndOutputAttribute();
 
 				ImNodes::EndNode();
@@ -66,39 +66,39 @@ namespace Rift
 				ImNodes::BeginNode(2);
 
 				ImNodes::BeginNodeTitleBar();
-				ImGui::Text("If");
+				UI::Text("If");
 				ImNodes::EndNodeTitleBar();
 
-				ImGui::BeginGroup();    // Inputs
+				UI::BeginGroup();    // Inputs
 				{
 					ImNodes::BeginInputAttribute(2, ImNodesPinShape_QuadFilled);
-					ImGui::Text("");
+					UI::Text("");
 					ImNodes::EndInputAttribute();
 
 					ImNodes::BeginInputAttribute(3, ImNodesPinShape_CircleFilled);
-					ImGui::Text("Value");
+					UI::Text("Value");
 					ImNodes::EndInputAttribute();
 				}
-				ImGui::EndGroup();
+				UI::EndGroup();
 
-				ImGui::SameLine();
-				ImGui::BeginGroup();    // Outputs
+				UI::SameLine();
+				UI::BeginGroup();    // Outputs
 				{
 					ImNodes::BeginOutputAttribute(4, ImNodesPinShape_QuadFilled);
-					ImGui::Text("True");
+					UI::Text("True");
 					ImNodes::EndOutputAttribute();
 
 					ImNodes::BeginOutputAttribute(5, ImNodesPinShape_QuadFilled);
-					ImGui::Text("False");
+					UI::Text("False");
 					ImNodes::EndOutputAttribute();
 				}
-				ImGui::EndGroup();
+				UI::EndGroup();
 
 				ImNodes::EndNode();
 				ImNodes::PopColorStyle();
 			}
 			ImNodes::EndNodeEditor();
 		}
-		ImGui::End();
+		UI::End();
 	}
 }    // namespace Rift

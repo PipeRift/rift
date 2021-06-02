@@ -71,45 +71,45 @@ namespace Rift::UI
 	}
 
 
-	bool InputText(const char* label, String* str, ImGuiInputTextFlags flags,
+	bool InputText(const char* label, String& str, ImGuiInputTextFlags flags,
 	    ImGuiInputTextCallback callback, void* userData)
 	{
 		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 		flags |= ImGuiInputTextFlags_CallbackResize;
 
 		InputTextCallback_StringUserData cbUserData;
-		cbUserData.str                   = str;
+		cbUserData.str                   = &str;
 		cbUserData.chainCallback         = callback;
 		cbUserData.chainCallbackUserData = userData;
-		return ImGui::InputText(label, (char*) str->c_str(), str->capacity() + 1, flags,
+		return ImGui::InputText(
+		    label, (char*) str.c_str(), str.capacity() + 1, flags, InputTextCallback, &cbUserData);
+	}
+
+	bool InputTextMultiline(const char* label, String& str, const ImVec2& size,
+	    ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* userData)
+	{
+		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
+		flags |= ImGuiInputTextFlags_CallbackResize;
+
+		InputTextCallback_StringUserData cbUserData;
+		cbUserData.str                   = &str;
+		cbUserData.chainCallback         = callback;
+		cbUserData.chainCallbackUserData = userData;
+		return ImGui::InputTextMultiline(label, (char*) str.c_str(), str.capacity() + 1, size,
+		    flags, InputTextCallback, &cbUserData);
+	}
+
+	bool InputTextWithHint(const char* label, const char* hint, String& str,
+	    ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* userData)
+	{
+		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
+		flags |= ImGuiInputTextFlags_CallbackResize;
+
+		InputTextCallback_StringUserData cbUserData;
+		cbUserData.str                   = &str;
+		cbUserData.chainCallback         = callback;
+		cbUserData.chainCallbackUserData = userData;
+		return ImGui::InputTextWithHint(label, hint, (char*) str.c_str(), str.capacity() + 1, flags,
 		    InputTextCallback, &cbUserData);
-	}
-
-	bool InputTextMultiline(const char* label, String* str, const ImVec2& size,
-	    ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* userData)
-	{
-		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
-		flags |= ImGuiInputTextFlags_CallbackResize;
-
-		InputTextCallback_StringUserData cbUserData;
-		cbUserData.str                   = str;
-		cbUserData.chainCallback         = callback;
-		cbUserData.chainCallbackUserData = userData;
-		return ImGui::InputTextMultiline(label, (char*) str->c_str(), str->capacity() + 1, size,
-		    flags, InputTextCallback, &cbUserData);
-	}
-
-	bool InputTextWithHint(const char* label, const char* hint, String* str,
-	    ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* userData)
-	{
-		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
-		flags |= ImGuiInputTextFlags_CallbackResize;
-
-		InputTextCallback_StringUserData cbUserData;
-		cbUserData.str                   = str;
-		cbUserData.chainCallback         = callback;
-		cbUserData.chainCallbackUserData = userData;
-		return ImGui::InputTextWithHint(label, hint, (char*) str->c_str(), str->capacity() + 1,
-		    flags, InputTextCallback, &cbUserData);
 	}
 }    // namespace Rift::UI

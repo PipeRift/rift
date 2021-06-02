@@ -17,7 +17,7 @@ namespace Rift
 		}
 		else
 		{
-			ImGui::OpenPopup("Project Picker");
+			UI::OpenPopup("Project Picker");
 		}
 
 		DrawMenuBar();
@@ -28,57 +28,57 @@ namespace Rift
 #if BUILD_DEBUG
 		if (showDemo)
 		{
-			ImGui::ShowDemoWindow(&showDemo);
+			UI::ShowDemoWindow(&showDemo);
 		}
 #endif
 	}
 
 	void RootEditor::DrawMenuBar()
 	{
-		if (ImGui::BeginMainMenuBar())
+		if (UI::BeginMainMenuBar())
 		{
-			if (ImGui::BeginMenu("Views"))
+			if (UI::BeginMenu("Views"))
 			{
-				ImGui::MenuItem("Memory", nullptr, &memoryDebugger.open);
-				ImGui::EndMenu();
+				UI::MenuItem("Memory", nullptr, &memoryDebugger.open);
+				UI::EndMenu();
 			}
 
 #if BUILD_DEBUG
-			ImGui::MenuItem("Demo", nullptr, &showDemo);
+			UI::MenuItem("Demo", nullptr, &showDemo);
 #endif
 
-			ImGui::EndMainMenuBar();
+			UI::EndMainMenuBar();
 		}
 	}
 
 	void RootEditor::DrawProjectPickerPopup()
 	{
 		// Center modal when appearing
-		ImGui::SetNextWindowPos(
-		    ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		UI::SetNextWindowPos(
+		    UI::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
-		if (ImGui::BeginPopupModal("Project Picker", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		if (UI::BeginPopupModal("Project Picker", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			if (ImGui::Button("Open Project..."))
+			if (UI::Button("Open Project..."))
 			{
 				Path folder = Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
 
 				if (GetContext<RiftContext>()->OpenProject(folder))
 				{
-					ImGui::CloseCurrentPopup();
+					UI::CloseCurrentPopup();
 				}
 			}
-			ImGui::SetItemDefaultFocus();
-			ImGui::Separator();
-			ImGui::Text("Recent Projects");
+			UI::SetItemDefaultFocus();
+			UI::Separator();
+			UI::Text("Recent Projects");
 			static const char* recentProjects[]{"One recent project"};
 			static int selected = 0;
-			if (ImGui::BeginListBox("##RecentProjects"))
+			if (UI::BeginListBox("##RecentProjects"))
 			{
 				for (int n = 0; n < IM_ARRAYSIZE(recentProjects); ++n)
 				{
 					const bool is_selected = (selected == n);
-					if (ImGui::Selectable(recentProjects[n], is_selected))
+					if (UI::Selectable(recentProjects[n], is_selected))
 					{
 						selected = n;
 					}
@@ -87,12 +87,12 @@ namespace Rift
 					// focus)
 					if (is_selected)
 					{
-						ImGui::SetItemDefaultFocus();
+						UI::SetItemDefaultFocus();
 					}
 				}
-				ImGui::EndListBox();
+				UI::EndListBox();
 			}
-			ImGui::EndPopup();
+			UI::EndPopup();
 		}
 	}
 }    // namespace Rift

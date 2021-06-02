@@ -1,6 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include <Math/Color.h>
 #include <Platform/Platform.h>
 #include <Reflection/Static/EnumType.h>
 
@@ -18,6 +19,20 @@ namespace Rift::Style
 		None
 	};
 
+	enum class ThemeColors : Rift::u8
+	{
+		Primary,
+		Secondary,
+		Fill
+	};
+	inline LinearColor primaryColor       = Color{0, 186, 189};
+	inline LinearColor primaryTextColor   = LinearColor{Color::Black}.Lighten(0.1f);
+	inline LinearColor secondaryColor     = Color{213, 106, 56};
+	inline LinearColor secondaryTextColor = LinearColor{Color::Black}.Lighten(0.1f);
+
+	inline LinearColor fillColor     = Color{136, 136, 140};
+	inline LinearColor fillTextColor = LinearColor{Color::White}.Darken(0.15f);
+
 
 	// Sets the default font
 	// @param name of the font
@@ -33,7 +48,8 @@ namespace Rift::Style
 
 	void PopFont();
 
-	void ApplyStyle();
+	void PushGeneralStyle();
+	void PopGeneralStyle();
 
 	void PushStyleCompact();
 	void PopStyleCompact();

@@ -22,7 +22,7 @@ namespace Rift
 			return;
 		}
 
-		ImGui::Begin("Abstract Syntax Tree", &open);
+		UI::Begin("Abstract Syntax Tree", &open);
 		{
 			auto rootView = ast.MakeView<CChildren>(AST::TExclude<CParent>{});
 			// auto identifierView = ast.MakeView<CIdentifier>();
@@ -35,9 +35,9 @@ namespace Rift
 			ast.EachOrphan([&ast](AST::Id ent) {
 				DrawEntity(ast, ent);
 			});
-			ImGui::Separator();
+			UI::Separator();
 		}
-		ImGui::End();
+		UI::End();
 	}
 
 	void ASTDebugger::DrawEntity(AST::Tree& ast, AST::Id entity)
@@ -55,7 +55,7 @@ namespace Rift
 
 		const CChildren* children = ast.GetComponentPtr<CChildren>(entity);
 		const bool hasChildren = children && !children->children.IsEmpty();
-		if (ImGui::TreeNodeEx(name.c_str(), hasChildren ? 0 : ImGuiTreeNodeFlags_Leaf))
+		if (UI::TreeNodeEx(name.c_str(), hasChildren ? 0 : ImGuiTreeNodeFlags_Leaf))
 		{
 			if (hasChildren)
 			{
@@ -64,7 +64,7 @@ namespace Rift
 					DrawEntity(ast, child);
 				}
 			}
-			ImGui::TreePop();
+			UI::TreePop();
 		}
 	}
 }    // namespace Rift

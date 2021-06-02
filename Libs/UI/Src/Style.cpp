@@ -2,12 +2,12 @@
 
 #include "UI/Paths.h"
 #include "UI/Style.h"
-#include "UI/UI.h"
+#include "UI/UIImGui.h"
 
 #include <Containers/Array.h>
 #include <Log.h>
-#include <Math/Color.h>
 #include <Math/Math.h>
+#include <Misc/Checks.h>
 #include <Templates/Tuples.h>
 
 
@@ -138,45 +138,109 @@ namespace Rift::Style
 		ImGui::PopFont();
 	}
 
-	void ApplyStyle()
+	LinearColor Hovered(const LinearColor& color)
+	{
+		return color.Darken(0.1f);
+	}
+
+	LinearColor Disabled(const LinearColor& color)
+	{
+		return color.Darken(0.3f);
+	}
+
+	void SetTheme(ThemeColors themeColors)
+	{
+		LinearColor mainColor;
+		LinearColor mainTextColor;
+		switch (themeColors)
+		{
+			case ThemeColors::Primary:
+				mainColor     = primaryColor;
+				mainTextColor = primaryTextColor;
+				break;
+			case ThemeColors::Secondary:
+				mainColor     = secondaryColor;
+				mainTextColor = secondaryTextColor;
+				break;
+			default:
+				mainColor     = fillColor;
+				mainTextColor = secondaryTextColor;
+				break;
+		}
+	}
+
+	void PushGeneralStyle()
 	{
 		ImGui::StyleColorsDark();
 		auto& style = ImGui::GetStyle();
 
-		ImVec4* colors                      = style.Colors;
-		colors[ImGuiCol_FrameBg]            = LinearColor(0.48f, 0.40f, 0.16f, 0.54f);
-		colors[ImGuiCol_FrameBgHovered]     = ImVec4(0.98f, 0.77f, 0.26f, 0.40f);
-		colors[ImGuiCol_FrameBgActive]      = ImVec4(0.98f, 0.77f, 0.26f, 0.67f);
-		colors[ImGuiCol_TitleBgActive]      = ImVec4(0.48f, 0.40f, 0.16f, 1.00f);
-		colors[ImGuiCol_CheckMark]          = ImVec4(0.98f, 0.77f, 0.26f, 1.00f);
-		colors[ImGuiCol_SliderGrab]         = ImVec4(0.88f, 0.69f, 0.24f, 1.00f);
-		colors[ImGuiCol_SliderGrabActive]   = ImVec4(0.98f, 0.77f, 0.26f, 1.00f);
-		colors[ImGuiCol_Button]             = ImVec4(0.98f, 0.77f, 0.26f, 0.40f);
-		colors[ImGuiCol_ButtonHovered]      = ImVec4(0.98f, 0.77f, 0.26f, 1.00f);
-		colors[ImGuiCol_ButtonActive]       = ImVec4(0.98f, 0.65f, 0.06f, 1.00f);
-		colors[ImGuiCol_Header]             = ImVec4(0.98f, 0.77f, 0.26f, 0.31f);
-		colors[ImGuiCol_HeaderHovered]      = ImVec4(0.98f, 0.77f, 0.26f, 0.80f);
-		colors[ImGuiCol_HeaderActive]       = ImVec4(0.98f, 0.77f, 0.26f, 1.00f);
-		colors[ImGuiCol_SeparatorHovered]   = ImVec4(0.75f, 0.54f, 0.10f, 0.78f);
-		colors[ImGuiCol_SeparatorActive]    = ImVec4(0.75f, 0.54f, 0.10f, 1.00f);
-		colors[ImGuiCol_ResizeGrip]         = ImVec4(0.98f, 0.77f, 0.26f, 0.25f);
-		colors[ImGuiCol_ResizeGripHovered]  = ImVec4(0.98f, 0.77f, 0.26f, 0.67f);
-		colors[ImGuiCol_ResizeGripActive]   = ImVec4(0.98f, 0.77f, 0.26f, 0.95f);
-		colors[ImGuiCol_Tab]                = ImVec4(0.58f, 0.47f, 0.18f, 0.86f);
-		colors[ImGuiCol_TabHovered]         = ImVec4(0.98f, 0.77f, 0.26f, 0.80f);
-		colors[ImGuiCol_TabActive]          = ImVec4(0.68f, 0.54f, 0.20f, 1.00f);
-		colors[ImGuiCol_TabUnfocused]       = ImVec4(0.15f, 0.13f, 0.07f, 0.97f);
-		colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.42f, 0.34f, 0.14f, 1.00f);
-		colors[ImGuiCol_DockingPreview]     = ImVec4(0.98f, 0.77f, 0.26f, 0.70f);
-		colors[ImGuiCol_TextSelectedBg]     = ImVec4(0.98f, 0.77f, 0.26f, 0.35f);
-		colors[ImGuiCol_NavHighlight]       = ImVec4(0.98f, 0.77f, 0.26f, 1.00f);
+		style.WindowRounding           = 0;
+		style.FramePadding             = ImVec2(2.f, 4.5f);
+		style.TabRounding              = 0;
+		style.ScrollbarRounding        = 2;
+		style.WindowMenuButtonPosition = ImGuiDir_Right;
 
-		style.WindowRounding    = 2;
-		style.TabRounding       = 1;
-		style.ScrollbarRounding = 2;
+		// PushThemeStyle(ThemeColors::Primary);
+
+
+		ImVec4* colors                  = style.Colors;
+		LinearColor frameColor          = fillColor.Darken(0.1f);
+		colors[ImGuiCol_FrameBg]        = frameColor.Darken(0.5f);
+		colors[ImGuiCol_FrameBgHovered] = frameColor.Darken(0.1f);
+		colors[ImGuiCol_FrameBgActive]  = frameColor;
+
+		LinearColor titleColor            = primaryColor.Darken(0.5f);
+		colors[ImGuiCol_TitleBg]          = titleColor.Darken(0.65f);
+		colors[ImGuiCol_TitleBgActive]    = titleColor.Darken(0.3f);
+		colors[ImGuiCol_TitleBgCollapsed] = Disabled(titleColor);
+
+		colors[ImGuiCol_CheckMark]        = fillTextColor.Darken(0.2f);
+		colors[ImGuiCol_SliderGrabActive] = fillColor;
+		colors[ImGuiCol_SliderGrab]       = fillColor.Darken(0.2f);
+
+		LinearColor buttonColor        = fillColor;
+		colors[ImGuiCol_Button]        = buttonColor.Darken(0.3f);
+		colors[ImGuiCol_ButtonHovered] = Hovered(buttonColor);
+		colors[ImGuiCol_ButtonActive]  = buttonColor;
+
+		LinearColor headerColor        = fillColor;
+		colors[ImGuiCol_Header]        = headerColor.Darken(0.3f);
+		colors[ImGuiCol_HeaderHovered] = Hovered(headerColor);
+		colors[ImGuiCol_HeaderActive]  = headerColor;
+
+		LinearColor separatorColor        = fillColor;
+		colors[ImGuiCol_SeparatorHovered] = Hovered(separatorColor);
+		colors[ImGuiCol_SeparatorActive]  = separatorColor;
+
+		LinearColor resizeGripColor        = fillColor;
+		colors[ImGuiCol_ResizeGrip]        = resizeGripColor.Darken(0.3f);
+		colors[ImGuiCol_ResizeGripHovered] = Hovered(resizeGripColor);
+		colors[ImGuiCol_ResizeGripActive]  = resizeGripColor;
+
+		LinearColor tabColor                = primaryColor.Darken(0.1f);
+		colors[ImGuiCol_Tab]                = tabColor.Darken(0.3f);
+		colors[ImGuiCol_TabActive]          = tabColor;
+		colors[ImGuiCol_TabUnfocused]       = tabColor.Darken(0.5f);
+		colors[ImGuiCol_TabUnfocusedActive] = tabColor.Darken(0.3f);
+		colors[ImGuiCol_TabHovered]         = Hovered(tabColor);
+
+		colors[ImGuiCol_DockingPreview] = fillColor;
+		colors[ImGuiCol_TextSelectedBg] = primaryColor.Darken(0.2f);
+
+		colors[ImGuiCol_NavHighlight] = primaryColor;
+
+		colors[ImGuiCol_Border] = fillColor.Darken(0.1f);
+
+		colors[ImGuiCol_Text]         = fillTextColor;
+		colors[ImGuiCol_TextDisabled] = fillTextColor.Darken(0.1f);
 
 		LoadFonts();
 		Style::SetDefaultFont("WorkSans");
+	}
+
+	void PopGeneralStyle()
+	{
+		// PopThemeStyle();
 	}
 
 	// Make the UI compact because there are so many fields
@@ -193,5 +257,4 @@ namespace Rift::Style
 	{
 		ImGui::PopStyleVar(2);
 	}
-
-}    // namespace Style
+}    // namespace Rift::Style

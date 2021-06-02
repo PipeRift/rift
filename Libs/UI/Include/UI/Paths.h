@@ -4,6 +4,7 @@
 
 #include <Files/Paths.h>
 
+
 namespace Rift::Paths
 {
 	Path GetResourcesPath();

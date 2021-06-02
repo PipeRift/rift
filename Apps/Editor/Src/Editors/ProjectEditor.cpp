@@ -1,14 +1,15 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editors/ProjectEditor.h"
-
 #include "Editor.h"
+#include "Editors/ProjectEditor.h"
 
 #include <Compiler/Compiler.h>
 #include <Files/FileDialog.h>
 #include <Profiler.h>
 #include <RiftContext.h>
+#include <UI/UI.h>
 #include <imgui_internal.h>
+
 
 
 namespace Rift
@@ -80,14 +81,14 @@ namespace Rift
 		}
 
 		String projectPath = Paths::ToString(project->GetPath());
-		ImGui::PushID(Hash<String>()(projectPath));
+		UI::PushID(Hash<String>()(projectPath));
 
 		DrawMenuBar();
 
 		if (bSkipFrameAfterMenu)    // We could have closed the project
 		{
 			bSkipFrameAfterMenu = false;
-			ImGui::PopID();
+			UI::PopID();
 			return;
 		}
 
@@ -109,7 +110,7 @@ namespace Rift
 		}
 
 		astDebugger.Draw(*RiftContext::GetAST());
-		ImGui::PopID();
+		UI::PopID();
 	}
 
 	void ProjectEditor::CreateDockspace()
@@ -117,11 +118,11 @@ namespace Rift
 		ZoneScoped;
 		ImGuiDockNodeFlags dockingFlags = ImGuiDockNodeFlags_None;
 
-		const auto& viewport = ImGui::GetMainViewport();
+		const auto& viewport = UI::GetMainViewport();
 
-		ImGui::SetNextWindowPos(viewport->WorkPos);
-		ImGui::SetNextWindowSize(viewport->WorkSize);
-		ImGui::SetNextWindowViewport(viewport->ID);
+		UI::SetNextWindowPos(viewport->WorkPos);
+		UI::SetNextWindowSize(viewport->WorkSize);
+		UI::SetNextWindowViewport(viewport->ID);
 
 		ImGuiWindowFlags hostWindowFlags =
 		    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
@@ -135,15 +136,15 @@ namespace Rift
 		char label[32];
 		ImFormatString(label, IM_ARRAYSIZE(label), "DockSpaceViewport_%08X", viewport->ID);
 
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		ImGui::Begin(label, nullptr, hostWindowFlags);
-		ImGui::PopStyleVar(3);
+		UI::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		UI::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		UI::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		UI::Begin(label, nullptr, hostWindowFlags);
+		UI::PopStyleVar(3);
 
-		dockspaceID = ImGui::GetID("DockSpace");
-		ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), dockingFlags, nullptr);
-		ImGui::End();
+		dockspaceID = UI::GetID("DockSpace");
+		UI::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), dockingFlags, nullptr);
+		UI::End();
 	}
 
 	void ProjectEditor::DrawMenuBar()
@@ -151,11 +152,11 @@ namespace Rift
 		ZoneScoped;
 
 		auto context = GetContext<RiftContext>();
-		if (ImGui::BeginMainMenuBar())
+		if (UI::BeginMainMenuBar())
 		{
-			if (ImGui::BeginMenu("File"))
+			if (UI::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("Open Project"))
+				if (UI::MenuItem("Open Project"))
 				{
 					Path folder =
 					    Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
@@ -164,49 +165,49 @@ namespace Rift
 						bSkipFrameAfterMenu = true;
 					}
 				}
-				if (ImGui::MenuItem("Close current"))
+				if (UI::MenuItem("Close current"))
 				{
 					context->CloseProject();
 					bSkipFrameAfterMenu = true;
 				}
-				ImGui::Separator();
-				if (ImGui::MenuItem("Open File")) {}
-				if (ImGui::MenuItem("Save File", "CTRL+S")) {}
-				if (ImGui::MenuItem("Save All", "CTRL+SHFT+S")) {}
-				ImGui::EndMenu();
+				UI::Separator();
+				if (UI::MenuItem("Open File")) {}
+				if (UI::MenuItem("Save File", "CTRL+S")) {}
+				if (UI::MenuItem("Save All", "CTRL+SHFT+S")) {}
+				UI::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Build"))
+			if (UI::BeginMenu("Build"))
 			{
-				if (ImGui::MenuItem("Build current"))
+				if (UI::MenuItem("Build current"))
 				{
 					Rift::Compiler::Config config;
 					Rift::Compiler::Build(
 					    context->GetRootProject(), config, Rift::Compiler::EBackend::C);
 				}
-				if (ImGui::MenuItem("Build all"))
+				if (UI::MenuItem("Build all"))
 				{
 					Rift::Compiler::Config config;
 					Rift::Compiler::Build(
 					    context->GetRootProject(), config, Rift::Compiler::EBackend::C);
 				}
-				ImGui::EndMenu();
+				UI::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Edit"))
+			if (UI::BeginMenu("Edit"))
 			{
-				if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-				if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}    // Disabled item
-				ImGui::Separator();
-				if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-				if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-				if (ImGui::MenuItem("Paste", "CTRL+V")) {}
-				ImGui::EndMenu();
+				if (UI::MenuItem("Undo", "CTRL+Z")) {}
+				if (UI::MenuItem("Redo", "CTRL+Y", false, false)) {}    // Disabled item
+				UI::Separator();
+				if (UI::MenuItem("Cut", "CTRL+X")) {}
+				if (UI::MenuItem("Copy", "CTRL+C")) {}
+				if (UI::MenuItem("Paste", "CTRL+V")) {}
+				UI::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Layout"))
+			if (UI::BeginMenu("Layout"))
 			{
-				if (ImGui::MenuItem("Reset layout"))
+				if (UI::MenuItem("Reset layout"))
 				{
 					layout.Reset();
 					for (const auto& editor : TypeAssetEditors)
@@ -217,10 +218,10 @@ namespace Rift
 						}
 					}
 				}
-				ImGui::EndMenu();
+				UI::EndMenu();
 			}
 
-			ImGui::EndMainMenuBar();
+			UI::EndMainMenuBar();
 		}
 	}
 

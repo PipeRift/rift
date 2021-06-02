@@ -28,7 +28,7 @@ namespace Rift
 	    const TArray<BigBestFitArena::Slot>& freeSlots, v2 graphSize = v2::Zero())
 	{
 		ImGuiContext& g     = *GImGui;
-		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		ImGuiWindow* window = UI::GetCurrentWindow();
 		if (window->SkipItems)
 		{
 			return -1;
@@ -36,11 +36,11 @@ namespace Rift
 
 		const ImGuiStyle& style = g.Style;
 		const ImGuiID id        = window->GetID(label.data());
-		const ImVec2 label_size = ImGui::CalcTextSize(label.data(), NULL, true);
+		const ImVec2 label_size = UI::CalcTextSize(label.data(), NULL, true);
 
 		if (graphSize.x == 0.0f)
 		{
-			graphSize.x = ImGui::CalcItemWidth();
+			graphSize.x = UI::CalcItemWidth();
 		}
 		if (graphSize.y == 0.0f)
 		{
@@ -54,14 +54,14 @@ namespace Rift
 		const ImRect totalBox(frameBox.Min,
 		    frameBox.Max +
 		        ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0));
-		ImGui::ItemSize(totalBox, style.FramePadding.y);
-		if (!ImGui::ItemAdd(totalBox, 0, &frameBox))
+		UI::ItemSize(totalBox, style.FramePadding.y);
+		if (!UI::ItemAdd(totalBox, 0, &frameBox))
 		{
 			return -1;
 		}
-		const bool hovered = ImGui::ItemHoverable(frameBox, id);
+		const bool hovered = UI::ItemHoverable(frameBox, id);
 
-		ImGui::RenderFrame(frameBox.Min, frameBox.Max, ImGui::GetColorU32(ImGuiCol_FrameBg), true,
+		UI::RenderFrame(frameBox.Min, frameBox.Max, UI::GetColorU32(ImGuiCol_FrameBg), true,
 		    style.FrameRounding);
 
 		// Render
@@ -106,7 +106,7 @@ namespace Rift
 
 		if (label_size.x > 0.0f)
 		{
-			ImGui::RenderText(
+			UI::RenderText(
 			    ImVec2(frameBox.Max.x + style.ItemInnerSpacing.x, frameBox.Min.y), label.data());
 		}
 
@@ -130,14 +130,14 @@ namespace Rift
 		String scaleStr      = Strings::ParseMemorySize(memoryScale);
 		u32 scaleMultiplier  = u32(Math::Log(memoryScale, 2.f));
 		static const u32 min = 2, max = 8;
-		ImGui::SliderScalar(
+		UI::SliderScalar(
 		    "Scale", ImGuiDataType_U32, (void*) &scaleMultiplier, &min, &max, scaleStr.c_str());
 		memoryScale = Math::Pow(2, scaleMultiplier);
 
-		ImGui::BeginChild("##memoryblock", ImVec2(0.f, 450.f), false);
-		ImGui::SetNextItemWidth(-FLT_MIN);
+		UI::BeginChild("##memoryblock", ImVec2(0.f, 450.f), false);
+		UI::SetNextItemWidth(-FLT_MIN);
 		DrawMemoryBlock("##MemoryGraph", *this, freeSlots, v2{0.f, 100.f});
-		ImGui::EndChild();
+		UI::EndChild();
 	}
 
 	BigBestFitArenaDebugger::BigBestFitArenaDebugger()
@@ -166,7 +166,7 @@ namespace Rift
 		{
 			auto& arena = GetGlobalArena();
 
-			ImGui::Begin("Memory", &open);
+			UI::Begin("Memory", &open);
 
 			String size = Strings::ParseMemorySize(arena.GetBlock().GetSize());
 			String used = Strings::ParseMemorySize(arena.GetUsedSize());
@@ -179,33 +179,33 @@ namespace Rift
 				static const LinearColor highMemoryColor = Color(210, 56, 41);
 				const LinearColor color =
 				    LinearColor::LerpUsingHSV(lowMemoryColor, highMemoryColor, usedPct);
-				ImGui::PushStyleColor(ImGuiCol_PlotHistogram, color);
-				ImGui::PushStyleColor(ImGuiCol_FrameBg, color.Desaturate(0.4f));
+				UI::PushStyleColor(ImGuiCol_PlotHistogram, color);
+				UI::PushStyleColor(ImGuiCol_FrameBg, color.Desaturate(0.4f));
 
-				ImGui::PushItemWidth(-FLT_MIN);
-				ImGui::ProgressBar(usedPct, ImVec2(0.f, 0.0f), "");
+				UI::PushItemWidth(-FLT_MIN);
+				UI::ProgressBar(usedPct, ImVec2(0.f, 0.0f), "");
 
 				const String usedPctLabel =
 				    Strings::Format("{:.0f}%% used ({})", usedPct * 100.f, used);
-				const float pctFontSize = (ImGui::GetFontSize() * usedPctLabel.size()) / 2.f;
-				ImGui::SameLine(ImGui::GetWindowContentRegionWidth() / 2 - pctFontSize / 2,
-				    ImGui::GetStyle().ItemInnerSpacing.x / 2);
-				ImGui::Text(usedPctLabel.c_str());
+				const float pctFontSize = (UI::GetFontSize() * usedPctLabel.size()) / 2.f;
+				UI::SameLine(UI::GetWindowContentRegionWidth() / 2 - pctFontSize / 2,
+				    UI::GetStyle().ItemInnerSpacing.x / 2);
+				UI::Text(usedPctLabel.c_str());
 
-				ImGui::SetItemAllowOverlap();
-				const float usedFontSize = (ImGui::GetFontSize() * size.size()) / 2.f;
-				ImGui::SameLine(ImGui::GetWindowContentRegionWidth() - usedFontSize);
-				ImGui::Text(size.c_str());
+				UI::SetItemAllowOverlap();
+				const float usedFontSize = (UI::GetFontSize() * size.size()) / 2.f;
+				UI::SameLine(UI::GetWindowContentRegionWidth() - usedFontSize);
+				UI::Text(size.c_str());
 
-				ImGui::PopStyleColor(2);
+				UI::PopStyleColor(2);
 			}
 
-			ImGui::Separator();
+			UI::Separator();
 
 			blockGrid.block = &arena.GetBlock();
 			blockGrid.Draw(arena.GetFreeSlots());
 
-			ImGui::End();
+			UI::End();
 		}
 	}
 }    // namespace Rift

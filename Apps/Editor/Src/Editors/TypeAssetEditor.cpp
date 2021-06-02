@@ -3,6 +3,7 @@
 #include "Editors/ProjectEditor.h"
 #include "Editors/TypeAssetEditor.h"
 
+#include <UI/UI.h>
 #include <imgui_internal.h>
 
 
@@ -36,9 +37,9 @@ namespace Rift
 		auto owner = GetOwner<ProjectEditor>();
 		assert(owner);
 
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		UI::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		UI::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);
+		UI::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
 		bool isOpen       = true;
 		String windowName = asset.GetFilename();
@@ -46,14 +47,14 @@ namespace Rift
 
 		if (pendingFocus)
 		{
-			ImGui::SetWindowFocus(windowName.c_str());
+			UI::SetWindowFocus(windowName.c_str());
 			pendingFocus = false;
 		}
 
 		owner->layout.BindNextWindowToNode(ProjectEditor::centralNode);
-		if (ImGui::Begin(windowName.c_str(), &isOpen))
+		if (UI::Begin(windowName.c_str(), &isOpen))
 		{
-			ImGui::PopStyleVar(3);
+			UI::PopStyleVar(3);
 
 			CreateDockspace(windowName.c_str());
 			layout.Tick(dockspaceID);
@@ -63,9 +64,9 @@ namespace Rift
 		}
 		else
 		{
-			ImGui::PopStyleVar(3);
+			UI::PopStyleVar(3);
 		}
-		ImGui::End();
+		UI::End();
 
 		if (!isOpen)
 		{
@@ -77,7 +78,7 @@ namespace Rift
 	{
 		ImGuiDockNodeFlags dockingFlags = ImGuiDockNodeFlags_None;
 
-		dockspaceID = ImGui::GetID(id);
-		ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), dockingFlags, nullptr);
+		dockspaceID = UI::GetID(id);
+		UI::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), dockingFlags, nullptr);
 	}
 }    // namespace Rift

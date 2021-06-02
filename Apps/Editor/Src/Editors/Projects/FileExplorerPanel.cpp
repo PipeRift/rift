@@ -17,24 +17,24 @@ namespace Rift
 	void FileExplorerPanel::Draw()
 	{
 		editor.layout.BindNextWindowToNode(editor.leftNode);
-		if (ImGui::Begin(
+		if (UI::Begin(
 		        "File Explorer", &bOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar))
 		{
-			if (ImGui::BeginMenuBar())
+			if (UI::BeginMenuBar())
 			{
-				if (ImGui::BeginMenu("Filter"))
+				if (UI::BeginMenu("Filter"))
 				{
-					ImGui::CheckboxFlags("Classes", (u32*) &filter, *Filter::Classes);
-					ImGui::CheckboxFlags("Structs", (u32*) &filter, *Filter::Structs);
-					ImGui::CheckboxFlags(
+					UI::CheckboxFlags("Classes", (u32*) &filter, *Filter::Classes);
+					UI::CheckboxFlags("Structs", (u32*) &filter, *Filter::Structs);
+					UI::CheckboxFlags(
 					    "Function Libraries", (u32*) &filter, *Filter::FunctionLibraries);
-					ImGui::EndMenu();
+					UI::EndMenu();
 				}
-				ImGui::EndMenuBar();
+				UI::EndMenuBar();
 			}
 			DrawList();
 		}
-		ImGui::End();
+		UI::End();
 	}
 
 	void FileExplorerPanel::DrawList()
@@ -44,46 +44,46 @@ namespace Rift
 			CacheProjectFiles();
 		}
 
-		ImGui::BeginChild("Files");
-		if (ImGui::BeginPopupContextWindow())
+		UI::BeginChild("Files");
+		if (UI::BeginPopupContextWindow())
 		{
 			DrawContextMenu({}, {});
-			ImGui::EndPopup();
+			UI::EndPopup();
 		}
 
 		DrawFolderItems(projectFolder);
 
-		ImGui::EndChild();
+		UI::EndChild();
 	}
 
 	void FileExplorerPanel::DrawContextMenu(Path path, File* file)
 	{
 		if (file && file->info)
 		{
-			if (ImGui::MenuItem("Rename"))
+			if (UI::MenuItem("Rename"))
 			{
 				file->renaming = true;
 			}
-			if (ImGui::MenuItem("Delete")) {}
+			if (UI::MenuItem("Delete")) {}
 		}
 		else
 		{
-			if (ImGui::BeginMenu("Create"))
+			if (UI::BeginMenu("Create"))
 			{
-				if (ImGui::MenuItem("Class"))
+				if (UI::MenuItem("Class"))
 				{
 					CreateAsset("Create Class file", TypeAsset::Type::Class, path);
 				}
-				if (ImGui::MenuItem("Struct"))
+				if (UI::MenuItem("Struct"))
 				{
 					CreateAsset("Create Struct file", TypeAsset::Type::Struct, path);
 				}
-				if (ImGui::MenuItem("Function Library"))
+				if (UI::MenuItem("Function Library"))
 				{
 					CreateAsset(
 					    "Create Function Library file", TypeAsset::Type::FunctionLibrary, path);
 				}
-				ImGui::EndMenu();
+				UI::EndMenu();
 			}
 		}
 	}
@@ -143,16 +143,16 @@ namespace Rift
 	{
 		for (auto& childFolder : folder.folders)
 		{
-			if (ImGui::TreeNode(childFolder.name.c_str()))
+			if (UI::TreeNode(childFolder.name.c_str()))
 			{
 				DrawFolderItems(childFolder);
-				ImGui::TreePop();
+				UI::TreePop();
 			}
-			if (ImGui::BeginPopupContextItem())
+			if (UI::BeginPopupContextItem())
 			{
 				const Path path = Paths::FromString(childFolder.name);
 				DrawContextMenu(path, nullptr);
-				ImGui::EndPopup();
+				UI::EndPopup();
 			}
 		}
 
@@ -166,9 +166,9 @@ namespace Rift
 	{
 		if (!file.renaming)
 		{
-			ImGui::TreeNodeEx(
+			UI::TreeNodeEx(
 			    file.name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-			if (ImGui::IsItemHovered() && ImGui::IsKeyReleased(GLFW_KEY_F2))
+			if (UI::IsItemHovered() && UI::IsKeyReleased(GLFW_KEY_F2))
 			{
 				file.renaming = true;
 			}
@@ -180,7 +180,7 @@ namespace Rift
 			// TODO: Implement UI functions for string types
 			TFixedString<128> buffer;
 
-			ImGui::SetKeyboardFocusHere();
+			UI::SetKeyboardFocusHere();
 			if (UI::InputText("##newname", buffer.data(), buffer.size(),
 			        ImGuiInputTextFlags_EnterReturnsTrue))
 			{
@@ -195,19 +195,19 @@ namespace Rift
 		}
 
 
-		if (ImGui::IsItemClicked())
+		if (UI::IsItemClicked())
 		{
-			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+			if (UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 			{
 				editor.OpenType(file.info);
 			}
 		}
 
-		if (ImGui::BeginPopupContextItem())
+		if (UI::BeginPopupContextItem())
 		{
 			const Path path = Paths::FromString(file.info.GetStrPath());
 			DrawContextMenu(path, &file);
-			ImGui::EndPopup();
+			UI::EndPopup();
 		}
 	}
 
