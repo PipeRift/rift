@@ -225,11 +225,12 @@ namespace Rift::Style
 		colors[ImGuiCol_TabHovered]         = Hovered(tabColor);
 
 		colors[ImGuiCol_DockingPreview] = fillColor;
+		colors[ImGuiCol_DockingEmptyBg] = LinearColor(Color::White).Darken(0.97f);
 		colors[ImGuiCol_TextSelectedBg] = primaryColor.Darken(0.2f);
 
 		colors[ImGuiCol_NavHighlight] = primaryColor;
 
-		colors[ImGuiCol_Border] = fillColor.Darken(0.1f);
+		colors[ImGuiCol_Border] = fillColor.Darken(0.1f).Translucency(0.5f);
 
 		colors[ImGuiCol_Text]         = fillTextColor;
 		colors[ImGuiCol_TextDisabled] = fillTextColor.Darken(0.1f);
