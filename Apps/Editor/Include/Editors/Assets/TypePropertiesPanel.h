@@ -17,6 +17,7 @@ namespace Rift
 		TypeAssetEditor& editor;
 
 
+		AST::Id selectedNode = AST::NoId;
 		AST::Id renameNode = AST::NoId;
 		// Renaming uses this buffer to temporarely store the name being edited
 		String renameBuffer;

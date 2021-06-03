@@ -138,16 +138,6 @@ namespace Rift::Style
 		ImGui::PopFont();
 	}
 
-	LinearColor Hovered(const LinearColor& color)
-	{
-		return color.Darken(0.1f);
-	}
-
-	LinearColor Disabled(const LinearColor& color)
-	{
-		return color.Darken(0.3f);
-	}
-
 	void SetTheme(ThemeColors themeColors)
 	{
 		LinearColor mainColor;
@@ -183,11 +173,7 @@ namespace Rift::Style
 		// PushThemeStyle(ThemeColors::Primary);
 
 
-		ImVec4* colors                  = style.Colors;
-		LinearColor frameColor          = fillColor.Darken(0.1f);
-		colors[ImGuiCol_FrameBg]        = frameColor.Darken(0.5f);
-		colors[ImGuiCol_FrameBgHovered] = frameColor.Darken(0.1f);
-		colors[ImGuiCol_FrameBgActive]  = frameColor;
+		ImVec4* colors = style.Colors;
 
 		LinearColor titleColor            = primaryColor.Darken(0.5f);
 		colors[ImGuiCol_TitleBg]          = titleColor.Darken(0.65f);
@@ -198,15 +184,6 @@ namespace Rift::Style
 		colors[ImGuiCol_SliderGrabActive] = fillColor;
 		colors[ImGuiCol_SliderGrab]       = fillColor.Darken(0.2f);
 
-		LinearColor buttonColor        = fillColor;
-		colors[ImGuiCol_Button]        = buttonColor.Darken(0.3f);
-		colors[ImGuiCol_ButtonHovered] = Hovered(buttonColor);
-		colors[ImGuiCol_ButtonActive]  = buttonColor;
-
-		LinearColor headerColor        = fillColor;
-		colors[ImGuiCol_Header]        = headerColor.Darken(0.3f);
-		colors[ImGuiCol_HeaderHovered] = Hovered(headerColor);
-		colors[ImGuiCol_HeaderActive]  = headerColor;
 
 		LinearColor separatorColor        = fillColor;
 		colors[ImGuiCol_SeparatorHovered] = Hovered(separatorColor);
@@ -235,14 +212,15 @@ namespace Rift::Style
 		colors[ImGuiCol_Text]         = fillTextColor;
 		colors[ImGuiCol_TextDisabled] = fillTextColor.Darken(0.1f);
 
+		PushButtonColor(fillColor);
+		PushFrameBgColor(fillColor.Darken(0.1f));
+		PushHeaderColor(fillColor);
+
 		LoadFonts();
 		Style::SetDefaultFont("WorkSans");
 	}
 
-	void PopGeneralStyle()
-	{
-		// PopThemeStyle();
-	}
+	void PopGeneralStyle() {}
 
 	// Make the UI compact because there are so many fields
 	void PushStyleCompact()
@@ -257,5 +235,51 @@ namespace Rift::Style
 	void PopStyleCompact()
 	{
 		ImGui::PopStyleVar(2);
+	}
+
+	void PushFrameBgColor(LinearColor color)
+	{
+		UI::PushStyleColor(ImGuiCol_FrameBg, color.Darken(0.5f));
+		UI::PushStyleColor(ImGuiCol_FrameBgHovered, Hovered(color));
+		UI::PushStyleColor(ImGuiCol_FrameBgActive, color);
+	}
+
+	void PopFrameBgColor()
+	{
+		UI::PopStyleColor(3);
+	}
+
+	void PushButtonColor(LinearColor color)
+	{
+		UI::PushStyleColor(ImGuiCol_Button, color.Darken(0.3f));
+		UI::PushStyleColor(ImGuiCol_ButtonHovered, Hovered(color));
+		UI::PushStyleColor(ImGuiCol_ButtonActive, color);
+	}
+
+	void PopButtonColor()
+	{
+		UI::PopStyleColor(3);
+	}
+
+	void PushHeaderColor(LinearColor color)
+	{
+		UI::PushStyleColor(ImGuiCol_Header, color.Darken(0.3f));
+		UI::PushStyleColor(ImGuiCol_HeaderHovered, Hovered(color));
+		UI::PushStyleColor(ImGuiCol_HeaderActive, color);
+	}
+
+	void PopHeaderColor()
+	{
+		UI::PopStyleColor(3);
+	}
+
+	LinearColor Hovered(const LinearColor& color)
+	{
+		return color.Darken(0.1f);
+	}
+
+	LinearColor Disabled(const LinearColor& color)
+	{
+		return color.Darken(0.3f);
 	}
 }    // namespace Rift::Style

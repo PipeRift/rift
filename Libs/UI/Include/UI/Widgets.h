@@ -77,4 +77,6 @@ namespace Rift::UI
 		ImGui::PopStyleVar();
 		ImGui::End();
 	}
+
+	ImRect GetWorkRect(v2 desiredSize, bool addhalfItemSpacing = true, v2 extent = v2::Zero());
 }    // namespace Rift::UI

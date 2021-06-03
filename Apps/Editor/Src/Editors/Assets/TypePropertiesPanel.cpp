@@ -60,8 +60,12 @@ namespace Rift
 		{
 			UI::Indent(10.f);
 			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
-			if (UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingStretchSame))
+			if (UI::BeginTable(
+			        "##variableTable", 3, ImGuiTableFlags_SizingFixedFit))
 			{
+				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch);
+				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
+				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
 				for (AST::Id child : *children)
 				{
 					if (variableView.Has(child))
@@ -162,43 +166,66 @@ namespace Rift
 
 		UI::PushID(identifier);
 
-		static constexpr Color color{230, 69, 69};
-		static constexpr Color frameBG{122, 59, 41, 138};
-		static constexpr float frameHeight = 26.f;
+		static const LinearColor color = Color(230, 69, 69);
+		static constexpr Color frameBg{122, 59, 41};
+		static constexpr float frameHeight = 20.f;
 
-		auto* table = UI::GetCurrentTable();
-		auto& style = ImGui::GetStyle();
-		ImRect rowRect;
-		rowRect.Min.x = table->WorkRect.Min.x + style.CellPadding.x;
-		rowRect.Min.y = table->RowPosY1 + style.CellPadding.y;
-		rowRect.Max.x = table->WorkRect.Max.x - style.CellPadding.x;
-		rowRect.Max.y = table->RowPosY1 + frameHeight - style.CellPadding.y;
-		ImGui::RenderFrame(rowRect.Min, rowRect.Max, color.DWColor(), false, style.FrameRounding);
+		{ // Custom Selectable
+			UI::TableNextColumn();
+			auto& style = ImGui::GetStyle();
+			Style::PushHeaderColor(LinearColor::Transparent);
 
-		UI::PushStyleColor(ImGuiCol_FrameBg, ImVec4(frameBG));
-		UI::PushStyleVar(ImGuiStyleVar_CellPadding, style.CellPadding + ImVec2{0.f, 2.f});
+			ImRect bb   = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
+
+			bool selected = selectedNode == id;
+			ImGui::Selectable("##selectArea", &selected,
+				ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap,
+				ImVec2(0, frameHeight));
+
+			if (selected)
+			{
+				selectedNode = id;
+			}
+			else if (selectedNode == id) // If not selected but WAS selected
+			{
+				selectedNode = AST::NoId;
+			}
+
+			LinearColor bgColor = color.Darken(0.4f); // Inactive
+			if(selected)
+			{
+				bgColor = color;
+			}
+			else if (UI::IsItemHovered())
+			{
+				bgColor = Style::Hovered(color);
+			}
+			ImGui::RenderFrame(bb.Min, bb.Max, bgColor.ToColor().DWColor(), false, 4.f);
+
+			Style::PopHeaderColor();
+		}
+
+		UI::SameLine();
+		DrawRenameInput(id, identifier);
+
 
 		UI::TableNextColumn();
 		{
-			UI::PushItemWidth(-FLT_MIN);
+			UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
+			UI::PushItemWidth(75.f);
 			TypeCombo();
+			UI::PopStyleVar();
 		}
 
 		UI::TableNextColumn();
 		{
-			UI::PushItemWidth(-FLT_MIN);
-			DrawRenameInput(id, identifier);
-		}
-
-		UI::TableNextColumn();
-		{
+			UI::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{4.f, 4.f});
+			UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
 			static float value = 2.f;
-			UI::PushItemWidth(-FLT_MIN);
-			UI::InputFloat("##defaultValue", &value, 0.f, 0.f, "%.1f");
+			UI::SetNextItemWidth(Math::Max(100.f, UI::CalcItemWidth()));
+			UI::InputFloat("##defaultValue", &value, 0.f, 0.f, "%.2f");
+			UI::PopStyleVar(2);
 		}
-
-		UI::PopStyleVar();
-		UI::PopStyleColor();
 
 		UI::PopID();
 	}
@@ -223,7 +250,7 @@ namespace Rift
 		rowRect.Min.x = table->WorkRect.Min.x + style.CellPadding.x;
 		rowRect.Min.y = table->RowPosY1 + style.CellPadding.y;
 		rowRect.Max.x = table->WorkRect.Max.x - style.CellPadding.x;
-		rowRect.Max.y = table->RowPosY1 + frameHeight - style.CellPadding.y;
+		rowRect.Max.y = table->RowPosY1 + style.CellPadding.y + frameHeight;
 		ImGui::RenderFrame(rowRect.Min, rowRect.Max, color.DWColor(), false, style.FrameRounding);
 
 		UI::PushStyleColor(ImGuiCol_FrameBg, ImVec4(frameBG));
@@ -232,7 +259,6 @@ namespace Rift
 		// Name
 		UI::TableNextColumn();
 		{
-			UI::PushItemWidth(-FLT_MIN);
 			DrawRenameInput(id, identifier);
 		}
 
@@ -244,44 +270,43 @@ namespace Rift
 
 	void TypePropertiesPanel::DrawRenameInput(AST::Id id, CIdentifier* identifier)
 	{
-		String* name;
-		String currentName;
-
-		const bool wasEditing = renameNode == id;
-		if (!wasEditing)
+		const bool isEditing = renameNode == id;
+		if (!isEditing)
 		{
-			currentName = identifier->name.ToString();
-			name        = &currentName;
+			const String& name = identifier->name.ToString();
+
+			if (UI::IsItemHovered() && UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+			{
+				renameNode   = id;
+				renameBuffer = name;
+				// UI::SetFocusID(UI::GetID("##renameEdit"), UI::GetCurrentWindow());
+				UI::ActivateItem(UI::GetID("##renameEdit"));
+			}
 
 			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {16.f, 4.f});
 			UI::PushStyleColor(ImGuiCol_FrameBg, ImVec4(Color::Transparent));
+
+			UI::SetNextItemWidth(-FLT_MIN);
+			UI::AlignTextToFramePadding();
+			UI::Text(name.c_str());
+
+			UI::PopStyleColor();
+			UI::PopStyleVar();
 		}
 		else
 		{
-			name = &renameBuffer;
-		}
+			UI::SetNextItemWidth(-FLT_MIN);
+			UI::InputText("##renameEdit", renameBuffer, ImGuiInputTextFlags_AutoSelectAll);
 
-		UI::InputText("##rename", *name);
-
-		if (UI::IsItemDeactivatedAfterEdit())
-		{
-			identifier->name = Name{renameBuffer};
-			ResetRename();
-		}
-		else if (UI::IsItemActive())
-		{
-			renameNode   = id;
-			renameBuffer = identifier->name.ToString();
-		}
-		else if (wasEditing)    // If not active and editing, stop
-		{
-			ResetRename();
-		}
-
-		if (!wasEditing)
-		{
-			UI::PopStyleColor();
-			UI::PopStyleVar();
+			if (UI::IsItemDeactivatedAfterEdit())
+			{
+				identifier->name = Name{renameBuffer};
+				ResetRename();
+			}
+			else if (UI::IsItemDeactivated())
+			{
+				ResetRename();
+			}
 		}
 	}
 

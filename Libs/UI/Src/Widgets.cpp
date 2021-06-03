@@ -112,4 +112,36 @@ namespace Rift::UI
 		return ImGui::InputTextWithHint(label, hint, (char*) str.c_str(), str.capacity() + 1, flags,
 		    InputTextCallback, &cbUserData);
 	}
+
+	ImRect GetWorkRect(v2 desiredSize, bool addhalfItemSpacing, v2 extent)
+	{
+		auto& style  = ImGui::GetStyle();
+		auto* table  = UI::GetCurrentTable();
+		auto* window = UI::GetCurrentWindow();
+		ImVec2 pos   = window->DC.CursorPos;
+		pos.y += window->DC.CurrLineTextBaseOffset;
+
+		const float min_x = window->ParentWorkRect.Min.x;
+		const float max_x = window->ParentWorkRect.Max.x;
+
+		const ImVec2 size{Math::Max(desiredSize.x, max_x - min_x), desiredSize.y};
+		ImRect bb{min_x, pos.y, min_x + size.x, pos.y + size.y};
+
+		if (addhalfItemSpacing)
+		{
+			const float spacing_x = 0;
+			const float spacing_y = style.ItemSpacing.y;
+			const float spacing_L = IM_FLOOR(spacing_x * 0.50f);
+			const float spacing_U = IM_FLOOR(spacing_y * 0.50f);
+			bb.Min.x -= spacing_L;
+			bb.Min.y -= spacing_U;
+			bb.Max.x += (spacing_x - spacing_L);
+			bb.Max.y += (spacing_y - spacing_U);
+		}
+		bb.Min.x -= extent.x;
+		bb.Min.y -= extent.y;
+		bb.Max.x += extent.x;
+		bb.Max.y += extent.y;
+		return bb;
+	}
 }    // namespace Rift::UI

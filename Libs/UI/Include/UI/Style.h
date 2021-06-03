@@ -53,4 +53,14 @@ namespace Rift::Style
 
 	void PushStyleCompact();
 	void PopStyleCompact();
+
+	void PushFrameBgColor(LinearColor color);
+	void PopFrameBgColor();
+	void PushButtonColor(LinearColor color);
+	void PopButtonColor();
+	void PushHeaderColor(LinearColor color);
+	void PopHeaderColor();
+
+	LinearColor Hovered(const LinearColor& color);
+	LinearColor Disabled(const LinearColor& color);
 };
