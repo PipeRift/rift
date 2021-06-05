@@ -97,6 +97,7 @@ namespace Rift
 				ImNodes::EndNode();
 				ImNodes::PopColorStyle();
 			}
+			ImNodes::MiniMap(0.2f, ImNodesMiniMapLocation_TopRight);
 			ImNodes::EndNodeEditor();
 		}
 		UI::End();

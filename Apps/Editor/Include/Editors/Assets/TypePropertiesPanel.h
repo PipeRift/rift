@@ -22,6 +22,8 @@ namespace Rift
 		// Renaming uses this buffer to temporarely store the name being edited
 		String renameBuffer;
 
+		AST::Id pendingDelete = AST::NoId;
+
 
 	public:
 		TypePropertiesPanel(TypeAssetEditor& editor);

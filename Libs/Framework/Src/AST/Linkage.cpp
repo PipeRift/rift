@@ -200,9 +200,10 @@ namespace Rift::AST
 		});
 	}
 
-	void GetLinkedDeep(const Tree& ast, Id node, TArray<Id>& outLinkedNodes)
+	void GetLinkedDeep(const Tree& ast, TArrayView<Id> roots, TArray<Id>& outLinkedNodes)
 	{
-		TArray<AST::Id> pendingInspection{node};
+		TArray<AST::Id> pendingInspection;
+		pendingInspection.Append(roots);
 		TArray<AST::Id> currentLinked{};
 		while (pendingInspection.Size() > 0)
 		{
@@ -216,6 +217,24 @@ namespace Rift::AST
 			outLinkedNodes.Append(currentLinked);
 			pendingInspection = Move(currentLinked);
 		}
+	}
+
+	void Remove(Tree& ast, TArrayView<Id> nodes)
+	{
+		Unlink(ast, nodes, true);
+
+		UnlinkAllChildren(ast, nodes);
+		ast.Destroy(nodes.begin(), nodes.end());
+	}
+
+	void RemoveDeep(Tree& ast, TArrayView<Id> nodes)
+	{
+		Unlink(ast, nodes, true);
+
+		TArray<Id> allNodes;
+		allNodes.Append(nodes);
+		GetLinkedDeep(ast, nodes, allNodes);
+		ast.Destroy(allNodes.begin(), allNodes.end());
 	}
 
 

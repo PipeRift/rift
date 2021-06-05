@@ -1,9 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editors/Assets/TypePropertiesPanel.h"
-
 #include "AST/Linkage.h"
 #include "DockSpaceLayout.h"
+#include "Editors/Assets/TypePropertiesPanel.h"
 #include "Editors/TypeAssetEditor.h"
 
 #include <AST/Components/CClassDecl.h>
@@ -11,6 +10,7 @@
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CStructDecl.h>
 #include <AST/Components/CVariableDecl.h>
+#include <GLFW/glfw3.h>
 #include <RiftContext.h>
 #include <UI/UI.h>
 
@@ -46,6 +46,12 @@ namespace Rift
 			}
 		}
 		UI::End();
+
+		if (IsValid(pendingDelete))
+		{
+			AST::RemoveDeep(*ast, pendingDelete);
+			pendingDelete = AST::NoId;
+		}
 	}
 
 	void TypePropertiesPanel::DrawVariables(AST::Tree& ast, AST::Id node)
@@ -103,8 +109,10 @@ namespace Rift
 		{
 			UI::Indent(10.f);
 			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
-			if (UI::BeginTable("##functionTable", 1, ImGuiTableFlags_SizingStretchSame))
+			if (UI::BeginTable("##functionTable", 1, ImGuiTableFlags_SizingFixedFit))
 			{
+				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch);
+
 				for (AST::Id child : *children)
 				{
 					if (functionView.Has(child))
@@ -170,8 +178,8 @@ namespace Rift
 		static constexpr Color frameBg{122, 59, 41};
 		static constexpr float frameHeight = 20.f;
 
+		UI::TableNextColumn();
 		{    // Custom Selectable
-			UI::TableNextColumn();
 			auto& style = ImGui::GetStyle();
 			Style::PushHeaderColor(LinearColor::Transparent);
 
@@ -185,13 +193,18 @@ namespace Rift
 			if (selected)
 			{
 				selectedNode = id;
+
+				if (UI::IsKeyReleased(GLFW_KEY_DELETE))
+				{
+					pendingDelete = id;
+				}
 			}
 			else if (selectedNode == id)    // If not selected but WAS selected
 			{
 				selectedNode = AST::NoId;
 			}
 
-			LinearColor bgColor = color.Darken(0.4f);    // Inactive
+			LinearColor bgColor = color.Darken(0.5f);
 			if (selected)
 			{
 				bgColor = color;
@@ -200,9 +213,18 @@ namespace Rift
 			{
 				bgColor = Style::Hovered(color);
 			}
-			ImGui::RenderFrame(bb.Min, bb.Max, bgColor.ToColor().DWColor(), false, 4.f);
+			ImGui::RenderFrame(bb.Min, bb.Max, bgColor.ToColor().DWColor(), false, 3.f);
 
 			Style::PopHeaderColor();
+		}
+
+		if (ImGui::BeginPopupContextItem())
+		{
+			if (ImGui::MenuItem("Delete"))
+			{
+				pendingDelete = id;
+			}
+			ImGui::EndPopup();
 		}
 
 		UI::SameLine();
@@ -223,7 +245,6 @@ namespace Rift
 			UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
 			static float value = 2.f;
 			UI::SetNextItemWidth(-FLT_MIN);
-			// UI::SetNextItemWidth(Math::Max(100.f, UI::CalcItemWidth()));
 			UI::InputFloat("##defaultValue", &value, 0.f, 0.f, "%.2f");
 			UI::PopStyleVar(2);
 		}
@@ -241,30 +262,61 @@ namespace Rift
 
 		UI::PushID(identifier);
 
-		static constexpr Color color{68, 135, 229};
+		static LinearColor color = Color{68, 135, 229};
 		static constexpr Color frameBG{41, 75, 122, 138};
-		static constexpr float frameHeight = 26.f;
+		static constexpr float frameHeight = 20.f;
 
-		auto* table = UI::GetCurrentTable();
-		auto& style = ImGui::GetStyle();
-		ImRect rowRect;
-		rowRect.Min.x = table->WorkRect.Min.x + style.CellPadding.x;
-		rowRect.Min.y = table->RowPosY1 + style.CellPadding.y;
-		rowRect.Max.x = table->WorkRect.Max.x - style.CellPadding.x;
-		rowRect.Max.y = table->RowPosY1 + style.CellPadding.y + frameHeight;
-		ImGui::RenderFrame(rowRect.Min, rowRect.Max, color.DWColor(), false, style.FrameRounding);
-
-		UI::PushStyleColor(ImGuiCol_FrameBg, ImVec4(frameBG));
-		UI::PushStyleVar(ImGuiStyleVar_CellPadding, style.CellPadding + ImVec2{0.f, 2.f});
-
-		// Name
 		UI::TableNextColumn();
-		{
-			DrawRenameInput(id, identifier);
+		{    // Custom Selectable
+			auto& style = ImGui::GetStyle();
+			Style::PushHeaderColor(LinearColor::Transparent);
+
+			ImRect bb = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
+
+			bool selected = selectedNode == id;
+			ImGui::Selectable("##selectArea", &selected,
+			    ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap,
+			    ImVec2(0, frameHeight));
+
+			if (selected)
+			{
+				selectedNode = id;
+
+				if (UI::IsKeyReleased(GLFW_KEY_DELETE))
+				{
+					pendingDelete = id;
+				}
+			}
+			else if (selectedNode == id)    // If not selected but WAS selected
+			{
+				selectedNode = AST::NoId;
+			}
+
+			LinearColor bgColor = color.Darken(0.5f);
+			if (selected)
+			{
+				bgColor = color;
+			}
+			else if (UI::IsItemHovered())
+			{
+				bgColor = Style::Hovered(color);
+			}
+			ImGui::RenderFrame(bb.Min, bb.Max, bgColor.ToColor().DWColor(), false, 3.f);
+
+			Style::PopHeaderColor();
 		}
 
-		UI::PopStyleVar();
-		UI::PopStyleColor();
+		if (ImGui::BeginPopupContextItem())
+		{
+			if (ImGui::MenuItem("Delete"))
+			{
+				pendingDelete = id;
+			}
+			ImGui::EndPopup();
+		}
+
+		UI::SameLine();
+		DrawRenameInput(id, identifier);
 
 		UI::PopID();
 	}

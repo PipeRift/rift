@@ -73,12 +73,8 @@ namespace Rift
 	void ASTReadContext::SerializeRoot(AST::Id& root)
 	{
 		Next("count", nodeCount);
-		ASTIds.Reserve(nodeCount);
-		for (u32 i = 0; i < nodeCount; ++i)
-		{
-			const AST::Id newNode = ast.Create();
-			ASTIds.Add(newNode);
-		}
+		ASTIds.Resize(nodeCount);
+		ast.Create(ASTIds.begin(), ASTIds.end());
 
 		Next("root", root);
 		if (EnterNext("components"))

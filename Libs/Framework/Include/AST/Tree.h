@@ -29,8 +29,18 @@ namespace Rift::AST
 #pragma region ECS API
 		Id Create();
 		Id Create(const Id hint);
+		template <typename It>
+		void Create(It first, It last)
+		{
+			registry.create(first, last);
+		}
 		void Destroy(const Id node);
 		void Destroy(const Id node, const VersionType version);
+		template <typename It>
+		void Destroy(It first, It last)
+		{
+			registry.destroy(first, last);
+		}
 
 		/**
 		 * Adds Component to an entity (if the entity doesnt have it already)

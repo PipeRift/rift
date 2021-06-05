@@ -48,5 +48,5 @@ namespace Rift::AST
 
 constexpr bool IsValid(Rift::AST::Id id)
 {
-	return id == Rift::AST::NoId;
+	return id != Rift::AST::NoId;
 }
