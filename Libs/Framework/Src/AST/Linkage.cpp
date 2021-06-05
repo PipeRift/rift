@@ -1,12 +1,13 @@
 // Copyright 2015-2020 Piperift - All rights reserved
-#include "Lang/AST/ASTLinkage.h"
-#include "Lang/CChildren.h"
-#include "Lang/CParent.h"
-#include "Lang/Declarations/CClassDecl.h"
-#include "Lang/Declarations/CFunctionDecl.h"
-#include "Lang/Declarations/CStructDecl.h"
-#include "Lang/Declarations/CVariableDecl.h"
-#include "Lang/Identifiers/CIdentifier.h"
+#include "AST/Linkage.h"
+
+#include "AST/Components/CChildren.h"
+#include "AST/Components/CClassDecl.h"
+#include "AST/Components/CFunctionDecl.h"
+#include "AST/Components/CIdentifier.h"
+#include "AST/Components/CParent.h"
+#include "AST/Components/CStructDecl.h"
+#include "AST/Components/CVariableDecl.h"
 #include "Misc/Checks.h"
 
 

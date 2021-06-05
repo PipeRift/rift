@@ -1,14 +1,15 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Lang/AST/ASTLinkage.h"
-#include "Lang/AST/ASTSerialization.h"
-#include "Lang/CChildren.h"
-#include "Lang/CParent.h"
-#include "Lang/Declarations/CClassDecl.h"
-#include "Lang/Declarations/CFunctionDecl.h"
-#include "Lang/Declarations/CStructDecl.h"
-#include "Lang/Declarations/CVariableDecl.h"
-#include "Lang/Identifiers/CIdentifier.h"
+#include "AST/Serialization.h"
+
+#include "AST/Components/CChildren.h"
+#include "AST/Components/CClassDecl.h"
+#include "AST/Components/CFunctionDecl.h"
+#include "AST/Components/CIdentifier.h"
+#include "AST/Components/CParent.h"
+#include "AST/Components/CStructDecl.h"
+#include "AST/Components/CVariableDecl.h"
+#include "AST/Linkage.h"
 
 #include <Reflection/TypeName.h>
 
@@ -33,6 +34,7 @@ namespace Rift
 				if (ct.EnterNext(key))
 				{
 					T comp;
+					ct.BeginObject();
 					ct.Serialize(comp);
 					ast.AddComponent<T>(node, Move(comp));
 					ct.Leave();
@@ -43,20 +45,27 @@ namespace Rift
 	}
 
 	template <typename T>
-	void WritePool(ASTWriteContext& ct, const AST::Tree& ast, const TArray<AST::Id>& nodes)
+	void WritePool(ASTWriteContext& ct, AST::Tree& ast, const TArray<AST::Id>& nodes)
 	{
-		if (ct.EnterNext(GetTypeName<T>()))
+		auto view = ast.MakeView<T>();
+
+		if (ct.EnterNext(GetTypeName<T>(false)))
 		{
 			String key;
 			ct.BeginObject();
+			ct.PushAddFlags(Serl::WriteFlags_CacheStringKeys);
 			for (i32 i = 0; i < nodes.Size(); ++i)
 			{
 				const AST::Id node = nodes[i];
 				key.clear();
 				Strings::FormatTo(key, "{}", i);
 
-				ct.Next(key, ast.GetComponent<T>(node));
+				if (view.Has(node))
+				{
+					ct.Next(StringView{key}, view.Get<T>(node));
+				}
 			}
+			ct.PopFlags();
 			ct.Leave();
 		}
 	}

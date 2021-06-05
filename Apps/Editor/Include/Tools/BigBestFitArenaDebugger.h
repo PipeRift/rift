@@ -50,7 +50,7 @@ namespace Rift
 
 	struct BigBestFitArenaDebugger
 	{
-		bool open = true;
+		bool open = false;
 
 		MemoryGrid blockGrid;
 

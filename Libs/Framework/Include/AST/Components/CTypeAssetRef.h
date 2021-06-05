@@ -4,8 +4,8 @@
 #include "Assets/AssetPtr.h"
 #include "Assets/TypeAsset.h"
 
+#include <AST/Tree.h>
 #include <Containers/Set.h>
-#include <Lang/AST.h>
 #include <Object/Struct.h>
 
 

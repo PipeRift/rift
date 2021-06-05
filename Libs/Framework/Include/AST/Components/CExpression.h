@@ -1,13 +1,13 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "Lang/CDeclaration.h"
+#include "AST/Components/CStatement.h"
 
 
 namespace Rift
 {
-	struct CVariableDecl : public CDeclaration
+	struct CExpression : public CStatement
 	{
-		STRUCT(CVariableDecl, CDeclaration)
+		STRUCT(CExpression, CStatement)
 	};
 }    // namespace Rift

@@ -1,6 +1,6 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Lang/AST.h"
+#include "AST/Tree.h"
 
 
 namespace Rift::AST

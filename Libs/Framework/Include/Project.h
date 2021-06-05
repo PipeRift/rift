@@ -2,9 +2,9 @@
 
 #pragma once
 
+#include "AST/Tree.h"
 #include "Assets/ProjectAsset.h"
 #include "Assets/TypeAsset.h"
-#include "Lang/AST.h"
 #include "Log.h"
 #include "Strings/String.h"
 

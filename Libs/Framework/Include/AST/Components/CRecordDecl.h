@@ -1,9 +1,9 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "Lang/CDeclaration.h"
+#include "AST/Components/CDeclaration.h"
 
-#include <Lang/AST.h>
+#include <AST/Tree.h>
 
 
 namespace Rift

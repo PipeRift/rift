@@ -1,10 +1,10 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "Lang/AST/ASTTypes.h"
-#include "Lang/AST/View.h"
-#include "Lang/CChildren.h"
-#include "Lang/CParent.h"
+#include "AST/Components/CChildren.h"
+#include "AST/Components/CParent.h"
+#include "AST/Types.h"
+#include "AST/View.h"
 
 #include <Strings/Name.h>
 

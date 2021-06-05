@@ -1,9 +1,9 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "Lang/Declarations/CRecordDecl.h"
+#include "AST/Components/CRecordDecl.h"
 
-#include <Lang/AST.h>
+#include <AST/Tree.h>
 
 
 namespace Rift

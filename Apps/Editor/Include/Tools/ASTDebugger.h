@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "Lang/AST.h"
+#include "AST/Tree.h"
 
 #include <Math/Vector.h>
 #include <Memory/Arenas/BigBestFitArena.h>

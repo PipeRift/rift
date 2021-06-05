@@ -1,7 +1,8 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Lang/AST/ASTSerialization.h"
-#include "Lang/AST/ASTTypes.h"
+#include "AST/Types.h"
+
+#include "AST/Serialization.h"
 
 #include <Serialization/Contexts.h>
 

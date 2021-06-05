@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "Lang/AST.h"
+#include "AST/Tree.h"
 #include "Serialization/Contexts.h"
 
 
@@ -34,7 +34,7 @@ namespace Rift
 
 	class ASTWriteContext : public Serl::WriteContext
 	{
-		const AST::Tree& ast;
+		AST::Tree& ast;
 
 		// While serializing we create ids as AST::Ids appear and link them.
 		u32 nodeCount = 0;

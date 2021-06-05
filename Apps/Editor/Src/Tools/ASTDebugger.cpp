@@ -2,12 +2,11 @@
 
 #include "Tools/ASTDebugger.h"
 
-#include <Lang/AST.h>
-#include <Lang/CChildren.h>
-#include <Lang/CParent.h>
-#include <Lang/Identifiers/CIdentifier.h>
+#include <AST/Components/CChildren.h>
+#include <AST/Components/CIdentifier.h>
+#include <AST/Components/CParent.h>
+#include <AST/Tree.h>
 #include <UI/UI.h>
-
 
 namespace Rift
 {
@@ -54,7 +53,7 @@ namespace Rift
 		}
 
 		const CChildren* children = ast.GetComponentPtr<CChildren>(entity);
-		const bool hasChildren = children && !children->children.IsEmpty();
+		const bool hasChildren    = children && !children->children.IsEmpty();
 		if (UI::TreeNodeEx(name.c_str(), hasChildren ? 0 : ImGuiTreeNodeFlags_Leaf))
 		{
 			if (hasChildren)

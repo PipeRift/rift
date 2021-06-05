@@ -1,11 +1,13 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editors/ProjectEditor.h"
 #include "Editors/TypeAssetEditor.h"
 
+#include "Editors/ProjectEditor.h"
+#include "RiftContext.h"
+
+#include <AST/Utils/DeclarationUtils.h>
 #include <UI/UI.h>
 #include <imgui_internal.h>
-
 
 
 namespace Rift
@@ -59,7 +61,10 @@ namespace Rift
 			CreateDockspace(windowName.c_str());
 			layout.Tick(dockspaceID);
 
-			nodeGraph.Draw(layout);
+			if (Util::IsStructDecl(*RiftContext::GetAST(), GetNode()))
+			{
+				nodeGraph.Draw(layout);
+			}
 			properties.Draw(layout);
 		}
 		else

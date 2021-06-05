@@ -212,6 +212,8 @@ namespace Rift::Style
 		colors[ImGuiCol_Text]         = fillTextColor;
 		colors[ImGuiCol_TextDisabled] = fillTextColor.Darken(0.1f);
 
+		colors[ImGuiCol_ModalWindowDimBg] = secondaryColor.Translucency(0.2f);
+
 		PushButtonColor(fillColor);
 		PushFrameBgColor(fillColor.Darken(0.1f));
 		PushHeaderColor(fillColor);

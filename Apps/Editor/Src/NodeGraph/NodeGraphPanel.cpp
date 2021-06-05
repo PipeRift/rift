@@ -1,12 +1,12 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "NodeGraph/NodeGraphPanel.h"
+
 #include "DockSpaceLayout.h"
 #include "Editors/TypeAssetEditor.h"
-#include "NodeGraph/NodeGraphPanel.h"
 #include "UI/UI.h"
 
 #include <imnodes.h>
-
 
 
 namespace Rift

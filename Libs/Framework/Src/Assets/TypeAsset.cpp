@@ -1,14 +1,15 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Assets/TypeAsset.h"
-#include "Lang/AST/ASTSerialization.h"
-#include "Lang/CChildren.h"
-#include "Lang/CParent.h"
-#include "Lang/Declarations/CClassDecl.h"
-#include "Lang/Declarations/CFunctionLibraryDecl.h"
-#include "Lang/Declarations/CStructDecl.h"
-#include "Lang/Identifiers/CIdentifier.h"
-#include "Lang/Misc/CTypeAssetRef.h"
+
+#include "AST/Components/CChildren.h"
+#include "AST/Components/CClassDecl.h"
+#include "AST/Components/CFunctionLibraryDecl.h"
+#include "AST/Components/CIdentifier.h"
+#include "AST/Components/CParent.h"
+#include "AST/Components/CStructDecl.h"
+#include "AST/Components/CTypeAssetRef.h"
+#include "AST/Serialization.h"
 #include "RiftContext.h"
 
 #include <Reflection/Static/EnumType.h>
@@ -20,6 +21,7 @@ namespace Rift
 	{
 		Super::Serialize(ct);
 
+		ct.PushAddFlags(Serl::WriteFlags_CacheStringValues);
 		if (ct.IsReading())
 		{
 			String typeStr;
@@ -31,6 +33,7 @@ namespace Rift
 			String typeStr{Refl::GetEnumName(type)};
 			ct.Next("type", typeStr);
 		}
+		ct.PopFlags();
 
 		auto project = RiftContext::GetProject();
 		Check(project);

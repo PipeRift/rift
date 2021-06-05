@@ -1,15 +1,16 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "DockSpaceLayout.h"
 #include "Editors/Assets/TypePropertiesPanel.h"
-#include "Editors/TypeAssetEditor.h"
-#include "Lang/AST/ASTLinkage.h"
 
-#include <Lang/Declarations/CClassDecl.h>
-#include <Lang/Declarations/CFunctionDecl.h>
-#include <Lang/Declarations/CStructDecl.h>
-#include <Lang/Declarations/CVariableDecl.h>
-#include <Lang/Identifiers/CIdentifier.h>
+#include "AST/Linkage.h"
+#include "DockSpaceLayout.h"
+#include "Editors/TypeAssetEditor.h"
+
+#include <AST/Components/CClassDecl.h>
+#include <AST/Components/CFunctionDecl.h>
+#include <AST/Components/CIdentifier.h>
+#include <AST/Components/CStructDecl.h>
+#include <AST/Components/CVariableDecl.h>
 #include <RiftContext.h>
 #include <UI/UI.h>
 
@@ -60,12 +61,11 @@ namespace Rift
 		{
 			UI::Indent(10.f);
 			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
-			if (UI::BeginTable(
-			        "##variableTable", 3, ImGuiTableFlags_SizingFixedFit))
+			if (UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit))
 			{
-				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch);
-				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
-				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
+				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.45f);
+				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.25f);
+				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.30f);
 				for (AST::Id child : *children)
 				{
 					if (variableView.Has(child))
@@ -170,29 +170,29 @@ namespace Rift
 		static constexpr Color frameBg{122, 59, 41};
 		static constexpr float frameHeight = 20.f;
 
-		{ // Custom Selectable
+		{    // Custom Selectable
 			UI::TableNextColumn();
 			auto& style = ImGui::GetStyle();
 			Style::PushHeaderColor(LinearColor::Transparent);
 
-			ImRect bb   = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
+			ImRect bb = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
 
 			bool selected = selectedNode == id;
 			ImGui::Selectable("##selectArea", &selected,
-				ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap,
-				ImVec2(0, frameHeight));
+			    ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap,
+			    ImVec2(0, frameHeight));
 
 			if (selected)
 			{
 				selectedNode = id;
 			}
-			else if (selectedNode == id) // If not selected but WAS selected
+			else if (selectedNode == id)    // If not selected but WAS selected
 			{
 				selectedNode = AST::NoId;
 			}
 
-			LinearColor bgColor = color.Darken(0.4f); // Inactive
-			if(selected)
+			LinearColor bgColor = color.Darken(0.4f);    // Inactive
+			if (selected)
 			{
 				bgColor = color;
 			}
@@ -212,7 +212,7 @@ namespace Rift
 		UI::TableNextColumn();
 		{
 			UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
-			UI::PushItemWidth(75.f);
+			UI::SetNextItemWidth(-FLT_MIN);
 			TypeCombo();
 			UI::PopStyleVar();
 		}
@@ -222,7 +222,8 @@ namespace Rift
 			UI::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{4.f, 4.f});
 			UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
 			static float value = 2.f;
-			UI::SetNextItemWidth(Math::Max(100.f, UI::CalcItemWidth()));
+			UI::SetNextItemWidth(-FLT_MIN);
+			// UI::SetNextItemWidth(Math::Max(100.f, UI::CalcItemWidth()));
 			UI::InputFloat("##defaultValue", &value, 0.f, 0.f, "%.2f");
 			UI::PopStyleVar(2);
 		}

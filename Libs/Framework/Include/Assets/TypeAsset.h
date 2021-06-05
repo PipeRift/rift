@@ -1,9 +1,9 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
+#include <AST/Tree.h>
 #include <Assets/AssetData.h>
 #include <CoreObject.h>
-#include <Lang/AST.h>
 #include <Reflection/TypeFlags.h>
 
 

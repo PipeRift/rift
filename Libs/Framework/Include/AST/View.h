@@ -1,7 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "Lang/AST/ASTTypes.h"
+#include "AST/Types.h"
 
 #include <entt/entity/view.hpp>
 

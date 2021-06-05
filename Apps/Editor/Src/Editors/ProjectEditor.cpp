@@ -1,7 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editor.h"
 #include "Editors/ProjectEditor.h"
+
+#include "Editor.h"
 
 #include <Compiler/Compiler.h>
 #include <Files/FileDialog.h>
@@ -9,7 +10,6 @@
 #include <RiftContext.h>
 #include <UI/UI.h>
 #include <imgui_internal.h>
-
 
 
 namespace Rift
@@ -202,6 +202,12 @@ namespace Rift
 				if (UI::MenuItem("Cut", "CTRL+X")) {}
 				if (UI::MenuItem("Copy", "CTRL+C")) {}
 				if (UI::MenuItem("Paste", "CTRL+V")) {}
+				UI::EndMenu();
+			}
+
+			if (UI::BeginMenu("Views"))
+			{
+				UI::MenuItem("Syntax Tree", nullptr, &astDebugger.open);
 				UI::EndMenu();
 			}
 
