@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "Compiler/C/Backend_C.h"
 #include "Compiler/CompilerContext.h"
+#include "Compiler/Cpp/Backend_Cpp.h"
 #include "Project.h"
 
 #include <CoreObject.h>
@@ -13,7 +13,7 @@ namespace Rift::Compiler
 {
 	enum class EBackend : u8
 	{
-		C,
+		Cpp,
 		LLVM
 	};
 
@@ -27,8 +27,8 @@ namespace Rift::Compiler
 
 		switch (backend)
 		{
-			case EBackend::C:
-				C::Build(project, config);
+			case EBackend::Cpp:
+				Cpp::Build(project, config);
 			case EBackend::LLVM:
 				Log::Error("LLVM backend is not yet supported.");
 				break;

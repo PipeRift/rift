@@ -6,8 +6,11 @@
 
 namespace Rift
 {
-	struct CStatement : public Struct
+	struct CEditorNode : public Struct
 	{
-		STRUCT(CStatement, Struct)
+		STRUCT(CEditorNode, Struct)
+
+		PROP(v2, position)
+		v2 position;
 	};
 }    // namespace Rift

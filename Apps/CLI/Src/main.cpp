@@ -20,7 +20,7 @@ int main(int argc, char** argv)
 	auto project = context->OpenProject(Path("Project"));
 
 	Rift::Compiler::Config config;
-	Rift::Compiler::Build(project, config, Rift::Compiler::EBackend::C);
+	Rift::Compiler::Build(project, config, Rift::Compiler::EBackend::Cpp);
 
 	while (true)
 	{

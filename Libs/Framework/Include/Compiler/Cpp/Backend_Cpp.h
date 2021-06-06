@@ -5,7 +5,7 @@
 #include "Compiler/CompilerContext.h"
 
 
-namespace Rift::Compiler::C
+namespace Rift::Compiler::Cpp
 {
 	struct Context : public Rift::Compiler::Context
 	{
@@ -15,4 +15,4 @@ namespace Rift::Compiler::C
 
 	void GenerateCode(const Context& config);
 	void Build(TPtr<Project> project, const Config& config);
-}    // namespace Rift::Compiler::C
+}    // namespace Rift::Compiler::Cpp
