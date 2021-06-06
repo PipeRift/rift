@@ -32,8 +32,8 @@ go_bandit([]() {
 		});
 
 		it("Can load empty descriptor", [&]() {
-			Json json{{"asset_type", "ProjectAsset"}};
-			Files::SaveJsonFile(testProjectPath / "Project.rf", json);
+			Files::SaveStringFile(
+			    testProjectPath / "Project.rf", "{\"asset_type\": \"ProjectType\"}");
 
 			TOwnPtr<Project> project = Create<Project>();
 			AssertThat(project.IsValid(), Equals(true));

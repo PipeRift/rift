@@ -2,7 +2,8 @@
 
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CIdentifier.h"
-#include "Compiler/Cpp/Backend_Cpp.h"
+#include "Compiler/Cpp/CMakeGenerator.h"
+#include "Compiler/Cpp/CppBackend.h"
 #include "Files/Files.h"
 
 
@@ -92,7 +93,7 @@ namespace Rift::Compiler::Cpp
 		if (owner.empty())
 		{
 			Strings::FormatTo(code,
-			    "void {} ()\n"
+			    "inline void {} ()\n"
 			    "{{\n"
 			    "{}"
 			    "}};\n",
@@ -101,7 +102,7 @@ namespace Rift::Compiler::Cpp
 		else
 		{
 			Strings::FormatTo(code,
-			    "void {} ({}& self)\n"
+			    "inline void {} ({}& self)\n"
 			    "{{\n"
 			    "{}"
 			    "}};\n",
@@ -112,8 +113,15 @@ namespace Rift::Compiler::Cpp
 
 	void GenerateCode(Context& context)
 	{
-		ZoneScopedC(0x459bd1);
 		auto& config = context.config;
+
+		const Path includePath = config.intermediatesPath / "Include";
+		const Path sourcePath  = config.intermediatesPath / "Src";
+		Files::CreateFolder(includePath, true);
+		Files::CreateFolder(sourcePath, true);
+
+		ZoneScopedC(0x459bd1);
+
 		String code;
 
 		Strings::FormatTo(code, "#pragma once\n");
@@ -155,12 +163,36 @@ namespace Rift::Compiler::Cpp
 		DefineFunction(code, "MoveAll", {});
 
 
-		Path codePath = config.intermediatesPath / "code.h";
-		if (!Files::SaveStringFile(codePath, code))
+		Path headerFile = includePath / "code.h";
+		if (!Files::SaveStringFile(headerFile, code))
 		{
-			context.AddError(
-			    Strings::Format("Couldn't save generated code at '{}'", Paths::ToString(codePath)));
+			context.AddError(Strings::Format(
+			    "Couldn't save generated header at '{}'", Paths::ToString(headerFile)));
 		}
+
+		code = {};
+		AddInclude(code, "code.h");
+		Strings::FormatTo(code, "int main() {{ return 0; }}\n");
+
+		Path sourceFile = sourcePath / "code.cpp";
+		if (!Files::SaveStringFile(sourceFile, code))
+		{
+			context.AddError(Strings::Format(
+			    "Couldn't save generated source at '{}'", Paths::ToString(sourceFile)));
+		}
+	}
+
+	void BuildCode(Context& context)
+	{
+		const Path lastCwd = Paths::GetCurrent();
+
+		Paths::SetCurrent(context.config.intermediatesPath);
+
+		const String command = Strings::Format("cmake --build {} --config {}",
+		    Paths::ToString(context.config.binariesPath), "Release");
+		std::system(command.c_str());
+
+		Paths::SetCurrent(lastCwd);
 	}
 
 	void Build(TPtr<Project> project, const Config& config)
@@ -179,20 +211,33 @@ namespace Rift::Compiler::Cpp
 		Files::CreateFolder(config.intermediatesPath, true);
 		Files::CreateFolder(config.binariesPath, true);
 
+		Log::Info("Loading files");
 		project->LoadAllAssets();
 
+		Log::Info("Generating C++ code");
 		GenerateCode(context);
 		if (context.HasErrors())
 		{
-			context.AddError("Failed to generate C code.");
+			context.AddError("Failed to generate C++ code.");
 			return;
 		}
-		Log::Info("Generated C code");
 
-		// BuildCode();
+		Log::Info("Generating Cmake project");
+		GenerateCMake(context);
 		if (context.HasErrors())
 		{
-			context.AddError("Failed to compile C code.");
+			context.AddError("Failed to generate C++ code.");
+			return;
 		}
+		Log::Info("Building C++ code");
+
+
+		BuildCode(context);
+		if (context.HasErrors())
+		{
+			context.AddError("Failed to compile C++ code.");
+		}
+
+		Log::Info("Build complete");
 	}
 }    // namespace Rift::Compiler::Cpp

@@ -8,6 +8,14 @@
 
 namespace Rift
 {
+	enum class ModuleType
+	{
+		Executable,
+		Static,
+		Shared,
+		Interface
+	};
+
 	/**
 	 * ProjectAssets represents the asset that defines
 	 */
@@ -18,6 +26,9 @@ namespace Rift
 	public:
 		PROP(Name, name);
 		Name name;
+
+		// PROP(ModuleType, type)
+		ModuleType type = ModuleType::Executable;
 
 		PROP(String, version)
 		String version;

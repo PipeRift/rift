@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Compiler/CompilerContext.h"
-#include "Compiler/Cpp/Backend_Cpp.h"
+#include "Compiler/Cpp/CppBackend.h"
 #include "Project.h"
 
 #include <CoreObject.h>
@@ -29,6 +29,7 @@ namespace Rift::Compiler
 		{
 			case EBackend::Cpp:
 				Cpp::Build(project, config);
+				break;
 			case EBackend::LLVM:
 				Log::Error("LLVM backend is not yet supported.");
 				break;
