@@ -17,7 +17,7 @@ namespace Rift
 		if (!projectPath.empty())
 		{
 			auto manager = AssetManager::Get();
-			projectAsset = manager->Load(AssetInfo(projectPath / projectFile)).Cast<ProjectAsset>();
+			projectAsset = manager->Load(AssetInfo(projectPath / projectFile)).Cast<ModuleAsset>();
 
 			if (projectAsset)
 			{

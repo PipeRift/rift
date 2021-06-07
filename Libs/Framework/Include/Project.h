@@ -3,7 +3,7 @@
 #pragma once
 
 #include "AST/Tree.h"
-#include "Assets/ProjectAsset.h"
+#include "Assets/ModuleAsset.h"
 #include "Assets/TypeAsset.h"
 #include "Log.h"
 #include "Strings/String.h"
@@ -46,7 +46,7 @@ namespace Rift
 
 		Path projectPath;
 
-		TAssetPtr<ProjectAsset> projectAsset;
+		TAssetPtr<ModuleAsset> projectAsset;
 		TArray<AssetInfo> allTypes;
 		AST::Tree ast;
 

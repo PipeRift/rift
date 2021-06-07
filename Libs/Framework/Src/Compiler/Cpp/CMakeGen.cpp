@@ -1,6 +1,6 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Assets/ProjectAsset.h"
+#include "Assets/ModuleAsset.h"
 #include "Compiler/Cpp/CMakeGen.h"
 #include "Compiler/Cpp/CppBackend.h"
 

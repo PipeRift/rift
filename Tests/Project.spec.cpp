@@ -33,7 +33,7 @@ go_bandit([]() {
 
 		it("Can load empty descriptor", [&]() {
 			Files::SaveStringFile(
-			    testProjectPath / "Project.rf", "{\"asset_type\": \"ProjectType\"}");
+			    testProjectPath / "Project.rf", "{\"asset_type\": \"ModuleAsset\"}");
 
 			TOwnPtr<Project> project = Create<Project>();
 			AssertThat(project.IsValid(), Equals(true));

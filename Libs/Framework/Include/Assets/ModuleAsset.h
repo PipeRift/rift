@@ -17,11 +17,11 @@ namespace Rift
 	};
 
 	/**
-	 * ProjectAssets represents the asset that defines
+	 * ModuleAssets represent a group of folders and types to be built together
 	 */
-	class ProjectAsset : public AssetData
+	class ModuleAsset : public AssetData
 	{
-		CLASS(ProjectAsset, AssetData)
+		CLASS(ModuleAsset, AssetData)
 
 	public:
 		PROP(Name, name);

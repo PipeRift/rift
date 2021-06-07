@@ -1,10 +1,10 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "Assets/AssetPtr.h"
 #include "Assets/TypeAsset.h"
 
 #include <AST/Tree.h>
+#include <Assets/AssetPtr.h>
 #include <Containers/Set.h>
 #include <Object/Struct.h>
 
