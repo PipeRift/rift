@@ -1,5 +1,11 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "AST/Components/CClassDecl.h"
+#include "AST/Components/CFunctionDecl.h"
+#include "AST/Components/CIdentifier.h"
+#include "AST/Components/CStructDecl.h"
+#include "AST/Components/CVariableDecl.h"
+#include "AST/Linkage.h"
 #include "Compiler/Cpp/CodeGen.h"
 #include "Compiler/Cpp/CppBackend.h"
 
@@ -28,7 +34,7 @@ namespace Rift::Compiler::Cpp
 	{
 		Strings::FormatTo(code, "struct {};\n", name);
 	}
-	void AddStruct(String& code, StringView name, StringView super = {},
+	void DeclareStruct(String& code, StringView name, StringView super = {},
 	    TFunction<void(String&)> buildContent = {})
 	{
 		String innerCode;
@@ -73,11 +79,11 @@ namespace Rift::Compiler::Cpp
 	{
 		if (owner.empty())
 		{
-			Strings::FormatTo(code, "void {} ();\n", name);
+			Strings::FormatTo(code, "void {}();\n", name);
 		}
 		else
 		{
-			Strings::FormatTo(code, "void {} ({}& self);\n", name, owner);
+			Strings::FormatTo(code, "void {}({}& self);\n", name, owner);
 		}
 	}
 
@@ -93,7 +99,7 @@ namespace Rift::Compiler::Cpp
 		if (owner.empty())
 		{
 			Strings::FormatTo(code,
-			    "inline void {} ()\n"
+			    "inline void {}()\n"
 			    "{{\n"
 			    "{}"
 			    "}};\n",
@@ -102,11 +108,125 @@ namespace Rift::Compiler::Cpp
 		else
 		{
 			Strings::FormatTo(code,
-			    "inline void {} ({}& self)\n"
+			    "inline void {}({}& self)\n"
 			    "{{\n"
 			    "{}"
 			    "}};\n",
 			    name, owner, innerCode);
+		}
+	}
+
+	void ForwardDeclareTypes(String& code, Context& context)
+	{
+		auto& ast = context.project->GetAST();
+
+		auto structs = ast.MakeView<CIdentifier, CStructDecl>();
+		for (AST::Id entity : structs)
+		{
+			auto& identifier = structs.Get<CIdentifier>(entity);
+			ForwardDeclareStruct(code, identifier.name.ToString());
+		}
+
+		auto classes = ast.MakeView<CIdentifier, CClassDecl>();
+		for (AST::Id entity : classes)
+		{
+			auto& identifier = classes.Get<CIdentifier>(entity);
+			ForwardDeclareStruct(code, identifier.name.ToString());
+		}
+	}
+
+	void AddTypeVariables(String& code, Context& context, AST::Id owner)
+	{
+		auto& ast      = context.project->GetAST();
+		auto variables = ast.MakeView<CIdentifier, CVariableDecl>();
+
+		if (const CChildren* children = AST::GetCChildren(ast, owner))
+		{
+			for (AST::Id entity : children->children)
+			{
+				if (variables.Has(entity))
+				{
+					auto& identifier = variables.Get<CIdentifier>(entity);
+					AddVariable(code, "bool", identifier.name.ToString(), "false");
+				}
+			}
+		}
+	}
+
+	void DeclareTypes(String& code, Context& context)
+	{
+		auto& ast = context.project->GetAST();
+
+		auto structs = ast.MakeView<CIdentifier, CStructDecl>();
+		for (AST::Id entity : structs)
+		{
+			auto& identifier = structs.Get<CIdentifier>(entity);
+			DeclareStruct(
+			    code, identifier.name.ToString(), {}, [&context, entity](String& innerCode) {
+				    AddTypeVariables(innerCode, context, entity);
+			    });
+		}
+
+		auto classes = ast.MakeView<CIdentifier, CClassDecl>();
+		for (AST::Id entity : classes)
+		{
+			auto& identifier = classes.Get<CIdentifier>(entity);
+			DeclareStruct(
+			    code, identifier.name.ToString(), {}, [&context, entity](String& innerCode) {
+				    AddTypeVariables(innerCode, context, entity);
+			    });
+		}
+	}
+
+
+	void DeclareFunctions(String& code, Context& context)
+	{
+		auto& ast = context.project->GetAST();
+
+		auto functions = ast.MakeView<CIdentifier, CFunctionDecl>();
+		auto children  = ast.MakeView<CParent>();
+		auto classes   = ast.MakeView<CIdentifier, CClassDecl>();
+		for (AST::Id entity : functions)
+		{
+			StringView ownerName;
+
+			const CParent* parent = AST::GetCParent(ast, entity);
+			if (parent && ast.IsValid(parent->parent))
+			{
+				if (CIdentifier* parentIdent = classes.TryGet<CIdentifier>(parent->parent))
+				{
+					ownerName = parentIdent->name.ToString();
+				}
+			}
+
+			auto& identifier = functions.Get<CIdentifier>(entity);
+			DeclareFunction(code, identifier.name.ToString(), ownerName);
+		}
+	}
+
+
+	void DefineFunctions(String& code, Context& context)
+	{
+		auto& ast = context.project->GetAST();
+
+		auto functions = ast.MakeView<CIdentifier, CFunctionDecl>();
+		auto children  = ast.MakeView<CParent>();
+		auto classes   = ast.MakeView<CIdentifier, CClassDecl>();
+		for (AST::Id entity : functions)
+		{
+			StringView ownerName;
+
+			const CParent* parent = AST::GetCParent(ast, entity);
+			if (parent && ast.IsValid(parent->parent))
+			{
+				if (CIdentifier* parentIdent = classes.TryGet<CIdentifier>(parent->parent))
+				{
+					ownerName = parentIdent->name.ToString();
+				}
+			}
+
+			auto& identifier = functions.Get<CIdentifier>(entity);
+			DefineFunction(code, identifier.name.ToString(), ownerName);
 		}
 	}
 
@@ -125,45 +245,28 @@ namespace Rift::Compiler::Cpp
 		String code;
 
 		Strings::FormatTo(code, "#pragma once\n");
+		Spacing(code);
 
 		// Includes
 		AddInclude(code, "stdint.h");
 
 		Spacing(code);
 		Comment(code, "Forward declarations");
-		ForwardDeclareStruct(code, "MyStruct");
-		ForwardDeclareStruct(code, "ChildrenStruct");
-		ForwardDeclareStruct(code, "Another");
-
+		ForwardDeclareTypes(code, context);
 
 		Spacing(code);
 		Comment(code, "Declarations");
-		AddStruct(code, "MyStruct", {}, [](String& innerCode) {
-			AddVariable(innerCode, "char", "alive", {});
-		});
-
-		AddStruct(code, "ChildrenStruct", "MyStruct", [](String& innerCode) {
-			AddVariable(innerCode, "char", "done", {});
-		});
-
-		AddStruct(code, "Another", {}, [](String& innerCode) {
-			AddVariable(innerCode, "ChildrenStruct", "data", {});
-		});
-
+		DeclareTypes(code, context);
 
 		Spacing(code);
 		Comment(code, "Function Declarations");
-		DeclareFunction(code, "Move", "MyStruct");
-		DeclareFunction(code, "MoveAll", {});
-
+		DeclareFunctions(code, context);
 
 		Spacing(code);
 		Comment(code, "Function Definitions");
-		DefineFunction(code, "Move", "MyStruct");
-		DefineFunction(code, "MoveAll", {});
+		DefineFunctions(code, context);
 
-
-		Path headerFile = includePath / "code.h";
+		const Path headerFile = includePath / "code.h";
 		if (!Files::SaveStringFile(headerFile, code))
 		{
 			context.AddError(Strings::Format(

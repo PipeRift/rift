@@ -64,7 +64,7 @@ namespace Rift::AST
 		children.Each([&ast, node](Id child) {
 			if (CParent* parentComp = GetCParent(ast, child))
 			{
-				if (EnsureMsg(!IsValid(parentComp->parent),
+				if (EnsureMsg(IsNone(parentComp->parent),
 				        "A node trying to be linked already has a parent. Consider using "
 				        "TransferLinks()"))
 				{

@@ -47,7 +47,7 @@ namespace Rift
 		}
 		UI::End();
 
-		if (IsValid(pendingDelete))
+		if (!IsNone(pendingDelete))
 		{
 			AST::RemoveDeep(*ast, pendingDelete);
 			pendingDelete = AST::NoId;

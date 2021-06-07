@@ -46,7 +46,7 @@ namespace Rift::AST
 }    // namespace Rift::AST
 
 
-constexpr bool IsValid(Rift::AST::Id id)
+constexpr bool IsNone(Rift::AST::Id id)
 {
-	return id != Rift::AST::NoId;
+	return id == Rift::AST::NoId;
 }
