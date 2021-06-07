@@ -14,6 +14,8 @@ namespace Rift::Compiler
 	{
 		STRUCT(Config, Struct)
 
+		String buildMode{"Release"};
+
 		Path buildPath;
 		Path intermediatesPath;
 		Path binariesPath;

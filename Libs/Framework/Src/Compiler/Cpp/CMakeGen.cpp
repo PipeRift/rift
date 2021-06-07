@@ -1,7 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
 #include "Assets/ProjectAsset.h"
-#include "Compiler/Cpp/CMakeGenerator.h"
+#include "Compiler/Cpp/CMakeGen.h"
 #include "Compiler/Cpp/CppBackend.h"
 
 #include <Files/Files.h>
@@ -64,7 +64,7 @@ namespace Rift::Compiler::Cpp
 		    fmt::arg("ModuleName", name));
 	}
 
-	void GenerateCMake(Context& context)
+	void GenerateCMake(Context& context, const Path& generatePath)
 	{
 		ModuleType type = ModuleType::Executable;
 
@@ -79,6 +79,6 @@ namespace Rift::Compiler::Cpp
 			AddLibrary(code, context, type, context.project->GetName().ToString(), "14");
 		}
 
-		Files::SaveStringFile(context.config.intermediatesPath / "CMakelists.txt", code);
+		Files::SaveStringFile(generatePath / "CMakelists.txt", code);
 	}
 }    // namespace Rift::Compiler::Cpp

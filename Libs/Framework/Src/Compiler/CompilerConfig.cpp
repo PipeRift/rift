@@ -11,7 +11,7 @@ namespace Rift::Compiler
 		{
 			buildPath         = rootProject->GetPath() / "Build";
 			intermediatesPath = buildPath / "Intermediates";
-			binariesPath      = buildPath / "Binaries";
+			binariesPath      = buildPath / buildMode;
 		}
 	}
 }    // namespace Rift::Compiler

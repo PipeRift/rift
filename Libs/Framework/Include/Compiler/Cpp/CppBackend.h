@@ -12,7 +12,5 @@ namespace Rift::Compiler::Cpp
 		STRUCT(Context, Rift::Compiler::Context)
 	};
 
-
-	void GenerateCode(const Context& config);
 	void Build(TPtr<Project> project, const Config& config);
 }    // namespace Rift::Compiler::Cpp
