@@ -81,7 +81,7 @@ namespace Rift::AST
 		template <typename... Comp>
 		decltype(auto) Get(const Id node) const
 		{
-			return view.get<Comp...>(node);
+			return view.template get<Comp...>(node);
 		}
 
 		template <typename Comp>
@@ -89,7 +89,7 @@ namespace Rift::AST
 		{
 			if (Has(node))
 			{
-				return &view.get<Comp>(node);
+				return &view.template get<Comp>(node);
 			}
 			return nullptr;
 		}
@@ -99,7 +99,7 @@ namespace Rift::AST
 		{
 			if (Has(node))
 			{
-				return &view.get<Comp>(node);
+				return &view.template get<Comp>(node);
 			}
 			return nullptr;
 		}
