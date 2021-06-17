@@ -83,7 +83,7 @@ namespace Rift::Compiler::Cpp
 		}
 		else
 		{
-			Strings::FormatTo(code, "void {}({}& self);\n", name, owner);
+			Strings::FormatTo(code, "void {}_{}({}& self);\n", owner, name, owner);
 		}
 	}
 
@@ -108,11 +108,11 @@ namespace Rift::Compiler::Cpp
 		else
 		{
 			Strings::FormatTo(code,
-			    "inline void {}({}& self)\n"
+			    "inline void {}_{}({}& self)\n"
 			    "{{\n"
 			    "{}"
 			    "}};\n",
-			    name, owner, innerCode);
+			    owner, name, owner, innerCode);
 		}
 	}
 

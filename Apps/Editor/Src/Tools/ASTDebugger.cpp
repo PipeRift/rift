@@ -24,6 +24,7 @@ namespace Rift
 		UI::Begin("Abstract Syntax Tree", &open);
 		{
 			auto rootView = ast.MakeView<CChildren>(AST::TExclude<CParent>{});
+			auto orphanView = ast.MakeView<CIdentifier>(AST::TExclude<CParent, CChildren>{});
 			// auto identifierView = ast.MakeView<CIdentifier>();
 
 			for (auto root : rootView)
@@ -31,9 +32,10 @@ namespace Rift
 				DrawEntity(ast, root);
 			}
 
-			ast.EachOrphan([&ast](AST::Id ent) {
-				DrawEntity(ast, ent);
-			});
+			for (auto orphan : orphanView)
+			{
+				DrawEntity(ast, orphan);
+			}
 			UI::Separator();
 		}
 		UI::End();

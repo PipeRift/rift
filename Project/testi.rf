@@ -2,7 +2,7 @@
     "asset_type": "TypeAsset",
     "type": "Class",
     "count": 2,
-    "root": 0,
+    "roots": [0],
     "components": {
         "CChildren": {
             "0": {

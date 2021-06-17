@@ -22,8 +22,14 @@ namespace Rift
 		    , ast(ast)
 		{}
 
+		void SerializeRoots(TArray<AST::Id>& roots);
 
-		void SerializeRoot(AST::Id& root);
+		void SerializeRoot(AST::Id& root)
+		{
+			TArray<AST::Id> roots{root};
+			SerializeRoots(roots);
+			root = roots.IsEmpty() ? AST::NoId : roots[0];
+		}
 
 		const TArray<AST::Id>& GetASTIds() const
 		{
@@ -47,7 +53,13 @@ namespace Rift
 		    , ast(ast)
 		{}
 
-		void SerializeRoot(const AST::Id& root);
+		void SerializeRoots(const TArray<AST::Id>& roots);
+
+		void SerializeRoot(const AST::Id& root)
+		{
+			TArray<AST::Id> roots{root};
+			SerializeRoots(roots);
+		}
 
 		const TMap<AST::Id, u32>& GetASTIdToIndexes() const
 		{
@@ -55,6 +67,6 @@ namespace Rift
 		}
 
 	private:
-		void RetrieveHierarchy(AST::Id root, TArray<AST::Id>& children);
+		void RetrieveHierarchy(const TArray<AST::Id>& roots, TArray<AST::Id>& children);
 	};
 }    // namespace Rift

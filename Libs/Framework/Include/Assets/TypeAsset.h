@@ -23,7 +23,7 @@ namespace Rift
 		};
 
 		Type type = Type::None;
-		AST::Id declaration;
+		AST::Id declaration = AST::NoId;
 
 
 		// TODO: Eventually remove this or provide the type with access to the project

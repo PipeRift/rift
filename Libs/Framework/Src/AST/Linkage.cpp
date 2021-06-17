@@ -190,7 +190,7 @@ namespace Rift::AST
 		return parent ? &parent->children : nullptr;
 	}
 
-	void GetLinked(Tree& ast, TArrayView<Id> nodes, TArray<Id>& outLinkedNodes)
+	void GetLinked(Tree& ast, TArrayView<const Id> nodes, TArray<Id>& outLinkedNodes)
 	{
 		nodes.Each([&ast, &outLinkedNodes](Id node) {
 			if (CChildren* const parent = GetCChildren(ast, node))
@@ -200,7 +200,7 @@ namespace Rift::AST
 		});
 	}
 
-	void GetLinkedDeep(const Tree& ast, TArrayView<Id> roots, TArray<Id>& outLinkedNodes)
+	void GetLinkedDeep(const Tree& ast, TArrayView<const Id> roots, TArray<Id>& outLinkedNodes)
 	{
 		TArray<AST::Id> pendingInspection;
 		pendingInspection.Append(roots);

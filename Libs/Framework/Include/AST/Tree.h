@@ -24,7 +24,7 @@ namespace Rift::AST
 
 
 	public:
-		Tree() : registry{}, parentView(MakeView<CParent>()), childrenView(MakeView<CChildren>()) {}
+		Tree();
 
 #pragma region ECS API
 		Id Create();
@@ -198,6 +198,7 @@ namespace Rift::AST
 		}
 #pragma endregion ECS API
 
-		void RemoveChildFromCChildren(Id parent, Id child);
+	private:
+		void SetupNativeTypes();
 	};
 }    // namespace Rift::AST

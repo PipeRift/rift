@@ -70,13 +70,13 @@ namespace Rift
 		}
 	}
 
-	void ASTReadContext::SerializeRoot(AST::Id& root)
+	void ASTReadContext::SerializeRoots(TArray<AST::Id>& roots)
 	{
 		Next("count", nodeCount);
 		ASTIds.Resize(nodeCount);
 		ast.Create(ASTIds.begin(), ASTIds.end());
 
-		Next("root", root);
+		Next("roots", roots);
 		if (EnterNext("components"))
 		{
 			BeginObject();
@@ -92,10 +92,10 @@ namespace Rift
 		}
 	}
 
-	void ASTWriteContext::SerializeRoot(const AST::Id& root)
+	void ASTWriteContext::SerializeRoots(const TArray<AST::Id>& roots)
 	{
 		TArray<AST::Id> treeEntities;
-		RetrieveHierarchy(root, treeEntities);
+		RetrieveHierarchy(roots, treeEntities);
 		nodeCount = treeEntities.Size();
 		Next("count", nodeCount);
 
@@ -105,7 +105,7 @@ namespace Rift
 			ASTIdToIndexes.Insert(treeEntities[i], i);
 		}
 
-		Next("root", root);
+		Next("roots", roots);
 		if (EnterNext("components"))
 		{
 			BeginObject();
@@ -121,9 +121,9 @@ namespace Rift
 		}
 	}
 
-	void ASTWriteContext::RetrieveHierarchy(AST::Id root, TArray<AST::Id>& children)
+	void ASTWriteContext::RetrieveHierarchy(const TArray<AST::Id>& roots, TArray<AST::Id>& children)
 	{
-		children.Add(root);
-		AST::GetLinkedDeep(ast, root, children);
+		children.Append(roots);
+		AST::GetLinkedDeep(ast, roots, children);
 	}
 }    // namespace Rift

@@ -52,12 +52,6 @@ namespace Rift
 	void TypeAsset::InitializeDeclaration(AST::Tree& ast)
 	{
 		declaration = ast.Create();
-		// TODO: Use file name
-		ast.AddComponent<CIdentifier>(declaration, GetMetaPath());
-		ast.AddComponent<CChildren>(declaration);
-		auto& assetRef = ast.AddComponent<CTypeAssetRef>(declaration);
-		assetRef.asset = {GetInfo()};
-
 		switch (type)
 		{
 			case Type::Class:
@@ -70,5 +64,11 @@ namespace Rift
 				ast.AddComponent<CFunctionLibraryDecl>(declaration);
 				break;
 		}
+		// TODO: Use file name
+		ast.AddComponent<CIdentifier>(declaration, GetMetaPath());
+		ast.AddComponent<CChildren>(declaration);
+
+		auto& assetRef = ast.AddComponent<CTypeAssetRef>(declaration);
+		assetRef.asset = {GetInfo()};
 	}
 }    // namespace Rift
