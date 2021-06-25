@@ -1,11 +1,11 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editors/ProjectEditor.h"
-
 #include "Editor.h"
+#include "Editors/ProjectEditor.h"
 
 #include <Compiler/Compiler.h>
 #include <Files/FileDialog.h>
+#include <Framework/Paths.h>
 #include <Profiler.h>
 #include <RiftContext.h>
 #include <UI/UI.h>
@@ -247,5 +247,8 @@ namespace Rift
 			// Set default config path
 			Editor::Get().SetUIConfigFile({});
 		}
+
+		fileWatcher.AddExtension(Paths::codeExtension);
+		fileWatcher.AddPath(Paths::ToString(currentProject->GetPath()));
 	}
 }    // namespace Rift

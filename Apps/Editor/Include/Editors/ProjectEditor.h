@@ -9,6 +9,7 @@
 
 #include <Assets/AssetPtr.h>
 #include <Assets/TypeAsset.h>
+#include <Files/FileWatcher.h>
 #include <Project.h>
 #include <UI/UI.h>
 
@@ -32,6 +33,8 @@ namespace Rift
 		FileExplorerPanel fileExplorer{*this};
 		DockSpaceLayout layout;
 		Rift::ASTDebugger astDebugger;
+
+		FileWatcher fileWatcher;
 
 	protected:
 		bool bSkipFrameAfterMenu = false;

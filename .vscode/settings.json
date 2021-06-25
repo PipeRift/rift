@@ -152,7 +152,9 @@
         "polynomials": "cpp",
         "sparseextra": "cpp",
         "specialfunctions": "cpp",
-        "splines": "cpp"
+        "splines": "cpp",
+        "typeindex": "cpp",
+        "qtalignedmalloc": "cpp"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "banditTestExplorer.testsuites": [

@@ -11,6 +11,7 @@ namespace Rift
 {
 	int Editor::Run()
 	{
+		FileWatcher::StartAsync();
 		InitializeContext<RiftContext>();
 
 		// Setup window
