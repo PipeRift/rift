@@ -9,6 +9,8 @@
 
 namespace Rift
 {
+	void RootEditor::Tick() {}
+
 	void RootEditor::Draw()
 	{
 		if (GetContext<RiftContext>()->HasProject())

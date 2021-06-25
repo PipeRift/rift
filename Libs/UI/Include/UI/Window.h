@@ -12,9 +12,7 @@ struct GLFWwindow;
 
 namespace Rift::UI
 {
-	using ErrorFunc = void (*)(int, const char*);
-
-	bool Init(ErrorFunc onError);
+	bool Init();
 	void Shutdown();
 
 	void PreFrame();

@@ -55,20 +55,20 @@ namespace Rift
 		switch (type)
 		{
 			case Type::Class:
-				ast.AddComponent<CClassDecl>(declaration);
+				ast.Add<CClassDecl>(declaration);
 				break;
 			case Type::Struct:
-				ast.AddComponent<CStructDecl>(declaration);
+				ast.Add<CStructDecl>(declaration);
 				break;
 			case Type::FunctionLibrary:
-				ast.AddComponent<CFunctionLibraryDecl>(declaration);
+				ast.Add<CFunctionLibraryDecl>(declaration);
 				break;
 		}
 		// TODO: Use file name
-		ast.AddComponent<CIdentifier>(declaration, GetMetaPath());
-		ast.AddComponent<CChildren>(declaration);
+		ast.Add<CIdentifier>(declaration, GetMetaPath());
+		ast.Add<CChildren>(declaration);
 
-		auto& assetRef = ast.AddComponent<CTypeAssetRef>(declaration);
+		auto& assetRef = ast.Add<CTypeAssetRef>(declaration);
 		assetRef.asset = {GetInfo()};
 	}
 }    // namespace Rift

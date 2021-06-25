@@ -23,11 +23,16 @@ namespace Rift::UI
 {
 	static GLFWwindow* window = nullptr;
 
+	void OnGl3WError(int error, const char* description)
+	{
+		Log::Error("Glfw Error {}: {}", error, description);
+	}
 
-	bool Init(ErrorFunc onError)
+
+	bool Init()
 	{
 		// Setup window
-		glfwSetErrorCallback(onError);
+		glfwSetErrorCallback(OnGl3WError);
 		if (!glfwInit())
 		{
 			return false;

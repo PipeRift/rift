@@ -19,6 +19,7 @@ namespace Rift
 
 
 	public:
+		void Tick();
 		void Draw();
 
 	private:

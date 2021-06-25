@@ -46,15 +46,15 @@ namespace Rift::AST
 		 * Adds Component to an entity (if the entity doesnt have it already)
 		 */
 		template <typename Component, typename... Args>
-		decltype(auto) AddComponent(Id node, Args&&... args)
+		Component& Add(Id node, Args&&... args)
 		{
 			return registry.emplace<Component>(node, Forward<Args>(args)...);
 		}
 
-		template <typename... Component>
-		void AddComponents(Id node)
+		template <typename... Components>
+		void Add(Id node) requires(sizeof...(Components) > 1)
 		{
-			(AddComponent<Component>(node), ...);
+			(Add<Components>(node), ...);
 		}
 
 		/**
@@ -70,78 +70,48 @@ namespace Rift::AST
 		 * Adds Component to an entity (if the entity already has it, it will be replaced)
 		 */
 		template <typename Component, typename... Args>
-		decltype(auto) EmplaceComponent(Id node, Args&&... args)
+		decltype(auto) Emplace(Id node, Args&&... args)
 		{
 			return registry.emplace_or_replace<Component>(node, Forward<Args>(args)...);
 		}
 
-		template <typename Component>
-		void RemoveComponent(const Id node)
-		{
-			RemoveComponents<Component>(node);
-		}
-
 		template <typename... Component>
-		void RemoveComponents(const Id node)
+		void Remove(const Id node)
 		{
 			registry.remove<Component...>(node);
 		}
 
-		void RemoveAllComponents(const Id node)
+		void RemoveAll(const Id node)
 		{
 			registry.remove_all(node);
 		}
 
 		template <typename... Component>
-		decltype(auto) GetComponents(const Id node) const
+		decltype(auto) Get(const Id node) const
 		{
 			return registry.get<Component...>(node);
 		}
 
 		template <typename... Component>
-		decltype(auto) GetComponents(const Id node)
+		decltype(auto) Get(const Id node)
 		{
 			return registry.get<Component...>(node);
 		}
 
 		template <typename... Component>
-		decltype(auto) GetComponentsPtr(const Id node) const
+		decltype(auto) TryGet(const Id node) const
 		{
 			return registry.try_get<Component...>(node);
 		}
 
 		template <typename... Component>
-		decltype(auto) GetComponentPtrs(const Id node)
+		decltype(auto) TryGet(const Id node)
 		{
 			return registry.try_get<Component...>(node);
-		}
-
-		template <typename Component>
-		auto GetComponent(const Id node) const
-		{
-			return GetComponents<Component>(node);
-		}
-
-		template <typename Component>
-		auto GetComponent(const Id node)
-		{
-			return GetComponents<Component>(node);
-		}
-
-		template <typename Component>
-		const auto* GetComponentPtr(const Id node) const
-		{
-			return GetComponentPtrs<Component>(node);
-		}
-
-		template <typename Component>
-		auto* GetComponentPtr(const Id node)
-		{
-			return GetComponentPtrs<Component>(node);
 		}
 
 		template <typename Component, typename... Args>
-		auto& GetOrAddComponent(const Id node, Args&&... args)
+		auto& GetOrAdd(const Id node, Args&&... args)
 		{
 			return registry.get_or_emplace<Component>(node, Forward<Args>(args)...);
 		}
@@ -168,6 +138,37 @@ namespace Rift::AST
 		bool IsValid(Id node) const
 		{
 			return registry.valid(node);
+		}
+
+
+		template <typename Component, typename... Args>
+		Component& SetUnique(Args&&... args)
+		{
+			return registry.set<Component>(std::forward<Args>(args)...);
+		}
+
+		template <typename Component>
+		const Component& GetUnique() const
+		{
+			return registry.ctx<const Component>();
+		}
+
+		template <typename Component>
+		Component& GetUnique()
+		{
+			return registry.ctx<Component>();
+		}
+
+		template <typename Component>
+		const Component* TryGetUnique() const
+		{
+			return registry.try_ctx<const Component>();
+		}
+
+		template <typename Component>
+		Component* TryGetUnique()
+		{
+			return registry.try_ctx<Component>();
 		}
 
 

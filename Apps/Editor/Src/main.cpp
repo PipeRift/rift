@@ -3,7 +3,7 @@
 #include "Editor.h"
 
 
-int RunCLI()
+int RunEditor()
 {
 	return Rift::Editor::Get().Run();
 }
@@ -13,11 +13,11 @@ int RunCLI()
 #	include <windows.h>
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
 {
-	return RunCLI();
+	return RunEditor();
 }
 #else
 int main(int, char**)
 {
-	return RunCLI();
+	return RunEditor();
 }
 #endif

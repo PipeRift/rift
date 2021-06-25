@@ -20,7 +20,7 @@ namespace Rift::AST
 			children->children.Remove(child);
 			if (children->children.IsEmpty())
 			{
-				ast.RemoveComponent<CChildren>(parent);
+				ast.Remove<CChildren>(parent);
 			}
 		}
 	}
@@ -29,32 +29,32 @@ namespace Rift::AST
 	Id CreateClass(Tree& ast, Name name)
 	{
 		Id id = ast.Create();
-		ast.AddComponent<CIdentifier>(id, name);
-		ast.AddComponents<CStructDecl, CChildren>(id);
+		ast.Add<CIdentifier>(id, name);
+		ast.Add<CStructDecl, CChildren>(id);
 		return id;
 	}
 
 	Id CreateStruct(Tree& ast, Name name)
 	{
 		Id id = ast.Create();
-		ast.AddComponent<CIdentifier>(id, name);
-		ast.AddComponents<CStructDecl, CChildren>(id);
+		ast.Add<CIdentifier>(id, name);
+		ast.Add<CStructDecl, CChildren>(id);
 		return id;
 	}
 
 	Id CreateVariable(Tree& ast, Name name)
 	{
 		Id id = ast.Create();
-		ast.AddComponent<CIdentifier>(id, name);
-		ast.AddComponents<CVariableDecl, CChildren>(id);
+		ast.Add<CIdentifier>(id, name);
+		ast.Add<CVariableDecl, CChildren>(id);
 		return id;
 	}
 
 	Id CreateFunction(Tree& ast, Name name)
 	{
 		Id id = ast.Create();
-		ast.AddComponent<CIdentifier>(id, name);
-		ast.AddComponents<CFunctionDecl, CChildren>(id);
+		ast.Add<CIdentifier>(id, name);
+		ast.Add<CFunctionDecl, CChildren>(id);
 		return id;
 	}
 
@@ -73,10 +73,10 @@ namespace Rift::AST
 			}
 			else
 			{
-				ast.AddComponent<CParent>(child).parent = node;
+				ast.Add<CParent>(child).parent = node;
 			}
 		});
-		ast.GetOrAddComponent<CChildren>(node).children.Append(children);
+		ast.GetOrAdd<CChildren>(node).children.Append(children);
 	}
 
 	void TransferLinks(Tree& ast, TArrayView<Id> children, Id destination)
@@ -106,7 +106,7 @@ namespace Rift::AST
 		if (!keepComponents)
 		{
 			children.Each([&ast](Id child) {
-				ast.RemoveComponent<CParent>(child);
+				ast.Remove<CParent>(child);
 			});
 		}
 
@@ -145,7 +145,7 @@ namespace Rift::AST
 					childrenComp->children.RemoveMany(children);
 					if (childrenComp->children.IsEmpty())
 					{
-						ast.RemoveComponent<CChildren>(parent);
+						ast.Remove<CChildren>(parent);
 					}
 				}
 			}
@@ -176,9 +176,9 @@ namespace Rift::AST
 				{
 					for (Id child : childrenComp->children)
 					{
-						ast.RemoveComponent<CParent>(child);
+						ast.Remove<CParent>(child);
 					}
-					ast.RemoveComponent<CChildren>(parent);
+					ast.Remove<CChildren>(parent);
 				}
 			});
 		}

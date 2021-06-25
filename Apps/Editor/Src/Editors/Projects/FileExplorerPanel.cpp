@@ -1,15 +1,16 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editors/Projects/FileExplorerPanel.h"
-
 #include "Editors/ProjectEditor.h"
+#include "Editors/Projects/FileExplorerPanel.h"
 #include "UI/Style.h"
 #include "UI/UI.h"
 
 #include <Files/FileDialog.h>
+#include <Framework/Paths.h>
 #include <GLFW/glfw3.h>
 #include <RiftContext.h>
 #include <imgui_internal.h>
+#include <Strings/FixedString.h>
 
 
 namespace Rift
@@ -107,11 +108,8 @@ namespace Rift
 
 			for (auto it = relative.begin(); it != relative.end(); ++it)
 			{
-				// TODO: move the file extensions to a config file or something
-				static StringView extension = ".rf";
-
 				const String name = Paths::ToString(*it);
-				if (Strings::EndsWith(name, extension))
+				if (Strings::EndsWith(name, Paths::codeExtension))
 				{
 					current->files.Add({name, asset});
 				}
@@ -214,7 +212,8 @@ namespace Rift
 
 	void FileExplorerPanel::CreateAsset(StringView title, TypeAsset::Type type, Path path)
 	{
-		const Path filename = Dialogs::SaveFile(title, path, {{"Rift file", "*.rf"}}, true);
+		const Path filename = Dialogs::SaveFile(
+		    title, path, {{"Rift file", Strings::Format("*.{}", Paths::codeExtension)}}, true);
 		TAssetPtr<TypeAsset> newAsset{filename};
 		if (newAsset.LoadOrCreate())
 		{

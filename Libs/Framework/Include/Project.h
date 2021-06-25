@@ -39,7 +39,7 @@ namespace Rift
 	{
 		CLASS(Project, Object)
 
-		static constexpr StringView projectFile{"Project.rf"};
+		static constexpr StringView projectFile{"Project.rift"};
 
 		PROP(Name, name);
 		Name name;

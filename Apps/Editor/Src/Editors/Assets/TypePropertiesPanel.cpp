@@ -166,7 +166,7 @@ namespace Rift
 
 	void TypePropertiesPanel::DrawVariable(AST::Tree& ast, AST::Id id)
 	{
-		CIdentifier* identifier = ast.GetComponentPtr<CIdentifier>(id);
+		CIdentifier* identifier = ast.TryGet<CIdentifier>(id);
 		if (!identifier)
 		{
 			return;
@@ -254,7 +254,7 @@ namespace Rift
 
 	void TypePropertiesPanel::DrawFunction(AST::Tree& ast, AST::Id id)
 	{
-		CIdentifier* identifier = ast.GetComponentPtr<CIdentifier>(id);
+		CIdentifier* identifier = ast.TryGet<CIdentifier>(id);
 		if (!identifier)
 		{
 			return;

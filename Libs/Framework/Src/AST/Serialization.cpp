@@ -36,7 +36,7 @@ namespace Rift
 					T comp;
 					ct.BeginObject();
 					ct.Serialize(comp);
-					ast.AddComponent<T>(node, Move(comp));
+					ast.Add<T>(node, Move(comp));
 					ct.Leave();
 				}
 			}

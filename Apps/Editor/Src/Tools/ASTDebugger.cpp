@@ -45,7 +45,7 @@ namespace Rift
 	{
 		static String name;
 		name.clear();
-		if (CIdentifier* id = ast.GetComponentPtr<CIdentifier>(entity))
+		if (CIdentifier* id = ast.TryGet<CIdentifier>(entity))
 		{
 			Strings::FormatTo(name, "{}  (id:{})", id->name, entity);
 		}
@@ -54,7 +54,7 @@ namespace Rift
 			Strings::FormatTo(name, "(id:{})", entity);
 		}
 
-		const CChildren* children = ast.GetComponentPtr<CChildren>(entity);
+		const CChildren* children = ast.TryGet<CChildren>(entity);
 		const bool hasChildren    = children && !children->children.IsEmpty();
 		if (UI::TreeNodeEx(name.c_str(), hasChildren ? 0 : ImGuiTreeNodeFlags_Leaf))
 		{

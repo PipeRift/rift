@@ -206,5 +206,11 @@
             },
             "parallelProcessLimit": 10
         }
-    ]
+    ],
+    "favorites.resources": [
+        "Apps\\Editor",
+        "Libs\\Framework",
+        "Libs\\UI"
+    ],
+    "favorites.sortOrder": "ASC"
 }

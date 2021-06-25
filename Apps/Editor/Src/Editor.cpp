@@ -14,7 +14,7 @@ namespace Rift
 		InitializeContext<RiftContext>();
 
 		// Setup window
-		if (!Rift::UI::Init(Editor::OnGl3WError))
+		if (!Rift::UI::Init())
 		{
 			return 1;
 		}
@@ -24,7 +24,8 @@ namespace Rift
 			frameTime.Tick();
 
 			UI::PreFrame();
-			Tick(frameTime.GetDeltaTime());
+			Tick();
+			Draw();
 			UI::Render();
 
 			frameTime.PostTick();
@@ -56,10 +57,16 @@ namespace Rift
 		}
 	}
 
-	void Editor::Tick(float /*deltaTime*/)
+	void Editor::Tick()
 	{
 		ZoneScopedN("Tick");
 		UpdateConfig();
+
+		rootEditor.Tick();
+	}
+	void Editor::Draw()
+	{
+		ZoneScopedN("Draw");
 
 		rootEditor.Draw();
 	}
@@ -85,10 +92,5 @@ namespace Rift
 			}
 			configFileChanged = false;
 		}
-	}
-
-	void Editor::OnGl3WError(int error, const char* description)
-	{
-		Log::Error("Glfw Error {}: {}", error, description);
 	}
 }    // namespace Rift

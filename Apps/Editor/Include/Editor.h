@@ -5,6 +5,7 @@
 
 #include <Misc/Time.h>
 
+
 namespace Rift
 {
 	class Editor
@@ -40,10 +41,9 @@ namespace Rift
 		}
 
 	protected:
-		void Tick(float deltaTime);
+		void Tick();
+		void Draw();
 
 		void UpdateConfig();
-
-		static void OnGl3WError(int error, const char* description);
 	};
 }    // namespace Rift
