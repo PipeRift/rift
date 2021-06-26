@@ -17,6 +17,7 @@ namespace Rift
 		CLASS(RiftContext, Context)
 
 	private:
+		AST::Tree ast;
 		TOwnPtr<Project> rootProject;
 		// TArray<TOwnPtr<Project>> subProjects;
 

@@ -1,6 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Editor.h"
+#include "Systems/EditorSystem.h"
 
 #include <Profiler.h>
 #include <RiftContext.h>
@@ -25,8 +26,8 @@ namespace Rift
 			frameTime.Tick();
 
 			UI::PreFrame();
-			Tick();
-			Draw();
+			UpdateConfig();
+			EditorSystem::Draw(editorData);
 			UI::Render();
 
 			frameTime.PostTick();
@@ -56,20 +57,6 @@ namespace Rift
 			configFile                 = Paths::ToString(path);
 			ImGui::GetIO().IniFilename = configFile.c_str();
 		}
-	}
-
-	void Editor::Tick()
-	{
-		ZoneScopedN("Tick");
-		UpdateConfig();
-
-		rootEditor.Tick();
-	}
-	void Editor::Draw()
-	{
-		ZoneScopedN("Draw");
-
-		rootEditor.Draw();
 	}
 
 	void Editor::UpdateConfig()

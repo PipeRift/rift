@@ -1,63 +1,66 @@
-// Copyright 2015-2021 Piperift - All rights reserved
+// Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Editors/RootEditor.h"
+#include "EditorData.h"
+#include "Files/FileDialog.h"
+#include "Systems/EditorSystem.h"
 
-#include <Files/FileDialog.h>
 #include <RiftContext.h>
-#include <UI/UI.h>
 
 
-namespace Rift
+namespace Rift::EditorSystem
 {
-	void RootEditor::Tick() {}
+	void DrawMenuBar(EditorData& editorData);
+	void DrawProjectPickerPopup();
 
-	void RootEditor::Draw()
+
+	void Draw(EditorData& editorData)
 	{
+		ZoneScopedN("EditorSystem::Draw");
+
 		if (GetContext<RiftContext>()->HasProject())
 		{
-			projectEditor->Draw();
+			editorData.projectEditor->Draw();
 		}
 		else
 		{
 			UI::OpenPopup("Project Picker");
 		}
 
-		DrawMenuBar();
+		DrawMenuBar(editorData);
 		DrawProjectPickerPopup();
 
-		memoryDebugger.Draw();
+		editorData.memoryDebugger.Draw();
 
 #if BUILD_DEBUG
-		if (showDemo)
+		if (editorData.showDemo)
 		{
-			UI::ShowDemoWindow(&showDemo);
+			UI::ShowDemoWindow(&editorData.showDemo);
 		}
 #endif
 	}
 
-	void RootEditor::DrawMenuBar()
+	void DrawMenuBar(EditorData& editorData)
 	{
 		if (UI::BeginMainMenuBar())
 		{
 			if (UI::BeginMenu("Views"))
 			{
-				UI::MenuItem("Memory", nullptr, &memoryDebugger.open);
+				UI::MenuItem("Memory", nullptr, &editorData.memoryDebugger.open);
 				UI::EndMenu();
 			}
 
 #if BUILD_DEBUG
-			UI::MenuItem("Demo", nullptr, &showDemo);
+			UI::MenuItem("Demo", nullptr, &editorData.showDemo);
 #endif
-
 			UI::EndMainMenuBar();
 		}
 	}
 
-	void RootEditor::DrawProjectPickerPopup()
+	void DrawProjectPickerPopup()
 	{
 		// Center modal when appearing
 		UI::SetNextWindowPos(
-		    UI::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		    UI::GetMainViewport()->GetCenter(), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
 		if (UI::BeginPopupModal("Project Picker", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
@@ -97,4 +100,4 @@ namespace Rift
 			UI::EndPopup();
 		}
 	}
-}    // namespace Rift
+}    // namespace Rift::EditorSystem

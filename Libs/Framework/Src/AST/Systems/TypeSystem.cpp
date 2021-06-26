@@ -1,5 +1,5 @@
 
-#include "Systems/TypeSystem.h"
+#include "AST/Systems/TypeSystem.h"
 
 namespace Rift
 {

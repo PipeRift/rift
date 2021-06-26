@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "Editors/RootEditor.h"
+#include "EditorData.h"
 
 #include <Misc/Time.h>
 
@@ -12,7 +12,7 @@ namespace Rift
 	{
 		FrameTime frameTime;
 
-		RootEditor rootEditor;
+		EditorData editorData;
 
 		bool configFileChanged = false;
 		String configFile;
@@ -35,15 +35,7 @@ namespace Rift
 			return instance;
 		}
 
-		RootEditor& GetRootEditor()
-		{
-			return rootEditor;
-		}
-
 	protected:
-		void Tick();
-		void Draw();
-
 		void UpdateConfig();
 	};
 }    // namespace Rift

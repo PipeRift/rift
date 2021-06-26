@@ -1,29 +1,25 @@
-// Copyright 2015-2021 Piperift - All rights reserved
+// Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "ProjectEditor.h"
+#include "Editors/ProjectEditor.h"
 #include "Tools/BigBestFitArenaDebugger.h"
+
+#include <Memory/OwnPtr.h>
+#include <Object/Struct.h>
 
 
 namespace Rift
 {
-	struct RootEditor
+	struct EditorData : public Struct
 	{
-	private:
+		STRUCT(EditorData, Struct)
+
 		TOwnPtr<ProjectEditor> projectEditor = Create<ProjectEditor>();
+
 		Rift::BigBestFitArenaDebugger memoryDebugger;
 
 #if BUILD_DEBUG
 		bool showDemo = false;
 #endif
-
-
-	public:
-		void Tick();
-		void Draw();
-
-	private:
-		void DrawMenuBar();
-		void DrawProjectPickerPopup();
 	};
 }    // namespace Rift
