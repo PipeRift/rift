@@ -21,12 +21,18 @@ namespace Rift
 			return 1;
 		}
 
+		// AssetSystem::Init();
+		// TypeSystem::Init();
+
 		while (!UI::WantsToClose())
 		{
 			frameTime.Tick();
 
 			UI::PreFrame();
 			UpdateConfig();
+
+			// AssetSystem::Tick();
+			// TypeSystem::Tick();
 			EditorSystem::Draw(editorData);
 			UI::Render();
 

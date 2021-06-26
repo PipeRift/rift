@@ -3,8 +3,5 @@
 
 namespace Rift
 {
-	void TypeSystem::Tick()
-	{
-		;
-	}
+	void TypeSystem::Tick() {}
 }    // namespace Rift

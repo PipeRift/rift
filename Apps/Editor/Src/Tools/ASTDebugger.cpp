@@ -2,11 +2,12 @@
 
 #include "Tools/ASTDebugger.h"
 
-#include <AST/Components/CChildren.h>
-#include <AST/Components/CIdentifier.h>
+#include <AST/Components/CChild.h>
 #include <AST/Components/CParent.h>
+#include <AST/Components/CIdentifier.h>
 #include <AST/Tree.h>
 #include <UI/UI.h>
+
 
 namespace Rift
 {
@@ -23,8 +24,8 @@ namespace Rift
 
 		UI::Begin("Abstract Syntax Tree", &open);
 		{
-			auto rootView = ast.MakeView<CChildren>(AST::TExclude<CParent>{});
-			auto orphanView = ast.MakeView<CIdentifier>(AST::TExclude<CParent, CChildren>{});
+			auto rootView   = ast.MakeView<CParent>(AST::TExclude<CChild>{});
+			auto orphanView = ast.MakeView<CIdentifier>(AST::TExclude<CChild, CParent>{});
 			// auto identifierView = ast.MakeView<CIdentifier>();
 
 			for (auto root : rootView)
@@ -54,7 +55,7 @@ namespace Rift
 			Strings::FormatTo(name, "(id:{})", entity);
 		}
 
-		const CChildren* children = ast.TryGet<CChildren>(entity);
+		const CParent* children = ast.TryGet<CParent>(entity);
 		const bool hasChildren    = children && !children->children.IsEmpty();
 		if (UI::TreeNodeEx(name.c_str(), hasChildren ? 0 : ImGuiTreeNodeFlags_Leaf))
 		{

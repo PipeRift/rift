@@ -1,15 +1,14 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "AST/Serialization.h"
-
-#include "AST/Components/CChildren.h"
+#include "AST/Components/CChild.h"
+#include "AST/Components/CParent.h"
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CIdentifier.h"
-#include "AST/Components/CParent.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CVariableDecl.h"
 #include "AST/Linkage.h"
+#include "AST/Serialization.h"
 
 #include <Reflection/TypeName.h>
 
@@ -81,8 +80,8 @@ namespace Rift
 		{
 			BeginObject();
 			// TODO: Use reflection for this
+			ReadPool<CChild>(*this, ast);
 			ReadPool<CParent>(*this, ast);
-			ReadPool<CChildren>(*this, ast);
 			ReadPool<CIdentifier>(*this, ast);
 			ReadPool<CStructDecl>(*this, ast);
 			ReadPool<CClassDecl>(*this, ast);
@@ -110,8 +109,8 @@ namespace Rift
 		{
 			BeginObject();
 			// TODO: Use reflection for this
+			WritePool<CChild>(*this, ast, treeEntities);
 			WritePool<CParent>(*this, ast, treeEntities);
-			WritePool<CChildren>(*this, ast, treeEntities);
 			WritePool<CIdentifier>(*this, ast, treeEntities);
 			WritePool<CStructDecl>(*this, ast, treeEntities);
 			WritePool<CClassDecl>(*this, ast, treeEntities);

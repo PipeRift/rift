@@ -1,8 +1,10 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "AST/Components/CChild.h"
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CIdentifier.h"
+#include "AST/Components/CParent.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CVariableDecl.h"
 #include "AST/Linkage.h"
@@ -140,9 +142,9 @@ namespace Rift::Compiler::Cpp
 		auto& ast      = context.project->GetAST();
 		auto variables = ast.MakeView<CIdentifier, CVariableDecl>();
 
-		if (const CChildren* children = AST::GetCChildren(ast, owner))
+		if (const CParent* parent = AST::GetCParent(ast, owner))
 		{
-			for (AST::Id entity : children->children)
+			for (AST::Id entity : parent->children)
 			{
 				if (variables.Has(entity))
 				{
@@ -184,13 +186,13 @@ namespace Rift::Compiler::Cpp
 		auto& ast = context.project->GetAST();
 
 		auto functions = ast.MakeView<CIdentifier, CFunctionDecl>();
-		auto children  = ast.MakeView<CParent>();
+		auto children  = ast.MakeView<CChild>();
 		auto classes   = ast.MakeView<CIdentifier, CClassDecl>();
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
 
-			const CParent* parent = AST::GetCParent(ast, entity);
+			const CChild* parent = AST::GetCChild(ast, entity);
 			if (parent && ast.IsValid(parent->parent))
 			{
 				if (CIdentifier* parentIdent = classes.TryGet<CIdentifier>(parent->parent))
@@ -210,13 +212,13 @@ namespace Rift::Compiler::Cpp
 		auto& ast = context.project->GetAST();
 
 		auto functions = ast.MakeView<CIdentifier, CFunctionDecl>();
-		auto children  = ast.MakeView<CParent>();
+		auto children  = ast.MakeView<CChild>();
 		auto classes   = ast.MakeView<CIdentifier, CClassDecl>();
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
 
-			const CParent* parent = AST::GetCParent(ast, entity);
+			const CChild* parent = AST::GetCChild(ast, entity);
 			if (parent && ast.IsValid(parent->parent))
 			{
 				if (CIdentifier* parentIdent = classes.TryGet<CIdentifier>(parent->parent))

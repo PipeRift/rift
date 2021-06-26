@@ -1,7 +1,9 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "AST/Components/CChild.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CNativeDecl.h"
+#include "AST/Components/CParent.h"
 #include "AST/Components/Tags/CType.h"
 #include "AST/Tree.h"
 #include "Compiler/Cpp/Components/CCppNativeName.h"
@@ -9,7 +11,7 @@
 
 namespace Rift::AST
 {
-	Tree::Tree() : registry{}, parentView(MakeView<CParent>()), childrenView(MakeView<CChildren>())
+	Tree::Tree() : registry{}, childView(MakeView<CChild>()), parentView(MakeView<CParent>())
 	{
 		SetupNativeTypes();
 	}

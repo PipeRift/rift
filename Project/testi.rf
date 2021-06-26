@@ -4,14 +4,14 @@
     "count": 2,
     "roots": [0],
     "components": {
-        "CChildren": {
+        "CParent": {
             "0": {
                 "children": [
                     1
                 ]
             }
         },
-        "CParent": {
+        "CChild": {
             "1": {
                 "parent": 0
             }

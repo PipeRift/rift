@@ -4,7 +4,7 @@
 #include "AST/Tree.h"
 #include "Project.h"
 
-#include <CoreMinimal.h>
+#include <CoreObject.h>
 #include <Memory/OwnPtr.h>
 
 
@@ -15,6 +15,5 @@ namespace Rift
 		STRUCT(CAssetsUnique, Struct)
 
 		TAssetPtr<ModuleAsset> rootModule;
-		// TArray<TOwnPtr<Project>> subProjects;
 	};
 }    // namespace Rift

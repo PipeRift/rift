@@ -2,17 +2,16 @@
 #pragma once
 
 #include <AST/Types.h>
-#include <Containers/Set.h>
 #include <Object/Struct.h>
 
 
 namespace Rift
 {
-	struct CChildren : public Struct
+	struct CChild : public Struct
 	{
-		STRUCT(CChildren, Struct)
+		STRUCT(CChild, Struct)
 
-		PROP(TArray<AST::Id>, children)
-		TArray<AST::Id> children;
+		PROP(AST::Id, parent)
+		AST::Id parent = AST::NoId;
 	};
 }    // namespace Rift

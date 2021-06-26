@@ -1,14 +1,19 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Components/CChildren.h"
-#include "AST/Components/CParent.h"
 #include "AST/Types.h"
 #include "AST/View.h"
 
 #include <Strings/Name.h>
 
 #include <entt/entt.hpp>
+
+
+namespace Rift
+{
+	struct CChild;
+	struct CParent;
+}    // namespace Rift
 
 
 namespace Rift::AST
@@ -19,8 +24,8 @@ namespace Rift::AST
 		entt::basic_registry<Id> registry;
 
 	public:
+		View<TExclude<>, CChild> childView;
 		View<TExclude<>, CParent> parentView;
-		View<TExclude<>, CChildren> childrenView;
 
 
 	public:

@@ -6,6 +6,13 @@
 #include <Containers/ArrayView.h>
 
 
+namespace Rift
+{
+	struct CParent;
+	struct CChild;
+}    // namespace Rift
+
+
 namespace Rift::AST
 {
 	Id CreateClass(Tree& ast, Name name);
@@ -36,15 +43,15 @@ namespace Rift::AST
 
 
 	/**
+	 * @returns the CChild of a valid node. If the node doesnt have this component, nullptr is
+	 * returned
+	 */
+	CChild* GetCChild(Tree& ast, Id node);
+	const CChild* GetCChild(const Tree& ast, Id node);
+	/**
 	 * @returns the CParent of a valid node. If the node doesnt have this component, nullptr is
 	 * returned
 	 */
 	CParent* GetCParent(Tree& ast, Id node);
 	const CParent* GetCParent(const Tree& ast, Id node);
-	/**
-	 * @returns the CChildren of a valid node. If the node doesnt have this component, nullptr is
-	 * returned
-	 */
-	CChildren* GetCChildren(Tree& ast, Id node);
-	const CChildren* GetCChildren(const Tree& ast, Id node);
 }    // namespace Rift::AST

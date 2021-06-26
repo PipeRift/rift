@@ -1,26 +1,25 @@
 // Copyright 2015-2020 Piperift - All rights reserved
-#include "AST/Linkage.h"
-
-#include "AST/Components/CChildren.h"
+#include "AST/Components/CChild.h"
+#include "AST/Components/CParent.h"
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CIdentifier.h"
-#include "AST/Components/CParent.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CVariableDecl.h"
+#include "AST/Linkage.h"
 #include "Misc/Checks.h"
 
 
 namespace Rift::AST
 {
-	void RemoveChildFromCChildren(Tree& ast, Id parent, Id child)
+	void RemoveChildFromCParent(Tree& ast, Id parent, Id child)
 	{
-		if (CChildren* children = GetCChildren(ast, parent))
+		if (CParent* cParent = GetCParent(ast, parent))
 		{
-			children->children.Remove(child);
-			if (children->children.IsEmpty())
+			cParent->children.Remove(child);
+			if (cParent->children.IsEmpty())
 			{
-				ast.Remove<CChildren>(parent);
+				ast.Remove<CParent>(parent);
 			}
 		}
 	}
@@ -30,7 +29,7 @@ namespace Rift::AST
 	{
 		Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);
-		ast.Add<CStructDecl, CChildren>(id);
+		ast.Add<CStructDecl, CParent>(id);
 		return id;
 	}
 
@@ -38,7 +37,7 @@ namespace Rift::AST
 	{
 		Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);
-		ast.Add<CStructDecl, CChildren>(id);
+		ast.Add<CStructDecl, CParent>(id);
 		return id;
 	}
 
@@ -46,7 +45,7 @@ namespace Rift::AST
 	{
 		Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);
-		ast.Add<CVariableDecl, CChildren>(id);
+		ast.Add<CVariableDecl, CParent>(id);
 		return id;
 	}
 
@@ -54,7 +53,7 @@ namespace Rift::AST
 	{
 		Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);
-		ast.Add<CFunctionDecl, CChildren>(id);
+		ast.Add<CFunctionDecl, CParent>(id);
 		return id;
 	}
 
@@ -62,21 +61,21 @@ namespace Rift::AST
 	void Link(Tree& ast, Id node, TArrayView<Id> children)
 	{
 		children.Each([&ast, node](Id child) {
-			if (CParent* parentComp = GetCParent(ast, child))
+			if (CChild* cChild = GetCChild(ast, child))
 			{
-				if (EnsureMsg(IsNone(parentComp->parent),
+				if (EnsureMsg(IsNone(cChild->parent),
 				        "A node trying to be linked already has a parent. Consider using "
 				        "TransferLinks()"))
 				{
-					parentComp->parent = node;
+					cChild->parent = node;
 				}
 			}
 			else
 			{
-				ast.Add<CParent>(child).parent = node;
+				ast.Add<CChild>(child).parent = node;
 			}
 		});
-		ast.GetOrAdd<CChildren>(node).children.Append(children);
+		ast.GetOrAdd<CParent>(node).children.Append(children);
 	}
 
 	void TransferLinks(Tree& ast, TArrayView<Id> children, Id destination)
@@ -95,18 +94,18 @@ namespace Rift::AST
 		parents.Reserve(children.Size());
 
 		children.Each([&ast, &parents](Id child) {
-			CParent* parentComp = GetCParent(ast, child);
-			if (parentComp)
+			CChild* cChild = GetCChild(ast, child);
+			if (cChild)
 			{
-				parents.Add(parentComp->parent);
-				parentComp->parent = AST::NoId;
+				parents.Add(cChild->parent);
+				cChild->parent = AST::NoId;
 			}
 		});
 
 		if (!keepComponents)
 		{
 			children.Each([&ast](Id child) {
-				ast.Remove<CParent>(child);
+				ast.Remove<CChild>(child);
 			});
 		}
 
@@ -124,9 +123,9 @@ namespace Rift::AST
 				}
 				lastParent = parent;
 
-				if (CChildren* childrenComp = GetCChildren(ast, parent))
+				if (CParent* cParent = GetCParent(ast, parent))
 				{
-					childrenComp->children.RemoveMany(children);
+					cParent->children.RemoveMany(children);
 				}
 			}
 		}
@@ -140,12 +139,12 @@ namespace Rift::AST
 				}
 				lastParent = parent;
 
-				if (CChildren* childrenComp = GetCChildren(ast, parent))
+				if (CParent* cParent = GetCParent(ast, parent))
 				{
-					childrenComp->children.RemoveMany(children);
-					if (childrenComp->children.IsEmpty())
+					cParent->children.RemoveMany(children);
+					if (cParent->children.IsEmpty())
 					{
-						ast.Remove<CChildren>(parent);
+						ast.Remove<CParent>(parent);
 					}
 				}
 			}
@@ -157,28 +156,28 @@ namespace Rift::AST
 		if (keepComponents)
 		{
 			parents.Each([&ast](Id parent) {
-				if (CChildren* childrenComp = GetCChildren(ast, parent))
+				if (CParent* cParent = GetCParent(ast, parent))
 				{
-					for (Id child : childrenComp->children)
+					for (Id child : cParent->children)
 					{
-						CParent* parentComp = GetCParent(ast, child);
-						Ensure(parentComp);
-						parentComp->parent = AST::NoId;
+						CChild* cChild = GetCChild(ast, child);
+						Ensure(cChild);
+						cChild->parent = AST::NoId;
 					}
-					childrenComp->children.Empty();
+					cParent->children.Empty();
 				}
 			});
 		}
 		else
 		{
 			parents.Each([&ast](Id parent) {
-				if (CChildren* childrenComp = GetCChildren(ast, parent))
+				if (CParent* cParent = GetCParent(ast, parent))
 				{
-					for (Id child : childrenComp->children)
+					for (Id child : cParent->children)
 					{
-						ast.Remove<CParent>(child);
+						ast.Remove<CChild>(child);
 					}
-					ast.Remove<CChildren>(parent);
+					ast.Remove<CParent>(parent);
 				}
 			});
 		}
@@ -186,14 +185,14 @@ namespace Rift::AST
 
 	TArray<Id>* GetLinked(Tree& ast, Id node)
 	{
-		CChildren* const parent = GetCChildren(ast, node);
+		CParent* const parent = GetCParent(ast, node);
 		return parent ? &parent->children : nullptr;
 	}
 
 	void GetLinked(Tree& ast, TArrayView<const Id> nodes, TArray<Id>& outLinkedNodes)
 	{
 		nodes.Each([&ast, &outLinkedNodes](Id node) {
-			if (CChildren* const parent = GetCChildren(ast, node))
+			if (CParent* const parent = GetCParent(ast, node))
 			{
 				outLinkedNodes.Append(parent->children);
 			}
@@ -209,7 +208,7 @@ namespace Rift::AST
 		{
 			for (AST::Id parent : pendingInspection)
 			{
-				if (const CChildren* childrenComp = GetCChildren(ast, parent))
+				if (const CParent* childrenComp = GetCParent(ast, parent))
 				{
 					currentLinked.Append(childrenComp->children);
 				}
@@ -238,6 +237,16 @@ namespace Rift::AST
 	}
 
 
+	CChild* GetCChild(Tree& ast, Id node)
+	{
+		return ast.childView.TryGet<CChild>(node);
+	}
+
+	const CChild* GetCChild(const Tree& ast, Id node)
+	{
+		return ast.childView.TryGet<CChild>(node);
+	}
+
 	CParent* GetCParent(Tree& ast, Id node)
 	{
 		return ast.parentView.TryGet<CParent>(node);
@@ -246,15 +255,5 @@ namespace Rift::AST
 	const CParent* GetCParent(const Tree& ast, Id node)
 	{
 		return ast.parentView.TryGet<CParent>(node);
-	}
-
-	CChildren* GetCChildren(Tree& ast, Id node)
-	{
-		return ast.childrenView.TryGet<CChildren>(node);
-	}
-
-	const CChildren* GetCChildren(const Tree& ast, Id node)
-	{
-		return ast.childrenView.TryGet<CChildren>(node);
 	}
 }    // namespace Rift::AST
