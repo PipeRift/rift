@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Project.h"
+#include "Module.h"
 
 #include <CoreObject.h>
 #include <Reflection/Reflection.h>
@@ -21,6 +21,6 @@ namespace Rift::Compiler
 		Path binariesPath;
 
 
-		void Init(TPtr<Project> rootProject);
+		void Init(TPtr<Module> rootProject);
 	};
 }    // namespace Rift::Compiler

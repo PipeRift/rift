@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Compiler/CompilerConfig.h"
-#include "Project.h"
+#include "Module.h"
 
 #include <CoreObject.h>
 #include <Profiler.h>
@@ -28,7 +28,8 @@ namespace Rift::Compiler
 		PROP(Config, config)
 		Config config;
 
-		TPtr<Project> project;
+		AST::Tree ast;
+		TPtr<Module> project;
 
 		PROP(TArray<CompileError>, errors)
 		TArray<CompileError> errors;

@@ -120,7 +120,7 @@ namespace Rift::Compiler::Cpp
 
 	void ForwardDeclareTypes(String& code, Context& context)
 	{
-		auto& ast = context.project->GetAST();
+		auto& ast = context.ast;
 
 		auto structs = ast.MakeView<CIdentifier, CStructDecl>();
 		for (AST::Id entity : structs)
@@ -139,7 +139,8 @@ namespace Rift::Compiler::Cpp
 
 	void AddTypeVariables(String& code, Context& context, AST::Id owner)
 	{
-		auto& ast      = context.project->GetAST();
+		auto& ast = context.ast;
+
 		auto variables = ast.MakeView<CIdentifier, CVariableDecl>();
 
 		if (const CParent* parent = AST::GetCParent(ast, owner))
@@ -157,7 +158,7 @@ namespace Rift::Compiler::Cpp
 
 	void DeclareTypes(String& code, Context& context)
 	{
-		auto& ast = context.project->GetAST();
+		auto& ast = context.ast;
 
 		auto structs = ast.MakeView<CIdentifier, CStructDecl>();
 		for (AST::Id entity : structs)
@@ -183,7 +184,7 @@ namespace Rift::Compiler::Cpp
 
 	void DeclareFunctions(String& code, Context& context)
 	{
-		auto& ast = context.project->GetAST();
+		auto& ast = context.ast;
 
 		auto functions = ast.MakeView<CIdentifier, CFunctionDecl>();
 		auto children  = ast.MakeView<CChild>();
@@ -209,7 +210,7 @@ namespace Rift::Compiler::Cpp
 
 	void DefineFunctions(String& code, Context& context)
 	{
-		auto& ast = context.project->GetAST();
+		auto& ast = context.ast;
 
 		auto functions = ast.MakeView<CIdentifier, CFunctionDecl>();
 		auto children  = ast.MakeView<CChild>();

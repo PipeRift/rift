@@ -41,7 +41,6 @@ namespace Rift::AST
 	void Remove(Tree& ast, TArrayView<Id> nodes);
 	void RemoveDeep(Tree& ast, TArrayView<Id> nodes);
 
-
 	/**
 	 * @returns the CChild of a valid node. If the node doesnt have this component, nullptr is
 	 * returned

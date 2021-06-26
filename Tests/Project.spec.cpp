@@ -3,7 +3,7 @@
 #include <Context.h>
 #include <Files/Files.h>
 #include <Memory/OwnPtr.h>
-#include <Project.h>
+#include <Module.h>
 #include <bandit/bandit.h>
 
 
@@ -35,7 +35,7 @@ go_bandit([]() {
 			Files::SaveStringFile(
 			    testProjectPath / "Project.rf", "{\"asset_type\": \"ModuleAsset\"}");
 
-			TOwnPtr<Project> project = Create<Project>();
+			TOwnPtr<Module> project = Create<Module>();
 			AssertThat(project.IsValid(), Equals(true));
 
 			project->Init(testProjectPath);

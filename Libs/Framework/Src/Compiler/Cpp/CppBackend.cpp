@@ -37,7 +37,7 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void Build(TPtr<Project> project, const Config& tmpConfig)
+	void Build(TPtr<Module> project, const Config& tmpConfig)
 	{
 		ZoneScopedC(0x459bd1);
 

@@ -22,11 +22,7 @@ namespace Rift
 	void TypePropertiesPanel::Draw(DockSpaceLayout& layout)
 	{
 		// TODO: Get AST from project or asset
-		auto* ast = RiftContext::GetAST();
-		if (!ast)
-		{
-			return;
-		}
+		auto& ast = RiftContext::AST();
 
 		AST::Id node = editor.GetNode();
 
@@ -35,21 +31,21 @@ namespace Rift
 		const String name = Strings::Format(TX("Properties##{}"), editor.GetWindowId());
 		if (UI::Begin(name.c_str()))
 		{
-			if (ast->HasAny<CClassDecl, CStructDecl>(node))    // IsStruct || IsClass
+			if (ast.HasAny<CClassDecl, CStructDecl>(node))    // IsStruct || IsClass
 			{
-				DrawVariables(*ast, node);
+				DrawVariables(ast, node);
 			}
 
-			if (ast->HasAny<CClassDecl>(node))    // IsClass || IsFunctionLibrary
+			if (ast.HasAny<CClassDecl>(node))    // IsClass || IsFunctionLibrary
 			{
-				DrawFunctions(*ast, node);
+				DrawFunctions(ast, node);
 			}
 		}
 		UI::End();
 
 		if (!IsNone(pendingDelete))
 		{
-			AST::RemoveDeep(*ast, pendingDelete);
+			AST::RemoveDeep(ast, pendingDelete);
 			pendingDelete = AST::NoId;
 		}
 	}

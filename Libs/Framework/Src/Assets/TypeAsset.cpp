@@ -38,12 +38,12 @@ namespace Rift
 		Check(project);
 		if (ct.IsReading())
 		{
-			ASTReadContext astCt{ct.GetRead(), project->GetAST()};
+			ASTReadContext astCt{ct.GetRead(), RiftContext::AST()};
 			astCt.SerializeRoot(declaration);
 		}
 		else
 		{
-			ASTWriteContext astCt{ct.GetWrite(), project->GetAST()};
+			ASTWriteContext astCt{ct.GetWrite(), RiftContext::AST()};
 			astCt.SerializeRoot(declaration);
 		}
 	}

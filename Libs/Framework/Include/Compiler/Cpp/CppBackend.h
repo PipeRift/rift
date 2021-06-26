@@ -12,5 +12,5 @@ namespace Rift::Compiler::Cpp
 		STRUCT(Context, Rift::Compiler::Context)
 	};
 
-	void Build(TPtr<Project> project, const Config& config);
+	void Build(TPtr<Module> project, const Config& config);
 }    // namespace Rift::Compiler::Cpp

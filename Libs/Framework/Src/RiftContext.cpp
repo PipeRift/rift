@@ -6,24 +6,25 @@
 
 namespace Rift
 {
-	TPtr<Project> RiftContext::OpenProject(Path path)
+	TPtr<Module> RiftContext::OpenProject(Path path)
 	{
 		if (path.empty() || (rootProject && rootProject->GetPath() == path))
 		{
 			return {};
 		}
 
-		rootProject = Create<Project>();
+		rootProject = Create<Module>();
 		rootProject->Init(path);
 		return rootProject.AsPtr();
 	}
 
 	void RiftContext::CloseProject()
 	{
+		ast.Reset();
 		rootProject.Delete();
 	}
 
-	TPtr<Project> RiftContext::GetAssetProject(TAssetPtr<TypeAsset> asset) const
+	TPtr<Module> RiftContext::GetAssetProject(TAssetPtr<TypeAsset> asset) const
 	{
 		return {};
 	}

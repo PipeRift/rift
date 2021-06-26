@@ -202,6 +202,17 @@ namespace Rift::AST
 		{
 			registry.orphans(cb);
 		}
+
+		template <typename... Components>
+		void Clear()
+		{
+			registry.clear<Components...>();
+		}
+
+		void Reset()
+		{
+			registry = {};
+		}
 #pragma endregion ECS API
 
 	private:

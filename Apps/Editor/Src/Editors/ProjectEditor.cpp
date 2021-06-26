@@ -74,7 +74,7 @@ namespace Rift
 	{
 		ZoneScoped;
 
-		TPtr<Project> project = RiftContext::GetProject();
+		TPtr<Module> project = RiftContext::GetProject();
 		if (project != currentProject)
 		{
 			OnProjectChanged(project);
@@ -109,7 +109,7 @@ namespace Rift
 			editor->Draw();
 		}
 
-		astDebugger.Draw(*RiftContext::GetAST());
+		astDebugger.Draw(RiftContext::AST());
 		UI::PopID();
 	}
 
@@ -232,7 +232,7 @@ namespace Rift
 	}
 
 
-	void ProjectEditor::OnProjectChanged(TPtr<Project> newProject)
+	void ProjectEditor::OnProjectChanged(TPtr<Module> newProject)
 	{
 		currentProject = newProject;
 		TypeAssetEditors.Empty();

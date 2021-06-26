@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Project.h"
+#include "Module.h"
 
 #include <Context.h>
 
@@ -18,12 +18,12 @@ namespace Rift
 
 	private:
 		AST::Tree ast;
-		TOwnPtr<Project> rootProject;
+		TOwnPtr<Module> rootProject;
 		// TArray<TOwnPtr<Project>> subProjects;
 
 
 	public:
-		TPtr<Project> OpenProject(Path path);
+		TPtr<Module> OpenProject(Path path);
 		void CloseProject();
 
 		bool HasProject() const
@@ -31,23 +31,31 @@ namespace Rift
 			return rootProject.IsValid();
 		}
 
-		TPtr<Project> GetRootProject() const
+		TPtr<Module> GetRootProject() const
 		{
 			return rootProject;
 		}
 
-		TPtr<Project> GetAssetProject(TAssetPtr<TypeAsset> asset) const;
+		TPtr<Module> GetAssetProject(TAssetPtr<TypeAsset> asset) const;
 
 		// Handy helper to obtain the root project
-		static TPtr<Project> GetProject()
+		static TPtr<Module> GetProject()
 		{
 			return GetContext<RiftContext>()->GetRootProject();
 		}
 
-		static AST::Tree* GetAST()
+		AST::Tree& GetAST()
 		{
-			const TPtr<Project> project = GetProject();
-			return project ? &project->GetAST() : nullptr;
+			return ast;
+		}
+		const AST::Tree& GetAST() const
+		{
+			return ast;
+		}
+
+		static AST::Tree& AST()
+		{
+			return GetContext<RiftContext>()->GetAST();
 		}
 	};
 }    // namespace Rift

@@ -5,7 +5,7 @@
 
 namespace Rift::Compiler
 {
-	void Config::Init(TPtr<Project> rootProject)
+	void Config::Init(TPtr<Module> rootProject)
 	{
 		if (rootProject.IsValid())
 		{

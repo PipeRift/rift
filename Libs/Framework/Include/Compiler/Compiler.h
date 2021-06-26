@@ -4,7 +4,7 @@
 
 #include "Compiler/CompilerContext.h"
 #include "Compiler/Cpp/CppBackend.h"
-#include "Project.h"
+#include "Module.h"
 
 #include <CoreObject.h>
 
@@ -18,7 +18,7 @@ namespace Rift::Compiler
 	};
 
 
-	void Build(TPtr<Project> project, const Config& config, EBackend backend)
+	void Build(TPtr<Module> project, const Config& config, EBackend backend)
 	{
 		if (!project)
 		{

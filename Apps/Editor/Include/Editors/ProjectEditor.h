@@ -10,7 +10,7 @@
 #include <Assets/AssetPtr.h>
 #include <Assets/TypeAsset.h>
 #include <Files/FileWatcher.h>
-#include <Project.h>
+#include <Module.h>
 #include <UI/UI.h>
 
 
@@ -26,7 +26,7 @@ namespace Rift
 
 		ImGuiID dockspaceID = 0;
 
-		TPtr<Project> currentProject;
+		TPtr<Module> currentProject;
 		TArray<TOwnPtr<TypeAssetEditor>> TypeAssetEditors;
 		TArray<TAssetPtr<TypeAsset>> pendingTypesToClose;
 
@@ -53,6 +53,6 @@ namespace Rift
 
 		void DrawMenuBar();
 
-		void OnProjectChanged(TPtr<Project> newProject);
+		void OnProjectChanged(TPtr<Module> newProject);
 	};
 }    // namespace Rift

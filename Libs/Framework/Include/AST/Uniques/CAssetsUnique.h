@@ -2,7 +2,7 @@
 #pragma once
 
 #include "AST/Tree.h"
-#include "Project.h"
+#include "Module.h"
 
 #include <CoreObject.h>
 #include <Memory/OwnPtr.h>
