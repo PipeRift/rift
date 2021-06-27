@@ -1,22 +1,14 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
-#include <CoreObject.h>
 
-
-namespace Rift
+namespace Rift::AST
 {
-	namespace AST
-	{
-		struct Tree;
-	}
+	struct Tree;
+}
 
-	class AssetSystem : public Object
-	{
-		CLASS(AssetSystem, Object)
-
-	public:
-		void Init(AST::Tree& ast);
-		void Tick(AST::Tree& ast);
-	};
-}    // namespace Rift
+namespace Rift::AssetSystem
+{
+	void Init(AST::Tree& ast);
+	void Run(AST::Tree& ast);
+}    // namespace Rift::AssetSystem

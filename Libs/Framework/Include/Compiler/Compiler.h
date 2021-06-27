@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "Compiler/CompilerContext.h"
-#include "Compiler/Cpp/CppBackend.h"
+#include "Compiler/CompilerConfig.h"
 #include "Module.h"
 
 #include <CoreObject.h>
@@ -18,23 +17,5 @@ namespace Rift::Compiler
 	};
 
 
-	void Build(TPtr<Module> project, const Config& config, EBackend backend)
-	{
-		if (!project)
-		{
-			return;
-		}
-
-		switch (backend)
-		{
-			case EBackend::Cpp:
-				Cpp::Build(project, config);
-				break;
-			case EBackend::LLVM:
-				Log::Error("LLVM backend is not yet supported.");
-				break;
-			default:
-				Log::Error("Unknown backend.");
-		}
-	}
+	void Build(TPtr<Module> project, const Config& config, EBackend backend);
 }    // namespace Rift::Compiler
