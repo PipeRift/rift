@@ -61,7 +61,14 @@ namespace Rift
 
 				if (view.Has(node))
 				{
-					ct.Next(StringView{key}, view.Get<T>(node));
+					if constexpr (std::is_empty_v<T>)
+					{
+						ct.Next(StringView{key}, T{});
+					}
+					else
+					{
+						ct.Next(StringView{key}, view.Get<T>(node));
+					}
 				}
 			}
 			ct.PopFlags();

@@ -31,9 +31,9 @@ REFLECT_NATIVE_TYPE(Rift::AST::Id);
 
 namespace entt
 {
-	template <>
-	struct entt_traits<Rift::AST::Id> : public entt_traits<Rift::u32>
-	{};
+	// template <>
+	// struct entt_traits<Rift::AST::Id> : public entt_traits<Rift::u32>
+	//{};
 }    // namespace entt
 
 

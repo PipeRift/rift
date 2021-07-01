@@ -17,6 +17,9 @@ namespace Rift
 		bool configFileChanged = false;
 		String configFile;
 
+	public:
+		AST::Tree ast;
+
 
 	public:
 		Editor() = default;

@@ -17,5 +17,5 @@ namespace Rift::Compiler
 	};
 
 
-	void Build(TPtr<Module> project, const Config& config, EBackend backend);
+	void Build(AST::Tree& tree, const Config& config, EBackend backend);
 }    // namespace Rift::Compiler

@@ -25,16 +25,14 @@ namespace Rift::Compiler
 	{
 		STRUCT(Context, Struct)
 
-		PROP(Config, config)
+		AST::Tree& ast;
 		Config config;
-
-		AST::Tree ast;
-		TPtr<Module> project;
-
-		PROP(TArray<CompileError>, errors)
 		TArray<CompileError> errors;
 
 
+		Context(AST::Tree& ast) : ast{ast} {}
+
+		// Errors
 		void AddError(StringView str);
 		bool HasErrors() const
 		{

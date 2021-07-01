@@ -32,5 +32,8 @@ namespace Rift
 
 		PROP(String, version)
 		String version;
+
+		PROP(TArray<Path>, dependencies)
+		TArray<Path> dependencies;
 	};
 }    // namespace Rift

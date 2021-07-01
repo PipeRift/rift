@@ -1,12 +1,13 @@
-// Copyright 2015-2020 Piperift - All rights reserved
+// Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
 #include "AST/Types.h"
 #include "AST/View.h"
+#include "AST/Entt/RegistryTraits.h"
 
 #include <Strings/Name.h>
 
-#include <entt/entt.hpp>
+#include <entt/entity/registry.hpp>
 
 
 namespace Rift
@@ -20,14 +21,15 @@ namespace Rift::AST
 {
 	struct Tree
 	{
+		using Registry = entt::basic_registry<Id>;
+		using Pool     = Registry::poly_storage;
+
 	private:
-		entt::basic_registry<Id> registry;
+		Registry registry;
+		Pool* childPool;
+		Pool* parentPool;
 
 	public:
-		View<TExclude<>, CChild> childView;
-		View<TExclude<>, CParent> parentView;
-
-
 	public:
 		Tree();
 
@@ -51,7 +53,7 @@ namespace Rift::AST
 		 * Adds Component to an entity (if the entity doesnt have it already)
 		 */
 		template <typename Component, typename... Args>
-		Component& Add(Id node, Args&&... args)
+		decltype(auto) Add(Id node, Args&&... args)
 		{
 			return registry.emplace<Component>(node, Forward<Args>(args)...);
 		}
@@ -213,9 +215,33 @@ namespace Rift::AST
 		{
 			registry = {};
 		}
+
+		Pool& GetParentPool()
+		{
+			return *parentPool;
+		}
+
+		Pool& GetChildPool()
+		{
+			return *childPool;
+		}
+
+		const Pool& GetParentPool() const
+		{
+			return *parentPool;
+		}
+
+		const Pool& GetChildPool() const
+		{
+			return *childPool;
+		}
 #pragma endregion ECS API
+
+		void CopyFrom(const Tree& other);
 
 	private:
 		void SetupNativeTypes();
+		void CachePools();
+
 	};
 }    // namespace Rift::AST

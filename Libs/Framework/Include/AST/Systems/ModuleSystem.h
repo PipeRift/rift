@@ -7,8 +7,11 @@ namespace Rift::AST
 	struct Tree;
 }
 
-namespace Rift::AssetSystem
+namespace Rift::ModuleSystem
 {
 	void Init(AST::Tree& ast);
 	void Run(AST::Tree& ast);
-}    // namespace Rift::AssetSystem
+
+	void CacheDependencies(AST::Tree& ast);
+	void LoadAllModules(AST::Tree& ast);
+}    // namespace Rift::ModuleSystem

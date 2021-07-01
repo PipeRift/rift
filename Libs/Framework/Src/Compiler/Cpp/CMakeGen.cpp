@@ -1,5 +1,6 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "AST/Utils/ModuleUtils.h"
 #include "Assets/ModuleAsset.h"
 #include "Compiler/Cpp/CMakeGen.h"
 #include "Compiler/Cpp/CppBackend.h"
@@ -68,15 +69,17 @@ namespace Rift::Compiler::Cpp
 	{
 		ModuleType type = ModuleType::Executable;
 
+		Name projectName = Modules::GetProjectName(context.ast);
+
 		String code;
-		SetProject(code, context, context.project->GetName().ToString(), "0.1");
+		SetProject(code, context, projectName.ToString(), "0.1");
 		if (type == ModuleType::Executable)
 		{
-			AddExecutable(code, context, context.project->GetName().ToString(), "14");
+			AddExecutable(code, context, projectName.ToString(), "14");
 		}
 		else
 		{
-			AddLibrary(code, context, type, context.project->GetName().ToString(), "14");
+			AddLibrary(code, context, type, projectName.ToString(), "14");
 		}
 
 		Files::SaveStringFile(generatePath / "CMakelists.txt", code);

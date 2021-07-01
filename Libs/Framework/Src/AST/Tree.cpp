@@ -11,9 +11,10 @@
 
 namespace Rift::AST
 {
-	Tree::Tree() : registry{}, childView(MakeView<CChild>()), parentView(MakeView<CParent>())
+	Tree::Tree() : registry{}
 	{
 		SetupNativeTypes();
+		CachePools();
 	}
 
 	Id Tree::Create()
@@ -91,5 +92,30 @@ namespace Rift::AST
 		Add<CNativeDecl, CType>(i64Type);
 		Add<CIdentifier>(i64Type, "i64");
 		Add<CCppNativeName>(i64Type, "std::int_64");
+	}
+
+	void Tree::CachePools()
+	{
+		registry.prepare<CChild>();
+		childPool = &registry.storage(entt::type_id<CChild>());
+
+		registry.prepare<CParent>();
+		parentPool = &registry.storage(entt::type_id<CParent>());
+	}
+
+	void Tree::CopyFrom(const Tree& other)
+	{
+		Reset();
+
+		// Copy entities
+		registry.assign(other.registry.data(), other.registry.data() + other.registry.size(),
+		    other.registry.destroyed());
+
+		// Copy components
+		other.registry.visit([&other, this](const auto info) {
+			other.registry.storage(info)->copy_to(registry);
+		});
+
+		CachePools();
 	}
 }    // namespace Rift::AST

@@ -2,6 +2,7 @@
 
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CIdentifier.h"
+#include "AST/Utils/ModuleUtils.h"
 #include "Compiler/Cpp/CMakeGen.h"
 #include "Compiler/Cpp/CodeGen.h"
 #include "Compiler/Cpp/CppBackend.h"
@@ -37,16 +38,23 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void Build(TPtr<Module> project, const Config& tmpConfig)
+	void BuildModule(AST::Tree& ast, TAssetPtr<ModuleAsset> module)
+	{
+		Log::Info("Building '{}'", Modules::GetModuleName(module));
+
+		Log::Info("Loading module files");
+		// project->LoadAllAssets();
+	}
+
+	void Build(Context& context, const Config& tmpConfig)
 	{
 		ZoneScopedC(0x459bd1);
 
-		Log::Info("Building project '{}'", project->GetName());
+		Log::Info("Building project '{}'", Modules::GetProjectName(context.ast));
 
-		Context context{};
-		context.project = project;
+		// context.project = project;
 		context.config  = tmpConfig;
-		context.config.Init(project);
+		// context.config.Init(project);
 
 		const Path& codePath = context.config.intermediatesPath / "Code";
 		Files::Delete(codePath, true, false);
@@ -55,7 +63,7 @@ namespace Rift::Compiler::Cpp
 		Files::CreateFolder(context.config.binariesPath, true);
 
 		Log::Info("Loading files");
-		project->LoadAllAssets();
+		// project->LoadAllAssets();
 
 		Log::Info("Generating Code: C++");
 		GenerateCode(context, codePath);

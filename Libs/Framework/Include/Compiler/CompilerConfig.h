@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Module.h"
+#include "AST/Tree.h"
 
 #include <CoreObject.h>
 #include <Reflection/Reflection.h>
@@ -12,7 +12,7 @@ namespace Rift::Compiler
 {
 	struct Config : public Struct
 	{
-		STRUCT(Config, Struct)
+		// STRUCT(Config, Struct)
 
 		String buildMode{"Release"};
 
@@ -21,6 +21,6 @@ namespace Rift::Compiler
 		Path binariesPath;
 
 
-		void Init(TPtr<Module> rootProject);
+		void Init(AST::Tree& ast);
 	};
 }    // namespace Rift::Compiler

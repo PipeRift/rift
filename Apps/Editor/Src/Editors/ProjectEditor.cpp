@@ -182,14 +182,12 @@ namespace Rift
 				if (UI::MenuItem("Build current"))
 				{
 					Rift::Compiler::Config config;
-					Rift::Compiler::Build(
-					    context->GetRootProject(), config, Rift::Compiler::EBackend::Cpp);
+					Rift::Compiler::Build(context->GetAST(), config, Rift::Compiler::EBackend::Cpp);
 				}
 				if (UI::MenuItem("Build all"))
 				{
 					Rift::Compiler::Config config;
-					Rift::Compiler::Build(
-					    context->GetRootProject(), config, Rift::Compiler::EBackend::Cpp);
+					Rift::Compiler::Build(context->GetAST(), config, Rift::Compiler::EBackend::Cpp);
 				}
 				UI::EndMenu();
 			}

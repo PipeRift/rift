@@ -8,8 +8,10 @@
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CVariableDecl.h"
 #include "AST/Linkage.h"
+#include "AST/Tree.h"
 #include "Compiler/Cpp/CodeGen.h"
 #include "Compiler/Cpp/CppBackend.h"
+#include "Compiler/CompilerContext.h"
 
 #include <Files/Files.h>
 #include <Strings/String.h>
@@ -118,30 +120,26 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void ForwardDeclareTypes(String& code, Context& context)
+	void ForwardDeclareTypes(String& code, const AST::Tree& ast)
 	{
-		auto& ast = context.ast;
-
-		auto structs = ast.MakeView<CIdentifier, CStructDecl>();
+		auto structs = ast.MakeView<const CIdentifier, const CStructDecl>();
 		for (AST::Id entity : structs)
 		{
-			auto& identifier = structs.Get<CIdentifier>(entity);
+			const auto& identifier = structs.Get<const CIdentifier>(entity);
 			ForwardDeclareStruct(code, identifier.name.ToString());
 		}
 
-		auto classes = ast.MakeView<CIdentifier, CClassDecl>();
+		auto classes = ast.MakeView<const CIdentifier, const CClassDecl>();
 		for (AST::Id entity : classes)
 		{
-			auto& identifier = classes.Get<CIdentifier>(entity);
+			const auto& identifier = classes.Get<const CIdentifier>(entity);
 			ForwardDeclareStruct(code, identifier.name.ToString());
 		}
 	}
 
-	void AddTypeVariables(String& code, Context& context, AST::Id owner)
+	void AddTypeVariables(String& code, const AST::Tree& ast, AST::Id owner)
 	{
-		auto& ast = context.ast;
-
-		auto variables = ast.MakeView<CIdentifier, CVariableDecl>();
+		auto variables = ast.MakeView<const CIdentifier, const CVariableDecl>();
 
 		if (const CParent* parent = AST::GetCParent(ast, owner))
 		{
@@ -149,46 +147,40 @@ namespace Rift::Compiler::Cpp
 			{
 				if (variables.Has(entity))
 				{
-					auto& identifier = variables.Get<CIdentifier>(entity);
+					auto& identifier = variables.Get<const CIdentifier>(entity);
 					AddVariable(code, "bool", identifier.name.ToString(), "false");
 				}
 			}
 		}
 	}
 
-	void DeclareTypes(String& code, Context& context)
+	void DeclareTypes(String& code, const AST::Tree& ast)
 	{
-		auto& ast = context.ast;
-
-		auto structs = ast.MakeView<CIdentifier, CStructDecl>();
+		auto structs = ast.MakeView<const CIdentifier, const CStructDecl>();
 		for (AST::Id entity : structs)
 		{
-			auto& identifier = structs.Get<CIdentifier>(entity);
-			DeclareStruct(
-			    code, identifier.name.ToString(), {}, [&context, entity](String& innerCode) {
-				    AddTypeVariables(innerCode, context, entity);
-			    });
+			auto& identifier = structs.Get<const CIdentifier>(entity);
+			DeclareStruct(code, identifier.name.ToString(), {}, [&ast, entity](String& innerCode) {
+				AddTypeVariables(innerCode, ast, entity);
+			});
 		}
 
-		auto classes = ast.MakeView<CIdentifier, CClassDecl>();
+		auto classes = ast.MakeView<const CIdentifier, const CClassDecl>();
 		for (AST::Id entity : classes)
 		{
-			auto& identifier = classes.Get<CIdentifier>(entity);
-			DeclareStruct(
-			    code, identifier.name.ToString(), {}, [&context, entity](String& innerCode) {
-				    AddTypeVariables(innerCode, context, entity);
-			    });
+			auto& identifier = classes.Get<const CIdentifier>(entity);
+			DeclareStruct(code, identifier.name.ToString(), {}, [&ast, entity](String& innerCode) {
+				AddTypeVariables(innerCode, ast, entity);
+			});
 		}
 	}
 
 
-	void DeclareFunctions(String& code, Context& context)
+	void DeclareFunctions(String& code, const AST::Tree& ast)
 	{
-		auto& ast = context.ast;
-
-		auto functions = ast.MakeView<CIdentifier, CFunctionDecl>();
-		auto children  = ast.MakeView<CChild>();
-		auto classes   = ast.MakeView<CIdentifier, CClassDecl>();
+		auto functions = ast.MakeView<const CIdentifier, const CFunctionDecl>();
+		auto children  = ast.MakeView<const CChild>();
+		auto classes   = ast.MakeView<const CIdentifier, const CClassDecl>();
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
@@ -196,25 +188,23 @@ namespace Rift::Compiler::Cpp
 			const CChild* parent = AST::GetCChild(ast, entity);
 			if (parent && ast.IsValid(parent->parent))
 			{
-				if (CIdentifier* parentIdent = classes.TryGet<CIdentifier>(parent->parent))
+				if (const CIdentifier* parentId = classes.TryGet<const CIdentifier>(parent->parent))
 				{
-					ownerName = parentIdent->name.ToString();
+					ownerName = parentId->name.ToString();
 				}
 			}
 
-			auto& identifier = functions.Get<CIdentifier>(entity);
+			const auto& identifier = functions.Get<const CIdentifier>(entity);
 			DeclareFunction(code, identifier.name.ToString(), ownerName);
 		}
 	}
 
 
-	void DefineFunctions(String& code, Context& context)
+	void DefineFunctions(String& code, const AST::Tree& ast)
 	{
-		auto& ast = context.ast;
-
-		auto functions = ast.MakeView<CIdentifier, CFunctionDecl>();
-		auto children  = ast.MakeView<CChild>();
-		auto classes   = ast.MakeView<CIdentifier, CClassDecl>();
+		auto functions = ast.MakeView<const CIdentifier, const CFunctionDecl>();
+		auto children  = ast.MakeView<const CChild>();
+		auto classes   = ast.MakeView<const CIdentifier, const CClassDecl>();
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
@@ -222,13 +212,13 @@ namespace Rift::Compiler::Cpp
 			const CChild* parent = AST::GetCChild(ast, entity);
 			if (parent && ast.IsValid(parent->parent))
 			{
-				if (CIdentifier* parentIdent = classes.TryGet<CIdentifier>(parent->parent))
+				if (const CIdentifier* parentId = classes.TryGet<const CIdentifier>(parent->parent))
 				{
-					ownerName = parentIdent->name.ToString();
+					ownerName = parentId->name.ToString();
 				}
 			}
 
-			auto& identifier = functions.Get<CIdentifier>(entity);
+			auto& identifier = functions.Get<const CIdentifier>(entity);
 			DefineFunction(code, identifier.name.ToString(), ownerName);
 		}
 	}
@@ -236,7 +226,8 @@ namespace Rift::Compiler::Cpp
 
 	void GenerateCode(Context& context, const Path& generatePath)
 	{
-		auto& config = context.config;
+		const auto& config = context.config;
+		const auto& ast    = context.ast;
 
 		const Path includePath = generatePath / "Include";
 		const Path sourcePath  = generatePath / "Src";
@@ -255,19 +246,19 @@ namespace Rift::Compiler::Cpp
 
 		Spacing(code);
 		Comment(code, "Forward declarations");
-		ForwardDeclareTypes(code, context);
+		ForwardDeclareTypes(code, ast);
 
 		Spacing(code);
 		Comment(code, "Declarations");
-		DeclareTypes(code, context);
+		DeclareTypes(code, ast);
 
 		Spacing(code);
 		Comment(code, "Function Declarations");
-		DeclareFunctions(code, context);
+		DeclareFunctions(code, ast);
 
 		Spacing(code);
 		Comment(code, "Function Definitions");
-		DefineFunctions(code, context);
+		DefineFunctions(code, ast);
 
 		const Path headerFile = includePath / "code.h";
 		if (!Files::SaveStringFile(headerFile, code))

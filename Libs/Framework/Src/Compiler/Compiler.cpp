@@ -1,6 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
-#include "AST/Systems/AssetSystem.h"
+#include "AST/Systems/ModuleSystem.h"
 #include "AST/Systems/TypeSystem.h"
+#include "AST/Uniques/CModulesUnique.h"
 #include "Compiler/Compiler.h"
 #include "Compiler/CompilerContext.h"
 #include "Compiler/Cpp/CppBackend.h"
@@ -11,35 +12,45 @@
 
 namespace Rift::Compiler
 {
-	void Build(TPtr<Module> project, const Config& config, EBackend backend)
+	void Build(AST::Tree& ast, const Config& config, EBackend backend)
 	{
-		if (!project)
+		Context context{ast};
+
+		// Early backend check
+		switch (backend)
 		{
+			case EBackend::Cpp:
+				break;
+			case EBackend::LLVM:
+				context.AddError("LLVM backend is not yet supported.");
+				return;
+			default:
+				context.AddError("Unknown backend.");
+				return;
+		}
+
+		ModuleSystem::Init(ast);
+		TypeSystem::Init(ast);
+		OptimizationSystem::Init(ast);
+		CompileTimeSystem::Init(ast);
+
+		ModuleSystem::Run(ast);
+		auto& modules = ast.GetUnique<CModulesUnique>();
+		if (modules.HasMainModule())
+		{
+			Log::Error("No existing module selected to build.");
 			return;
 		}
 
-		// TODO: Provide build independant ast
-
-		AssetSystem::Init(RiftContext::AST());
-		TypeSystem::Init(RiftContext::AST());
-		OptimizationSystem::Init(RiftContext::AST());
-		CompileTimeSystem::Init(RiftContext::AST());
-
-		AssetSystem::Run(RiftContext::AST());
-		TypeSystem::Run(RiftContext::AST());
-		OptimizationSystem::Run(RiftContext::AST());
-		CompileTimeSystem::Run(RiftContext::AST());
+		TypeSystem::Run(ast);
+		OptimizationSystem::Run(ast);
+		CompileTimeSystem::Run(ast);
 
 		switch (backend)
 		{
 			case EBackend::Cpp:
-				Cpp::Build(project, config);
+				Cpp::Build(context, config);
 				break;
-			case EBackend::LLVM:
-				Log::Error("LLVM backend is not yet supported.");
-				break;
-			default:
-				Log::Error("Unknown backend.");
 		}
 	}
 }    // namespace Rift::Compiler

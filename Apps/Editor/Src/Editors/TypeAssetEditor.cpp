@@ -61,7 +61,7 @@ namespace Rift
 			CreateDockspace(windowName.c_str());
 			layout.Tick(dockspaceID);
 
-			if (Util::IsStructDecl(RiftContext::AST(), GetNode()))
+			if (Declarations::IsStruct(RiftContext::AST(), GetNode()))
 			{
 				nodeGraph.Draw(layout);
 			}

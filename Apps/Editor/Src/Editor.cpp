@@ -21,7 +21,7 @@ namespace Rift
 			return 1;
 		}
 
-		// AssetSystem::Init();
+		// ModuleSystem::Init();
 		// TypeSystem::Init();
 
 		while (!UI::WantsToClose())
@@ -31,7 +31,7 @@ namespace Rift
 			UI::PreFrame();
 			UpdateConfig();
 
-			// AssetSystem::Tick();
+			// ModuleSystem::Tick();
 			// TypeSystem::Tick();
 			EditorSystem::Draw(editorData);
 			UI::Render();

@@ -3,13 +3,19 @@
 #pragma once
 
 #include "AST/Components/CClassDecl.h"
+#include "AST/Components/CStructDecl.h"
 #include "AST/Tree.h"
 
 
-namespace Rift::Util
+namespace Rift::Declarations
 {
-	bool IsStructDecl(const AST::Tree& ast, AST::Id node)
+	bool IsClass(const AST::Tree& ast, AST::Id node)
 	{
 		return ast.Has<CClassDecl>(node);
+	}
+
+	bool IsStruct(const AST::Tree& ast, AST::Id node)
+	{
+		return ast.Has<CStructDecl>(node);
 	}
 }    // namespace Rift::Util

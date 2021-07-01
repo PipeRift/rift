@@ -7,10 +7,5 @@
 
 namespace Rift::Compiler::Cpp
 {
-	struct Context : public Rift::Compiler::Context
-	{
-		STRUCT(Context, Rift::Compiler::Context)
-	};
-
-	void Build(TPtr<Module> project, const Config& config);
+	void Build(Context& ast, const Config& config);
 }    // namespace Rift::Compiler::Cpp
