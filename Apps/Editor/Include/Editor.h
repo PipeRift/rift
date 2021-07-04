@@ -17,7 +17,6 @@ namespace Rift
 		bool configFileChanged = false;
 		String configFile;
 
-	public:
 		AST::Tree ast;
 
 
@@ -37,6 +36,12 @@ namespace Rift
 			static Editor instance{};
 			return instance;
 		}
+
+		static AST::Tree& GetAST()
+		{
+			return Get().ast;
+		}
+
 
 	protected:
 		void UpdateConfig();

@@ -42,7 +42,7 @@ namespace Rift::Compiler
 			return;
 		}
 
-		TypeSystem::Run(ast);
+		TypeSystem::RunChecks(ast);
 		OptimizationSystem::Run(ast);
 		CompileTimeSystem::Run(ast);
 

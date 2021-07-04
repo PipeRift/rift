@@ -2,6 +2,7 @@
 
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CIdentifier.h"
+#include "AST/Components/CModule.h"
 #include "AST/Utils/ModuleUtils.h"
 #include "Compiler/Cpp/CMakeGen.h"
 #include "Compiler/Cpp/CodeGen.h"
@@ -38,10 +39,16 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void BuildModule(AST::Tree& ast, TAssetPtr<ModuleAsset> module)
+	void BuildModule(Context& context, AST::Id moduleId)
 	{
-		Log::Info("Building '{}'", Modules::GetModuleName(module));
+		CModule* module = context.ast.TryGet<CModule>(moduleId);
+		if (!module)
+		{
+			Log::Info("Cant find module");
+			return;
+		}
 
+		Log::Info("Building module '{}'", Modules::GetModuleName(*module));
 		Log::Info("Loading module files");
 		// project->LoadAllAssets();
 	}

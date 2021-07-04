@@ -17,7 +17,5 @@ namespace Rift
 
 
 		CType() {}
-		CType(CType&& other) = default;
-		CType& operator=(CType&& other) = default;
 	};
 }    // namespace Rift

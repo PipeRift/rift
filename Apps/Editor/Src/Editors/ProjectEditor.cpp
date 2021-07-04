@@ -109,7 +109,7 @@ namespace Rift
 			editor->Draw();
 		}
 
-		astDebugger.Draw(RiftContext::AST());
+		astDebugger.Draw(Editor::GetAST());
 		UI::PopID();
 	}
 
@@ -167,6 +167,7 @@ namespace Rift
 				}
 				if (UI::MenuItem("Close current"))
 				{
+					// Modules::CloseProject()
 					context->CloseProject();
 					bSkipFrameAfterMenu = true;
 				}
@@ -181,13 +182,17 @@ namespace Rift
 			{
 				if (UI::MenuItem("Build current"))
 				{
+					AST::Tree compileAST;
+					compileAST.CopyFrom(Editor::GetAST());
 					Rift::Compiler::Config config;
-					Rift::Compiler::Build(context->GetAST(), config, Rift::Compiler::EBackend::Cpp);
+					Rift::Compiler::Build(compileAST, config, Rift::Compiler::EBackend::Cpp);
 				}
 				if (UI::MenuItem("Build all"))
 				{
+					AST::Tree compileAST;
+					compileAST.CopyFrom(Editor::GetAST());
 					Rift::Compiler::Config config;
-					Rift::Compiler::Build(context->GetAST(), config, Rift::Compiler::EBackend::Cpp);
+					Rift::Compiler::Build(compileAST, config, Rift::Compiler::EBackend::Cpp);
 				}
 				UI::EndMenu();
 			}

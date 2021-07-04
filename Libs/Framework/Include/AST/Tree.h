@@ -29,9 +29,13 @@ namespace Rift::AST
 		Pool* childPool;
 		Pool* parentPool;
 
-	public:
+
 	public:
 		Tree();
+		Tree(const Tree& other) = delete;
+		Tree& operator=(const Tree& other) = delete;
+		Tree(Tree&& other);
+		Tree& operator=(Tree&& other);
 
 #pragma region ECS API
 		Id Create();
@@ -152,6 +156,16 @@ namespace Rift::AST
 		Component& SetUnique(Args&&... args)
 		{
 			return registry.set<Component>(std::forward<Args>(args)...);
+		}
+
+		template <typename Component, typename... Args>
+		Component& GetOrSetUnique(Args&&... args)
+		{
+			if (Component* existing = TryGetUnique<Component>())
+			{
+				return *existing;
+			}
+			return SetUnique<Component>(std::forward<Args>(args)...);
 		}
 
 		template <typename Component>

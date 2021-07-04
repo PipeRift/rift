@@ -10,5 +10,6 @@ namespace Rift::AST
 namespace Rift::TypeSystem
 {
 	void Init(AST::Tree& ast);
-	void Run(AST::Tree& ast);
+	void RunLoads(AST::Tree& ast);
+	void RunChecks(AST::Tree& ast);
 }    // namespace Rift::TypeSystem

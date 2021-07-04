@@ -10,9 +10,9 @@ namespace Rift::Compiler
 	void Config::Init(AST::Tree& ast)
 	{
 		auto* modules = ast.TryGetUnique<CModulesUnique>();
-		if (modules && !modules->main.IsNull())
+		if (modules && !modules->HasMainModule())
 		{
-			buildPath         = Modules::GetProjectPath(*modules) / "Build";
+			buildPath         = Modules::GetProjectPath(ast) / "Build";
 			intermediatesPath = buildPath / "Intermediates";
 			binariesPath      = buildPath / buildMode;
 		}

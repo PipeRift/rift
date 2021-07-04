@@ -17,6 +17,18 @@ namespace Rift::AST
 		CachePools();
 	}
 
+	Tree::Tree(Tree&& other)
+	{
+		registry = Move(other.registry);
+		CachePools();
+	}
+	Tree& Tree::operator=(Tree&& other)
+	{
+		registry = Move(other.registry);
+		CachePools();
+		return *this;
+	}
+
 	Id Tree::Create()
 	{
 		return registry.create();

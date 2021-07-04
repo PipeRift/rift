@@ -17,7 +17,6 @@ namespace Rift
 		CLASS(RiftContext, Context)
 
 	private:
-		AST::Tree ast;
 		TOwnPtr<Module> rootProject;
 		// TArray<TOwnPtr<Project>> subProjects;
 
@@ -42,20 +41,6 @@ namespace Rift
 		static TPtr<Module> GetProject()
 		{
 			return GetContext<RiftContext>()->GetRootProject();
-		}
-
-		AST::Tree& GetAST()
-		{
-			return ast;
-		}
-		const AST::Tree& GetAST() const
-		{
-			return ast;
-		}
-
-		static AST::Tree& AST()
-		{
-			return GetContext<RiftContext>()->GetAST();
 		}
 	};
 }    // namespace Rift

@@ -1,6 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include <Platform/Platform.h>
+
 #include <entt/entity/poly_storage.hpp>
 #include <entt/entity/registry.hpp>
 
@@ -14,7 +16,8 @@ struct PolyStorage : entt::type_list_cat_t<
     decltype(as_type_list(std::declval<entt::Storage<Entity>>())),
         entt::type_list<
             const void*(const Entity) const,
-            void(entt::basic_registry<Entity>&) const
+            void(entt::basic_registry<Entity>&) const,
+            void(entt::basic_registry<Entity>&, const Entity* entity, const void* components, Rift::sizet size)
         >
     >
 {
@@ -41,21 +44,50 @@ struct PolyStorage : entt::type_list_cat_t<
 		{
 			entt::poly_call<base + 1>(*this, other);
 		}
+
+		void insert(entt::basic_registry<Entity> &owner, const Entity* entities, const void* components, Rift::sizet size)
+		{
+			entt::poly_call<base + 2>(*this, owner, entities, components, size);
+		}
 	};
 
 	template <typename Type>
 	struct members
 	{
-		static const typename Type::value_type* get(const Type& self, const entity_type entity)
+		static const void* get(const Type& self, const entity_type entity)
 		{
-			return nullptr;    //&self.get(entity);
+			if constexpr(!std::is_empty_v<typename Type::value_type>)
+			{
+				return static_cast<const void*>(&self.get(entity));
+			}
+			return nullptr;
 		}
 
 		static void copy_to(const Type& self, entt::basic_registry<entity_type>& other)
 		{
-			const entt::basic_sparse_set<entity_type>& base = self;
-			// other.template insert<typename Type::value_type>(
-			//    base.rbegin(), base.rend(), self.rbegin());
+			other.prepare<typename Type::value_type>();
+			auto& otherPool = other.storage(entt::type_id<typename Type::value_type>());
+
+			if constexpr(!std::is_empty_v<typename Type::value_type>)
+			{
+				otherPool->insert(other, self.data(), *self.raw(), self.size());
+			}
+			else
+			{
+				otherPool->insert(other, self.data(), nullptr, self.size());
+			}
+		}
+
+		static void insert(Type& self, entt::basic_registry<entity_type> &owner, const Entity* entities, const void* components, Rift::sizet size)
+		{
+			if constexpr(!std::is_empty_v<typename Type::value_type>)
+			{
+				self.insert(owner, entities, entities + size, reinterpret_cast<const typename Type::value_type*>(components));
+			}
+			else
+			{
+				self.insert(owner, entities, entities + size);
+			}
 		}
 	};
 
@@ -64,7 +96,8 @@ struct PolyStorage : entt::type_list_cat_t<
         typename entt::Storage<Entity>::template impl<Type>,
             entt::value_list<
             &members<Type>::get,
-            &members<Type>::copy_to
+            &members<Type>::copy_to,
+			&members<Type>::insert
         >
     >;
 };

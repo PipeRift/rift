@@ -1,5 +1,6 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Editor.h"
 #include "Editors/ProjectEditor.h"
 #include "Editors/Projects/FileExplorerPanel.h"
 #include "UI/Style.h"
@@ -9,8 +10,9 @@
 #include <Framework/Paths.h>
 #include <GLFW/glfw3.h>
 #include <RiftContext.h>
-#include <imgui_internal.h>
 #include <Strings/FixedString.h>
+#include <imgui_internal.h>
+
 
 
 namespace Rift
@@ -218,7 +220,7 @@ namespace Rift
 		if (newAsset.LoadOrCreate())
 		{
 			newAsset->type = type;
-			newAsset->InitializeDeclaration(RiftContext::AST());
+			newAsset->InitializeDeclaration(Editor::GetAST());
 			newAsset->Save();
 			bDirty = true;
 		}

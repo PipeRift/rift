@@ -2,6 +2,7 @@
 
 #include "AST/Linkage.h"
 #include "DockSpaceLayout.h"
+#include "Editor.h"
 #include "Editors/Assets/TypePropertiesPanel.h"
 #include "Editors/TypeAssetEditor.h"
 
@@ -21,8 +22,7 @@ namespace Rift
 
 	void TypePropertiesPanel::Draw(DockSpaceLayout& layout)
 	{
-		// TODO: Get AST from project or asset
-		auto& ast = RiftContext::AST();
+		auto& ast = Editor::GetAST();
 
 		AST::Id node = editor.GetNode();
 

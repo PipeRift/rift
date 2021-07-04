@@ -20,7 +20,7 @@ namespace Rift
 
 	void RiftContext::CloseProject()
 	{
-		ast.Reset();
+		// ast.Reset();
 		rootProject.Delete();
 	}
 

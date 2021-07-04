@@ -8,7 +8,13 @@ namespace Rift::TypeSystem
 	{
 	}
 
-	void Run(AST::Tree& ast)
+	void RunLoads(AST::Tree& ast)
 	{
+		// Load pending files
+	}
+
+	void RunChecks(AST::Tree& ast)
+	{
+		// Load pending files
 	}
 }    // namespace Rift::TypeSystem

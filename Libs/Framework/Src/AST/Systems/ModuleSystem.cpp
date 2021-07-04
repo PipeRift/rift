@@ -19,15 +19,5 @@ namespace Rift::ModuleSystem
 		auto& assets = ast.GetUnique<CModulesUnique>();
 	}
 
-	void CacheDependencies(AST::Tree& ast) {}
-
-	void LoadAllModules(AST::Tree& ast)
-	{
-		auto& modules = ast.GetUnique<CModulesUnique>();
-
-		if (!modules.main.Load())
-		{
-			return;
-		}
-	}
+	void LoadAllDependencies(AST::Tree& ast) {}
 }    // namespace Rift::ModuleSystem

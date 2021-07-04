@@ -12,6 +12,5 @@ namespace Rift::ModuleSystem
 	void Init(AST::Tree& ast);
 	void Run(AST::Tree& ast);
 
-	void CacheDependencies(AST::Tree& ast);
-	void LoadAllModules(AST::Tree& ast);
+	void LoadAllDependencies(AST::Tree& ast);
 }    // namespace Rift::ModuleSystem
