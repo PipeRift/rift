@@ -3,6 +3,7 @@
 #include "Editor.h"
 #include "Editors/ProjectEditor.h"
 
+#include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Files/FileDialog.h>
 #include <Framework/Paths.h>
@@ -74,14 +75,14 @@ namespace Rift
 	{
 		ZoneScoped;
 
-		TPtr<Module> project = RiftContext::GetProject();
-		if (project != currentProject)
+		String projectPath = Paths::ToString(Modules::GetProjectPath(Editor::GetAST()));
+		if (projectPath != currentProjectPath)
 		{
-			OnProjectChanged(project);
+			currentProjectPath = projectPath;
+			OnProjectChanged();
 		}
 
-		String projectPath = Paths::ToString(project->GetPath());
-		UI::PushID(Hash<String>()(projectPath));
+		UI::PushID(Hash<Name>()(projectPath));
 
 		DrawMenuBar();
 
@@ -158,17 +159,16 @@ namespace Rift
 			{
 				if (UI::MenuItem("Open Project"))
 				{
-					Path folder =
+					const Path folder =
 					    Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
-					if (context->OpenProject(folder))
+					if (Modules::OpenProject(Editor::GetAST(), folder))
 					{
 						bSkipFrameAfterMenu = true;
 					}
 				}
 				if (UI::MenuItem("Close current"))
 				{
-					// Modules::CloseProject()
-					context->CloseProject();
+					Modules::CloseProject(Editor::GetAST());
 					bSkipFrameAfterMenu = true;
 				}
 				UI::Separator();
@@ -235,15 +235,15 @@ namespace Rift
 	}
 
 
-	void ProjectEditor::OnProjectChanged(TPtr<Module> newProject)
+	void ProjectEditor::OnProjectChanged()
 	{
-		currentProject = newProject;
 		TypeAssetEditors.Empty();
 
-		if (currentProject)
+		if (!currentProjectPath.empty())
 		{
 			// Set config path to project folder and save or load manually
-			Editor::Get().SetUIConfigFile(currentProject->GetPath() / "Saved" / "ui.ini");
+			Editor::Get().SetUIConfigFile(
+			    Paths::FromString(currentProjectPath) / "Saved" / "ui.ini");
 		}
 		else
 		{
@@ -252,6 +252,6 @@ namespace Rift
 		}
 
 		fileWatcher.AddExtension(Paths::codeExtension);
-		fileWatcher.AddPath(Paths::ToString(currentProject->GetPath()));
+		fileWatcher.AddPath(currentProjectPath);
 	}
 }    // namespace Rift

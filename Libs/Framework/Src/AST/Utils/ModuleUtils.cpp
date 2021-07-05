@@ -10,28 +10,31 @@
 
 namespace Rift::Modules
 {
-	void OpenProject(AST::Tree& ast, const Path& path)
+	bool OpenProject(AST::Tree& ast, const Path& path)
 	{
 		auto& modules = ast.GetOrSetUnique<CModulesUnique>();
 		if (ast.IsValid(modules.mainModule))
 		{
 			// Project must be closed first
-			return;
+			return false;
+		}
+
+		const Path fullPath = Paths::ToAbsolute(path);
+
+		auto manager = AssetManager::Get();
+		auto asset   = manager->Load(AssetInfo(fullPath / projectFile)).Cast<ModuleAsset>();
+		if (!asset.IsValid())
+		{
+			return false;
 		}
 
 		// Reset ast
 		ast.Reset();
 
-		Path fullPath = Paths::ToAbsolute(path);
-
-
-		auto manager = AssetManager::Get();
-		TAssetPtr<ModuleAsset> asset =
-		    manager->Load(AssetInfo(fullPath / projectFile)).Cast<ModuleAsset>();
-
-
 		modules.mainModule = ast.Create();
 		ast.Add<CModule>(modules.mainModule, true, asset);
+
+		return true;
 	}
 
 	void CloseProject(AST::Tree& ast)
@@ -69,10 +72,11 @@ namespace Rift::Modules
 		return module ? GetModuleName(*module) : Name{};
 	}
 
-	Path GetProjectPath(const AST::Tree& ast)
+	const Path& GetProjectPath(const AST::Tree& ast)
 	{
+		static const Path def{};
 		const CModule* module = GetProjectModule(ast);
-		return module ? Paths::FromString(module->asset.GetStrPath()) : Path{};
+		return module ? module->path : def;
 	}
 
 	Name GetModuleName(const CModule& module)
@@ -90,10 +94,5 @@ namespace Rift::Modules
 			return {Strings::RemoveFromEnd(fileName, Paths::projectExtension)};
 		}
 		return {};
-	}
-
-	Path GetModulePath(const CModule& module)
-	{
-		return Paths::FromString(module.asset.GetStrPath());
 	}
 }    // namespace Rift::Modules

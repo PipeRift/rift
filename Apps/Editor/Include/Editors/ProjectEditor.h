@@ -26,7 +26,7 @@ namespace Rift
 
 		ImGuiID dockspaceID = 0;
 
-		TPtr<Module> currentProject;
+		String currentProjectPath;
 		TArray<TOwnPtr<TypeAssetEditor>> TypeAssetEditors;
 		TArray<TAssetPtr<TypeAsset>> pendingTypesToClose;
 
@@ -53,6 +53,6 @@ namespace Rift
 
 		void DrawMenuBar();
 
-		void OnProjectChanged(TPtr<Module> newProject);
+		void OnProjectChanged();
 	};
 }    // namespace Rift

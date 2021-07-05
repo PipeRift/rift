@@ -4,6 +4,8 @@
 #include "AST/Types.h"
 #include "Assets/ModuleAsset.h"
 
+#include <Containers/Map.h>
+#include <Misc/Guid.h>
 #include <Object/Struct.h>
 
 
@@ -16,10 +18,23 @@ namespace Rift
 		PROP(bool, isMain, Transient)
 		bool isMain = false;
 
+		using TypeMap = TMap<Guid, AST::Id>;
+		// TODO: Reflect Maps
+		// PROP(TypeMap, types, Transient)
+		TypeMap types;
+
+		// TODO: Remove when deprecating assets
 		PROP(TAssetPtr<ModuleAsset>, asset, Transient)
 		TAssetPtr<ModuleAsset> asset;
 
+		PROP(Path, path, Transient)
+		Path path;
 
-		CModule(bool isMain, TAssetPtr<ModuleAsset> asset) : isMain{isMain}, asset{asset} {}
+
+		CModule(bool isMain, TAssetPtr<ModuleAsset> asset)
+		    : isMain{isMain}
+		    , asset{asset}
+		    , path{Paths::FromString(asset.GetStrPath())}
+		{}
 	};
 }    // namespace Rift

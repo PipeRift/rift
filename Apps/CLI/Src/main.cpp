@@ -3,6 +3,7 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Context.h>
+#include <Files/Paths.h>
 #include <Module.h>
 #include <Profiler.h>
 #include <RiftContext.h>
@@ -19,9 +20,13 @@ int main(int argc, char** argv)
 	auto context = InitializeContext<RiftContext>();
 
 	AST::Tree ast;
-	Modules::OpenProject(ast, Path("Project"));
 
-	auto project = context->OpenProject(Path("Project"));
+	const Path path{"Project"};
+	if (!Modules::OpenProject(ast, path))
+	{
+		Log::Error("Couldn't open project '{}'", Paths::ToString(path));
+		return;
+	}
 
 	Rift::Compiler::Config config;
 	Rift::Compiler::Build(ast, config, Rift::Compiler::EBackend::Cpp);
