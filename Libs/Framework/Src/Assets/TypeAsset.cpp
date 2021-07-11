@@ -34,8 +34,8 @@ namespace Rift
 		}
 		ct.PopFlags();
 
-		auto project = RiftContext::GetProject();
-		Check(project);
+		// auto project = RiftContext::GetProject();
+		// Check(project);
 		if (ct.IsReading())
 		{
 			// ASTReadContext astCt{ct.GetRead(), RiftContext::AST()};

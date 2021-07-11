@@ -26,5 +26,7 @@ namespace Rift::Modules
 	Name GetProjectName(const AST::Tree& ast);
 	const Path& GetProjectPath(const AST::Tree& ast);
 
+	bool HasProject(const AST::Tree& ast);
+
 	Name GetModuleName(const CModule& module);
 }    // namespace Rift::Modules

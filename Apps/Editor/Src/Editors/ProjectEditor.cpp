@@ -74,8 +74,9 @@ namespace Rift
 	void ProjectEditor::Draw()
 	{
 		ZoneScoped;
+		AST::Tree& ast = Editor::GetAST();
 
-		String projectPath = Paths::ToString(Modules::GetProjectPath(Editor::GetAST()));
+		String projectPath = Paths::ToString(Modules::GetProjectPath(ast));
 		if (projectPath != currentProjectPath)
 		{
 			currentProjectPath = projectPath;
@@ -84,7 +85,7 @@ namespace Rift
 
 		UI::PushID(Hash<Name>()(projectPath));
 
-		DrawMenuBar();
+		DrawMenuBar(ast);
 
 		if (bSkipFrameAfterMenu)    // We could have closed the project
 		{
@@ -110,7 +111,7 @@ namespace Rift
 			editor->Draw();
 		}
 
-		astDebugger.Draw(Editor::GetAST());
+		astDebugger.Draw(ast);
 		UI::PopID();
 	}
 
@@ -148,7 +149,7 @@ namespace Rift
 		UI::End();
 	}
 
-	void ProjectEditor::DrawMenuBar()
+	void ProjectEditor::DrawMenuBar(AST::Tree& ast)
 	{
 		ZoneScoped;
 
@@ -161,14 +162,14 @@ namespace Rift
 				{
 					const Path folder =
 					    Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
-					if (Modules::OpenProject(Editor::GetAST(), folder))
+					if (Modules::OpenProject(ast, folder))
 					{
 						bSkipFrameAfterMenu = true;
 					}
 				}
 				if (UI::MenuItem("Close current"))
 				{
-					Modules::CloseProject(Editor::GetAST());
+					Modules::CloseProject(ast);
 					bSkipFrameAfterMenu = true;
 				}
 				UI::Separator();
@@ -183,14 +184,14 @@ namespace Rift
 				if (UI::MenuItem("Build current"))
 				{
 					AST::Tree compileAST;
-					compileAST.CopyFrom(Editor::GetAST());
+					compileAST.CopyFrom(ast);
 					Rift::Compiler::Config config;
 					Rift::Compiler::Build(compileAST, config, Rift::Compiler::EBackend::Cpp);
 				}
 				if (UI::MenuItem("Build all"))
 				{
 					AST::Tree compileAST;
-					compileAST.CopyFrom(Editor::GetAST());
+					compileAST.CopyFrom(ast);
 					Rift::Compiler::Config config;
 					Rift::Compiler::Build(compileAST, config, Rift::Compiler::EBackend::Cpp);
 				}
@@ -251,7 +252,7 @@ namespace Rift
 			Editor::Get().SetUIConfigFile({});
 		}
 
-		fileWatcher.AddExtension(Paths::codeExtension);
+		fileWatcher.AddExtension(Paths::typeExtension);
 		fileWatcher.AddPath(currentProjectPath);
 	}
 }    // namespace Rift

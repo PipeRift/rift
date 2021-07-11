@@ -1,5 +1,6 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "AST/Utils/ModuleUtils.h"
 #include "EditorData.h"
 #include "Files/FileDialog.h"
 #include "Systems/EditorSystem.h"
@@ -10,14 +11,13 @@
 namespace Rift::EditorSystem
 {
 	void DrawMenuBar(EditorData& editorData);
-	void DrawProjectPickerPopup();
+	void DrawProjectPickerPopup(AST::Tree& ast);
 
 
-	void Draw(EditorData& editorData)
+	void Draw(AST::Tree& ast, EditorData& editorData)
 	{
 		ZoneScopedN("EditorSystem::Draw");
-
-		if (GetContext<RiftContext>()->HasProject())
+		if (Modules::HasProject(ast))
 		{
 			editorData.projectEditor->Draw();
 		}
@@ -27,7 +27,7 @@ namespace Rift::EditorSystem
 		}
 
 		DrawMenuBar(editorData);
-		DrawProjectPickerPopup();
+		DrawProjectPickerPopup(ast);
 
 		editorData.memoryDebugger.Draw();
 
@@ -56,7 +56,7 @@ namespace Rift::EditorSystem
 		}
 	}
 
-	void DrawProjectPickerPopup()
+	void DrawProjectPickerPopup(AST::Tree& ast)
 	{
 		// Center modal when appearing
 		UI::SetNextWindowPos(
@@ -68,7 +68,7 @@ namespace Rift::EditorSystem
 			{
 				Path folder = Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
 
-				if (GetContext<RiftContext>()->OpenProject(folder))
+				if (Modules::OpenProject(ast, folder))
 				{
 					UI::CloseCurrentPopup();
 				}

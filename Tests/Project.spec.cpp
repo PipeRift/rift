@@ -1,9 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include <AST/Utils/ModuleUtils.h>
 #include <Context.h>
 #include <Files/Files.h>
 #include <Memory/OwnPtr.h>
-#include <Module.h>
 #include <bandit/bandit.h>
 
 
@@ -33,13 +33,30 @@ go_bandit([]() {
 
 		it("Can load empty descriptor", [&]() {
 			Files::SaveStringFile(
-			    testProjectPath / "Project.rf", "{\"asset_type\": \"ModuleAsset\"}");
+			    testProjectPath / Modules::projectFile, "{\"asset_type\": \"ModuleAsset\"}");
 
-			TOwnPtr<Module> project = Create<Module>();
-			AssertThat(project.IsValid(), Equals(true));
+			AST::Tree ast;
+			AssertThat(Modules::OpenProject(ast, testProjectPath), Equals(true));
+		});
 
-			project->Init(testProjectPath);
-			AssertThat(project->IsValid(), Equals(true));
+		it("Project name equals the folder", [&]() {
+			Files::SaveStringFile(
+			    testProjectPath / Modules::projectFile, "{\"asset_type\": \"ModuleAsset\"}");
+
+			AST::Tree ast;
+			AssertThat(Modules::OpenProject(ast, testProjectPath), Equals(true));
+
+			AssertThat(Modules::GetProjectName(ast), Equals(Name{"TestProject"}));
+		});
+
+		it("Project name can be overriden", [&]() {
+			Files::SaveStringFile(testProjectPath / Modules::projectFile,
+			    "{\"asset_type\": \"ModuleAsset\", \"name\": \"SomeProject\"}");
+
+			AST::Tree ast;
+			AssertThat(Modules::OpenProject(ast, testProjectPath), Equals(true));
+
+			AssertThat(Modules::GetProjectName(ast), Equals(Name{"SomeProject"}));
 		});
 	});
 });

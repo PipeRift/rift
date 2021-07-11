@@ -94,49 +94,50 @@ namespace Rift
 	void FileExplorerPanel::CacheProjectFiles()
 	{
 		bDirty       = false;
-		auto project = RiftContext::GetProject();
-		assert(project);
+		//CModule* mod = Modules::GetProjectModule(ast);
+		//assert(mod);
 
-		project->ScanAssets();
+		//project->ScanAssets();
 
 		// Reset cached data
 		projectFolder = {};
 
-		for (auto& asset : project->GetAllTypeAssets())
+		/*for (auto& asset : project->GetAllTypeAssets())
 		{
-			const Path path     = Paths::FromString(asset.GetStrPath());
-			const Path relative = Paths::ToRelative(path, project->GetPath());
-			Folder* current     = &projectFolder;
+		    const Path path     = Paths::FromString(asset.GetStrPath());
+		    const Path relative = Paths::ToRelative(path, project->GetPath());
+		    Folder* current     = &projectFolder;
 
-			for (auto it = relative.begin(); it != relative.end(); ++it)
-			{
-				const String name = Paths::ToString(*it);
-				if (Strings::EndsWith(name, Paths::codeExtension))
-				{
-					current->files.Add({name, asset});
-				}
-				else
-				{
-					bool exists = false;
-					for (i32 i = 0; i < current->folders.Size(); ++i)
-					{
-						Folder& folder = current->folders[i];
-						if (folder.name == name)
-						{
-							current = &folder;
-							exists  = true;
-							break;
-						}
-					}
+		    for (auto it = relative.begin(); it != relative.end(); ++it)
+		    {
+		        const String name = Paths::ToString(*it);
+		        if (Strings::EndsWith(name, Paths::typeExtension))
+		        {
+		            current->files.Add({name, asset});
+		        }
+		        else
+		        {
+		            bool exists = false;
+		            for (i32 i = 0; i < current->folders.Size(); ++i)
+		            {
+		                Folder& folder = current->folders[i];
+		                if (folder.name == name)
+		                {
+		                    current = &folder;
+		                    exists  = true;
+		                    break;
+		                }
+		            }
 
-					if (!exists)
-					{
-						current->folders.Add({name});
-						current = &current->folders.Last();
-					}
-				}
-			}
+		            if (!exists)
+		            {
+		                current->folders.Add({name});
+		                current = &current->folders.Last();
+		            }
+		        }
+		    }
 		}
+		*/
 	}
 
 	void FileExplorerPanel::DrawFolderItems(Folder& folder)
@@ -215,7 +216,7 @@ namespace Rift
 	void FileExplorerPanel::CreateAsset(StringView title, TypeAsset::Type type, Path path)
 	{
 		const Path filename = Dialogs::SaveFile(
-		    title, path, {{"Rift file", Strings::Format("*.{}", Paths::codeExtension)}}, true);
+		    title, path, {{"Rift file", Strings::Format("*.{}", Paths::typeExtension)}}, true);
 		TAssetPtr<TypeAsset> newAsset{filename};
 		if (newAsset.LoadOrCreate())
 		{

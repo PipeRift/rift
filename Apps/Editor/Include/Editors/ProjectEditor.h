@@ -51,7 +51,7 @@ namespace Rift
 	protected:
 		void CreateDockspace();
 
-		void DrawMenuBar();
+		void DrawMenuBar(AST::Tree& ast);
 
 		void OnProjectChanged();
 	};

@@ -4,7 +4,6 @@
 #include <Compiler/Compiler.h>
 #include <Context.h>
 #include <Files/Paths.h>
-#include <Module.h>
 #include <Profiler.h>
 #include <RiftContext.h>
 

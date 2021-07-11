@@ -1,6 +1,6 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Assets/AssetIterator.h"
+#include "AST/Utils/TypeIterator.h"
 #include "Files/Paths.h"
 #include "Module.h"
 
@@ -9,7 +9,7 @@
 
 namespace Rift
 {
-	void Module::Init(const Path& inPath)
+	/*void Module::Init(const Path& inPath)
 	{
 		path = Paths::ToAbsolute(inPath);
 
@@ -55,5 +55,5 @@ namespace Rift
 			return path / inPath;
 		}
 		return Paths::IsInside(path, inPath) ? path : Path{};
-	}
+	}*/
 }    // namespace Rift

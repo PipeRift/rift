@@ -34,7 +34,9 @@ namespace Rift
 		CModule(bool isMain, TAssetPtr<ModuleAsset> asset)
 		    : isMain{isMain}
 		    , asset{asset}
-		    , path{Paths::FromString(asset.GetStrPath())}
-		{}
+		{
+			auto parentPath = Paths::GetParent(asset.GetStrPath());
+			path            = Paths::FromString(parentPath);
+		}
 	};
 }    // namespace Rift

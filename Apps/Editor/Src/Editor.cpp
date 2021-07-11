@@ -33,7 +33,7 @@ namespace Rift
 
 			// ModuleSystem::Tick();
 			// TypeSystem::Tick();
-			EditorSystem::Draw(editorData);
+			EditorSystem::Draw(Editor::GetAST(), editorData);
 			UI::Render();
 
 			frameTime.PostTick();

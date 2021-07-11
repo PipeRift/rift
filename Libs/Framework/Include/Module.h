@@ -35,7 +35,7 @@ namespace Rift
 	 * A project represents a group of classes, structs and other features of the lenguage that can
 	 * be edited or compiled
 	 */
-	class Module : public Object
+	/*class Module : public Object
 	{
 		CLASS(Module, Object)
 
@@ -83,5 +83,5 @@ namespace Rift
 		{
 			return name;
 		}
-	};
+	};*/
 }    // namespace Rift
