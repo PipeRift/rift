@@ -43,7 +43,7 @@ namespace Rift
 			asset = inAsset;
 		}
 
-		void Draw();
+		void Draw(AST::Tree& ast);
 
 		TAssetPtr<TypeAsset> GetAsset() const
 		{

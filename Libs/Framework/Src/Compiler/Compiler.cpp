@@ -29,12 +29,12 @@ namespace Rift::Compiler
 				return;
 		}
 
-		ModuleSystem::Init(ast);
+		ast.SetUnique<CModulesUnique>();
 		TypeSystem::Init(ast);
 		OptimizationSystem::Init(ast);
 		CompileTimeSystem::Init(ast);
 
-		ModuleSystem::Run(ast);
+		ModuleSystem::ScanModuleTypes(ast);
 		auto& modules = ast.GetUnique<CModulesUnique>();
 		if (modules.HasMainModule())
 		{

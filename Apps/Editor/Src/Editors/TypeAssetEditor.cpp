@@ -35,7 +35,7 @@ namespace Rift
 		});
 	}
 
-	void TypeAssetEditor::Draw()
+	void TypeAssetEditor::Draw(AST::Tree& ast)
 	{
 		auto owner = GetOwner<ProjectEditor>();
 		assert(owner);
@@ -62,7 +62,7 @@ namespace Rift
 			CreateDockspace(windowName.c_str());
 			layout.Tick(dockspaceID);
 
-			if (Declarations::IsStruct(Editor::GetAST(), GetNode()))
+			if (Declarations::IsStruct(ast, GetNode()))
 			{
 				nodeGraph.Draw(layout);
 			}

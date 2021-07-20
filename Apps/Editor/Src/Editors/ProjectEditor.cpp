@@ -46,7 +46,7 @@ namespace Rift
 
 	void ProjectEditor::OpenType(TAssetPtr<TypeAsset> asset)
 	{
-		auto* existingEditor = TypeAssetEditors.Find([asset](const auto& editor) {
+		auto* existingEditor = typeAssetEditors.Find([asset](const auto& editor) {
 			return editor->GetAsset() == asset;
 		});
 		if (existingEditor)
@@ -62,8 +62,8 @@ namespace Rift
 			return;
 		}
 
-		TypeAssetEditors.Add(Create<TypeAssetEditor>(Self()));
-		TypeAssetEditors.Last()->SetAsset(asset);
+		typeAssetEditors.Add(Create<TypeAssetEditor>(Self()));
+		typeAssetEditors.Last()->SetAsset(asset);
 	}
 
 	void ProjectEditor::CloseType(TAssetPtr<TypeAsset> asset)
@@ -97,21 +97,20 @@ namespace Rift
 		CreateDockspace();
 		layout.Tick(dockspaceID);
 
-		fileExplorer.Draw();
+		fileExplorer.Draw(ast);
 
 
 		// Close editors if needed
-		TypeAssetEditors.RemoveIf([this](const auto& item) {
+		typeAssetEditors.RemoveIf([this](const auto& item) {
 			return !item || pendingTypesToClose.Contains(item->GetAsset());
 		});
 		pendingTypesToClose.Empty();
 
-		for (const auto& editor : TypeAssetEditors)
-		{
-			editor->Draw();
-		}
+		// for (const auto& editor : typeAssetEditors)
+		//{
+		//	editor->Draw();
+		//}
 
-		astDebugger.Draw(ast);
 		UI::PopID();
 	}
 
@@ -153,7 +152,6 @@ namespace Rift
 	{
 		ZoneScoped;
 
-		auto context = GetContext<RiftContext>();
 		if (UI::BeginMainMenuBar())
 		{
 			if (UI::BeginMenu("File"))
@@ -162,7 +160,7 @@ namespace Rift
 				{
 					const Path folder =
 					    Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
-					if (Modules::OpenProject(ast, folder))
+					if (Editor::Get().OpenProject(folder))
 					{
 						bSkipFrameAfterMenu = true;
 					}
@@ -211,7 +209,6 @@ namespace Rift
 
 			if (UI::BeginMenu("Views"))
 			{
-				UI::MenuItem("Syntax Tree", nullptr, &astDebugger.open);
 				UI::EndMenu();
 			}
 
@@ -220,7 +217,7 @@ namespace Rift
 				if (UI::MenuItem("Reset layout"))
 				{
 					layout.Reset();
-					for (const auto& editor : TypeAssetEditors)
+					for (const auto& editor : typeAssetEditors)
 					{
 						if (editor)
 						{
@@ -238,7 +235,7 @@ namespace Rift
 
 	void ProjectEditor::OnProjectChanged()
 	{
-		TypeAssetEditors.Empty();
+		typeAssetEditors.Empty();
 
 		if (!currentProjectPath.empty())
 		{

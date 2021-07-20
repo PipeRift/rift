@@ -192,6 +192,12 @@ namespace Rift::AST
 			return registry.try_ctx<Component>();
 		}
 
+		template <typename Component>
+		bool HasUnique() const
+		{
+			return TryGetUnique<const Component>() != nullptr;
+		}
+
 
 		template <typename... Component, typename... Exclude>
 		auto MakeView(TExclude<Exclude...> excluded = {}) const
@@ -228,6 +234,7 @@ namespace Rift::AST
 		void Reset()
 		{
 			registry = {};
+			CachePools();
 		}
 
 		Pool& GetParentPool()
@@ -256,6 +263,5 @@ namespace Rift::AST
 	private:
 		void SetupNativeTypes();
 		void CachePools();
-
 	};
 }    // namespace Rift::AST

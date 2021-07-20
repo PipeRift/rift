@@ -40,7 +40,6 @@ namespace Rift
 		};
 
 	private:
-		ProjectEditor& editor;
 		Folder projectFolder;
 		bool bOpen  = true;
 		bool bDirty = true;
@@ -49,22 +48,22 @@ namespace Rift
 
 
 	public:
-		FileExplorerPanel(ProjectEditor& editor) : editor(editor) {}
+		FileExplorerPanel() {}
 
 		void BuildLayout();
-		void Draw();
+		void Draw(AST::Tree& ast);
 
-		void DrawList();
+		void DrawList(AST::Tree& ast);
 
-		void DrawContextMenu(Path path, File* file);
+		void DrawContextMenu(AST::Tree& ast, Path path, File* file);
 
-		void CacheProjectFiles();
+		void CacheProjectFiles(AST::Tree& ast);
 
 	private:
-		void DrawFolderItems(Folder& folder);
-		void DrawFile(File& file);
+		void DrawFolderItems(AST::Tree& ast, Folder& folder);
+		void DrawFile(AST::Tree& ast, File& file);
 
-		void CreateAsset(StringView title, TypeAsset::Type type, Path path);
+		void CreateAsset(AST::Tree& ast, StringView title, TypeAsset::Type type, Path path);
 	};
 
 

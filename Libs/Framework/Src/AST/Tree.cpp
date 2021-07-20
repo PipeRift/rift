@@ -4,7 +4,7 @@
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CNativeDecl.h"
 #include "AST/Components/CParent.h"
-#include "AST/Components/Tags/CType.h"
+#include "AST/Components/CType.h"
 #include "AST/Tree.h"
 #include "Compiler/Cpp/Components/CCppNativeName.h"
 

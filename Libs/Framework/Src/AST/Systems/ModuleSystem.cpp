@@ -1,6 +1,8 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
 #include "AST/Components/CModule.h"
+#include "AST/Components/CType.h"
+#include "AST/Components/Tags/CPendingLoad.h"
 #include "AST/Systems/ModuleSystem.h"
 #include "AST/Tree.h"
 #include "AST/Uniques/CModulesUnique.h"
@@ -11,37 +13,43 @@
 
 namespace Rift::ModuleSystem
 {
-    void Init(AST::Tree& ast)
-    {
-        if (ast.TryGetUnique<CModulesUnique>() == nullptr)
-        {
-            ast.SetUnique<CModulesUnique>();
-        }
-    }
-
-    void Run(AST::Tree& ast)
-    {
-        auto& assets = ast.GetUnique<CModulesUnique>();
-    }
-
-    void ScanModuleAssets(AST::Tree& ast)
-    {
-        TSet<Path> modulePaths;
-        auto modules = ast.MakeView<CModule>();
-        for (AST::Id entity : modules)
-        {
-            const CModule& mod = ast.Get<CModule>(entity);
-            modulePaths.Insert(mod.path);
-        }
-
-
-		ZoneScopedNC("Find asset files", 0x459bd1);
-		for (AST::Id entity : modules)
+	void ScanModuleTypes(AST::Tree& ast)
+	{
+		auto* modules = ast.TryGetUnique<CModulesUnique>();
+		if (!modules)
 		{
-			CModule& mod = ast.Get<CModule>(entity);
-			for (const auto& asset : TypeIterator(mod.path, &modulePaths))
+			return;
+		}
+
+		auto modulesView = ast.MakeView<CModule>();
+
+		// Cache module paths
+		TSet<Path> modulePaths;
+		modulePaths.Reserve(modulesView.Size());
+		for (AST::Id entity : modulesView)
+		{
+			const CModule& mod = ast.Get<CModule>(entity);
+			modulePaths.Insert(mod.path);
+		}
+
+		ZoneScopedNC("Find type files", 0x459bd1);
+		for (AST::Id moduleId : modulesView)
+		{
+			const CModule& mod = ast.Get<CModule>(moduleId);
+			for (const auto& typePath : TypeIterator(mod.path, &modulePaths))
 			{
-				// allTypes.Add(asset);
+				const Name namePath{Paths::ToString(typePath)};
+
+				if (!modules->typesByPath.Contains(namePath))
+				{
+					AST::Id unloadedType = ast.Create();
+					ast.Add<CPendingLoad>(unloadedType);
+					CType& type   = ast.Add<CType>(unloadedType);
+					type.path     = typePath;
+					type.moduleId = moduleId;
+
+					modules->typesByPath.Insert(namePath, unloadedType);
+				}
 			}
 		}
 

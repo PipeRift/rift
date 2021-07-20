@@ -9,8 +9,5 @@ namespace Rift::AST
 
 namespace Rift::ModuleSystem
 {
-	void Init(AST::Tree& ast);
-	void Run(AST::Tree& ast);
-
-	void ScanModuleAssets(AST::Tree& ast);
+	void ScanModuleTypes(AST::Tree& ast);
 }    // namespace Rift::ModuleSystem

@@ -18,10 +18,10 @@ int main(int argc, char** argv)
 	ZoneScopedNC("CLI Execution", 0x459bd1);
 	auto context = InitializeContext<RiftContext>();
 
-	AST::Tree ast;
-
 	const Path path{"Project"};
-	if (!Modules::OpenProject(ast, path))
+	AST::Tree ast = Modules::OpenProject(path);
+
+	if (!Modules::HasProject(ast))
 	{
 		Log::Error("Couldn't open project '{}'", Paths::ToString(path));
 		return;

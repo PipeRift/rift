@@ -2,7 +2,11 @@
 
 #include "Editor.h"
 #include "Systems/EditorSystem.h"
+#include "Uniques/CEditorUnique.h"
 
+#include <AST/Systems/ModuleSystem.h>
+#include <AST/Uniques/CModulesUnique.h>
+#include <AST/Utils/ModuleUtils.h>
 #include <Profiler.h>
 #include <RiftContext.h>
 #include <UI/Window.h>
@@ -21,9 +25,6 @@ namespace Rift
 			return 1;
 		}
 
-		// ModuleSystem::Init();
-		// TypeSystem::Init();
-
 		while (!UI::WantsToClose())
 		{
 			frameTime.Tick();
@@ -31,9 +32,8 @@ namespace Rift
 			UI::PreFrame();
 			UpdateConfig();
 
-			// ModuleSystem::Tick();
-			// TypeSystem::Tick();
-			EditorSystem::Draw(Editor::GetAST(), editorData);
+			Tick();
+			Draw();
 			UI::Render();
 
 			frameTime.PostTick();
@@ -50,9 +50,19 @@ namespace Rift
 		UI::Shutdown();
 	}
 
-	void Editor::Close()
+	void Editor::Tick()
 	{
-		Rift::UI::Close();
+		if (!Modules::HasProject(ast))
+		{
+			return;
+		}
+
+		ModuleSystem::ScanModuleTypes(ast);
+	}
+
+	void Editor::Draw()
+	{
+		EditorSystem::Draw(ast);
 	}
 
 	void Editor::SetUIConfigFile(Path path)
@@ -63,6 +73,28 @@ namespace Rift
 			configFile                 = Paths::ToString(path);
 			ImGui::GetIO().IniFilename = configFile.c_str();
 		}
+	}
+
+	bool Editor::OpenProject(const Path& path, bool closeFirst)
+	{
+		if (!closeFirst && Modules::HasProject(ast))
+		{
+			return false;
+		}
+
+		AST::Tree newAST = Modules::OpenProject(path);
+		if (Modules::HasProject(newAST))
+		{
+			ast = Move(newAST);
+			ast.SetUnique<CEditorUnique>();
+			return true;
+		}
+		return false;
+	}
+
+	void Editor::Close()
+	{
+		Rift::UI::Close();
 	}
 
 	void Editor::UpdateConfig()

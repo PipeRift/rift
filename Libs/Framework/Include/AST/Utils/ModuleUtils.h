@@ -17,7 +17,7 @@ namespace Rift::Modules
 {
 	static constexpr StringView projectFile{"Project.rift"};
 
-	bool OpenProject(AST::Tree& ast, const Path& path);
+	AST::Tree OpenProject(const Path& path);
 	void CloseProject(AST::Tree& ast);
 
 	CModule* GetProjectModule(AST::Tree& ast);

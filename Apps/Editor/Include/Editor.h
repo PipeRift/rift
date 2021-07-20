@@ -1,8 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "EditorData.h"
-
+#include <AST/Tree.h>
+#include <Files/Paths.h>
 #include <Misc/Time.h>
 
 
@@ -12,12 +12,15 @@ namespace Rift
 	{
 		FrameTime frameTime;
 
-		EditorData editorData;
-
 		bool configFileChanged = false;
 		String configFile;
 
 		AST::Tree ast;
+
+	public:
+#if BUILD_DEBUG
+		bool showDemo = false;
+#endif
 
 
 	public:
@@ -27,7 +30,8 @@ namespace Rift
 
 		int Run();
 
-		void Close();
+		void Tick();
+		void Draw();
 
 		void SetUIConfigFile(Path path);
 
@@ -42,6 +46,10 @@ namespace Rift
 			return Get().ast;
 		}
 
+		bool OpenProject(const Path& path, bool closeFirst = true);
+		void CloseProject();
+
+		void Close();
 
 	protected:
 		void UpdateConfig();

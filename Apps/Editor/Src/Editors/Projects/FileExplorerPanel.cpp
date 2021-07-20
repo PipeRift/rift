@@ -5,6 +5,7 @@
 #include "Editors/Projects/FileExplorerPanel.h"
 #include "UI/Style.h"
 #include "UI/UI.h"
+#include "Uniques/CEditorUnique.h"
 
 #include <Files/FileDialog.h>
 #include <Framework/Paths.h>
@@ -17,8 +18,9 @@
 
 namespace Rift
 {
-	void FileExplorerPanel::Draw()
+	void FileExplorerPanel::Draw(AST::Tree& ast)
 	{
+		CEditorUnique& editor = ast.GetUnique<CEditorUnique>();
 		editor.layout.BindNextWindowToNode(editor.leftNode);
 		if (UI::Begin(
 		        "File Explorer", &bOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar))
@@ -35,31 +37,31 @@ namespace Rift
 				}
 				UI::EndMenuBar();
 			}
-			DrawList();
+			DrawList(ast);
 		}
 		UI::End();
 	}
 
-	void FileExplorerPanel::DrawList()
+	void FileExplorerPanel::DrawList(AST::Tree& ast)
 	{
 		if (bDirty)
 		{
-			CacheProjectFiles();
+			CacheProjectFiles(ast);
 		}
 
 		UI::BeginChild("Files");
 		if (UI::BeginPopupContextWindow())
 		{
-			DrawContextMenu({}, {});
+			DrawContextMenu(ast, {}, {});
 			UI::EndPopup();
 		}
 
-		DrawFolderItems(projectFolder);
+		DrawFolderItems(ast, projectFolder);
 
 		UI::EndChild();
 	}
 
-	void FileExplorerPanel::DrawContextMenu(Path path, File* file)
+	void FileExplorerPanel::DrawContextMenu(AST::Tree& ast, Path path, File* file)
 	{
 		if (file && file->info)
 		{
@@ -75,23 +77,23 @@ namespace Rift
 			{
 				if (UI::MenuItem("Class"))
 				{
-					CreateAsset("Create Class file", TypeAsset::Type::Class, path);
+					CreateAsset(ast, "Create Class file", TypeAsset::Type::Class, path);
 				}
 				if (UI::MenuItem("Struct"))
 				{
-					CreateAsset("Create Struct file", TypeAsset::Type::Struct, path);
+					CreateAsset(ast, "Create Struct file", TypeAsset::Type::Struct, path);
 				}
 				if (UI::MenuItem("Function Library"))
 				{
-					CreateAsset(
-					    "Create Function Library file", TypeAsset::Type::FunctionLibrary, path);
+					CreateAsset(ast, "Create Function Library file",
+					    TypeAsset::Type::FunctionLibrary, path);
 				}
 				UI::EndMenu();
 			}
 		}
 	}
 
-	void FileExplorerPanel::CacheProjectFiles()
+	void FileExplorerPanel::CacheProjectFiles(AST::Tree& ast)
 	{
 		bDirty       = false;
 		//CModule* mod = Modules::GetProjectModule(ast);
@@ -140,30 +142,30 @@ namespace Rift
 		*/
 	}
 
-	void FileExplorerPanel::DrawFolderItems(Folder& folder)
+	void FileExplorerPanel::DrawFolderItems(AST::Tree& ast, Folder& folder)
 	{
 		for (auto& childFolder : folder.folders)
 		{
 			if (UI::TreeNode(childFolder.name.c_str()))
 			{
-				DrawFolderItems(childFolder);
+				DrawFolderItems(ast, childFolder);
 				UI::TreePop();
 			}
 			if (UI::BeginPopupContextItem())
 			{
 				const Path path = Paths::FromString(childFolder.name);
-				DrawContextMenu(path, nullptr);
+				DrawContextMenu(ast, path, nullptr);
 				UI::EndPopup();
 			}
 		}
 
 		for (auto& file : folder.files)
 		{
-			DrawFile(file);
+			DrawFile(ast, file);
 		}
 	}
 
-	void FileExplorerPanel::DrawFile(File& file)
+	void FileExplorerPanel::DrawFile(AST::Tree& ast, File& file)
 	{
 		if (!file.renaming)
 		{
@@ -200,20 +202,21 @@ namespace Rift
 		{
 			if (UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 			{
-				editor.OpenType(file.info);
+				// editor.OpenType(file.info);
 			}
 		}
 
 		if (UI::BeginPopupContextItem())
 		{
 			const Path path = Paths::FromString(file.info.GetStrPath());
-			DrawContextMenu(path, &file);
+			DrawContextMenu(ast, path, &file);
 			UI::EndPopup();
 		}
 	}
 
 
-	void FileExplorerPanel::CreateAsset(StringView title, TypeAsset::Type type, Path path)
+	void FileExplorerPanel::CreateAsset(
+	    AST::Tree& ast, StringView title, TypeAsset::Type type, Path path)
 	{
 		const Path filename = Dialogs::SaveFile(
 		    title, path, {{"Rift file", Strings::Format("*.{}", Paths::typeExtension)}}, true);
@@ -221,7 +224,7 @@ namespace Rift
 		if (newAsset.LoadOrCreate())
 		{
 			newAsset->type = type;
-			newAsset->InitializeDeclaration(Editor::GetAST());
+			newAsset->InitializeDeclaration(ast);
 			newAsset->Save();
 			bDirty = true;
 		}

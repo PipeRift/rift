@@ -35,16 +35,16 @@ go_bandit([]() {
 			Files::SaveStringFile(
 			    testProjectPath / Modules::projectFile, "{\"asset_type\": \"ModuleAsset\"}");
 
-			AST::Tree ast;
-			AssertThat(Modules::OpenProject(ast, testProjectPath), Equals(true));
+			AST::Tree ast = Modules::OpenProject(testProjectPath);
+			AssertThat(Modules::HasProject(ast), Equals(true));
 		});
 
 		it("Project name equals the folder", [&]() {
 			Files::SaveStringFile(
 			    testProjectPath / Modules::projectFile, "{\"asset_type\": \"ModuleAsset\"}");
 
-			AST::Tree ast;
-			AssertThat(Modules::OpenProject(ast, testProjectPath), Equals(true));
+			AST::Tree ast = Modules::OpenProject(testProjectPath);
+			AssertThat(Modules::HasProject(ast), Equals(true));
 
 			AssertThat(Modules::GetProjectName(ast), Equals(Name{"TestProject"}));
 		});
@@ -53,8 +53,8 @@ go_bandit([]() {
 			Files::SaveStringFile(testProjectPath / Modules::projectFile,
 			    "{\"asset_type\": \"ModuleAsset\", \"name\": \"SomeProject\"}");
 
-			AST::Tree ast;
-			AssertThat(Modules::OpenProject(ast, testProjectPath), Equals(true));
+			AST::Tree ast = Modules::OpenProject(testProjectPath);
+			AssertThat(Modules::HasProject(ast), Equals(true));
 
 			AssertThat(Modules::GetProjectName(ast), Equals(Name{"SomeProject"}));
 		});

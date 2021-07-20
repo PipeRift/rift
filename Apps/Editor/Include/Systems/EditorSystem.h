@@ -6,5 +6,5 @@
 
 namespace Rift::EditorSystem
 {
-	void Draw(AST::Tree& ast, struct EditorData& editorData);
+	void Draw(AST::Tree& ast);
 }    // namespace Rift::EditorSystem

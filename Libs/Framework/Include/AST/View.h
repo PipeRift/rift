@@ -103,5 +103,10 @@ namespace Rift::AST
 			}
 			return nullptr;
 		}
+
+		sizet Size() const
+		{
+			return view.size();
+		}
 	};
 }    // namespace Rift::AST

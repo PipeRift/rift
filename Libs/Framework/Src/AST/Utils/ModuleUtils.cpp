@@ -10,46 +10,33 @@
 
 namespace Rift::Modules
 {
-	bool OpenProject(AST::Tree& ast, const Path& path)
+	AST::Tree OpenProject(const Path& path)
 	{
 		const Path fullPath = Paths::ToAbsolute(path);
 
-		auto& modules = ast.GetOrSetUnique<CModulesUnique>();
-		if (ast.IsValid(modules.mainModule))
-		{
-			if (Modules::GetProjectPath(ast) == fullPath)
-			{
-				Log::Warning("Tried to open a project that is already open.");
-			}
-			else
-			{
-				Log::Error("Can't open a project while another is active.");
-			}
-			return false;
-		}
-		else if (path.empty())
+		if (path.empty())
 		{
 			Log::Error("Cant open project: Invalid path");
-			return false;
+			return {};
 		}
-
 
 		auto manager = AssetManager::Get();
 		auto asset   = manager->Load(AssetInfo(fullPath / projectFile)).Cast<ModuleAsset>();
 		if (!asset.IsValid())
 		{
 			Log::Error(
-			    "Cant open project: Project file failed to load. Does it exist? Is it corrupted?");
-			return false;
+			    "Can't open project: Project file failed to load. Does it exist? Is it corrupted?");
+			return {};
 		}
 
-		// Reset ast
-		ast.Reset();
+		AST::Tree ast;
+		CModulesUnique& modules = ast.SetUnique<CModulesUnique>();
 
+		// Create root module
 		modules.mainModule = ast.Create();
 		ast.Add<CModule>(modules.mainModule, true, asset);
 
-		return true;
+		return ast;
 	}
 
 	void CloseProject(AST::Tree& ast)

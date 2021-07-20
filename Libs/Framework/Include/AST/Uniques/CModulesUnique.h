@@ -17,6 +17,8 @@ namespace Rift
 		PROP(AST::Id, mainModule)
 		AST::Id mainModule = AST::NoId;
 
+		TMap<Name, AST::Id> typesByPath;
+
 
 		bool HasMainModule() const
 		{

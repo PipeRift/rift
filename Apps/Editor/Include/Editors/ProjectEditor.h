@@ -24,15 +24,15 @@ namespace Rift
 		static const Name leftNode;
 		static const Name centralNode;
 
+		AST::Tree ast;
 		ImGuiID dockspaceID = 0;
 
 		String currentProjectPath;
-		TArray<TOwnPtr<TypeAssetEditor>> TypeAssetEditors;
+		TArray<TOwnPtr<TypeAssetEditor>> typeAssetEditors;
 		TArray<TAssetPtr<TypeAsset>> pendingTypesToClose;
 
-		FileExplorerPanel fileExplorer{*this};
+		FileExplorerPanel fileExplorer{};
 		DockSpaceLayout layout;
-		Rift::ASTDebugger astDebugger;
 
 		FileWatcher fileWatcher;
 
