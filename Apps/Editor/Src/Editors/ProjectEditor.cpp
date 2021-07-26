@@ -87,9 +87,9 @@ namespace Rift
 
 		DrawMenuBar(ast);
 
-		if (bSkipFrameAfterMenu)    // We could have closed the project
+		if (skipFrameAfterMenu)    // We could have closed the project
 		{
-			bSkipFrameAfterMenu = false;
+			skipFrameAfterMenu = false;
 			UI::PopID();
 			return;
 		}
@@ -162,13 +162,13 @@ namespace Rift
 					    Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
 					if (Editor::Get().OpenProject(folder))
 					{
-						bSkipFrameAfterMenu = true;
+						skipFrameAfterMenu = true;
 					}
 				}
 				if (UI::MenuItem("Close current"))
 				{
 					Modules::CloseProject(ast);
-					bSkipFrameAfterMenu = true;
+					skipFrameAfterMenu = true;
 				}
 				UI::Separator();
 				if (UI::MenuItem("Open File")) {}

@@ -32,7 +32,8 @@ struct PolyStorage : entt::type_list_cat_t<
 
 		void* get(const entity_type entity)
 		{
-			return const_cast<void*>(entt::poly_call<base + 0>(*this, entity));
+			const auto* self = this;
+			return const_cast<void*>(self->get(entity));
 		}
 
 		const void* get(const entity_type entity) const

@@ -1,20 +1,15 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "AST/Components/CChild.h"
+#include "AST/Components/CParent.h"
+#include "AST/Entt/RegistryTraits.h"
 #include "AST/Types.h"
 #include "AST/View.h"
-#include "AST/Entt/RegistryTraits.h"
 
 #include <Strings/Name.h>
 
 #include <entt/entity/registry.hpp>
-
-
-namespace Rift
-{
-	struct CChild;
-	struct CParent;
-}    // namespace Rift
 
 
 namespace Rift::AST
@@ -26,8 +21,8 @@ namespace Rift::AST
 
 	private:
 		Registry registry;
-		Pool* childPool;
-		Pool* parentPool;
+		TOwnPtr<View<TExclude<>, CChild>> childView;
+		TOwnPtr<View<TExclude<>, CParent>> parentView;
 
 
 	public:
@@ -237,24 +232,24 @@ namespace Rift::AST
 			CachePools();
 		}
 
-		Pool& GetParentPool()
+		View<TExclude<>, CParent>& GetParentView()
 		{
-			return *parentPool;
+			return *parentView;
 		}
 
-		Pool& GetChildPool()
+		View<TExclude<>, CChild>& GetChildView()
 		{
-			return *childPool;
+			return *childView;
 		}
 
-		const Pool& GetParentPool() const
+		const View<TExclude<>, CParent>& GetParentView() const
 		{
-			return *parentPool;
+			return *parentView;
 		}
 
-		const Pool& GetChildPool() const
+		const View<TExclude<>, CChild>& GetChildView() const
 		{
-			return *childPool;
+			return *childView;
 		}
 #pragma endregion ECS API
 

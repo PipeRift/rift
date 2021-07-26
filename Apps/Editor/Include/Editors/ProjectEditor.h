@@ -37,7 +37,7 @@ namespace Rift
 		FileWatcher fileWatcher;
 
 	protected:
-		bool bSkipFrameAfterMenu = false;
+		bool skipFrameAfterMenu = false;
 
 
 	public:

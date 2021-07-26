@@ -32,7 +32,7 @@ namespace Rift
 
 		ASTDebugger astDebugger;
 
-		bool bSkipFrameAfterMenu = false;
+		bool skipFrameAfterMenu = false;
 	};
 
 	inline const Name CEditorUnique::leftNode{"leftNode"};

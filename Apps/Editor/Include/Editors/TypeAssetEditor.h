@@ -5,10 +5,10 @@
 #include "DockSpaceLayout.h"
 #include "Editors/BaseEditor.h"
 #include "NodeGraph/NodeGraphPanel.h"
-#include "UI/UI.h"
 
 #include <Assets/AssetPtr.h>
 #include <Assets/TypeAsset.h>
+#include <UI/UI.h>
 
 
 namespace Rift

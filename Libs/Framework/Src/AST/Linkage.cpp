@@ -239,21 +239,21 @@ namespace Rift::AST
 
 	CChild* GetCChild(Tree& ast, Id node)
 	{
-		return reinterpret_cast<CChild*>(ast.GetChildPool()->get(node));
+		return reinterpret_cast<CChild*>(ast.GetChildView().TryGet<CChild>(node));
 	}
 
 	const CChild* GetCChild(const Tree& ast, Id node)
 	{
-		return reinterpret_cast<const CChild*>(ast.GetChildPool()->get(node));
+		return reinterpret_cast<const CChild*>(ast.GetChildView().TryGet<CChild>(node));
 	}
 
 	CParent* GetCParent(Tree& ast, Id node)
 	{
-		return reinterpret_cast<CParent*>(ast.GetParentPool()->get(node));
+		return reinterpret_cast<CParent*>(ast.GetParentView().TryGet<CParent>(node));
 	}
 
 	const CParent* GetCParent(const Tree& ast, Id node)
 	{
-		return reinterpret_cast<const CParent*>(ast.GetParentPool()->get(node));
+		return reinterpret_cast<const CParent*>(ast.GetParentView().TryGet<CParent>(node));
 	}
 }    // namespace Rift::AST

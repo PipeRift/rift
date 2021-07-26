@@ -1,10 +1,16 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "Components/CTypeEditor.h"
 #include "Editor.h"
 #include "Files/FileDialog.h"
+#include "NodeGraph/NodeGraphPanel.h"
 #include "Systems/EditorSystem.h"
 #include "Uniques/CEditorUnique.h"
+#include "Utils/FunctionGraph.h"
+#include "Utils/Properties.h"
 
+#include <AST/Components/CType.h>
+#include <AST/Utils/DeclarationUtils.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <RiftContext.h>
@@ -12,18 +18,23 @@
 
 namespace Rift::EditorSystem
 {
+	// Root Editor
 	void CreateDockspace(CEditorUnique& editor);
-
-	void DrawProject(AST::Tree& ast);
+	void CreateDockspace(CTypeEditor& editor, const char* id);
 	void DrawMenuBar(AST::Tree& ast);
-	void DrawProjectMenuBar(AST::Tree& ast, CEditorUnique& editorData);
 	void DrawProjectPickerPopup(AST::Tree& ast);
+
+	// Project Editor
+	void DrawProject(AST::Tree& ast);
+	void DrawProjectMenuBar(AST::Tree& ast, CEditorUnique& editorData);
+
+	// Type Editor
+	void DrawTypes(AST::Tree& ast, CEditorUnique& editor);
 
 
 	void Draw(AST::Tree& ast)
 	{
 		ZoneScopedN("EditorSystem::Draw");
-
 
 		if (Modules::HasProject(ast))
 		{
@@ -80,35 +91,13 @@ namespace Rift::EditorSystem
 		UI::End();
 	}
 
-	void DrawProject(AST::Tree& ast)
+	void CreateDockspace(CTypeEditor& editor, const char* id)
 	{
-		ZoneScopedN("EditorSystem::DrawProject");
+		ZoneScoped;
+		ImGuiDockNodeFlags dockingFlags = ImGuiDockNodeFlags_None;
 
-		CEditorUnique* editor = ast.TryGetUnique<CEditorUnique>();
-		if (!Ensure(editor))
-		{
-			return;
-		}
-
-		const auto& path = Modules::GetProjectPath(ast);
-		UI::PushID(Hash<Path>()(path));
-
-		DrawProjectMenuBar(ast, *editor);
-
-		if (editor->bSkipFrameAfterMenu)    // We could have closed the project
-		{
-			editor->bSkipFrameAfterMenu = false;
-			UI::PopID();
-			return;
-		}
-
-		CreateDockspace(*editor);
-		editor->layout.Tick(editor->dockspaceID);
-
-		editor->astDebugger.Draw(ast);
-		editor->fileExplorer.Draw(ast);
-
-		UI::PopID();
+		editor.dockspaceID = UI::GetID(id);
+		UI::DockSpace(editor.dockspaceID, ImVec2(0.0f, 0.0f), dockingFlags, nullptr);
 	}
 
 	void DrawMenuBar(AST::Tree& ast)
@@ -128,6 +117,89 @@ namespace Rift::EditorSystem
 		}
 	}
 
+	void DrawProjectPickerPopup(AST::Tree& ast)
+	{
+		// Center modal when appearing
+		UI::SetNextWindowPos(UI::GetMainViewport()->GetCenter(), ImGuiCond_Always, {0.5f, 0.5f});
+
+		if (UI::BeginPopupModal("Project Picker", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			if (UI::Button("Open Project..."))
+			{
+				Path folder = Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
+				if (Editor::Get().OpenProject(folder))
+				{
+					UI::CloseCurrentPopup();
+				}
+			}
+			UI::SetItemDefaultFocus();
+			UI::Separator();
+			{
+				UI::Text("Recent Projects");
+				static const char* recentProjects[]{"One recent project"};
+				static int selectedN = 0;
+				if (UI::BeginListBox("##RecentProjects"))
+				{
+					for (int n = 0; n < IM_ARRAYSIZE(recentProjects); ++n)
+					{
+						const bool isSelected = (selectedN == n);
+						if (UI::Selectable(recentProjects[n], isSelected))
+						{
+							selectedN = n;
+						}
+
+						// Set the initial focus when opening the combo (scrolling + keyboard
+						// navigation focus)
+						if (isSelected)
+						{
+							UI::SetItemDefaultFocus();
+						}
+					}
+					UI::EndListBox();
+				}
+			}
+			UI::EndPopup();
+		}
+	}
+
+
+	void DrawProject(AST::Tree& ast)
+	{
+		ZoneScopedN("EditorSystem::DrawProject");
+
+		if (!Ensure(ast.HasUnique<CEditorUnique>()))
+		{
+			return;
+		}
+		CEditorUnique& editor = ast.GetUnique<CEditorUnique>();
+
+		const auto& path = Modules::GetProjectPath(ast);
+		UI::PushID(Hash<Path>()(path));
+
+		DrawProjectMenuBar(ast, editor);
+
+		if (editor.skipFrameAfterMenu)    // We could have closed the project
+		{
+			editor.skipFrameAfterMenu = false;
+			UI::PopID();
+			return;
+		}
+
+		CreateDockspace(editor);
+		editor.layout.Tick(editor.dockspaceID);
+
+		auto typeEditors = ast.MakeView<CTypeEditor, CType>();
+		for (AST::Id typeId : typeEditors)
+		{
+			DrawTypes(ast, editor);
+		}
+
+		editor.astDebugger.Draw(ast);
+		editor.fileExplorer.Draw(ast);
+
+		UI::PopID();
+	}
+
 	void DrawProjectMenuBar(AST::Tree& ast, CEditorUnique& editorData)
 	{
 		if (UI::BeginMainMenuBar())
@@ -140,13 +212,13 @@ namespace Rift::EditorSystem
 					    Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
 					if (Editor::Get().OpenProject(folder))
 					{
-						editorData.bSkipFrameAfterMenu = true;
+						editorData.skipFrameAfterMenu = true;
 					}
 				}
 				if (UI::MenuItem("Close current"))
 				{
 					Modules::CloseProject(ast);
-					editorData.bSkipFrameAfterMenu = true;
+					editorData.skipFrameAfterMenu = true;
 				}
 				UI::Separator();
 				if (UI::MenuItem("Open File")) {}
@@ -200,13 +272,13 @@ namespace Rift::EditorSystem
 				if (UI::MenuItem("Reset layout"))
 				{
 					editorData.layout.Reset();
-					// for (const auto& editor : typeAssetEditors)
-					//{
-					//	if (editor)
-					//	{
-					//		editor->GetLayout().Reset();
-					//	}
-					//}
+
+					auto openTypes = ast.MakeView<CTypeEditor>();
+					for (AST::Id typeId : openTypes)
+					{
+						auto& editor = openTypes.Get<CTypeEditor>(typeId);
+						editor.layout.Reset();
+					}
 				}
 				UI::EndMenu();
 			}
@@ -214,48 +286,53 @@ namespace Rift::EditorSystem
 		}
 	}
 
-	void DrawProjectPickerPopup(AST::Tree& ast)
+	void DrawTypes(AST::Tree& ast, CEditorUnique& editor)
 	{
-		// Center modal when appearing
-		UI::SetNextWindowPos(UI::GetMainViewport()->GetCenter(), ImGuiCond_Always, {0.5f, 0.5f});
-
-		if (UI::BeginPopupModal("Project Picker", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		auto typeEditors = ast.MakeView<CType, CTypeEditor>();
+		for (AST::Id typeId : typeEditors)
 		{
-			if (UI::Button("Open Project..."))
-			{
-				Path folder = Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
-				if (Editor::Get().OpenProject(folder))
-				{
-					UI::CloseCurrentPopup();
-				}
-			}
-			UI::SetItemDefaultFocus();
-			UI::Separator();
-			{
-				UI::Text("Recent Projects");
-				static const char* recentProjects[]{"One recent project"};
-				static int selectedN = 0;
-				if (UI::BeginListBox("##RecentProjects"))
-				{
-					for (int n = 0; n < IM_ARRAYSIZE(recentProjects); ++n)
-					{
-						const bool isSelected = (selectedN == n);
-						if (UI::Selectable(recentProjects[n], isSelected))
-						{
-							selectedN = n;
-						}
+			UI::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+			UI::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);
+			UI::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-						// Set the initial focus when opening the combo (scrolling + keyboard
-						// navigation focus)
-						if (isSelected)
-						{
-							UI::SetItemDefaultFocus();
-						}
-					}
-					UI::EndListBox();
-				}
+			auto& type       = typeEditors.Get<CType>(typeId);
+			auto& typeEditor = typeEditors.Get<CTypeEditor>(typeId);
+
+			bool isOpen       = true;
+			String path       = Paths::ToString(type.path);
+			String windowName = Paths::GetFilename(StringView{path});
+			Strings::FormatTo(windowName, TX("###{}"), path);
+
+			if (typeEditor.pendingFocus)
+			{
+				UI::SetWindowFocus(windowName.c_str());
+				typeEditor.pendingFocus = false;
 			}
-			UI::EndPopup();
+
+			editor.layout.BindNextWindowToNode(CEditorUnique::centralNode);
+			if (UI::Begin(windowName.c_str(), &isOpen))
+			{
+				UI::PopStyleVar(3);
+
+				CreateDockspace(typeEditor, windowName.c_str());
+				typeEditor.layout.Tick(typeEditor.dockspaceID);
+
+				if (Declarations::IsStruct(ast, typeId))
+				{
+					DrawGraphFunction(ast, AST::NoId, typeEditor.layout);
+				}
+				DrawProperties(ast, typeId, typeEditor.layout);
+			}
+			else
+			{
+				UI::PopStyleVar(3);
+			}
+			UI::End();
+
+			if (!isOpen)
+			{
+				Modules::CloseType(ast, typeId);
+			}
 		}
 	}
 }    // namespace Rift::EditorSystem

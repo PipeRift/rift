@@ -16,7 +16,7 @@ namespace Rift
 		Path path;
 
 		PROP(AST::Id, moduleId)
-		AST::Id moduleId;
+		AST::Id moduleId = AST::NoId;
 
 		PROP(Guid, guid)
 		Guid guid;

@@ -144,4 +144,55 @@ namespace Rift::UI
 		bb.Max.y += extent.y;
 		return bb;
 	}
+
+	bool MutableText(StringView label, String& text)
+	{
+		static ImGuiID editingId = 0;
+		static String buffer;
+
+		const ImGuiID id = UI::GetID(label);
+		ImGui::PushID(id);
+
+		if (editingId == id)    // Editing?
+		{
+			UI::SetNextItemWidth(-FLT_MIN);
+			UI::InputText("##mutableEdit", buffer, ImGuiInputTextFlags_AutoSelectAll);
+
+			if (UI::IsItemDeactivatedAfterEdit())
+			{
+				editingId = 0;
+				text      = buffer;
+				buffer    = {};
+				UI::PopID();
+				return true;
+			}
+			else if (UI::IsItemDeactivated())
+			{
+				editingId = 0;
+				buffer    = {};
+			}
+			UI::PopID();
+			return false;
+		}
+
+		if (UI::IsItemHovered() && UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+		{
+			editingId = id;
+			buffer    = text;
+			UI::ActivateItem(UI::GetID("##mutableEdit"));
+		}
+
+		UI::PushStyleVar(ImGuiStyleVar_CellPadding, {16.f, 4.f});
+		UI::PushStyleColor(ImGuiCol_FrameBg, ImVec4(Color::Transparent));
+
+		UI::SetNextItemWidth(-FLT_MIN);
+		UI::AlignTextToFramePadding();
+		UI::Text(label.data());
+
+		UI::PopStyleColor();
+		UI::PopStyleVar();
+
+		UI::PopID();
+		return false;
+	}
 }    // namespace Rift::UI

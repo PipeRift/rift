@@ -1,9 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "AST/Components/CChild.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CNativeDecl.h"
-#include "AST/Components/CParent.h"
 #include "AST/Components/CType.h"
 #include "AST/Tree.h"
 #include "Compiler/Cpp/Components/CCppNativeName.h"
@@ -109,10 +107,10 @@ namespace Rift::AST
 	void Tree::CachePools()
 	{
 		registry.prepare<CChild>();
-		childPool = &registry.storage(entt::type_id<CChild>());
-
 		registry.prepare<CParent>();
-		parentPool = &registry.storage(entt::type_id<CParent>());
+
+		childView  = MakeOwned<View<TExclude<>, CChild>>(MakeView<CChild>());
+		parentView = MakeOwned<View<TExclude<>, CParent>>(MakeView<CParent>());
 	}
 
 	void Tree::CopyFrom(const Tree& other)
