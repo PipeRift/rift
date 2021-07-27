@@ -1,9 +1,10 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Editors/Assets/TypePropertiesPanel.h"
+
 #include "AST/Linkage.h"
 #include "DockSpaceLayout.h"
 #include "Editor.h"
-#include "Editors/Assets/TypePropertiesPanel.h"
 #include "Editors/TypeAssetEditor.h"
 
 #include <AST/Components/CClassDecl.h>

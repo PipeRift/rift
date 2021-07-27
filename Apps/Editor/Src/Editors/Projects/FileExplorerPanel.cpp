@@ -7,13 +7,14 @@
 #include "UI/UI.h"
 #include "Uniques/CEditorUnique.h"
 
+#include <AST/Components/CIdentifier.h>
+#include <AST/Components/CModule.h>
 #include <Files/FileDialog.h>
 #include <Framework/Paths.h>
 #include <GLFW/glfw3.h>
 #include <RiftContext.h>
 #include <Strings/FixedString.h>
 #include <imgui_internal.h>
-
 
 
 namespace Rift
@@ -56,6 +57,17 @@ namespace Rift
 			UI::EndPopup();
 		}
 
+		auto modules = ast.MakeView<CIdentifier, CModule>();
+		for (AST::Id moduleId : modules)
+		{
+			auto& ident = modules.Get<CIdentifier>(moduleId);
+			// auto& mod   = modules.Get<CModule>(moduleId);
+			if (UI::TreeNode(ident.name.ToString().c_str()))
+			{
+				UI::TreePop();
+			}
+		}
+
 		DrawFolderItems(ast, projectFolder);
 
 		UI::EndChild();
@@ -95,11 +107,11 @@ namespace Rift
 
 	void FileExplorerPanel::CacheProjectFiles(AST::Tree& ast)
 	{
-		bDirty       = false;
-		//CModule* mod = Modules::GetProjectModule(ast);
-		//assert(mod);
+		bDirty = false;
+		// CModule* mod = Modules::GetProjectModule(ast);
+		// assert(mod);
 
-		//project->ScanAssets();
+		// project->ScanAssets();
 
 		// Reset cached data
 		projectFolder = {};

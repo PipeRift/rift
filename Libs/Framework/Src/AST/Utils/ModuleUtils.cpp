@@ -1,9 +1,10 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "AST/Utils/ModuleUtils.h"
+
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CModule.h"
 #include "AST/Uniques/CModulesUnique.h"
-#include "AST/Utils/ModuleUtils.h"
 #include "Framework/Paths.h"
 
 #include <Files/Paths.h>
@@ -36,7 +37,7 @@ namespace Rift::Modules
 		// Create root module
 		modules.mainModule = ast.Create();
 		ast.Add<CModule>(modules.mainModule, true, asset);
-		ast.Add<CIdentifier>(modules.mainModule, Name{Paths::ToString(fullPath)});
+		ast.Add<CIdentifier>(modules.mainModule, Name{Paths::ToString(fullPath.filename())});
 
 		return ast;
 	}

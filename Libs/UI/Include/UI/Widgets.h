@@ -33,17 +33,6 @@ namespace Rift::UI
 	static bool SpriteButton(AnimatedSprite& sprite, i32 framePadding, const LinearColor& bgColor,
 	    const LinearColor& tintColor);
 
-
-	inline void PushID(StringView id)
-	{
-		ImGui::PushID(id.data(), id.data() + id.size());
-	}
-
-	inline ImGuiID GetID(StringView id)
-	{
-		return ImGui::GetID(id.data(), id.data() + id.size());
-	}
-
 	inline bool InputText(const char* label, char* buf, size_t buf_size,
 	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL,
 	    void* user_data = NULL)

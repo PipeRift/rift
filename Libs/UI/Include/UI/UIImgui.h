@@ -85,4 +85,51 @@
 namespace Rift::UI
 {
 	using namespace ImGui;
-}
+
+	// Begin ImGui API override
+	// Push string into the ID stack (will hash string)
+	inline void PushID(const char* str_id)
+	{
+		ImGui::PushID(str_id);
+	}
+	// Push string into the ID stack (will hash string)
+	inline void PushID(const char* str_id_begin, const char* str_id_end)
+	{
+		ImGui::PushID(str_id_begin, str_id_end);
+	}
+	// Push pointer into the ID stack (will hash pointer)
+	inline void PushID(const void* ptr_id)
+	{
+		ImGui::PushID(ptr_id);
+	}
+	// Push integer into the ID stack (will hash integer)
+	inline void PushID(i32 int_id)
+	{
+		ImGui::PushID(int_id);
+	}
+
+	inline ImGuiID GetID(const char* str_id)
+	{
+		return ImGui::GetID(str_id);
+	}
+	inline ImGuiID GetID(const char* str_id_begin, const char* str_id_end)
+	{
+		return ImGui::GetID(str_id_begin, str_id_end);
+	}
+	inline ImGuiID GetID(const void* ptr_id)
+	{
+		return ImGui::GetID(ptr_id);
+	}
+	// End ImGui API override
+
+
+	inline void PushID(StringView id)
+	{
+		UI::PushID(id.data(), id.data() + id.size());
+	}
+
+	inline ImGuiID GetID(StringView id)
+	{
+		return UI::GetID(id.data(), id.data() + id.size());
+	}
+}    // namespace Rift::UI

@@ -4,9 +4,7 @@
 
 namespace Rift::TypeSystem
 {
-	void Init(AST::Tree& ast)
-	{
-	}
+	void Init(AST::Tree& ast) {}
 
 	void RunLoads(AST::Tree& ast)
 	{

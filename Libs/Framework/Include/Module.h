@@ -37,51 +37,51 @@ namespace Rift
 	 */
 	/*class Module : public Object
 	{
-		CLASS(Module, Object)
+	    CLASS(Module, Object)
 
-		static constexpr StringView file{"Project.rift"};
+	    static constexpr StringView file{"Project.rift"};
 
-		PROP(Name, name);
-		Name name;
+	    PROP(Name, name);
+	    Name name;
 
-		Path path;
+	    Path path;
 
-		TAssetPtr<ModuleAsset> asset;
-		TArray<AssetInfo> allTypes;
+	    TAssetPtr<ModuleAsset> asset;
+	    TArray<AssetInfo> allTypes;
 
 
 	public:
-		Module() : Super() {}
+	    Module() : Super() {}
 
-		void Init(const Path& path);
+	    void Init(const Path& path);
 
-		void ScanAssets();
-		void LoadAllAssets();
+	    void ScanAssets();
+	    void LoadAllAssets();
 
-		Path ToModulePath(const Path& path) const;
+	    Path ToModulePath(const Path& path) const;
 
-		Path GetPath() const
-		{
-			return path;
-		}
+	    Path GetPath() const
+	    {
+	        return path;
+	    }
 
-		bool IsValid() const
-		{
-			return asset.IsValid();
-		}
+	    bool IsValid() const
+	    {
+	        return asset.IsValid();
+	    }
 
-		const TArray<AssetInfo>& GetAllTypeAssets() const
-		{
-			return allTypes;
-		}
+	    const TArray<AssetInfo>& GetAllTypeAssets() const
+	    {
+	        return allTypes;
+	    }
 
-		void SetName(Name newName)
-		{
-			name = Move(newName);
-		}
-		Name GetName() const
-		{
-			return name;
-		}
+	    void SetName(Name newName)
+	    {
+	        name = Move(newName);
+	    }
+	    Name GetName() const
+	    {
+	        return name;
+	    }
 	};*/
 }    // namespace Rift

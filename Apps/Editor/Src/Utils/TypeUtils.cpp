@@ -1,13 +1,13 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
 #include "Components/CTypeEditor.h"
-#include "Utils/EditorUtils.h"
+#include "Utils/TypeUtils.h"
 
 #include <AST/Components/CType.h>
 #include <Misc/Checks.h>
 
 
-namespace Rift::Modules
+namespace Rift::Types
 {
 	void OpenType(AST::Tree& ast, AST::Id typeId)
 	{
@@ -22,4 +22,4 @@ namespace Rift::Modules
 
 		ast.Remove<CTypeEditor>(typeId);
 	}
-}    // namespace Rift::Modules
+}    // namespace Rift::Types

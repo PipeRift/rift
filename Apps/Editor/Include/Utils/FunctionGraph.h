@@ -5,7 +5,7 @@
 #include "AST/Tree.h"
 
 
-namespace Rift::Editor
+namespace Rift
 {
 	void DrawFunctionGraph(AST::Tree& ast, AST::Id functionId, struct DockSpaceLayout& layout);
 }

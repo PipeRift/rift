@@ -1,13 +1,14 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "Utils/FunctionGraph.h"
+
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
-#include "Utils/FunctionGraph.h"
 
 #include <imnodes.h>
 
 
-namespace Rift::Editor
+namespace Rift
 {
 	void DrawFunctionGraph(AST::Tree& ast, AST::Id functionId, DockSpaceLayout& layout)
 	{
@@ -97,4 +98,4 @@ namespace Rift::Editor
 		}
 		UI::End();
 	}
-}    // namespace Rift::Editor
+}    // namespace Rift

@@ -2,6 +2,9 @@
 
 #include "Utils/Properties.h"
 
+#include "Components/CTypeEditor.h"
+#include "DockSpaceLayout.h"
+
 #include <AST/Components/CClassDecl.h>
 #include <AST/Components/CFunctionDecl.h>
 #include <AST/Components/CIdentifier.h>
@@ -12,7 +15,7 @@
 #include <UI/UI.h>
 
 
-namespace Rift::Editor
+namespace Rift
 {
 	void DrawVariable(AST::Tree& ast, AST::Id variableId)
 	{
@@ -288,4 +291,4 @@ namespace Rift::Editor
 		//	pendingDelete = AST::NoId;
 		//}
 	}
-}    // namespace Rift::Editor
+}    // namespace Rift

@@ -1,12 +1,13 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "Compiler/Cpp/CppBackend.h"
+
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CModule.h"
 #include "AST/Utils/ModuleUtils.h"
 #include "Compiler/Cpp/CMakeGen.h"
 #include "Compiler/Cpp/CodeGen.h"
-#include "Compiler/Cpp/CppBackend.h"
 
 #include <Files/Files.h>
 
@@ -60,7 +61,7 @@ namespace Rift::Compiler::Cpp
 		Log::Info("Building project '{}'", Modules::GetProjectName(context.ast));
 
 		// context.project = project;
-		context.config  = tmpConfig;
+		context.config = tmpConfig;
 		// context.config.Init(project);
 
 		const Path& codePath = context.config.intermediatesPath / "Code";

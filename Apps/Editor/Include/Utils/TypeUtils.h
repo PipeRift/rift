@@ -5,8 +5,8 @@
 #include "AST/Tree.h"
 
 
-namespace Rift::Editor
+namespace Rift::Types
 {
 	void OpenType(AST::Tree& ast, AST::Id typeId);
 	void CloseType(AST::Tree& ast, AST::Id typeId);
-}    // namespace Rift::Editor
+}    // namespace Rift::Types

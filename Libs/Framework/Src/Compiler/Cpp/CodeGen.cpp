@@ -1,5 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "Compiler/Cpp/CodeGen.h"
+
 #include "AST/Components/CChild.h"
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CFunctionDecl.h"
@@ -9,9 +11,8 @@
 #include "AST/Components/CVariableDecl.h"
 #include "AST/Linkage.h"
 #include "AST/Tree.h"
-#include "Compiler/Cpp/CodeGen.h"
-#include "Compiler/Cpp/CppBackend.h"
 #include "Compiler/CompilerContext.h"
+#include "Compiler/Cpp/CppBackend.h"
 
 #include <Files/Files.h>
 #include <Strings/String.h>

@@ -1,8 +1,9 @@
 // Copyright 2015-2020 Piperift - All rights reserved
+#include "Compiler/Compiler.h"
+
 #include "AST/Systems/ModuleSystem.h"
 #include "AST/Systems/TypeSystem.h"
 #include "AST/Uniques/CModulesUnique.h"
-#include "Compiler/Compiler.h"
 #include "Compiler/CompilerContext.h"
 #include "Compiler/Cpp/CppBackend.h"
 #include "Compiler/Systems/CompileTimeSystem.h"

@@ -8,6 +8,7 @@
 #include "Uniques/CEditorUnique.h"
 #include "Utils/FunctionGraph.h"
 #include "Utils/Properties.h"
+#include "Utils/TypeUtils.h"
 
 #include <AST/Components/CType.h>
 #include <AST/Utils/DeclarationUtils.h>
@@ -299,9 +300,9 @@ namespace Rift::EditorSystem
 			auto& typeEditor = typeEditors.Get<CTypeEditor>(typeId);
 
 			bool isOpen       = true;
-			String path       = Paths::ToString(type.path);
-			String windowName = Paths::GetFilename(StringView{path});
-			Strings::FormatTo(windowName, TX("###{}"), path);
+			const String path       = Paths::ToString(type.path);
+			StringView filename     = Paths::GetFilename(StringView{path});
+			const String windowName = Strings::Format(TX("{}###{}"), filename, path);
 
 			if (typeEditor.pendingFocus)
 			{
@@ -319,7 +320,7 @@ namespace Rift::EditorSystem
 
 				if (Declarations::IsStruct(ast, typeId))
 				{
-					DrawGraphFunction(ast, AST::NoId, typeEditor.layout);
+					DrawFunctionGraph(ast, AST::NoId, typeEditor.layout);
 				}
 				DrawProperties(ast, typeId, typeEditor.layout);
 			}
@@ -331,7 +332,7 @@ namespace Rift::EditorSystem
 
 			if (!isOpen)
 			{
-				Modules::CloseType(ast, typeId);
+				Types::CloseType(ast, typeId);
 			}
 		}
 	}

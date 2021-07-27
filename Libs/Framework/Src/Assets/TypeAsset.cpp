@@ -1,14 +1,15 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Assets/TypeAsset.h"
+
 #include "AST/Components/CChild.h"
-#include "AST/Components/CParent.h"
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CFunctionLibraryDecl.h"
 #include "AST/Components/CIdentifier.h"
+#include "AST/Components/CParent.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CTypeAssetRef.h"
 #include "AST/Serialization.h"
-#include "Assets/TypeAsset.h"
 #include "RiftContext.h"
 
 #include <Reflection/Static/EnumType.h>

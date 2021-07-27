@@ -3,8 +3,8 @@
 #include "Tools/ASTDebugger.h"
 
 #include <AST/Components/CChild.h>
-#include <AST/Components/CParent.h>
 #include <AST/Components/CIdentifier.h>
+#include <AST/Components/CParent.h>
 #include <AST/Tree.h>
 #include <UI/UI.h>
 
@@ -56,7 +56,7 @@ namespace Rift
 		}
 
 		const CParent* children = ast.TryGet<CParent>(entity);
-		const bool hasChildren    = children && !children->children.IsEmpty();
+		const bool hasChildren  = children && !children->children.IsEmpty();
 		if (UI::TreeNodeEx(name.c_str(), hasChildren ? 0 : ImGuiTreeNodeFlags_Leaf))
 		{
 			if (hasChildren)

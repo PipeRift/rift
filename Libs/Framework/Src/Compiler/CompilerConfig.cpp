@@ -1,8 +1,8 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
 #include "AST/Uniques/CModulesUnique.h"
-#include "Compiler/CompilerContext.h"
 #include "AST/Utils/ModuleUtils.h"
+#include "Compiler/CompilerContext.h"
 
 
 namespace Rift::Compiler

@@ -1,9 +1,10 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "AST/Tree.h"
+
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CNativeDecl.h"
 #include "AST/Components/CType.h"
-#include "AST/Tree.h"
 #include "Compiler/Cpp/Components/CCppNativeName.h"
 
 

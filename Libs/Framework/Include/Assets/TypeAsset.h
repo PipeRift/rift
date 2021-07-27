@@ -22,7 +22,7 @@ namespace Rift
 			FunctionLibrary
 		};
 
-		Type type = Type::None;
+		Type type           = Type::None;
 		AST::Id declaration = AST::NoId;
 
 

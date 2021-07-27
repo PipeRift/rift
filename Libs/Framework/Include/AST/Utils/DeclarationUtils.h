@@ -9,13 +9,13 @@
 
 namespace Rift::Declarations
 {
-	bool IsClass(const AST::Tree& ast, AST::Id node)
+	inline bool IsClass(const AST::Tree& ast, AST::Id node)
 	{
 		return ast.Has<CClassDecl>(node);
 	}
 
-	bool IsStruct(const AST::Tree& ast, AST::Id node)
+	inline bool IsStruct(const AST::Tree& ast, AST::Id node)
 	{
 		return ast.Has<CStructDecl>(node);
 	}
-}    // namespace Rift::Util
+}    // namespace Rift::Declarations

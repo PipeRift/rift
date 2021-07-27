@@ -1,10 +1,11 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "AST/Systems/ModuleSystem.h"
+
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CModule.h"
 #include "AST/Components/CType.h"
 #include "AST/Components/Tags/CPendingLoad.h"
-#include "AST/Systems/ModuleSystem.h"
 #include "AST/Tree.h"
 #include "AST/Uniques/CModulesUnique.h"
 #include "AST/Utils/TypeIterator.h"
