@@ -42,14 +42,13 @@ namespace Rift::Compiler::Cpp
 
 	void BuildModule(Context& context, AST::Id moduleId)
 	{
-		CModule* module = context.ast.TryGet<CModule>(moduleId);
-		if (!module)
+		if (!context.ast.Has<CModule>(moduleId))
 		{
 			Log::Info("Cant find module");
 			return;
 		}
 
-		Log::Info("Building module '{}'", Modules::GetModuleName(*module));
+		Log::Info("Building module '{}'", Modules::GetModuleName(context.ast, moduleId));
 		Log::Info("Loading module files");
 		// project->LoadAllAssets();
 	}

@@ -1,5 +1,6 @@
 .vs
 .clangd
+.cache
 Build
 Saved
 Testing

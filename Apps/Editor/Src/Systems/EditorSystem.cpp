@@ -1,10 +1,11 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "Systems/EditorSystem.h"
+
 #include "Components/CTypeEditor.h"
 #include "Editor.h"
 #include "Files/FileDialog.h"
 #include "NodeGraph/NodeGraphPanel.h"
-#include "Systems/EditorSystem.h"
 #include "Uniques/CEditorUnique.h"
 #include "Utils/FunctionGraph.h"
 #include "Utils/Properties.h"
@@ -299,10 +300,10 @@ namespace Rift::EditorSystem
 			auto& type       = typeEditors.Get<CType>(typeId);
 			auto& typeEditor = typeEditors.Get<CTypeEditor>(typeId);
 
-			bool isOpen       = true;
-			const String path       = Paths::ToString(type.path);
-			StringView filename     = Paths::GetFilename(StringView{path});
-			const String windowName = Strings::Format(TX("{}###{}"), filename, path);
+			bool isOpen               = true;
+			const String path         = Paths::ToString(type.path);
+			const StringView filename = Paths::GetFilename(path);
+			const String windowName   = Strings::Format(TX("{}###{}"), filename, path);
 
 			if (typeEditor.pendingFocus)
 			{

@@ -1,14 +1,18 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Editors/Projects/FileExplorerPanel.h"
+
 #include "Editor.h"
 #include "Editors/ProjectEditor.h"
-#include "Editors/Projects/FileExplorerPanel.h"
 #include "UI/Style.h"
 #include "UI/UI.h"
 #include "Uniques/CEditorUnique.h"
 
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CModule.h>
+#include <AST/Components/CType.h>
+#include <AST/Linkage.h>
+#include <AST/Utils/ModuleUtils.h>
 #include <Files/FileDialog.h>
 #include <Framework/Paths.h>
 #include <GLFW/glfw3.h>
@@ -45,7 +49,7 @@ namespace Rift
 
 	void FileExplorerPanel::DrawList(AST::Tree& ast)
 	{
-		if (bDirty)
+		// if (bDirty)
 		{
 			CacheProjectFiles(ast);
 		}
@@ -57,29 +61,21 @@ namespace Rift
 			UI::EndPopup();
 		}
 
-		auto modules = ast.MakeView<CIdentifier, CModule>();
-		for (AST::Id moduleId : modules)
+
+		for (const auto& item : folders[Name::None()].items)
 		{
-			auto& ident = modules.Get<CIdentifier>(moduleId);
-			// auto& mod   = modules.Get<CModule>(moduleId);
-			if (UI::TreeNode(ident.name.ToString().c_str()))
-			{
-				UI::TreePop();
-			}
+			DrawItem(ast, item);
 		}
-
-		DrawFolderItems(ast, projectFolder);
-
 		UI::EndChild();
 	}
 
-	void FileExplorerPanel::DrawContextMenu(AST::Tree& ast, Path path, File* file)
+	void FileExplorerPanel::DrawContextMenu(AST::Tree& ast, Path path, Item* item)
 	{
-		if (file && file->info)
+		if (item)
 		{
 			if (UI::MenuItem("Rename"))
 			{
-				file->renaming = true;
+				// file->renaming = true;
 			}
 			if (UI::MenuItem("Delete")) {}
 		}
@@ -105,126 +101,268 @@ namespace Rift
 		}
 	}
 
+	void FileExplorerPanel::CreateParentFolders(TMap<Name, Folder>& folders, StringView parentPath)
+	{
+		Name lastName{parentPath};
+		parentPath = Paths::GetParent(parentPath);
+		Name parentName{parentPath};
+		while (!parentPath.empty())
+		{
+			if (Folder* parent = folders.Find(parentName))
+			{
+				parent->items.Add({AST::NoId, lastName});
+				// Found an existing folder. Leave since we assume all parent folders are valid
+				return;
+			}
+			else
+			{
+				folders.Insert(parentName, Folder{{Item{AST::NoId, lastName}}});
+
+				lastName   = parentName;
+				parentPath = Paths::GetParent(parentPath);
+				parentName = Name{parentPath};
+			}
+		}
+	}
+
 	void FileExplorerPanel::CacheProjectFiles(AST::Tree& ast)
 	{
 		bDirty = false;
-		// CModule* mod = Modules::GetProjectModule(ast);
-		// assert(mod);
 
-		// project->ScanAssets();
+		folders.Empty();
 
-		// Reset cached data
-		projectFolder = {};
+		// Set root folder (not displayed)
+		folders.InsertDefaulted(Name::None());
 
-		/*for (auto& asset : project->GetAllTypeAssets())
+		auto modules = ast.MakeView<CIdentifier, CModule>();
+
+		AST::Id projectModId = Modules::GetProjectModule(ast);
+		auto& projectModule  = modules.Get<CModule>(projectModId);
+
+		// Create module folders
+		for (AST::Id moduleId : modules)
 		{
-		    const Path path     = Paths::FromString(asset.GetStrPath());
-		    const Path relative = Paths::ToRelative(path, project->GetPath());
-		    Folder* current     = &projectFolder;
-
-		    for (auto it = relative.begin(); it != relative.end(); ++it)
-		    {
-		        const String name = Paths::ToString(*it);
-		        if (Strings::EndsWith(name, Paths::typeExtension))
-		        {
-		            current->files.Add({name, asset});
-		        }
-		        else
-		        {
-		            bool exists = false;
-		            for (i32 i = 0; i < current->folders.Size(); ++i)
-		            {
-		                Folder& folder = current->folders[i];
-		                if (folder.name == name)
-		                {
-		                    current = &folder;
-		                    exists  = true;
-		                    break;
-		                }
-		            }
-
-		            if (!exists)
-		            {
-		                current->folders.Add({name});
-		                current = &current->folders.Last();
-		            }
-		        }
-		    }
+			auto& mod = modules.Get<CModule>(moduleId);
+			const Name pathName{Paths::ToString(mod.path)};
+			folders.InsertDefaulted(pathName);
 		}
-		*/
+
+		// Create folders between modules
+		for (AST::Id oneId : modules)
+		{
+			bool insideOther = false;
+			auto& one        = modules.Get<CModule>(oneId);
+
+			const String path = Paths::ToString(one.path);
+			for (AST::Id otherId : modules)
+			{
+				if (oneId != otherId)
+				{
+					auto& other = modules.Get<CModule>(otherId);
+					if (Paths::IsInside(one.path, other.path))
+					{
+						// If a module is inside another, create the folders in between
+						CreateParentFolders(folders, path);
+						insideOther = true;
+					}
+				}
+			}
+
+			if (!insideOther)
+			{
+				folders[Name::None()].items.Add(Item{oneId, Name{path}});
+			}
+		}
+
+		// Create items
+		auto types = ast.MakeView<CType>();
+		for (AST::Id typeId : types)
+		{
+			CType& type = types.Get<CType>(typeId);
+			if (!type.path.empty())
+			{
+				CreateParentFolders(folders, Paths::ToString(type.path));
+			}
+		}
 	}
 
-	void FileExplorerPanel::DrawFolderItems(AST::Tree& ast, Folder& folder)
+	/*TArray<Folder> moduleFolders;
+	auto types = ast.MakeView<CType>();
+	for (AST::Id moduleId : modules)
 	{
-		for (auto& childFolder : folder.folders)
+	    Folder& folder = moduleFolders.AddDefaultedRef();
+	    folder.name    = Modules::GetModuleName(ast, moduleId).ToString();
+
+	    TArray<AST::Id>* linked = AST::GetLinked(ast, moduleId);
+	    TArray<TPair<AST::Id, CType*>> types;
+	    types.Reserve(linked.Size());
+	    for (AST::Id link : linked)
+	    {
+	        if (CType* type = types.TryGet<CType>(link))
+	        {
+	            types.Add(type);
+	        }
+	    }
+	    // Remove non types
+
+	    linked.Sort([&types](AST::Id oneId, AST::Id otherId) {
+	        CType& one   = types.Get<CType>(oneId);
+	        CType& other = types.Get<CType>(otherId);
+
+	        return one.path > other.path;
+	    });
+
+	    TFixedString<512> currentPath;
+	    for (AST::Id type : types)
+	    {
+	        while ()
+	    }
+	}
+
+	for (Folder& folder : moduleFolders) {}
+
+	// Sort
+	for (Folder& folder : moduleFolders) {}
+	*/
+
+	// project->ScanAssets();
+
+	// Reset cached data
+	// projectFolder = {};
+
+	/*for (auto& asset : project->GetAllTypeAssets())
+	{
+	    const Path path     = Paths::FromString(asset.GetStrPath());
+	    const Path relative = Paths::ToRelative(path, project->GetPath());
+	    Folder* current     = &projectFolder;
+
+	    for (auto it = relative.begin(); it != relative.end(); ++it)
+	    {
+	        const String name = Paths::ToString(*it);
+	        if (Strings::EndsWith(name, Paths::typeExtension))
+	        {
+	            current->files.Add({name, asset});
+	        }
+	        else
+	        {
+	            bool exists = false;
+	            for (i32 i = 0; i < current->folders.Size(); ++i)
+	            {
+	                Folder& folder = current->folders[i];
+	                if (folder.name == name)
+	                {
+	                    current = &folder;
+	                    exists  = true;
+	                    break;
+	                }
+	            }
+
+	            if (!exists)
+	            {
+	                current->folders.Add({name});
+	                current = &current->folders.Last();
+	            }
+	        }
+	    }
+	}
+	*/
+
+	void FileExplorerPanel::DrawItem(AST::Tree& ast, const Item& item)
+	{
+		if (Folder* folder = folders.Find(item.path))
 		{
-			if (UI::TreeNode(childFolder.name.c_str()))
+			// TODO: Display module name
+			StringView name = Paths::GetFilename(item.path.ToString());
+			if (UI::TreeNode(name.data()))
 			{
-				DrawFolderItems(ast, childFolder);
+				for (auto& childItem : folder->items)
+				{
+					DrawItem(ast, childItem);
+				}
 				UI::TreePop();
-			}
-			if (UI::BeginPopupContextItem())
-			{
-				const Path path = Paths::FromString(childFolder.name);
-				DrawContextMenu(ast, path, nullptr);
-				UI::EndPopup();
-			}
-		}
-
-		for (auto& file : folder.files)
-		{
-			DrawFile(ast, file);
-		}
-	}
-
-	void FileExplorerPanel::DrawFile(AST::Tree& ast, File& file)
-	{
-		if (!file.renaming)
-		{
-			UI::TreeNodeEx(
-			    file.name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-			if (UI::IsItemHovered() && UI::IsKeyReleased(GLFW_KEY_F2))
-			{
-				file.renaming = true;
 			}
 		}
 		else
 		{
-			UI::Indent();
-			Style::PushStyleCompact();
-			// TODO: Implement UI functions for string types
-			TFixedString<128> buffer;
-
-			UI::SetKeyboardFocusHere();
-			if (UI::InputText("##newname", buffer.data(), buffer.size(),
-			        ImGuiInputTextFlags_EnterReturnsTrue))
-			{
-				file.renaming = false;
-			}
-			// if (!UI::IsItemActive())
-			//{
-			//	file.renaming = false;
-			//}
-			Style::PopStyleCompact();
-			UI::Unindent();
+			StringView name = Paths::GetFilename(item.path.ToString());
+			UI::TreeNodeEx(
+			    name.data(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
 		}
 
 
-		if (UI::IsItemClicked())
+		/*if (UI::TreeNode(folder.name.c_str()))
 		{
-			if (UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-			{
-				// editor.OpenType(file.info);
-			}
-		}
+		    for (auto& item : folder.items)
+		    {
+		        if (UI::TreeNode(childFolder.name.c_str()))
+		        {
+		            DrawFolderItems(ast, childFolder);
+		            UI::TreePop();
+		        }
+		        if (UI::BeginPopupContextItem())
+		        {
+		            const Path path = Paths::FromString(childFolder.name);
+		            DrawContextMenu(ast, path, nullptr);
+		            UI::EndPopup();
+		        }
+		    }
 
-		if (UI::BeginPopupContextItem())
-		{
-			const Path path = Paths::FromString(file.info.GetStrPath());
-			DrawContextMenu(ast, path, &file);
-			UI::EndPopup();
-		}
+		    for (auto& file : folder.files)
+		    {
+		        DrawFile(ast, file);
+		    }
+		    UI::TreePop();
+		}*/
 	}
+
+	/*void FileExplorerPanel::DrawFile(AST::Tree& ast, File& file)
+	{
+	    if (!file.renaming)
+	    {
+	        UI::TreeNodeEx(
+	            file.name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+	        if (UI::IsItemHovered() && UI::IsKeyReleased(GLFW_KEY_F2))
+	        {
+	            file.renaming = true;
+	        }
+	    }
+	    else
+	    {
+	        UI::Indent();
+	        Style::PushStyleCompact();
+	        // TODO: Implement UI functions for string types
+	        TFixedString<128> buffer;
+
+	        UI::SetKeyboardFocusHere();
+	        if (UI::InputText("##newname", buffer.data(), buffer.size(),
+	                ImGuiInputTextFlags_EnterReturnsTrue))
+	        {
+	            file.renaming = false;
+	        }
+	        // if (!UI::IsItemActive())
+	        //{
+	        //	file.renaming = false;
+	        //}
+	        Style::PopStyleCompact();
+	        UI::Unindent();
+	    }
+
+
+	    if (UI::IsItemClicked())
+	    {
+	        if (UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+	        {
+	            // editor.OpenType(file.info);
+	        }
+	    }
+
+	    if (UI::BeginPopupContextItem())
+	    {
+	        const Path path = Paths::FromString(file.info.GetStrPath());
+	        DrawContextMenu(ast, path, &file);
+	        UI::EndPopup();
+	    }
+	}*/
 
 
 	void FileExplorerPanel::CreateAsset(

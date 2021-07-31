@@ -20,13 +20,14 @@ namespace Rift::Modules
 	AST::Tree OpenProject(const Path& path);
 	void CloseProject(AST::Tree& ast);
 
-	CModule* GetProjectModule(AST::Tree& ast);
-	const CModule* GetProjectModule(const AST::Tree& ast);
+	AST::Id GetProjectModule(const AST::Tree& ast);
 
 	Name GetProjectName(const AST::Tree& ast);
 	const Path& GetProjectPath(const AST::Tree& ast);
 
 	bool HasProject(const AST::Tree& ast);
 
-	Name GetModuleName(const CModule& module);
+	// Resolve a module's name
+	// Reads: CIdentifier, CModule
+	Name GetModuleName(const AST::Tree& ast, AST::Id moduleId);
 }    // namespace Rift::Modules

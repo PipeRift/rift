@@ -59,48 +59,54 @@ namespace Rift::Modules
 		return nullptr;
 	}
 
-	const CModule* GetProjectModule(const AST::Tree& ast)
+	AST::Id GetProjectModule(const AST::Tree& ast)
 	{
 		if (auto* modules = ast.TryGetUnique<CModulesUnique>())
 		{
 			if (ast.IsValid(modules->mainModule))
 			{
-				return ast.TryGet<CModule>(modules->mainModule);
+				return modules->mainModule;
 			}
 		}
-		return nullptr;
+		return AST::NoId;
 	}
 
 	Name GetProjectName(const AST::Tree& ast)
 	{
-		const CModule* module = GetProjectModule(ast);
-		return module ? GetModuleName(*module) : Name{};
+		AST::Id moduleId = GetProjectModule(ast);
+		return GetModuleName(ast, moduleId);
 	}
 
 	const Path& GetProjectPath(const AST::Tree& ast)
 	{
 		static const Path def{};
-		const CModule* module = GetProjectModule(ast);
+		const auto* module = ast.TryGet<CModule>(GetProjectModule(ast));
 		return module ? module->path : def;
 	}
 
 	bool HasProject(const AST::Tree& ast)
 	{
-		return GetProjectModule(ast) != nullptr;
+		return GetProjectModule(ast) != AST::NoId;
 	}
 
-	Name GetModuleName(const CModule& module)
+	Name GetModuleName(const AST::Tree& ast, AST::Id moduleId)
 	{
-		if (module.asset.IsValid())
+		if (!ast.IsValid(moduleId))
 		{
-			const auto& asset = module.asset;
-			if (!asset->name.IsNone())
-			{
-				return asset->name;
-			}
+			return {};
+		}
 
-			// Name is not defined, use the file name
-			const String fileName = asset.GetFilename();
+		const auto* identifier = ast.TryGet<CIdentifier>(moduleId);
+		if (identifier && !identifier->name.IsNone())
+		{
+			return identifier->name;
+		}
+
+		const auto* module = ast.TryGet<CModule>(moduleId);
+		if (module && !module->path.empty())
+		{
+			// Obtain name from project file name
+			const String fileName = Paths::GetFilename(module->path);
 			return {Strings::RemoveFromEnd(fileName, Paths::projectExtension)};
 		}
 		return {};

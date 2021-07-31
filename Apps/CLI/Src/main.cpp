@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 	if (!Modules::HasProject(ast))
 	{
 		Log::Error("Couldn't open project '{}'", Paths::ToString(path));
-		return;
+		return 1;
 	}
 
 	Rift::Compiler::Config config;

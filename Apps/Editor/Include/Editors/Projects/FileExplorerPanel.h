@@ -25,22 +25,21 @@ namespace Rift
 			All               = UINT_MAX
 		};
 
-		struct File
+		struct Item
 		{
-			String name;
-			TAssetPtr<TypeAsset> info;
-			bool renaming = false;
+			AST::Id id;
+			Name path;
+			bool isModule = false;
 		};
 
 		struct Folder
 		{
-			String name;
-			TArray<Folder> folders;
-			TArray<File> files;
+			TArray<Item> items;
 		};
 
 	private:
-		Folder projectFolder;
+		TMap<Name, Folder> folders;
+
 		bool bOpen  = true;
 		bool bDirty = true;
 
@@ -55,13 +54,14 @@ namespace Rift
 
 		void DrawList(AST::Tree& ast);
 
-		void DrawContextMenu(AST::Tree& ast, Path path, File* file);
+		void DrawContextMenu(AST::Tree& ast, Path path, Item* item);
 
 		void CacheProjectFiles(AST::Tree& ast);
 
 	private:
-		void DrawFolderItems(AST::Tree& ast, Folder& folder);
-		void DrawFile(AST::Tree& ast, File& file);
+		void CreateParentFolders(TMap<Name, Folder>& folders, StringView parentPath);
+		void DrawItem(AST::Tree& ast, const Item& item);
+		// void DrawFile(AST::Tree& ast, File& file);
 
 		void CreateAsset(AST::Tree& ast, StringView title, TypeAsset::Type type, Path path);
 	};

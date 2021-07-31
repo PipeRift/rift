@@ -3,6 +3,8 @@
 
 #include <Math/Color.h>
 #include <Math/Vector.h>
+#include <Platform/Platform.h>
+#include <Strings/StringView.h>
 
 
 #define IM_VEC2_CLASS_EXTRA                                      \
@@ -126,6 +128,11 @@ namespace Rift::UI
 	inline void PushID(StringView id)
 	{
 		UI::PushID(id.data(), id.data() + id.size());
+	}
+
+	inline void PushID(sizet sizet_id)
+	{
+		ImGui::PushID(reinterpret_cast<void*>(sizet_id));
 	}
 
 	inline ImGuiID GetID(StringView id)
