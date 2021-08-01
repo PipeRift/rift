@@ -57,7 +57,7 @@ namespace Rift
 		UI::BeginChild("Files");
 		if (UI::BeginPopupContextWindow())
 		{
-			DrawContextMenu(ast, {}, {});
+			DrawContextMenu(ast, {}, AST::NoId);
 			UI::EndPopup();
 		}
 
@@ -69,9 +69,9 @@ namespace Rift
 		UI::EndChild();
 	}
 
-	void FileExplorerPanel::DrawContextMenu(AST::Tree& ast, Path path, Item* item)
+	void FileExplorerPanel::DrawContextMenu(AST::Tree& ast, StringView path, AST::Id itemId)
 	{
-		if (item)
+		if (itemId != AST::NoId)
 		{
 			if (UI::MenuItem("Rename"))
 			{
@@ -101,27 +101,35 @@ namespace Rift
 		}
 	}
 
-	void FileExplorerPanel::CreateParentFolders(TMap<Name, Folder>& folders, StringView parentPath)
+	void FileExplorerPanel::InsertItem(TMap<Name, Folder>& folders, const Item& item)
 	{
-		Name lastName{parentPath};
-		parentPath = Paths::GetParent(parentPath);
+		Name lastName         = item.path;
+		StringView parentPath = Paths::GetParent(item.path.ToString());
 		Name parentName{parentPath};
+
+		if (Folder* parent = folders.Find(parentName))
+		{
+			parent->items.Add(item);
+			return;
+		}
+		folders.Insert(parentName, Folder{{item}});
+
+		parentPath = Paths::GetParent(parentPath);
 		while (!parentPath.empty())
 		{
+			lastName   = parentName;
+			parentName = Name{parentPath};
+
+			const Item newItem{AST::NoId, lastName};
 			if (Folder* parent = folders.Find(parentName))
 			{
-				parent->items.Add({AST::NoId, lastName});
+				parent->items.Add(newItem);
 				// Found an existing folder. Leave since we assume all parent folders are valid
 				return;
 			}
-			else
-			{
-				folders.Insert(parentName, Folder{{Item{AST::NoId, lastName}}});
+			folders.Insert(parentName, Folder{{newItem}});
 
-				lastName   = parentName;
-				parentPath = Paths::GetParent(parentPath);
-				parentName = Name{parentPath};
-			}
+			parentPath = Paths::GetParent(parentPath);
 		}
 	}
 
@@ -134,12 +142,10 @@ namespace Rift
 		// Set root folder (not displayed)
 		folders.InsertDefaulted(Name::None());
 
-		auto modules = ast.MakeView<CIdentifier, CModule>();
-
-		AST::Id projectModId = Modules::GetProjectModule(ast);
-		auto& projectModule  = modules.Get<CModule>(projectModId);
+		projectModuleId = Modules::GetProjectModule(ast);
 
 		// Create module folders
+		auto modules = ast.MakeView<CIdentifier, CModule>();
 		for (AST::Id moduleId : modules)
 		{
 			auto& mod = modules.Get<CModule>(moduleId);
@@ -162,7 +168,7 @@ namespace Rift
 					if (Paths::IsInside(one.path, other.path))
 					{
 						// If a module is inside another, create the folders in between
-						CreateParentFolders(folders, path);
+						InsertItem(folders, Item{oneId, path});
 						insideOther = true;
 					}
 				}
@@ -181,105 +187,64 @@ namespace Rift
 			CType& type = types.Get<CType>(typeId);
 			if (!type.path.empty())
 			{
-				CreateParentFolders(folders, Paths::ToString(type.path));
+				const String path = Paths::ToString(type.path);
+				InsertItem(folders, Item{typeId, Name{path}});
 			}
 		}
 	}
-
-	/*TArray<Folder> moduleFolders;
-	auto types = ast.MakeView<CType>();
-	for (AST::Id moduleId : modules)
-	{
-	    Folder& folder = moduleFolders.AddDefaultedRef();
-	    folder.name    = Modules::GetModuleName(ast, moduleId).ToString();
-
-	    TArray<AST::Id>* linked = AST::GetLinked(ast, moduleId);
-	    TArray<TPair<AST::Id, CType*>> types;
-	    types.Reserve(linked.Size());
-	    for (AST::Id link : linked)
-	    {
-	        if (CType* type = types.TryGet<CType>(link))
-	        {
-	            types.Add(type);
-	        }
-	    }
-	    // Remove non types
-
-	    linked.Sort([&types](AST::Id oneId, AST::Id otherId) {
-	        CType& one   = types.Get<CType>(oneId);
-	        CType& other = types.Get<CType>(otherId);
-
-	        return one.path > other.path;
-	    });
-
-	    TFixedString<512> currentPath;
-	    for (AST::Id type : types)
-	    {
-	        while ()
-	    }
-	}
-
-	for (Folder& folder : moduleFolders) {}
-
-	// Sort
-	for (Folder& folder : moduleFolders) {}
-	*/
-
-	// project->ScanAssets();
-
-	// Reset cached data
-	// projectFolder = {};
-
-	/*for (auto& asset : project->GetAllTypeAssets())
-	{
-	    const Path path     = Paths::FromString(asset.GetStrPath());
-	    const Path relative = Paths::ToRelative(path, project->GetPath());
-	    Folder* current     = &projectFolder;
-
-	    for (auto it = relative.begin(); it != relative.end(); ++it)
-	    {
-	        const String name = Paths::ToString(*it);
-	        if (Strings::EndsWith(name, Paths::typeExtension))
-	        {
-	            current->files.Add({name, asset});
-	        }
-	        else
-	        {
-	            bool exists = false;
-	            for (i32 i = 0; i < current->folders.Size(); ++i)
-	            {
-	                Folder& folder = current->folders[i];
-	                if (folder.name == name)
-	                {
-	                    current = &folder;
-	                    exists  = true;
-	                    break;
-	                }
-	            }
-
-	            if (!exists)
-	            {
-	                current->folders.Add({name});
-	                current = &current->folders.Last();
-	            }
-	        }
-	    }
-	}
-	*/
 
 	void FileExplorerPanel::DrawItem(AST::Tree& ast, const Item& item)
 	{
 		if (Folder* folder = folders.Find(item.path))
 		{
-			// TODO: Display module name
-			StringView name = Paths::GetFilename(item.path.ToString());
-			if (UI::TreeNode(name.data()))
+			auto* module = item.id != AST::NoId ? ast.TryGet<CModule>(item.id) : nullptr;
+			if (module)
 			{
-				for (auto& childItem : folder->items)
+				// TODO: Display module name
+				const StringView name = Paths::GetFilename(item.path.ToString());
+
+				const bool isProject = item.id == projectModuleId;
+				Style::PushHeaderColor(Style::primaryColor);
+				Style::PushStyleCompact();
+				bool open = UI::CollapsingHeader(
+				    name.data(), isProject ? ImGuiTreeNodeFlags_DefaultOpen : 0);
+				Style::PopStyleCompact();
+				Style::PopHeaderColor();
+
+				if (UI::BeginPopupContextItem())
 				{
-					DrawItem(ast, childItem);
+					DrawContextMenu(ast, item.path.ToString(), item.id);
+					UI::EndPopup();
 				}
-				UI::TreePop();
+
+				if (open)
+				{
+					UI::TreePush(name.data());
+					for (auto& childItem : folder->items)
+					{
+						DrawItem(ast, childItem);
+					}
+					UI::TreePop();
+				}
+				DrawModuleActions(item.id, *module);
+			}
+			else    // Just a folder
+			{
+				const StringView name = Paths::GetFilename(item.path.ToString());
+				bool open             = UI::TreeNode(name.data());
+				if (UI::BeginPopupContextItem())
+				{
+					DrawContextMenu(ast, item.path.ToString(), item.id);
+					UI::EndPopup();
+				}
+				if (open)
+				{
+					for (auto& childItem : folder->items)
+					{
+						DrawItem(ast, childItem);
+					}
+					UI::TreePop();
+				}
 			}
 		}
 		else
@@ -287,32 +252,12 @@ namespace Rift
 			StringView name = Paths::GetFilename(item.path.ToString());
 			UI::TreeNodeEx(
 			    name.data(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+			if (UI::BeginPopupContextItem())
+			{
+				DrawContextMenu(ast, item.path.ToString(), item.id);
+				UI::EndPopup();
+			}
 		}
-
-
-		/*if (UI::TreeNode(folder.name.c_str()))
-		{
-		    for (auto& item : folder.items)
-		    {
-		        if (UI::TreeNode(childFolder.name.c_str()))
-		        {
-		            DrawFolderItems(ast, childFolder);
-		            UI::TreePop();
-		        }
-		        if (UI::BeginPopupContextItem())
-		        {
-		            const Path path = Paths::FromString(childFolder.name);
-		            DrawContextMenu(ast, path, nullptr);
-		            UI::EndPopup();
-		        }
-		    }
-
-		    for (auto& file : folder.files)
-		    {
-		        DrawFile(ast, file);
-		    }
-		    UI::TreePop();
-		}*/
 	}
 
 	/*void FileExplorerPanel::DrawFile(AST::Tree& ast, File& file)
@@ -384,4 +329,7 @@ namespace Rift
 			Log::Error("Couldn't create file '{}'", filenameStr);
 		}
 	}
+
+	void FileExplorerPanel::DrawModuleActions(AST::Id id, CModule& module) {}
+	void FileExplorerPanel::DrawTypeActions(AST::Id id, CType& type) {}
 }    // namespace Rift

@@ -29,7 +29,6 @@ namespace Rift
 		{
 			AST::Id id;
 			Name path;
-			bool isModule = false;
 		};
 
 		struct Folder
@@ -38,6 +37,7 @@ namespace Rift
 		};
 
 	private:
+		AST::Id projectModuleId = AST::NoId;
 		TMap<Name, Folder> folders;
 
 		bool bOpen  = true;
@@ -54,16 +54,19 @@ namespace Rift
 
 		void DrawList(AST::Tree& ast);
 
-		void DrawContextMenu(AST::Tree& ast, Path path, Item* item);
+		void DrawContextMenu(AST::Tree& ast, StringView path, AST::Id itemId);
 
 		void CacheProjectFiles(AST::Tree& ast);
 
 	private:
-		void CreateParentFolders(TMap<Name, Folder>& folders, StringView parentPath);
+		void InsertItem(TMap<Name, Folder>& folders, const Item& item);
 		void DrawItem(AST::Tree& ast, const Item& item);
 		// void DrawFile(AST::Tree& ast, File& file);
 
 		void CreateAsset(AST::Tree& ast, StringView title, TypeAsset::Type type, Path path);
+
+		void DrawModuleActions(AST::Id id, struct CModule& module);
+		void DrawTypeActions(AST::Id id, struct CType& type);
 	};
 
 

@@ -145,6 +145,8 @@ namespace Rift::UI
 		return bb;
 	}
 
+	static ImGuiID pendingEditingId = 0;
+
 	bool MutableText(StringView label, String& text)
 	{
 		static ImGuiID editingId = 0;
@@ -175,8 +177,13 @@ namespace Rift::UI
 			return false;
 		}
 
-		if (UI::IsItemHovered() && UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+		if (pendingEditingId == id ||
+		    (UI::IsItemHovered() && UI::IsMouseDoubleClicked(ImGuiMouseButton_Left)))
 		{
+			if (pendingEditingId == id)
+			{
+				pendingEditingId = 0;
+			}
 			editingId = id;
 			buffer    = text;
 			UI::ActivateItem(UI::GetID("##mutableEdit"));
@@ -194,5 +201,10 @@ namespace Rift::UI
 
 		UI::PopID();
 		return false;
+	}
+
+	void SetEditingMutableText(StringView label)
+	{
+		pendingEditingId = UI::GetID(label);
 	}
 }    // namespace Rift::UI

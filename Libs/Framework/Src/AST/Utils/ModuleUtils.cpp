@@ -107,7 +107,7 @@ namespace Rift::Modules
 		{
 			// Obtain name from project file name
 			const String fileName = Paths::GetFilename(module->path);
-			return {Strings::RemoveFromEnd(fileName, Paths::projectExtension)};
+			return {Strings::RemoveFromEnd(fileName, Paths::moduleExtension)};
 		}
 		return {};
 	}
