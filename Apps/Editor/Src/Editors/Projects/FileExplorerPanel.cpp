@@ -49,6 +49,7 @@ namespace Rift
 
 	void FileExplorerPanel::DrawList(AST::Tree& ast)
 	{
+		ZoneScoped;
 		// if (bDirty)
 		{
 			CacheProjectFiles(ast);
@@ -62,9 +63,12 @@ namespace Rift
 		}
 
 
-		for (const auto& item : folders[Name::None()].items)
 		{
-			DrawItem(ast, item);
+			ZoneScopedN("Draw File Explorer");
+			for (const auto& item : folders[Name::None()].items)
+			{
+				DrawItem(ast, item);
+			}
 		}
 		UI::EndChild();
 	}
@@ -135,6 +139,7 @@ namespace Rift
 
 	void FileExplorerPanel::CacheProjectFiles(AST::Tree& ast)
 	{
+		ZoneScopedN("Cache Project Files");
 		bDirty = false;
 
 		folders.Empty();
@@ -165,11 +170,12 @@ namespace Rift
 				if (oneId != otherId)
 				{
 					auto& other = modules.Get<CModule>(otherId);
-					if (Paths::IsInside(one.path, other.path))
+					if (Strings::Contains<Path::value_type>(one.path.native(),
+					        other.path.native()))    // Is relative
 					{
 						// If a module is inside another, create the folders in between
 						InsertItem(folders, Item{oneId, path});
-						insideOther = true;
+						insideOther = true;    // break;?
 					}
 				}
 			}

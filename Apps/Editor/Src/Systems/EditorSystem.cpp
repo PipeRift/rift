@@ -190,11 +190,7 @@ namespace Rift::EditorSystem
 		CreateDockspace(editor);
 		editor.layout.Tick(editor.dockspaceID);
 
-		auto typeEditors = ast.MakeView<CTypeEditor, CType>();
-		for (AST::Id typeId : typeEditors)
-		{
-			DrawTypes(ast, editor);
-		}
+		DrawTypes(ast, editor);
 
 		editor.astDebugger.Draw(ast);
 		editor.fileExplorer.Draw(ast);
@@ -293,6 +289,7 @@ namespace Rift::EditorSystem
 		auto typeEditors = ast.MakeView<CType, CTypeEditor>();
 		for (AST::Id typeId : typeEditors)
 		{
+			ZoneScopedN("Draw Type");
 			UI::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 			UI::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);
 			UI::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));

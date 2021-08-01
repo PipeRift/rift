@@ -8,6 +8,8 @@
 #include "AST/Components/Tags/CPendingLoad.h"
 #include "AST/Tree.h"
 #include "AST/Uniques/CModulesUnique.h"
+#include "AST/Utils/ModuleIterator.h"
+#include "AST/Utils/ModuleUtils.h"
 #include "AST/Utils/TypeIterator.h"
 
 #include <AST/Linkage.h>
@@ -16,8 +18,42 @@
 
 namespace Rift::ModuleSystem
 {
+	void ScanSubmodules(AST::Tree& ast)
+	{
+		ZoneScopedNC("ScanSubmodules", 0x459bd1);
+
+		auto modulesView = ast.MakeView<CModule>();
+
+		AST::Id projectId   = Modules::GetProjectModule(ast);
+		auto& projectModule = modulesView.Get<CModule>(projectId);
+
+		for (const auto& modulePath : ModuleIterator(projectModule.path, nullptr))
+		{
+			const Path folderPath = modulePath.parent_path();
+			bool moduleExists     = false;
+			for (AST::Id otherId : modulesView)
+			{
+				auto& other = modulesView.Get<CModule>(otherId);
+				if (folderPath == other.path)
+				{
+					moduleExists = true;
+					break;
+				}
+			}
+
+			if (!moduleExists)
+			{
+				const AST::Id newModuleId = ast.Create();
+				ast.Add<CModule>(newModuleId, false, modulePath);
+				ast.Add<CIdentifier>(newModuleId, Name{Paths::ToString(folderPath.filename())});
+			}
+		}
+	}
+
 	void ScanModuleTypes(AST::Tree& ast)
 	{
+		ZoneScopedNC("ScanModuleTypes", 0x459bd1);
+
 		auto* modules = ast.TryGetUnique<CModulesUnique>();
 		if (!modules)
 		{
@@ -35,7 +71,6 @@ namespace Rift::ModuleSystem
 			modulePaths.Insert(mod.path);
 		}
 
-		ZoneScopedNC("Find type files", 0x459bd1);
 		for (AST::Id moduleId : modulesView)
 		{
 			TArray<AST::Id> newTypes;

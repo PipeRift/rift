@@ -31,10 +31,15 @@ namespace Rift
 		Path path;
 
 
+		// TODO: Remove when deprecating assets
 		CModule(bool isMain, TAssetPtr<ModuleAsset> asset) : isMain{isMain}, asset{asset}
 		{
 			auto parentPath = Paths::GetParent(asset.GetStrPath());
 			path            = Paths::FromString(parentPath);
+		}
+		CModule(bool isMain, const Path& inPath) : isMain{isMain}, asset{}
+		{
+			path = inPath.parent_path();
 		}
 	};
 }    // namespace Rift

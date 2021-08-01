@@ -58,6 +58,7 @@ namespace Rift
 			return;
 		}
 
+		ModuleSystem::ScanSubmodules(ast);
 		ModuleSystem::ScanModuleTypes(ast);
 	}
 
