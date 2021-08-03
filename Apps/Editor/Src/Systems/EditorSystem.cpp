@@ -11,11 +11,13 @@
 #include "Utils/Properties.h"
 #include "Utils/TypeUtils.h"
 
+#include <AST/Components/CFileRef.h>
 #include <AST/Components/CType.h>
 #include <AST/Utils/DeclarationUtils.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <RiftContext.h>
+
 
 
 namespace Rift::EditorSystem
@@ -286,7 +288,7 @@ namespace Rift::EditorSystem
 
 	void DrawTypes(AST::Tree& ast, CEditorUnique& editor)
 	{
-		auto typeEditors = ast.MakeView<CType, CTypeEditor>();
+		auto typeEditors = ast.MakeView<CType, CTypeEditor, CFileRef>();
 		for (AST::Id typeId : typeEditors)
 		{
 			ZoneScopedN("Draw Type");
@@ -294,11 +296,11 @@ namespace Rift::EditorSystem
 			UI::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);
 			UI::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-			auto& type       = typeEditors.Get<CType>(typeId);
 			auto& typeEditor = typeEditors.Get<CTypeEditor>(typeId);
+			auto& file       = typeEditors.Get<CFileRef>(typeId);
 
 			bool isOpen               = true;
-			const String path         = Paths::ToString(type.path);
+			const String path         = Paths::ToString(file.path);
 			const StringView filename = Paths::GetFilename(path);
 			const String windowName   = Strings::Format(TX("{}###{}"), filename, path);
 

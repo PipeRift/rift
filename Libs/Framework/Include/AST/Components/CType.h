@@ -12,9 +12,6 @@ namespace Rift
 	{
 		STRUCT(CType, Struct)
 
-		PROP(Path, path)
-		Path path;
-
 		PROP(AST::Id, moduleId)
 		AST::Id moduleId = AST::NoId;
 

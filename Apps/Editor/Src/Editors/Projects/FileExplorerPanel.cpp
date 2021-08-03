@@ -8,6 +8,7 @@
 #include "UI/UI.h"
 #include "Uniques/CEditorUnique.h"
 
+#include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
 #include <AST/Components/CType.h>
 #include <AST/Linkage.h>
@@ -149,11 +150,11 @@ namespace Rift
 		projectModuleId = Modules::GetProjectModule(ast);
 
 		// Create module folders
-		auto modules = ast.MakeView<CModule>();
+		auto modules = ast.MakeView<CModule, CFileRef>();
 		for (AST::Id moduleId : modules)
 		{
-			auto& mod = modules.Get<CModule>(moduleId);
-			const Name pathName{Paths::ToString(mod.path)};
+			auto& file = modules.Get<CFileRef>(moduleId);
+			const Name pathName{Paths::ToString(file.path)};
 			folders.InsertDefaulted(pathName);
 		}
 
@@ -161,41 +162,54 @@ namespace Rift
 		for (AST::Id oneId : modules)
 		{
 			bool insideOther = false;
-			auto& one        = modules.Get<CModule>(oneId);
+			const Path& path = modules.Get<CFileRef>(oneId).path;
 
-			const String path = Paths::ToString(one.path);
 			for (AST::Id otherId : modules)
 			{
 				if (oneId != otherId)
 				{
-					auto& other = modules.Get<CModule>(otherId);
-					if (Strings::Contains<Path::value_type>(one.path.native(),
-					        other.path.native()))    // Is relative
+					const Path& otherPath = modules.Get<CFileRef>(otherId).path;
+
+					if (Strings::Contains<Path::value_type>(path.native(),
+					        otherPath.native()))    // Is relative
 					{
 						// If a module is inside another, create the folders in between
-						InsertItem(folders, Item{oneId, path, true});
-						insideOther = true;    // break;?
+						InsertItem(folders, Item{oneId, Paths::ToString(path), true});
+						insideOther = true;
+						// break;?
 					}
 				}
 			}
 
 			if (!insideOther)
 			{
-				folders[Name::None()].items.Add(Item{oneId, Name{path}, true});
+				folders[Name::None()].items.Add(Item{oneId, Name{Paths::ToString(path)}, true});
 			}
 		}
 
 		// Create items
-		auto types = ast.MakeView<CType>();
-		for (AST::Id typeId : types)
+		auto fileTypes = ast.MakeView<CType, CFileRef>();
+		for (AST::Id typeId : fileTypes)
 		{
-			CType& type = types.Get<CType>(typeId);
-			if (!type.path.empty())
+			auto& file = fileTypes.Get<CFileRef>(typeId);
+			if (!file.path.empty())
 			{
-				const String path = Paths::ToString(type.path);
+				const String path = Paths::ToString(file.path);
 				InsertItem(folders, Item{typeId, Name{path}});
 			}
 		}
+	}
+
+	void FileExplorerPanel::SortFolder(Folder& folder)
+	{
+		// Sort items. First folders, then alphabetically
+		folder.items.Sort([](const auto& one, const auto& other) {
+			if (one.isFolder != other.isFolder)
+			{
+				return one.isFolder;
+			}
+			return one.path.ToString() < other.path.ToString();
+		});
 	}
 
 	void FileExplorerPanel::DrawItem(AST::Tree& ast, const Item& item)
@@ -226,15 +240,7 @@ namespace Rift
 				{
 					UI::TreePush(name.data());
 
-					// Sort items. FIrst folders, then alphabetically
-					folder->items.Sort([](const auto& one, const auto& other) {
-						if (one.isFolder != other.isFolder)
-						{
-							return one.isFolder;
-						}
-						return one.path.ToString() < other.path.ToString();
-					});
-
+					SortFolder(*folder);
 					for (auto& childItem : folder->items)
 					{
 						DrawItem(ast, childItem);
@@ -254,6 +260,7 @@ namespace Rift
 				}
 				if (open)
 				{
+					SortFolder(*folder);
 					for (auto& childItem : folder->items)
 					{
 						DrawItem(ast, childItem);

@@ -59,6 +59,8 @@ namespace Rift
 
 		void CacheProjectFiles(AST::Tree& ast);
 
+		void SortFolder(Folder& folder);
+
 	private:
 		void InsertItem(TMap<Name, Folder>& folders, const Item& item);
 		void DrawItem(AST::Tree& ast, const Item& item);

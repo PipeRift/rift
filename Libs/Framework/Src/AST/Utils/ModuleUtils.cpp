@@ -2,6 +2,7 @@
 
 #include "AST/Utils/ModuleUtils.h"
 
+#include "AST/Components/CFileRef.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CModule.h"
 #include "AST/Systems/LoadSystem.h"
@@ -38,7 +39,8 @@ namespace Rift::Modules
 
 		// Create root module
 		modules.mainModule = ast.Create();
-		ast.Add<CModule>(modules.mainModule, true, asset);
+		ast.Add<CModule>(modules.mainModule, true);
+		ast.Add<CFileRef>(modules.mainModule, fullPath);
 		ast.Add<CIdentifier>(modules.mainModule, Name{Paths::ToString(fullPath.filename())});
 
 		return ast;
@@ -82,8 +84,8 @@ namespace Rift::Modules
 	const Path& GetProjectPath(const AST::Tree& ast)
 	{
 		static const Path def{};
-		const auto* module = ast.TryGet<CModule>(GetProjectModule(ast));
-		return module ? module->path : def;
+		const auto* file = ast.TryGet<CFileRef>(GetProjectModule(ast));
+		return file ? file->path : def;
 	}
 
 	bool HasProject(const AST::Tree& ast)
@@ -104,11 +106,11 @@ namespace Rift::Modules
 			return identifier->name;
 		}
 
-		const auto* module = ast.TryGet<CModule>(moduleId);
-		if (module && !module->path.empty())
+		const auto* file = ast.TryGet<CFileRef>(moduleId);
+		if (file && !file->path.empty())
 		{
 			// Obtain name from project file name
-			const String fileName = Paths::GetFilename(module->path);
+			const String fileName = Paths::GetFilename(file->path);
 			return {Strings::RemoveFromEnd(fileName, Paths::moduleExtension)};
 		}
 		return {};

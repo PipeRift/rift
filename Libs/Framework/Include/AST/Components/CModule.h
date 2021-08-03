@@ -15,31 +15,16 @@ namespace Rift
 	{
 		STRUCT(CModule, Struct)
 
-		PROP(bool, isMain, Transient)
-		bool isMain = false;
-
 		using TypeMap = TMap<Guid, AST::Id>;
+
 		// TODO: Reflect Maps
 		// PROP(TypeMap, types, Transient)
 		TypeMap types;
 
-		// TODO: Remove when deprecating assets
-		PROP(TAssetPtr<ModuleAsset>, asset, Transient)
-		TAssetPtr<ModuleAsset> asset;
-
-		PROP(Path, path, Transient)
-		Path path;
+		PROP(bool, isMain, Transient)
+		bool isMain = false;
 
 
-		// TODO: Remove when deprecating assets
-		CModule(bool isMain, TAssetPtr<ModuleAsset> asset) : isMain{isMain}, asset{asset}
-		{
-			auto parentPath = Paths::GetParent(asset.GetStrPath());
-			path            = Paths::FromString(parentPath);
-		}
-		CModule(bool isMain, const Path& inPath) : isMain{isMain}, asset{}
-		{
-			path = inPath.parent_path();
-		}
+		CModule(bool isMain) : isMain{isMain} {}
 	};
 }    // namespace Rift

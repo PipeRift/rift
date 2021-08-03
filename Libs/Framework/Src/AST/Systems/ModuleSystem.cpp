@@ -24,20 +24,20 @@ namespace Rift::ModuleSystem
 	{
 		ZoneScopedNC("ScanSubmodules", 0x459bd1);
 
-		auto modulesView = ast.MakeView<CModule>();
+		auto modulesView = ast.MakeView<CModule, CFileRef>();
 
-		AST::Id projectId   = Modules::GetProjectModule(ast);
-		auto& projectModule = modulesView.Get<CModule>(projectId);
+		AST::Id projectId = Modules::GetProjectModule(ast);
+		auto& projectFile = modulesView.Get<CFileRef>(projectId);
 
 		TArray<AST::Id> newModules;
-		for (const auto& modulePath : ModuleIterator(projectModule.path, nullptr))
+		for (const auto& modulePath : ModuleIterator(projectFile.path, nullptr))
 		{
 			const Path folderPath = modulePath.parent_path();
 			bool moduleExists     = false;
 			for (AST::Id otherId : modulesView)
 			{
-				auto& other = modulesView.Get<CModule>(otherId);
-				if (folderPath == other.path)
+				auto& otherFile = modulesView.Get<CFileRef>(otherId);
+				if (folderPath == otherFile.path)
 				{
 					moduleExists = true;
 					break;
@@ -47,8 +47,8 @@ namespace Rift::ModuleSystem
 			if (!moduleExists)
 			{
 				const AST::Id id = ast.Create();
-				ast.Add<CModule>(id, false, modulePath);
-				ast.Add<CFileRef>(id, modulePath);
+				ast.Add<CModule>(id, false);
+				ast.Add<CFileRef>(id, modulePath.parent_path());
 				// ast.Add<CIdentifier>(id, Name{Paths::ToString(folderPath.filename())});
 				newModules.Add(id);
 			}
@@ -72,17 +72,18 @@ namespace Rift::ModuleSystem
 		// Cache module paths
 		TSet<Path> modulePaths;
 		modulePaths.Reserve(u32(modulesView.Size()));
-		for (AST::Id entity : modulesView)
+		for (AST::Id moduleId : modulesView)
 		{
-			const CModule& mod = ast.Get<CModule>(entity);
-			modulePaths.Insert(mod.path);
+			const CFileRef& moduleFile = ast.Get<CFileRef>(moduleId);
+			modulePaths.Insert(moduleFile.path);
 		}
 
 		for (AST::Id moduleId : modulesView)
 		{
+			const CFileRef& moduleFile = ast.Get<CFileRef>(moduleId);
+
 			TArray<AST::Id> newTypes;
-			const CModule& mod = ast.Get<CModule>(moduleId);
-			for (const auto& typePath : TypeIterator(mod.path, &modulePaths))
+			for (const auto& typePath : TypeIterator(moduleFile.path, &modulePaths))
 			{
 				const Name namePath{Paths::ToString(typePath)};
 
@@ -90,7 +91,6 @@ namespace Rift::ModuleSystem
 				{
 					AST::Id unloadedType = ast.Create();
 					CType& type          = ast.Add<CType>(unloadedType);
-					type.path            = typePath;
 					type.moduleId        = moduleId;
 
 					ast.Add<CFileRef>(unloadedType, typePath);
