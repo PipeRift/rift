@@ -29,6 +29,7 @@ namespace Rift
 		{
 			AST::Id id;
 			Name path;
+			bool isFolder = false;
 		};
 
 		struct Folder

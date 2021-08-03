@@ -4,6 +4,7 @@
 
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CModule.h"
+#include "AST/Systems/LoadSystem.h"
 #include "AST/Uniques/CModulesUnique.h"
 #include "Framework/Paths.h"
 
@@ -33,6 +34,7 @@ namespace Rift::Modules
 
 		AST::Tree ast;
 		CModulesUnique& modules = ast.SetUnique<CModulesUnique>();
+		LoadSystem::Init(ast);
 
 		// Create root module
 		modules.mainModule = ast.Create();

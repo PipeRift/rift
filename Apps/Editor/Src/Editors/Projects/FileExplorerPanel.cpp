@@ -8,7 +8,6 @@
 #include "UI/UI.h"
 #include "Uniques/CEditorUnique.h"
 
-#include <AST/Components/CIdentifier.h>
 #include <AST/Components/CModule.h>
 #include <AST/Components/CType.h>
 #include <AST/Linkage.h>
@@ -124,7 +123,7 @@ namespace Rift
 			lastName   = parentName;
 			parentName = Name{parentPath};
 
-			const Item newItem{AST::NoId, lastName};
+			const Item newItem{AST::NoId, lastName, true};
 			if (Folder* parent = folders.Find(parentName))
 			{
 				parent->items.Add(newItem);
@@ -150,7 +149,7 @@ namespace Rift
 		projectModuleId = Modules::GetProjectModule(ast);
 
 		// Create module folders
-		auto modules = ast.MakeView<CIdentifier, CModule>();
+		auto modules = ast.MakeView<CModule>();
 		for (AST::Id moduleId : modules)
 		{
 			auto& mod = modules.Get<CModule>(moduleId);
@@ -174,7 +173,7 @@ namespace Rift
 					        other.path.native()))    // Is relative
 					{
 						// If a module is inside another, create the folders in between
-						InsertItem(folders, Item{oneId, path});
+						InsertItem(folders, Item{oneId, path, true});
 						insideOther = true;    // break;?
 					}
 				}
@@ -182,7 +181,7 @@ namespace Rift
 
 			if (!insideOther)
 			{
-				folders[Name::None()].items.Add(Item{oneId, Name{path}});
+				folders[Name::None()].items.Add(Item{oneId, Name{path}, true});
 			}
 		}
 
@@ -226,6 +225,16 @@ namespace Rift
 				if (open)
 				{
 					UI::TreePush(name.data());
+
+					// Sort items. FIrst folders, then alphabetically
+					folder->items.Sort([](const auto& one, const auto& other) {
+						if (one.isFolder != other.isFolder)
+						{
+							return one.isFolder;
+						}
+						return one.path.ToString() < other.path.ToString();
+					});
+
 					for (auto& childItem : folder->items)
 					{
 						DrawItem(ast, childItem);

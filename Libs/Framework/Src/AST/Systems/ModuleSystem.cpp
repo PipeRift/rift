@@ -2,12 +2,14 @@
 
 #include "AST/Systems/ModuleSystem.h"
 
+#include "AST/Components/CFileRef.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CModule.h"
 #include "AST/Components/CType.h"
 #include "AST/Components/Tags/CPendingLoad.h"
 #include "AST/Tree.h"
 #include "AST/Uniques/CModulesUnique.h"
+#include "AST/Utils/LoadingUtils.h"
 #include "AST/Utils/ModuleIterator.h"
 #include "AST/Utils/ModuleUtils.h"
 #include "AST/Utils/TypeIterator.h"
@@ -27,6 +29,7 @@ namespace Rift::ModuleSystem
 		AST::Id projectId   = Modules::GetProjectModule(ast);
 		auto& projectModule = modulesView.Get<CModule>(projectId);
 
+		TArray<AST::Id> newModules;
 		for (const auto& modulePath : ModuleIterator(projectModule.path, nullptr))
 		{
 			const Path folderPath = modulePath.parent_path();
@@ -43,11 +46,15 @@ namespace Rift::ModuleSystem
 
 			if (!moduleExists)
 			{
-				const AST::Id newModuleId = ast.Create();
-				ast.Add<CModule>(newModuleId, false, modulePath);
-				ast.Add<CIdentifier>(newModuleId, Name{Paths::ToString(folderPath.filename())});
+				const AST::Id id = ast.Create();
+				ast.Add<CModule>(id, false, modulePath);
+				ast.Add<CFileRef>(id, modulePath);
+				// ast.Add<CIdentifier>(id, Name{Paths::ToString(folderPath.filename())});
+				newModules.Add(id);
 			}
 		}
+
+		Loading::MarkPendingLoad(ast, newModules);
 	}
 
 	void ScanModuleTypes(AST::Tree& ast)
@@ -64,7 +71,7 @@ namespace Rift::ModuleSystem
 
 		// Cache module paths
 		TSet<Path> modulePaths;
-		modulePaths.Reserve(modulesView.Size());
+		modulePaths.Reserve(u32(modulesView.Size()));
 		for (AST::Id entity : modulesView)
 		{
 			const CModule& mod = ast.Get<CModule>(entity);
@@ -82,17 +89,19 @@ namespace Rift::ModuleSystem
 				if (!modules->typesByPath.Contains(namePath))
 				{
 					AST::Id unloadedType = ast.Create();
-					ast.Add<CPendingLoad>(unloadedType);
-					CType& type   = ast.Add<CType>(unloadedType);
-					type.path     = typePath;
-					type.moduleId = moduleId;
+					CType& type          = ast.Add<CType>(unloadedType);
+					type.path            = typePath;
+					type.moduleId        = moduleId;
 
+					ast.Add<CFileRef>(unloadedType, typePath);
 					ast.Add<CIdentifier>(unloadedType, namePath);
-					modules->typesByPath.Insert(namePath, unloadedType);
 					newTypes.Add(unloadedType);
+
+					modules->typesByPath.Insert(namePath, unloadedType);
 				}
 			}
 			AST::Link(ast, moduleId, newTypes);
+			Loading::MarkPendingLoad(ast, newTypes);
 		}
 
 		// allTypes.Empty();

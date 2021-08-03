@@ -5,7 +5,6 @@
 #include "Assets/ModuleAsset.h"
 
 #include <CoreObject.h>
-#include <Memory/OwnPtr.h>
 
 
 namespace Rift

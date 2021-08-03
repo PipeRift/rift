@@ -5,6 +5,7 @@
 #include "Systems/EditorSystem.h"
 #include "Uniques/CEditorUnique.h"
 
+#include <AST/Systems/LoadSystem.h>
 #include <AST/Systems/ModuleSystem.h>
 #include <AST/Uniques/CModulesUnique.h>
 #include <AST/Utils/ModuleUtils.h>

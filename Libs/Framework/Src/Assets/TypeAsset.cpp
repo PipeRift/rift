@@ -4,11 +4,11 @@
 
 #include "AST/Components/CChild.h"
 #include "AST/Components/CClassDecl.h"
+#include "AST/Components/CFileRef.h"
 #include "AST/Components/CFunctionLibraryDecl.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CParent.h"
 #include "AST/Components/CStructDecl.h"
-#include "AST/Components/CTypeAssetRef.h"
 #include "AST/Serialization.h"
 #include "RiftContext.h"
 
@@ -68,7 +68,7 @@ namespace Rift
 		ast.Add<CIdentifier>(declaration, GetMetaPath());
 		ast.Add<CParent>(declaration);
 
-		auto& assetRef = ast.Add<CTypeAssetRef>(declaration);
-		assetRef.asset = {GetInfo()};
+		auto& assetRef = ast.Add<CFileRef>(declaration);
+		assetRef.path  = Paths::FromString(GetInfo().GetStrPath());
 	}
 }    // namespace Rift

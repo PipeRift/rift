@@ -1,7 +1,8 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Components/CTypeEditor.h"
 #include "Utils/TypeUtils.h"
+
+#include "Components/CTypeEditor.h"
 
 #include <AST/Components/CType.h>
 #include <Misc/Checks.h>
