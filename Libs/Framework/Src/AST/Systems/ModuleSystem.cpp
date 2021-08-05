@@ -49,7 +49,6 @@ namespace Rift::ModuleSystem
 				const AST::Id id = ast.Create();
 				ast.Add<CModule>(id, false);
 				ast.Add<CFileRef>(id, modulePath.parent_path());
-				// ast.Add<CIdentifier>(id, Name{Paths::ToString(folderPath.filename())});
 				newModules.Add(id);
 			}
 		}
