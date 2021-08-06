@@ -3,18 +3,21 @@
 #include "AST/Systems/LoadSystem.h"
 
 #include "AST/Tree.h"
-#include "AST/Uniques/CEntityLoadUnique.h"
+#include "AST/Uniques/CLoadQueueUnique.h"
+#include "AST/Uniques/CStringLoadUnique.h"
 
 
 namespace Rift::LoadSystem
 {
 	void Init(AST::Tree& ast)
 	{
-		ast.SetUnique<CEntityLoadUnique>();
+		ast.SetUnique<CLoadQueueUnique>();
+		ast.SetUnique<CStringLoadUnique>();
 	}
 
 	void Run(AST::Tree& ast)
 	{
-		auto& loadData = ast.GetUnique<CEntityLoadUnique>();
+		auto& loadQueue  = ast.GetUnique<CLoadQueueUnique>();
+		auto& stringLoad = ast.GetUnique<CStringLoadUnique>();
 	}
 }    // namespace Rift::LoadSystem

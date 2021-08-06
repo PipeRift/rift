@@ -9,18 +9,16 @@
 
 namespace Rift
 {
-	struct CEntityLoadUnique : public Struct
+	// Contains loaded string data from disk
+	struct CStringLoadUnique : public Struct
 	{
-		STRUCT(CEntityLoadUnique, Struct)
+		STRUCT(CStringLoadUnique, Struct)
 
 		struct FileText
 		{
 			AST::Id id;
 			String data;
 		};
-
-		TArray<AST::Id> entitiesToLoadSync;
-		TArray<AST::Id> entitiesToLoadAsync;
 
 		TArray<AST::Id> filesToLoad;
 		TArray<FileText> loadedFiles;
