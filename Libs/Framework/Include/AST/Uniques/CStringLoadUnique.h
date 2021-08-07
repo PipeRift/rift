@@ -14,13 +14,10 @@ namespace Rift
 	{
 		STRUCT(CStringLoadUnique, Struct)
 
-		struct FileText
-		{
-			AST::Id id;
-			String data;
-		};
-
-		TArray<AST::Id> filesToLoad;
-		TArray<FileText> loadedFiles;
+		// This buffers are always in sync with size
+		// They bind by array index an Id, path and loaded string
+		TArray<AST::Id> entities;
+		TArray<Path> paths;
+		TArray<String> strings;
 	};
 }    // namespace Rift
