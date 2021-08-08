@@ -65,8 +65,6 @@ namespace Rift::Compiler::Cpp
 
 	void GenerateCMake(Context& context, const Path& generatePath)
 	{
-		ModuleTarget type = ModuleTarget::Executable;
-
 		Name projectName      = Modules::GetProjectName(context.ast);
 		const CModule* module = Modules::GetProjectModule(context.ast);
 
