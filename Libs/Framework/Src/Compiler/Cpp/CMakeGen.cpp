@@ -2,8 +2,8 @@
 
 #include "Compiler/Cpp/CMakeGen.h"
 
+#include "AST/Components/CModule.h"
 #include "AST/Utils/ModuleUtils.h"
-#include "Assets/ModuleAsset.h"
 #include "Compiler/Cpp/CppBackend.h"
 
 #include <Files/Files.h>
@@ -20,22 +20,22 @@ namespace Rift::Compiler::Cpp
 	}
 
 	void AddLibrary(
-	    String& code, Context& context, ModuleType type, Name name, StringView cppVersion)
+	    String& code, Context& context, ModuleTarget type, Name name, StringView cppVersion)
 	{
 		StringView targetType;
 		switch (type)
 		{
-			case ModuleType::Shared:
+			case ModuleTarget::Shared:
 				targetType = "SHARED";
 				break;
-			case ModuleType::Static:
+			case ModuleTarget::Static:
 				targetType = "STATIC";
 				break;
-			case ModuleType::Interface:
-				targetType = "INTERFACE";
-				break;
+			// case ModuleTarget::Interface:
+			// targetType = "INTERFACE";
+			// break;
 			default:
-				context.AddError("Failed to add CMake library. Invalid ModuleType");
+				context.AddError("Failed to add CMake library. Invalid ModuleTarget");
 				return;
 		}
 
@@ -47,11 +47,8 @@ namespace Rift::Compiler::Cpp
 		    fmt::arg("CppVersion", cppVersion));
 
 
-		if (type != ModuleType::Interface)
-		{
-			Strings::FormatTo(code, "target_sources({ModuleName} PRIVATE Src/code.cpp)\n",
-			    fmt::arg("ModuleName", name));
-		}
+		Strings::FormatTo(code, "target_sources({ModuleName} PRIVATE Src/code.cpp)\n",
+		    fmt::arg("ModuleName", name));
 	}
 
 	void AddExecutable(String& code, Context& context, Name name, StringView cppVersion)
@@ -68,19 +65,20 @@ namespace Rift::Compiler::Cpp
 
 	void GenerateCMake(Context& context, const Path& generatePath)
 	{
-		ModuleType type = ModuleType::Executable;
+		ModuleTarget type = ModuleTarget::Executable;
 
-		Name projectName = Modules::GetProjectName(context.ast);
+		Name projectName      = Modules::GetProjectName(context.ast);
+		const CModule* module = Modules::GetProjectModule(context.ast);
 
 		String code;
 		SetProject(code, context, projectName.ToString(), "0.1");
-		if (type == ModuleType::Executable)
+		if (module->target == ModuleTarget::Executable)
 		{
 			AddExecutable(code, context, projectName.ToString(), "14");
 		}
 		else
 		{
-			AddLibrary(code, context, type, projectName.ToString(), "14");
+			AddLibrary(code, context, module->target, projectName.ToString(), "14");
 		}
 
 		Files::SaveStringFile(generatePath / "CMakelists.txt", code);

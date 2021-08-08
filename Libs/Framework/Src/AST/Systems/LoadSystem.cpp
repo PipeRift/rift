@@ -5,6 +5,8 @@
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/CFunctionLibraryDecl.h"
+#include "AST/Components/CIdentifier.h"
+#include "AST/Components/CModule.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CType.h"
 #include "AST/Serialization.h"
@@ -32,14 +34,9 @@ namespace Rift::LoadSystem
 		auto& loadQueue  = ast.GetUnique<CLoadQueueUnique>();
 		auto& stringLoad = ast.GetUnique<CStringLoadUnique>();
 
-		// Dump loaded data
-		Deserialize(ast, stringLoad);
-
-		stringLoad.entities.Empty();
-
 		stringLoad.entities = Move(loadQueue.pendingAsyncLoad);
-
 		stringLoad.paths.Resize(stringLoad.entities.Size());
+
 		auto filesView = ast.MakeView<CFileRef>();
 		for (u32 i = 0; i < stringLoad.entities.Size(); ++i)
 		{
@@ -54,6 +51,8 @@ namespace Rift::LoadSystem
 		}
 
 		LoadStrings(stringLoad);
+
+		Deserialize(ast, stringLoad);
 	}
 
 	void LoadStrings(CStringLoadUnique& stringLoad)
@@ -88,28 +87,40 @@ namespace Rift::LoadSystem
 			{
 				continue;
 			}
-			AST::Id entity = entities[i];
+			AST::Id entity      = entities[i];
+			const bool isModule = ast.Has<CModule>(entity);
 
 			Serl::JsonFormatReader reader{str};
 			ASTReadContext ct{reader, ast};
 
 			ct.BeginObject();
-			TypeCategory category;
-			ct.Next("type", category);
-			switch (category)
+			if (isModule) [[unlikely]]
 			{
-				case TypeCategory::Class:
-					ast.Emplace<CClassDecl>(entity);
-					break;
-				case TypeCategory::Struct:
-					ast.Emplace<CStructDecl>(entity);
-					break;
-				case TypeCategory::FunctionLibrary:
-					ast.Emplace<CFunctionLibraryDecl>(entity);
-					break;
+				TypeCategory category;
+				ct.Next("type", category);
+				switch (category)
+				{
+					case TypeCategory::Class:
+						ast.Emplace<CClassDecl>(entity);
+						break;
+					case TypeCategory::Struct:
+						ast.Emplace<CStructDecl>(entity);
+						break;
+					case TypeCategory::FunctionLibrary:
+						ast.Emplace<CFunctionLibraryDecl>(entity);
+						break;
+				}
 			}
 
 			ct.SerializeRoot(entity);
+
+			// Root entity's optional name
+			StringView name;
+			ct.Next("name", name);
+			if (!name.empty())
+			{
+				ast.Emplace<CIdentifier>(entity, name);
+			}
 		}
 	}
 }    // namespace Rift::LoadSystem

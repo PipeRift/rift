@@ -10,7 +10,6 @@
 #include <Assets/AssetPtr.h>
 #include <Assets/TypeAsset.h>
 #include <Files/FileWatcher.h>
-#include <Module.h>
 #include <UI/UI.h>
 
 

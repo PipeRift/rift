@@ -156,7 +156,7 @@ namespace Rift
 		// Set root folder (not displayed)
 		folders.InsertDefaulted(Name::None());
 
-		projectModuleId = Modules::GetProjectModule(ast);
+		projectModuleId = Modules::GetProjectId(ast);
 
 		// Create module folders
 		auto modules = ast.MakeView<CModule, CFileRef>();

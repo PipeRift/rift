@@ -2,7 +2,6 @@
 #pragma once
 
 #include "AST/Types.h"
-#include "Assets/ModuleAsset.h"
 
 #include <CoreObject.h>
 

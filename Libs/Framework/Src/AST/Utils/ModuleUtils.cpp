@@ -7,6 +7,7 @@
 #include "AST/Components/CModule.h"
 #include "AST/Systems/LoadSystem.h"
 #include "AST/Uniques/CModulesUnique.h"
+#include "AST/Utils/LoadingUtils.h"
 #include "Framework/Paths.h"
 
 #include <Files/Paths.h>
@@ -16,17 +17,14 @@ namespace Rift::Modules
 {
 	AST::Tree OpenProject(const Path& path)
 	{
-		const Path fullPath = Paths::ToAbsolute(path);
-
 		if (path.empty())
 		{
 			Log::Error("Cant open project: Invalid path");
 			return {};
 		}
 
-		auto manager = AssetManager::Get();
-		auto asset   = manager->Load(AssetInfo(fullPath / projectFile)).Cast<ModuleAsset>();
-		if (!asset.IsValid())
+		const Path fullPath = Paths::ToAbsolute(path);
+		if (!Files::ExistsAsFile(fullPath / moduleFile))
 		{
 			Log::Error(
 			    "Can't open project: Project file failed to load. Does it exist? Is it corrupted?");
@@ -42,6 +40,7 @@ namespace Rift::Modules
 		ast.Add<CModule>(modules.mainModule, true);
 		ast.Add<CFileRef>(modules.mainModule, fullPath);
 		ast.Add<CIdentifier>(modules.mainModule, Name{Paths::ToString(fullPath.filename())});
+		Loading::MarkPendingLoad(ast, modules.mainModule);
 
 		return ast;
 	}
@@ -51,19 +50,7 @@ namespace Rift::Modules
 		ast.Reset();
 	}
 
-	CModule* GetProjectModule(AST::Tree& ast)
-	{
-		if (auto* modules = ast.TryGetUnique<CModulesUnique>())
-		{
-			if (ast.IsValid(modules->mainModule))
-			{
-				return ast.TryGet<CModule>(modules->mainModule);
-			}
-		}
-		return nullptr;
-	}
-
-	AST::Id GetProjectModule(const AST::Tree& ast)
+	AST::Id GetProjectId(const AST::Tree& ast)
 	{
 		if (auto* modules = ast.TryGetUnique<CModulesUnique>())
 		{
@@ -77,20 +64,20 @@ namespace Rift::Modules
 
 	Name GetProjectName(const AST::Tree& ast)
 	{
-		AST::Id moduleId = GetProjectModule(ast);
+		AST::Id moduleId = GetProjectId(ast);
 		return GetModuleName(ast, moduleId);
 	}
 
 	const Path& GetProjectPath(const AST::Tree& ast)
 	{
 		static const Path def{};
-		const auto* file = ast.TryGet<CFileRef>(GetProjectModule(ast));
+		const auto* file = ast.TryGet<CFileRef>(GetProjectId(ast));
 		return file ? file->path : def;
 	}
 
 	bool HasProject(const AST::Tree& ast)
 	{
-		return GetProjectModule(ast) != AST::NoId;
+		return GetProjectId(ast) != AST::NoId;
 	}
 
 	Name GetModuleName(const AST::Tree& ast, AST::Id moduleId)
@@ -114,5 +101,29 @@ namespace Rift::Modules
 			return {Strings::RemoveFromEnd(fileName, Paths::moduleExtension)};
 		}
 		return {};
+	}
+
+	CModule* GetProjectModule(AST::Tree& ast)
+	{
+		if (auto* modules = ast.TryGetUnique<CModulesUnique>())
+		{
+			if (ast.IsValid(modules->mainModule))
+			{
+				return ast.TryGet<CModule>(modules->mainModule);
+			}
+		}
+		return nullptr;
+	}
+
+	const CModule* GetProjectModule(const AST::Tree& ast)
+	{
+		if (auto* modules = ast.TryGetUnique<CModulesUnique>())
+		{
+			if (ast.IsValid(modules->mainModule))
+			{
+				return ast.TryGet<CModule>(modules->mainModule);
+			}
+		}
+		return nullptr;
 	}
 }    // namespace Rift::Modules

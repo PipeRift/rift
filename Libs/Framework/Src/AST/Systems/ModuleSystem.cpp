@@ -26,11 +26,11 @@ namespace Rift::ModuleSystem
 
 		auto modulesView = ast.MakeView<CModule, CFileRef>();
 
-		AST::Id projectId = Modules::GetProjectModule(ast);
-		auto& projectFile = modulesView.Get<CFileRef>(projectId);
+		AST::Id projectId = Modules::GetProjectId(ast);
+		auto& moduleFile  = modulesView.Get<CFileRef>(projectId);
 
 		TArray<AST::Id> newModules;
-		for (const auto& modulePath : ModuleIterator(projectFile.path, nullptr))
+		for (const auto& modulePath : ModuleIterator(moduleFile.path, nullptr))
 		{
 			const Path folderPath = modulePath.parent_path();
 			bool moduleExists     = false;

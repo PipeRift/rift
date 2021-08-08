@@ -3,7 +3,6 @@
 #pragma once
 
 #include "Compiler/CompilerConfig.h"
-#include "Module.h"
 
 #include <CoreObject.h>
 #include <Profiler.h>

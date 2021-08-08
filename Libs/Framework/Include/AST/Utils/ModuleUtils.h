@@ -3,7 +3,6 @@
 #pragma once
 
 #include "AST/Tree.h"
-#include "Assets/ModuleAsset.h"
 
 #include <Memory/OwnPtr.h>
 
@@ -15,15 +14,16 @@ namespace Rift
 
 namespace Rift::Modules
 {
-	static constexpr StringView projectFile{"Project.rift"};
+	static constexpr StringView moduleFile{"Module.rift"};
 
 	AST::Tree OpenProject(const Path& path);
 	void CloseProject(AST::Tree& ast);
 
-	AST::Id GetProjectModule(const AST::Tree& ast);
-
+	AST::Id GetProjectId(const AST::Tree& ast);
 	Name GetProjectName(const AST::Tree& ast);
 	const Path& GetProjectPath(const AST::Tree& ast);
+	CModule* GetProjectModule(AST::Tree& ast);
+	const CModule* GetProjectModule(const AST::Tree& ast);
 
 	bool HasProject(const AST::Tree& ast);
 

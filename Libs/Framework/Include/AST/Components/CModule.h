@@ -2,7 +2,6 @@
 #pragma once
 
 #include "AST/Types.h"
-#include "Assets/ModuleAsset.h"
 
 #include <Containers/Map.h>
 #include <Misc/Guid.h>
@@ -11,18 +10,26 @@
 
 namespace Rift
 {
+	enum class ModuleTarget : u8
+	{
+		Executable,
+		Shared,
+		Static
+	};
+	// TODO: Simplify enum reflection so that ENUM() is not needed
+	ENUM(ModuleTarget)
+
 	struct CModule : public Struct
 	{
 		STRUCT(CModule, Struct)
 
 		using TypeMap = TMap<Guid, AST::Id>;
 
-		// TODO: Reflect Maps
-		// PROP(TypeMap, types, Transient)
-		TypeMap types;
-
 		PROP(bool, isMain, Transient)
 		bool isMain = false;
+
+		PROP(ModuleTarget, target)
+		ModuleTarget target = ModuleTarget::Executable;
 
 
 		CModule(bool isMain) : isMain{isMain} {}
