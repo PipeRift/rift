@@ -36,7 +36,7 @@ namespace Rift
 					T comp;
 					ct.BeginObject();
 					ct.Serialize(comp);
-					ast.Add<T>(node, Move(comp));
+					ast.Emplace<T>(node, Move(comp));
 					ct.Leave();
 				}
 			}
@@ -81,9 +81,25 @@ namespace Rift
 	{
 		Next("count", nodeCount);
 		ASTIds.Resize(nodeCount);
-		ast.Create(ASTIds.begin(), ASTIds.end());
+		// Create or assign root ids
+		const u32 maxSize = Math::Min(roots.Size(), ASTIds.Size());
+		for (i32 i = 0; i < maxSize; ++i)
+		{
+			const AST::Id root = roots[i];
+			if (root != AST::NoId)
+			{
+				ASTIds[i] = root;
+			}
+			else
+			{
+				ASTIds[i] = ast.Create();
+			}
+		}
 
-		Next("roots", roots);
+		// Create all non-root entities
+		ast.Create(ASTIds.begin() + maxSize, ASTIds.end());
+
+		// Next("roots", roots); // Not needed
 		if (EnterNext("components"))
 		{
 			BeginObject();

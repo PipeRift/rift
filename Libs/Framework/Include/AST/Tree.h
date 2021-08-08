@@ -64,10 +64,10 @@ namespace Rift::AST
 		}
 
 		/**
-		 * If the entity has Component, it will be replaced)
+		 * If the entity has Component, it will be replaced
 		 */
 		template <typename Component, typename... Args>
-		decltype(auto) ReplaceComponent(Id node, Args&&... args)
+		decltype(auto) Replace(Id node, Args&&... args)
 		{
 			return registry.replace<Component>(node, Forward<Args>(args)...);
 		}

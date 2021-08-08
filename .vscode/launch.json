@@ -4,7 +4,6 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
         {
             "name": "Launch",
             "type": "cppvsdbg",
@@ -20,7 +19,7 @@
             "name": "Test Core",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "../Build/Bin/RiftCoreTests.exe",
+            "program": "${workspaceFolder}/Build/Bin/RiftCoreTests.exe",
             "args": [
                 "--reporter=spec"
             ],
@@ -33,7 +32,7 @@
             "name": "Test Rift",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "../Build/Bin/RiftTests.exe",
+            "program": "${workspaceFolder}/Build/Bin/RiftTests.exe",
             "args": [
                 "--reporter=spec"
             ],

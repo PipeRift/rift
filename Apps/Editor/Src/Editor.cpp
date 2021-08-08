@@ -61,6 +61,7 @@ namespace Rift
 
 		ModuleSystem::ScanSubmodules(ast);
 		ModuleSystem::ScanModuleTypes(ast);
+		LoadSystem::Run(ast);
 	}
 
 	void Editor::Draw()

@@ -89,9 +89,8 @@ namespace Rift::ModuleSystem
 				if (!modules->typesByPath.Contains(namePath))
 				{
 					AST::Id unloadedType = ast.Create();
-					CType& type          = ast.Add<CType>(unloadedType);
-					type.moduleId        = moduleId;
 
+					ast.Add<CType>(unloadedType);
 					ast.Add<CFileRef>(unloadedType, typePath);
 					ast.Add<CIdentifier>(unloadedType, namePath);
 					newTypes.Add(unloadedType);
