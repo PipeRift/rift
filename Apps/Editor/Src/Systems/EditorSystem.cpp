@@ -19,7 +19,6 @@
 #include <RiftContext.h>
 
 
-
 namespace Rift::EditorSystem
 {
 	// Root Editor
@@ -292,6 +291,7 @@ namespace Rift::EditorSystem
 		for (AST::Id typeId : typeEditors)
 		{
 			ZoneScopedN("Draw Type");
+
 			UI::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 			UI::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);
 			UI::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -302,7 +302,7 @@ namespace Rift::EditorSystem
 			bool isOpen               = true;
 			const String path         = Paths::ToString(file.path);
 			const StringView filename = Paths::GetFilename(path);
-			const String windowName   = Strings::Format(TX("{}###{}"), filename, path);
+			const String windowName   = Strings::Format("{}##{}", filename, typeId);
 
 			if (typeEditor.pendingFocus)
 			{

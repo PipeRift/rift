@@ -7,6 +7,7 @@
 #include "UI/Style.h"
 #include "UI/UI.h"
 #include "Uniques/CEditorUnique.h"
+#include "Utils/TypeUtils.h"
 
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
@@ -77,6 +78,14 @@ namespace Rift
 	{
 		if (itemId != AST::NoId)
 		{
+			if (ast.Has<CType>(itemId))
+			{
+				if (UI::MenuItem("Open"))
+				{
+					Types::OpenType(ast, itemId);
+				}
+			}
+
 			if (UI::MenuItem("Rename"))
 			{
 				// file->renaming = true;
@@ -278,6 +287,14 @@ namespace Rift
 			{
 				DrawContextMenu(ast, item.path.ToString(), item.id);
 				UI::EndPopup();
+			}
+
+			if (UI::IsItemClicked())
+			{
+				if (UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				{
+					Types::OpenType(ast, item.id);
+				}
 			}
 		}
 	}

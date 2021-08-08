@@ -7,6 +7,7 @@
 
 #include <AST/Components/CClassDecl.h>
 #include <AST/Components/CFunctionDecl.h>
+#include <AST/Components/CFunctionLibraryDecl.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CStructDecl.h>
 #include <AST/Components/CVariableDecl.h>
@@ -185,33 +186,30 @@ namespace Rift
 
 	void DrawVariables(AST::Tree& ast, AST::Id typeId)
 	{
-		auto* children = AST::GetLinked(ast, typeId);
-		if (!Ensure(children))
-		{
-			return;
-		}
-
 		if (UI::CollapsingHeader("Variables"))
 		{
 			auto variableView = ast.MakeView<CVariableDecl>();
 			UI::Indent(10.f);
-			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
-			if (UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit))
+			if (auto* children = AST::GetLinked(ast, typeId))
 			{
-				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.45f);
-				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.25f);
-				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.30f);
-				for (AST::Id child : *children)
+				UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
+				if (UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit))
 				{
-					if (variableView.Has(child))
+					ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.45f);
+					ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.25f);
+					ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.30f);
+					for (AST::Id child : *children)
 					{
-						UI::TableNextRow();
-						DrawVariable(ast, child);
+						if (variableView.Has(child))
+						{
+							UI::TableNextRow();
+							DrawVariable(ast, child);
+						}
 					}
+					UI::EndTable();
 				}
-				UI::EndTable();
+				UI::PopStyleVar();
 			}
-			UI::PopStyleVar();
 
 			Style::PushStyleCompact();
 			if (UI::Button("Add##Variable", ImVec2(-FLT_MIN, 0.0f)))
@@ -227,33 +225,31 @@ namespace Rift
 
 	void DrawFunctions(AST::Tree& ast, AST::Id typeId)
 	{
-		auto* children = AST::GetLinked(ast, typeId);
-		if (!Ensure(children))
-		{
-			return;
-		}
-
 		if (UI::CollapsingHeader("Functions", ImGuiTreeNodeFlags_AllowItemOverlap |
 		                                          ImGuiTreeNodeFlags_ClipLabelForTrailingButton))
 		{
 			auto functionView = ast.MakeView<CFunctionDecl>();
 			UI::Indent(10.f);
-			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
-			if (UI::BeginTable("##functionTable", 1, ImGuiTableFlags_SizingFixedFit))
-			{
-				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch);
 
-				for (AST::Id child : *children)
+			if (auto* children = AST::GetLinked(ast, typeId))
+			{
+				UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
+				if (UI::BeginTable("##functionTable", 1, ImGuiTableFlags_SizingFixedFit))
 				{
-					if (functionView.Has(child))
+					ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch);
+
+					for (AST::Id child : *children)
 					{
-						UI::TableNextRow();
-						DrawFunction(ast, child);
+						if (functionView.Has(child))
+						{
+							UI::TableNextRow();
+							DrawFunction(ast, child);
+						}
 					}
+					UI::EndTable();
 				}
-				UI::EndTable();
+				UI::PopStyleVar();
 			}
-			UI::PopStyleVar();
 
 			Style::PushStyleCompact();
 			if (UI::Button("Add##Function", ImVec2(-FLT_MIN, 0.0f)))
@@ -271,14 +267,17 @@ namespace Rift
 	{
 		layout.BindNextWindowToNode(CTypeEditor::rightNode);
 
-		if (UI::Begin("Properties"))
+		const String windowName = Strings::Format("Properties##{}", typeId);
+		if (UI::Begin(windowName.c_str()))
 		{
-			if (ast.HasAny<CClassDecl, CStructDecl>(typeId))    // IsStruct || IsClass
+			// IsStruct || IsClass
+			if (ast.HasAny<CClassDecl, CStructDecl>(typeId))
 			{
 				DrawVariables(ast, typeId);
 			}
 
-			if (ast.HasAny<CClassDecl>(typeId))    // IsClass || IsFunctionLibrary
+			// IsClass || IsFunctionLibrary
+			if (ast.HasAny<CClassDecl, CFunctionLibraryDecl>(typeId))
 			{
 				DrawFunctions(ast, typeId);
 			}

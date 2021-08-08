@@ -194,7 +194,7 @@ namespace Rift::UI
 
 		UI::SetNextItemWidth(-FLT_MIN);
 		UI::AlignTextToFramePadding();
-		UI::Text(label.data());
+		UI::Text(text.data());
 
 		UI::PopStyleColor();
 		UI::PopStyleVar();
