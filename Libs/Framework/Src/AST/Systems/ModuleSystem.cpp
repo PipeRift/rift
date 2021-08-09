@@ -30,14 +30,13 @@ namespace Rift::ModuleSystem
 		auto& moduleFile  = modulesView.Get<CFileRef>(projectId);
 
 		TArray<AST::Id> newModules;
-		for (const auto& modulePath : ModuleIterator(moduleFile.path, nullptr))
+		for (const auto& modulePath : ModuleIterator(moduleFile.path.parent_path(), nullptr))
 		{
-			const Path folderPath = modulePath.parent_path();
-			bool moduleExists     = false;
+			bool moduleExists = false;
 			for (AST::Id otherId : modulesView)
 			{
 				auto& otherFile = modulesView.Get<CFileRef>(otherId);
-				if (folderPath == otherFile.path)
+				if (modulePath == otherFile.path)
 				{
 					moduleExists = true;
 					break;
@@ -48,7 +47,7 @@ namespace Rift::ModuleSystem
 			{
 				const AST::Id id = ast.Create();
 				ast.Add<CModule>(id, false);
-				ast.Add<CFileRef>(id, modulePath.parent_path());
+				ast.Add<CFileRef>(id, modulePath);
 				newModules.Add(id);
 			}
 		}
@@ -74,7 +73,7 @@ namespace Rift::ModuleSystem
 		for (AST::Id moduleId : modulesView)
 		{
 			const CFileRef& moduleFile = ast.Get<CFileRef>(moduleId);
-			modulePaths.Insert(moduleFile.path);
+			modulePaths.Insert(moduleFile.path.parent_path());
 		}
 
 		for (AST::Id moduleId : modulesView)
@@ -82,7 +81,7 @@ namespace Rift::ModuleSystem
 			const CFileRef& moduleFile = ast.Get<CFileRef>(moduleId);
 
 			TArray<AST::Id> newTypes;
-			for (const auto& typePath : TypeIterator(moduleFile.path, &modulePaths))
+			for (const auto& typePath : TypeIterator(moduleFile.path.parent_path(), &modulePaths))
 			{
 				const Name namePath{Paths::ToString(typePath)};
 
@@ -101,7 +100,5 @@ namespace Rift::ModuleSystem
 			AST::Link(ast, moduleId, newTypes);
 			Loading::MarkPendingLoad(ast, newTypes);
 		}
-
-		// allTypes.Empty();
 	}
 }    // namespace Rift::ModuleSystem

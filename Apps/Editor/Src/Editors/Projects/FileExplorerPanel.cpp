@@ -159,38 +159,45 @@ namespace Rift
 		projectModuleId = Modules::GetProjectId(ast);
 
 		// Create module folders
-		auto modules = ast.MakeView<CModule, CFileRef>();
+		auto modules = ast.MakeView<CModule>();
+		TMap<AST::Id, Path> moduleFolders;
+		moduleFolders.Reserve(u32(modules.Size()));
 		for (AST::Id moduleId : modules)
 		{
-			auto& file = modules.Get<CFileRef>(moduleId);
-			const Name pathName{Paths::ToString(file.path)};
+			auto& file      = ast.Get<CFileRef>(moduleId);
+			Path folderPath = file.path.parent_path();
+			const Name pathName{Paths::ToString(folderPath)};
 			folders.InsertDefaulted(pathName);
+			moduleFolders.Insert(moduleId, Move(folderPath));
 		}
 
 		// Create folders between modules
 		for (AST::Id oneId : modules)
 		{
 			bool insideOther = false;
-			const Path& path = modules.Get<CFileRef>(oneId).path;
+			const Path& path = moduleFolders[oneId];
 
 			for (AST::Id otherId : modules)
 			{
 				if (oneId != otherId)
 				{
-					const Path& otherPath = modules.Get<CFileRef>(otherId).path;
+					const Path& otherPath = moduleFolders[otherId];
 
 					if (Strings::Contains<Path::value_type>(path.native(),
 					        otherPath.native()))    // Is relative
 					{
-						// If a module is inside another, create the folders in between
-						InsertItem(folders, Item{oneId, Paths::ToString(path), true});
 						insideOther = true;
-						// break;?
+						break;
 					}
 				}
 			}
 
-			if (!insideOther)
+			if (insideOther)
+			{
+				// If a module is inside another, create the folders in between
+				InsertItem(folders, Item{oneId, Paths::ToString(path), true});
+			}
+			else
 			{
 				folders[Name::None()].items.Add(Item{oneId, Name{Paths::ToString(path)}, true});
 			}

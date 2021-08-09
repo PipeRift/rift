@@ -45,12 +45,13 @@ go_bandit([]() {
 			AST::Tree ast = Modules::OpenProject(testProjectPath);
 			AssertThat(Modules::HasProject(ast), Equals(true));
 
-			AssertThat(Modules::GetProjectName(ast), Equals(Name{"TestProject"}));
+			Name projectName = Modules::GetProjectName(ast);
+			AssertThat(projectName.ToString(), Equals(String{"TestProject"}));
 		});
 
 		// TODO: Fix module loading. They can't load from CFileRef pointing to the folder and not
 		// the file
-		xit("Project name can be overriden", [&]() {
+		it("Project name can be overriden", [&]() {
 			Files::SaveStringFile(
 			    testProjectPath / Modules::moduleFile, "{\"name\": \"SomeProject\"}");
 
@@ -59,7 +60,7 @@ go_bandit([]() {
 			AssertThat(Modules::HasProject(ast), Equals(true));
 
 			Name projectName = Modules::GetProjectName(ast);
-			AssertThat(projectName.ToString().c_str(), Equals("SomeProject"));
+			AssertThat(projectName.ToString(), Equals(String{"SomeProject"}));
 		});
 	});
 });

@@ -23,8 +23,20 @@ namespace Rift::Modules
 			return {};
 		}
 
-		const Path fullPath = Paths::ToAbsolute(path);
-		if (!Files::ExistsAsFile(fullPath / moduleFile))
+		Path folderPath;
+		Path filePath;
+		if (Files::IsFile(path))
+		{
+			filePath   = Paths::ToAbsolute(path);
+			folderPath = filePath.parent_path();
+		}
+		else
+		{
+			folderPath = Paths::ToAbsolute(path);
+			filePath   = folderPath / moduleFile;
+		}
+
+		if (!Files::ExistsAsFile(filePath))
 		{
 			Log::Error(
 			    "Can't open project: Project file failed to load. Does it exist? Is it corrupted?");
@@ -38,8 +50,7 @@ namespace Rift::Modules
 		// Create root module
 		modules.mainModule = ast.Create();
 		ast.Add<CModule>(modules.mainModule, true);
-		ast.Add<CFileRef>(modules.mainModule, fullPath);
-		ast.Add<CIdentifier>(modules.mainModule, Name{Paths::ToString(fullPath.filename())});
+		ast.Add<CFileRef>(modules.mainModule, filePath);
 		Loading::MarkPendingLoad(ast, modules.mainModule);
 
 		return ast;
@@ -97,8 +108,8 @@ namespace Rift::Modules
 		if (file && !file->path.empty())
 		{
 			// Obtain name from project file name
-			const String fileName = Paths::GetFilename(file->path);
-			return {Strings::RemoveFromEnd(fileName, Paths::moduleExtension)};
+			const String fileName = Paths::ToString(file->path);
+			return {Paths::GetFilename(Paths::GetParent(fileName))};    // Folder name
 		}
 		return {};
 	}
