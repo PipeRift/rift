@@ -19,6 +19,11 @@ namespace Rift::Compiler::Cpp
 		    fmt::arg("ProjectName", name), fmt::arg("Version", version));
 	}
 
+	void AddSubdirectory(String& code, StringView path)
+	{
+		Strings::FormatTo(code, "add_subdirectory({})\n", path);
+	}
+
 	void AddLibrary(
 	    String& code, Context& context, ModuleTarget type, Name name, StringView cppVersion)
 	{
@@ -63,22 +68,37 @@ namespace Rift::Compiler::Cpp
 		    fmt::arg("ModuleName", name));
 	}
 
-	void GenerateCMake(Context& context, const Path& generatePath)
+	void GenerateCMakeModule(
+	    Context& context, AST::Id moduleId, CModule& module, const Path& codePath, Name name)
 	{
-		Name projectName      = Modules::GetProjectName(context.ast);
-		const CModule* module = Modules::GetProjectModule(context.ast);
-
 		String code;
-		SetProject(code, context, projectName.ToString(), "0.1");
-		if (module->target == ModuleTarget::Executable)
+		ModuleTarget target = module.target;
+		if (target == ModuleTarget::Executable)
 		{
-			AddExecutable(code, context, projectName.ToString(), "14");
+			AddExecutable(code, context, name.ToString(), "20");
 		}
 		else
 		{
-			AddLibrary(code, context, module->target, projectName.ToString(), "14");
+			AddLibrary(code, context, target, name.ToString(), "20");
+		}
+		Files::SaveStringFile(codePath / name.ToString() / "CMakelists.txt", code);
+	}
+
+	void GenerateCMake(Context& context, const Path& codePath)
+	{
+		String code;
+		Name projectName = Modules::GetProjectName(context.ast);
+		SetProject(code, context, projectName.ToString(), "0.1");
+
+		auto modules = context.ast.MakeView<CModule>();
+		for (AST::Id moduleId : modules)
+		{
+			Name name = Modules::GetModuleName(context.ast, moduleId);
+			GenerateCMakeModule(context, moduleId, modules.Get<CModule>(moduleId), codePath, name);
+
+			AddSubdirectory(code, name.ToString());
 		}
 
-		Files::SaveStringFile(generatePath / "CMakelists.txt", code);
+		Files::SaveStringFile(codePath / "CMakelists.txt", code);
 	}
 }    // namespace Rift::Compiler::Cpp

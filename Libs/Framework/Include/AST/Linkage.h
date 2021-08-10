@@ -31,6 +31,7 @@ namespace Rift::AST
 	void UnlinkAllChildren(Tree& ast, TArrayView<Id> parents, bool keepComponents = false);
 
 	TArray<Id>* GetLinked(Tree& ast, Id node);
+	const TArray<Id>* GetLinked(const Tree& ast, Id node);
 	void GetLinked(const Tree& ast, TArrayView<const Id> nodes, TArray<Id>& outLinkedNodes);
 	void GetLinkedDeep(const Tree& ast, TArrayView<const Id> roots, TArray<Id>& outLinkedNodes);
 

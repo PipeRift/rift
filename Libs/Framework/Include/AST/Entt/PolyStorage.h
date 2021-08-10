@@ -71,7 +71,10 @@ struct PolyStorage : entt::type_list_cat_t<
 
 			if constexpr(!std::is_empty_v<typename Type::value_type>)
 			{
-				otherPool->insert(other, self.data(), *self.raw(), self.size());
+				if (self.raw())
+				{
+					otherPool->insert(other, self.data(), *self.raw(), self.size());
+				}
 			}
 			else
 			{

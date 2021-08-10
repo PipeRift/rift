@@ -29,7 +29,7 @@ namespace Rift::Compiler
 		TArray<CompileError> errors;
 
 
-		Context(AST::Tree& ast) : ast{ast} {}
+		Context(AST::Tree& ast, const Config& config) : ast{ast}, config{config} {}
 
 		// Errors
 		void AddError(StringView str);

@@ -7,5 +7,5 @@
 
 namespace Rift::Compiler::Cpp
 {
-	void Build(Context& ast, const Config& config);
+	void Build(Context& ast);
 }    // namespace Rift::Compiler::Cpp

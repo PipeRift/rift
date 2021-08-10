@@ -53,24 +53,17 @@ namespace Rift::Compiler::Cpp
 		// project->LoadAllAssets();
 	}
 
-	void Build(Context& context, const Config& tmpConfig)
+	void Build(Context& context)
 	{
 		ZoneScopedC(0x459bd1);
 
 		Log::Info("Building project '{}'", Modules::GetProjectName(context.ast));
-
-		// context.project = project;
-		context.config = tmpConfig;
-		// context.config.Init(project);
 
 		const Path& codePath = context.config.intermediatesPath / "Code";
 		Files::Delete(codePath, true, false);
 		Files::Delete(context.config.binariesPath, true, false);
 		Files::CreateFolder(codePath, true);
 		Files::CreateFolder(context.config.binariesPath, true);
-
-		Log::Info("Loading files");
-		// project->LoadAllAssets();
 
 		Log::Info("Generating Code: C++");
 		GenerateCode(context, codePath);
@@ -85,7 +78,7 @@ namespace Rift::Compiler::Cpp
 		GenerateCMake(context, codePath);
 		if (context.HasErrors())
 		{
-			context.AddError("Failed to generate C++ code.");
+			context.AddError("Failed to generate cmake files");
 			return;
 		}
 
@@ -106,10 +99,15 @@ namespace Rift::Compiler::Cpp
 			context.AddError("Failed to copy code");
 			return;
 		}
-		if (!Files::Copy(cmakePath / context.config.buildMode, context.config.binariesPath / "Bin"))
+		auto modules = context.ast.MakeView<CModule>();
+		for (AST::Id moduleId : modules)
 		{
-			context.AddError("Failed to copy binaries");
-			return;
+			Name name = Modules::GetModuleName(context.ast, moduleId);
+			if (!Files::Copy(cmakePath / name.ToString() / context.config.buildMode,
+			        context.config.binariesPath / name.ToString() / "Bin"))
+			{
+				context.AddError("Failed to copy binaries");
+			}
 		}
 
 		Log::Info("Build complete");

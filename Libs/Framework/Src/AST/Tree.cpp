@@ -5,6 +5,7 @@
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CNativeDecl.h"
 #include "AST/Components/CType.h"
+#include "AST/Uniques/CModulesUnique.h"
 #include "Compiler/Cpp/Components/CCppNativeName.h"
 
 
@@ -126,7 +127,10 @@ namespace Rift::AST
 		other.registry.visit([&other, this](const auto info) {
 			other.registry.storage(info)->copy_to(registry);
 		});
-
 		CachePools();
+
+		// Copy non-transient unique components
+		// TODO: Use reflection for this
+		SetUnique<CModulesUnique>(other.GetUnique<CModulesUnique>());
 	}
 }    // namespace Rift::AST

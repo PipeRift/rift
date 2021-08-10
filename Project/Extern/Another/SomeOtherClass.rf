@@ -1,0 +1,33 @@
+{
+    "type": "Class",
+    "count": 2,
+    "roots": [0],
+    "components": {
+        "CParent": {
+            "0": {
+                "children": [
+                    1
+                ]
+            }
+        },
+        "CChild": {
+            "1": {
+                "parent": 0
+            }
+        },
+        "CIdentifier": {
+            "0": {
+                "name": "SomeOtherClass"
+            },
+            "1": {
+                "name": "DoSomething"
+            }
+        },
+        "CClassDecl": {
+            "0": {}
+        },
+        "CFunctionDecl": {
+            "1": {}
+        }
+    }
+}

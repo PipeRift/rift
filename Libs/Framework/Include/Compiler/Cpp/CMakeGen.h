@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "AST/Types.h"
+
 #include <Files/Paths.h>
 
 
@@ -12,5 +14,5 @@ namespace Rift::Compiler
 
 namespace Rift::Compiler::Cpp
 {
-	void GenerateCMake(Context& context, const Path& generatePath);
+	void GenerateCMake(Context& context, const Path& codePath);
 }    // namespace Rift::Compiler::Cpp

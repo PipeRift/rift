@@ -190,6 +190,12 @@ namespace Rift::AST
 		return parent ? &parent->children : nullptr;
 	}
 
+	const TArray<Id>* GetLinked(const Tree& ast, Id node)
+	{
+		const CParent* const parent = GetCParent(ast, node);
+		return parent ? &parent->children : nullptr;
+	}
+
 	void GetLinked(const Tree& ast, TArrayView<const Id> nodes, TArray<Id>& outLinkedNodes)
 	{
 		nodes.Each([&ast, &outLinkedNodes](Id node) {
