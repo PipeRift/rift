@@ -5,7 +5,6 @@
 #include "Components/CTypeEditor.h"
 #include "Editor.h"
 #include "Files/FileDialog.h"
-#include "NodeGraph/NodeGraphPanel.h"
 #include "Uniques/CEditorUnique.h"
 #include "Utils/FunctionGraph.h"
 #include "Utils/Properties.h"

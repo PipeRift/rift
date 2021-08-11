@@ -1,9 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editors/Projects/FileExplorerPanel.h"
+#include "Panels/FileExplorerPanel.h"
 
 #include "Editor.h"
-#include "Editors/ProjectEditor.h"
 #include "UI/Style.h"
 #include "UI/UI.h"
 #include "Uniques/CEditorUnique.h"

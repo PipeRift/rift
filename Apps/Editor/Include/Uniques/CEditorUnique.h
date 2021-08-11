@@ -2,8 +2,8 @@
 #pragma once
 
 #include "AST/Types.h"
-#include "Editors/Projects/FileExplorerPanel.h"
-#include "Editors/TypeAssetEditor.h"
+#include "DockSpaceLayout.h"
+#include "Panels/FileExplorerPanel.h"
 #include "Tools/ASTDebugger.h"
 
 #include <CoreObject.h>
@@ -24,7 +24,6 @@ namespace Rift
 		static const Name centralNode;
 
 		String currentProjectPath;
-		// TArray<TOwnPtr<TypeAssetEditor>> typeAssetEditors;
 		TArray<AST::Id> pendingTypesToClose;
 
 		FileWatcher fileWatcher;
