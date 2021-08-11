@@ -19,7 +19,9 @@ namespace Rift
 
 	public:
 #if BUILD_DEBUG
-		bool showDemo = false;
+		bool showDemo    = false;
+		bool showMetrics = false;
+		bool showStyle   = false;
 #endif
 
 
@@ -47,7 +49,6 @@ namespace Rift
 		}
 
 		bool OpenProject(const Path& path, bool closeFirst = true);
-		void CloseProject();
 
 		void Close();
 

@@ -14,7 +14,7 @@ namespace Rift
 {
 	struct ASTDebugger
 	{
-		bool open = true;
+		bool open = false;
 
 		AST::Id selectedEntity{};
 

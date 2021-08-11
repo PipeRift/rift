@@ -186,7 +186,7 @@ namespace Rift
 
 	void DrawVariables(AST::Tree& ast, AST::Id typeId)
 	{
-		if (UI::CollapsingHeader("Variables"))
+		if (UI::CollapsingHeader("Variables", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			auto variableView = ast.MakeView<CVariableDecl>();
 			UI::Indent(10.f);
@@ -225,8 +225,10 @@ namespace Rift
 
 	void DrawFunctions(AST::Tree& ast, AST::Id typeId)
 	{
-		if (UI::CollapsingHeader("Functions", ImGuiTreeNodeFlags_AllowItemOverlap |
-		                                          ImGuiTreeNodeFlags_ClipLabelForTrailingButton))
+		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen |
+		                                 ImGuiTreeNodeFlags_AllowItemOverlap |
+		                                 ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
+		if (UI::CollapsingHeader("Functions", flags))
 		{
 			auto functionView = ast.MakeView<CFunctionDecl>();
 			UI::Indent(10.f);

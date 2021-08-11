@@ -23,22 +23,20 @@ namespace Rift
 		}
 
 		UI::Begin("Abstract Syntax Tree", &open);
+		auto rootView   = ast.MakeView<CParent>(AST::TExclude<CChild>{});
+		auto orphanView = ast.MakeView<CIdentifier>(AST::TExclude<CChild, CParent>{});
+		// auto identifierView = ast.MakeView<CIdentifier>();
+
+		for (auto root : rootView)
 		{
-			auto rootView   = ast.MakeView<CParent>(AST::TExclude<CChild>{});
-			auto orphanView = ast.MakeView<CIdentifier>(AST::TExclude<CChild, CParent>{});
-			// auto identifierView = ast.MakeView<CIdentifier>();
-
-			for (auto root : rootView)
-			{
-				DrawEntity(ast, root);
-			}
-
-			for (auto orphan : orphanView)
-			{
-				DrawEntity(ast, orphan);
-			}
-			UI::Separator();
+			DrawEntity(ast, root);
 		}
+
+		for (auto orphan : orphanView)
+		{
+			DrawEntity(ast, orphan);
+		}
+		UI::Separator();
 		UI::End();
 	}
 

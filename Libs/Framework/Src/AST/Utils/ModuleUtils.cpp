@@ -79,11 +79,9 @@ namespace Rift::Modules
 		return GetModuleName(ast, moduleId);
 	}
 
-	const Path& GetProjectPath(const AST::Tree& ast)
+	Path GetProjectPath(const AST::Tree& ast)
 	{
-		static const Path def{};
-		const auto* file = ast.TryGet<CFileRef>(GetProjectId(ast));
-		return file ? file->path : def;
+		return GetModulePath(ast, GetProjectId(ast));
 	}
 
 	bool HasProject(const AST::Tree& ast)
@@ -112,6 +110,15 @@ namespace Rift::Modules
 			return {Paths::GetFilename(Paths::GetParent(fileName))};    // Folder name
 		}
 		return {};
+	}
+
+	Path GetModulePath(const AST::Tree& ast, AST::Id moduleId)
+	{
+		if (const auto* file = ast.TryGet<CFileRef>(moduleId))
+		{
+			return file->path.parent_path();
+		}
+		return Path{};
 	}
 
 	CModule* GetProjectModule(AST::Tree& ast)

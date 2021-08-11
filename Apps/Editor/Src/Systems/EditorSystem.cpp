@@ -11,6 +11,7 @@
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CFileRef.h>
+#include <AST/Components/CModule.h>
 #include <AST/Components/CType.h>
 #include <AST/Utils/DeclarationUtils.h>
 #include <AST/Utils/ModuleUtils.h>
@@ -20,9 +21,63 @@
 
 namespace Rift::EditorSystem
 {
+	void OnProjectEditorOpen(AST::Tree& ast)
+	{
+		auto& editor = ast.GetUnique<CEditorUnique>();
+		editor.layout.OnBuild([](auto& builder) {
+			// ==================================== //
+			//          |                           //
+			//          |                           //
+			//   Left   |          Central          //
+			//(Explorer)|          (Types)          //
+			//          |                           //
+			//          |                           //
+			// ==================================== //
+			builder.Split(builder.GetRootNode(), ImGuiDir_Left, 0.2f, CEditorUnique::leftNode,
+			    CEditorUnique::centralNode);
+
+			builder.GetNodeLocalFlags(CEditorUnique::leftNode) |= ImGuiDockNodeFlags_AutoHideTabBar;
+			builder.GetNodeLocalFlags(CEditorUnique::centralNode) |= ImGuiDockNodeFlags_CentralNode;
+		});
+
+		// TODO: Reseting until we are able to know if the layout was saved before. Reset if it
+		// didn't exist
+		editor.layout.Reset();
+	}
+
+	void OnTypeEditorOpen(AST::Tree::Registry& registry, AST::Id typeId)
+	{
+		auto& typeEditor = registry.get<CTypeEditor>(typeId);
+		typeEditor.layout.OnBuild([](auto& builder) {
+			// =================================== //
+			//                           |         //
+			//                           |         //
+			//          Central          |  Right  //
+			//          (Graph)          |(Details)//
+			//                           |         //
+			//                           |         //
+			// =================================== //
+			builder.Split(builder.GetRootNode(), ImGuiDir_Right, 0.2f, CTypeEditor::rightNode,
+			    CTypeEditor::centralNode);
+
+			builder.GetNodeLocalFlags(CTypeEditor::rightNode) |= ImGuiDockNodeFlags_AutoHideTabBar;
+			builder.GetNodeLocalFlags(CTypeEditor::centralNode) |= ImGuiDockNodeFlags_CentralNode;
+		});
+
+		// TODO: Reseting until we are able to know if the layout was saved before. Reset if it
+		// didn't exist
+		typeEditor.layout.Reset();
+	}
+
+	void Init(AST::Tree& ast)
+	{
+		OnProjectEditorOpen(ast);
+		ast.OnConstruct<CTypeEditor>().connect<&OnTypeEditorOpen>();
+	}
+
 	// Root Editor
-	void CreateDockspace(CEditorUnique& editor);
-	void CreateDockspace(CTypeEditor& editor, const char* id);
+	void CreateRootDockspace(CEditorUnique& editor);
+	void CreateTypeDockspace(CTypeEditor& editor, const char* id);
 	void DrawMenuBar(AST::Tree& ast);
 	void DrawProjectPickerPopup(AST::Tree& ast);
 
@@ -51,15 +106,26 @@ namespace Rift::EditorSystem
 		DrawProjectPickerPopup(ast);
 
 #if BUILD_DEBUG
-		bool& showDemo = Editor::Get().showDemo;
-		if (showDemo)
+		if (bool& showDemo = Editor::Get().showDemo)
 		{
 			UI::ShowDemoWindow(&showDemo);
+		}
+
+		if (bool& showMetrics = Editor::Get().showMetrics)
+		{
+			ImGui::ShowMetricsWindow(&showMetrics);
+		}
+
+		if (bool& showStyle = Editor::Get().showStyle)
+		{
+			ImGui::Begin("Editor Style", &showStyle);
+			ImGui::ShowStyleEditor();
+			ImGui::End();
 		}
 #endif
 	}
 
-	void CreateDockspace(CEditorUnique& editor)
+	void CreateRootDockspace(CEditorUnique& editor)
 	{
 		ZoneScoped;
 		ImGuiDockNodeFlags dockingFlags = ImGuiDockNodeFlags_None;
@@ -93,7 +159,7 @@ namespace Rift::EditorSystem
 		UI::End();
 	}
 
-	void CreateDockspace(CTypeEditor& editor, const char* id)
+	void CreateTypeDockspace(CTypeEditor& editor, const char* id)
 	{
 		ZoneScoped;
 		ImGuiDockNodeFlags dockingFlags = ImGuiDockNodeFlags_None;
@@ -108,13 +174,14 @@ namespace Rift::EditorSystem
 		{
 			if (UI::BeginMenu("Views"))
 			{
+#if BUILD_DEBUG
+				UI::MenuItem("Style", nullptr, &Editor::Get().showStyle);
+				UI::MenuItem("Metrics", nullptr, &Editor::Get().showMetrics);
+				UI::MenuItem("Demo", nullptr, &Editor::Get().showDemo);
+#endif
 				UI::EndMenu();
 			}
 
-#if BUILD_DEBUG
-			bool& showDemo = Editor::Get().showDemo;
-			UI::MenuItem("Demo", nullptr, &showDemo);
-#endif
 			UI::EndMainMenuBar();
 		}
 	}
@@ -187,7 +254,7 @@ namespace Rift::EditorSystem
 			return;
 		}
 
-		CreateDockspace(editor);
+		CreateRootDockspace(editor);
 		editor.layout.Tick(editor.dockspaceID);
 
 		DrawTypes(ast, editor);
@@ -291,9 +358,6 @@ namespace Rift::EditorSystem
 		{
 			ZoneScopedN("Draw Type");
 
-			UI::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-			UI::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);
-			UI::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
 			auto& typeEditor = typeEditors.Get<CTypeEditor>(typeId);
 			auto& file       = typeEditors.Get<CFileRef>(typeId);
@@ -310,11 +374,15 @@ namespace Rift::EditorSystem
 			}
 
 			editor.layout.BindNextWindowToNode(CEditorUnique::centralNode);
+
+			UI::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+			UI::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);
+			UI::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 			if (UI::Begin(windowName.c_str(), &isOpen))
 			{
 				UI::PopStyleVar(3);
 
-				CreateDockspace(typeEditor, windowName.c_str());
+				CreateTypeDockspace(typeEditor, windowName.c_str());
 				typeEditor.layout.Tick(typeEditor.dockspaceID);
 
 				if (Declarations::IsStruct(ast, typeId))

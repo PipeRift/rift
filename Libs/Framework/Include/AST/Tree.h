@@ -251,6 +251,34 @@ namespace Rift::AST
 		{
 			return *childView;
 		}
+
+		template <typename Component>
+		auto OnConstruct()
+		{
+			return registry.on_construct<Component>();
+		}
+
+		template <typename Component>
+		auto OnDestroy()
+		{
+			return registry.on_destroy<Component>();
+		}
+
+		template <typename Component>
+		auto OnUpdate()
+		{
+			return registry.on_update<Component>();
+		}
+
+		Registry& GetRegistry()
+		{
+			return registry;
+		}
+		const Registry& GetRegistry() const
+		{
+			return registry;
+		}
+
 #pragma endregion ECS API
 
 		void CopyFrom(const Tree& other);
