@@ -11,7 +11,7 @@ namespace Rift
 	{
 		STRUCT(CChild, Struct)
 
-		PROP(AST::Id, parent)
+		PROP(parent)
 		AST::Id parent = AST::NoId;
 	};
 }    // namespace Rift

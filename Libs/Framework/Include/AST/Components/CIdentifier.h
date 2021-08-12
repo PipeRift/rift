@@ -11,7 +11,7 @@ namespace Rift
 	{
 		STRUCT(CIdentifier, Struct)
 
-		PROP(Name, name);
+		PROP(name);
 		Name name;
 
 

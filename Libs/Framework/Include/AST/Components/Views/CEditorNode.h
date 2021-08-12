@@ -10,7 +10,7 @@ namespace Rift
 	{
 		STRUCT(CEditorNode, Struct)
 
-		PROP(v2, position)
+		PROP(position)
 		v2 position;
 	};
 }    // namespace Rift

@@ -12,7 +12,7 @@ namespace Rift
 	{
 		STRUCT(CModulesUnique, Struct)
 
-		PROP(AST::Id, mainModule)
+		PROP(mainModule)
 		AST::Id mainModule = AST::NoId;
 
 		TMap<Name, AST::Id> typesByPath;

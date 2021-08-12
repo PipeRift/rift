@@ -10,6 +10,7 @@
 #include "AST/Utils/LoadingUtils.h"
 #include "Framework/Paths.h"
 
+#include <Files/Files.h>
 #include <Files/Paths.h>
 
 

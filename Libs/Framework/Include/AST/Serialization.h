@@ -41,6 +41,7 @@ namespace Rift
 	class ASTWriteContext : public Serl::WriteContext
 	{
 		AST::Tree& ast;
+		bool includeChildren;
 
 		// While serializing we create ids as AST::Ids appear and link them.
 		u32 nodeCount = 0;
@@ -48,9 +49,11 @@ namespace Rift
 
 
 	public:
-		ASTWriteContext(const Serl::WriteContext& parent, AST::Tree& ast)
+		ASTWriteContext(
+		    const Serl::WriteContext& parent, AST::Tree& ast, bool includeChildren = true)
 		    : Serl::WriteContext(parent)
 		    , ast(ast)
+		    , includeChildren{includeChildren}
 		{}
 
 		void SerializeRoots(const TArray<AST::Id>& roots);

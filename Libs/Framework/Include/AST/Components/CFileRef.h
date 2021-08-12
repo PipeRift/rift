@@ -16,7 +16,7 @@ namespace Rift
 	{
 		STRUCT(CFileRef, Struct)
 
-		PROP(Path, path)
+		PROP(path)
 		Path path;
 
 

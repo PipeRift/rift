@@ -147,6 +147,9 @@ namespace Rift
 	void ASTWriteContext::RetrieveHierarchy(const TArray<AST::Id>& roots, TArray<AST::Id>& children)
 	{
 		children.Append(roots);
-		AST::GetLinkedDeep(ast, roots, children);
+		if (includeChildren)
+		{
+			AST::GetLinkedDeep(ast, roots, children);
+		}
 	}
 }    // namespace Rift

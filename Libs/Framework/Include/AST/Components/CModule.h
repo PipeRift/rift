@@ -25,10 +25,10 @@ namespace Rift
 
 		using TypeMap = TMap<Guid, AST::Id>;
 
-		PROP(bool, isMain, Transient)
+		PROP(isMain, Prop_Transient)
 		bool isMain = false;
 
-		PROP(ModuleTarget, target)
+		PROP(target)
 		ModuleTarget target = ModuleTarget::Executable;
 
 

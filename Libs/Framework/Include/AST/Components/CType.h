@@ -19,7 +19,7 @@ namespace Rift
 	{
 		STRUCT(CType, Struct)
 
-		PROP(Guid, guid)
+		PROP(guid)
 		Guid guid;
 
 

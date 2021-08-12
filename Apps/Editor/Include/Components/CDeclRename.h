@@ -13,7 +13,7 @@ namespace Rift
 {
 	struct CDeclRename : public Struct
 	{
-		STRUCT(CDeclRename, Struct, Transient)
+		STRUCT(CDeclRename, Struct, Struct_Transient)
 
 		// Renaming uses this buffer to temporarely store the name being edited
 		String buffer;

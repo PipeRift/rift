@@ -13,10 +13,10 @@ namespace Rift::AST
 	{
 		STRUCT(TypeRef, Struct)
 
-		PROP(AST::Id, id)
+		PROP(id)
 		AST::Id id;
 
-		PROP(Guid, guid)
+		PROP(guid)
 		Guid guid;
 	};
 

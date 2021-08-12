@@ -15,7 +15,7 @@ namespace Rift::Compiler
 	{
 		STRUCT(CompileError, Struct)
 
-		PROP(String, text)
+		PROP(text)
 		String text;
 	};
 
