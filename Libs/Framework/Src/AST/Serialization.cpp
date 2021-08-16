@@ -49,11 +49,13 @@ namespace Rift
 	{
 		auto view = ast.MakeView<T>();
 
+		// FIX: yyjson doesn't seem to take into account stringview length when generating text
+		// Temporarely fixed by caching component name keys
+		ct.PushAddFlags(Serl::WriteFlags_CacheStringKeys);
 		if (ct.EnterNext(GetTypeName<T>(false)))
 		{
 			String key;
 			ct.BeginObject();
-			ct.PushAddFlags(Serl::WriteFlags_CacheStringKeys);
 			for (i32 i = 0; i < nodes.Size(); ++i)
 			{
 				const AST::Id node = nodes[i];
@@ -72,9 +74,9 @@ namespace Rift
 					}
 				}
 			}
-			ct.PopFlags();
 			ct.Leave();
 		}
+		ct.PopFlags();
 	}
 
 	void ASTReadContext::SerializeRoots(TArray<AST::Id>& roots)

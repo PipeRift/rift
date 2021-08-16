@@ -4,6 +4,7 @@
 #include "Assets/AssetPtr.h"
 #include "Assets/TypeAsset.h"
 
+#include <AST/Components/CType.h>
 #include <Containers/Array.h>
 #include <Strings/String.h>
 
@@ -66,10 +67,10 @@ namespace Rift
 		void DrawItem(AST::Tree& ast, const Item& item);
 		// void DrawFile(AST::Tree& ast, File& file);
 
-		void CreateAsset(AST::Tree& ast, StringView title, TypeAsset::Type type, Path path);
-
 		void DrawModuleActions(AST::Id id, struct CModule& module);
 		void DrawTypeActions(AST::Id id, struct CType& type);
+
+		void CreateType(AST::Tree& ast, StringView title, TypeCategory category, Path path);
 	};
 
 

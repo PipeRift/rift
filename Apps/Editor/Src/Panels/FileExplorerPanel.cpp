@@ -10,9 +10,9 @@
 
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
-#include <AST/Components/CType.h>
 #include <AST/Linkage.h>
 #include <AST/Utils/ModuleUtils.h>
+#include <AST/Utils/TypeUtils.h>
 #include <Files/FileDialog.h>
 #include <Framework/Paths.h>
 #include <GLFW/glfw3.h>
@@ -98,16 +98,16 @@ namespace Rift
 			{
 				if (UI::MenuItem("Class"))
 				{
-					CreateAsset(ast, "Create Class file", TypeAsset::Type::Class, path);
+					CreateType(ast, "Create Class file", TypeCategory::Class, path);
 				}
 				if (UI::MenuItem("Struct"))
 				{
-					CreateAsset(ast, "Create Struct file", TypeAsset::Type::Struct, path);
+					CreateType(ast, "Create Struct file", TypeCategory::Struct, path);
 				}
 				if (UI::MenuItem("Function Library"))
 				{
-					CreateAsset(ast, "Create Function Library file",
-					    TypeAsset::Type::FunctionLibrary, path);
+					CreateType(
+					    ast, "Create Function Library file", TypeCategory::FunctionLibrary, path);
 				}
 				UI::EndMenu();
 			}
@@ -355,27 +355,21 @@ namespace Rift
 	    }
 	}*/
 
-
-	void FileExplorerPanel::CreateAsset(
-	    AST::Tree& ast, StringView title, TypeAsset::Type type, Path path)
-	{
-		const Path filename = Dialogs::SaveFile(
-		    title, path, {{"Rift file", Strings::Format("*.{}", Paths::typeExtension)}}, true);
-		TAssetPtr<TypeAsset> newAsset{filename};
-		if (newAsset.LoadOrCreate())
-		{
-			newAsset->type = type;
-			newAsset->InitializeDeclaration(ast);
-			newAsset->Save();
-			bDirty = true;
-		}
-		else
-		{
-			const String filenameStr = Paths::ToString(filename);
-			Log::Error("Couldn't create file '{}'", filenameStr);
-		}
-	}
-
 	void FileExplorerPanel::DrawModuleActions(AST::Id id, CModule& module) {}
 	void FileExplorerPanel::DrawTypeActions(AST::Id id, CType& type) {}
+
+	void FileExplorerPanel::CreateType(
+	    AST::Tree& ast, StringView title, TypeCategory category, Path path)
+	{
+		const Path filename = Dialogs::SaveFile(
+		    title, path, {{"Rift type", Strings::Format("*.{}", Paths::typeExtension)}}, true);
+
+		AST::Id tmpType = ast.Create();
+		Types::InitFromCategory(ast, tmpType, category);
+
+		String data;
+		Types::Serialize(ast, tmpType, data);
+		Files::SaveStringFile(filename, data);
+		ast.Destroy(tmpType);
+	}
 }    // namespace Rift

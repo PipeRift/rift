@@ -385,7 +385,8 @@ namespace Rift::EditorSystem
 				CreateTypeDockspace(typeEditor, windowName.c_str());
 				typeEditor.layout.Tick(typeEditor.dockspaceID);
 
-				if (Declarations::IsStruct(ast, typeId))
+				if (Declarations::IsClass(ast, typeId) ||
+				    Declarations::IsFunctionLibrary(ast, typeId))
 				{
 					DrawFunctionGraph(ast, AST::NoId, typeEditor.layout);
 				}

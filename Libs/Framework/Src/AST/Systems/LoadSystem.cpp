@@ -13,6 +13,7 @@
 #include "AST/Tree.h"
 #include "AST/Uniques/CLoadQueueUnique.h"
 #include "AST/Uniques/CStringLoadUnique.h"
+#include "AST/Utils/TypeUtils.h"
 
 #include <Files/Files.h>
 #include <Serialization/Formats/JsonFormat.h>
@@ -94,22 +95,11 @@ namespace Rift::LoadSystem
 			ASTReadContext ct{reader, ast};
 
 			ct.BeginObject();
-			if (isModule) [[unlikely]]
+			if (!isModule) [[likely]]
 			{
-				TypeCategory category;
+				TypeCategory category = TypeCategory::None;
 				ct.Next("type", category);
-				switch (category)
-				{
-					case TypeCategory::Class:
-						ast.Emplace<CClassDecl>(entity);
-						break;
-					case TypeCategory::Struct:
-						ast.Emplace<CStructDecl>(entity);
-						break;
-					case TypeCategory::FunctionLibrary:
-						ast.Emplace<CFunctionLibraryDecl>(entity);
-						break;
-				}
+				Types::InitFromCategory(ast, entity, category);
 			}
 
 			ct.SerializeRoot(entity);

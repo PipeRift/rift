@@ -2,6 +2,7 @@
 
 #include "Utils/TypeUtils.h"
 
+#include "AST/Serialization.h"
 #include "Components/CTypeEditor.h"
 
 #include <AST/Components/CType.h>
@@ -14,7 +15,14 @@ namespace Rift::Types
 	{
 		Check(ast.Has<CType>(typeId));
 
-		ast.Add<CTypeEditor>(typeId);
+		if (auto* editor = ast.TryGet<CTypeEditor>(typeId))
+		{
+			editor->pendingFocus = true;
+		}
+		else
+		{
+			ast.Add<CTypeEditor>(typeId);
+		}
 	}
 
 	void CloseType(AST::Tree& ast, AST::Id typeId)
@@ -23,4 +31,6 @@ namespace Rift::Types
 
 		ast.Remove<CTypeEditor>(typeId);
 	}
+
+	void Changed(AST::Id typeId, StringView name) {}
 }    // namespace Rift::Types
