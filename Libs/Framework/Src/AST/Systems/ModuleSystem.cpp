@@ -91,7 +91,6 @@ namespace Rift::ModuleSystem
 
 					ast.Add<CType>(unloadedType);
 					ast.Add<CFileRef>(unloadedType, typePath);
-					ast.Add<CIdentifier>(unloadedType, namePath);
 					newTypes.Add(unloadedType);
 
 					modules->typesByPath.Insert(namePath, unloadedType);

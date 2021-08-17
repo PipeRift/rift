@@ -4,6 +4,7 @@
 
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CFunctionLibraryDecl.h"
+#include "AST/Components/CIdentifier.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Serialization.h"
 
@@ -11,6 +12,7 @@
 #include <Misc/Checks.h>
 #include <Profiler.h>
 #include <Serialization/Formats/JsonFormat.h>
+
 
 
 namespace Rift::Types
@@ -57,6 +59,11 @@ namespace Rift::Types
 		ct.BeginObject();
 		ct.Next("type", GetCategory(ast, id));
 		ct.SerializeRoot(id);
+
+		if (auto* identifier = ast.TryGet<CIdentifier>(id))
+		{
+			ct.Next("name", identifier->name);
+		}
 
 		data = writer.ToString();
 	}

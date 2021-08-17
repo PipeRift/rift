@@ -16,6 +16,7 @@
 #include <AST/Utils/DeclarationUtils.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
+#include <Containers/Array.h>
 #include <RiftContext.h>
 
 
@@ -288,7 +289,25 @@ namespace Rift::EditorSystem
 				UI::Separator();
 				if (UI::MenuItem("Open File")) {}
 				if (UI::MenuItem("Save File", "CTRL+S")) {}
-				if (UI::MenuItem("Save All", "CTRL+SHFT+S")) {}
+				if (UI::MenuItem("Save All", "CTRL+SHFT+S"))
+				{
+					// TODO: Only save dirty types
+					auto typeEditors = ast.MakeView<CType, CTypeEditor, CFileRef>();
+					TArray<TPair<Path, String>> fileDatas;
+					for (AST::Id typeId : typeEditors)
+					{
+						auto& file     = typeEditors.Get<CFileRef>(typeId);
+						auto& fileData = fileDatas.AddRef({file.path, ""});
+						Types::Serialize(ast, typeId, fileData.second);
+					}
+
+					TaskSystem::Get().GetPool(TaskPool::Workers).silent_async([fileDatas]() {
+						for (auto& fileData : fileDatas)
+						{
+							Files::SaveStringFile(fileData.first, fileData.second);
+						}
+					});
+				}
 				UI::EndMenu();
 			}
 
