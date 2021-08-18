@@ -1,16 +1,17 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
+//#include <Math/Vector.h>
 #include <Object/Struct.h>
 
 
 namespace Rift
 {
-	struct CEditorNode : public Struct
+	struct CGraphTransform : public Struct
 	{
-		STRUCT(CEditorNode, Struct)
+		STRUCT(CGraphTransform, Struct)
 
-		PROP(position)
-		v2 position;
+		// PROP(position)
+		// v2 position;
 	};
 }    // namespace Rift

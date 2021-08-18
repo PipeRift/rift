@@ -7,5 +7,5 @@
 
 namespace Rift
 {
-	void DrawFunctionGraph(AST::Tree& ast, AST::Id functionId, struct DockSpaceLayout& layout);
+	void DrawFunctionGraph(AST::Tree& ast, AST::Id typeId, struct DockSpaceLayout& layout);
 }

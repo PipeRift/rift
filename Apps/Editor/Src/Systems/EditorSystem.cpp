@@ -62,7 +62,8 @@ namespace Rift::EditorSystem
 			    CTypeEditor::centralNode);
 
 			builder.GetNodeLocalFlags(CTypeEditor::rightNode) |= ImGuiDockNodeFlags_AutoHideTabBar;
-			builder.GetNodeLocalFlags(CTypeEditor::centralNode) |= ImGuiDockNodeFlags_CentralNode;
+			builder.GetNodeLocalFlags(CTypeEditor::centralNode) |=
+			    ImGuiDockNodeFlags_CentralNode | ImGuiDockNodeFlags_AutoHideTabBar;
 		});
 
 		// TODO: Reseting until we are able to know if the layout was saved before. Reset if it
@@ -407,7 +408,7 @@ namespace Rift::EditorSystem
 				if (Declarations::IsClass(ast, typeId) ||
 				    Declarations::IsFunctionLibrary(ast, typeId))
 				{
-					DrawFunctionGraph(ast, AST::NoId, typeEditor.layout);
+					DrawFunctionGraph(ast, typeId, typeEditor.layout);
 				}
 				DrawProperties(ast, typeId, typeEditor.layout);
 			}
