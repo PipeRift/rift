@@ -7,8 +7,11 @@
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CFunctionDecl.h>
+#include <AST/Components/CIdentifier.h>
+#include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Linkage.h>
 #include <imnodes.h>
+#include <imnodes_internal.h>
 
 
 namespace Rift
@@ -51,75 +54,49 @@ namespace Rift
 		UI::End();
 	}
 
+	void DrawFunctionEntry(AST::Tree& ast, AST::Id functionId)
+	{
+		auto* imnodes = ImNodes::GetCurrentContext();
+
+		Name name;
+		if (auto* identifier = ast.TryGet<CIdentifier>(functionId))
+		{
+			name = identifier->name;
+		}
+
+		auto& transform = ast.GetOrAdd<CGraphTransform>(functionId);
+		if (!(imnodes->LeftMouseDragging && ImNodes::IsNodeSelected(i32(functionId))))
+		{
+			ImNodes::SetNodeGridSpacePos(i32(functionId), transform.position);
+		}
+
+		ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(191, 56, 11, 255));
+		ImNodes::BeginNode(i32(functionId));
+
+		ImNodes::BeginNodeTitleBar();
+		UI::Text(name.ToString().c_str());
+		ImNodes::EndNodeTitleBar();
+
+		UI::BeginGroup();    // Outputs
+		{
+			ImNodes::BeginOutputAttribute(4, ImNodesPinShape_QuadFilled);
+			ImNodes::EndOutputAttribute();
+		}
+		UI::EndGroup();
+
+		ImNodes::EndNode();
+		ImNodes::PopColorStyle();
+
+		if (imnodes->LeftMouseDragging || imnodes->LeftMouseReleased)
+		{
+			ImVec2 pos           = ImNodes::GetNodeGridSpacePos(i32(functionId));
+			transform.position.x = pos.x;
+			transform.position.y = pos.y;
+		}
+	}
+
 	void DrawFunctionNodes(AST::Tree& ast, AST::Id functionId)
 	{
-		{    // Node
-			ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(11, 109, 191, 255));
-			ImNodes::BeginNode(1);
-
-			ImNodes::BeginNodeTitleBar();
-			UI::Text("If");
-			ImNodes::EndNodeTitleBar();
-
-			ImNodes::BeginInputAttribute(2, ImNodesPinShape_QuadFilled);
-			UI::Text("");
-			ImNodes::EndInputAttribute();
-
-			UI::SameLine();
-
-			ImNodes::BeginOutputAttribute(4, ImNodesPinShape_QuadFilled);
-			UI::Text("True");
-			ImNodes::EndOutputAttribute();
-
-			ImNodes::BeginInputAttribute(3, ImNodesPinShape_CircleFilled);
-			UI::Text("Value");
-			ImNodes::EndInputAttribute();
-
-			UI::SameLine();
-
-			ImNodes::BeginOutputAttribute(5, ImNodesPinShape_QuadFilled);
-			UI::Text("False");
-			ImNodes::EndOutputAttribute();
-
-			ImNodes::EndNode();
-			ImNodes::PopColorStyle();
-		}
-
-		{    // Node 2
-			ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(191, 56, 11, 255));
-			ImNodes::BeginNode(2);
-
-			ImNodes::BeginNodeTitleBar();
-			UI::Text("If");
-			ImNodes::EndNodeTitleBar();
-
-			UI::BeginGroup();    // Inputs
-			{
-				ImNodes::BeginInputAttribute(2, ImNodesPinShape_QuadFilled);
-				UI::Text("");
-				ImNodes::EndInputAttribute();
-
-				ImNodes::BeginInputAttribute(3, ImNodesPinShape_CircleFilled);
-				UI::Text("Value");
-				ImNodes::EndInputAttribute();
-			}
-			UI::EndGroup();
-
-			UI::SameLine();
-			UI::BeginGroup();    // Outputs
-			{
-				ImNodes::BeginOutputAttribute(4, ImNodesPinShape_QuadFilled);
-				UI::Text("True");
-				ImNodes::EndOutputAttribute();
-
-				ImNodes::BeginOutputAttribute(5, ImNodesPinShape_QuadFilled);
-				UI::Text("False");
-				ImNodes::EndOutputAttribute();
-			}
-			UI::EndGroup();
-
-			ImNodes::EndNode();
-			ImNodes::PopColorStyle();
-		}
+		DrawFunctionEntry(ast, functionId);
 	}
 }    // namespace Rift
