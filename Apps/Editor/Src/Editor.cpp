@@ -9,6 +9,7 @@
 #include <AST/Systems/ModuleSystem.h>
 #include <AST/Uniques/CModulesUnique.h>
 #include <AST/Utils/ModuleUtils.h>
+#include <Files/Files.h>
 #include <Profiler.h>
 #include <RiftContext.h>
 #include <UI/Window.h>

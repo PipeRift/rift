@@ -4,6 +4,7 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <Context.h>
 #include <Files/Files.h>
+#include <Files/Paths.h>
 #include <Memory/OwnPtr.h>
 #include <bandit/bandit.h>
 
