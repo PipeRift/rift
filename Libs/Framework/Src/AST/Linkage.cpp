@@ -241,6 +241,20 @@ namespace Rift::AST
 		return AST::NoId;
 	}
 
+	TArray<Id> GetLinkedParents(const Tree& ast, TArrayView<Id> nodes)
+	{
+		TArray<Id> parents;
+		for (Id nodeId : nodes)
+		{
+			const auto* child = GetCChild(ast, nodeId);
+			if (child && child->parent != AST::NoId)
+			{
+				parents.AddUnique(child->parent);
+			}
+		}
+		return Move(parents);
+	}
+
 	void Remove(Tree& ast, TArrayView<Id> nodes)
 	{
 		Unlink(ast, nodes, true);
@@ -278,5 +292,52 @@ namespace Rift::AST
 	const CParent* GetCParent(const Tree& ast, Id node)
 	{
 		return reinterpret_cast<const CParent*>(ast.GetParentView().TryGet<CParent>(node));
+	}
+
+	bool FixParentLinks(Tree& ast, TArrayView<Id> parents)
+	{
+		bool fixed = false;
+		for (Id parentId : parents)
+		{
+			if (const CParent* parent = GetCParent(ast, parentId))
+			{
+				for (Id childId : parent->children)
+				{
+					if (CChild* child = GetCChild(ast, childId))
+					{
+						if (child->parent != parentId)
+						{
+							child->parent = parentId;
+							fixed         = true;
+						}
+					}
+					else
+					{
+						ast.Add<CChild>(childId, parentId);
+						fixed = true;
+					}
+				}
+			}
+		}
+		return fixed;
+	}
+
+	bool ValidateParentLinks(const Tree& ast, TArrayView<Id> parents)
+	{
+		for (Id parentId : parents)
+		{
+			if (const CParent* parent = GetCParent(ast, parentId))
+			{
+				for (Id childId : parent->children)
+				{
+					const CChild* child = GetCChild(ast, childId);
+					if (!child || child->parent != parentId)
+					{
+						return false;
+					}
+				}
+			}
+		}
+		return true;
 	}
 }    // namespace Rift::AST

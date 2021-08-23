@@ -82,6 +82,8 @@ namespace Rift
 
 	void ASTReadContext::SerializeRoots(TArray<AST::Id>& roots)
 	{
+		TArray<AST::Id> parents = AST::GetLinkedParents(ast, roots);
+
 		Next("count", nodeCount);
 		ASTIds.Resize(nodeCount);
 		// Create or assign root ids
@@ -117,6 +119,8 @@ namespace Rift
 			ReadPool<CGraphTransform>(*this, ast);
 			Leave();
 		}
+
+		AST::FixParentLinks(ast, parents);
 	}
 
 	void ASTWriteContext::SerializeRoots(const TArray<AST::Id>& roots)

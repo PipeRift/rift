@@ -13,5 +13,9 @@ namespace Rift
 
 		PROP(parent)
 		AST::Id parent = AST::NoId;
+
+
+		CChild() = default;
+		CChild(AST::Id parent) : parent(parent) {}
 	};
 }    // namespace Rift

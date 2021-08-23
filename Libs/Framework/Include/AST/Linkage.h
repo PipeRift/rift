@@ -39,6 +39,7 @@ namespace Rift::AST
 	void GetLinkedDeep(
 	    const Tree& ast, TArrayView<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth = 0);
 	Id GetLinkedParent(Tree& ast, Id node);
+	TArray<Id> GetLinkedParents(const Tree& ast, TArrayView<Id> nodes);
 
 	// void Copy(Tree& ast, const TArray<Id>& nodes, TArray<Id>& outNewNodes);
 	// void CopyDeep(Tree& ast, const TArray<Id>& rootNodes, TArray<Id>& outNewRootNodes);
@@ -59,4 +60,22 @@ namespace Rift::AST
 	 */
 	CParent* GetCParent(Tree& ast, Id node);
 	const CParent* GetCParent(const Tree& ast, Id node);
+
+	/**
+	 * Iterates children nodes making sure child->parent links are correct or fixed
+	 * Only first depth links are affected
+	 * Complexity: O(N)
+	 * @parents: where to look for children to fix up
+	 * @return true if an incorrect link was found and fixed
+	 */
+	bool FixParentLinks(Tree& ast, TArrayView<Id> parents);
+
+	/**
+	 * Iterates children nodes looking for invalid child->parent links
+	 * Only first depth links are affected
+	 * Complexity: O(1) <-> O(N) (First invalid link makes an early out)
+	 * @parents: where to look for children
+	 * @return true if an incorrect link was found
+	 */
+	bool ValidateParentLinks(const Tree& ast, TArrayView<Id> parents);
 }    // namespace Rift::AST
