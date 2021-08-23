@@ -18,7 +18,7 @@
 
 namespace Rift
 {
-	void DrawVariable(AST::Tree& ast, AST::Id variableId)
+	void DrawVariable(AST::Tree& ast, CTypeEditor& editor, AST::Id variableId)
 	{
 		CIdentifier* identifier = ast.TryGet<CIdentifier>(variableId);
 		if (!identifier)
@@ -39,23 +39,23 @@ namespace Rift
 
 			ImRect bb = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
 
-			bool selected = false;    // selectedNode == variableId;
+			bool selected = editor.selectedPropertyId == variableId;
 			ImGui::Selectable("##selectArea", &selected,
 			    ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap,
 			    ImVec2(0, frameHeight));
 
 			if (selected)
 			{
-				// selectedNode = variableId;
+				editor.selectedPropertyId = variableId;
 
 				if (UI::IsKeyReleased(GLFW_KEY_DELETE))
 				{
-					// pendingDelete = variableId;
+					editor.pendingDeletePropertyId = variableId;
 				}
 			}
-			else if (false /*selectedNode == variableId*/)    // If not selected but WAS selected
+			else if (editor.selectedPropertyId == variableId)    // If not selected but WAS selected
 			{
-				// selectedNode = AST::NoId;
+				editor.selectedPropertyId = AST::NoId;
 			}
 
 			LinearColor bgColor = color.Darken(0.5f);
@@ -76,7 +76,7 @@ namespace Rift
 		{
 			if (UI::MenuItem("Delete"))
 			{
-				// pendingDelete = variableId;
+				editor.pendingDeletePropertyId = variableId;
 			}
 			UI::EndPopup();
 		}
@@ -111,7 +111,7 @@ namespace Rift
 		UI::PopID();
 	}
 
-	void DrawFunction(AST::Tree& ast, AST::Id functionId)
+	void DrawFunction(AST::Tree& ast, CTypeEditor& editor, AST::Id functionId)
 	{
 		CIdentifier* identifier = ast.TryGet<CIdentifier>(functionId);
 		if (!identifier)
@@ -132,23 +132,23 @@ namespace Rift
 
 			ImRect bb = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
 
-			bool selected = false;    // selectedNode == functionId;
+			bool selected = editor.selectedPropertyId == functionId;
 			ImGui::Selectable("##selectArea", &selected,
 			    ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap,
 			    ImVec2(0, frameHeight));
 
 			if (selected)
 			{
-				// selectedNode = functionId;
+				editor.selectedPropertyId = functionId;
 
 				if (UI::IsKeyReleased(GLFW_KEY_DELETE))
 				{
-					// pendingDelete = functionId;
+					editor.pendingDeletePropertyId = functionId;
 				}
 			}
-			else if (false /*selectedNode == functionId*/)    // If not selected but WAS selected
+			else if (editor.selectedPropertyId == functionId)    // If not selected but WAS selected
 			{
-				// selectedNode = AST::NoId;
+				editor.selectedPropertyId = AST::NoId;
 			}
 
 			LinearColor bgColor = color.Darken(0.5f);
@@ -169,7 +169,7 @@ namespace Rift
 		{
 			if (ImGui::MenuItem("Delete"))
 			{
-				// pendingDelete = functionId;
+				editor.pendingDeletePropertyId = functionId;
 			}
 			ImGui::EndPopup();
 		}
@@ -184,7 +184,7 @@ namespace Rift
 		UI::PopID();
 	}
 
-	void DrawVariables(AST::Tree& ast, AST::Id typeId)
+	void DrawVariables(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId)
 	{
 		if (UI::CollapsingHeader("Variables", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -203,7 +203,7 @@ namespace Rift
 						if (variableView.Has(child))
 						{
 							UI::TableNextRow();
-							DrawVariable(ast, child);
+							DrawVariable(ast, editor, child);
 						}
 					}
 					UI::EndTable();
@@ -223,7 +223,7 @@ namespace Rift
 		}
 	}
 
-	void DrawFunctions(AST::Tree& ast, AST::Id typeId)
+	void DrawFunctions(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId)
 	{
 		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen |
 		                                 ImGuiTreeNodeFlags_AllowItemOverlap |
@@ -245,7 +245,7 @@ namespace Rift
 						if (functionView.Has(child))
 						{
 							UI::TableNextRow();
-							DrawFunction(ast, child);
+							DrawFunction(ast, editor, child);
 						}
 					}
 					UI::EndTable();
@@ -267,29 +267,30 @@ namespace Rift
 
 	void DrawProperties(AST::Tree& ast, AST::Id typeId, struct DockSpaceLayout& layout)
 	{
-		layout.BindNextWindowToNode(CTypeEditor::rightNode);
+		auto& editor = ast.Get<CTypeEditor>(typeId);
 
+		layout.BindNextWindowToNode(CTypeEditor::rightNode);
 		const String windowName = Strings::Format("Properties##{}", typeId);
 		if (UI::Begin(windowName.c_str()))
 		{
 			// IsStruct || IsClass
 			if (ast.HasAny<CClassDecl, CStructDecl>(typeId))
 			{
-				DrawVariables(ast, typeId);
+				DrawVariables(ast, editor, typeId);
 			}
 
 			// IsClass || IsFunctionLibrary
 			if (ast.HasAny<CClassDecl, CFunctionLibraryDecl>(typeId))
 			{
-				DrawFunctions(ast, typeId);
+				DrawFunctions(ast, editor, typeId);
 			}
 		}
 		UI::End();
 
-		// if (!IsNone(pendingDelete))
-		//{
-		//	AST::RemoveDeep(ast, pendingDelete);
-		//	pendingDelete = AST::NoId;
-		//}
+		if (!IsNone(editor.pendingDeletePropertyId))
+		{
+			AST::RemoveDeep(ast, editor.pendingDeletePropertyId);
+			editor.pendingDeletePropertyId = AST::NoId;
+		}
 	}
 }    // namespace Rift

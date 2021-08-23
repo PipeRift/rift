@@ -1,18 +1,23 @@
 {
     "type": "Class",
     "count": 2,
-    "roots": [0],
+    "roots": [
+        0
+    ],
     "components": {
+        "CChild": {
+            "0": {
+                "parent": 0
+            },
+            "1": {
+                "parent": 0
+            }
+        },
         "CParent": {
             "0": {
                 "children": [
                     1
                 ]
-            }
-        },
-        "CChild": {
-            "1": {
-                "parent": 0
             }
         },
         "CIdentifier": {
@@ -23,11 +28,22 @@
                 "name": "DoSomething"
             }
         },
+        "CStructDecl": {},
         "CClassDecl": {
             "0": {}
         },
+        "CVariableDecl": {},
         "CFunctionDecl": {
             "1": {}
+        },
+        "CGraphTransform": {
+            "1": {
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            }
         }
-    }
+    },
+    "name": "Class"
 }

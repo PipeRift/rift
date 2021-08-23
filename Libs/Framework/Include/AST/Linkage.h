@@ -33,7 +33,12 @@ namespace Rift::AST
 	TArray<Id>* GetLinked(Tree& ast, Id node);
 	const TArray<Id>* GetLinked(const Tree& ast, Id node);
 	void GetLinked(const Tree& ast, TArrayView<const Id> nodes, TArray<Id>& outLinkedNodes);
-	void GetLinkedDeep(const Tree& ast, TArrayView<const Id> roots, TArray<Id>& outLinkedNodes);
+	/**
+	 * Finds all nodes connected recursively.
+	 */
+	void GetLinkedDeep(
+	    const Tree& ast, TArrayView<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth = 0);
+	Id GetLinkedParent(Tree& ast, Id node);
 
 	// void Copy(Tree& ast, const TArray<Id>& nodes, TArray<Id>& outNewNodes);
 	// void CopyDeep(Tree& ast, const TArray<Id>& rootNodes, TArray<Id>& outNewRootNodes);

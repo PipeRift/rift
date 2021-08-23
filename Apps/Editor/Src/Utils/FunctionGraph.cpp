@@ -65,7 +65,8 @@ namespace Rift
 		}
 
 		auto& transform = ast.GetOrAdd<CGraphTransform>(functionId);
-		if (!(imnodes->LeftMouseDragging && ImNodes::IsNodeSelected(i32(functionId))))
+		if (UI::IsWindowAppearing() &&
+		    !(imnodes->LeftMouseDragging && ImNodes::IsNodeSelected(i32(functionId))))
 		{
 			ImNodes::SetNodeGridSpacePos(i32(functionId), transform.position);
 		}
@@ -79,7 +80,7 @@ namespace Rift
 
 		UI::BeginGroup();    // Outputs
 		{
-			ImNodes::BeginOutputAttribute(4, ImNodesPinShape_QuadFilled);
+			ImNodes::BeginOutputAttribute(i32(functionId), ImNodesPinShape_QuadFilled);
 			ImNodes::EndOutputAttribute();
 		}
 		UI::EndGroup();
@@ -92,6 +93,7 @@ namespace Rift
 			ImVec2 pos           = ImNodes::GetNodeGridSpacePos(i32(functionId));
 			transform.position.x = pos.x;
 			transform.position.y = pos.y;
+			Types::Changed(AST::GetLinkedParent(ast, functionId), "Moved nodes");
 		}
 	}
 

@@ -20,6 +20,9 @@ namespace Rift
 		DockSpaceLayout layout;
 
 		bool pendingFocus = false;
+
+		AST::Id selectedPropertyId      = AST::NoId;
+		AST::Id pendingDeletePropertyId = AST::NoId;
 	};
 
 	inline const Name CTypeEditor::rightNode{"rightNode"};

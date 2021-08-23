@@ -206,12 +206,18 @@ namespace Rift::AST
 		});
 	}
 
-	void GetLinkedDeep(const Tree& ast, TArrayView<const Id> roots, TArray<Id>& outLinkedNodes)
+	void GetLinkedDeep(
+	    const Tree& ast, TArrayView<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth)
 	{
+		if (depth == 0)
+		{
+			depth = std::numeric_limits<u32>::max();
+		}
+
+		TArray<AST::Id> currentLinked{};
 		TArray<AST::Id> pendingInspection;
 		pendingInspection.Append(roots);
-		TArray<AST::Id> currentLinked{};
-		while (pendingInspection.Size() > 0)
+		while (pendingInspection.Size() > 0 && depth > 0)
 		{
 			for (AST::Id parent : pendingInspection)
 			{
@@ -222,7 +228,17 @@ namespace Rift::AST
 			}
 			outLinkedNodes.Append(currentLinked);
 			pendingInspection = Move(currentLinked);
+			--depth;
 		}
+	}
+
+	Id GetLinkedParent(Tree& ast, Id node)
+	{
+		if (auto* child = GetCChild(ast, node))
+		{
+			return child->parent;
+		}
+		return AST::NoId;
 	}
 
 	void Remove(Tree& ast, TArrayView<Id> nodes)

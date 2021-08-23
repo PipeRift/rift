@@ -95,9 +95,9 @@ namespace Rift
 		}
 		else
 		{
-			UI::Indent();
+			UI::Indent(10.f);
 			UI::Text(idText.c_str());
-			UI::Unindent();
+			UI::Unindent(10.f);
 		}
 		Style::PopFont();
 		ImGui::TableNextColumn();

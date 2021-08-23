@@ -12,7 +12,7 @@ namespace Rift::Compiler
 		auto* modules = ast.TryGetUnique<CModulesUnique>();
 		if (modules && modules->HasMainModule())
 		{
-			buildPath         = Modules::GetProjectPath(ast).parent_path() / "Build";
+			buildPath         = Modules::GetProjectPath(ast) / "Build";
 			intermediatesPath = buildPath / "Intermediates";
 			binariesPath      = buildPath / buildMode;
 		}

@@ -14,9 +14,17 @@ namespace Rift::Serl
 		auto* astCt = dynamic_cast<ASTReadContext*>(&ct);
 		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTReadContext"))
 		{
-			u32 dataId;
+			i64 dataId;
 			astCt->Serialize(dataId);
-			val = astCt->GetASTIds()[dataId];
+
+			if (dataId >= 0) [[likely]]
+			{
+				val = astCt->GetASTIds()[dataId];
+			}
+			else
+			{
+				val = AST::NoId;
+			}
 		}
 	}
 
@@ -25,8 +33,15 @@ namespace Rift::Serl
 		auto* astCt = dynamic_cast<ASTWriteContext*>(&ct);
 		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTWriteContext"))
 		{
-			const u32 dataId = astCt->GetASTIdToIndexes()[val];
-			astCt->Serialize(dataId);
+			const u32* dataId = astCt->GetASTIdToIndexes().Find(val);
+			if (dataId) [[likely]]
+			{
+				astCt->Serialize(i64(*dataId));
+			}
+			else
+			{
+				astCt->Serialize(-1);
+			}
 		}
 	}
 }    // namespace Rift::Serl

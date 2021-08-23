@@ -16,7 +16,7 @@ namespace Rift
 	{
 		bool open = false;
 
-		AST::Id selectedEntity{};
+		AST::Id selectedEntity = AST::NoId;
 
 
 		ASTDebugger();

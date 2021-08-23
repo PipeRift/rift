@@ -7,11 +7,13 @@
 
 namespace Rift
 {
-	void DrawVariable(AST::Tree& ast, AST::Id variableId);
-	void DrawFunction(AST::Tree& ast, AST::Id functionId);
+	struct CTypeEditor;
 
-	void DrawVariables(AST::Tree& ast, AST::Id typeId);
-	void DrawFunctions(AST::Tree& ast, AST::Id typeId);
+	void DrawVariable(AST::Tree& ast, CTypeEditor& editor, AST::Id variableId);
+	void DrawFunction(AST::Tree& ast, CTypeEditor& editor, AST::Id functionId);
+
+	void DrawVariables(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId);
+	void DrawFunctions(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId);
 
 	void DrawProperties(AST::Tree& ast, AST::Id typeId, struct DockSpaceLayout& layout);
 }    // namespace Rift

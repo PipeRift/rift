@@ -9,6 +9,7 @@
 #include "AST/Components/CModule.h"
 #include "AST/Components/CParent.h"
 #include "AST/Components/CStructDecl.h"
+#include "AST/Components/CType.h"
 #include "AST/Components/CVariableDecl.h"
 #include "AST/Linkage.h"
 #include "AST/Tree.h"
@@ -123,32 +124,20 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void ForwardDeclareTypes(String& code, const AST::Tree& ast, AST::Id moduleId)
+	void ForwardDeclareTypes(String& code, const AST::Tree& ast, AST::Id moduleId,
+	    const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
-		const auto* children = AST::GetLinked(ast, moduleId);
-		if (!children)
+		auto identifiers = ast.MakeView<const CIdentifier>();
+		for (AST::Id entity : structs)
 		{
-			return;
+			const auto& identifier = identifiers.Get<const CIdentifier>(entity);
+			ForwardDeclareStruct(code, identifier.name.ToString());
 		}
 
-		auto structs = ast.MakeView<const CIdentifier, const CStructDecl>();
-		for (AST::Id entity : *children)
+		for (AST::Id entity : classes)
 		{
-			if (structs.Has(entity))
-			{
-				const auto& identifier = structs.Get<const CIdentifier>(entity);
-				ForwardDeclareStruct(code, identifier.name.ToString());
-			}
-		}
-
-		auto classes = ast.MakeView<const CIdentifier, const CClassDecl>();
-		for (AST::Id entity : *children)
-		{
-			if (classes.Has(entity))
-			{
-				const auto& identifier = classes.Get<const CIdentifier>(entity);
-				ForwardDeclareStruct(code, identifier.name.ToString());
-			}
+			const auto& identifier = identifiers.Get<const CIdentifier>(entity);
+			ForwardDeclareStruct(code, identifier.name.ToString());
 		}
 	}
 
@@ -169,47 +158,33 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void DeclareTypes(String& code, const AST::Tree& ast, AST::Id moduleId)
+	void DeclareTypes(String& code, const AST::Tree& ast, AST::Id moduleId,
+	    const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
-		const auto* children = AST::GetLinked(ast, moduleId);
-		if (!children)
+		auto identifiers = ast.MakeView<const CIdentifier>();
+		for (AST::Id entity : structs)
 		{
-			return;
+			auto& identifier = identifiers.Get<const CIdentifier>(entity);
+			DeclareStruct(code, identifier.name.ToString(), {}, [&ast, entity](String& innerCode) {
+				AddTypeVariables(innerCode, ast, entity);
+			});
 		}
 
-		auto structs = ast.MakeView<const CIdentifier, const CStructDecl>();
-		for (AST::Id entity : *children)
+		for (AST::Id entity : classes)
 		{
-			if (structs.Has(entity))
-			{
-				auto& identifier = structs.Get<const CIdentifier>(entity);
-				DeclareStruct(
-				    code, identifier.name.ToString(), {}, [&ast, entity](String& innerCode) {
-					    AddTypeVariables(innerCode, ast, entity);
-				    });
-			}
-		}
-
-		auto classes = ast.MakeView<const CIdentifier, const CClassDecl>();
-		for (AST::Id entity : *children)
-		{
-			if (classes.Has(entity))
-			{
-				auto& identifier = classes.Get<const CIdentifier>(entity);
-				DeclareStruct(
-				    code, identifier.name.ToString(), {}, [&ast, entity](String& innerCode) {
-					    AddTypeVariables(innerCode, ast, entity);
-				    });
-			}
+			auto& identifier = identifiers.Get<const CIdentifier>(entity);
+			DeclareStruct(code, identifier.name.ToString(), {}, [&ast, entity](String& innerCode) {
+				AddTypeVariables(innerCode, ast, entity);
+			});
 		}
 	}
 
 
-	void DeclareFunctions(String& code, const AST::Tree& ast, AST::Id moduleId)
+	void DeclareFunctions(
+	    String& code, const AST::Tree& ast, AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
-		auto functions = ast.MakeView<const CIdentifier, const CFunctionDecl>();
-		auto children  = ast.MakeView<const CChild>();
-		auto classes   = ast.MakeView<const CIdentifier, const CClassDecl>();
+		auto identifiers = ast.MakeView<const CIdentifier>();
+		auto classesView = ast.MakeView<const CIdentifier, const CClassDecl>();
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
@@ -217,37 +192,37 @@ namespace Rift::Compiler::Cpp
 			const CChild* parent = AST::GetCChild(ast, entity);
 			if (parent && ast.IsValid(parent->parent))
 			{
-				if (const CIdentifier* parentId = classes.TryGet<const CIdentifier>(parent->parent))
+				if (const CIdentifier* parentId =
+				        classesView.TryGet<const CIdentifier>(parent->parent))
 				{
 					ownerName = parentId->name.ToString();
 				}
 			}
 
-			const auto& identifier = functions.Get<const CIdentifier>(entity);
+			const auto& identifier = identifiers.Get<const CIdentifier>(entity);
 			DeclareFunction(code, identifier.name.ToString(), ownerName);
 		}
 	}
 
 
-	void DefineFunctions(String& code, const AST::Tree& ast, AST::Id moduleId)
+	void DefineFunctions(
+	    String& code, const AST::Tree& ast, AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
-		auto functions = ast.MakeView<const CIdentifier, const CFunctionDecl>();
-		auto children  = ast.MakeView<const CChild>();
-		auto classes   = ast.MakeView<const CIdentifier, const CClassDecl>();
+		auto identifiers = ast.MakeView<const CIdentifier>();
+		auto classesView = ast.MakeView<const CIdentifier, const CClassDecl>();
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
-
 			const CChild* child = AST::GetCChild(ast, entity);
 			if (child && ast.IsValid(child->parent))
 			{
-				if (const CIdentifier* parentId = classes.TryGet<const CIdentifier>(child->parent))
+				if (auto* parentId = classesView.TryGet<const CIdentifier>(child->parent))
 				{
 					ownerName = parentId->name.ToString();
 				}
 			}
 
-			auto& identifier = functions.Get<const CIdentifier>(entity);
+			auto& identifier = identifiers.Get<const CIdentifier>(entity);
 			DefineFunction(code, identifier.name.ToString(), ownerName);
 		}
 	}
@@ -275,21 +250,44 @@ namespace Rift::Compiler::Cpp
 		// Includes
 		AddInclude(code, "stdint.h");
 
+		TArray<AST::Id> classes, structs;
+		AST::GetLinked(ast, moduleId, classes);
+		structs = classes;
+
+		auto classesView = ast.MakeView<const CClassDecl, const CType, const CIdentifier>();
+		classes.RemoveIfSwap([&classesView](AST::Id entity) {
+			return !classesView.Has(entity);
+		});
+
+		auto structsView = ast.MakeView<const CStructDecl, const CType, const CIdentifier>();
+		structs.RemoveIfSwap([&structsView](AST::Id entity) {
+			return !structsView.Has(entity);
+		});
+
 		Spacing(code);
 		Comment(code, "Forward declarations");
-		ForwardDeclareTypes(code, ast, moduleId);
+		ForwardDeclareTypes(code, ast, moduleId, structs, classes);
 
 		Spacing(code);
 		Comment(code, "Declarations");
-		DeclareTypes(code, ast, moduleId);
+		DeclareTypes(code, ast, moduleId, structs, classes);
+
+
+		TArray<AST::Id> functions;
+		AST::GetLinkedDeep(ast, moduleId, functions, 2);    // Module->Types->Functions = depth 2
+
+		auto functionsView = ast.MakeView<const CIdentifier, const CFunctionDecl>();
+		functions.RemoveIfSwap([&functionsView](AST::Id entity) {
+			return !functionsView.Has(entity);
+		});
 
 		Spacing(code);
 		Comment(code, "Function Declarations");
-		// DeclareFunctions(code, ast, moduleId);
+		DeclareFunctions(code, ast, moduleId, functions);
 
 		Spacing(code);
 		Comment(code, "Function Definitions");
-		// DefineFunctions(code, ast, moduleId);
+		DefineFunctions(code, ast, moduleId, functions);
 
 		const Path headerFile = includePath / "code.h";
 		if (!Files::SaveStringFile(headerFile, code))
