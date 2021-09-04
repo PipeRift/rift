@@ -9,5 +9,11 @@ namespace Rift
 	struct CCallExpr : public CExpression
 	{
 		STRUCT(CCallExpr, CExpression)
+
+		PROP(type)
+		Name type;
+
+		PROP(name)
+		Name name;
 	};
 }    // namespace Rift
