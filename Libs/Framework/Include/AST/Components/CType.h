@@ -19,8 +19,8 @@ namespace Rift
 	{
 		STRUCT(CType, Struct)
 
-		PROP(guid)
-		Guid guid;
+		PROP(id)
+		Guid id;
 
 
 		CType() {}
