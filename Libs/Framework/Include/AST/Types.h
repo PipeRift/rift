@@ -43,6 +43,9 @@ namespace Rift::AST
 
 	template <typename... Type>
 	using TExclude = entt::exclude_t<Type...>;
+
+	template <typename... Type>
+	using TTypeList = entt::type_list<Type...>;
 }    // namespace Rift::AST
 
 
