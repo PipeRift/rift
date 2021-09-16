@@ -20,6 +20,6 @@ namespace Rift
 	{
 		STRUCT(CTypeListUnique, Struct)
 
-		TMap<Guid, AST::Id> types;
+		TMap<Name, AST::Id> types;
 	};
 }    // namespace Rift

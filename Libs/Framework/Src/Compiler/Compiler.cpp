@@ -31,10 +31,10 @@ namespace Rift::Compiler
 				return;
 		}
 
+		LoadSystem::Init(ast);
 		TypeSystem::Init(ast);
 		OptimizationSystem::Init(ast);
 		CompileTimeSystem::Init(ast);
-		LoadSystem::Init(ast);
 
 		auto* modules = ast.TryGetUnique<CModulesUnique>();
 		if (!modules || !modules->HasMainModule())
@@ -47,6 +47,7 @@ namespace Rift::Compiler
 		ModuleSystem::ScanSubmodules(ast);
 		ModuleSystem::ScanModuleTypes(ast);
 		Log::Info("Loading files");
+
 		LoadSystem::Run(ast);
 
 		TypeSystem::RunChecks(ast);

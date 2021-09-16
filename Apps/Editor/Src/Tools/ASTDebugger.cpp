@@ -7,6 +7,7 @@
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CParent.h>
 #include <AST/Tree.h>
+#include <AST/Uniques/CTypeListUnique.h>
 #include <Framework/Paths.h>
 #include <UI/UI.h>
 
@@ -14,6 +15,48 @@
 namespace Rift
 {
 	using namespace Memory;
+
+	void DrawTypesDebug(AST::Tree& ast)
+	{
+		if (!UI::CollapsingHeader("Types"))
+		{
+			return;
+		}
+
+
+		static ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
+		                               ImGuiTableFlags_Hideable | ImGuiTableFlags_SizingStretchProp;
+		if (auto* types = ast.TryGetUnique<CTypeListUnique>())
+		{
+			UI::BeginChild("typesTableChild",
+			    ImVec2(0.f, Math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
+			if (UI::BeginTable("typesTable", 2, flags, ImVec2(0.f, UI::GetContentRegionAvail().y)))
+			{
+				UI::TableSetupColumn("Name");
+				UI::TableSetupColumn("Id");
+				UI::TableHeadersRow();
+
+				auto identifiers = ast.MakeView<CIdentifier>();
+				for (auto it : types->types)
+				{
+					UI::TableNextRow();
+					UI::TableNextColumn();    // Name
+					UI::Text(it.first.ToString().c_str());
+
+					UI::TableNextColumn();    // Id
+
+					static String idText;
+					idText.clear();
+					Strings::FormatTo(idText, "{}", it.second);
+					UI::Text(idText.c_str());
+				}
+
+				UI::EndTable();
+			}
+			UI::EndChild();
+		}
+	}
+
 
 	ASTDebugger::ASTDebugger() {}
 
@@ -25,31 +68,41 @@ namespace Rift
 		}
 
 		UI::Begin("Abstract Syntax Tree", &open);
-		auto rootView   = ast.MakeView<CParent>(AST::TExclude<CChild>{});
-		auto orphanView = ast.MakeView<CIdentifier>(AST::TExclude<CChild, CParent>{});
 
-		static ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
-		                               ImGuiTableFlags_Hideable | ImGuiTableFlags_SizingStretchProp;
-		if (UI::BeginTable("entities", 3, flags, {0.f, UI::GetContentRegionAvail().y - 20.f}))
+		DrawTypesDebug(ast);
+
+		if (UI::CollapsingHeader("Entities"))
 		{
-			UI::TableSetupColumn("Id", ImGuiTableColumnFlags_NoHide);
-			UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 1.f);
-			UI::TableSetupColumn("Path",
-			    ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultHide, 1.2f);
-			UI::TableHeadersRow();
+			auto rootView   = ast.MakeView<CParent>(AST::TExclude<CChild>{});
+			auto orphanView = ast.MakeView<CIdentifier>(AST::TExclude<CChild, CParent>{});
 
-			for (auto root : rootView)
+			static ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
+			                               ImGuiTableFlags_Hideable |
+			                               ImGuiTableFlags_SizingStretchProp;
+			ImGui::BeginChild("entitiesTableChild",
+			    ImVec2(0.f, Math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
+			if (UI::BeginTable("entitiesTable", 3, flags))
 			{
-				DrawEntity(ast, root);
-			}
+				UI::TableSetupColumn("Id", ImGuiTableColumnFlags_NoHide);
+				UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 1.f);
+				UI::TableSetupColumn("Path",
+				    ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultHide, 1.2f);
+				UI::TableHeadersRow();
 
-			for (auto orphan : orphanView)
-			{
-				DrawEntity(ast, orphan);
+				for (auto root : rootView)
+				{
+					DrawEntity(ast, root);
+				}
+
+				for (auto orphan : orphanView)
+				{
+					DrawEntity(ast, orphan);
+				}
+				UI::EndTable();
 			}
-			UI::EndTable();
+			UI::EndChild();
+			UI::Separator();
 		}
-		UI::Separator();
 		UI::End();
 	}
 

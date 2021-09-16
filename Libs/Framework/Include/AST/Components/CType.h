@@ -19,10 +19,6 @@ namespace Rift
 	{
 		STRUCT(CType, Struct)
 
-		PROP(id)
-		Guid id;
-
-
 		CType() {}
 	};
 }    // namespace Rift

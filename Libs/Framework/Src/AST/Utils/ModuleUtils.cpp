@@ -1,17 +1,18 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "AST/Utils/ModuleUtils.h"
-
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CModule.h"
 #include "AST/Systems/LoadSystem.h"
+#include "AST/Systems/TypeSystem.h"
 #include "AST/Uniques/CModulesUnique.h"
 #include "AST/Utils/LoadingUtils.h"
+#include "AST/Utils/ModuleUtils.h"
 #include "Framework/Paths.h"
 
 #include <Files/Files.h>
 #include <Files/Paths.h>
+
 
 
 namespace Rift::Modules
@@ -47,6 +48,7 @@ namespace Rift::Modules
 		AST::Tree ast;
 		CModulesUnique& modules = ast.SetUnique<CModulesUnique>();
 		LoadSystem::Init(ast);
+		TypeSystem::Init(ast);
 
 		// Create root module
 		modules.mainModule = ast.Create();
