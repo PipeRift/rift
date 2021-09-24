@@ -33,7 +33,7 @@ namespace Rift
 		UI::Begin(graphId.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
 
 		ImNodes::GetStyle().Flags |=
-		    ImNodesStyleFlags_GridLinesPrimary | ImNodesStyleFlags_GridSnappingOnRelease;
+		    ImNodesStyleFlags_GridLines /* | ImNodesStyleFlags_GridSnappingOnRelease*/;
 		ImNodes::PushStyleVar(ImNodesStyleVar_GridSpacing, 12.f);
 		ImNodes::PushStyleVar(ImNodesStyleVar_PinLineThickness, 2.5f);
 		ImNodes::PushStyleVar(ImNodesStyleVar_NodeCornerRounding, 2.f);

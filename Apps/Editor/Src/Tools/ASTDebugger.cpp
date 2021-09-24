@@ -71,17 +71,28 @@ namespace Rift
 
 		DrawTypesDebug(ast);
 
-		if (UI::CollapsingHeader("Entities"))
+		if (UI::CollapsingHeader("Nodes"))
 		{
-			auto rootView   = ast.MakeView<CParent>(AST::TExclude<CChild>{});
-			auto orphanView = ast.MakeView<CIdentifier>(AST::TExclude<CChild, CParent>{});
+			if (ImGui::BeginPopup("Options"))
+			{
+				ImGui::Checkbox("Show hierarchy", &showHierarchy);
+				ImGui::EndPopup();
+			}
+
+			if (UI::Button("Options"))
+			{
+				UI::OpenPopup("Options");
+			}
+			UI::SameLine();
+			filter.Draw("##Filter", -100.0f);
+
 
 			static ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
 			                               ImGuiTableFlags_Hideable |
 			                               ImGuiTableFlags_SizingStretchProp;
-			ImGui::BeginChild("entitiesTableChild",
+			ImGui::BeginChild("nodesTableChild",
 			    ImVec2(0.f, Math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
-			if (UI::BeginTable("entitiesTable", 3, flags))
+			if (UI::BeginTable("nodesTable", 3, flags))
 			{
 				UI::TableSetupColumn("Id", ImGuiTableColumnFlags_NoHide);
 				UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 1.f);
@@ -89,14 +100,25 @@ namespace Rift
 				    ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultHide, 1.2f);
 				UI::TableHeadersRow();
 
-				for (auto root : rootView)
+				if (showHierarchy && !filter.IsActive())
 				{
-					DrawEntity(ast, root);
-				}
+					auto rootView = ast.MakeView<CParent>(AST::TExclude<CChild>{});
+					for (auto root : rootView)
+					{
+						DrawNode(ast, root, true);
+					}
 
-				for (auto orphan : orphanView)
+					auto orphanView = ast.MakeView<CIdentifier>(AST::TExclude<CChild, CParent>{});
+					for (auto orphan : orphanView)
+					{
+						DrawNode(ast, orphan, true);
+					}
+				}
+				else
 				{
-					DrawEntity(ast, orphan);
+					ast.Each([this, &ast](AST::Id id) {
+						DrawNode(ast, id, false);
+					});
 				}
 				UI::EndTable();
 			}
@@ -106,22 +128,22 @@ namespace Rift
 		UI::End();
 	}
 
-	void ASTDebugger::DrawEntity(AST::Tree& ast, AST::Id entity)
+	void ASTDebugger::DrawNode(AST::Tree& ast, AST::Id nodeId, bool showChildren)
 	{
 		static String idText;
 		idText.clear();
-		Strings::FormatTo(idText, "{}", entity);
+		Strings::FormatTo(idText, "{}", nodeId);
 
 		static String name;
 		name.clear();
-		if (CIdentifier* id = ast.TryGet<CIdentifier>(entity))
+		if (CIdentifier* id = ast.TryGet<CIdentifier>(nodeId))
 		{
 			name = id->name.ToString();
 		}
 
 		static String path;
 		path.clear();
-		if (CFileRef* file = ast.TryGet<CFileRef>(entity))
+		if (CFileRef* file = ast.TryGet<CFileRef>(nodeId))
 		{
 			path = Paths::ToString(file->path);
 			if (name.empty())
@@ -134,11 +156,27 @@ namespace Rift
 			}
 		}
 
+		if (!filter.PassFilter(idText.c_str(), idText.c_str() + idText.size()) &&
+		    !filter.PassFilter(name.c_str(), name.c_str() + name.size()))
+		{
+			return;
+		}
+
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
 
-		const CParent* children = ast.TryGet<CParent>(entity);
-		const bool hasChildren  = children && !children->children.IsEmpty();
+		bool hasChildren;
+		const CParent* children = nullptr;
+		if (showChildren)
+		{
+			children    = ast.TryGet<CParent>(nodeId);
+			hasChildren = children && !children->children.IsEmpty();
+		}
+		else
+		{
+			hasChildren = false;
+		}
+
 		bool open               = false;
 		static Name font{"WorkSans"};
 		Style::PushFont(font, Style::FontMode::Bold);
@@ -167,7 +205,7 @@ namespace Rift
 			{
 				for (AST::Id child : children->children)
 				{
-					DrawEntity(ast, child);
+					DrawNode(ast, child, true);
 				}
 			}
 			UI::TreePop();

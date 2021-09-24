@@ -6,8 +6,11 @@
 
 namespace Rift
 {
-	struct CCallExpr : public CExpression
+	struct CDeclRefExpr : public CExpression
 	{
-		STRUCT(CCallExpr, CExpression)
+		STRUCT(CDeclRefExpr, CExpression)
+
+		PROP(name)
+		Name name;
 	};
 }    // namespace Rift

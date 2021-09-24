@@ -1,12 +1,11 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Compiler/Cpp/CodeGen.h"
-
 #include "AST/Components/CChild.h"
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CModule.h"
+#include "AST/Components/CParameterDecl.h"
 #include "AST/Components/CParent.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CType.h"
@@ -15,6 +14,8 @@
 #include "AST/Tree.h"
 #include "AST/Utils/ModuleUtils.h"
 #include "Compiler/CompilerContext.h"
+#include "Compiler/Cpp/CodeGen.h"
+#include "Compiler/Cpp/Components/CCppCodeGenFragment.h"
 #include "Compiler/Cpp/CppBackend.h"
 
 #include <Files/Files.h>
@@ -227,6 +228,19 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
+	void GenParameters(AST::Tree& ast)
+	{
+		auto parameters = ast.MakeView<const CParameterDecl>();
+		for (AST::Id entity : parameters)
+		{
+			const auto& param = parameters.Get<const CParameterDecl>(entity);
+
+			auto& fragment = ast.Add<CCppCodeGenFragment>(entity);
+			fragment.code.clear();
+			Strings::FormatTo(fragment.code, "{} {}", param.type, param.name);
+		}
+	}
+
 
 	void GenerateModuleCode(Context& context, AST::Id moduleId, const Path& codePath)
 	{
@@ -312,6 +326,8 @@ namespace Rift::Compiler::Cpp
 	void GenerateCode(Context& context, const Path& generatePath)
 	{
 		ZoneScopedC(0x459bd1);
+
+		GenParameters(context.ast);
 
 		auto modules = context.ast.MakeView<CModule>();
 		for (AST::Id moduleId : modules)

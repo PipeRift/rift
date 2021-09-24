@@ -9,5 +9,11 @@ namespace Rift
 	struct CParameterDecl : public CDeclaration
 	{
 		STRUCT(CParameterDecl, CDeclaration)
+
+		PROP(type)
+		Name type;
+
+		PROP(name)
+		String name;
 	};
 }    // namespace Rift

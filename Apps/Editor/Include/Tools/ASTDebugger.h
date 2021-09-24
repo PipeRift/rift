@@ -8,6 +8,7 @@
 #include <Memory/Blocks/Block.h>
 #include <Platform/Platform.h>
 #include <Strings/StringView.h>
+#include <UI/UI.h>
 
 
 namespace Rift
@@ -15,8 +16,10 @@ namespace Rift
 	struct ASTDebugger
 	{
 		bool open = false;
+		bool showHierarchy = true;
 
-		AST::Id selectedEntity = AST::NoId;
+		AST::Id selectedNode = AST::NoId;
+		ImGuiTextFilter filter;
 
 
 		ASTDebugger();
@@ -24,6 +27,6 @@ namespace Rift
 		void Draw(AST::Tree& ast);
 
 	private:
-		static void DrawEntity(AST::Tree& ast, AST::Id entity);
+		void DrawNode(AST::Tree& ast, AST::Id nodeId, bool showChildren);
 	};
 }    // namespace Rift
