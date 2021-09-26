@@ -3,6 +3,7 @@
 
 #include "DockSpaceLayout.h"
 
+#include <AST/Types.h>
 #include <CoreObject.h>
 #include <UI/UI.h>
 

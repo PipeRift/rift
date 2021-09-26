@@ -1,15 +1,15 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Utils/FunctionGraph.h"
-
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
+#include "Utils/FunctionGraph.h"
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CFunctionDecl.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Linkage.h>
+#include <AST/Uniques/CTypeListUnique.h>
 #include <imnodes.h>
 #include <imnodes_internal.h>
 
@@ -40,6 +40,45 @@ namespace Rift
 		ImNodes::PushStyleVar(ImNodesStyleVar_PinQuadSideLength, 10.f);
 
 		ImNodes::BeginNodeEditor();
+
+		if (!ImGui::IsAnyItemHovered() && ImNodes::IsEditorHovered() &&
+		    ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+		{
+			ImGui::OpenPopup("GraphContextMenu");
+		}
+
+		if (ImGui::BeginPopup("GraphContextMenu"))
+		{
+			static ImGuiTextFilter filter;
+			filter.Draw("##Filter");
+			const ImVec2 click_pos = ImGui::GetMousePosOnOpeningCurrentPopup();
+			if (filter.IsActive() || ImGui::TreeNode("Constructors"))
+			{
+				String makeStr{};
+				auto& typeList   = ast.GetUnique<CTypeListUnique>();
+				auto identifiers = ast.MakeView<CIdentifier>();
+				for (auto type : typeList.types)
+				{
+					if (CIdentifier* iden = identifiers.TryGet<CIdentifier>(type.second))
+					{
+						makeStr.clear();
+						Strings::FormatTo(makeStr, "Make {}", iden->name);
+						if (filter.PassFilter(makeStr.c_str(), makeStr.c_str() + makeStr.size()))
+						{
+							if (ImGui::MenuItem(makeStr.c_str())) {}
+						}
+					}
+				}
+
+				if (!filter.IsActive())
+				{
+					ImGui::TreePop();
+				}
+			}
+			ImGui::EndPopup();
+		}
+
+
 		auto functions = ast.MakeView<CFunctionDecl>();
 		for (AST::Id child : *children)
 		{
@@ -51,6 +90,7 @@ namespace Rift
 
 		ImNodes::MiniMap(0.2f, ImNodesMiniMapLocation_TopRight);
 		ImNodes::EndNodeEditor();
+
 		UI::End();
 	}
 

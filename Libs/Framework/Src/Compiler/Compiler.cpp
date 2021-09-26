@@ -33,7 +33,6 @@ namespace Rift::Compiler
 
 		LoadSystem::Init(ast);
 		TypeSystem::Init(ast);
-		OptimizationSystem::Init(ast);
 		CompileTimeSystem::Init(ast);
 
 		auto* modules = ast.TryGetUnique<CModulesUnique>();
@@ -50,8 +49,10 @@ namespace Rift::Compiler
 
 		LoadSystem::Run(ast);
 
+		// PruneDisconnected(ast);
+
+		OptimizationSystem::PruneDisconnected(ast);
 		TypeSystem::RunChecks(ast);
-		OptimizationSystem::Run(ast);
 		CompileTimeSystem::Run(ast);
 
 		switch (backend)
