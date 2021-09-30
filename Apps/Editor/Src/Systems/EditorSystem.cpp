@@ -263,6 +263,7 @@ namespace Rift::EditorSystem
 
 		editor.astDebugger.Draw(ast);
 		editor.fileExplorer.Draw(ast);
+		editor.graphPlayground.Draw(ast, editor.layout);
 
 		UI::PopID();
 	}
@@ -347,6 +348,7 @@ namespace Rift::EditorSystem
 				if (UI::BeginMenu("Debug"))
 				{
 					UI::MenuItem("Syntax Tree", nullptr, &editorData.astDebugger.open);
+					UI::MenuItem("Graph Playground", nullptr, &editorData.graphPlayground.open);
 					UI::EndMenu();
 				}
 				UI::EndMenu();
@@ -408,7 +410,7 @@ namespace Rift::EditorSystem
 				if (Declarations::IsClass(ast, typeId) ||
 				    Declarations::IsFunctionLibrary(ast, typeId))
 				{
-					DrawFunctionGraph(ast, typeId, typeEditor.layout);
+					Graph::DrawFunctionGraph(ast, typeId, typeEditor.layout);
 				}
 				DrawProperties(ast, typeId, typeEditor.layout);
 			}

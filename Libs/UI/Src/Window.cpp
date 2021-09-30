@@ -1,12 +1,10 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "UI/Window.h"
-
 #include "UI/Style.h"
+#include "UI/Window.h"
 
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-#include <imnodes.h>
 
 #include <cstdio>
 // OpenGL loader
@@ -73,7 +71,6 @@ namespace Rift::UI
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		ImNodes::CreateContext();
 
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;    // Enable Keyboard Controls
@@ -103,7 +100,6 @@ namespace Rift::UI
 			// Cleanup
 			ImGui_ImplOpenGL3_Shutdown();
 			ImGui_ImplGlfw_Shutdown();
-			ImNodes::DestroyContext();
 			ImGui::DestroyContext();
 
 			glfwDestroyWindow(window);

@@ -5,6 +5,7 @@
 #include "DockSpaceLayout.h"
 #include "Panels/FileExplorerPanel.h"
 #include "Tools/ASTDebugger.h"
+#include "Tools/GraphPlayground.h"
 
 #include <CoreObject.h>
 #include <Files/FileWatcher.h>
@@ -30,6 +31,7 @@ namespace Rift
 		FileExplorerPanel fileExplorer{};
 
 		ASTDebugger astDebugger;
+		GraphPlayground graphPlayground;
 
 		bool skipFrameAfterMenu = false;
 	};

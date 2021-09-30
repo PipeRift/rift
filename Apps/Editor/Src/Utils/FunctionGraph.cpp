@@ -14,9 +14,52 @@
 #include <imnodes_internal.h>
 
 
-namespace Rift
+namespace Rift::Graph
 {
-	void DrawFunctionNodes(AST::Tree& ast, AST::Id functionId);
+	void Settings::SetGridSize(float size)
+	{
+		gridSize                        = size;
+		invGridSize                     = 1.f / size;
+		ImNodes::GetStyle().GridSpacing = size;
+	}
+
+	float Settings::GetGridSize() const
+	{
+		return gridSize;
+	}
+
+	float Settings::GetInvGridSize() const
+	{
+		return invGridSize;
+	}
+
+
+	void Graph::Init()
+	{
+		ImNodes::CreateContext();
+		settings.SetGridSize(settings.GetGridSize());
+	}
+
+	void Graph::Shutdown()
+	{
+		ImNodes::DestroyContext();
+	}
+
+
+	void PushNodeStyle()
+	{
+		ImNodes::GetStyle().Flags |=
+		    ImNodesStyleFlags_GridLines /* | ImNodesStyleFlags_GridSnappingOnRelease*/;
+
+		ImNodes::PushStyleVar(ImNodesStyleVar_PinLineThickness, 2.5f);
+		ImNodes::PushStyleVar(ImNodesStyleVar_NodeCornerRounding, 2.f);
+		ImNodes::PushStyleVar(ImNodesStyleVar_PinQuadSideLength, 10.f);
+	}
+
+	void PopNodeStyle()
+	{
+		ImNodes::PopStyleVar(3);
+	}
 
 	void DrawFunctionGraph(AST::Tree& ast, AST::Id typeId, DockSpaceLayout& layout)
 	{
@@ -32,12 +75,7 @@ namespace Rift
 		Strings::FormatTo(graphId, "Graph##{}", typeId);
 		UI::Begin(graphId.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
 
-		ImNodes::GetStyle().Flags |=
-		    ImNodesStyleFlags_GridLines /* | ImNodesStyleFlags_GridSnappingOnRelease*/;
-		ImNodes::PushStyleVar(ImNodesStyleVar_GridSpacing, 12.f);
-		ImNodes::PushStyleVar(ImNodesStyleVar_PinLineThickness, 2.5f);
-		ImNodes::PushStyleVar(ImNodesStyleVar_NodeCornerRounding, 2.f);
-		ImNodes::PushStyleVar(ImNodesStyleVar_PinQuadSideLength, 10.f);
+		PushNodeStyle();
 
 		ImNodes::BeginNodeEditor();
 
@@ -90,6 +128,7 @@ namespace Rift
 
 		ImNodes::MiniMap(0.2f, ImNodesMiniMapLocation_TopRight);
 		ImNodes::EndNodeEditor();
+		PopNodeStyle();
 
 		UI::End();
 	}
@@ -108,7 +147,7 @@ namespace Rift
 		if (UI::IsWindowAppearing() &&
 		    !(imnodes->LeftMouseDragging && ImNodes::IsNodeSelected(i32(functionId))))
 		{
-			ImNodes::SetNodeGridSpacePos(i32(functionId), transform.position);
+			SetNodePosition(functionId, transform.position);
 		}
 
 		ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(191, 56, 11, 255));
@@ -130,9 +169,7 @@ namespace Rift
 
 		if (imnodes->LeftMouseDragging || imnodes->LeftMouseReleased)
 		{
-			ImVec2 pos           = ImNodes::GetNodeGridSpacePos(i32(functionId));
-			transform.position.x = pos.x;
-			transform.position.y = pos.y;
+			transform.position = GetNodePosition(functionId);
 			Types::Changed(AST::GetLinkedParent(ast, functionId), "Moved nodes");
 		}
 	}
@@ -141,4 +178,23 @@ namespace Rift
 	{
 		DrawFunctionEntry(ast, functionId);
 	}
-}    // namespace Rift
+
+	void DrawBoolLiteralNode(AST::Id id)
+	{
+		ImNodes::BeginNode(i32(id));
+
+		ImNodes::EndNode();
+	}
+
+	void SetNodePosition(AST::Id id, v2 position)
+	{
+		position *= settings.GetGridSize();
+		ImNodes::SetNodeGridSpacePos(i32(id), position);
+	}
+
+	v2 Graph::GetNodePosition(AST::Id id)
+	{
+		const ImVec2 pos = ImNodes::GetNodeGridSpacePos(i32(id));
+		return {pos.x * settings.GetInvGridSize(), pos.y * settings.GetInvGridSize()};
+	}
+}    // namespace Rift::Graph

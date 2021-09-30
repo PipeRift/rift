@@ -1,9 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Editor.h"
-
 #include "Systems/EditorSystem.h"
 #include "Uniques/CEditorUnique.h"
+#include "Utils/FunctionGraph.h"
 
 #include <AST/Systems/LoadSystem.h>
 #include <AST/Systems/ModuleSystem.h>
@@ -27,6 +27,7 @@ namespace Rift
 		{
 			return 1;
 		}
+		Graph::Init();
 
 		while (!UI::WantsToClose())
 		{
@@ -43,6 +44,7 @@ namespace Rift
 			FrameMark;
 		}
 
+		Graph::Shutdown();
 		UI::Shutdown();
 		ShutdownContext();
 		return 0;
