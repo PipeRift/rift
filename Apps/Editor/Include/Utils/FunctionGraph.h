@@ -4,19 +4,28 @@
 
 #include "AST/Tree.h"
 
+#include <Math/Vector.h>
+
 
 namespace Rift::Graph
 {
 	struct Settings
 	{
+	public:
+		float verticalMargin  = 1.f;
+		float verticalPadding = 0.f;
+
 	protected:
-		float gridSize    = 12.f;
+		float gridSize    = 20.f;
 		float invGridSize = 1 / gridSize;
 
 	public:
 		void SetGridSize(float size);
 		float GetGridSize() const;
 		float GetInvGridSize() const;
+
+		float GetSpaceHeight(u32 height) const;
+		v2 GetContentPadding() const;
 	};
 	inline Settings settings{};
 
@@ -27,13 +36,18 @@ namespace Rift::Graph
 
 	void PushNodeStyle();
 	void PopNodeStyle();
+	void PushInnerNodeStyle();
+	void PopInnerNodeStyle();
 
 	void DrawFunctionGraph(AST::Tree& ast, AST::Id typeId, struct DockSpaceLayout& layout);
 	void DrawFunctionNodes(AST::Tree& ast, AST::Id functionId);
 
 
-	void DrawBoolLiteralNode(AST::Id id);
+	void DrawBoolLiteralNode(AST::Id id, bool& value);
+	void DrawStringLiteralNode(AST::Id id, String& value);
 
 	void SetNodePosition(AST::Id id, v2 position);
 	v2 GetNodePosition(AST::Id id);
+
+	void SnapNodeDimensionsToGrid();
 }

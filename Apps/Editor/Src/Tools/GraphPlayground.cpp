@@ -26,7 +26,10 @@ void Rift::GraphPlayground::Draw(AST::Tree& ast, DockSpaceLayout& layout)
 			Graph::SetNodePosition(AST::Id(0), v3::Zero());
 		}
 
-		Graph::DrawBoolLiteralNode(AST::Id(0));
+		static bool boolValue = false;
+		Graph::DrawBoolLiteralNode(AST::Id(0), boolValue);
+		static String stringValue;
+		Graph::DrawStringLiteralNode(AST::Id(1), stringValue);
 
 		ImNodes::MiniMap(0.2f, ImNodesMiniMapLocation_TopRight);
 		ImNodes::EndNodeEditor();

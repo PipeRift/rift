@@ -10,6 +10,7 @@
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Linkage.h>
 #include <AST/Uniques/CTypeListUnique.h>
+#include <UI/Style.h>
 #include <imnodes.h>
 #include <imnodes_internal.h>
 
@@ -33,6 +34,16 @@ namespace Rift::Graph
 		return invGridSize;
 	}
 
+	float Settings::GetSpaceHeight(u32 height) const
+	{
+		return settings.GetGridSize() - (settings.verticalMargin * 2.f);
+	}
+
+	v2 Settings::GetContentPadding() const
+	{
+		return {0.f, settings.verticalMargin + settings.verticalPadding};
+	}
+
 
 	void Graph::Init()
 	{
@@ -48,17 +59,38 @@ namespace Rift::Graph
 
 	void PushNodeStyle()
 	{
-		ImNodes::GetStyle().Flags |=
-		    ImNodesStyleFlags_GridLines /* | ImNodesStyleFlags_GridSnappingOnRelease*/;
+		ImNodes::GetStyle().Flags |= ImNodesStyleFlags_GridLines |
+		                             ImNodesStyleFlags_GridLinesPrimary |
+		                             ImNodesStyleFlags_GridSnappingOnRelease;
 
 		ImNodes::PushStyleVar(ImNodesStyleVar_PinLineThickness, 2.5f);
-		ImNodes::PushStyleVar(ImNodesStyleVar_NodeCornerRounding, 2.f);
+		ImNodes::PushStyleVar(ImNodesStyleVar_NodeCornerRounding, 1.f);
 		ImNodes::PushStyleVar(ImNodesStyleVar_PinQuadSideLength, 10.f);
+		ImNodes::PushStyleVar(ImNodesStyleVar_NodePadding, v2(4.f, 1.f));
+
+		// Style::PushStyleCompact();
 	}
 
 	void PopNodeStyle()
 	{
+		// Style::PopStyleCompact();
 		ImNodes::PopStyleVar(3);
+	}
+
+	void PushInnerNodeStyle()
+	{
+		ImGuiStyle& style = ImGui::GetStyle();
+		const float padding =
+		    (settings.GetSpaceHeight(1) - GImGui->FontSize) * 0.5f - settings.verticalPadding;
+
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {style.FramePadding.x, padding});
+		ImGui::PushStyleVar(
+		    ImGuiStyleVar_ItemSpacing, {style.ItemSpacing.x, settings.verticalPadding});
+	}
+
+	void PopInnerNodeStyle()
+	{
+		ImGui::PopStyleVar(2);
 	}
 
 	void DrawFunctionGraph(AST::Tree& ast, AST::Id typeId, DockSpaceLayout& layout)
@@ -179,11 +211,74 @@ namespace Rift::Graph
 		DrawFunctionEntry(ast, functionId);
 	}
 
-	void DrawBoolLiteralNode(AST::Id id)
+	void DrawBoolLiteralNode(AST::Id id, bool& value)
 	{
+		static const Color color = Color::HexRGB(0xFF6057);
+		static const Color darkColor =
+		    LinearColor::LerpUsingHSV(LinearColor{color}, LinearColor::Black, 0.1f).ToColor();
+		static const Color darkerColor = color.Darken(0.2f);
+
+		ImNodes::PushColorStyle(ImNodesCol_NodeBackground, color.ToPackedABGR());
+		ImNodes::PushColorStyle(ImNodesCol_NodeBackgroundHovered, color.ToPackedABGR());
+		ImNodes::PushColorStyle(ImNodesCol_NodeBackgroundSelected, darkColor.ToPackedABGR());
+		ImNodes::PushColorStyle(ImNodesCol_NodeOutline, darkColor.ToPackedABGR());
+
 		ImNodes::BeginNode(i32(id));
+		ImNodes::PushColorStyle(ImNodesCol_Pin, darkColor.ToPackedABGR());
+		ImNodes::PushColorStyle(ImNodesCol_PinHovered, darkerColor.ToPackedABGR());
+		{
+			ImNodes::BeginOutputAttribute(i32(id), ImNodesPinShape_CircleFilled);
+			PushInnerNodeStyle();
+			UI::Checkbox("##value", &value);
+			PopInnerNodeStyle();
+			ImNodes::EndOutputAttribute();
+		}
+		ImNodes::PopColorStyle();
+		ImNodes::PopColorStyle();
 
 		ImNodes::EndNode();
+
+		ImNodes::PopColorStyle();
+		ImNodes::PopColorStyle();
+		ImNodes::PopColorStyle();
+		ImNodes::PopColorStyle();
+	}
+
+	void DrawStringLiteralNode(AST::Id id, String& value)
+	{
+		static const Color color = Color::HexRGB(0xE757FF);
+		static const Color darkColor =
+		    LinearColor::LerpUsingHSV(LinearColor{color}, LinearColor::Black, 0.2f).ToColor();
+		static const Color darkerColor = color.Darken(0.2f);
+
+		ImNodes::PushColorStyle(ImNodesCol_NodeBackground, color.ToPackedABGR());
+		ImNodes::PushColorStyle(ImNodesCol_NodeBackgroundHovered, color.ToPackedABGR());
+		ImNodes::PushColorStyle(ImNodesCol_NodeBackgroundSelected, darkColor.ToPackedABGR());
+		ImNodes::PushColorStyle(ImNodesCol_NodeOutline, darkColor.ToPackedABGR());
+
+		ImNodes::BeginNode(i32(id));
+		ImNodes::PushColorStyle(ImNodesCol_Pin, darkColor.ToPackedABGR());
+		ImNodes::PushColorStyle(ImNodesCol_PinHovered, darkerColor.ToPackedABGR());
+		{
+			ImNodes::BeginOutputAttribute(i32(id), ImNodesPinShape_CircleFilled);
+			PushInnerNodeStyle();
+
+			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
+			const v2 minSize{settings.GetGridSize() * 4.f, settings.GetGridSize()};
+			const v2 size{Math::Max(minSize.x, textSize.x), Math::Max(minSize.y, textSize.y)};
+			UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
+			PopInnerNodeStyle();
+			ImNodes::EndOutputAttribute();
+		}
+		ImNodes::PopColorStyle();
+		ImNodes::PopColorStyle();
+
+		ImNodes::EndNode();
+
+		ImNodes::PopColorStyle();
+		ImNodes::PopColorStyle();
+		ImNodes::PopColorStyle();
+		ImNodes::PopColorStyle();
 	}
 
 	void SetNodePosition(AST::Id id, v2 position)
@@ -192,7 +287,7 @@ namespace Rift::Graph
 		ImNodes::SetNodeGridSpacePos(i32(id), position);
 	}
 
-	v2 Graph::GetNodePosition(AST::Id id)
+	v2 GetNodePosition(AST::Id id)
 	{
 		const ImVec2 pos = ImNodes::GetNodeGridSpacePos(i32(id));
 		return {pos.x * settings.GetInvGridSize(), pos.y * settings.GetInvGridSize()};
