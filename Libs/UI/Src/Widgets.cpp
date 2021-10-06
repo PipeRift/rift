@@ -36,8 +36,8 @@ namespace Rift::UI
 	    const LinearColor& tintColor)
 	{
 		const v2 uv = sprite.GetUV();
-		return UI::ImageButton(sprite.textureId, sprite.size, uv, v2(uv + sprite.size),
-		    framePadding, bgColor, tintColor);
+		return UI::ImageButton(
+		    sprite.textureId, sprite.size, uv, uv + sprite.size, framePadding, bgColor, tintColor);
 	}
 
 

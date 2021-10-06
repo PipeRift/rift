@@ -23,7 +23,7 @@ void Rift::GraphPlayground::Draw(AST::Tree& ast, DockSpaceLayout& layout)
 
 		if (UI::IsWindowAppearing())
 		{
-			Graph::SetNodePosition(AST::Id(0), v3::Zero());
+			Graph::SetNodePosition(AST::Id(0), v2::Zero());
 		}
 
 		static bool boolValue = false;

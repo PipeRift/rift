@@ -263,6 +263,7 @@ namespace Rift::Graph
 			ImNodes::BeginOutputAttribute(i32(id), ImNodesPinShape_CircleFilled);
 			PushInnerNodeStyle();
 
+			ImGuiStyle& style     = ImGui::GetStyle();
 			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
 			const v2 minSize{settings.GetGridSize() * 4.f, settings.GetGridSize()};
 			const v2 size{Math::Max(minSize.x, textSize.x), Math::Max(minSize.y, textSize.y)};
