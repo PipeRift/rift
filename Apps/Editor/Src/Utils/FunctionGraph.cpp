@@ -94,35 +94,14 @@ namespace Rift::Graph
 		ImGui::PopStyleVar(2);
 	}
 
-	void DrawFunctionGraph(AST::Tree& ast, AST::Id typeId, DockSpaceLayout& layout)
+	void DrawContextMenu(AST::Tree& ast)
 	{
-		TArray<AST::Id>* children = AST::GetLinked(ast, typeId);
-		if (!children)
-		{
-			return;
-		}
-
-		layout.BindNextWindowToNode(CTypeEditor::centralNode);
-		static String graphId;
-		graphId.clear();
-		Strings::FormatTo(graphId, "Graph##{}", typeId);
-		UI::Begin(graphId.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
-
-		PushNodeStyle();
-
-		ImNodes::BeginNodeEditor();
-
-		if (!ImGui::IsAnyItemHovered() && ImNodes::IsEditorHovered() &&
-		    ImGui::IsMouseReleased(ImGuiMouseButton_Right))
-		{
-			ImGui::OpenPopup("GraphContextMenu");
-		}
-
 		if (ImGui::BeginPopup("GraphContextMenu"))
 		{
 			static ImGuiTextFilter filter;
 			filter.Draw("##Filter");
 			const ImVec2 click_pos = ImGui::GetMousePosOnOpeningCurrentPopup();
+
 			if (filter.IsActive() || ImGui::TreeNode("Constructors"))
 			{
 				String makeStr{};
@@ -148,22 +127,56 @@ namespace Rift::Graph
 			}
 			ImGui::EndPopup();
 		}
+	}
 
-
-		auto functions = ast.MakeView<CFunctionDecl>();
-		for (AST::Id child : *children)
+	void DrawFunctionGraph(AST::Tree& ast, AST::Id typeId, DockSpaceLayout& layout)
+	{
+		TArray<AST::Id>* children = AST::GetLinked(ast, typeId);
+		if (!children)
 		{
-			if (functions.Has(child))
-			{
-				DrawFunctionNodes(ast, child);
-			}
+			return;
 		}
 
-		ImNodes::MiniMap(0.2f, ImNodesMiniMapLocation_TopRight);
-		ImNodes::EndNodeEditor();
-		PopNodeStyle();
+		layout.BindNextWindowToNode(CTypeEditor::centralNode);
+		static String graphId;
+		graphId.clear();
+		Strings::FormatTo(graphId, "Graph##{}", typeId);
 
-		UI::End();
+		bool wantsToOpenContextMenu = false;
+		UI::Begin(graphId.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
+		{
+			PushNodeStyle();
+
+			ImNodes::BeginNodeEditor();
+
+			if (!ImGui::IsAnyItemHovered() && ImNodes::IsEditorHovered() &&
+			    ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+			{
+				wantsToOpenContextMenu = true;
+			}
+
+
+			auto functions = ast.MakeView<CFunctionDecl>();
+			for (AST::Id child : *children)
+			{
+				if (functions.Has(child))
+				{
+					DrawFunctionNodes(ast, child);
+				}
+			}
+
+			ImNodes::MiniMap(0.2f, ImNodesMiniMapLocation_TopRight);
+			ImNodes::EndNodeEditor();
+			PopNodeStyle();
+
+			UI::End();
+		}
+
+		if (wantsToOpenContextMenu)
+		{
+			ImGui::OpenPopup("GraphContextMenu", ImGuiPopupFlags_AnyPopup);
+		}
+		DrawContextMenu(ast);
 	}
 
 	void DrawFunctionEntry(AST::Tree& ast, AST::Id functionId)

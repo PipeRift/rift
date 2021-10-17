@@ -44,6 +44,7 @@ namespace Rift::Graph
 	void PushInnerNodeStyle();
 	void PopInnerNodeStyle();
 
+	void DrawContextMenu(AST::Tree& ast);
 	void DrawFunctionGraph(AST::Tree& ast, AST::Id typeId, DockSpaceLayout& layout);
 	void DrawFunctionNodes(AST::Tree& ast, AST::Id functionId);
 
