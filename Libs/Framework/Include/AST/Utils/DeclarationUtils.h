@@ -8,7 +8,6 @@
 #include "AST/Tree.h"
 
 
-
 namespace Rift::Declarations
 {
 	inline bool IsClass(const AST::Tree& ast, AST::Id node)

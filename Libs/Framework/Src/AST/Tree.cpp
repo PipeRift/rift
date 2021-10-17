@@ -6,6 +6,7 @@
 #include "AST/Components/CNativeDecl.h"
 #include "AST/Components/CType.h"
 #include "AST/Uniques/CModulesUnique.h"
+#include "AST/Uniques/CTypesUnique.h"
 #include "Compiler/Cpp/Components/CCppNativeName.h"
 
 
@@ -132,5 +133,6 @@ namespace Rift::AST
 		// Copy non-transient unique components
 		// TODO: Use reflection for this
 		SetUnique<CModulesUnique>(other.GetUnique<CModulesUnique>());
+		SetUnique<CTypesUnique>(other.GetUnique<CTypesUnique>());
 	}
 }    // namespace Rift::AST

@@ -1,5 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#define RIFT_ENABLE_PROFILER 0
+
 #include <AST/Systems/LoadSystem.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Context.h>
@@ -8,10 +10,14 @@
 #include <Memory/OwnPtr.h>
 #include <bandit/bandit.h>
 
+#include <chrono>
+#include <thread>
+
 
 using namespace snowhouse;
 using namespace bandit;
 using namespace Rift;
+using namespace std::chrono_literals;
 
 Path testProjectPath = Paths::GetCurrent() / "TestProject";
 
@@ -19,7 +25,6 @@ Path testProjectPath = Paths::GetCurrent() / "TestProject";
 go_bandit([]() {
 	describe("Project", []() {
 		before_each([]() {
-			InitializeContext();
 			Files::Delete(testProjectPath, true, false);
 
 			if (!Files::ExistsAsFolder(testProjectPath))
@@ -30,7 +35,6 @@ go_bandit([]() {
 
 		after_each([]() {
 			Files::Delete(testProjectPath);
-			ShutdownContext();
 		});
 
 		it("Can load empty descriptor", [&]() {
@@ -46,8 +50,8 @@ go_bandit([]() {
 			AST::Tree ast = Modules::OpenProject(testProjectPath);
 			AssertThat(Modules::HasProject(ast), Equals(true));
 
-			Name projectName = Modules::GetProjectName(ast);
-			AssertThat(projectName.ToString(), Equals(String{"TestProject"}));
+			StringView projectName = Modules::GetProjectName(ast).ToString();
+			AssertThat(projectName, Equals("TestProject"));
 		});
 
 		// TODO: Fix module loading. They can't load from CFileRef pointing to the folder and not
@@ -57,11 +61,10 @@ go_bandit([]() {
 			    testProjectPath / Modules::moduleFile, "{\"name\": \"SomeProject\"}");
 
 			AST::Tree ast = Modules::OpenProject(testProjectPath);
-			LoadSystem::Run(ast);    // Load module
 			AssertThat(Modules::HasProject(ast), Equals(true));
 
-			Name projectName = Modules::GetProjectName(ast);
-			AssertThat(projectName.ToString(), Equals(String{"SomeProject"}));
+			StringView projectName = Modules::GetProjectName(ast).ToString();
+			AssertThat(projectName, Equals("SomeProject"));
 		});
 	});
 });

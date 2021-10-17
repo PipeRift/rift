@@ -17,6 +17,12 @@ namespace Rift
 		};
 
 		constexpr entt::null_t NoId = entt::null;
+
+		inline constexpr bool operator!(Id id)
+		{
+			return id == NoId;
+		}
+
 	}    // namespace AST
 
 	namespace Serl

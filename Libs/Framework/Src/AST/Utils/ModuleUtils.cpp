@@ -1,18 +1,19 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "AST/Utils/ModuleUtils.h"
+
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CModule.h"
+#include "AST/Components/CProject.h"
 #include "AST/Systems/LoadSystem.h"
 #include "AST/Systems/TypeSystem.h"
 #include "AST/Uniques/CModulesUnique.h"
-#include "AST/Utils/LoadingUtils.h"
-#include "AST/Utils/ModuleUtils.h"
+#include "AST/Uniques/CTypesUnique.h"
 #include "Framework/Paths.h"
 
 #include <Files/Files.h>
 #include <Files/Paths.h>
-
 
 
 namespace Rift::Modules
@@ -46,16 +47,20 @@ namespace Rift::Modules
 		}
 
 		AST::Tree ast;
-		CModulesUnique& modules = ast.SetUnique<CModulesUnique>();
+		ast.SetUnique<CModulesUnique>();
+		ast.SetUnique<CTypesUnique>();
 		LoadSystem::Init(ast);
 		TypeSystem::Init(ast);
 
-		// Create root module
-		modules.mainModule = ast.Create();
-		ast.Add<CModule>(modules.mainModule, true);
-		ast.Add<CFileRef>(modules.mainModule, filePath);
-		Loading::MarkPendingLoad(ast, modules.mainModule);
+		// Create project node (root module)
+		AST::Id projectId = ast.Create();
+		ast.Add<CProject, CModule>(projectId);
+		ast.Add<CFileRef>(projectId, filePath);
 
+		// Load project module
+		TArray<String> strings;
+		LoadSystem::LoadFileStrings(ast, projectId, strings);
+		LoadSystem::DeserializeModules(ast, projectId, strings);
 		return ast;
 	}
 
@@ -66,14 +71,7 @@ namespace Rift::Modules
 
 	AST::Id GetProjectId(const AST::Tree& ast)
 	{
-		if (auto* modules = ast.TryGetUnique<CModulesUnique>())
-		{
-			if (ast.IsValid(modules->mainModule))
-			{
-				return modules->mainModule;
-			}
-		}
-		return AST::NoId;
+		return ast.GetFirstId<CProject>();
 	}
 
 	Name GetProjectName(const AST::Tree& ast)
@@ -126,24 +124,20 @@ namespace Rift::Modules
 
 	CModule* GetProjectModule(AST::Tree& ast)
 	{
-		if (auto* modules = ast.TryGetUnique<CModulesUnique>())
+		const AST::Id projectId = GetProjectId(ast);
+		if (projectId != AST::NoId)
 		{
-			if (ast.IsValid(modules->mainModule))
-			{
-				return ast.TryGet<CModule>(modules->mainModule);
-			}
+			return ast.TryGet<CModule>(projectId);
 		}
 		return nullptr;
 	}
 
 	const CModule* GetProjectModule(const AST::Tree& ast)
 	{
-		if (auto* modules = ast.TryGetUnique<CModulesUnique>())
+		const AST::Id projectId = GetProjectId(ast);
+		if (projectId != AST::NoId)
 		{
-			if (ast.IsValid(modules->mainModule))
-			{
-				return ast.TryGet<CModule>(modules->mainModule);
-			}
+			return ast.TryGet<CModule>(projectId);
 		}
 		return nullptr;
 	}

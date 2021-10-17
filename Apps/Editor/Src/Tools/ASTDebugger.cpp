@@ -177,7 +177,7 @@ namespace Rift
 			hasChildren = false;
 		}
 
-		bool open               = false;
+		bool open = false;
 		static Name font{"WorkSans"};
 		Style::PushFont(font, Style::FontMode::Bold);
 		if (hasChildren)

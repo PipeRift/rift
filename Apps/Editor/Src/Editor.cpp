@@ -1,12 +1,12 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Editor.h"
+
 #include "Systems/EditorSystem.h"
 #include "Uniques/CEditorUnique.h"
 #include "Utils/FunctionGraph.h"
 
 #include <AST/Systems/LoadSystem.h>
-#include <AST/Systems/ModuleSystem.h>
 #include <AST/Uniques/CModulesUnique.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Files/Files.h>
@@ -62,8 +62,6 @@ namespace Rift
 			return;
 		}
 
-		ModuleSystem::ScanSubmodules(ast);
-		ModuleSystem::ScanModuleTypes(ast);
 		LoadSystem::Run(ast);
 	}
 

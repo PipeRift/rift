@@ -362,7 +362,7 @@ namespace Rift
 	    AST::Tree& ast, StringView title, TypeCategory category, Path path)
 	{
 		const Path filename = Dialogs::SaveFile(
-		    title, path, {{"Rift type", Strings::Format("*.{}", Paths::typeExtension)}}, true);
+		    title, path, {{"Rift Type", Strings::Format("*.{}", Paths::typeExtension)}}, true);
 
 		AST::Id tmpType = ast.Create();
 		Types::InitFromCategory(ast, tmpType, category);

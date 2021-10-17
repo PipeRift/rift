@@ -8,10 +8,10 @@
 
 namespace Rift
 {
-	struct CModulesUnique : public Struct
+	struct CTypesUnique : public Struct
 	{
-		STRUCT(CModulesUnique, Struct)
+		STRUCT(CTypesUnique, Struct)
 
-		TMap<Name, AST::Id> modulesByPath;
+		TMap<Name, AST::Id> typesByPath;
 	};
 }    // namespace Rift

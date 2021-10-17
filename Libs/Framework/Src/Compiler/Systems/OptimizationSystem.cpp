@@ -1,7 +1,8 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "AST/Linkage.h"
 #include "Compiler/Systems/OptimizationSystem.h"
+
+#include "AST/Linkage.h"
 
 
 void Rift::OptimizationSystem::PruneDisconnected(AST::Tree& ast)

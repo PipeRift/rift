@@ -2,9 +2,9 @@
 #include "Compiler/Compiler.h"
 
 #include "AST/Systems/LoadSystem.h"
-#include "AST/Systems/ModuleSystem.h"
 #include "AST/Systems/TypeSystem.h"
 #include "AST/Uniques/CModulesUnique.h"
+#include "AST/Utils/ModuleUtils.h"
 #include "Compiler/CompilerContext.h"
 #include "Compiler/Cpp/CppBackend.h"
 #include "Compiler/Systems/CompileTimeSystem.h"
@@ -35,18 +35,14 @@ namespace Rift::Compiler
 		TypeSystem::Init(ast);
 		CompileTimeSystem::Init(ast);
 
-		auto* modules = ast.TryGetUnique<CModulesUnique>();
-		if (!modules || !modules->HasMainModule())
+		if (!Modules::HasProject(ast))
 		{
-			Log::Error("No existing module selected to build.");
+			Log::Error("No existing project to build.");
 			return;
 		}
 		context.config.Init(ast);
 
-		ModuleSystem::ScanSubmodules(ast);
-		ModuleSystem::ScanModuleTypes(ast);
 		Log::Info("Loading files");
-
 		LoadSystem::Run(ast);
 
 		// PruneDisconnected(ast);

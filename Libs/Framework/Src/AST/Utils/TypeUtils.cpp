@@ -14,7 +14,6 @@
 #include <Serialization/Formats/JsonFormat.h>
 
 
-
 namespace Rift::Types
 {
 	void InitFromCategory(AST::Tree& ast, AST::Id id, TypeCategory category)

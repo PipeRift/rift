@@ -7,6 +7,11 @@
 #include <Math/Vector.h>
 
 
+namespace Rift
+{
+	struct DockSpaceLayout;
+}
+
 namespace Rift::Graph
 {
 	struct Settings
@@ -39,7 +44,7 @@ namespace Rift::Graph
 	void PushInnerNodeStyle();
 	void PopInnerNodeStyle();
 
-	void DrawFunctionGraph(AST::Tree& ast, AST::Id typeId, struct DockSpaceLayout& layout);
+	void DrawFunctionGraph(AST::Tree& ast, AST::Id typeId, DockSpaceLayout& layout);
 	void DrawFunctionNodes(AST::Tree& ast, AST::Id functionId);
 
 
@@ -50,4 +55,4 @@ namespace Rift::Graph
 	v2 GetNodePosition(AST::Id id);
 
 	void SnapNodeDimensionsToGrid();
-}
+}    // namespace Rift::Graph

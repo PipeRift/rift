@@ -15,7 +15,7 @@ namespace Rift
 {
 	struct ASTDebugger
 	{
-		bool open = false;
+		bool open          = false;
 		bool showHierarchy = true;
 
 		AST::Id selectedNode = AST::NoId;

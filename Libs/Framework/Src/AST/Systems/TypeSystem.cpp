@@ -1,11 +1,11 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "AST/Systems/TypeSystem.h"
+
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CType.h"
-#include "AST/Systems/TypeSystem.h"
 #include "AST/Tree.h"
 #include "AST/Uniques/CTypeListUnique.h"
-
 
 
 namespace Rift::TypeSystem

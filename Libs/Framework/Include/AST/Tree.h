@@ -196,9 +196,10 @@ namespace Rift::AST
 
 		template <typename... Component, typename... Exclude>
 		auto MakeView(TExclude<Exclude...> excluded = {}) const
-		    -> View<TExclude<Exclude...>, Component...>
+		    -> View<TExclude<Exclude...>, std::add_const_t<Component>...>
 		{
-			return View<TExclude<Exclude...>, Component...>{registry.view<Component...>(excluded)};
+			return View<TExclude<Exclude...>, std::add_const_t<Component>...>{
+			    registry.view<Component...>(excluded)};
 		}
 
 		template <typename... Component, typename... Exclude>
@@ -277,6 +278,17 @@ namespace Rift::AST
 		const Registry& GetRegistry() const
 		{
 			return registry;
+		}
+
+		template <typename Component>
+		AST::Id GetFirstId() const
+		{
+			auto view = MakeView<Component>();
+			if (view.Size() > 0)
+			{
+				return *view.begin();
+			}
+			return AST::NoId;
 		}
 
 #pragma endregion ECS API
