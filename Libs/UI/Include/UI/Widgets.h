@@ -66,7 +66,17 @@ namespace Rift::UI
 
 	static bool Begin(const char* name, bool* p_open = NULL, ImGuiWindowFlags flags = 0)
 	{
+		LinearColor tabColor = Style::primaryColor;
+		ImGui::PushStyleColor(ImGuiCol_Tab, tabColor.Darken(0.2f));
+		ImGui::PushStyleColor(ImGuiCol_TabActive, tabColor);
+		ImGui::PushStyleColor(ImGuiCol_TabUnfocused, tabColor.Darken(0.2f));
+		ImGui::PushStyleColor(ImGuiCol_TabUnfocusedActive, tabColor);
+		ImGui::PushStyleColor(ImGuiCol_TabHovered, Style::Hovered(tabColor));
+		Style::PushTextColor(Style::primaryTextColor);
+
 		const bool value = ImGui::Begin(name, p_open, flags);
+
+		Style::PushTextColor(Style::fillTextColor);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.f, 3.f));
 		return value;
 	}
@@ -74,7 +84,10 @@ namespace Rift::UI
 	static void End()
 	{
 		ImGui::PopStyleVar();
+		Style::PopTextColor();
 		ImGui::End();
+		Style::PopTextColor();
+		ImGui::PopStyleColor(5);
 	}
 
 	ImRect GetWorkRect(v2 desiredSize, bool addhalfItemSpacing = true, v2 extent = v2::Zero());

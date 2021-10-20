@@ -175,7 +175,7 @@ namespace Rift::Style
 
 		ImVec4* colors = style.Colors;
 
-		LinearColor titleColor            = primaryColor.Darken(0.5f);
+		LinearColor titleColor            = fillColor.Darken(0.1f);
 		colors[ImGuiCol_TitleBg]          = titleColor.Darken(0.65f);
 		colors[ImGuiCol_TitleBgActive]    = titleColor.Darken(0.3f);
 		colors[ImGuiCol_TitleBgCollapsed] = Disabled(titleColor);
@@ -194,23 +194,23 @@ namespace Rift::Style
 		colors[ImGuiCol_ResizeGripHovered] = Hovered(resizeGripColor);
 		colors[ImGuiCol_ResizeGripActive]  = resizeGripColor;
 
-		LinearColor tabColor                = primaryColor.Darken(0.1f);
-		colors[ImGuiCol_Tab]                = tabColor.Darken(0.3f);
+		LinearColor tabColor                = fillColor;
+		colors[ImGuiCol_Tab]                = tabColor.Darken(0.2f);
 		colors[ImGuiCol_TabActive]          = tabColor;
-		colors[ImGuiCol_TabUnfocused]       = tabColor.Darken(0.5f);
-		colors[ImGuiCol_TabUnfocusedActive] = tabColor.Darken(0.3f);
+		colors[ImGuiCol_TabUnfocused]       = tabColor.Darken(0.2f);
+		colors[ImGuiCol_TabUnfocusedActive] = tabColor;
 		colors[ImGuiCol_TabHovered]         = Hovered(tabColor);
 
 		colors[ImGuiCol_DockingPreview] = fillColor;
 		colors[ImGuiCol_DockingEmptyBg] = LinearColor(Color::White).Darken(0.97f);
-		colors[ImGuiCol_TextSelectedBg] = primaryColor.Darken(0.2f);
+		colors[ImGuiCol_TextSelectedBg] = primaryColor.Darken(0.1f);
 
 		colors[ImGuiCol_NavHighlight] = primaryColor;
 
 		colors[ImGuiCol_Border] = fillColor.Darken(0.1f).Translucency(0.5f);
 
 		colors[ImGuiCol_Text]         = fillTextColor;
-		colors[ImGuiCol_TextDisabled] = fillTextColor.Darken(0.1f);
+		colors[ImGuiCol_TextDisabled] = fillTextColor.Darken(0.15f);
 
 		colors[ImGuiCol_ModalWindowDimBg] = primaryColor.Darken(0.5f).Translucency(0.05f);
 
@@ -273,6 +273,17 @@ namespace Rift::Style
 	void PopHeaderColor()
 	{
 		UI::PopStyleColor(3);
+	}
+
+	void PushTextColor(LinearColor color)
+	{
+		UI::PushStyleColor(ImGuiCol_Text, color);
+		UI::PushStyleColor(ImGuiCol_TextDisabled, color.Darken(0.15f));
+	}
+
+	void PopTextColor()
+	{
+		UI::PopStyleColor(2);
 	}
 
 	LinearColor Hovered(const LinearColor& color)

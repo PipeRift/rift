@@ -154,7 +154,8 @@
         "specialfunctions": "cpp",
         "splines": "cpp",
         "typeindex": "cpp",
-        "qtalignedmalloc": "cpp"
+        "qtalignedmalloc": "cpp",
+        "*.traits": "cpp"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "banditTestExplorer.testsuites": [

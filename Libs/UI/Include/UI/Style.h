@@ -25,13 +25,13 @@ namespace Rift::Style
 		Secondary,
 		Fill
 	};
-	inline LinearColor primaryColor       = Color{0, 186, 189};
-	inline LinearColor primaryTextColor   = LinearColor{Color::Black}.Lighten(0.1f);
-	inline LinearColor secondaryColor     = Color{213, 106, 56};
-	inline LinearColor secondaryTextColor = LinearColor{Color::Black}.Lighten(0.1f);
+	inline LinearColor primaryColor       = Color::HexRGB(0xbc5b00);
+	inline LinearColor primaryTextColor   = Color::White.Darken(0.05f);
+	inline LinearColor secondaryColor     = Color::HexRGB(0xD56A38);
+	inline LinearColor secondaryTextColor = Color::Black.Lighten(0.1f);
 
-	inline LinearColor fillColor     = Color{136, 136, 140};
-	inline LinearColor fillTextColor = LinearColor{Color::White}.Darken(0.15f);
+	inline LinearColor fillColor     = Color::HexRGB(0x888888);
+	inline LinearColor fillTextColor = Color::White.Darken(0.08f);
 
 
 	// Sets the default font
@@ -60,6 +60,9 @@ namespace Rift::Style
 	void PopButtonColor();
 	void PushHeaderColor(LinearColor color);
 	void PopHeaderColor();
+
+	void PushTextColor(LinearColor color);
+	void PopTextColor();
 
 	LinearColor Hovered(const LinearColor& color);
 	LinearColor Disabled(const LinearColor& color);
