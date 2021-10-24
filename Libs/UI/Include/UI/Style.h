@@ -8,7 +8,37 @@
 
 namespace Rift::Style
 {
-	enum class FontMode : Rift::u8
+	const LinearColor primaryColor = LinearColor::Hex(0xD6863B);
+
+	const LinearColor whiteTextColor = LinearColor::White().Shade(0.05f);
+	const LinearColor blackTextColor = LinearColor::Black().Tint(0.05f);
+
+
+	inline LinearColor GetNeutralColor(u8 level)
+	{
+		switch (level)
+		{
+			default:
+			case 0: return LinearColor::Hex(0x222222);
+			case 1: return LinearColor::Hex(0x3B3B3B);
+			case 2: return LinearColor::Hex(0x464646);
+			case 3: return LinearColor::Hex(0x515151);
+			case 4: return LinearColor::Hex(0x626262);
+			case 5: return LinearColor::Hex(0x6E6E6E);
+			case 6: return LinearColor::Hex(0x9E9E9E);
+			case 7: return LinearColor::Hex(0xB1B1B1);
+			case 8: return LinearColor::Hex(0xCFCFCF);
+			case 9: return LinearColor::Hex(0xE1E1E1);
+			case 10: return LinearColor::Hex(0xF7F7F7);
+		}
+	}
+	inline LinearColor GetNeutralTextColor(u8 level)
+	{
+		return level <= 5 ? whiteTextColor : blackTextColor;
+	}
+
+
+	enum class FontMode : u8
 	{
 		Regular,
 		Bold,
@@ -18,21 +48,6 @@ namespace Rift::Style
 		LightItalic,
 		None
 	};
-
-	enum class ThemeColors : Rift::u8
-	{
-		Primary,
-		Secondary,
-		Fill
-	};
-	inline LinearColor primaryColor       = Color::HexRGB(0xbc5b00);
-	inline LinearColor primaryTextColor   = Color::White.Darken(0.05f);
-	inline LinearColor secondaryColor     = Color::HexRGB(0xD56A38);
-	inline LinearColor secondaryTextColor = Color::Black.Lighten(0.1f);
-
-	inline LinearColor fillColor     = Color::HexRGB(0x888888);
-	inline LinearColor fillTextColor = Color::White.Darken(0.08f);
-
 
 	// Sets the default font
 	// @param name of the font
@@ -58,12 +73,21 @@ namespace Rift::Style
 	void PopFrameBgColor();
 	void PushButtonColor(LinearColor color);
 	void PopButtonColor();
-	void PushHeaderColor(LinearColor color);
+	void PushHeaderColor(LinearColor color = GetNeutralColor(2));
 	void PopHeaderColor();
 
 	void PushTextColor(LinearColor color);
 	void PopTextColor();
 
-	LinearColor Hovered(const LinearColor& color);
-	LinearColor Disabled(const LinearColor& color);
+	template<ColorMode mode>
+	TColor<mode> Hovered(const TColor<mode>& color)
+	{
+		return color.Shade(0.1f);
+	}
+
+	template<ColorMode mode>
+	TColor<mode> Disabled(const TColor<mode>& color)
+	{
+		return color.Shade(0.3f);
+	}
 };

@@ -8,47 +8,47 @@
 
 namespace Rift::AST
 {
-	template <typename... Types>
+	template<typename... Types>
 	using Matcher = entt::matcher<Types...>;
 
-	template <typename...>
+	template<typename...>
 	struct Collector;
 
-	template <>
+	template<>
 	struct Collector<>
 	{
-		template <typename... AllOf, typename... NoneOf>
+		template<typename... AllOf, typename... NoneOf>
 		static constexpr auto Group(TExclude<NoneOf...> = {}) ENTT_NOEXCEPT
 		{
 			return Collector<Matcher<TTypeList<>, TTypeList<>, TTypeList<NoneOf...>, AllOf...>>{};
 		}
 
-		template <typename AnyOf>
+		template<typename AnyOf>
 		static constexpr auto Update() ENTT_NOEXCEPT
 		{
 			return Collector<Matcher<TTypeList<>, TTypeList<>, AnyOf>>{};
 		}
 	};
 
-	template <typename... Reject, typename... Require, typename... Rule, typename... Other>
+	template<typename... Reject, typename... Require, typename... Rule, typename... Other>
 	struct Collector<Matcher<TTypeList<Reject...>, TTypeList<Require...>, Rule...>, Other...>
 	{
 		using current_type = Matcher<TTypeList<Reject...>, TTypeList<Require...>, Rule...>;
 
-		template <typename... AllOf, typename... NoneOf>
+		template<typename... AllOf, typename... NoneOf>
 		static constexpr auto Group(TExclude<NoneOf...> = {}) ENTT_NOEXCEPT
 		{
 			return Collector<Matcher<TTypeList<>, TTypeList<>, TTypeList<NoneOf...>, AllOf...>,
 			    current_type, Other...>{};
 		}
 
-		template <typename AnyOf>
+		template<typename AnyOf>
 		static constexpr auto Update() ENTT_NOEXCEPT
 		{
 			return Collector<Matcher<TTypeList<>, TTypeList<>, AnyOf>, current_type, Other...>{};
 		}
 
-		template <typename... AllOf, typename... NoneOf>
+		template<typename... AllOf, typename... NoneOf>
 		static constexpr auto Where(TExclude<NoneOf...> = {}) ENTT_NOEXCEPT
 		{
 			using extended_type =
@@ -77,7 +77,7 @@ namespace Rift::AST
 		Observer(const Observer&) = delete;
 		Observer(Observer&&)      = delete;
 
-		template <typename... Matcher>
+		template<typename... Matcher>
 		Observer(Tree& ast, Collector<Matcher...>)
 		    : observer{ast.GetRegistry(), entt::basic_collector<Matcher...>{}}
 		{}
@@ -85,7 +85,7 @@ namespace Rift::AST
 		Observer& operator=(const Observer&) = delete;
 		Observer& operator=(Observer&&) = delete;
 
-		template <typename... Matcher>
+		template<typename... Matcher>
 		void Connect(Tree& ast, Collector<Matcher...>)
 		{
 			observer.connect<Matcher...>(ast.GetRegistry(), entt::basic_collector<Matcher...>{});
@@ -126,13 +126,13 @@ namespace Rift::AST
 			observer.clear();
 		}
 
-		template <typename Func>
+		template<typename Func>
 		void Each(Func func) const
 		{
 			observer.each(std::move(func));
 		}
 
-		template <typename Func>
+		template<typename Func>
 		void Each(Func func)
 		{
 			observer.each(std::move(func));

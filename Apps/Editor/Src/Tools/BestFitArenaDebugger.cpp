@@ -6,6 +6,8 @@
 #include <Memory/Arenas/GlobalArena.h>
 #include <Strings/String.h>
 #include <UI/UI.h>
+
+// External
 #include <imgui_internal.h>
 
 
@@ -19,9 +21,10 @@ namespace Rift
 	void DrawMemoryRect(ImGuiWindow* window, const MemoryGrid& grid, ImRect box, v2_u32 min,
 	    v2_u32 max, const Color& color)
 	{
-		const v2 minPos = v2{min} * grid.unitSize;
-		const v2 maxPos = (v2{max} * grid.unitSize) + grid.unitSize;
-		window->DrawList->AddRectFilled(box.Min + minPos, box.Min + maxPos, color.ToPackedABGR());
+		const v2 fmin = v2{box.Min} + v2{min} * grid.unitSize;
+		const v2 fmax = v2{box.Min} + (v2{max} * grid.unitSize) + grid.unitSize;
+
+		window->DrawList->AddRectFilled(ImVec2(fmin), ImVec2(fmax), color.ToPackedABGR());
 	}
 
 	i32 DrawMemoryBlock(StringView label, MemoryGrid& grid,
@@ -50,10 +53,12 @@ namespace Rift
 		grid.UpdateGridScale(graphSize.x);
 		graphSize.y = Math::Max(graphSize.y, grid.GetHeight());
 
-		const ImRect frameBox(window->DC.CursorPos, window->DC.CursorPos + graphSize);
-		const ImRect totalBox(frameBox.Min,
-		    frameBox.Max +
-		        ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0));
+		const ImRect frameBox(window->DC.CursorPos, ImVec2(v2(window->DC.CursorPos) + graphSize));
+
+		const ImRect totalBox(ImVec2(frameBox.Min),
+		    ImVec2(v2(frameBox.Max.x, frameBox.Max.y)
+		           + v2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0)));
+
 		UI::ItemSize(totalBox, style.FramePadding.y);
 		if (!UI::ItemAdd(totalBox, 0, &frameBox))
 		{
@@ -128,10 +133,10 @@ namespace Rift
 	void MemoryGrid::Draw(const TArray<BigBestFitArena::Slot>& freeSlots)
 	{
 		String scaleStr      = Strings::ParseMemorySize(memoryScale);
-		u32 scaleMultiplier  = u32(Math::Log(memoryScale, 2.f));
+		u32 scaleMultiplier  = u32(Math::Log2(memoryScale));
 		static const u32 min = 2, max = 8;
 		UI::SliderScalar(
-		    "Scale", ImGuiDataType_U32, (void*) &scaleMultiplier, &min, &max, scaleStr.c_str());
+		    "Scale", ImGuiDataType_U32, (void*)&scaleMultiplier, &min, &max, scaleStr.c_str());
 		memoryScale = Math::Pow(2, scaleMultiplier);
 
 		UI::BeginChild("##memoryblock", ImVec2(0.f, 450.f), false);
@@ -175,8 +180,8 @@ namespace Rift
 			{    // Progress bar
 				const float usedPct = float(arena.GetUsedSize()) / arena.GetBlock().GetSize();
 
-				static const LinearColor lowMemoryColor  = Color(56, 210, 41);
-				static const LinearColor highMemoryColor = Color(210, 56, 41);
+				static const LinearColor lowMemoryColor  = LinearColor::RGB(56, 210, 41);
+				static const LinearColor highMemoryColor = LinearColor::RGB(210, 56, 41);
 				const LinearColor color =
 				    LinearColor::LerpUsingHSV(lowMemoryColor, highMemoryColor, usedPct);
 				UI::PushStyleColor(ImGuiCol_PlotHistogram, color);

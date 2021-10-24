@@ -17,7 +17,7 @@
 
 namespace Rift
 {
-	template <typename T>
+	template<typename T>
 	void ReadPool(ASTReadContext& ct, AST::Tree& ast)
 	{
 		if (ct.EnterNext(GetTypeName<T>(false)))
@@ -45,7 +45,7 @@ namespace Rift
 		}
 	}
 
-	template <typename T>
+	template<typename T>
 	void WritePool(ASTWriteContext& ct, AST::Tree& ast, const TArray<AST::Id>& nodes)
 	{
 		auto view = ast.MakeView<T>();
@@ -87,7 +87,7 @@ namespace Rift
 		Next("count", nodeCount);
 		ASTIds.Resize(nodeCount);
 		// Create or assign root ids
-		const u32 maxSize = Math::Min(roots.Size(), ASTIds.Size());
+		const i32 maxSize = Math::Min(roots.Size(), ASTIds.Size());
 		for (i32 i = 0; i < maxSize; ++i)
 		{
 			const AST::Id root = roots[i];

@@ -13,8 +13,7 @@ namespace Rift
 	namespace AST
 	{
 		enum class Id : u32
-		{
-		};
+		{};
 
 		constexpr entt::null_t NoId = entt::null;
 
@@ -47,10 +46,10 @@ namespace Rift::AST
 {
 	using VersionType = entt::entt_traits<Id>::version_type;
 
-	template <typename... Type>
+	template<typename... Type>
 	using TExclude = entt::exclude_t<Type...>;
 
-	template <typename... Type>
+	template<typename... Type>
 	using TTypeList = entt::type_list<Type...>;
 }    // namespace Rift::AST
 

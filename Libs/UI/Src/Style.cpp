@@ -138,27 +138,6 @@ namespace Rift::Style
 		ImGui::PopFont();
 	}
 
-	void SetTheme(ThemeColors themeColors)
-	{
-		LinearColor mainColor;
-		LinearColor mainTextColor;
-		switch (themeColors)
-		{
-			case ThemeColors::Primary:
-				mainColor     = primaryColor;
-				mainTextColor = primaryTextColor;
-				break;
-			case ThemeColors::Secondary:
-				mainColor     = secondaryColor;
-				mainTextColor = secondaryTextColor;
-				break;
-			default:
-				mainColor     = fillColor;
-				mainTextColor = secondaryTextColor;
-				break;
-		}
-	}
-
 	void PushGeneralStyle()
 	{
 		ImGui::StyleColorsDark();
@@ -170,53 +149,46 @@ namespace Rift::Style
 		style.ScrollbarRounding        = 2;
 		style.WindowMenuButtonPosition = ImGuiDir_Right;
 
-		// PushThemeStyle(ThemeColors::Primary);
-
 
 		ImVec4* colors = style.Colors;
 
-		LinearColor titleColor            = fillColor.Darken(0.1f);
-		colors[ImGuiCol_TitleBg]          = titleColor.Darken(0.65f);
-		colors[ImGuiCol_TitleBgActive]    = titleColor.Darken(0.3f);
+		LinearColor titleColor            = GetNeutralColor(0);
+		colors[ImGuiCol_TitleBg]          = titleColor.Shade(0.2f);
+		colors[ImGuiCol_TitleBgActive]    = titleColor;
 		colors[ImGuiCol_TitleBgCollapsed] = Disabled(titleColor);
 
-		colors[ImGuiCol_CheckMark]        = fillTextColor.Darken(0.2f);
-		colors[ImGuiCol_SliderGrabActive] = fillColor;
-		colors[ImGuiCol_SliderGrab]       = fillColor.Darken(0.2f);
+		colors[ImGuiCol_WindowBg] = GetNeutralColor(1);
+
+		colors[ImGuiCol_CheckMark]        = whiteTextColor;
+		colors[ImGuiCol_SliderGrabActive] = GetNeutralColor(5);
+		colors[ImGuiCol_SliderGrab]       = GetNeutralColor(4);
 
 
-		LinearColor separatorColor        = fillColor;
+		LinearColor separatorColor        = GetNeutralColor(1);
 		colors[ImGuiCol_SeparatorHovered] = Hovered(separatorColor);
 		colors[ImGuiCol_SeparatorActive]  = separatorColor;
 
-		LinearColor resizeGripColor        = fillColor;
-		colors[ImGuiCol_ResizeGrip]        = resizeGripColor.Darken(0.3f);
+		LinearColor resizeGripColor        = GetNeutralColor(1);
+		colors[ImGuiCol_ResizeGrip]        = resizeGripColor.Shade(0.3f);
 		colors[ImGuiCol_ResizeGripHovered] = Hovered(resizeGripColor);
 		colors[ImGuiCol_ResizeGripActive]  = resizeGripColor;
 
-		LinearColor tabColor                = fillColor;
-		colors[ImGuiCol_Tab]                = tabColor.Darken(0.2f);
-		colors[ImGuiCol_TabActive]          = tabColor;
-		colors[ImGuiCol_TabUnfocused]       = tabColor.Darken(0.2f);
-		colors[ImGuiCol_TabUnfocusedActive] = tabColor;
-		colors[ImGuiCol_TabHovered]         = Hovered(tabColor);
-
-		colors[ImGuiCol_DockingPreview] = fillColor;
-		colors[ImGuiCol_DockingEmptyBg] = LinearColor(Color::White).Darken(0.97f);
-		colors[ImGuiCol_TextSelectedBg] = primaryColor.Darken(0.1f);
+		colors[ImGuiCol_DockingPreview] = GetNeutralColor(2);
+		colors[ImGuiCol_DockingEmptyBg] = LinearColor::White().Shade(0.97f);
+		colors[ImGuiCol_TextSelectedBg] = primaryColor.Shade(0.1f);
 
 		colors[ImGuiCol_NavHighlight] = primaryColor;
 
-		colors[ImGuiCol_Border] = fillColor.Darken(0.1f).Translucency(0.5f);
+		// colors[ImGuiCol_Border] = neutralColor.Shade(0.1f).Translucency(0.5f);
 
-		colors[ImGuiCol_Text]         = fillTextColor;
-		colors[ImGuiCol_TextDisabled] = fillTextColor.Darken(0.15f);
+		colors[ImGuiCol_Text]         = whiteTextColor;
+		colors[ImGuiCol_TextDisabled] = whiteTextColor.Shade(0.15f);
 
-		colors[ImGuiCol_ModalWindowDimBg] = primaryColor.Darken(0.5f).Translucency(0.05f);
+		colors[ImGuiCol_ModalWindowDimBg] = primaryColor.Shade(0.5f).Translucency(0.05f);
 
-		PushButtonColor(fillColor);
-		PushFrameBgColor(fillColor.Darken(0.1f));
-		PushHeaderColor(fillColor);
+		PushButtonColor(GetNeutralColor(4));
+		PushFrameBgColor(GetNeutralColor(3));
+		PushHeaderColor();
 
 		LoadFonts();
 		Style::SetDefaultFont("WorkSans");
@@ -228,20 +200,20 @@ namespace Rift::Style
 	void PushStyleCompact()
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-		    ImVec2(style.FramePadding.x, (float) (int) (style.FramePadding.y * 0.60f)));
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
-		    ImVec2(style.ItemSpacing.x, (float) (int) (style.ItemSpacing.y * 0.60f)));
+		UI::PushStyleVar(ImGuiStyleVar_FramePadding,
+		    ImVec2(style.FramePadding.x, (float)(int)(style.FramePadding.y * 0.60f)));
+		UI::PushStyleVar(ImGuiStyleVar_ItemSpacing,
+		    ImVec2(style.ItemSpacing.x, (float)(int)(style.ItemSpacing.y * 0.60f)));
 	}
 
 	void PopStyleCompact()
 	{
-		ImGui::PopStyleVar(2);
+		UI::PopStyleVar(2);
 	}
 
 	void PushFrameBgColor(LinearColor color)
 	{
-		UI::PushStyleColor(ImGuiCol_FrameBg, color.Darken(0.5f));
+		UI::PushStyleColor(ImGuiCol_FrameBg, color.Shade(0.5f));
 		UI::PushStyleColor(ImGuiCol_FrameBgHovered, Hovered(color));
 		UI::PushStyleColor(ImGuiCol_FrameBgActive, color);
 	}
@@ -253,7 +225,7 @@ namespace Rift::Style
 
 	void PushButtonColor(LinearColor color)
 	{
-		UI::PushStyleColor(ImGuiCol_Button, color.Darken(0.3f));
+		UI::PushStyleColor(ImGuiCol_Button, color.Shade(0.3f));
 		UI::PushStyleColor(ImGuiCol_ButtonHovered, Hovered(color));
 		UI::PushStyleColor(ImGuiCol_ButtonActive, color);
 	}
@@ -265,7 +237,7 @@ namespace Rift::Style
 
 	void PushHeaderColor(LinearColor color)
 	{
-		UI::PushStyleColor(ImGuiCol_Header, color.Darken(0.3f));
+		UI::PushStyleColor(ImGuiCol_Header, color.Shade(0.3f));
 		UI::PushStyleColor(ImGuiCol_HeaderHovered, Hovered(color));
 		UI::PushStyleColor(ImGuiCol_HeaderActive, color);
 	}
@@ -278,21 +250,11 @@ namespace Rift::Style
 	void PushTextColor(LinearColor color)
 	{
 		UI::PushStyleColor(ImGuiCol_Text, color);
-		UI::PushStyleColor(ImGuiCol_TextDisabled, color.Darken(0.15f));
+		UI::PushStyleColor(ImGuiCol_TextDisabled, color.Shade(0.15f));
 	}
 
 	void PopTextColor()
 	{
 		UI::PopStyleColor(2);
-	}
-
-	LinearColor Hovered(const LinearColor& color)
-	{
-		return color.Darken(0.1f);
-	}
-
-	LinearColor Disabled(const LinearColor& color)
-	{
-		return color.Darken(0.3f);
 	}
 }    // namespace Rift::Style

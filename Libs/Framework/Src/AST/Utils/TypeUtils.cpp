@@ -20,15 +20,9 @@ namespace Rift::Types
 	{
 		switch (category)
 		{
-			case TypeCategory::Class:
-				ast.Emplace<CClassDecl>(id);
-				break;
-			case TypeCategory::Struct:
-				ast.Emplace<CStructDecl>(id);
-				break;
-			case TypeCategory::FunctionLibrary:
-				ast.Emplace<CFunctionLibraryDecl>(id);
-				break;
+			case TypeCategory::Class: ast.Emplace<CClassDecl>(id); break;
+			case TypeCategory::Struct: ast.Emplace<CStructDecl>(id); break;
+			case TypeCategory::FunctionLibrary: ast.Emplace<CFunctionLibraryDecl>(id); break;
 		}
 	}
 

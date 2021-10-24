@@ -1,8 +1,9 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "Utils/FunctionGraph.h"
+
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
-#include "Utils/FunctionGraph.h"
 #include "Utils/GraphColors.h"
 #include "Utils/TypeUtils.h"
 
@@ -11,9 +12,9 @@
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Linkage.h>
 #include <AST/Uniques/CTypeListUnique.h>
-#include <UI/Style.h>
 #include <imnodes.h>
 #include <imnodes_internal.h>
+#include <UI/Style.h>
 
 
 namespace Rift::Graph
@@ -60,9 +61,9 @@ namespace Rift::Graph
 
 	void PushNodeStyle()
 	{
-		ImNodes::GetStyle().Flags |= ImNodesStyleFlags_GridLines |
-		                             ImNodesStyleFlags_GridLinesPrimary |
-		                             ImNodesStyleFlags_GridSnappingOnRelease;
+		ImNodes::GetStyle().Flags |= ImNodesStyleFlags_GridLines
+		                             | ImNodesStyleFlags_GridLinesPrimary
+		                             | ImNodesStyleFlags_GridSnappingOnRelease;
 
 		ImNodes::PushStyleVar(ImNodesStyleVar_PinLineThickness, 2.5f);
 		ImNodes::PushStyleVar(ImNodesStyleVar_NodeCornerRounding, 1.f);
@@ -151,8 +152,8 @@ namespace Rift::Graph
 
 			ImNodes::BeginNodeEditor();
 
-			if (!ImGui::IsAnyItemHovered() && ImNodes::IsEditorHovered() &&
-			    ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+			if (!ImGui::IsAnyItemHovered() && ImNodes::IsEditorHovered()
+			    && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
 			{
 				wantsToOpenContextMenu = true;
 			}
@@ -191,8 +192,8 @@ namespace Rift::Graph
 		}
 
 		auto& transform = ast.GetOrAdd<CGraphTransform>(functionId);
-		if (UI::IsWindowAppearing() &&
-		    !(imnodes->LeftMouseDragging && ImNodes::IsNodeSelected(i32(functionId))))
+		if (UI::IsWindowAppearing()
+		    && !(imnodes->LeftMouseDragging && ImNodes::IsNodeSelected(i32(functionId))))
 		{
 			SetNodePosition(functionId, transform.position);
 		}

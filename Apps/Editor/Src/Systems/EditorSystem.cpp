@@ -139,9 +139,9 @@ namespace Rift::EditorSystem
 		UI::SetNextWindowViewport(viewport->ID);
 
 		ImGuiWindowFlags hostWindowFlags =
-		    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-		    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking |
-		    ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+		    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize
+		    | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking
+		    | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 		if (dockingFlags & ImGuiDockNodeFlags_PassthruCentralNode)
 		{
 			hostWindowFlags |= ImGuiWindowFlags_NoBackground;
@@ -407,8 +407,8 @@ namespace Rift::EditorSystem
 				CreateTypeDockspace(typeEditor, windowName.c_str());
 				typeEditor.layout.Tick(typeEditor.dockspaceID);
 
-				if (Declarations::IsClass(ast, typeId) ||
-				    Declarations::IsFunctionLibrary(ast, typeId))
+				if (Declarations::IsClass(ast, typeId)
+				    || Declarations::IsFunctionLibrary(ast, typeId))
 				{
 					Graph::DrawFunctionGraph(ast, typeId, typeEditor.layout);
 				}

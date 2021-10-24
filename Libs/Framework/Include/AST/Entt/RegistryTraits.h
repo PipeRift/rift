@@ -4,7 +4,7 @@
 #include "AST/Entt/PolyStorage.h"
 
 
-template <typename Entity>
+template<typename Entity>
 struct entt::poly_storage_traits<Entity>
 {
 	using storage_type = entt::poly<PolyStorage<Entity>>;

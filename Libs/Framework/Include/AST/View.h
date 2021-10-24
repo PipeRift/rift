@@ -8,11 +8,11 @@
 
 namespace Rift::AST
 {
-	template <typename...>
+	template<typename...>
 	struct View;
 
 
-	template <typename... Exclude, typename... Component>
+	template<typename... Exclude, typename... Component>
 	struct View<TExclude<Exclude...>, Component...>
 	{
 		using EnTTView        = entt::basic_view<Id, TExclude<Exclude...>, Component...>;
@@ -61,13 +61,13 @@ namespace Rift::AST
 			return view.find(node);
 		}
 
-		template <typename Func>
+		template<typename Func>
 		void Each(Func func) const
 		{
 			view.each(func);
 		}
 
-		template <typename Comp, typename Func>
+		template<typename Comp, typename Func>
 		void Each(Func func) const
 		{
 			view.template each<Comp>(func);
@@ -78,13 +78,13 @@ namespace Rift::AST
 			return view.contains(node);
 		}
 
-		template <typename... Comp>
+		template<typename... Comp>
 		decltype(auto) Get(const Id node) const
 		{
 			return view.template get<Comp...>(node);
 		}
 
-		template <typename Comp>
+		template<typename Comp>
 		Comp* TryGet(const Id node)
 		{
 			if (Has(node))
@@ -94,7 +94,7 @@ namespace Rift::AST
 			return nullptr;
 		}
 
-		template <typename Comp>
+		template<typename Comp>
 		const Comp* TryGet(const Id node) const
 		{
 			if (Has(node))

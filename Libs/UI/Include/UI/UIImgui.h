@@ -9,74 +9,23 @@
 
 #define IM_VEC2_CLASS_EXTRA                                      \
 	constexpr ImVec2(Rift::v2 other) : x(other.x), y(other.y) {} \
-	constexpr ImVec2& operator=(Rift::Vec<2, float> other)       \
+	constexpr operator Rift::v2()                                \
 	{                                                            \
-		x = other.x;                                             \
-		y = other.y;                                             \
-		return *this;                                            \
-	}                                                            \
-	constexpr ImVec2& operator+=(ImVec2 other)                   \
-	{                                                            \
-		x += other.x;                                            \
-		y += other.y;                                            \
-		return *this;                                            \
-	}                                                            \
-	constexpr ImVec2 operator+(ImVec2 other) const               \
-	{                                                            \
-		ImVec2 newVector = *this;                                \
-		newVector += other;                                      \
-		return newVector;                                        \
-	}                                                            \
-	constexpr ImVec2& operator-=(ImVec2 other)                   \
-	{                                                            \
-		x -= other.x;                                            \
-		y -= other.y;                                            \
-		return *this;                                            \
-	}                                                            \
-	constexpr ImVec2 operator-(ImVec2 other) const               \
-	{                                                            \
-		ImVec2 newVector = *this;                                \
-		newVector -= other;                                      \
-		return newVector;                                        \
+		return Rift::v2{x, y};                                   \
 	}
 
-#define IM_VEC4_CLASS_EXTRA                                                                       \
-	constexpr ImVec4(Rift::LinearColor other) : x(other.r), y(other.g), z(other.b), w(other.a) {} \
-	constexpr ImVec4& operator=(const Rift::LinearColor& other)                                   \
-	{                                                                                             \
-		x = other.r;                                                                              \
-		y = other.g;                                                                              \
-		z = other.b;                                                                              \
-		w = other.a;                                                                              \
-		return *this;                                                                             \
-	}                                                                                             \
-	constexpr ImVec4& operator+=(const Rift::LinearColor& other)                                  \
-	{                                                                                             \
-		x += other.r;                                                                             \
-		y += other.g;                                                                             \
-		z += other.b;                                                                             \
-		w += other.a;                                                                             \
-		return *this;                                                                             \
-	}                                                                                             \
-	constexpr ImVec4 operator+(const Rift::LinearColor& other) const                              \
-	{                                                                                             \
-		ImVec4 newVector = *this;                                                                 \
-		newVector += other;                                                                       \
-		return newVector;                                                                         \
-	}                                                                                             \
-	constexpr ImVec4& operator-=(const Rift::LinearColor& other)                                  \
-	{                                                                                             \
-		x -= other.r;                                                                             \
-		y -= other.g;                                                                             \
-		z -= other.b;                                                                             \
-		w -= other.a;                                                                             \
-		return *this;                                                                             \
-	}                                                                                             \
-	constexpr ImVec4 operator-(const Rift::LinearColor& other) const                              \
-	{                                                                                             \
-		ImVec4 newVector = *this;                                                                 \
-		newVector -= other;                                                                       \
-		return newVector;                                                                         \
+#define IM_VEC4_CLASS_EXTRA                                                                     \
+	constexpr ImVec4(const Rift::LinearColor& other)                                            \
+	    : x(other.r), y(other.g), z(other.b), w(other.a)                                        \
+	{}                                                                                          \
+	constexpr operator Rift::LinearColor()                                                      \
+	{                                                                                           \
+		return Rift::LinearColor{x, y, z, w};                                                   \
+	}                                                                                           \
+	constexpr ImVec4(const Rift::v4& other) : x(other.x), y(other.y), z(other.z), w(other.w) {} \
+	constexpr operator Rift::v4()                                                               \
+	{                                                                                           \
+		return Rift::v4{x, y, z, w};                                                            \
 	}
 
 
@@ -122,6 +71,14 @@ namespace Rift::UI
 	{
 		return ImGui::GetID(ptr_id);
 	}
+	inline void PushStyleColor(ImGuiCol idx, ImU32 col)
+	{
+		ImGui::PushStyleColor(idx, col);
+	}
+	inline void PushStyleColor(ImGuiCol idx, const ImVec4& col)
+	{
+		ImGui::PushStyleColor(idx, col);
+	}
 	// End ImGui API override
 
 
@@ -132,11 +89,21 @@ namespace Rift::UI
 
 	inline void PushID(sizet sizet_id)
 	{
-		ImGui::PushID(reinterpret_cast<void*>(sizet_id));
+		UI::PushID(reinterpret_cast<void*>(sizet_id));
 	}
 
 	inline ImGuiID GetID(StringView id)
 	{
 		return UI::GetID(id.data(), id.data() + id.size());
+	}
+
+	inline void PushStyleColor(ImGuiCol idx, const LinearColor& color)
+	{
+		UI::PushStyleColor(idx, ImVec4{color.r, color.g, color.b, color.a});
+	}
+
+	inline void PushStyleColor(ImGuiCol idx, Color color)
+	{
+		UI::PushStyleColor(idx, color.DWColor());
 	}
 }    // namespace Rift::UI

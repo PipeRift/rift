@@ -7,7 +7,7 @@
 #include <entt/entity/registry.hpp>
 
 
-template <typename... Type>
+template<typename... Type>
 entt::type_list<Type...> as_type_list(const entt::type_list<Type...>&);
 
 // clang-format off

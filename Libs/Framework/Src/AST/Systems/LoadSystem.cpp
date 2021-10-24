@@ -95,7 +95,7 @@ namespace Rift::LoadSystem
 		}
 
 		// Find all type files by module
-		pathsByModule.Reserve(modulesView.Size());
+		pathsByModule.Reserve(u32(modulesView.Size()));
 		for (AST::Id moduleId : modulesView)
 		{
 			const CFileRef& moduleFile = ast.Get<CFileRef>(moduleId);
@@ -133,7 +133,7 @@ namespace Rift::LoadSystem
 		ids.Resize(paths.Size());
 		ast.Create(ids.begin(), ids.end());
 
-		for (u32 i = 0; i < ids.Size(); ++i)
+		for (i32 i = 0; i < ids.Size(); ++i)
 		{
 			AST::Id id = ids[i];
 			ast.Add<CModule>(id);
@@ -178,7 +178,7 @@ namespace Rift::LoadSystem
 			typeIds.Resize(modulePaths.paths.Size());
 			ast.Create(typeIds.begin(), typeIds.end());
 
-			for (u32 i = 0; i < typeIds.Size(); ++i)
+			for (i32 i = 0; i < typeIds.Size(); ++i)
 			{
 				AST::Id id = typeIds[i];
 				Path& path = modulePaths.paths[i];
@@ -187,7 +187,7 @@ namespace Rift::LoadSystem
 				ast.Add<CFileRef>(id, Move(path));
 			}
 
-			for (u32 i = 0; i < typeIds.Size(); ++i)
+			for (i32 i = 0; i < typeIds.Size(); ++i)
 			{
 				Name pathName = modulePaths.pathNames[i];
 				types->typesByPath.Insert(pathName, typeIds[i]);
@@ -204,7 +204,7 @@ namespace Rift::LoadSystem
 		strings.Resize(nodes.Size());
 
 		auto filesView = ast.MakeView<CFileRef>();
-		for (u32 i = 0; i < nodes.Size(); ++i)
+		for (i32 i = 0; i < nodes.Size(); ++i)
 		{
 			if (auto* file = filesView.TryGet<CFileRef>(nodes[i])) [[likely]]
 			{
@@ -224,7 +224,7 @@ namespace Rift::LoadSystem
 		ZoneScopedNC("DeserializeModules", 0x459bd1);
 		Check(moduleIds.Size() == strings.Size());
 
-		for (u32 i = 0; i < moduleIds.Size(); ++i)
+		for (i32 i = 0; i < moduleIds.Size(); ++i)
 		{
 			Serl::JsonFormatReader reader{strings[i]};
 			if (!reader.IsValid())
@@ -249,7 +249,7 @@ namespace Rift::LoadSystem
 		ZoneScopedNC("DeserializeTypes", 0x459bd1);
 		Check(typeIds.Size() == strings.Size());
 
-		for (u32 i = 0; i < typeIds.Size(); ++i)
+		for (i32 i = 0; i < typeIds.Size(); ++i)
 		{
 			Serl::JsonFormatReader reader{strings[i]};
 			if (!reader.IsValid())

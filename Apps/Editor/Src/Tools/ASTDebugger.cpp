@@ -24,8 +24,9 @@ namespace Rift
 		}
 
 
-		static ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
-		                               ImGuiTableFlags_Hideable | ImGuiTableFlags_SizingStretchProp;
+		static ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable
+		                               | ImGuiTableFlags_Hideable
+		                               | ImGuiTableFlags_SizingStretchProp;
 		if (auto* types = ast.TryGetUnique<CTypeListUnique>())
 		{
 			UI::BeginChild("typesTableChild",
@@ -87,9 +88,9 @@ namespace Rift
 			filter.Draw("##Filter", -100.0f);
 
 
-			static ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
-			                               ImGuiTableFlags_Hideable |
-			                               ImGuiTableFlags_SizingStretchProp;
+			static ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable
+			                               | ImGuiTableFlags_Hideable
+			                               | ImGuiTableFlags_SizingStretchProp;
 			ImGui::BeginChild("nodesTableChild",
 			    ImVec2(0.f, Math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
 			if (UI::BeginTable("nodesTable", 3, flags))
@@ -156,8 +157,8 @@ namespace Rift
 			}
 		}
 
-		if (!filter.PassFilter(idText.c_str(), idText.c_str() + idText.size()) &&
-		    !filter.PassFilter(name.c_str(), name.c_str() + name.size()))
+		if (!filter.PassFilter(idText.c_str(), idText.c_str() + idText.size())
+		    && !filter.PassFilter(name.c_str(), name.c_str() + name.size()))
 		{
 			return;
 		}

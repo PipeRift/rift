@@ -28,14 +28,14 @@ namespace Rift
 
 		ImGui::PushID(identifier);
 
-		static const LinearColor color = Color(230, 69, 69);
+		static const Color color{230, 69, 69};
 		static constexpr Color frameBg{122, 59, 41};
 		static constexpr float frameHeight = 20.f;
 
 		UI::TableNextColumn();
 		{    // Custom Selectable
 			auto& style = ImGui::GetStyle();
-			Style::PushHeaderColor(LinearColor::Transparent);
+			Style::PushHeaderColor(LinearColor::Transparent());
 
 			ImRect bb = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
 
@@ -58,7 +58,7 @@ namespace Rift
 				editor.selectedPropertyId = AST::NoId;
 			}
 
-			LinearColor bgColor = color.Darken(0.5f);
+			Color bgColor = color.Shade(0.5f);
 			if (selected)
 			{
 				bgColor = color;
@@ -67,7 +67,7 @@ namespace Rift
 			{
 				bgColor = Style::Hovered(color);
 			}
-			UI::RenderFrame(bb.Min, bb.Max, bgColor.ToColor().DWColor(), false, 3.f);
+			UI::RenderFrame(bb.Min, bb.Max, bgColor.DWColor(), false, 3.f);
 
 			Style::PopHeaderColor();
 		}
@@ -121,14 +121,14 @@ namespace Rift
 
 		ImGui::PushID(identifier);
 
-		static LinearColor color = Color{68, 135, 229};
+		static constexpr Color color{68, 135, 229};
 		static constexpr Color frameBG{41, 75, 122, 138};
 		static constexpr float frameHeight = 20.f;
 
 		UI::TableNextColumn();
 		{    // Custom Selectable
 			auto& style = ImGui::GetStyle();
-			Style::PushHeaderColor(LinearColor::Transparent);
+			Style::PushHeaderColor(LinearColor::Transparent());
 
 			ImRect bb = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
 
@@ -151,7 +151,7 @@ namespace Rift
 				editor.selectedPropertyId = AST::NoId;
 			}
 
-			LinearColor bgColor = color.Darken(0.5f);
+			Color bgColor = color.Shade(0.5f);
 			if (selected)
 			{
 				bgColor = color;
@@ -160,7 +160,7 @@ namespace Rift
 			{
 				bgColor = Style::Hovered(color);
 			}
-			ImGui::RenderFrame(bb.Min, bb.Max, bgColor.ToColor().DWColor(), false, 3.f);
+			ImGui::RenderFrame(bb.Min, bb.Max, bgColor.DWColor(), false, 3.f);
 
 			Style::PopHeaderColor();
 		}
@@ -225,9 +225,9 @@ namespace Rift
 
 	void DrawFunctions(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId)
 	{
-		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen |
-		                                 ImGuiTreeNodeFlags_AllowItemOverlap |
-		                                 ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
+		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen
+		                                 | ImGuiTreeNodeFlags_AllowItemOverlap
+		                                 | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
 		if (UI::CollapsingHeader("Functions", flags))
 		{
 			auto functionView = ast.MakeView<CFunctionDecl>();

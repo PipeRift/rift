@@ -14,7 +14,7 @@ namespace Rift::Serl
 		auto* astCt = dynamic_cast<ASTReadContext*>(&ct);
 		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTReadContext"))
 		{
-			i64 dataId;
+			u32 dataId;
 			astCt->Serialize(dataId);
 
 			if (dataId >= 0) [[likely]]
@@ -36,7 +36,7 @@ namespace Rift::Serl
 			const u32* dataId = astCt->GetASTIdToIndexes().Find(val);
 			if (dataId) [[likely]]
 			{
-				astCt->Serialize(i64(*dataId));
+				astCt->Serialize(*dataId);
 			}
 			else
 			{

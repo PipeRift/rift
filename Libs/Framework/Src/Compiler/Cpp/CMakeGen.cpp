@@ -30,18 +30,12 @@ namespace Rift::Compiler::Cpp
 		StringView targetType;
 		switch (type)
 		{
-			case ModuleTarget::Shared:
-				targetType = "SHARED";
-				break;
-			case ModuleTarget::Static:
-				targetType = "STATIC";
-				break;
+			case ModuleTarget::Shared: targetType = "SHARED"; break;
+			case ModuleTarget::Static: targetType = "STATIC"; break;
 			// case ModuleTarget::Interface:
 			// targetType = "INTERFACE";
 			// break;
-			default:
-				context.AddError("Failed to add CMake library. Invalid ModuleTarget");
-				return;
+			default: context.AddError("Failed to add CMake library. Invalid ModuleTarget"); return;
 		}
 
 		Strings::FormatTo(code,

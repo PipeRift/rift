@@ -16,9 +16,9 @@
 #include <Files/FileDialog.h>
 #include <Framework/Paths.h>
 #include <GLFW/glfw3.h>
+#include <imgui_internal.h>
 #include <RiftContext.h>
 #include <Strings/FixedString.h>
-#include <imgui_internal.h>
 
 
 namespace Rift
@@ -35,10 +35,10 @@ namespace Rift
 			{
 				if (UI::BeginMenu("Filter"))
 				{
-					UI::CheckboxFlags("Classes", (u32*) &filter, *Filter::Classes);
-					UI::CheckboxFlags("Structs", (u32*) &filter, *Filter::Structs);
+					UI::CheckboxFlags("Classes", (u32*)&filter, *Filter::Classes);
+					UI::CheckboxFlags("Structs", (u32*)&filter, *Filter::Structs);
 					UI::CheckboxFlags(
-					    "Function Libraries", (u32*) &filter, *Filter::FunctionLibraries);
+					    "Function Libraries", (u32*)&filter, *Filter::FunctionLibraries);
 					UI::EndMenu();
 				}
 				UI::EndMenuBar();
@@ -361,8 +361,11 @@ namespace Rift
 	void FileExplorerPanel::CreateType(
 	    AST::Tree& ast, StringView title, TypeCategory category, Path path)
 	{
-		const Path filename = Dialogs::SaveFile(
-		    title, path, {{"Rift Type", Strings::Format("*.{}", Paths::typeExtension)}}, true);
+		const Path filename = Dialogs::SaveFile(title, path,
+		    {
+		        {"Rift Type", Strings::Format("*.{}", Paths::typeExtension)}
+        },
+		    true);
 
 		AST::Id tmpType = ast.Create();
 		Types::InitFromCategory(ast, tmpType, category);

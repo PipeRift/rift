@@ -190,7 +190,7 @@ namespace Rift::UI
 		}
 
 		UI::PushStyleVar(ImGuiStyleVar_CellPadding, {16.f, 4.f});
-		UI::PushStyleColor(ImGuiCol_FrameBg, ImVec4(Color::Transparent));
+		UI::PushStyleColor(ImGuiCol_FrameBg, LinearColor::Transparent());
 
 		UI::SetNextItemWidth(-FLT_MIN);
 		UI::AlignTextToFramePadding();

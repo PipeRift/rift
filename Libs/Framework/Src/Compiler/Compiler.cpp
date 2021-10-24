@@ -21,14 +21,9 @@ namespace Rift::Compiler
 		// Early backend check
 		switch (backend)
 		{
-			case EBackend::Cpp:
-				break;
-			case EBackend::LLVM:
-				context.AddError("LLVM backend is not yet supported.");
-				return;
-			default:
-				context.AddError("Unknown backend.");
-				return;
+			case EBackend::Cpp: break;
+			case EBackend::LLVM: context.AddError("LLVM backend is not yet supported."); return;
+			default: context.AddError("Unknown backend."); return;
 		}
 
 		LoadSystem::Init(ast);
@@ -53,9 +48,7 @@ namespace Rift::Compiler
 
 		switch (backend)
 		{
-			case EBackend::Cpp:
-				Cpp::Build(context);
-				break;
+			case EBackend::Cpp: Cpp::Build(context); break;
 		}
 	}
 }    // namespace Rift::Compiler

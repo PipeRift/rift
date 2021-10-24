@@ -35,7 +35,7 @@ namespace Rift::TypeSystem
 
 		// Cache existing types
 		auto onlyTypesView = ast.MakeView<const CType>();
-		typeList.types.Reserve(onlyTypesView.Size());
+		typeList.types.Reserve(u32(onlyTypesView.Size()));
 
 		auto typesView = ast.MakeView<const CType, const CIdentifier>();
 		for (AST::Id typeId : typesView)

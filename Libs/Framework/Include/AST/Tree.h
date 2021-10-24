@@ -35,14 +35,14 @@ namespace Rift::AST
 #pragma region ECS API
 		Id Create();
 		Id Create(const Id hint);
-		template <typename It>
+		template<typename It>
 		void Create(It first, It last)
 		{
 			registry.create(first, last);
 		}
 		void Destroy(const Id node);
 		void Destroy(const Id node, const VersionType version);
-		template <typename It>
+		template<typename It>
 		void Destroy(It first, It last)
 		{
 			registry.destroy(first, last);
@@ -51,13 +51,13 @@ namespace Rift::AST
 		/**
 		 * Adds Component to an entity (if the entity doesnt have it already)
 		 */
-		template <typename Component, typename... Args>
+		template<typename Component, typename... Args>
 		decltype(auto) Add(Id node, Args&&... args)
 		{
 			return registry.emplace<Component>(node, Forward<Args>(args)...);
 		}
 
-		template <typename... Components>
+		template<typename... Components>
 		void Add(Id node) requires(sizeof...(Components) > 1)
 		{
 			(Add<Components>(node), ...);
@@ -66,7 +66,7 @@ namespace Rift::AST
 		/**
 		 * If the entity has Component, it will be replaced
 		 */
-		template <typename Component, typename... Args>
+		template<typename Component, typename... Args>
 		decltype(auto) Replace(Id node, Args&&... args)
 		{
 			return registry.replace<Component>(node, Forward<Args>(args)...);
@@ -75,13 +75,13 @@ namespace Rift::AST
 		/**
 		 * Adds Component to an entity (if the entity already has it, it will be replaced)
 		 */
-		template <typename Component, typename... Args>
+		template<typename Component, typename... Args>
 		decltype(auto) Emplace(Id node, Args&&... args)
 		{
 			return registry.emplace_or_replace<Component>(node, Forward<Args>(args)...);
 		}
 
-		template <typename... Component>
+		template<typename... Component>
 		void Remove(const Id node)
 		{
 			registry.remove<Component...>(node);
@@ -92,50 +92,50 @@ namespace Rift::AST
 			registry.remove_all(node);
 		}
 
-		template <typename... Component>
+		template<typename... Component>
 		decltype(auto) Get(const Id node) const
 		{
 			return registry.get<Component...>(node);
 		}
 
-		template <typename... Component>
+		template<typename... Component>
 		decltype(auto) Get(const Id node)
 		{
 			return registry.get<Component...>(node);
 		}
 
-		template <typename... Component>
+		template<typename... Component>
 		decltype(auto) TryGet(const Id node) const
 		{
 			return registry.try_get<Component...>(node);
 		}
 
-		template <typename... Component>
+		template<typename... Component>
 		decltype(auto) TryGet(const Id node)
 		{
 			return registry.try_get<Component...>(node);
 		}
 
-		template <typename Component, typename... Args>
+		template<typename Component, typename... Args>
 		auto& GetOrAdd(const Id node, Args&&... args)
 		{
 			return registry.get_or_emplace<Component>(node, Forward<Args>(args)...);
 		}
 
 
-		template <typename... Component>
+		template<typename... Component>
 		bool HasAny(Id node) const
 		{
 			return registry.any_of<Component...>(node);
 		}
 
-		template <typename... Component>
+		template<typename... Component>
 		bool HasAll(Id node) const
 		{
 			return registry.all_of<Component...>(node);
 		}
 
-		template <typename Component>
+		template<typename Component>
 		bool Has(Id node) const
 		{
 			return HasAny<Component>(node);
@@ -147,13 +147,13 @@ namespace Rift::AST
 		}
 
 
-		template <typename Component, typename... Args>
+		template<typename Component, typename... Args>
 		Component& SetUnique(Args&&... args)
 		{
 			return registry.set<Component>(std::forward<Args>(args)...);
 		}
 
-		template <typename Component, typename... Args>
+		template<typename Component, typename... Args>
 		Component& GetOrSetUnique(Args&&... args)
 		{
 			if (Component* existing = TryGetUnique<Component>())
@@ -163,38 +163,38 @@ namespace Rift::AST
 			return SetUnique<Component>(std::forward<Args>(args)...);
 		}
 
-		template <typename Component>
+		template<typename Component>
 		const Component& GetUnique() const
 		{
 			return registry.ctx<const Component>();
 		}
 
-		template <typename Component>
+		template<typename Component>
 		Component& GetUnique()
 		{
 			return registry.ctx<Component>();
 		}
 
-		template <typename Component>
+		template<typename Component>
 		const Component* TryGetUnique() const
 		{
 			return registry.try_ctx<const Component>();
 		}
 
-		template <typename Component>
+		template<typename Component>
 		Component* TryGetUnique()
 		{
 			return registry.try_ctx<Component>();
 		}
 
-		template <typename Component>
+		template<typename Component>
 		bool HasUnique() const
 		{
 			return TryGetUnique<const Component>() != nullptr;
 		}
 
 
-		template <typename... Component, typename... Exclude>
+		template<typename... Component, typename... Exclude>
 		auto MakeView(TExclude<Exclude...> excluded = {}) const
 		    -> View<TExclude<Exclude...>, std::add_const_t<Component>...>
 		{
@@ -202,26 +202,26 @@ namespace Rift::AST
 			    registry.view<Component...>(excluded)};
 		}
 
-		template <typename... Component, typename... Exclude>
+		template<typename... Component, typename... Exclude>
 		auto MakeView(TExclude<Exclude...> excluded = {})
 		    -> View<TExclude<Exclude...>, Component...>
 		{
 			return View<TExclude<Exclude...>, Component...>{registry.view<Component...>(excluded)};
 		}
 
-		template <typename Callback>
+		template<typename Callback>
 		void Each(Callback cb) const
 		{
 			registry.each(cb);
 		}
 
-		template <typename Callback>
+		template<typename Callback>
 		void EachOrphan(Callback cb) const
 		{
 			registry.orphans(cb);
 		}
 
-		template <typename... Components>
+		template<typename... Components>
 		void Clear()
 		{
 			registry.clear<Components...>();
@@ -253,19 +253,19 @@ namespace Rift::AST
 			return *childView;
 		}
 
-		template <typename Component>
+		template<typename Component>
 		auto OnConstruct()
 		{
 			return registry.on_construct<Component>();
 		}
 
-		template <typename Component>
+		template<typename Component>
 		auto OnDestroy()
 		{
 			return registry.on_destroy<Component>();
 		}
 
-		template <typename Component>
+		template<typename Component>
 		auto OnUpdate()
 		{
 			return registry.on_update<Component>();
@@ -280,7 +280,7 @@ namespace Rift::AST
 			return registry;
 		}
 
-		template <typename Component>
+		template<typename Component>
 		AST::Id GetFirstId() const
 		{
 			auto view = MakeView<Component>();

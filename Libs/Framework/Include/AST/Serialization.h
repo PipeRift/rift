@@ -18,8 +18,7 @@ namespace Rift
 
 	public:
 		ASTReadContext(const Serl::ReadContext& parent, AST::Tree& ast)
-		    : Serl::ReadContext(parent)
-		    , ast(ast)
+		    : Serl::ReadContext(parent), ast(ast)
 		{}
 
 		void SerializeRoots(TArray<AST::Id>& roots);
@@ -51,9 +50,7 @@ namespace Rift
 	public:
 		ASTWriteContext(
 		    const Serl::WriteContext& parent, AST::Tree& ast, bool includeChildren = true)
-		    : Serl::WriteContext(parent)
-		    , ast(ast)
-		    , includeChildren{includeChildren}
+		    : Serl::WriteContext(parent), ast(ast), includeChildren{includeChildren}
 		{}
 
 		void SerializeRoots(const TArray<AST::Id>& roots);
