@@ -32,6 +32,8 @@ void Rift::GraphPlayground::Draw(AST::Tree& ast, DockSpaceLayout& layout)
 		static String stringValue;
 		Graph::DrawStringLiteralNode(AST::Id(1), stringValue);
 
+		Graph::DrawCallNode(AST::Id(958), "Update");
+
 		ImNodes::MiniMap(0.2f, ImNodesMiniMapLocation_TopRight);
 		ImNodes::EndNodeEditor();
 		Graph::PopNodeStyle();

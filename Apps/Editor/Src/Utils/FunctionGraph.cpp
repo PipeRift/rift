@@ -1,9 +1,8 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Utils/FunctionGraph.h"
-
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
+#include "Utils/FunctionGraph.h"
 #include "Utils/GraphColors.h"
 #include "Utils/TypeUtils.h"
 
@@ -227,6 +226,35 @@ namespace Rift::Graph
 		DrawFunctionEntry(ast, functionId);
 	}
 
+	void DrawCallNode(AST::Id id, StringView name)
+	{
+		static constexpr Color color = GetTypeColor<bool>();
+		static constexpr Color bodyColor{Style::GetNeutralColor(0)};
+
+		ImNodes::PushColorStyle(ImNodesCol_TitleBar, color.ToPackedABGR());
+		ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, color.ToPackedABGR());
+		ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, color.ToPackedABGR());
+		ImNodes::PushColorStyle(ImNodesCol_NodeBackground, bodyColor.ToPackedABGR());
+		ImNodes::PushColorStyle(ImNodesCol_NodeBackgroundHovered, bodyColor.ToPackedABGR());
+		ImNodes::PushColorStyle(ImNodesCol_NodeBackgroundSelected, bodyColor.ToPackedABGR());
+
+
+		ImNodes::BeginNode(i32(id));
+		{
+			ImNodes::BeginNodeTitleBar();
+			UI::Text(name.data());
+			ImNodes::EndNodeTitleBar();
+		}
+		ImNodes::EndNode();
+
+		ImNodes::PopColorStyle();
+		ImNodes::PopColorStyle();
+		ImNodes::PopColorStyle();
+		ImNodes::PopColorStyle();
+		ImNodes::PopColorStyle();
+		ImNodes::PopColorStyle();
+	}
+
 	void DrawBoolLiteralNode(AST::Id id, bool& value)
 	{
 		static constexpr Color color = GetTypeColor<bool>();
@@ -246,14 +274,14 @@ namespace Rift::Graph
 			UI::Checkbox("##value", &value);
 			PopInnerNodeStyle();
 			ImNodes::EndOutputAttribute();
-		}
 
-		const auto* context = ImNodes::GetCurrentContext();
-		if (ImNodes::IsNodeSelected(context->CurrentNodeIdx))
-		{
-			ImNodes::EditorContextGet()
-			    .Nodes.Pool[context->CurrentNodeIdx]
-			    .LayoutStyle.BorderThickness = 2.f;
+			const auto* context = ImNodes::GetCurrentContext();
+			if (ImNodes::IsNodeSelected(context->CurrentNodeIdx))
+			{
+				ImNodes::EditorContextGet()
+				    .Nodes.Pool[context->CurrentNodeIdx]
+				    .LayoutStyle.BorderThickness = 2.f;
+			}
 		}
 		ImNodes::EndNode();
 

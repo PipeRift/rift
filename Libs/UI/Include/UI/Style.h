@@ -8,13 +8,13 @@
 
 namespace Rift::Style
 {
-	const LinearColor primaryColor = LinearColor::FromHEX(0xD6863B);
+	constexpr LinearColor primaryColor = LinearColor::FromHEX(0xD6863B);
 
-	const LinearColor whiteTextColor = LinearColor::White().Shade(0.05f);
-	const LinearColor blackTextColor = LinearColor::Black().Tint(0.05f);
+	constexpr LinearColor whiteTextColor = LinearColor::White().Shade(0.05f);
+	constexpr LinearColor blackTextColor = LinearColor::Black().Tint(0.05f);
 
 
-	inline LinearColor GetNeutralColor(u8 level)
+	constexpr LinearColor GetNeutralColor(u8 level)
 	{
 		switch (level)
 		{
