@@ -72,12 +72,12 @@ namespace Rift::UI
 		UI::PushStyleColor(ImGuiCol_TitleBgCollapsed, Style::Disabled(titleColor));
 
 		LinearColor tabColorActive = Style::GetNeutralColor(1);
-		LinearColor tabColor       = Style::GetNeutralColor(2);
+		LinearColor tabColor       = Style::Disabled(tabColorActive);
 		UI::PushStyleColor(ImGuiCol_Tab, tabColor);
 		UI::PushStyleColor(ImGuiCol_TabActive, tabColorActive);
 		UI::PushStyleColor(ImGuiCol_TabUnfocused, tabColor);
 		UI::PushStyleColor(ImGuiCol_TabUnfocusedActive, tabColorActive);
-		UI::PushStyleColor(ImGuiCol_TabHovered, Style::Hovered(tabColor));
+		UI::PushStyleColor(ImGuiCol_TabHovered, Style::Hovered(tabColorActive));
 		Style::PushTextColor(Style::GetNeutralTextColor(1));
 
 		const bool value = ImGui::Begin(name, p_open, flags);

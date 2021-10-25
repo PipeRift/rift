@@ -180,8 +180,8 @@ namespace Rift
 			{    // Progress bar
 				const float usedPct = float(arena.GetUsedSize()) / arena.GetBlock().GetSize();
 
-				static const LinearColor lowMemoryColor  = LinearColor::RGB(56, 210, 41);
-				static const LinearColor highMemoryColor = LinearColor::RGB(210, 56, 41);
+				static const LinearColor lowMemoryColor  = LinearColor::FromRGB(56, 210, 41);
+				static const LinearColor highMemoryColor = LinearColor::FromRGB(210, 56, 41);
 				const LinearColor color =
 				    LinearColor::LerpUsingHSV(lowMemoryColor, highMemoryColor, usedPct);
 				UI::PushStyleColor(ImGuiCol_PlotHistogram, color);

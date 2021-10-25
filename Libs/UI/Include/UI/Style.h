@@ -8,7 +8,7 @@
 
 namespace Rift::Style
 {
-	const LinearColor primaryColor = LinearColor::Hex(0xD6863B);
+	const LinearColor primaryColor = LinearColor::FromHEX(0xD6863B);
 
 	const LinearColor whiteTextColor = LinearColor::White().Shade(0.05f);
 	const LinearColor blackTextColor = LinearColor::Black().Tint(0.05f);
@@ -19,17 +19,17 @@ namespace Rift::Style
 		switch (level)
 		{
 			default:
-			case 0: return LinearColor::Hex(0x222222);
-			case 1: return LinearColor::Hex(0x3B3B3B);
-			case 2: return LinearColor::Hex(0x464646);
-			case 3: return LinearColor::Hex(0x515151);
-			case 4: return LinearColor::Hex(0x626262);
-			case 5: return LinearColor::Hex(0x6E6E6E);
-			case 6: return LinearColor::Hex(0x9E9E9E);
-			case 7: return LinearColor::Hex(0xB1B1B1);
-			case 8: return LinearColor::Hex(0xCFCFCF);
-			case 9: return LinearColor::Hex(0xE1E1E1);
-			case 10: return LinearColor::Hex(0xF7F7F7);
+			case 0: return LinearColor::FromHEX(0x222222);
+			case 1: return LinearColor::FromHEX(0x3B3B3B);
+			case 2: return LinearColor::FromHEX(0x464646);
+			case 3: return LinearColor::FromHEX(0x515151);
+			case 4: return LinearColor::FromHEX(0x626262);
+			case 5: return LinearColor::FromHEX(0x6E6E6E);
+			case 6: return LinearColor::FromHEX(0x9E9E9E);
+			case 7: return LinearColor::FromHEX(0xB1B1B1);
+			case 8: return LinearColor::FromHEX(0xCFCFCF);
+			case 9: return LinearColor::FromHEX(0xE1E1E1);
+			case 10: return LinearColor::FromHEX(0xF7F7F7);
 		}
 	}
 	inline LinearColor GetNeutralTextColor(u8 level)
@@ -88,6 +88,6 @@ namespace Rift::Style
 	template<ColorMode mode>
 	TColor<mode> Disabled(const TColor<mode>& color)
 	{
-		return color.Shade(0.3f);
+		return color.Shade(0.2f);
 	}
 };

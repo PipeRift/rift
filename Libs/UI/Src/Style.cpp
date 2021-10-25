@@ -143,11 +143,12 @@ namespace Rift::Style
 		ImGui::StyleColorsDark();
 		auto& style = ImGui::GetStyle();
 
-		style.WindowRounding           = 0;
+		style.WindowRounding           = 1;
 		style.FramePadding             = ImVec2(2.f, 4.5f);
 		style.TabRounding              = 0;
 		style.ScrollbarRounding        = 2;
 		style.WindowMenuButtonPosition = ImGuiDir_Right;
+		style.PopupBorderSize          = 0.f;
 
 
 		ImVec4* colors = style.Colors;
@@ -158,6 +159,7 @@ namespace Rift::Style
 		colors[ImGuiCol_TitleBgCollapsed] = Disabled(titleColor);
 
 		colors[ImGuiCol_WindowBg] = GetNeutralColor(1);
+		colors[ImGuiCol_Border]   = GetNeutralColor(0);
 
 		colors[ImGuiCol_CheckMark]        = whiteTextColor;
 		colors[ImGuiCol_SliderGrabActive] = GetNeutralColor(5);
@@ -186,7 +188,7 @@ namespace Rift::Style
 
 		colors[ImGuiCol_ModalWindowDimBg] = primaryColor.Shade(0.5f).Translucency(0.05f);
 
-		PushButtonColor(GetNeutralColor(4));
+		PushButtonColor(GetNeutralColor(5));
 		PushFrameBgColor(GetNeutralColor(3));
 		PushHeaderColor();
 

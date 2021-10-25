@@ -7,7 +7,7 @@
     "components": {
         "CChild": {
             "0": {
-                "parent": 0
+                "parent": -1
             },
             "1": {
                 "parent": 0

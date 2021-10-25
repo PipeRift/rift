@@ -8,30 +8,30 @@
 
 namespace Rift::Graph
 {
-	constexpr Color selectedColor{Color::Hex(0xdba43f)};
+	constexpr Color selectedColor{Color::FromHEX(0xdba43f)};
 
 	template<typename T>
 	constexpr Color GetTypeColor()
 	{
 		if (IsSame<T, bool>)
 		{
-			return Color::Hex(0xF94144);
+			return Color::FromHEX(0xF94144);
 		}
 		else if (FloatingPoint<T>)
 		{
-			return Color::Hex(0x90BE6D);
+			return Color::FromHEX(0x90BE6D);
 		}
 		else if (SignedIntegral<T>)
 		{
-			return Color::Hex(0x43AA8B);
+			return Color::FromHEX(0x43AA8B);
 		}
 		else if (UnsignedIntegral<T>)
 		{
-			return Color::Hex(0x4D908E);
+			return Color::FromHEX(0x4D908E);
 		}
 		else if (IsSame<T, String>)
 		{
-			return Color::Hex(0xD44BFA);
+			return Color::FromHEX(0xD44BFA);
 		}
 		return Color::Gray();
 	};
