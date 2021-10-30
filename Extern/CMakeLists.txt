@@ -37,10 +37,3 @@ target_sources(imgui PRIVATE
 rift_target_enable_CPP20(imgui)
 set_target_properties (imgui PROPERTIES FOLDER Extern)
 target_link_libraries(imgui PRIVATE glfw gl3w)
-
-add_library(imnodes STATIC)
-target_include_directories(imnodes PUBLIC imnodes)
-target_sources(imnodes PRIVATE imnodes/imnodes.cpp)
-target_link_libraries(imnodes PRIVATE imgui)
-target_compile_definitions(imnodes PRIVATE _CRT_SECURE_NO_WARNINGS)
-

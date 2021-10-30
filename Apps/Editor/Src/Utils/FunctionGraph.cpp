@@ -11,18 +11,20 @@
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Linkage.h>
 #include <AST/Uniques/CTypeListUnique.h>
-#include <imnodes.h>
-#include <imnodes_internal.h>
+#include <UI/Nodes.h>
+#include <UI/NodesInternal.h>
 #include <UI/Style.h>
 
 
 namespace Rift::Graph
 {
+	using namespace Nodes;
+
 	void Settings::SetGridSize(float size)
 	{
 		gridSize                        = size;
 		invGridSize                     = 1.f / size;
-		ImNodes::GetStyle().GridSpacing = size;
+		Nodes::GetStyle().GridSpacing   = size;
 	}
 
 	float Settings::GetGridSize() const
@@ -48,28 +50,27 @@ namespace Rift::Graph
 
 	void Graph::Init()
 	{
-		ImNodes::CreateContext();
+		Nodes::CreateContext();
 		settings.SetGridSize(settings.GetGridSize());
 	}
 
 	void Graph::Shutdown()
 	{
-		ImNodes::DestroyContext();
+		Nodes::DestroyContext();
 	}
 
 
 	void PushNodeStyle()
 	{
-		ImNodes::GetStyle().Flags |= ImNodesStyleFlags_GridLines
-		                             | ImNodesStyleFlags_GridLinesPrimary
-		                             | ImNodesStyleFlags_GridSnappingOnRelease;
+		Nodes::GetStyle().Flags |=
+		    StyleFlags_GridLines | StyleFlags_GridLinesPrimary | StyleFlags_GridSnappingOnRelease;
 
-		ImNodes::PushStyleVar(ImNodesStyleVar_PinLineThickness, 2.5f);
-		ImNodes::PushStyleVar(ImNodesStyleVar_NodeCornerRounding, 1.f);
-		ImNodes::PushStyleVar(ImNodesStyleVar_PinQuadSideLength, 10.f);
-		ImNodes::PushStyleVar(ImNodesStyleVar_NodePadding, v2(4.f, 1.f));
+		Nodes::PushStyleVar(StyleVar_PinLineThickness, 2.5f);
+		Nodes::PushStyleVar(StyleVar_NodeCornerRounding, 1.f);
+		Nodes::PushStyleVar(StyleVar_PinQuadSideLength, 10.f);
+		Nodes::PushStyleVar(StyleVar_NodePadding, v2(10.f, 2.f));
 
-		ImNodes::PushStyleVar(ImNodesStyleVar_NodeBorderThickness, 0.f);
+		Nodes::PushStyleVar(StyleVar_NodeBorderThickness, 0.f);
 
 		// Style::PushStyleCompact();
 	}
@@ -77,7 +78,7 @@ namespace Rift::Graph
 	void PopNodeStyle()
 	{
 		// Style::PopStyleCompact();
-		ImNodes::PopStyleVar(4);
+		Nodes::PopStyleVar(4);
 	}
 
 	void PushInnerNodeStyle()
@@ -149,9 +150,9 @@ namespace Rift::Graph
 		{
 			PushNodeStyle();
 
-			ImNodes::BeginNodeEditor();
+			Nodes::BeginNodeEditor();
 
-			if (!ImGui::IsAnyItemHovered() && ImNodes::IsEditorHovered()
+			if (!ImGui::IsAnyItemHovered() && Nodes::IsEditorHovered()
 			    && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
 			{
 				wantsToOpenContextMenu = true;
@@ -167,8 +168,8 @@ namespace Rift::Graph
 				}
 			}
 
-			ImNodes::MiniMap(0.2f, ImNodesMiniMapLocation_TopRight);
-			ImNodes::EndNodeEditor();
+			Nodes::MiniMap(0.2f, MiniMapLocation_TopRight);
+			Nodes::EndNodeEditor();
 			PopNodeStyle();
 
 			if (wantsToOpenContextMenu)
@@ -182,7 +183,7 @@ namespace Rift::Graph
 
 	void DrawFunctionEntry(AST::Tree& ast, AST::Id functionId)
 	{
-		auto* imnodes = ImNodes::GetCurrentContext();
+		auto* nodes = Nodes::GetCurrentContext();
 
 		Name name;
 		if (auto* identifier = ast.TryGet<CIdentifier>(functionId))
@@ -192,29 +193,29 @@ namespace Rift::Graph
 
 		auto& transform = ast.GetOrAdd<CGraphTransform>(functionId);
 		if (UI::IsWindowAppearing()
-		    && !(imnodes->LeftMouseDragging && ImNodes::IsNodeSelected(i32(functionId))))
+		    && !(nodes->LeftMouseDragging && Nodes::IsNodeSelected(i32(functionId))))
 		{
 			SetNodePosition(functionId, transform.position);
 		}
 
-		ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(191, 56, 11, 255));
-		ImNodes::BeginNode(i32(functionId));
+		Nodes::PushColorStyle(ColorVar_TitleBar, IM_COL32(191, 56, 11, 255));
+		Nodes::BeginNode(i32(functionId));
 
-		ImNodes::BeginNodeTitleBar();
+		Nodes::BeginNodeTitleBar();
 		UI::Text(name.ToString().c_str());
-		ImNodes::EndNodeTitleBar();
+		Nodes::EndNodeTitleBar();
 
 		UI::BeginGroup();    // Outputs
 		{
-			ImNodes::BeginOutputAttribute(i32(functionId), ImNodesPinShape_QuadFilled);
-			ImNodes::EndOutputAttribute();
+			Nodes::BeginOutputAttribute(i32(functionId), PinShape_QuadFilled);
+			Nodes::EndOutputAttribute();
 		}
 		UI::EndGroup();
 
-		ImNodes::EndNode();
-		ImNodes::PopColorStyle();
+		Nodes::EndNode();
+		Nodes::PopColorStyle();
 
-		if (imnodes->LeftMouseDragging || imnodes->LeftMouseReleased)
+		if (nodes->LeftMouseDragging || nodes->LeftMouseReleased)
 		{
 			transform.position = GetNodePosition(functionId);
 			Types::Changed(AST::GetLinkedParent(ast, functionId), "Moved nodes");
@@ -228,31 +229,47 @@ namespace Rift::Graph
 
 	void DrawCallNode(AST::Id id, StringView name)
 	{
-		static constexpr Color color = GetTypeColor<bool>();
-		static constexpr Color bodyColor{Style::GetNeutralColor(0)};
+		static constexpr Color headerColor = Rift::Style::GetNeutralColor(2);
+		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
 
-		ImNodes::PushColorStyle(ImNodesCol_TitleBar, color.ToPackedABGR());
-		ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, color.ToPackedABGR());
-		ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, color.ToPackedABGR());
-		ImNodes::PushColorStyle(ImNodesCol_NodeBackground, bodyColor.ToPackedABGR());
-		ImNodes::PushColorStyle(ImNodesCol_NodeBackgroundHovered, bodyColor.ToPackedABGR());
-		ImNodes::PushColorStyle(ImNodesCol_NodeBackgroundSelected, bodyColor.ToPackedABGR());
+		Nodes::PushColorStyle(ColorVar_NodeBackground, bodyColor.ToPackedABGR());
+		Nodes::PushColorStyle(ColorVar_NodeBackgroundHovered, bodyColor.ToPackedABGR());
+		Nodes::PushColorStyle(ColorVar_NodeBackgroundSelected, bodyColor.ToPackedABGR());
 
 
-		ImNodes::BeginNode(i32(id));
+		Nodes::BeginNode(i32(id));
 		{
-			ImNodes::BeginNodeTitleBar();
-			UI::Text(name.data());
-			ImNodes::EndNodeTitleBar();
-		}
-		ImNodes::EndNode();
+			ImGui::BeginGroup();
+			{
+				static constexpr Color color = executionColor;
+				Nodes::PushColorStyle(ColorVar_Pin, color.ToPackedABGR());
+				Nodes::PushColorStyle(ColorVar_PinHovered, GetHovered(color).ToPackedABGR());
 
-		ImNodes::PopColorStyle();
-		ImNodes::PopColorStyle();
-		ImNodes::PopColorStyle();
-		ImNodes::PopColorStyle();
-		ImNodes::PopColorStyle();
-		ImNodes::PopColorStyle();
+				Nodes::BeginInputAttribute(i32(id), PinShape_QuadFilled);
+				UI::Text("");
+				Nodes::EndInputAttribute();
+				UI::SameLine();
+				UI::Text(name.data());
+				UI::SameLine();
+				Nodes::BeginOutputAttribute(i32(id) + 1, PinShape_QuadFilled);
+				UI::Text("");
+				Nodes::EndOutputAttribute();
+
+				Nodes::PopColorStyle();
+				Nodes::PopColorStyle();
+			}
+			ImGui::EndGroup();
+
+			ImRect headerRect{ImGui::GetItemRectMin(), ImGui::GetItemRectMax()};
+			NodeData& node = Nodes::EditorContextGet().Nodes.Pool[GNodes->CurrentNodeIdx];
+			headerRect.Expand(node.LayoutStyle.Padding);
+			ImGui::ItemAdd(headerRect, ImGui::GetID("title_bar"));
+		}
+		Nodes::EndNode();
+
+		Nodes::PopColorStyle();
+		Nodes::PopColorStyle();
+		Nodes::PopColorStyle();
 	}
 
 	void DrawBoolLiteralNode(AST::Id id, bool& value)
@@ -260,37 +277,37 @@ namespace Rift::Graph
 		static constexpr Color color = GetTypeColor<bool>();
 		static const Color darkColor = GetHovered(color);
 
-		ImNodes::PushColorStyle(ImNodesCol_NodeBackground, color.ToPackedABGR());
-		ImNodes::PushColorStyle(ImNodesCol_NodeBackgroundHovered, darkColor.ToPackedABGR());
-		ImNodes::PushColorStyle(ImNodesCol_NodeBackgroundSelected, color.ToPackedABGR());
-		ImNodes::PushColorStyle(ImNodesCol_NodeOutline, selectedColor.ToPackedABGR());
-		ImNodes::PushColorStyle(ImNodesCol_Pin, color.ToPackedABGR());
-		ImNodes::PushColorStyle(ImNodesCol_PinHovered, darkColor.ToPackedABGR());
+		Nodes::PushColorStyle(ColorVar_NodeBackground, color.ToPackedABGR());
+		Nodes::PushColorStyle(ColorVar_NodeBackgroundHovered, darkColor.ToPackedABGR());
+		Nodes::PushColorStyle(ColorVar_NodeBackgroundSelected, color.ToPackedABGR());
+		Nodes::PushColorStyle(ColorVar_NodeOutline, selectedColor.ToPackedABGR());
+		Nodes::PushColorStyle(ColorVar_Pin, color.ToPackedABGR());
+		Nodes::PushColorStyle(ColorVar_PinHovered, darkColor.ToPackedABGR());
 
-		ImNodes::BeginNode(i32(id));
+		Nodes::BeginNode(i32(id));
 		{
-			ImNodes::BeginOutputAttribute(i32(id), ImNodesPinShape_CircleFilled);
+			Nodes::BeginOutputAttribute(i32(id), PinShape_CircleFilled);
 			PushInnerNodeStyle();
 			UI::Checkbox("##value", &value);
 			PopInnerNodeStyle();
-			ImNodes::EndOutputAttribute();
+			Nodes::EndOutputAttribute();
 
-			const auto* context = ImNodes::GetCurrentContext();
-			if (ImNodes::IsNodeSelected(context->CurrentNodeIdx))
+			const auto* context = Nodes::GetCurrentContext();
+			if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
 			{
-				ImNodes::EditorContextGet()
+				Nodes::EditorContextGet()
 				    .Nodes.Pool[context->CurrentNodeIdx]
 				    .LayoutStyle.BorderThickness = 2.f;
 			}
 		}
-		ImNodes::EndNode();
+		Nodes::EndNode();
 
-		ImNodes::PopColorStyle();
-		ImNodes::PopColorStyle();
-		ImNodes::PopColorStyle();
-		ImNodes::PopColorStyle();
-		ImNodes::PopColorStyle();
-		ImNodes::PopColorStyle();
+		Nodes::PopColorStyle();
+		Nodes::PopColorStyle();
+		Nodes::PopColorStyle();
+		Nodes::PopColorStyle();
+		Nodes::PopColorStyle();
+		Nodes::PopColorStyle();
 	}
 
 	void DrawStringLiteralNode(AST::Id id, String& value)
@@ -298,16 +315,16 @@ namespace Rift::Graph
 		static constexpr Color color = GetTypeColor<String>();
 		static const Color darkColor = GetHovered(color);
 
-		ImNodes::PushColorStyle(ImNodesCol_NodeBackground, color.ToPackedABGR());
-		ImNodes::PushColorStyle(ImNodesCol_NodeBackgroundHovered, darkColor.ToPackedABGR());
-		ImNodes::PushColorStyle(ImNodesCol_NodeBackgroundSelected, color.ToPackedABGR());
-		ImNodes::PushColorStyle(ImNodesCol_NodeOutline, selectedColor.ToPackedABGR());
-		ImNodes::PushColorStyle(ImNodesCol_Pin, color.ToPackedABGR());
-		ImNodes::PushColorStyle(ImNodesCol_PinHovered, darkColor.ToPackedABGR());
+		Nodes::PushColorStyle(ColorVar_NodeBackground, color.ToPackedABGR());
+		Nodes::PushColorStyle(ColorVar_NodeBackgroundHovered, darkColor.ToPackedABGR());
+		Nodes::PushColorStyle(ColorVar_NodeBackgroundSelected, color.ToPackedABGR());
+		Nodes::PushColorStyle(ColorVar_NodeOutline, selectedColor.ToPackedABGR());
+		Nodes::PushColorStyle(ColorVar_Pin, color.ToPackedABGR());
+		Nodes::PushColorStyle(ColorVar_PinHovered, darkColor.ToPackedABGR());
 
-		ImNodes::BeginNode(i32(id));
+		Nodes::BeginNode(i32(id));
 		{
-			ImNodes::BeginOutputAttribute(i32(id), ImNodesPinShape_CircleFilled);
+			Nodes::BeginOutputAttribute(i32(id), PinShape_CircleFilled);
 			PushInnerNodeStyle();
 
 			ImGuiStyle& style     = ImGui::GetStyle();
@@ -316,35 +333,35 @@ namespace Rift::Graph
 			const v2 size{Math::Max(minSize.x, textSize.x), Math::Max(minSize.y, textSize.y)};
 			UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
 			PopInnerNodeStyle();
-			ImNodes::EndOutputAttribute();
+			Nodes::EndOutputAttribute();
 		}
 
-		const auto* context = ImNodes::GetCurrentContext();
-		if (ImNodes::IsNodeSelected(context->CurrentNodeIdx))
+		const auto* context = Nodes::GetCurrentContext();
+		if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
 		{
-			ImNodes::EditorContextGet()
+			Nodes::EditorContextGet()
 			    .Nodes.Pool[context->CurrentNodeIdx]
 			    .LayoutStyle.BorderThickness = 2.f;
 		}
-		ImNodes::EndNode();
+		Nodes::EndNode();
 
-		ImNodes::PopColorStyle();
-		ImNodes::PopColorStyle();
-		ImNodes::PopColorStyle();
-		ImNodes::PopColorStyle();
-		ImNodes::PopColorStyle();
-		ImNodes::PopColorStyle();
+		Nodes::PopColorStyle();
+		Nodes::PopColorStyle();
+		Nodes::PopColorStyle();
+		Nodes::PopColorStyle();
+		Nodes::PopColorStyle();
+		Nodes::PopColorStyle();
 	}
 
 	void SetNodePosition(AST::Id id, v2 position)
 	{
 		position *= settings.GetGridSize();
-		ImNodes::SetNodeGridSpacePos(i32(id), position);
+		Nodes::SetNodeGridSpacePos(i32(id), position);
 	}
 
 	v2 GetNodePosition(AST::Id id)
 	{
-		const ImVec2 pos = ImNodes::GetNodeGridSpacePos(i32(id));
+		const ImVec2 pos = Nodes::GetNodeGridSpacePos(i32(id));
 		return {pos.x * settings.GetInvGridSize(), pos.y * settings.GetInvGridSize()};
 	}
 }    // namespace Rift::Graph

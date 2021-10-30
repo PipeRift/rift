@@ -29,6 +29,7 @@
 	}
 
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #include <imgui_internal.h>
 
@@ -71,7 +72,7 @@ namespace Rift::UI
 	{
 		return ImGui::GetID(ptr_id);
 	}
-	inline void PushStyleColor(ImGuiCol idx, ImU32 col)
+	inline void PushStyleColor(ImGuiCol idx, u32 col)
 	{
 		ImGui::PushStyleColor(idx, col);
 	}

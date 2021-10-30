@@ -1,42 +1,45 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Tools/GraphPlayground.h"
-
 #include "DockSpaceLayout.h"
+#include "Tools/GraphPlayground.h"
 #include "Uniques/CEditorUnique.h"
 #include "Utils/FunctionGraph.h"
 
-#include <imnodes.h>
+#include <UI/Nodes.h>
 
-
-void Rift::GraphPlayground::Draw(AST::Tree& ast, DockSpaceLayout& layout)
+namespace Rift
 {
-	if (!open)
-	{
-		return;
-	}
+	using namespace Nodes;
 
-	layout.BindNextWindowToNode(CEditorUnique::centralNode);
-	if (UI::Begin("Graph Playground", &open))
+	void GraphPlayground::Draw(AST::Tree& ast, DockSpaceLayout& layout)
 	{
-		Graph::PushNodeStyle();
-		ImNodes::BeginNodeEditor();
-
-		if (UI::IsWindowAppearing())
+		if (!open)
 		{
-			Graph::SetNodePosition(AST::Id(0), v2::Zero());
+			return;
 		}
 
-		static bool boolValue = false;
-		Graph::DrawBoolLiteralNode(AST::Id(0), boolValue);
-		static String stringValue;
-		Graph::DrawStringLiteralNode(AST::Id(1), stringValue);
+		layout.BindNextWindowToNode(CEditorUnique::centralNode);
+		if (UI::Begin("Graph Playground", &open))
+		{
+			Graph::PushNodeStyle();
+			Nodes::BeginNodeEditor();
 
-		Graph::DrawCallNode(AST::Id(958), "Update");
+			if (UI::IsWindowAppearing())
+			{
+				Graph::SetNodePosition(AST::Id(0), v2::Zero());
+			}
 
-		ImNodes::MiniMap(0.2f, ImNodesMiniMapLocation_TopRight);
-		ImNodes::EndNodeEditor();
-		Graph::PopNodeStyle();
+			static bool boolValue = false;
+			Graph::DrawBoolLiteralNode(AST::Id(0), boolValue);
+			static String stringValue;
+			Graph::DrawStringLiteralNode(AST::Id(1), stringValue);
+
+			Graph::DrawCallNode(AST::Id(958), "Update");
+
+			Nodes::MiniMap(0.2f, MiniMapLocation_TopRight);
+			Nodes::EndNodeEditor();
+			Graph::PopNodeStyle();
+		}
+		UI::End();
 	}
-	UI::End();
-}
+}    // namespace Rift

@@ -15,7 +15,6 @@ target_link_libraries(RiftUI PUBLIC
     glfw
     gl3w
     imgui
-    imnodes
 )
 
 install(TARGETS RiftUI
