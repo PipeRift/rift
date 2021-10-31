@@ -1,12 +1,13 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Utils/FunctionGraph.h"
-
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
+#include "Utils/FunctionGraph.h"
 #include "Utils/GraphColors.h"
 #include "Utils/TypeUtils.h"
 
+#include <AST/Components/CBoolLiteral.h>
+#include <AST/Components/CCallExpr.h>
 #include <AST/Components/CFunctionDecl.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/Views/CGraphTransform.h>
@@ -98,7 +99,7 @@ namespace Rift::Graph
 		ImGui::PopStyleVar(2);
 	}
 
-	void DrawContextMenu(AST::Tree& ast)
+	void DrawContextMenu(AST::Tree& ast, AST::Id typeId)
 	{
 		if (ImGui::BeginPopup("GraphContextMenu"))
 		{
@@ -119,7 +120,12 @@ namespace Rift::Graph
 						Strings::FormatTo(makeStr, "Make {}", iden->name);
 						if (filter.PassFilter(makeStr.c_str(), makeStr.c_str() + makeStr.size()))
 						{
-							if (ImGui::MenuItem(makeStr.c_str())) {}
+							if (ImGui::MenuItem(makeStr.c_str()))
+							{
+								AST::Id newId = ast.Create();
+								ast.Add<CBoolLiteral, CGraphTransform>(newId);
+								AST::Link(ast, typeId, newId);
+							}
 						}
 					}
 				}
@@ -130,6 +136,42 @@ namespace Rift::Graph
 				}
 			}
 			ImGui::EndPopup();
+		}
+	}
+
+	void DrawFunctionDecls(AST::Tree& ast, TArray<AST::Id>& children)
+	{
+		auto functions = ast.MakeView<CFunctionDecl>();
+		for (AST::Id child : children)
+		{
+			if (functions.Has(child))
+			{
+				DrawFunctionEntry(ast, child);
+			}
+		}
+	}
+
+	void DrawCalls(AST::Tree& ast, TArray<AST::Id>& children)
+	{
+		auto calls = ast.MakeView<CCallExpr>();
+		for (AST::Id child : children)
+		{
+			if (calls.Has(child))
+			{
+				DrawCallNode(child, "...");
+			}
+		}
+	}
+
+	void DrawLiterals(AST::Tree& ast, TArray<AST::Id>& children)
+	{
+		auto calls = ast.MakeView<CBoolLiteral>();
+		for (AST::Id child : children)
+		{
+			if (auto* literal = calls.TryGet<CBoolLiteral>(child))
+			{
+				DrawBoolLiteralNode(child, literal->value);
+			}
 		}
 	}
 
@@ -159,15 +201,9 @@ namespace Rift::Graph
 				wantsToOpenContextMenu = true;
 			}
 
-
-			auto functions = ast.MakeView<CFunctionDecl>();
-			for (AST::Id child : *children)
-			{
-				if (functions.Has(child))
-				{
-					DrawFunctionNodes(ast, child);
-				}
-			}
+			DrawFunctionDecls(ast, *children);
+			DrawCalls(ast, *children);
+			DrawLiterals(ast, *children);
 
 			Nodes::MiniMap(0.2f, MiniMapLocation_TopRight);
 			Nodes::EndNodeEditor();
@@ -177,7 +213,7 @@ namespace Rift::Graph
 			{
 				ImGui::OpenPopup("GraphContextMenu", ImGuiPopupFlags_AnyPopup);
 			}
-			DrawContextMenu(ast);
+			DrawContextMenu(ast, typeId);
 			UI::End();
 		}
 	}
@@ -201,18 +237,22 @@ namespace Rift::Graph
 
 		Nodes::PushStyleColor(ColorVar_TitleBar, Color::FromRGB(191, 56, 11));
 		Nodes::BeginNode(i32(functionId));
-
-		Nodes::BeginNodeTitleBar();
-		UI::Text(name.ToString().c_str());
-		Nodes::EndNodeTitleBar();
-
-		UI::BeginGroup();    // Outputs
 		{
-			Nodes::BeginOutputAttribute(i32(functionId), PinShape_QuadFilled);
-			Nodes::EndOutputAttribute();
-		}
-		UI::EndGroup();
+			Nodes::BeginNodeTitleBar();
+			{
+				UI::Text(name.ToString().c_str());
+				UI::SameLine();
 
+				static constexpr Color color = executionColor;
+				Nodes::PushStyleColor(ColorVar_Pin, color);
+				Nodes::PushStyleColor(ColorVar_PinHovered, GetHovered(color));
+				Nodes::BeginOutputAttribute(i32(functionId), PinShape_QuadFilled);
+				UI::Text("");
+				Nodes::EndOutputAttribute();
+				Nodes::PopStyleColor(2);
+			}
+			Nodes::EndNodeTitleBar();
+		}
 		Nodes::EndNode();
 		Nodes::PopStyleColor();
 
@@ -221,11 +261,6 @@ namespace Rift::Graph
 			transform.position = GetNodePosition(functionId);
 			Types::Changed(AST::GetLinkedParent(ast, functionId), "Moved nodes");
 		}
-	}
-
-	void DrawFunctionNodes(AST::Tree& ast, AST::Id functionId)
-	{
-		DrawFunctionEntry(ast, functionId);
 	}
 
 	void DrawCallNode(AST::Id id, StringView name)
@@ -240,7 +275,6 @@ namespace Rift::Graph
 		Nodes::PushStyleColor(ColorVar_TitleBarHovered, GetHovered(headerColor));
 		Nodes::PushStyleColor(ColorVar_TitleBarSelected, headerColor);
 		Nodes::PushStyleColor(ColorVar_NodeOutline, selectedColor);
-
 
 		Nodes::BeginNode(i32(id));
 		{
@@ -260,11 +294,9 @@ namespace Rift::Graph
 				UI::Text("");
 				Nodes::EndOutputAttribute();
 
-				Nodes::PopStyleColor();
-				Nodes::PopStyleColor();
+				Nodes::PopStyleColor(2);
 			}
 			Nodes::EndNodeTitleBar();
-
 
 			static constexpr Color pinColor = GetTypeColor<float>();
 			Nodes::PushStyleColor(ColorVar_Pin, pinColor);

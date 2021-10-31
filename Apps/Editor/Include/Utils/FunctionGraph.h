@@ -22,7 +22,7 @@ namespace Rift::Graph
 
 	protected:
 		float gridSize    = 16.f;
-		float invGridSize = 1 / gridSize;
+		float invGridSize = 1.f / gridSize;
 
 	public:
 		void SetGridSize(float size);
@@ -46,9 +46,8 @@ namespace Rift::Graph
 
 	void DrawContextMenu(AST::Tree& ast);
 	void DrawFunctionGraph(AST::Tree& ast, AST::Id typeId, DockSpaceLayout& layout);
-	void DrawFunctionNodes(AST::Tree& ast, AST::Id functionId);
 
-
+	void DrawFunctionEntry(AST::Tree& ast, AST::Id functionId);
 	void DrawCallNode(AST::Id id, StringView name);
 	void DrawBoolLiteralNode(AST::Id id, bool& value);
 	void DrawStringLiteralNode(AST::Id id, String& value);

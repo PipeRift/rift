@@ -340,6 +340,18 @@ namespace Rift::EditorSystem
 				if (UI::MenuItem("Cut", "CTRL+X")) {}
 				if (UI::MenuItem("Copy", "CTRL+C")) {}
 				if (UI::MenuItem("Paste", "CTRL+V")) {}
+				UI::Separator();
+				if (UI::BeginMenu("Settings"))
+				{
+					float gridSize = Graph::settings.GetGridSize();
+					Style::PushStyleCompact();
+					if (UI::SliderFloat("Grid Size", &gridSize, 8.f, 32.f, "%.f"))
+					{
+						Graph::settings.SetGridSize(gridSize);
+					}
+					Style::PopStyleCompact();
+					UI::EndMenu();
+				}
 				UI::EndMenu();
 			}
 

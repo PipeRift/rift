@@ -46,7 +46,7 @@ namespace Rift::Nodes
 	// Calculates the closest point along each bezier curve segment.
 	v2 GetClosestPointOnCubicBezier(const i32 numSegments, const v2& p, const CubicBezier& cb)
 	{
-		IM_ASSERT(num_segments > 0);
+		IM_ASSERT(numSegments > 0);
 		v2 pLast = cb.p0;
 		v2 pClosest;
 		float pClosestDist = FLT_MAX;
@@ -93,7 +93,7 @@ namespace Rift::Nodes
 	CubicBezier GetCubicBezier(
 	    v2 start, v2 end, const AttributeType startType, const float lineSegmentsPerLength)
 	{
-		assert((start_type == AttributeType_Input) || (start_type == AttributeType_Output));
+		assert((startType == AttributeType_Input) || (startType == AttributeType_Output));
 		if (startType == AttributeType_Input)
 		{
 			ImSwap(start, end);
@@ -335,8 +335,8 @@ namespace Rift::Nodes
 			return;
 		}
 
-		assert(lhs_idx >= 0 && lhs_idx < splitter._Count);
-		assert(rhs_idx >= 0 && rhs_idx < splitter._Count);
+		assert(lhsIdx >= 0 && lhsIdx < splitter._Count);
+		assert(rhsIdx >= 0 && rhsIdx < splitter._Count);
 
 		ImDrawChannel& lhsChannel = splitter._Channels[lhsIdx];
 		ImDrawChannel& rhsChannel = splitter._Channels[rhsIdx];
@@ -432,7 +432,7 @@ namespace Rift::Nodes
 		// * SetNodeGridSpacePos
 		// * SetNodeDraggable
 		// after the BeginNode/EndNode function calls?
-		assert(submission_idx != -1);
+		assert(submissionIdx != -1);
 		const i32 backgroundChannelIdx = DrawListSubmissionIdxToBackgroundChannelIdx(submissionIdx);
 		gNodes->CanvasDrawList->_Splitter.SetCurrentChannel(
 		    gNodes->CanvasDrawList, backgroundChannelIdx);
@@ -440,7 +440,7 @@ namespace Rift::Nodes
 
 	void DrawListSwapSubmissionIndices(const i32 lhsIdx, const i32 rhsIdx)
 	{
-		assert(lhs_idx != rhs_idx);
+		assert(lhsIdx != rhsIdx);
 
 		const i32 lhsForegroundChannelIdx = DrawListSubmissionIdxToForegroundChannelIdx(lhsIdx);
 		const i32 lhsBackgroundChannelIdx = DrawListSubmissionIdxToBackgroundChannelIdx(lhsIdx);
@@ -460,7 +460,7 @@ namespace Rift::Nodes
 			return;
 		}
 
-		assert(node_idx_depth_order.Size == gNodes->NodeIdxSubmissionOrder.Size);
+		assert(nodeIdxDepthOrder.Size == gNodes->NodeIdxSubmissionOrder.Size);
 
 		i32 startIdx = nodeIdxDepthOrder.Size - 1;
 
@@ -480,7 +480,7 @@ namespace Rift::Nodes
 		{
 			const i32 nodeIdx = nodeIdxDepthOrder[depthIdx];
 
-			// Find the current index of the node_idx in the submission order array
+			// Find the current index of the nodeIdx in the submission order array
 			i32 submissionIdx = -1;
 			for (i32 i = 0; i < gNodes->NodeIdxSubmissionOrder.Size; ++i)
 			{
@@ -490,7 +490,7 @@ namespace Rift::Nodes
 					break;
 				}
 			}
-			assert(submission_idx >= 0);
+			assert(submissionIdx >= 0);
 
 			if (submissionIdx == depthIdx)
 			{
@@ -560,7 +560,7 @@ namespace Rift::Nodes
 			// Ensure that individually selected nodes get rendered on top
 			ImVector<i32>& depthStack = editor.NodeDepthOrder;
 			const i32* const elem     = depthStack.find(nodeIdx);
-			assert(elem != depth_stack.end());
+			assert(elem != depthStack.end());
 			depthStack.erase(elem);
 			depthStack.push_back(nodeIdx);
 		}
@@ -1147,7 +1147,7 @@ namespace Rift::Nodes
 			}
 		}
 
-		assert(node_idx_on_top != -1);
+		assert(nodeIdxOnTop != -1);
 		return ImOptionalIndex(nodeIdxOnTop);
 	}
 
@@ -1805,7 +1805,7 @@ namespace Rift::Nodes
 	{
 		const i32 idx = ObjectPoolFind(objects, id);
 		assert(idx >= 0);
-		assert(selected_indices.find(idx) == selected_indices.end());
+		assert(selectedIndices.find(idx) == selectedIndices.end());
 		selectedIndices.push_back(idx);
 	}
 
@@ -1815,7 +1815,7 @@ namespace Rift::Nodes
 	{
 		const i32 idx = ObjectPoolFind(objects, id);
 		assert(idx >= 0);
-		assert(selected_indices.find(idx) != selected_indices.end());
+		assert(selectedIndices.find(idx) != selectedIndices.end());
 		selectedIndices.find_erase_unsorted(idx);
 	}
 
@@ -2292,7 +2292,7 @@ namespace Rift::Nodes
 	    const MiniMapNodeHoveringCallbackUserData nodeHoveringCallbackData)
 	{
 		// Check that editor size fraction is sane; must be in the range (0, 1]
-		assert(minimap_size_fraction > 0.f && minimap_size_fraction <= 1.f);
+		assert(minimapSizeFraction > 0.f && minimapSizeFraction <= 1.f);
 
 		// Remember to call before EndNodeEditor
 		assert(gNodes->CurrentScope == Scope_Editor);
@@ -2376,7 +2376,7 @@ namespace Rift::Nodes
 	{
 		EditorContext& editor = EditorContextGet();
 		const i32 nodeIdx     = ObjectPoolFind(editor.Nodes, nodeId);
-		assert(node_idx != -1);    // invalid node_id
+		assert(nodeIdx != -1);    // invalid nodeId
 		const NodeData& node = editor.Nodes.Pool[nodeIdx];
 		return node.Rect.GetSize();
 	}
@@ -2520,7 +2520,7 @@ namespace Rift::Nodes
 		}
 	};
 
-	static const StyleVarInfo gGStyleVarInfo[] = {
+	static const StyleVarInfo gStyleVarInfo[] = {
   // StyleVar_GridSpacing
 	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, GridSpacing)              },
  // StyleVar_NodeCornerRounding
@@ -2556,8 +2556,8 @@ namespace Rift::Nodes
 	static const StyleVarInfo* GetStyleVarInfo(StyleVar idx)
 	{
 		IM_ASSERT(idx >= 0 && idx < StyleVar_COUNT);
-		IM_ASSERT(IM_ARRAYSIZE(GStyleVarInfo) == StyleVar_COUNT);
-		return &gGStyleVarInfo[idx];
+		IM_ASSERT(IM_ARRAYSIZE(gStyleVarInfo) == StyleVar_COUNT);
+		return &gStyleVarInfo[idx];
 	}
 
 	void PushStyleVar(const StyleVar item, const float value)
@@ -2640,7 +2640,7 @@ namespace Rift::Nodes
 	{
 		EditorContext& editor = EditorContextGet();
 		const i32 nodeIdx     = ObjectPoolFind(editor.Nodes, nodeId);
-		assert(node_idx != -1);
+		assert(nodeIdx != -1);
 		NodeData& node = editor.Nodes.Pool[nodeIdx];
 		return GridSpaceToScreenSpace(editor, node.Origin);
 	}
@@ -2649,7 +2649,7 @@ namespace Rift::Nodes
 	{
 		EditorContext& editor = EditorContextGet();
 		const i32 nodeIdx     = ObjectPoolFind(editor.Nodes, nodeId);
-		assert(node_idx != -1);
+		assert(nodeIdx != -1);
 		NodeData& node = editor.Nodes.Pool[nodeIdx];
 		return GridSpaceToEditorSpace(editor, node.Origin);
 	}
@@ -2658,7 +2658,7 @@ namespace Rift::Nodes
 	{
 		EditorContext& editor = EditorContextGet();
 		const i32 nodeIdx     = ObjectPoolFind(editor.Nodes, nodeId);
-		assert(node_idx != -1);
+		assert(nodeIdx != -1);
 		NodeData& node = editor.Nodes.Pool[nodeIdx];
 		return node.Origin;
 	}
@@ -2671,7 +2671,7 @@ namespace Rift::Nodes
 	bool IsNodeHovered(i32* const nodeId)
 	{
 		assert(gNodes->CurrentScope != Scope_None);
-		assert(node_id != nullptr);
+		assert(nodeId != nullptr);
 
 		const bool isHovered = gNodes->HoveredNodeIdx.HasValue();
 		if (isHovered)
@@ -2685,7 +2685,7 @@ namespace Rift::Nodes
 	bool IsLinkHovered(i32* const linkId)
 	{
 		assert(gNodes->CurrentScope != Scope_None);
-		assert(link_id != nullptr);
+		assert(linkId != nullptr);
 
 		const bool isHovered = gNodes->HoveredLinkIdx.HasValue();
 		if (isHovered)
@@ -2726,7 +2726,7 @@ namespace Rift::Nodes
 
 	void GetSelectedNodes(i32* nodeIds)
 	{
-		assert(node_ids != nullptr);
+		assert(nodeIds != nullptr);
 
 		const EditorContext& editor = EditorContextGet();
 		for (i32 i = 0; i < editor.SelectedNodeIndices.size(); ++i)
@@ -2738,7 +2738,7 @@ namespace Rift::Nodes
 
 	void GetSelectedLinks(i32* linkIds)
 	{
-		assert(link_ids != nullptr);
+		assert(linkIds != nullptr);
 
 		const EditorContext& editor = EditorContextGet();
 		for (i32 i = 0; i < editor.SelectedLinkIndices.size(); ++i)
@@ -2829,7 +2829,7 @@ namespace Rift::Nodes
 	{
 		// Call this function after EndNodeEditor()!
 		assert(gNodes->CurrentScope != Scope_None);
-		assert(started_at_id != nullptr);
+		assert(startedAtId != nullptr);
 
 		const bool isStarted = (gNodes->UIState & UIState_LinkStarted) != 0;
 		if (isStarted)
@@ -2867,8 +2867,8 @@ namespace Rift::Nodes
 	    i32* const startedAtPinId, i32* const endedAtPinId, bool* const createdFromSnap)
 	{
 		assert(gNodes->CurrentScope != Scope_None);
-		assert(started_at_pin_id != nullptr);
-		assert(ended_at_pin_id != nullptr);
+		assert(startedAtPinId != nullptr);
+		assert(endedAtPinId != nullptr);
 
 		const bool isCreated = (gNodes->UIState & UIState_LinkCreated) != 0;
 
@@ -2905,10 +2905,10 @@ namespace Rift::Nodes
 	    i32* endedAtPinId, bool* createdFromSnap)
 	{
 		assert(gNodes->CurrentScope != Scope_None);
-		assert(started_at_node_id != nullptr);
-		assert(started_at_pin_id != nullptr);
-		assert(ended_at_node_id != nullptr);
-		assert(ended_at_pin_id != nullptr);
+		assert(startedAtNodeId != nullptr);
+		assert(startedAtPinId != nullptr);
+		assert(endedAtNodeId != nullptr);
+		assert(endedAtPinId != nullptr);
 
 		const bool isCreated = (gNodes->UIState & UIState_LinkCreated) != 0;
 
