@@ -230,17 +230,21 @@ namespace Rift::Graph
 
 	void DrawCallNode(AST::Id id, StringView name)
 	{
-		static constexpr Color headerColor = Rift::Style::GetNeutralColor(2);
+		static constexpr Color headerColor = callColor;
 		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
 
 		Nodes::PushStyleColor(ColorVar_NodeBackground, bodyColor);
 		Nodes::PushStyleColor(ColorVar_NodeBackgroundHovered, bodyColor);
 		Nodes::PushStyleColor(ColorVar_NodeBackgroundSelected, bodyColor);
+		Nodes::PushStyleColor(ColorVar_TitleBar, headerColor);
+		Nodes::PushStyleColor(ColorVar_TitleBarHovered, GetHovered(headerColor));
+		Nodes::PushStyleColor(ColorVar_TitleBarSelected, headerColor);
+		Nodes::PushStyleColor(ColorVar_NodeOutline, selectedColor);
 
 
 		Nodes::BeginNode(i32(id));
 		{
-			ImGui::BeginGroup();
+			Nodes::BeginNodeTitleBar();
 			{
 				static constexpr Color color = executionColor;
 				Nodes::PushStyleColor(ColorVar_Pin, color);
@@ -259,16 +263,28 @@ namespace Rift::Graph
 				Nodes::PopStyleColor();
 				Nodes::PopStyleColor();
 			}
-			ImGui::EndGroup();
+			Nodes::EndNodeTitleBar();
 
-			ImRect headerRect{ImGui::GetItemRectMin(), ImGui::GetItemRectMax()};
-			NodeData& node = Nodes::EditorContextGet().Nodes.Pool[gNodes->CurrentNodeIdx];
-			headerRect.Expand(node.LayoutStyle.Padding);
-			ImGui::ItemAdd(headerRect, ImGui::GetID("title_bar"));
+
+			static constexpr Color pinColor = GetTypeColor<float>();
+			Nodes::PushStyleColor(ColorVar_Pin, pinColor);
+			Nodes::PushStyleColor(ColorVar_PinHovered, GetHovered(pinColor));
+			Nodes::BeginInputAttribute(i32(id) + 2, PinShape_CircleFilled);
+			UI::Text("amount");
+			Nodes::EndInputAttribute();
+			Nodes::PopStyleColor(2);
+
+			const auto* context = Nodes::GetCurrentContext();
+			if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
+			{
+				Nodes::EditorContextGet()
+				    .Nodes.Pool[context->CurrentNodeIdx]
+				    .LayoutStyle.BorderThickness = 2.f;
+			}
 		}
 		Nodes::EndNode();
 
-		Nodes::PopStyleColor(3);
+		Nodes::PopStyleColor(7);
 	}
 
 	void DrawBoolLiteralNode(AST::Id id, bool& value)
@@ -328,14 +344,14 @@ namespace Rift::Graph
 			UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
 			PopInnerNodeStyle();
 			Nodes::EndOutputAttribute();
-		}
 
-		const auto* context = Nodes::GetCurrentContext();
-		if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
-		{
-			Nodes::EditorContextGet()
-			    .Nodes.Pool[context->CurrentNodeIdx]
-			    .LayoutStyle.BorderThickness = 2.f;
+			const auto* context = Nodes::GetCurrentContext();
+			if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
+			{
+				Nodes::EditorContextGet()
+				    .Nodes.Pool[context->CurrentNodeIdx]
+				    .LayoutStyle.BorderThickness = 2.f;
+			}
 		}
 		Nodes::EndNode();
 

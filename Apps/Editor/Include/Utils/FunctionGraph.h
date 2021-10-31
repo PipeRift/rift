@@ -21,7 +21,7 @@ namespace Rift::Graph
 		float verticalPadding = 0.f;
 
 	protected:
-		float gridSize    = 20.f;
+		float gridSize    = 16.f;
 		float invGridSize = 1 / gridSize;
 
 	public:

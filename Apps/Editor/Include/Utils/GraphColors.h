@@ -10,6 +10,7 @@ namespace Rift::Graph
 {
 	constexpr Color selectedColor{Color::FromHEX(0xdba43f)};
 	constexpr Color executionColor{Color::FromHEX(0xdbdbdb)};
+	constexpr Color callColor{Color::FromHEX(0x5790ff)};
 
 	template<typename T>
 	constexpr Color GetTypeColor()
