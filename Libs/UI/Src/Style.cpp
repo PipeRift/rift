@@ -1,7 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "UI/Paths.h"
 #include "UI/Style.h"
+
+#include "UI/Paths.h"
 #include "UI/UIImGui.h"
 
 #include <Containers/Array.h>
@@ -64,16 +65,16 @@ namespace Rift::Style
 		}
 	};
 
-	static TMap<Rift::Name, FontDescriptor> fonts{};
+	static TMap<Rift::Name, FontDescriptor> gFonts{};
 
 
 	void AddFont(Name name, FontMode mode, float size, Path file)
 	{
-		FontDescriptor* font = fonts.Find(name);
+		FontDescriptor* font = gFonts.Find(name);
 		if (!font)
 		{
-			fonts.Insert(name, {});
-			font = &fonts[name];
+			gFonts.Insert(name, {});
+			font = &gFonts[name];
 		}
 
 		auto& io = ImGui::GetIO();
@@ -108,7 +109,7 @@ namespace Rift::Style
 
 	ImFont* FindFont(Rift::Name name, FontMode mode, float size)
 	{
-		const FontDescriptor* const font = fonts.Find(name);
+		const FontDescriptor* const font = gFonts.Find(name);
 		return font ? (*font)[mode].Get(size) : nullptr;
 	}
 

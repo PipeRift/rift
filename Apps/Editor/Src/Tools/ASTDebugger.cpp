@@ -38,7 +38,7 @@ namespace Rift
 				UI::TableHeadersRow();
 
 				auto identifiers = ast.MakeView<CIdentifier>();
-				for (auto it : types->types)
+				for (const auto& it : types->types)
 				{
 					UI::TableNextRow();
 					UI::TableNextColumn();    // Name
@@ -202,13 +202,11 @@ namespace Rift
 
 		if (hasChildren && open)
 		{
-			if (hasChildren)
-			{
-				for (AST::Id child : children->children)
+			    for (AST::Id child : children->children)
 				{
 					DrawNode(ast, child, true);
 				}
-			}
+
 			UI::TreePop();
 		}
 	}

@@ -1,8 +1,9 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "Utils/FunctionGraph.h"
+
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
-#include "Utils/FunctionGraph.h"
 #include "Utils/GraphColors.h"
 #include "Utils/TypeUtils.h"
 
@@ -22,9 +23,9 @@ namespace Rift::Graph
 
 	void Settings::SetGridSize(float size)
 	{
-		gridSize                        = size;
-		invGridSize                     = 1.f / size;
-		Nodes::GetStyle().GridSpacing   = size;
+		gridSize                      = size;
+		invGridSize                   = 1.f / size;
+		Nodes::GetStyle().GridSpacing = size;
 	}
 
 	float Settings::GetGridSize() const
@@ -103,16 +104,16 @@ namespace Rift::Graph
 		{
 			static ImGuiTextFilter filter;
 			filter.Draw("##Filter");
-			const ImVec2 click_pos = ImGui::GetMousePosOnOpeningCurrentPopup();
+			const ImVec2 clickPos = ImGui::GetMousePosOnOpeningCurrentPopup();
 
 			if (filter.IsActive() || ImGui::TreeNode("Constructors"))
 			{
 				String makeStr{};
 				auto& typeList   = ast.GetUnique<CTypeListUnique>();
 				auto identifiers = ast.MakeView<CIdentifier>();
-				for (auto type : typeList.types)
+				for (const auto& type : typeList.types)
 				{
-					if (CIdentifier* iden = identifiers.TryGet<CIdentifier>(type.second))
+					if (auto* iden = identifiers.TryGet<CIdentifier>(type.second))
 					{
 						makeStr.clear();
 						Strings::FormatTo(makeStr, "Make {}", iden->name);
@@ -198,7 +199,7 @@ namespace Rift::Graph
 			SetNodePosition(functionId, transform.position);
 		}
 
-		Nodes::PushColorStyle(ColorVar_TitleBar, IM_COL32(191, 56, 11, 255));
+		Nodes::PushStyleColor(ColorVar_TitleBar, Color::FromRGB(191, 56, 11));
 		Nodes::BeginNode(i32(functionId));
 
 		Nodes::BeginNodeTitleBar();
@@ -213,7 +214,7 @@ namespace Rift::Graph
 		UI::EndGroup();
 
 		Nodes::EndNode();
-		Nodes::PopColorStyle();
+		Nodes::PopStyleColor();
 
 		if (nodes->LeftMouseDragging || nodes->LeftMouseReleased)
 		{
@@ -232,9 +233,9 @@ namespace Rift::Graph
 		static constexpr Color headerColor = Rift::Style::GetNeutralColor(2);
 		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
 
-		Nodes::PushColorStyle(ColorVar_NodeBackground, bodyColor.ToPackedABGR());
-		Nodes::PushColorStyle(ColorVar_NodeBackgroundHovered, bodyColor.ToPackedABGR());
-		Nodes::PushColorStyle(ColorVar_NodeBackgroundSelected, bodyColor.ToPackedABGR());
+		Nodes::PushStyleColor(ColorVar_NodeBackground, bodyColor);
+		Nodes::PushStyleColor(ColorVar_NodeBackgroundHovered, bodyColor);
+		Nodes::PushStyleColor(ColorVar_NodeBackgroundSelected, bodyColor);
 
 
 		Nodes::BeginNode(i32(id));
@@ -242,8 +243,8 @@ namespace Rift::Graph
 			ImGui::BeginGroup();
 			{
 				static constexpr Color color = executionColor;
-				Nodes::PushColorStyle(ColorVar_Pin, color.ToPackedABGR());
-				Nodes::PushColorStyle(ColorVar_PinHovered, GetHovered(color).ToPackedABGR());
+				Nodes::PushStyleColor(ColorVar_Pin, color);
+				Nodes::PushStyleColor(ColorVar_PinHovered, GetHovered(color));
 
 				Nodes::BeginInputAttribute(i32(id), PinShape_QuadFilled);
 				UI::Text("");
@@ -255,21 +256,19 @@ namespace Rift::Graph
 				UI::Text("");
 				Nodes::EndOutputAttribute();
 
-				Nodes::PopColorStyle();
-				Nodes::PopColorStyle();
+				Nodes::PopStyleColor();
+				Nodes::PopStyleColor();
 			}
 			ImGui::EndGroup();
 
 			ImRect headerRect{ImGui::GetItemRectMin(), ImGui::GetItemRectMax()};
-			NodeData& node = Nodes::EditorContextGet().Nodes.Pool[GNodes->CurrentNodeIdx];
+			NodeData& node = Nodes::EditorContextGet().Nodes.Pool[gNodes->CurrentNodeIdx];
 			headerRect.Expand(node.LayoutStyle.Padding);
 			ImGui::ItemAdd(headerRect, ImGui::GetID("title_bar"));
 		}
 		Nodes::EndNode();
 
-		Nodes::PopColorStyle();
-		Nodes::PopColorStyle();
-		Nodes::PopColorStyle();
+		Nodes::PopStyleColor(3);
 	}
 
 	void DrawBoolLiteralNode(AST::Id id, bool& value)
@@ -277,12 +276,12 @@ namespace Rift::Graph
 		static constexpr Color color = GetTypeColor<bool>();
 		static const Color darkColor = GetHovered(color);
 
-		Nodes::PushColorStyle(ColorVar_NodeBackground, color.ToPackedABGR());
-		Nodes::PushColorStyle(ColorVar_NodeBackgroundHovered, darkColor.ToPackedABGR());
-		Nodes::PushColorStyle(ColorVar_NodeBackgroundSelected, color.ToPackedABGR());
-		Nodes::PushColorStyle(ColorVar_NodeOutline, selectedColor.ToPackedABGR());
-		Nodes::PushColorStyle(ColorVar_Pin, color.ToPackedABGR());
-		Nodes::PushColorStyle(ColorVar_PinHovered, darkColor.ToPackedABGR());
+		Nodes::PushStyleColor(ColorVar_NodeBackground, color);
+		Nodes::PushStyleColor(ColorVar_NodeBackgroundHovered, darkColor);
+		Nodes::PushStyleColor(ColorVar_NodeBackgroundSelected, color);
+		Nodes::PushStyleColor(ColorVar_NodeOutline, selectedColor);
+		Nodes::PushStyleColor(ColorVar_Pin, color);
+		Nodes::PushStyleColor(ColorVar_PinHovered, darkColor);
 
 		Nodes::BeginNode(i32(id));
 		{
@@ -302,12 +301,7 @@ namespace Rift::Graph
 		}
 		Nodes::EndNode();
 
-		Nodes::PopColorStyle();
-		Nodes::PopColorStyle();
-		Nodes::PopColorStyle();
-		Nodes::PopColorStyle();
-		Nodes::PopColorStyle();
-		Nodes::PopColorStyle();
+		Nodes::PopStyleColor(6);
 	}
 
 	void DrawStringLiteralNode(AST::Id id, String& value)
@@ -315,12 +309,12 @@ namespace Rift::Graph
 		static constexpr Color color = GetTypeColor<String>();
 		static const Color darkColor = GetHovered(color);
 
-		Nodes::PushColorStyle(ColorVar_NodeBackground, color.ToPackedABGR());
-		Nodes::PushColorStyle(ColorVar_NodeBackgroundHovered, darkColor.ToPackedABGR());
-		Nodes::PushColorStyle(ColorVar_NodeBackgroundSelected, color.ToPackedABGR());
-		Nodes::PushColorStyle(ColorVar_NodeOutline, selectedColor.ToPackedABGR());
-		Nodes::PushColorStyle(ColorVar_Pin, color.ToPackedABGR());
-		Nodes::PushColorStyle(ColorVar_PinHovered, darkColor.ToPackedABGR());
+		Nodes::PushStyleColor(ColorVar_NodeBackground, color);
+		Nodes::PushStyleColor(ColorVar_NodeBackgroundHovered, darkColor);
+		Nodes::PushStyleColor(ColorVar_NodeBackgroundSelected, color);
+		Nodes::PushStyleColor(ColorVar_NodeOutline, selectedColor);
+		Nodes::PushStyleColor(ColorVar_Pin, color);
+		Nodes::PushStyleColor(ColorVar_PinHovered, darkColor);
 
 		Nodes::BeginNode(i32(id));
 		{
@@ -345,12 +339,7 @@ namespace Rift::Graph
 		}
 		Nodes::EndNode();
 
-		Nodes::PopColorStyle();
-		Nodes::PopColorStyle();
-		Nodes::PopColorStyle();
-		Nodes::PopColorStyle();
-		Nodes::PopColorStyle();
-		Nodes::PopColorStyle();
+		Nodes::PopStyleColor(6);
 	}
 
 	void SetNodePosition(AST::Id id, v2 position)

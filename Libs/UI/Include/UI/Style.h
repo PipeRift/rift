@@ -90,4 +90,4 @@ namespace Rift::Style
 	{
 		return color.Shade(0.2f);
 	}
-};
+};    // namespace Rift::Style

@@ -54,22 +54,33 @@ endif()
 # clang-format
 include(CMake/CheckClangTools.cmake)
 
-# Additional targets to perform clang-format/clang-tidy
-file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS
-    Apps/**/*.cpp Apps/**/*.h
-    Libs/Framework/**/*.cpp Libs/Framework/**/*.h
-    Libs/Core/Include/**/*.cpp Libs/Core/Include/**/*.h
-    Libs/Core/Source/**/*.cpp Libs/Core/Source/**/*.h
-    Libs/Core/Tests/**/*.cpp Libs/Core/Tests/**/*.h
-    Tests/**/*.cpp Tests/**/*.h
-)
+
 
 if(CLANG_FORMAT_EXE)
+    # Additional targets to perform clang-format/clang-tidy
+    file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS
+        Apps/**/*.cpp Apps/**/*.h
+        Libs/Framework/**/*.cpp Libs/Framework/**/*.h
+        Libs/UI/**/*.cpp Libs/UI/**/*.h
+        Libs/Core/Include/**/*.cpp Libs/Core/Include/**/*.h
+        Libs/Core/Src/**/*.cpp Libs/Core/Src/**/*.h
+        Libs/Core/Tests/**/*.cpp Libs/Core/Tests/**/*.h
+        Tests/**/*.cpp Tests/**/*.h
+    )
+
     add_custom_target(ClangFormat COMMAND ${CLANG_FORMAT_EXE} -i ${ALL_SOURCE_FILES})
     set_target_properties (ClangFormat PROPERTIES FOLDER Util)
 endif()
 
 if(CLANG_TIDY_EXE)
-    add_custom_target(ClangTidy COMMAND ${CLANG_TIDY_EXE} -p=./Build ${ALL_SOURCE_FILES} --fix)
+    file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS
+        Apps/**/*.cpp
+        Libs/Framework/**/*.cpp
+        Libs/UI/**/*.cpp
+        Libs/Core/Include/**/*.cpp
+        Libs/Core/Src/**/*.cpp
+    )
+
+    add_custom_target(ClangTidy COMMAND ${DO_CLANG_TIDY} --fix-errors --fix-notes ${ALL_SOURCE_FILES})
     set_target_properties (ClangTidy PROPERTIES FOLDER Util)
 endif()

@@ -19,7 +19,7 @@ namespace Rift::Nodes
 {
 	struct Context;
 
-	extern Context* GNodes;
+	extern Context* gNodes;
 
 	// [SECTION] internal enums
 
@@ -150,14 +150,14 @@ namespace Rift::Nodes
 
 	struct NodeData
 	{
-		int Id;
+		i32 Id;
 		v2 Origin;    // The node origin is in editor space
 		Rect TitleBarContentRect;
 		Rect Rect;
 
 		struct
 		{
-			u32 Background, BackgroundHovered, BackgroundSelected, Outline, Titlebar,
+			Color Background, BackgroundHovered, BackgroundSelected, Outline, Titlebar,
 			    TitlebarHovered, TitlebarSelected;
 		} ColorStyle;
 
@@ -190,20 +190,20 @@ namespace Rift::Nodes
 
 	struct PinData
 	{
-		int Id;
-		int ParentNodeIdx;
+		i32 Id;
+		i32 ParentNodeIdx;
 		Rect AttributeRect;
 		AttributeType Type;
 		PinShape Shape;
 		v2 Pos;    // screen-space coordinates
-		int Flags;
+		i32 Flags;
 
 		struct
 		{
-			u32 Background, Hovered;
+			Color Background, Hovered;
 		} ColorStyle;
 
-		PinData(const int pin_id)
+		PinData(const i32 pin_id)
 		    : Id(pin_id)
 		    , ParentNodeIdx()
 		    , AttributeRect()
@@ -215,17 +215,17 @@ namespace Rift::Nodes
 		{}
 	};
 
-	struct ImLinkData
+	struct LinkData
 	{
-		int Id;
-		int StartPinIdx, EndPinIdx;
+		i32 Id;
+		i32 StartPinIdx, EndPinIdx;
 
 		struct
 		{
-			u32 Base, Hovered, Selected;
+			Color Base, Hovered, Selected;
 		} ColorStyle;
 
-		ImLinkData(const int link_id) : Id(link_id), StartPinIdx(), EndPinIdx(), ColorStyle() {}
+		LinkData(const i32 link_id) : Id(link_id), StartPinIdx(), EndPinIdx(), ColorStyle() {}
 	};
 
 	struct ImClickInteractionState
@@ -234,7 +234,7 @@ namespace Rift::Nodes
 
 		struct
 		{
-			int StartPinIdx;
+			i32 StartPinIdx;
 			ImOptionalIndex EndPinIdx;
 			LinkCreationType Type;
 		} LinkCreation;
@@ -250,9 +250,9 @@ namespace Rift::Nodes
 	struct ColElement
 	{
 		ColorVar item;
-		u32 color;
+		Color color;
 
-		ColElement(ColorVar item, u32 color) : item(item), color(color) {}
+		ColElement(ColorVar item, Color color) : item(item), color(color) {}
 	};
 
 	struct StyleVarElement
@@ -278,7 +278,7 @@ namespace Rift::Nodes
 	{
 		ObjectPool<NodeData> Nodes;
 		ObjectPool<PinData> Pins;
-		ObjectPool<ImLinkData> Links;
+		ObjectPool<LinkData> Links;
 
 		ImVector<int> NodeDepthOrder;
 
@@ -390,8 +390,8 @@ namespace Rift::Nodes
 	static inline EditorContext& EditorContextGet()
 	{
 		// No editor context was set! Did you forget to call Nodes::CreateContext()?
-		assert(GNodes->EditorCtx != nullptr);
-		return *GNodes->EditorCtx;
+		assert(gNodes->EditorCtx != nullptr);
+		return *gNodes->EditorCtx;
 	}
 
 	// [SECTION] ObjectPool implementation

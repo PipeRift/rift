@@ -194,8 +194,7 @@ namespace Rift::Compiler::Cpp
 			const CChild* parent = AST::GetCChild(ast, entity);
 			if (parent && ast.IsValid(parent->parent))
 			{
-				if (const CIdentifier* parentId =
-				        classesView.TryGet<const CIdentifier>(parent->parent))
+				if (const auto* parentId = classesView.TryGet<const CIdentifier>(parent->parent))
 				{
 					ownerName = parentId->name.ToString();
 				}

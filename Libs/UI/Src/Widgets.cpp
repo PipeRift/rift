@@ -41,7 +41,7 @@ namespace Rift::UI
 	}
 
 
-	struct InputTextCallback_StringUserData
+	struct InputTextCallbackStringUserData
 	{
 		String* str;
 		ImGuiInputTextCallback chainCallback;
@@ -50,7 +50,7 @@ namespace Rift::UI
 
 	static int InputTextCallback(ImGuiInputTextCallbackData* data)
 	{
-		auto* userData = static_cast<InputTextCallback_StringUserData*>(data->UserData);
+		auto* userData = static_cast<InputTextCallbackStringUserData*>(data->UserData);
 		if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
 		{
 			// Resize string callback
@@ -59,7 +59,7 @@ namespace Rift::UI
 			String* str = userData->str;
 			IM_ASSERT(data->Buf == str->c_str());
 			str->resize(data->BufTextLen);
-			data->Buf = (char*) str->c_str();
+			data->Buf = (char*)str->c_str();
 		}
 		else if (userData->chainCallback)
 		{
@@ -77,12 +77,12 @@ namespace Rift::UI
 		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 		flags |= ImGuiInputTextFlags_CallbackResize;
 
-		InputTextCallback_StringUserData cbUserData;
+		InputTextCallbackStringUserData cbUserData;
 		cbUserData.str                   = &str;
 		cbUserData.chainCallback         = callback;
 		cbUserData.chainCallbackUserData = userData;
 		return ImGui::InputText(
-		    label, (char*) str.c_str(), str.capacity() + 1, flags, InputTextCallback, &cbUserData);
+		    label, (char*)str.c_str(), str.capacity() + 1, flags, InputTextCallback, &cbUserData);
 	}
 
 	bool InputTextMultiline(const char* label, String& str, const ImVec2& size,
@@ -91,12 +91,12 @@ namespace Rift::UI
 		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 		flags |= ImGuiInputTextFlags_CallbackResize;
 
-		InputTextCallback_StringUserData cbUserData;
+		InputTextCallbackStringUserData cbUserData;
 		cbUserData.str                   = &str;
 		cbUserData.chainCallback         = callback;
 		cbUserData.chainCallbackUserData = userData;
-		return ImGui::InputTextMultiline(label, (char*) str.c_str(), str.capacity() + 1, size,
-		    flags, InputTextCallback, &cbUserData);
+		return ImGui::InputTextMultiline(label, (char*)str.c_str(), str.capacity() + 1, size, flags,
+		    InputTextCallback, &cbUserData);
 	}
 
 	bool InputTextWithHint(const char* label, const char* hint, String& str,
@@ -105,11 +105,11 @@ namespace Rift::UI
 		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 		flags |= ImGuiInputTextFlags_CallbackResize;
 
-		InputTextCallback_StringUserData cbUserData;
+		InputTextCallbackStringUserData cbUserData;
 		cbUserData.str                   = &str;
 		cbUserData.chainCallback         = callback;
 		cbUserData.chainCallbackUserData = userData;
-		return ImGui::InputTextWithHint(label, hint, (char*) str.c_str(), str.capacity() + 1, flags,
+		return ImGui::InputTextWithHint(label, hint, (char*)str.c_str(), str.capacity() + 1, flags,
 		    InputTextCallback, &cbUserData);
 	}
 
@@ -121,22 +121,22 @@ namespace Rift::UI
 		ImVec2 pos   = window->DC.CursorPos;
 		pos.y += window->DC.CurrLineTextBaseOffset;
 
-		const float min_x = window->ParentWorkRect.Min.x;
-		const float max_x = window->ParentWorkRect.Max.x;
+		const float minX = window->ParentWorkRect.Min.x;
+		const float maxX = window->ParentWorkRect.Max.x;
 
-		const ImVec2 size{Math::Max(desiredSize.x, max_x - min_x), desiredSize.y};
-		ImRect bb{min_x, pos.y, min_x + size.x, pos.y + size.y};
+		const ImVec2 size{Math::Max(desiredSize.x, maxX - minX), desiredSize.y};
+		ImRect bb{minX, pos.y, minX + size.x, pos.y + size.y};
 
 		if (addhalfItemSpacing)
 		{
-			const float spacing_x = 0;
-			const float spacing_y = style.ItemSpacing.y;
-			const float spacing_L = IM_FLOOR(spacing_x * 0.50f);
-			const float spacing_U = IM_FLOOR(spacing_y * 0.50f);
-			bb.Min.x -= spacing_L;
-			bb.Min.y -= spacing_U;
-			bb.Max.x += (spacing_x - spacing_L);
-			bb.Max.y += (spacing_y - spacing_U);
+			const float spacingX = 0;
+			const float spacingY = style.ItemSpacing.y;
+			const float spacingL = IM_FLOOR(spacingX * 0.50f);
+			const float spacingU = IM_FLOOR(spacingY * 0.50f);
+			bb.Min.x -= spacingL;
+			bb.Min.y -= spacingU;
+			bb.Max.x += (spacingX - spacingL);
+			bb.Max.y += (spacingY - spacingU);
 		}
 		bb.Min.x -= extent.x;
 		bb.Min.y -= extent.y;
@@ -145,7 +145,7 @@ namespace Rift::UI
 		return bb;
 	}
 
-	static ImGuiID pendingEditingId = 0;
+	static ImGuiID gPendingEditingId = 0;
 
 	bool MutableText(StringView label, String& text)
 	{
@@ -177,12 +177,12 @@ namespace Rift::UI
 			return false;
 		}
 
-		if (pendingEditingId == id ||
-		    (UI::IsItemHovered() && UI::IsMouseDoubleClicked(ImGuiMouseButton_Left)))
+		if (gPendingEditingId == id
+		    || (UI::IsItemHovered() && UI::IsMouseDoubleClicked(ImGuiMouseButton_Left)))
 		{
-			if (pendingEditingId == id)
+			if (gPendingEditingId == id)
 			{
-				pendingEditingId = 0;
+				gPendingEditingId = 0;
 			}
 			editingId = id;
 			buffer    = text;
@@ -205,6 +205,6 @@ namespace Rift::UI
 
 	void SetEditingMutableText(StringView label)
 	{
-		pendingEditingId = UI::GetID(label);
+		gPendingEditingId = UI::GetID(label);
 	}
 }    // namespace Rift::UI

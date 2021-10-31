@@ -1,7 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "UI/Style.h"
 #include "UI/Window.h"
+
+#include "UI/Style.h"
 
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
@@ -11,15 +12,14 @@
 #include <GL/gl3w.h>
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
-
 #include <Log.h>
-#include <Profiler.h>
 #include <Math/Color.h>
+#include <Profiler.h>
 
 
 namespace Rift::UI
 {
-	static GLFWwindow* window = nullptr;
+	static GLFWwindow* gWindow = nullptr;
 
 	void OnGl3WError(int error, const char* description)
 	{
@@ -46,20 +46,20 @@ namespace Rift::UI
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);              // Required on Mac
 #else
 		// GL 3.0 + GLSL 130
-		const char* glsl_version = "#version 130";
+		const char* glslVersion = "#version 130";
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 		// glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
 		// glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
-		window = glfwCreateWindow(1280, 900, "Rift", nullptr, nullptr);
-		if (window == nullptr)
+		gWindow = glfwCreateWindow(1280, 900, "Rift", nullptr, nullptr);
+		if (gWindow == nullptr)
 		{
 			return false;
 		}
 
-		glfwMakeContextCurrent(window);
+		glfwMakeContextCurrent(gWindow);
 		glfwSwapInterval(1);    // Enable vsync
 
 		// Initialize OpenGL loader
@@ -73,8 +73,8 @@ namespace Rift::UI
 		ImGui::CreateContext();
 
 		ImGuiIO& io = ImGui::GetIO();
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable |
-		                  ImGuiConfigFlags_ViewportsEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable
+		                  | ImGuiConfigFlags_ViewportsEnable;
 		io.ConfigDockingAlwaysTabBar = true;
 
 		Style::PushGeneralStyle();
@@ -87,24 +87,24 @@ namespace Rift::UI
 		}
 
 		// Setup Platform/Renderer backends
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init(glsl_version);
+		ImGui_ImplGlfw_InitForOpenGL(gWindow, true);
+		ImGui_ImplOpenGL3_Init(glslVersion);
 		return true;
 	}
 
 	void Shutdown()
 	{
 		Style::PopGeneralStyle();
-		if (window)
+		if (gWindow)
 		{
 			// Cleanup
 			ImGui_ImplOpenGL3_Shutdown();
 			ImGui_ImplGlfw_Shutdown();
 			ImGui::DestroyContext();
 
-			glfwDestroyWindow(window);
+			glfwDestroyWindow(gWindow);
 			glfwTerminate();
-			window = nullptr;
+			gWindow = nullptr;
 		}
 	}
 
@@ -123,9 +123,9 @@ namespace Rift::UI
 		ZoneScopedNC("Render", 0xA245D1);
 
 		ImGui::Render();
-		i32 display_w, display_h;
-		glfwGetFramebufferSize(window, &display_w, &display_h);
-		glViewport(0, 0, display_w, display_h);
+		i32 displayW, displayH;
+		glfwGetFramebufferSize(gWindow, &displayW, &displayH);
+		glViewport(0, 0, displayW, displayH);
 
 		static constexpr Rift::LinearColor clearColor{0.1f, 0.1f, 0.1f, 1.00f};
 		glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
@@ -139,26 +139,26 @@ namespace Rift::UI
 		//  directly)
 		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
-			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+			GLFWwindow* backupCurrentContext = glfwGetCurrentContext();
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent(backup_current_context);
+			glfwMakeContextCurrent(backupCurrentContext);
 		}
-		glfwSwapBuffers(window);
+		glfwSwapBuffers(gWindow);
 	}
 
 	void Close()
 	{
-		glfwSetWindowShouldClose(window, true);
+		glfwSetWindowShouldClose(gWindow, true);
 	}
 
 	bool WantsToClose()
 	{
-		return glfwWindowShouldClose(window);
+		return glfwWindowShouldClose(gWindow);
 	}
 
 	GLFWwindow* GetWindow()
 	{
-		return window;
+		return gWindow;
 	}
 }    // namespace Rift::UI

@@ -13,8 +13,8 @@
 
 namespace Rift
 {
-	static constexpr Color freeColor{210, 56, 41};    // Red
-	static constexpr Color usedColor{56, 210, 41};    // Green
+	static constexpr Color gFreeColor{210, 56, 41};    // Red
+	static constexpr Color gUsedColor{56, 210, 41};    // Green
 
 	using namespace Memory;
 
@@ -39,7 +39,7 @@ namespace Rift
 
 		const ImGuiStyle& style = g.Style;
 		const ImGuiID id        = window->GetID(label.data());
-		const ImVec2 label_size = UI::CalcTextSize(label.data(), NULL, true);
+		const ImVec2 labelSize  = UI::CalcTextSize(label.data(), nullptr, true);
 
 		if (graphSize.x == 0.0f)
 		{
@@ -47,7 +47,7 @@ namespace Rift
 		}
 		if (graphSize.y == 0.0f)
 		{
-			graphSize.y = label_size.y;
+			graphSize.y = labelSize.y;
 		}
 
 		grid.UpdateGridScale(graphSize.x);
@@ -57,7 +57,7 @@ namespace Rift
 
 		const ImRect totalBox(ImVec2(frameBox.Min),
 		    ImVec2(v2(frameBox.Max.x, frameBox.Max.y)
-		           + v2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0)));
+		           + v2(labelSize.x > 0.0f ? style.ItemInnerSpacing.x + labelSize.x : 0.0f, 0)));
 
 		UI::ItemSize(totalBox, style.FramePadding.y);
 		if (!UI::ItemAdd(totalBox, 0, &frameBox))
@@ -71,12 +71,12 @@ namespace Rift
 
 		// Render
 		{
-			DrawMemoryRect(
-			    window, grid, frameBox, {0, 0}, {grid.numColumns - 1, grid.numRows - 2}, usedColor);
+			DrawMemoryRect(window, grid, frameBox, {0, 0}, {grid.numColumns - 1, grid.numRows - 2},
+			    gUsedColor);
 			DrawMemoryRect(window, grid, frameBox, {0, grid.numRows - 1},
-			    {grid.GetX(grid.block->GetSize()), grid.numRows - 1}, usedColor);
+			    {grid.GetX(grid.block->GetSize()), grid.numRows - 1}, gUsedColor);
 
-			DrawMemoryRect(window, grid, frameBox, {0, 0}, {0, 0}, freeColor);
+			DrawMemoryRect(window, grid, frameBox, {0, 0}, {0, 0}, gFreeColor);
 
 			for (auto& slot : freeSlots)
 			{
@@ -91,25 +91,26 @@ namespace Rift
 				if (startY != endY)
 				{
 					DrawMemoryRect(window, grid, frameBox, {startX, startY},
-					    {grid.numColumns - 1, startY}, freeColor);
+					    {grid.numColumns - 1, startY}, gFreeColor);
 
-					DrawMemoryRect(window, grid, frameBox, {0, endY}, {endX, endY}, freeColor);
+					DrawMemoryRect(window, grid, frameBox, {0, endY}, {endX, endY}, gFreeColor);
 
 					// Draw full rows
 					if (endY - startY > 1)
 					{
 						DrawMemoryRect(window, grid, frameBox, {0, startY + 1},
-						    {grid.numColumns - 1, endY - 1}, freeColor);
+						    {grid.numColumns - 1, endY - 1}, gFreeColor);
 					}
 				}
 				else
 				{
-					DrawMemoryRect(window, grid, frameBox, {startX, endY}, {endX, endY}, freeColor);
+					DrawMemoryRect(
+					    window, grid, frameBox, {startX, endY}, {endX, endY}, gFreeColor);
 				}
 			}
 		}
 
-		if (label_size.x > 0.0f)
+		if (labelSize.x > 0.0f)
 		{
 			UI::RenderText(
 			    ImVec2(frameBox.Max.x + style.ItemInnerSpacing.x, frameBox.Min.y), label.data());

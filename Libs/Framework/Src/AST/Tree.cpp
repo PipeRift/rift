@@ -18,12 +18,12 @@ namespace Rift::AST
 		CachePools();
 	}
 
-	Tree::Tree(Tree&& other)
+	Tree::Tree(Tree&& other) noexcept
 	{
 		registry = Move(other.registry);
 		CachePools();
 	}
-	Tree& Tree::operator=(Tree&& other)
+	Tree& Tree::operator=(Tree&& other) noexcept
 	{
 		registry = Move(other.registry);
 		CachePools();

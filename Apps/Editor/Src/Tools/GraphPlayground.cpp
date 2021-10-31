@@ -1,7 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "DockSpaceLayout.h"
 #include "Tools/GraphPlayground.h"
+
+#include "DockSpaceLayout.h"
 #include "Uniques/CEditorUnique.h"
 #include "Utils/FunctionGraph.h"
 

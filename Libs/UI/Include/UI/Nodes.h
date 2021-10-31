@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Math/Color.h>
 #include <Math/Vector.h>
 #include <stddef.h>
 
@@ -203,9 +204,9 @@ namespace Rift::Nodes
 
 		// By default, StyleFlags_NodeOutline and StyleFlags_Gridlines are enabled.
 		StyleFlags Flags;
-		// Set these mid-frame using Push/PopColorStyle. You can index this color array with with a
+		// Set these mid-frame using Push/PopStyleColor. You can index this color array with with a
 		// Color value.
-		unsigned int colors[u8(ColorVar_COUNT)];
+		Color colors[u8(ColorVar_COUNT)];
 
 		Style();
 	};
@@ -276,9 +277,9 @@ namespace Rift::Nodes
 	    const MiniMapNodeHoveringCallback node_hovering_callback = NULL,
 	    const MiniMapNodeHoveringCallbackUserData node_hovering_callback_data = NULL);
 
-	// Use PushColorStyle and PopColorStyle to modify Style::Colors mid-frame.
-	void PushColorStyle(ColorVar item, unsigned int color);
-	void PopColorStyle();
+	// Use PushStyleColor and PopStyleColor to modify Style::Colors mid-frame.
+	void PushStyleColor(ColorVar item, Color color);
+	void PopStyleColor(i32 count = 1);
 	void PushStyleVar(StyleVar style_item, float value);
 	void PushStyleVar(StyleVar style_item, const v2& value);
 	void PopStyleVar(int count = 1);

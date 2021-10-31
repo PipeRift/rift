@@ -25,7 +25,7 @@ namespace Rift
 {
 	void FileExplorerPanel::Draw(AST::Tree& ast)
 	{
-		CEditorUnique& editor = ast.GetUnique<CEditorUnique>();
+		auto& editor = ast.GetUnique<CEditorUnique>();
 		editor.layout.BindNextWindowToNode(CEditorUnique::leftNode);
 
 		if (UI::Begin(

@@ -242,7 +242,7 @@ namespace Rift::EditorSystem
 		{
 			return;
 		}
-		CEditorUnique& editor = ast.GetUnique<CEditorUnique>();
+		auto& editor = ast.GetUnique<CEditorUnique>();
 
 		const auto& path = Modules::GetProjectPath(ast);
 		UI::PushID(Hash<Path>()(path));
