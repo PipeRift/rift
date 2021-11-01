@@ -226,8 +226,8 @@ namespace Rift
 	void DrawFunctions(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId)
 	{
 		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen
-		                                 | ImGuiTreeNodeFlags_AllowItemOverlap
-		                                 | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
+		                               | ImGuiTreeNodeFlags_AllowItemOverlap
+		                               | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
 		if (UI::CollapsingHeader("Functions", flags))
 		{
 			auto functionView = ast.MakeView<CFunctionDecl>();

@@ -9,8 +9,11 @@
 
 namespace Rift::Types
 {
-	void InitFromCategory(AST::Tree& ast, AST::Id id, TypeCategory category);
+	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, TypeCategory category);
 	TypeCategory GetCategory(AST::Tree& ast, AST::Id id);
+
+
+	AST::Id CreateLiteral(AST::Tree& ast, AST::Id typeId, AST::Id parentId);
 
 	void Serialize(AST::Tree& ast, AST::Id id, String& data);
 

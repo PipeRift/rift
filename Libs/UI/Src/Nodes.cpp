@@ -258,14 +258,14 @@ namespace Rift::Nodes
 	v2 MiniMapSpaceToGridSpace(const EditorContext& editor, const v2& v)
 	{
 		return (v - editor.miniMapContentScreenSpace.min) / editor.miniMapScaling
-		       + editor.gridContentBounds.min;
+		     + editor.gridContentBounds.min;
 	};
 
 	v2 ScreenSpaceToMiniMapSpace(const EditorContext& editor, const v2& v)
 	{
 		return (ScreenSpaceToGridSpace(editor, v) - editor.gridContentBounds.min)
-		           * editor.miniMapScaling
-		       + editor.miniMapContentScreenSpace.min;
+		         * editor.miniMapScaling
+		     + editor.miniMapContentScreenSpace.min;
 	};
 
 	Rect ScreenSpaceToMiniMapSpace(const EditorContext& editor, const Rect& r)
@@ -528,7 +528,7 @@ namespace Rift::Nodes
 		const bool isWindowHoveredOrFocused = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
 
 		return isWindowHoveredOrFocused
-		       && gNodes->CanvasRectScreenSpace.Contains(ImGui::GetMousePos());
+		    && gNodes->CanvasRectScreenSpace.Contains(ImGui::GetMousePos());
 	}
 
 	void BeginNodeSelection(EditorContext& editor, const i32 nodeIdx)
@@ -626,8 +626,8 @@ namespace Rift::Nodes
 		// This will in a link detach via clicking.
 
 		const bool modifierPressed = gNodes->Io.LinkDetachWithModifierClick.Modifier == nullptr
-		                                 ? false
-		                                 : *gNodes->Io.LinkDetachWithModifierClick.Modifier;
+		                               ? false
+		                               : *gNodes->Io.LinkDetachWithModifierClick.Modifier;
 
 		if (modifierPressed)
 		{
@@ -954,8 +954,8 @@ namespace Rift::Nodes
 				                                     : ImOptionalIndex();
 
 				const bool shouldSnap = gNodes->HoveredPinIdx.HasValue()
-				                        && ShouldLinkSnapToPin(editor, startPin,
-				                            gNodes->HoveredPinIdx.Value(), maybeDuplicateLinkIdx);
+				                     && ShouldLinkSnapToPin(editor, startPin,
+				                         gNodes->HoveredPinIdx.Value(), maybeDuplicateLinkIdx);
 
 				// If we created on snap and the hovered pin is empty or changed, then we need
 				// signal that the link's state has changed.
@@ -1395,9 +1395,8 @@ namespace Rift::Nodes
 		const NodeData& node = editor.Nodes.Pool[nodeIdx];
 		ImGui::SetCursorPos(node.Origin + editor.Panning);
 
-		const bool nodeHovered =
-		    gNodes->HoveredNodeIdx == nodeIdx
-		    && editor.ClickInteraction.Type != ClickInteractionType_BoxSelection;
+		const bool nodeHovered = gNodes->HoveredNodeIdx == nodeIdx
+		                      && editor.ClickInteraction.Type != ClickInteractionType_BoxSelection;
 
 		Color nodeBackground     = node.ColorStyle.Background;
 		Color titlebarBackground = node.ColorStyle.Titlebar;
@@ -1463,9 +1462,8 @@ namespace Rift::Nodes
 		const CubicBezier cubicBezier = GetCubicBezier(
 		    startPin.Pos, endPin.Pos, startPin.Type, gNodes->Style.LinkLineSegmentsPerLength);
 
-		const bool linkHovered =
-		    gNodes->HoveredLinkIdx == linkIdx
-		    && editor.ClickInteraction.Type != ClickInteractionType_BoxSelection;
+		const bool linkHovered = gNodes->HoveredLinkIdx == linkIdx
+		                      && editor.ClickInteraction.Type != ClickInteractionType_BoxSelection;
 
 		if (linkHovered)
 		{
@@ -1580,8 +1578,8 @@ namespace Rift::Nodes
 	{
 		EditorContext& editor = EditorContextGet();
 		return IsMiniMapActive()
-		       && ImGui::IsMouseHoveringRect(
-		           editor.miniMapRectScreenSpace.min, editor.miniMapRectScreenSpace.max);
+		    && ImGui::IsMouseHoveringRect(
+		        editor.miniMapRectScreenSpace.min, editor.miniMapRectScreenSpace.max);
 	}
 
 	static void CalcMiniMapLayout()
@@ -1599,8 +1597,8 @@ namespace Rift::Nodes
 			    ImFloor(editorRect.GetSize() * editor.miniMapSizeFraction - border * 2.0f);
 			const float maxSizeAspectRatio     = maxSize.x / maxSize.y;
 			const v2 gridContentSize           = editor.gridContentBounds.IsInverted()
-			                                         ? maxSize
-			                                         : editor.gridContentBounds.GetSize().Floor();
+			                                       ? maxSize
+			                                       : editor.gridContentBounds.GetSize().Floor();
 			const float gridContentAspectRatio = gridContentSize.x / gridContentSize.y;
 			miniMapSize                        = ImFloor(gridContentAspectRatio > maxSizeAspectRatio
 			                                                 ? v2(maxSize.x, maxSize.x / gridContentAspectRatio)
@@ -1784,8 +1782,8 @@ namespace Rift::Nodes
 		ImGui::EndChild();
 
 		const bool centerOnClick = miniMapIsHovered && ImGui::IsMouseDown(ImGuiMouseButton_Left)
-		                           && editor.ClickInteraction.Type == ClickInteractionType_None
-		                           && !gNodes->NodeIdxSubmissionOrder.empty();
+		                        && editor.ClickInteraction.Type == ClickInteractionType_None
+		                        && !gNodes->NodeIdxSubmissionOrder.empty();
 		if (centerOnClick)
 		{
 			v2 target      = MiniMapSpaceToGridSpace(editor, ImGui::GetMousePos());
@@ -2247,10 +2245,9 @@ namespace Rift::Nodes
 				BeginCanvasi32eraction(editor);
 			}
 
-			bool shouldAutoPan =
-			    editor.ClickInteraction.Type == ClickInteractionType_BoxSelection
-			    || editor.ClickInteraction.Type == ClickInteractionType_LinkCreation
-			    || editor.ClickInteraction.Type == ClickInteractionType_Node;
+			bool shouldAutoPan = editor.ClickInteraction.Type == ClickInteractionType_BoxSelection
+			                  || editor.ClickInteraction.Type == ClickInteractionType_LinkCreation
+			                  || editor.ClickInteraction.Type == ClickInteractionType_Node;
 			if (shouldAutoPan && !MouseInCanvas())
 			{
 				v2 mouse     = ImGui::GetMousePos();

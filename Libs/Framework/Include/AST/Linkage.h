@@ -21,7 +21,7 @@ namespace Rift::AST
 	Id CreateFunction(Tree& ast, Name name);
 
 	// Link a list of nodes at the end of the parent children list
-	void Link(Tree& ast, Id node, TArrayView<Id> children);
+	void Link(Tree& ast, Id node, TArrayView<const Id> children);
 	// Link a list of nodes after prevChild in the list of children nodes
 	void LinkAfter(Tree& ast, Id node, Id prevChild, TArrayView<Id> children);
 	void TransferLinks(Tree& ast, TArrayView<Id> children, Id destination);

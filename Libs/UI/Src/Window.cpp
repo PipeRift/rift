@@ -74,7 +74,7 @@ namespace Rift::UI
 
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable
-		                  | ImGuiConfigFlags_ViewportsEnable;
+		                | ImGuiConfigFlags_ViewportsEnable;
 		io.ConfigDockingAlwaysTabBar = true;
 
 		Style::PushGeneralStyle();

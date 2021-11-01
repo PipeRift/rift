@@ -14,6 +14,21 @@
 
 namespace Rift::AST
 {
+	struct NativeTypeIds
+	{
+		AST::Id boolId   = AST::NoId;
+		AST::Id floatId  = AST::NoId;
+		AST::Id doubleId = AST::NoId;
+		AST::Id u8Id     = AST::NoId;
+		AST::Id i8Id     = AST::NoId;
+		AST::Id u16Id    = AST::NoId;
+		AST::Id i16Id    = AST::NoId;
+		AST::Id u32Id    = AST::NoId;
+		AST::Id i32Id    = AST::NoId;
+		AST::Id u64Id    = AST::NoId;
+		AST::Id i64Id    = AST::NoId;
+	};
+
 	struct Tree
 	{
 		using Registry = entt::basic_registry<Id>;
@@ -23,6 +38,7 @@ namespace Rift::AST
 		Registry registry;
 		TOwnPtr<View<TExclude<>, CChild>> childView;
 		TOwnPtr<View<TExclude<>, CParent>> parentView;
+		NativeTypeIds nativeTypes;
 
 
 	public:
@@ -269,6 +285,11 @@ namespace Rift::AST
 		auto OnUpdate()
 		{
 			return registry.on_update<Component>();
+		}
+
+		const NativeTypeIds& GetNativeTypes() const
+		{
+			return nativeTypes;
 		}
 
 		Registry& GetRegistry()

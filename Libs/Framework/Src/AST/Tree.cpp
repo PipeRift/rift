@@ -51,60 +51,60 @@ namespace Rift::AST
 
 	void Tree::SetupNativeTypes()
 	{
-		AST::Id boolType = Create();
-		Add<CNativeDecl, CType>(boolType);
-		Add<CIdentifier>(boolType, "bool");
-		Add<CCppNativeName>(boolType, "bool");
+		nativeTypes.boolId = Create();
+		Add<CNativeDecl, CType>(nativeTypes.boolId);
+		Add<CIdentifier>(nativeTypes.boolId, "bool");
+		Add<CCppNativeName>(nativeTypes.boolId, "bool");
 
-		AST::Id floatType = Create();
-		Add<CNativeDecl, CType>(floatType);
-		Add<CIdentifier>(floatType, "float");
-		Add<CCppNativeName>(floatType, "float");
+		nativeTypes.floatId = Create();
+		Add<CNativeDecl, CType>(nativeTypes.floatId);
+		Add<CIdentifier>(nativeTypes.floatId, "float");
+		Add<CCppNativeName>(nativeTypes.floatId, "float");
 
-		AST::Id doubleType = Create();
-		Add<CNativeDecl, CType>(doubleType);
-		Add<CIdentifier>(doubleType, "double");
-		Add<CCppNativeName>(doubleType, "double");
+		nativeTypes.doubleId = Create();
+		Add<CNativeDecl, CType>(nativeTypes.doubleId);
+		Add<CIdentifier>(nativeTypes.doubleId, "double");
+		Add<CCppNativeName>(nativeTypes.doubleId, "double");
 
-		AST::Id u8Type = Create();
-		Add<CNativeDecl, CType>(u8Type);
-		Add<CIdentifier>(u8Type, "u8");
-		Add<CCppNativeName>(u8Type, "std::uint_8");
+		nativeTypes.u8Id = Create();
+		Add<CNativeDecl, CType>(nativeTypes.u8Id);
+		Add<CIdentifier>(nativeTypes.u8Id, "u8");
+		Add<CCppNativeName>(nativeTypes.u8Id, "std::uint_8");
 
-		AST::Id i8Type = Create();
-		Add<CNativeDecl, CType>(i8Type);
-		Add<CIdentifier>(i8Type, "i8");
-		Add<CCppNativeName>(i8Type, "std::int_8");
+		nativeTypes.i8Id = Create();
+		Add<CNativeDecl, CType>(nativeTypes.i8Id);
+		Add<CIdentifier>(nativeTypes.i8Id, "i8");
+		Add<CCppNativeName>(nativeTypes.i8Id, "std::int_8");
 
-		AST::Id u16Type = Create();
-		Add<CNativeDecl, CType>(u16Type);
-		Add<CIdentifier>(u16Type, "u16");
-		Add<CCppNativeName>(u16Type, "std::uint_16");
+		nativeTypes.u16Id = Create();
+		Add<CNativeDecl, CType>(nativeTypes.u16Id);
+		Add<CIdentifier>(nativeTypes.u16Id, "u16");
+		Add<CCppNativeName>(nativeTypes.u16Id, "std::uint_16");
 
-		AST::Id i16Type = Create();
-		Add<CNativeDecl, CType>(i16Type);
-		Add<CIdentifier>(i16Type, "i16");
-		Add<CCppNativeName>(i16Type, "std::int_16");
+		nativeTypes.i16Id = Create();
+		Add<CNativeDecl, CType>(nativeTypes.i16Id);
+		Add<CIdentifier>(nativeTypes.i16Id, "i16");
+		Add<CCppNativeName>(nativeTypes.i16Id, "std::int_16");
 
-		AST::Id u32Type = Create();
-		Add<CNativeDecl, CType>(u32Type);
-		Add<CIdentifier>(u32Type, "u32");
-		Add<CCppNativeName>(u32Type, "std::uint_32");
+		nativeTypes.u32Id = Create();
+		Add<CNativeDecl, CType>(nativeTypes.u32Id);
+		Add<CIdentifier>(nativeTypes.u32Id, "u32");
+		Add<CCppNativeName>(nativeTypes.u32Id, "std::uint_32");
 
-		AST::Id i32Type = Create();
-		Add<CNativeDecl, CType>(i32Type);
-		Add<CIdentifier>(i32Type, "i32");
-		Add<CCppNativeName>(i32Type, "std::int_32");
+		nativeTypes.i32Id = Create();
+		Add<CNativeDecl, CType>(nativeTypes.i32Id);
+		Add<CIdentifier>(nativeTypes.i32Id, "i32");
+		Add<CCppNativeName>(nativeTypes.i32Id, "std::int_32");
 
-		AST::Id u64Type = Create();
-		Add<CNativeDecl, CType>(u64Type);
-		Add<CIdentifier>(u64Type, "u64");
-		Add<CCppNativeName>(u64Type, "std::uint_64");
+		nativeTypes.u64Id = Create();
+		Add<CNativeDecl, CType>(nativeTypes.u64Id);
+		Add<CIdentifier>(nativeTypes.u64Id, "u64");
+		Add<CCppNativeName>(nativeTypes.u64Id, "std::uint_64");
 
-		AST::Id i64Type = Create();
-		Add<CNativeDecl, CType>(i64Type);
-		Add<CIdentifier>(i64Type, "i64");
-		Add<CCppNativeName>(i64Type, "std::int_64");
+		nativeTypes.i64Id = Create();
+		Add<CNativeDecl, CType>(nativeTypes.i64Id);
+		Add<CIdentifier>(nativeTypes.i64Id, "i64");
+		Add<CCppNativeName>(nativeTypes.i64Id, "std::int_64");
 	}
 
 	void Tree::CachePools()

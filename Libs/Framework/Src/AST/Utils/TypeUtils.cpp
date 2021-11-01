@@ -2,13 +2,15 @@
 
 #include "AST/Utils/TypeUtils.h"
 
+#include "AST/Components/CBoolLiteral.h"
 #include "AST/Components/CClassDecl.h"
+#include "AST/Components/CFloatLiteral.h"
 #include "AST/Components/CFunctionLibraryDecl.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CStructDecl.h"
+#include "AST/Linkage.h"
 #include "AST/Serialization.h"
 
-#include <AST/Serialization.h>
 #include <Misc/Checks.h>
 #include <Profiler.h>
 #include <Serialization/Formats/JsonFormat.h>
@@ -16,7 +18,7 @@
 
 namespace Rift::Types
 {
-	void InitFromCategory(AST::Tree& ast, AST::Id id, TypeCategory category)
+	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, TypeCategory category)
 	{
 		switch (category)
 		{
@@ -41,6 +43,32 @@ namespace Rift::Types
 			return TypeCategory::FunctionLibrary;
 		}
 		return TypeCategory::None;
+	}
+
+	AST::Id CreateLiteral(AST::Tree& ast, AST::Id typeId, AST::Id parentId)
+	{
+		const AST::Id literalId = ast.Create();
+
+		bool created        = false;
+		const auto& natives = ast.GetNativeTypes();
+		if (typeId == natives.boolId)
+		{
+			ast.Add<CBoolLiteral>(literalId);
+			created = true;
+		}
+		else if (typeId == natives.floatId)
+		{
+			ast.Add<CFloatLiteral>(literalId);
+			created = true;
+		}
+
+		if (!created)
+		{
+			ast.Destroy(literalId);
+			return AST::NoId;
+		}
+		AST::Link(ast, parentId, literalId);
+		return literalId;
 	}
 
 	void Serialize(AST::Tree& ast, AST::Id id, String& data)

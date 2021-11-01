@@ -1,8 +1,9 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "Utils/FunctionGraph.h"
+
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
-#include "Utils/FunctionGraph.h"
 #include "Utils/GraphColors.h"
 #include "Utils/TypeUtils.h"
 
@@ -122,9 +123,11 @@ namespace Rift::Graph
 						{
 							if (ImGui::MenuItem(makeStr.c_str()))
 							{
-								AST::Id newId = ast.Create();
-								ast.Add<CBoolLiteral, CGraphTransform>(newId);
-								AST::Link(ast, typeId, newId);
+								AST::Id newId = Types::CreateLiteral(ast, type.second, typeId);
+								if (newId != AST::NoId)
+								{
+									ast.Add<CGraphTransform>(newId);
+								}
 							}
 						}
 					}
@@ -165,10 +168,10 @@ namespace Rift::Graph
 
 	void DrawLiterals(AST::Tree& ast, TArray<AST::Id>& children)
 	{
-		auto calls = ast.MakeView<CBoolLiteral>();
+		auto boolLiterals = ast.MakeView<CBoolLiteral>();
 		for (AST::Id child : children)
 		{
-			if (auto* literal = calls.TryGet<CBoolLiteral>(child))
+			if (auto* literal = boolLiterals.TryGet<CBoolLiteral>(child))
 			{
 				DrawBoolLiteralNode(child, literal->value);
 			}
@@ -368,7 +371,6 @@ namespace Rift::Graph
 		{
 			Nodes::BeginOutputAttribute(i32(id), PinShape_CircleFilled);
 			PushInnerNodeStyle();
-
 			ImGuiStyle& style     = ImGui::GetStyle();
 			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
 			const v2 minSize{settings.GetGridSize() * 4.f, settings.GetGridSize()};

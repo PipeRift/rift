@@ -59,7 +59,7 @@ namespace Rift::AST
 	}
 
 
-	void Link(Tree& ast, Id node, TArrayView<Id> children)
+	void Link(Tree& ast, Id node, TArrayView<const Id> children)
 	{
 		children.Each([&ast, node](Id child) {
 			if (CChild* cChild = GetCChild(ast, child))

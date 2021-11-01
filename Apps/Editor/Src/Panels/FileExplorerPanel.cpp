@@ -368,7 +368,7 @@ namespace Rift
 		    true);
 
 		AST::Id tmpType = ast.Create();
-		Types::InitFromCategory(ast, tmpType, category);
+		Types::InitTypeFromCategory(ast, tmpType, category);
 
 		String data;
 		Types::Serialize(ast, tmpType, data);

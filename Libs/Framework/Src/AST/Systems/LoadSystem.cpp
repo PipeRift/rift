@@ -263,7 +263,7 @@ namespace Rift::LoadSystem
 			AST::Id entity        = typeIds[i];
 			TypeCategory category = TypeCategory::None;
 			ct.Next("type", category);
-			Types::InitFromCategory(ast, entity, category);
+			Types::InitTypeFromCategory(ast, entity, category);
 
 			ct.SerializeRoot(entity);
 
