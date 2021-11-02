@@ -1,8 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "AST/Utils/TypeUtils.h"
-
 #include "AST/Components/CBoolLiteral.h"
+#include "AST/Components/CCallExpr.h"
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CFloatLiteral.h"
 #include "AST/Components/CFunctionLibraryDecl.h"
@@ -10,6 +9,7 @@
 #include "AST/Components/CStructDecl.h"
 #include "AST/Linkage.h"
 #include "AST/Serialization.h"
+#include "AST/Utils/TypeUtils.h"
 
 #include <Misc/Checks.h>
 #include <Profiler.h>
@@ -69,6 +69,18 @@ namespace Rift::Types
 		}
 		AST::Link(ast, parentId, literalId);
 		return literalId;
+	}
+
+	AST::Id CreateCall(AST::Tree& ast, AST::Id functionId, AST::Id parentId)
+	{
+		const AST::Id callId = ast.Create();
+
+		// TODO: Reference the function
+		auto& expr      = ast.Add<CCallExpr>(callId);
+		expr.functionId = functionId;
+
+		AST::Link(ast, parentId, callId);
+		return callId;
 	}
 
 	void Serialize(AST::Tree& ast, AST::Id id, String& data)

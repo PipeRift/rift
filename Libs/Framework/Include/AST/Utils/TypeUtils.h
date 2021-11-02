@@ -14,6 +14,7 @@ namespace Rift::Types
 
 
 	AST::Id CreateLiteral(AST::Tree& ast, AST::Id typeId, AST::Id parentId);
+	AST::Id CreateCall(AST::Tree& ast, AST::Id functionId, AST::Id parentId);
 
 	void Serialize(AST::Tree& ast, AST::Id id, String& data);
 

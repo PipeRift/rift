@@ -138,6 +138,35 @@ namespace Rift::Graph
 					ImGui::TreePop();
 				}
 			}
+
+			if (filter.IsActive() || ImGui::TreeNode("Functions"))
+			{
+				auto functions   = ast.MakeView<CFunctionDecl>();
+				auto identifiers = ast.MakeView<CIdentifier>();
+				for (AST::Id functionId : functions)
+				{
+					if (auto* iden = identifiers.TryGet<CIdentifier>(functionId))
+					{
+						const String& name = iden->name.ToString();
+						if (filter.PassFilter(name.c_str(), name.c_str() + name.size()))
+						{
+							if (ImGui::MenuItem(name.c_str()))
+							{
+								AST::Id newId = Types::CreateCall(ast, functionId, typeId);
+								if (newId != AST::NoId)
+								{
+									ast.Add<CGraphTransform>(newId);
+								}
+							}
+						}
+					}
+				}
+
+				if (!filter.IsActive())
+				{
+					ImGui::TreePop();
+				}
+			}
 			ImGui::EndPopup();
 		}
 	}
