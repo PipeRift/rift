@@ -13,5 +13,8 @@ namespace Rift
 
 		PROP(position)
 		v2 position;
+
+		CGraphTransform() {}
+		CGraphTransform(v2 position) : position(position) {}
 	};
 }    // namespace Rift

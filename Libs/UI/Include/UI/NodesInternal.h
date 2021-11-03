@@ -387,7 +387,7 @@ namespace Rift::Nodes
 	};
 
 
-	static inline EditorContext& EditorContextGet()
+	static inline EditorContext& GetEditorContext()
 	{
 		// No editor context was set! Did you forget to call Nodes::CreateContext()?
 		assert(gNodes->EditorCtx != nullptr);
@@ -436,7 +436,7 @@ namespace Rift::Nodes
 				{
 					// Remove node idx form depth stack the first time we detect that this idx slot
 					// is unused
-					ImVector<int>& depth_stack = EditorContextGet().NodeDepthOrder;
+					ImVector<int>& depth_stack = GetEditorContext().NodeDepthOrder;
 					const int* const elem      = depth_stack.find(i);
 					assert(elem != depth_stack.end());
 					depth_stack.erase(elem);
@@ -513,7 +513,7 @@ namespace Rift::Nodes
 			IM_PLACEMENT_NEW(nodes.Pool.Data + node_idx) NodeData(node_id);
 			nodes.IdMap.SetInt(static_cast<ImGuiID>(node_id), node_idx);
 
-			EditorContext& editor = EditorContextGet();
+			EditorContext& editor = GetEditorContext();
 			editor.NodeDepthOrder.push_back(node_idx);
 		}
 

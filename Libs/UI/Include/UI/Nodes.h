@@ -241,7 +241,8 @@ namespace Rift::Nodes
 
 
 	// Call this function if you are compiling UI in to a dll, separate from ImGui. Calling
-	// this function sets the GImGui global variable, which is not shared across dll boundaries.
+	// this function sets the GImGui global variable, which is not shared across dll
+	// boundaries.
 	void SetImGuiContext(ImGuiContext* ctx);
 
 	Context* CreateContext();
@@ -252,7 +253,7 @@ namespace Rift::Nodes
 	EditorContext* EditorContextCreate();
 	void EditorContextFree(EditorContext*);
 	void EditorContextSet(EditorContext*);
-	v2 EditorContextGetPanning();
+	v2 GetEditorContextPanning();
 	void EditorContextResetPanning(const v2& pos);
 	void EditorContextMoveToNode(const int node_id);
 
@@ -270,6 +271,21 @@ namespace Rift::Nodes
 	void BeginNodeEditor();
 	void EndNodeEditor();
 
+
+	v2 EditorToScreenPosition(const v2& v);
+	v2 ScreenToGridPosition(const EditorContext& editor, const v2& v);
+	v2 GridToScreenPosition(const EditorContext& editor, const v2& v);
+	v2 GridToEditorPosition(const EditorContext& editor, const v2& v);
+	v2 EditorToGridPosition(const EditorContext& editor, const v2& v);
+	v2 MiniMapToGridPosition(const EditorContext& editor, const v2& v);
+	v2 ScreenToGridPosition(const v2& v);
+	v2 GridToScreenPosition(const v2& v);
+	v2 GridToEditorPosition(const v2& v);
+	v2 EditorToGridPosition(const v2& v);
+	v2 MiniMapToGridPosition(const v2& v);
+	v2 ScreenToMiniMapPosition(const v2& v);
+
+
 	// Add a navigable minimap to the editor; call before EndNodeEditor after all
 	// nodes and links have been specified
 	void MiniMap(const float minimap_size_fraction               = 0.2f,
@@ -284,16 +300,16 @@ namespace Rift::Nodes
 	void PushStyleVar(StyleVar style_item, const v2& value);
 	void PopStyleVar(int count = 1);
 
-	// id can be any positive or negative integer, but INT_MIN is currently reserved for internal
-	// use.
+	// id can be any positive or negative integer, but INT_MIN is currently reserved for
+	// internal use.
 	void BeginNode(int id);
 	void EndNode();
 
 	v2 GetNodeDimensions(int id);
 
 	// Place your node title bar content (such as the node title, using ImGui::Text) between the
-	// following function calls. These functions have to be called before adding any attributes, or
-	// the layout of the node will be incorrect.
+	// following function calls. These functions have to be called before adding any attributes,
+	// or the layout of the node will be incorrect.
 	void BeginNodeTitleBar();
 	void EndNodeTitleBar();
 
@@ -301,8 +317,8 @@ namespace Rift::Nodes
 	// rendered next to them. Links are created between pins.
 	//
 	// The activity status of an attribute can be checked via the IsAttributeActive() and
-	// IsAnyAttributeActive() function calls. This is one easy way of checking for any changes made
-	// to an attribute's drag float UI, for instance.
+	// IsAnyAttributeActive() function calls. This is one easy way of checking for any changes
+	// made to an attribute's drag float UI, for instance.
 	//
 	// Each attribute id must be unique.
 
@@ -312,9 +328,9 @@ namespace Rift::Nodes
 	// Create an output attribute block. The pin is rendered on the right side.
 	void BeginOutputAttribute(int id, PinShape shape = PinShape_CircleFilled);
 	void EndOutputAttribute();
-	// Create a static attribute block. A static attribute has no pin, and therefore can't be linked
-	// to anything. However, you can still use IsAttributeActive() and IsAnyAttributeActive() to
-	// check for attribute activity.
+	// Create a static attribute block. A static attribute has no pin, and therefore can't be
+	// linked to anything. However, you can still use IsAttributeActive() and
+	// IsAnyAttributeActive() to check for attribute activity.
 	void BeginStaticAttribute(int id);
 	void EndStaticAttribute();
 
@@ -323,8 +339,9 @@ namespace Rift::Nodes
 	void PopAttributeFlag();
 
 	// Render a link between attributes.
-	// The attributes ids used here must match the ids used in Begin(Input|Output)Attribute function
-	// calls. The order of start_attr and end_attr doesn't make a difference for rendering the link.
+	// The attributes ids used here must match the ids used in Begin(Input|Output)Attribute
+	// function calls. The order of start_attr and end_attr doesn't make a difference for
+	// rendering the link.
 	void Link(int id, int start_attribute_id, int end_attribute_id);
 
 	// Enable or disable the ability to click and drag a specific node.
@@ -332,10 +349,11 @@ namespace Rift::Nodes
 
 	// The node's position can be expressed in three coordinate systems:
 	// * screen space coordinates, -- the origin is the upper left corner of the window.
-	// * editor space coordinates -- the origin is the upper left corner of the node editor window
-	// * grid space coordinates, -- the origin is the upper left corner of the node editor window,
-	// translated by the current editor panning vector (see EditorContextGetPanning() and
-	// EditorContextResetPanning())
+	// * editor space coordinates -- the origin is the upper left corner of the node editor
+	// window
+	// * grid space coordinates, -- the origin is the upper left corner of the node editor
+	// window, translated by the current editor panning vector (see GetEditorContextPanning()
+	// and EditorContextResetPanning())
 
 	// Use the following functions to get and set the node's coordinates in these coordinate
 	// systems.
@@ -348,8 +366,8 @@ namespace Rift::Nodes
 	v2 GetNodeEditorSpacePos(const int node_id);
 	v2 GetNodeGridSpacePos(const int node_id);
 
-	// Returns true if the current node editor canvas is being hovered over by the mouse, and is not
-	// blocked by any other windows.
+	// Returns true if the current node editor canvas is being hovered over by the mouse, and is
+	// not blocked by any other windows.
 	bool IsEditorHovered();
 	// The following functions return true if a UI element is being hovered over by the mouse
 	// cursor. Assigns the id of the UI element being hovered over to the function argument. Use
@@ -358,13 +376,13 @@ namespace Rift::Nodes
 	bool IsLinkHovered(int* link_id);
 	bool IsPinHovered(int* attribute_id);
 
-	// Use The following two functions to query the number of selected nodes or links in the current
-	// editor. Use after calling EndNodeEditor().
+	// Use The following two functions to query the number of selected nodes or links in the
+	// current editor. Use after calling EndNodeEditor().
 	int NumSelectedNodes();
 	int NumSelectedLinks();
-	// Get the selected node/link ids. The pointer argument should point to an integer array with at
-	// least as many elements as the respective NumSelectedNodes/NumSelectedLinks function call
-	// returned.
+	// Get the selected node/link ids. The pointer argument should point to an integer array
+	// with at least as many elements as the respective NumSelectedNodes/NumSelectedLinks
+	// function call returned.
 	void GetSelectedNodes(int* node_ids);
 	void GetSelectedLinks(int* link_ids);
 	// Clears the list of selected nodes/links. Useful if you want to delete a selected node or
@@ -372,11 +390,11 @@ namespace Rift::Nodes
 	void ClearNodeSelection();
 	void ClearLinkSelection();
 	// Use the following functions to add or remove individual nodes or links from the current
-	// editors selection. Note that all functions require the id to be an existing valid id for this
-	// editor. Select-functions has the precondition that the object is currently considered
-	// unselected. Clear-functions has the precondition that the object is currently considered
-	// selected. Preconditions listed above can be checked via IsNodeSelected/IsLinkSelected if not
-	// already known.
+	// editors selection. Note that all functions require the id to be an existing valid id for
+	// this editor. Select-functions has the precondition that the object is currently
+	// considered unselected. Clear-functions has the precondition that the object is currently
+	// considered selected. Preconditions listed above can be checked via
+	// IsNodeSelected/IsLinkSelected if not already known.
 	void SelectNode(int node_id);
 	void ClearNodeSelection(int node_id);
 	bool IsNodeSelected(int node_id);
@@ -384,8 +402,8 @@ namespace Rift::Nodes
 	void ClearLinkSelection(int link_id);
 	bool IsLinkSelected(int link_id);
 
-	// Was the previous attribute active? This will continuously return true while the left mouse
-	// button is being pressed over the UI content of the attribute.
+	// Was the previous attribute active? This will continuously return true while the left
+	// mouse button is being pressed over the UI content of the attribute.
 	bool IsAttributeActive();
 	// Was any attribute active? If so, sets the active attribute id to the output function
 	// argument.
@@ -400,8 +418,8 @@ namespace Rift::Nodes
 	// There are two different kinds of situations to consider when handling this event:
 	// 1) a link which is created at a pin and then dropped
 	// 2) an existing link which is detached from a pin and then dropped
-	// Use the including_detached_links flag to control whether this function triggers when the user
-	// detaches a link and drops it.
+	// Use the including_detached_links flag to control whether this function triggers when the
+	// user detaches a link and drops it.
 	bool IsLinkDropped(int* started_at_attribute_id = NULL, bool including_detached_links = true);
 	// Did the user finish creating a new link?
 	bool IsLinkCreated(
@@ -409,7 +427,7 @@ namespace Rift::Nodes
 	bool IsLinkCreated(int* started_at_node_id, int* started_at_attribute_id, int* ended_at_node_id,
 	    int* ended_at_attribute_id, bool* created_from_snap = NULL);
 
-	// Was an existing link detached from a pin by the user? The detached link's id is assigned to
-	// the output argument link_id.
+	// Was an existing link detached from a pin by the user? The detached link's id is assigned
+	// to the output argument link_id.
 	bool IsLinkDestroyed(int* link_id);
 }    // namespace Rift::Nodes

@@ -7,7 +7,6 @@
 // [SECTION] API implementation
 
 #include "UI/Nodes.h"
-
 #include "UI/NodesInternal.h"
 #include "UI/UIImGui.h"
 
@@ -225,53 +224,70 @@ namespace Rift::Nodes
 
 	// [SECTION] coordinate space conversion helpers
 
-	v2 ScreenSpaceToGridSpace(const EditorContext& editor, const v2& v)
-	{
-		return v - gNodes->CanvasOriginScreenSpace - editor.Panning;
-	}
 
-	Rect ScreenSpaceToGridSpace(const EditorContext& editor, const Rect& r)
-	{
-		return {ScreenSpaceToGridSpace(editor, r.min), ScreenSpaceToGridSpace(editor, r.max)};
-	}
-
-	v2 GridSpaceToScreenSpace(const EditorContext& editor, const v2& v)
-	{
-		return v + gNodes->CanvasOriginScreenSpace + editor.Panning;
-	}
-
-	v2 GridSpaceToEditorSpace(const EditorContext& editor, const v2& v)
-	{
-		return v + editor.Panning;
-	}
-
-	v2 EditorSpaceToGridSpace(const EditorContext& editor, const v2& v)
-	{
-		return v - editor.Panning;
-	}
-
-	v2 EditorSpaceToScreenSpace(const v2& v)
+	v2 EditorToScreenPosition(const v2& v)
 	{
 		return gNodes->CanvasOriginScreenSpace + v;
 	}
 
-	v2 MiniMapSpaceToGridSpace(const EditorContext& editor, const v2& v)
+	v2 ScreenToGridPosition(const EditorContext& editor, const v2& v)
+	{
+		return v - gNodes->CanvasOriginScreenSpace - editor.Panning;
+	}
+
+	v2 GridToScreenPosition(const EditorContext& editor, const v2& v)
+	{
+		return v + gNodes->CanvasOriginScreenSpace + editor.Panning;
+	}
+
+	v2 GridToEditorPosition(const EditorContext& editor, const v2& v)
+	{
+		return v + editor.Panning;
+	}
+
+	v2 EditorToGridPosition(const EditorContext& editor, const v2& v)
+	{
+		return v - editor.Panning;
+	}
+
+	v2 MiniMapToGridPosition(const EditorContext& editor, const v2& v)
 	{
 		return (v - editor.miniMapContentScreenSpace.min) / editor.miniMapScaling
 		     + editor.gridContentBounds.min;
 	};
 
-	v2 ScreenSpaceToMiniMapSpace(const EditorContext& editor, const v2& v)
+	v2 ScreenToMiniMapPosition(const EditorContext& editor, const v2& v)
 	{
-		return (ScreenSpaceToGridSpace(editor, v) - editor.gridContentBounds.min)
+		return (ScreenToGridPosition(editor, v) - editor.gridContentBounds.min)
 		         * editor.miniMapScaling
 		     + editor.miniMapContentScreenSpace.min;
 	};
 
-	Rect ScreenSpaceToMiniMapSpace(const EditorContext& editor, const Rect& r)
+	v2 ScreenToGridPosition(const v2& v)
 	{
-		return {ScreenSpaceToMiniMapSpace(editor, r.min), ScreenSpaceToMiniMapSpace(editor, r.max)};
-	};
+		return ScreenToGridPosition(GetEditorContext(), v);
+	}
+	v2 GridToScreenPosition(const v2& v)
+	{
+		return GridToScreenPosition(GetEditorContext(), v);
+	}
+	v2 GridToEditorPosition(const v2& v)
+	{
+		return GridToEditorPosition(GetEditorContext(), v);
+	}
+	v2 EditorToGridPosition(const v2& v)
+	{
+		return EditorToGridPosition(GetEditorContext(), v);
+	}
+	v2 MiniMapToGridPosition(const v2& v)
+	{
+		return MiniMapToGridPosition(GetEditorContext(), v);
+	}
+	v2 ScreenToMiniMapPosition(const v2& v)
+	{
+		return ScreenToMiniMapPosition(GetEditorContext(), v);
+	}
+
 
 	// [SECTION] draw list helper
 
@@ -522,7 +538,7 @@ namespace Rift::Nodes
 		return GetScreenSpacePinCoordinates(parentNodeRect, pin.AttributeRect, pin.Type);
 	}
 
-	bool MouseInCanvas()
+	bool IsMouseInCanvas()
 	{
 		// This flag should be true either when hovering or clicking something in the canvas.
 		const bool isWindowHoveredOrFocused = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
@@ -675,7 +691,7 @@ namespace Rift::Nodes
 		    gNodes->HoveredNodeIdx.HasValue() || gNodes->HoveredLinkIdx.HasValue()
 		    || gNodes->HoveredPinIdx.HasValue() || ImGui::IsAnyItemHovered();
 
-		const bool mouseNotInCanvas = !MouseInCanvas();
+		const bool mouseNotInCanvas = !IsMouseInCanvas();
 
 		if (editor.ClickInteraction.Type != ClickInteractionType_None || anyUiElementHovered
 		    || mouseNotInCanvas)
@@ -693,7 +709,7 @@ namespace Rift::Nodes
 		{
 			editor.ClickInteraction.Type = ClickInteractionType_BoxSelection;
 			editor.ClickInteraction.BoxSelector.Rect.min =
-			    ScreenSpaceToGridSpace(editor, gNodes->MousePos);
+			    ScreenToGridPosition(editor, gNodes->MousePos);
 		}
 	}
 
@@ -878,11 +894,11 @@ namespace Rift::Nodes
 		{
 			case ClickInteractionType_BoxSelection: {
 				editor.ClickInteraction.BoxSelector.Rect.max =
-				    ScreenSpaceToGridSpace(editor, gNodes->MousePos);
+				    ScreenToGridPosition(editor, gNodes->MousePos);
 
 				Rect boxRect = editor.ClickInteraction.BoxSelector.Rect;
-				boxRect.min  = GridSpaceToScreenSpace(editor, boxRect.min);
-				boxRect.max  = GridSpaceToScreenSpace(editor, boxRect.max);
+				boxRect.min  = GridToScreenPosition(editor, boxRect.min);
+				boxRect.max  = GridToScreenPosition(editor, boxRect.max);
 
 				BoxSelectorUpdateSelection(editor, boxRect);
 
@@ -1259,16 +1275,16 @@ namespace Rift::Nodes
 		for (float x = fmodf(offset.x, gNodes->Style.GridSpacing); x < canvasSize.x;
 		     x += gNodes->Style.GridSpacing)
 		{
-			gNodes->CanvasDrawList->AddLine(EditorSpaceToScreenSpace(v2(x, 0.0f)),
-			    EditorSpaceToScreenSpace(v2(x, canvasSize.y)),
+			gNodes->CanvasDrawList->AddLine(EditorToScreenPosition(v2(x, 0.0f)),
+			    EditorToScreenPosition(v2(x, canvasSize.y)),
 			    offset.x - x == 0.f && drawPrimary ? lineColorPrim : lineColor);
 		}
 
 		for (float y = fmodf(offset.y, gNodes->Style.GridSpacing); y < canvasSize.y;
 		     y += gNodes->Style.GridSpacing)
 		{
-			gNodes->CanvasDrawList->AddLine(EditorSpaceToScreenSpace(v2(0.0f, y)),
-			    EditorSpaceToScreenSpace(v2(canvasSize.x, y)),
+			gNodes->CanvasDrawList->AddLine(EditorToScreenPosition(v2(0.0f, y)),
+			    EditorToScreenPosition(v2(canvasSize.x, y)),
 			    offset.y - y == 0.f && drawPrimary ? lineColorPrim : lineColor);
 		}
 	}
@@ -1506,7 +1522,7 @@ namespace Rift::Nodes
 		ImGui::BeginGroup();
 		ImGui::PushID(id);
 
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 
 		gNodes->CurrentAttributeId = id;
 
@@ -1536,7 +1552,7 @@ namespace Rift::Nodes
 			gNodes->ActiveAttributeId = gNodes->CurrentAttributeId;
 		}
 
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		PinData& pin          = editor.Pins.Pool[gNodes->CurrentPinIdx];
 		NodeData& node        = editor.Nodes.Pool[gNodes->CurrentNodeIdx];
 		pin.AttributeRect     = GetItemRect();
@@ -1570,13 +1586,13 @@ namespace Rift::Nodes
 
 	static bool IsMiniMapActive()
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		return editor.miniMapEnabled && editor.miniMapSizeFraction > 0.0f;
 	}
 
 	static bool IsMiniMapHovered()
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		return IsMiniMapActive()
 		    && ImGui::IsMouseHoveringRect(
 		        editor.miniMapRectScreenSpace.min, editor.miniMapRectScreenSpace.max);
@@ -1584,7 +1600,7 @@ namespace Rift::Nodes
 
 	static void CalcMiniMapLayout()
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		const v2 offset       = gNodes->Style.miniMapOffset;
 		const v2 border       = gNodes->Style.miniMapPadding;
 		const Rect editorRect = gNodes->CanvasRectScreenSpace;
@@ -1647,7 +1663,8 @@ namespace Rift::Nodes
 	{
 		const NodeData& node = editor.Nodes.Pool[nodeIdx];
 
-		const Rect nodeRect = ScreenSpaceToMiniMapSpace(editor, node.Rect);
+		const Rect nodeRect{ScreenToMiniMapPosition(editor, node.Rect.min),
+		    ScreenToMiniMapPosition(editor, node.Rect.max)};
 
 		// Round to near whole pixel value for corner-rounding to prevent visual glitches
 		const float miniMapNodeRounding =
@@ -1691,8 +1708,8 @@ namespace Rift::Nodes
 		const PinData& endPin   = editor.Pins.Pool[link.EndPinIdx];
 
 		const CubicBezier cubicBezier =
-		    GetCubicBezier(ScreenSpaceToMiniMapSpace(editor, startPin.Pos),
-		        ScreenSpaceToMiniMapSpace(editor, endPin.Pos), startPin.Type,
+		    GetCubicBezier(ScreenToMiniMapPosition(editor, startPin.Pos),
+		        ScreenToMiniMapPosition(editor, endPin.Pos), startPin.Type,
 		        gNodes->Style.LinkLineSegmentsPerLength / editor.miniMapScaling);
 
 		// It's possible for a link to be deleted in begin_link_i32eraction. A user
@@ -1717,7 +1734,7 @@ namespace Rift::Nodes
 
 	static void MiniMapUpdate()
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 
 		Color miniMapBackground;
 		if (IsMiniMapHovered())
@@ -1768,7 +1785,8 @@ namespace Rift::Nodes
 		{
 			const Color canvasColor  = gNodes->Style.colors[ColorVar_MiniMapCanvas];
 			const Color outlineColor = gNodes->Style.colors[ColorVar_MiniMapCanvasOutline];
-			const Rect rect = ScreenSpaceToMiniMapSpace(editor, gNodes->CanvasRectScreenSpace);
+			const Rect rect{ScreenToMiniMapPosition(editor, gNodes->CanvasRectScreenSpace.min),
+			    ScreenToMiniMapPosition(editor, gNodes->CanvasRectScreenSpace.max)};
 
 			gNodes->CanvasDrawList->AddRectFilled(rect.min, rect.max, canvasColor.ToPackedABGR());
 			gNodes->CanvasDrawList->AddRect(rect.min, rect.max, outlineColor.ToPackedABGR());
@@ -1786,7 +1804,7 @@ namespace Rift::Nodes
 		                        && !gNodes->NodeIdxSubmissionOrder.empty();
 		if (centerOnClick)
 		{
-			v2 target      = MiniMapSpaceToGridSpace(editor, ImGui::GetMousePos());
+			v2 target      = MiniMapToGridPosition(editor, ImGui::GetMousePos());
 			v2 center      = gNodes->CanvasRectScreenSpace.GetSize() * 0.5f;
 			editor.Panning = ImFloor(center - target);
 		}
@@ -1905,21 +1923,21 @@ namespace Rift::Nodes
 		gNodes->EditorCtx = ctx;
 	}
 
-	v2 EditorContextGetPanning()
+	v2 GetEditorContextPanning()
 	{
-		const EditorContext& editor = EditorContextGet();
+		const EditorContext& editor = GetEditorContext();
 		return editor.Panning;
 	}
 
 	void EditorContextResetPanning(const v2& pos)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		editor.Panning        = pos;
 	}
 
 	void EditorContextMoveToNode(const i32 nodeId)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		NodeData& node        = ObjectPoolFindOrCreateObject(editor.Nodes, nodeId);
 
 		editor.Panning.x = -node.Origin.x;
@@ -2070,7 +2088,7 @@ namespace Rift::Nodes
 
 		// Reset state from previous pass
 
-		EditorContext& editor    = EditorContextGet();
+		EditorContext& editor    = GetEditorContext();
 		editor.AutoPanningDelta  = v2(0, 0);
 		editor.gridContentBounds = Rect(v2{FLT_MAX, FLT_MAX}, v2{FLT_MIN, FLT_MIN});
 		editor.miniMapEnabled    = false;
@@ -2123,9 +2141,9 @@ namespace Rift::Nodes
 			DrawListSet(ImGui::GetWindowDrawList());
 
 			{
-				const v2 canvasSize           = ImGui::GetWindowSize();
-				gNodes->CanvasRectScreenSpace = Rect(
-				    EditorSpaceToScreenSpace(v2(0.f, 0.f)), EditorSpaceToScreenSpace(canvasSize));
+				const v2 canvasSize = ImGui::GetWindowSize();
+				gNodes->CanvasRectScreenSpace =
+				    Rect(EditorToScreenPosition(v2(0.f, 0.f)), EditorToScreenPosition(canvasSize));
 
 				if (gNodes->Style.Flags & StyleFlags_GridLines)
 				{
@@ -2140,13 +2158,14 @@ namespace Rift::Nodes
 		assert(gNodes->CurrentScope == Scope_Editor);
 		gNodes->CurrentScope = Scope_None;
 
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 
 		bool noGridContent = editor.gridContentBounds.IsInverted();
 		if (noGridContent)
 		{
 			editor.gridContentBounds =
-			    ScreenSpaceToGridSpace(editor, gNodes->CanvasRectScreenSpace);
+			    Rect{ScreenToGridPosition(editor, gNodes->CanvasRectScreenSpace.min),
+			        ScreenToGridPosition(editor, gNodes->CanvasRectScreenSpace.max)};
 		}
 
 		// Detect ImGui i32eraction first, because it blocks i32eraction with the rest of the UI
@@ -2165,7 +2184,7 @@ namespace Rift::Nodes
 
 		if ((editor.ClickInteraction.Type == ClickInteractionType_None
 		        || editor.ClickInteraction.Type == ClickInteractionType_LinkCreation)
-		    && MouseInCanvas() && !IsMiniMapHovered())
+		    && IsMouseInCanvas() && !IsMiniMapHovered())
 		{
 			// Pins needs some special care. We need to check the depth stack to see which pins are
 			// being occluded by other nodes.
@@ -2248,7 +2267,7 @@ namespace Rift::Nodes
 			bool shouldAutoPan = editor.ClickInteraction.Type == ClickInteractionType_BoxSelection
 			                  || editor.ClickInteraction.Type == ClickInteractionType_LinkCreation
 			                  || editor.ClickInteraction.Type == ClickInteractionType_Node;
-			if (shouldAutoPan && !MouseInCanvas())
+			if (shouldAutoPan && !IsMouseInCanvas())
 			{
 				v2 mouse     = ImGui::GetMousePos();
 				v2 center    = gNodes->CanvasRectScreenSpace.GetCenter();
@@ -2294,7 +2313,7 @@ namespace Rift::Nodes
 		// Remember to call before EndNodeEditor
 		assert(gNodes->CurrentScope == Scope_Editor);
 
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 
 		editor.miniMapEnabled      = true;
 		editor.miniMapSizeFraction = minimapSizeFraction;
@@ -2316,7 +2335,7 @@ namespace Rift::Nodes
 		assert(gNodes->CurrentScope == Scope_Editor);
 		gNodes->CurrentScope = Scope_Node;
 
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 
 		const i32 nodeIdx      = ObjectPoolFindOrCreateIndex(editor.Nodes, nodeId);
 		gNodes->CurrentNodeIdx = nodeIdx;
@@ -2336,7 +2355,7 @@ namespace Rift::Nodes
 		// ImGui::SetCursorPos sets the cursor position, local to the current widget
 		// (in this case, the child object started in BeginNodeEditor). Use
 		// ImGui::SetCursorScreenPos to set the screen space coordinates directly.
-		ImGui::SetCursorPos(GridSpaceToEditorSpace(editor, GetNodeTitleBarOrigin(node)));
+		ImGui::SetCursorPos(GridToEditorPosition(editor, GetNodeTitleBarOrigin(node)));
 
 		DrawListAddNode(nodeIdx);
 		DrawListActivateCurrentNodeForeground();
@@ -2350,7 +2369,7 @@ namespace Rift::Nodes
 		assert(gNodes->CurrentScope == Scope_Node);
 		gNodes->CurrentScope = Scope_Editor;
 
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 
 		// The node's rectangle depends on the ImGui UI group size.
 		ImGui::EndGroup();
@@ -2371,7 +2390,7 @@ namespace Rift::Nodes
 
 	v2 GetNodeDimensions(i32 nodeId)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		const i32 nodeIdx     = ObjectPoolFind(editor.Nodes, nodeId);
 		assert(nodeIdx != -1);    // invalid nodeId
 		const NodeData& node = editor.Nodes.Pool[nodeIdx];
@@ -2389,14 +2408,14 @@ namespace Rift::Nodes
 		assert(gNodes->CurrentScope == Scope_Node);
 		ImGui::EndGroup();
 
-		EditorContext& editor    = EditorContextGet();
+		EditorContext& editor    = GetEditorContext();
 		NodeData& node           = editor.Nodes.Pool[gNodes->CurrentNodeIdx];
 		node.TitleBarContentRect = GetItemRect();
 
 		Rect nodeTitleRect = GetNodeTitleRect(node);
 		ImGui::ItemAdd({nodeTitleRect.min, nodeTitleRect.max}, ImGui::GetID("title_bar"));
 
-		ImGui::SetCursorPos(GridSpaceToEditorSpace(editor, GetNodeContentOrigin(node)));
+		ImGui::SetCursorPos(GridToEditorPosition(editor, GetNodeContentOrigin(node)));
 	}
 
 	void BeginInputAttribute(const i32 id, const PinShape shape)
@@ -2467,7 +2486,7 @@ namespace Rift::Nodes
 	{
 		assert(gNodes->CurrentScope == Scope_Editor);
 
-		EditorContext& editor    = EditorContextGet();
+		EditorContext& editor    = GetEditorContext();
 		LinkData& link           = ObjectPoolFindOrCreateObject(editor.Links, id);
 		link.Id                  = id;
 		link.StartPinIdx         = ObjectPoolFindOrCreateIndex(editor.Pins, startAttrId);
@@ -2607,53 +2626,53 @@ namespace Rift::Nodes
 
 	void SetNodeScreenSpacePos(const i32 nodeId, const v2& screenSpacePos)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		NodeData& node        = ObjectPoolFindOrCreateObject(editor.Nodes, nodeId);
-		node.Origin           = ScreenSpaceToGridSpace(editor, screenSpacePos);
+		node.Origin           = ScreenToGridPosition(editor, screenSpacePos);
 	}
 
 	void SetNodeEditorSpacePos(const i32 nodeId, const v2& editorSpacePos)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		NodeData& node        = ObjectPoolFindOrCreateObject(editor.Nodes, nodeId);
-		node.Origin           = EditorSpaceToGridSpace(editor, editorSpacePos);
+		node.Origin           = EditorToGridPosition(editor, editorSpacePos);
 	}
 
 	void SetNodeGridSpacePos(const i32 nodeId, const v2& gridPos)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		NodeData& node        = ObjectPoolFindOrCreateObject(editor.Nodes, nodeId);
 		node.Origin           = gridPos;
 	}
 
 	void SetNodeDraggable(const i32 nodeId, const bool draggable)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		NodeData& node        = ObjectPoolFindOrCreateObject(editor.Nodes, nodeId);
 		node.Draggable        = draggable;
 	}
 
 	v2 GetNodeScreenSpacePos(const i32 nodeId)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		const i32 nodeIdx     = ObjectPoolFind(editor.Nodes, nodeId);
 		assert(nodeIdx != -1);
 		NodeData& node = editor.Nodes.Pool[nodeIdx];
-		return GridSpaceToScreenSpace(editor, node.Origin);
+		return GridToScreenPosition(editor, node.Origin);
 	}
 
 	v2 GetNodeEditorSpacePos(const i32 nodeId)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		const i32 nodeIdx     = ObjectPoolFind(editor.Nodes, nodeId);
 		assert(nodeIdx != -1);
 		NodeData& node = editor.Nodes.Pool[nodeIdx];
-		return GridSpaceToEditorSpace(editor, node.Origin);
+		return GridToEditorPosition(editor, node.Origin);
 	}
 
 	v2 GetNodeGridSpacePos(const i32 nodeId)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		const i32 nodeIdx     = ObjectPoolFind(editor.Nodes, nodeId);
 		assert(nodeIdx != -1);
 		NodeData& node = editor.Nodes.Pool[nodeIdx];
@@ -2662,7 +2681,7 @@ namespace Rift::Nodes
 
 	bool IsEditorHovered()
 	{
-		return MouseInCanvas();
+		return IsMouseInCanvas();
 	}
 
 	bool IsNodeHovered(i32* const nodeId)
@@ -2673,7 +2692,7 @@ namespace Rift::Nodes
 		const bool isHovered = gNodes->HoveredNodeIdx.HasValue();
 		if (isHovered)
 		{
-			const EditorContext& editor = EditorContextGet();
+			const EditorContext& editor = GetEditorContext();
 			*nodeId                     = editor.Nodes.Pool[gNodes->HoveredNodeIdx.Value()].Id;
 		}
 		return isHovered;
@@ -2687,7 +2706,7 @@ namespace Rift::Nodes
 		const bool isHovered = gNodes->HoveredLinkIdx.HasValue();
 		if (isHovered)
 		{
-			const EditorContext& editor = EditorContextGet();
+			const EditorContext& editor = GetEditorContext();
 			*linkId                     = editor.Links.Pool[gNodes->HoveredLinkIdx.Value()].Id;
 		}
 		return isHovered;
@@ -2701,7 +2720,7 @@ namespace Rift::Nodes
 		const bool isHovered = gNodes->HoveredPinIdx.HasValue();
 		if (isHovered)
 		{
-			const EditorContext& editor = EditorContextGet();
+			const EditorContext& editor = GetEditorContext();
 			*attr                       = editor.Pins.Pool[gNodes->HoveredPinIdx.Value()].Id;
 		}
 		return isHovered;
@@ -2710,14 +2729,14 @@ namespace Rift::Nodes
 	i32 NumSelectedNodes()
 	{
 		assert(gNodes->CurrentScope != Scope_None);
-		const EditorContext& editor = EditorContextGet();
+		const EditorContext& editor = GetEditorContext();
 		return editor.SelectedNodeIndices.size();
 	}
 
 	i32 NumSelectedLinks()
 	{
 		assert(gNodes->CurrentScope != Scope_None);
-		const EditorContext& editor = EditorContextGet();
+		const EditorContext& editor = GetEditorContext();
 		return editor.SelectedLinkIndices.size();
 	}
 
@@ -2725,7 +2744,7 @@ namespace Rift::Nodes
 	{
 		assert(nodeIds != nullptr);
 
-		const EditorContext& editor = EditorContextGet();
+		const EditorContext& editor = GetEditorContext();
 		for (i32 i = 0; i < editor.SelectedNodeIndices.size(); ++i)
 		{
 			const i32 nodeIdx = editor.SelectedNodeIndices[i];
@@ -2737,7 +2756,7 @@ namespace Rift::Nodes
 	{
 		assert(linkIds != nullptr);
 
-		const EditorContext& editor = EditorContextGet();
+		const EditorContext& editor = GetEditorContext();
 		for (i32 i = 0; i < editor.SelectedLinkIndices.size(); ++i)
 		{
 			const i32 linkIdx = editor.SelectedLinkIndices[i];
@@ -2747,49 +2766,49 @@ namespace Rift::Nodes
 
 	void ClearNodeSelection()
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		editor.SelectedNodeIndices.clear();
 	}
 
 	void ClearNodeSelection(i32 nodeId)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		ClearObjectSelection(editor.Nodes, editor.SelectedNodeIndices, nodeId);
 	}
 
 	void ClearLinkSelection()
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		editor.SelectedLinkIndices.clear();
 	}
 
 	void ClearLinkSelection(i32 linkId)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		ClearObjectSelection(editor.Links, editor.SelectedLinkIndices, linkId);
 	}
 
 	void SelectNode(i32 nodeId)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		SelectObject(editor.Nodes, editor.SelectedNodeIndices, nodeId);
 	}
 
 	void SelectLink(i32 linkId)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		SelectObject(editor.Links, editor.SelectedLinkIndices, linkId);
 	}
 
 	bool IsNodeSelected(i32 nodeId)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		return IsObjectSelected(editor.Nodes, editor.SelectedNodeIndices, nodeId);
 	}
 
 	bool IsLinkSelected(i32 linkId)
 	{
-		EditorContext& editor = EditorContextGet();
+		EditorContext& editor = GetEditorContext();
 		return IsObjectSelected(editor.Links, editor.SelectedLinkIndices, linkId);
 	}
 
@@ -2831,7 +2850,7 @@ namespace Rift::Nodes
 		const bool isStarted = (gNodes->UIState & UIState_LinkStarted) != 0;
 		if (isStarted)
 		{
-			const EditorContext& editor = EditorContextGet();
+			const EditorContext& editor = GetEditorContext();
 			const i32 pinIdx            = editor.ClickInteraction.LinkCreation.StartPinIdx;
 			*startedAtId                = editor.Pins.Pool[pinIdx].Id;
 		}
@@ -2844,7 +2863,7 @@ namespace Rift::Nodes
 		// Call this function after EndNodeEditor()!
 		assert(gNodes->CurrentScope != Scope_None);
 
-		const EditorContext& editor = EditorContextGet();
+		const EditorContext& editor = GetEditorContext();
 
 		const bool linkDropped =
 		    (gNodes->UIState & UIState_LinkDropped) != 0
@@ -2871,7 +2890,7 @@ namespace Rift::Nodes
 
 		if (isCreated)
 		{
-			const EditorContext& editor = EditorContextGet();
+			const EditorContext& editor = GetEditorContext();
 			const i32 startIdx          = editor.ClickInteraction.LinkCreation.StartPinIdx;
 			const i32 endIdx            = editor.ClickInteraction.LinkCreation.EndPinIdx.Value();
 			const PinData& startPin     = editor.Pins.Pool[startIdx];
@@ -2911,7 +2930,7 @@ namespace Rift::Nodes
 
 		if (isCreated)
 		{
-			const EditorContext& editor = EditorContextGet();
+			const EditorContext& editor = GetEditorContext();
 			const i32 startIdx          = editor.ClickInteraction.LinkCreation.StartPinIdx;
 			const i32 endIdx            = editor.ClickInteraction.LinkCreation.EndPinIdx.Value();
 			const PinData& startPin     = editor.Pins.Pool[startIdx];
@@ -2951,7 +2970,7 @@ namespace Rift::Nodes
 		const bool linkDestroyed = gNodes->DeletedLinkIdx.HasValue();
 		if (linkDestroyed)
 		{
-			const EditorContext& editor = EditorContextGet();
+			const EditorContext& editor = GetEditorContext();
 			const i32 linkIdx           = gNodes->DeletedLinkIdx.Value();
 			*linkId                     = editor.Links.Pool[linkIdx].Id;
 		}

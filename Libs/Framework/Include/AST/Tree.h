@@ -27,6 +27,7 @@ namespace Rift::AST
 		AST::Id i32Id    = AST::NoId;
 		AST::Id u64Id    = AST::NoId;
 		AST::Id i64Id    = AST::NoId;
+		AST::Id stringId = AST::NoId;
 	};
 
 	struct Tree

@@ -6,6 +6,7 @@
 #include "AST/Components/CFloatLiteral.h"
 #include "AST/Components/CFunctionLibraryDecl.h"
 #include "AST/Components/CIdentifier.h"
+#include "AST/Components/CStringLiteral.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Linkage.h"
 #include "AST/Serialization.h"
@@ -59,6 +60,11 @@ namespace Rift::Types
 		else if (typeId == natives.floatId)
 		{
 			ast.Add<CFloatLiteral>(literalId);
+			created = true;
+		}
+		else if (typeId == natives.stringId)
+		{
+			ast.Add<CStringLiteral>(literalId);
 			created = true;
 		}
 

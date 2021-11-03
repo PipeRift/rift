@@ -1,9 +1,8 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Utils/FunctionGraph.h"
-
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
+#include "Utils/FunctionGraph.h"
 #include "Utils/GraphColors.h"
 #include "Utils/TypeUtils.h"
 
@@ -11,6 +10,7 @@
 #include <AST/Components/CCallExpr.h>
 #include <AST/Components/CFunctionDecl.h>
 #include <AST/Components/CIdentifier.h>
+#include <AST/Components/CStringLiteral.h>
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Linkage.h>
 #include <AST/Uniques/CTypeListUnique.h>
@@ -105,8 +105,13 @@ namespace Rift::Graph
 		if (ImGui::BeginPopup("GraphContextMenu"))
 		{
 			static ImGuiTextFilter filter;
+			if (UI::IsWindowAppearing())
+			{
+				UI::SetKeyboardFocusHere();
+			}
 			filter.Draw("##Filter");
-			const ImVec2 clickPos = ImGui::GetMousePosOnOpeningCurrentPopup();
+			const v2 clickPos = ImGui::GetMousePosOnOpeningCurrentPopup();
+			const v2 gridPos  = Nodes::ScreenToGridPosition(clickPos);
 
 			if (filter.IsActive() || ImGui::TreeNode("Constructors"))
 			{
@@ -126,7 +131,7 @@ namespace Rift::Graph
 								AST::Id newId = Types::CreateLiteral(ast, type.second, typeId);
 								if (newId != AST::NoId)
 								{
-									ast.Add<CGraphTransform>(newId);
+									ast.Add<CGraphTransform>(newId, gridPos);
 								}
 							}
 						}
@@ -155,7 +160,7 @@ namespace Rift::Graph
 								AST::Id newId = Types::CreateCall(ast, functionId, typeId);
 								if (newId != AST::NoId)
 								{
-									ast.Add<CGraphTransform>(newId);
+									ast.Add<CGraphTransform>(newId, gridPos);
 								}
 							}
 						}
@@ -186,11 +191,21 @@ namespace Rift::Graph
 	void DrawCalls(AST::Tree& ast, TArray<AST::Id>& children)
 	{
 		auto calls = ast.MakeView<CCallExpr>();
+		auto functionDecls = ast.MakeView<CFunctionDecl, CIdentifier>();
 		for (AST::Id child : children)
 		{
-			if (calls.Has(child))
+			CCallExpr* call = calls.TryGet<CCallExpr>(child);
+			if (call)
 			{
-				DrawCallNode(child, "...");
+				StringView title = "Invalid";
+				if (ast.IsValid(call->functionId))
+				{
+					if (auto* iden = functionDecls.TryGet<CIdentifier>(call->functionId))
+					{
+						title = iden->name.ToString().c_str();
+					}
+				}
+				DrawCallNode(child, title);
 			}
 		}
 	}
@@ -203,6 +218,15 @@ namespace Rift::Graph
 			if (auto* literal = boolLiterals.TryGet<CBoolLiteral>(child))
 			{
 				DrawBoolLiteralNode(child, literal->value);
+			}
+		}
+
+		auto stringLiterals = ast.MakeView<CStringLiteral>();
+		for (AST::Id child : children)
+		{
+			if (auto* literal = stringLiterals.TryGet<CStringLiteral>(child))
+			{
+				DrawStringLiteralNode(child, literal->value);
 			}
 		}
 	}
@@ -341,7 +365,7 @@ namespace Rift::Graph
 			const auto* context = Nodes::GetCurrentContext();
 			if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
 			{
-				Nodes::EditorContextGet()
+				Nodes::GetEditorContext()
 				    .Nodes.Pool[context->CurrentNodeIdx]
 				    .LayoutStyle.BorderThickness = 2.f;
 			}
@@ -374,7 +398,7 @@ namespace Rift::Graph
 			const auto* context = Nodes::GetCurrentContext();
 			if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
 			{
-				Nodes::EditorContextGet()
+				Nodes::GetEditorContext()
 				    .Nodes.Pool[context->CurrentNodeIdx]
 				    .LayoutStyle.BorderThickness = 2.f;
 			}
@@ -411,7 +435,7 @@ namespace Rift::Graph
 			const auto* context = Nodes::GetCurrentContext();
 			if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
 			{
-				Nodes::EditorContextGet()
+				Nodes::GetEditorContext()
 				    .Nodes.Pool[context->CurrentNodeIdx]
 				    .LayoutStyle.BorderThickness = 2.f;
 			}
