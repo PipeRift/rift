@@ -9,6 +9,7 @@
 // [SECTION] API implementation
 
 #include "UI/Nodes.h"
+
 #include "UI/NodesInternal.h"
 #include "UI/NodesMiniMap.h"
 
@@ -20,7 +21,6 @@
 #include <cmath>
 #include <cstring>    // strlen, strncmp
 #include <new>
-
 
 
 namespace Rift::Nodes
@@ -37,10 +37,10 @@ namespace Rift::Nodes
 	// [SECTION] bezier curve helpers
 
 	CubicBezier MakeCubicBezier(
-	    v2 start, v2 end, const AttributeType startType, const float lineSegmentsPerLength)
+	    v2 start, v2 end, const PinType startType, const float lineSegmentsPerLength)
 	{
-		assert((startType == AttributeType::Input) || (startType == AttributeType::Output));
-		if (startType == AttributeType::Input)
+		assert((startType == PinType::Input) || (startType == PinType::Output));
+		if (startType == PinType::Input)
 		{
 			Swap(start, end);
 		}
@@ -179,7 +179,7 @@ namespace Rift::Nodes
 	}
 
 	bool RectangleOverlapsLink(
-	    const Rect& rectangle, const v2& start, const v2& end, const AttributeType startType)
+	    const Rect& rectangle, const v2& start, const v2& end, const PinType startType)
 	{
 		// First level: simple rejection test via rectangle overlap:
 
@@ -517,18 +517,18 @@ namespace Rift::Nodes
 	// [SECTION] ui state logic
 
 	v2 GetScreenSpacePinCoordinates(
-	    const Rect& nodeRect, const Rect& attributeRect, const AttributeType type)
+	    const Rect& nodeRect, const Rect& attributeRect, const PinType type)
 	{
-		assert(type == AttributeType::Input || type == AttributeType::Output);
-		const float x = type == AttributeType::Input ? (nodeRect.min.x - gNodes->Style.PinOffset)
-		                                             : (nodeRect.max.x + gNodes->Style.PinOffset);
+		assert(type == PinType::Input || type == PinType::Output);
+		const float x = type == PinType::Input ? (nodeRect.min.x - gNodes->Style.PinOffset)
+		                                       : (nodeRect.max.x + gNodes->Style.PinOffset);
 		return {x, 0.5f * (attributeRect.min.y + attributeRect.max.y)};
 	}
 
 	v2 GetScreenSpacePinCoordinates(const EditorContext& editor, const PinData& pin)
 	{
 		const Rect& parentNodeRect = editor.nodes.Pool[pin.ParentNodeIdx].Rect;
-		return GetScreenSpacePinCoordinates(parentNodeRect, pin.AttributeRect, pin.Type);
+		return GetScreenSpacePinCoordinates(parentNodeRect, pin.rect, pin.Type);
 	}
 
 	bool IsMouseInCanvas()
@@ -659,7 +659,7 @@ namespace Rift::Nodes
 				const i32 hoveredPinFlags = editor.pins.Pool[pinIdx.Value()].Flags;
 
 				// Check the 'click and drag to detach' case.
-				if (hoveredPinFlags & AttributeFlags_EnableLinkDetachWithDragClick)
+				if (hoveredPinFlags & PinFlags_EnableLinkDetachWithDragClick)
 				{
 					BeginLinkDetach(editor, linkIdx, pinIdx.Value());
 					editor.clickInteraction.LinkCreation.Type = LinkCreationType_FromDetach;
@@ -755,10 +755,9 @@ namespace Rift::Nodes
 				const Rect& nodeStartRect = editor.nodes.Pool[pinStart.ParentNodeIdx].Rect;
 				const Rect& nodeEndRect   = editor.nodes.Pool[pinEnd.ParentNodeIdx].Rect;
 
-				const v2 start = GetScreenSpacePinCoordinates(
-				    nodeStartRect, pinStart.AttributeRect, pinStart.Type);
-				const v2 end =
-				    GetScreenSpacePinCoordinates(nodeEndRect, pinEnd.AttributeRect, pinEnd.Type);
+				const v2 start =
+				    GetScreenSpacePinCoordinates(nodeStartRect, pinStart.rect, pinStart.Type);
+				const v2 end = GetScreenSpacePinCoordinates(nodeEndRect, pinEnd.rect, pinEnd.Type);
 
 				// Test
 				if (RectangleOverlapsLink(boxRect, start, end, pinStart.Type))
@@ -999,7 +998,7 @@ namespace Rift::Nodes
 				const bool linkCreationOnSnap =
 				    gNodes->HoveredPinIdx.HasValue()
 				    && (editor.pins.Pool[gNodes->HoveredPinIdx.Value()].Flags
-				        & AttributeFlags_EnableLinkCreationOnSnap);
+				        & PinFlags_EnableLinkCreationOnSnap);
 
 				if (!shouldSnap)
 				{
@@ -1118,8 +1117,8 @@ namespace Rift::Nodes
 
 			// TODO: gNodes->Style.PinHoverRadius needs to be copied i32o pin data and the
 			// pin-local value used here. This is no longer called in
-			// BeginAttribute/EndAttribute scope and the detected pin might have a different
-			// hover radius than what the user had when calling BeginAttribute/EndAttribute.
+			// BeginPin/EndPin scope and the detected pin might have a different
+			// hover radius than what the user had when calling BeginPin/EndPin.
 			if (distanceSqr < hoverRadiusSqr && distanceSqr < smallestDistance)
 			{
 				smallestDistance           = distanceSqr;
@@ -1389,7 +1388,7 @@ namespace Rift::Nodes
 		PinData& pin               = editor.pins.Pool[pinIdx];
 		const Rect& parentNodeRect = editor.nodes.Pool[pin.ParentNodeIdx].Rect;
 
-		pin.Pos = GetScreenSpacePinCoordinates(parentNodeRect, pin.AttributeRect, pin.Type);
+		pin.Pos = GetScreenSpacePinCoordinates(parentNodeRect, pin.rect, pin.Type);
 
 		Color pinColor = pin.ColorStyle.Background;
 		if (gNodes->HoveredPinIdx == pinIdx)
@@ -1505,20 +1504,19 @@ namespace Rift::Nodes
 		    cubicBezier.numSegments);
 	}
 
-	void BeginPinAttribute(
-	    const i32 id, const AttributeType type, const PinShape shape, const i32 nodeIdx)
+	void BeginPin(const i32 id, const PinType type, const PinShape shape, const i32 nodeIdx)
 	{
 		// Make sure to call BeginNode() before calling
-		// BeginAttribute()
+		// BeginPin()
 		assert(gNodes->CurrentScope == Scope_Node);
-		gNodes->CurrentScope = Scope_Attribute;
+		gNodes->CurrentScope = Scope_Pin;
 
 		ImGui::BeginGroup();
 		ImGui::PushID(id);
 
 		EditorContext& editor = GetEditorContext();
 
-		gNodes->CurrentAttributeId = id;
+		gNodes->CurrentPinId = id;
 
 		const i32 pinIdx          = ObjectPoolFindOrCreateIndex(editor.pins, id);
 		gNodes->CurrentPinIdx     = pinIdx;
@@ -1527,14 +1525,14 @@ namespace Rift::Nodes
 		pin.ParentNodeIdx         = nodeIdx;
 		pin.Type                  = type;
 		pin.Shape                 = shape;
-		pin.Flags                 = gNodes->CurrentAttributeFlags;
+		pin.Flags                 = gNodes->CurrentPinFlags;
 		pin.ColorStyle.Background = gNodes->Style.colors[ColorVar_Pin];
 		pin.ColorStyle.Hovered    = gNodes->Style.colors[ColorVar_PinHovered];
 	}
 
-	void EndPinAttribute()
+	void EndPin()
 	{
-		assert(gNodes->CurrentScope == Scope_Attribute);
+		assert(gNodes->CurrentScope == Scope_Pin);
 		gNodes->CurrentScope = Scope_Node;
 
 		ImGui::PopID();
@@ -1542,14 +1540,14 @@ namespace Rift::Nodes
 
 		if (ImGui::IsItemActive())
 		{
-			gNodes->ActiveAttribute   = true;
-			gNodes->ActiveAttributeId = gNodes->CurrentAttributeId;
+			gNodes->activePin   = true;
+			gNodes->activePinId = gNodes->CurrentPinId;
 		}
 
 		EditorContext& editor = GetEditorContext();
 		PinData& pin          = editor.pins.Pool[gNodes->CurrentPinIdx];
 		NodeData& node        = editor.nodes.Pool[gNodes->CurrentNodeIdx];
-		pin.AttributeRect     = GetItemRect();
+		pin.rect              = GetItemRect();
 		node.pinIndices.push_back(gNodes->CurrentPinIdx);
 	}
 
@@ -1565,8 +1563,8 @@ namespace Rift::Nodes
 		context->DefaultEditorCtx = EditorContextCreate();
 		EditorContextSet(gNodes->DefaultEditorCtx);
 
-		context->CurrentAttributeFlags = AttributeFlags_None;
-		context->AttributeFlagStack.push_back(gNodes->CurrentAttributeFlags);
+		context->CurrentPinFlags = PinFlags_None;
+		context->pinFlagStack.push_back(gNodes->CurrentPinFlags);
 
 		StyleColorsDark();
 	}
@@ -1872,7 +1870,7 @@ namespace Rift::Nodes
 		gNodes->multipleSelectModifier = (gNodes->Io.multipleSelectModifier.modifier != nullptr
 		                                      ? *gNodes->Io.multipleSelectModifier.modifier
 		                                      : ImGui::GetIO().KeyCtrl);
-		gNodes->ActiveAttribute        = false;
+		gNodes->activePin              = false;
 
 		ImGui::BeginGroup();
 		{
@@ -2142,86 +2140,58 @@ namespace Rift::Nodes
 		ImGui::SetCursorPos(GridToEditorPosition(editor, GetNodeContentOrigin(node)));
 	}
 
-	void BeginInputAttribute(const i32 id, const PinShape shape)
+	void BeginInput(const i32 id, const PinShape shape)
 	{
-		BeginPinAttribute(id, AttributeType::Input, shape, gNodes->CurrentNodeIdx);
+		BeginPin(id, PinType::Input, shape, gNodes->CurrentNodeIdx);
 	}
 
-	void EndInputAttribute()
+	void EndInput()
 	{
-		EndPinAttribute();
+		EndPin();
 	}
 
-	void BeginOutputAttribute(const i32 id, const PinShape shape)
+	void BeginOutput(const i32 id, const PinShape shape)
 	{
-		BeginPinAttribute(id, AttributeType::Output, shape, gNodes->CurrentNodeIdx);
+		BeginPin(id, PinType::Output, shape, gNodes->CurrentNodeIdx);
 	}
 
-	void EndOutputAttribute()
+	void EndOutput()
 	{
-		EndPinAttribute();
+		EndPin();
 	}
 
-	void BeginStaticAttribute(const i32 id)
+	void PushPinFlag(const PinFlags flag)
 	{
-		// Make sure to call BeginNode() before calling BeginAttribute()
-		assert(gNodes->CurrentScope == Scope_Node);
-		gNodes->CurrentScope = Scope_Attribute;
-
-		gNodes->CurrentAttributeId = id;
-
-		ImGui::BeginGroup();
-		ImGui::PushID(id);
+		gNodes->CurrentPinFlags |= flag;
+		gNodes->pinFlagStack.push_back(gNodes->CurrentPinFlags);
 	}
 
-	void EndStaticAttribute()
+	void PopPinFlag()
 	{
-		// Make sure to call BeginNode() before calling BeginAttribute()
-		assert(gNodes->CurrentScope == Scope_Attribute);
-		gNodes->CurrentScope = Scope_Node;
-
-		ImGui::PopID();
-		ImGui::EndGroup();
-
-		if (ImGui::IsItemActive())
-		{
-			gNodes->ActiveAttribute   = true;
-			gNodes->ActiveAttributeId = gNodes->CurrentAttributeId;
-		}
-	}
-
-	void PushAttributeFlag(const AttributeFlags flag)
-	{
-		gNodes->CurrentAttributeFlags |= flag;
-		gNodes->AttributeFlagStack.push_back(gNodes->CurrentAttributeFlags);
-	}
-
-	void PopAttributeFlag()
-	{
-		// PopAttributeFlag called without a matching PushAttributeFlag!
+		// PopPinFlag called without a matching PushPinFlag!
 		// The bottom value is always the default value, pushed in Initialize().
-		assert(gNodes->AttributeFlagStack.size() > 1);
+		assert(gNodes->pinFlagStack.size() > 1);
 
-		gNodes->AttributeFlagStack.pop_back();
-		gNodes->CurrentAttributeFlags = gNodes->AttributeFlagStack.back();
+		gNodes->pinFlagStack.pop_back();
+		gNodes->CurrentPinFlags = gNodes->pinFlagStack.back();
 	}
 
-	void Link(const i32 id, const i32 startAttrId, const i32 endAttrId)
+	void Link(const i32 id, const i32 startPinId, const i32 endPinId)
 	{
 		assert(gNodes->CurrentScope == Scope_Editor);
 
 		EditorContext& editor    = GetEditorContext();
 		LinkData& link           = ObjectPoolFindOrCreateObject(editor.Links, id);
 		link.Id                  = id;
-		link.StartPinIdx         = ObjectPoolFindOrCreateIndex(editor.pins, startAttrId);
-		link.EndPinIdx           = ObjectPoolFindOrCreateIndex(editor.pins, endAttrId);
+		link.StartPinIdx         = ObjectPoolFindOrCreateIndex(editor.pins, startPinId);
+		link.EndPinIdx           = ObjectPoolFindOrCreateIndex(editor.pins, endPinId);
 		link.ColorStyle.Base     = gNodes->Style.colors[ColorVar_Link];
 		link.ColorStyle.Hovered  = gNodes->Style.colors[ColorVar_LinkHovered];
 		link.ColorStyle.Selected = gNodes->Style.colors[ColorVar_LinkSelected];
 
 		// Check if this link was created by the current link event
 		if ((editor.clickInteraction.Type == ClickInteractionType_LinkCreation
-		        && editor.pins.Pool[link.EndPinIdx].Flags & AttributeFlags_EnableLinkCreationOnSnap
+		        && editor.pins.Pool[link.EndPinIdx].Flags & PinFlags_EnableLinkCreationOnSnap
 		        && editor.clickInteraction.LinkCreation.StartPinIdx == link.StartPinIdx
 		        && editor.clickInteraction.LinkCreation.EndPinIdx == link.EndPinIdx)
 		    || (editor.clickInteraction.LinkCreation.StartPinIdx == link.EndPinIdx
@@ -2536,30 +2506,30 @@ namespace Rift::Nodes
 		return IsObjectSelected(editor.Links, editor.SelectedLinkIndices, linkId);
 	}
 
-	bool IsAttributeActive()
+	bool IsPinActive()
 	{
 		assert((gNodes->CurrentScope & Scope_Node) != 0);
 
-		if (!gNodes->ActiveAttribute)
+		if (!gNodes->activePin)
 		{
 			return false;
 		}
 
-		return gNodes->ActiveAttributeId == gNodes->CurrentAttributeId;
+		return gNodes->activePinId == gNodes->CurrentPinId;
 	}
 
-	bool IsAnyAttributeActive(i32* const attributeId)
+	bool IsAnyPinActive(i32* const pinId)
 	{
-		assert((gNodes->CurrentScope & (Scope_Node | Scope_Attribute)) == 0);
+		assert((gNodes->CurrentScope & (Scope_Node | Scope_Pin)) == 0);
 
-		if (!gNodes->ActiveAttribute)
+		if (!gNodes->activePin)
 		{
 			return false;
 		}
 
-		if (attributeId != nullptr)
+		if (pinId != nullptr)
 		{
-			*attributeId = gNodes->ActiveAttributeId;
+			*pinId = gNodes->activePinId;
 		}
 
 		return true;
@@ -2620,7 +2590,7 @@ namespace Rift::Nodes
 			const PinData& startPin     = editor.pins.Pool[startIdx];
 			const PinData& endPin       = editor.pins.Pool[endIdx];
 
-			if (startPin.Type == AttributeType::Output)
+			if (startPin.Type == PinType::Output)
 			{
 				*startedAtPinId = startPin.Id;
 				*endedAtPinId   = endPin.Id;
@@ -2662,7 +2632,7 @@ namespace Rift::Nodes
 			const PinData& endPin       = editor.pins.Pool[endIdx];
 			const NodeData& endNode     = editor.nodes.Pool[endPin.ParentNodeIdx];
 
-			if (startPin.Type == AttributeType::Output)
+			if (startPin.Type == PinType::Output)
 			{
 				*startedAtPinId  = startPin.Id;
 				*startedAtNodeId = startNode.Id;

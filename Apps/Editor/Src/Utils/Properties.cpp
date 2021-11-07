@@ -1,8 +1,9 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "Utils/Properties.h"
+
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
-#include "Utils/Properties.h"
 
 #include <AST/Components/CClassDecl.h>
 #include <AST/Components/CFunctionDecl.h>

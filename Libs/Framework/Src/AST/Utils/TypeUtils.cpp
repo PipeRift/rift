@@ -1,5 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "AST/Utils/TypeUtils.h"
+
 #include "AST/Components/CBoolLiteral.h"
 #include "AST/Components/CCallExpr.h"
 #include "AST/Components/CClassDecl.h"
@@ -13,7 +15,6 @@
 #include "AST/Components/CVariableDecl.h"
 #include "AST/Linkage.h"
 #include "AST/Serialization.h"
-#include "AST/Utils/TypeUtils.h"
 
 #include <Misc/Checks.h>
 #include <Profiler.h>

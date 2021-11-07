@@ -16,10 +16,10 @@ struct ImGuiContext;
 
 namespace Rift::Nodes
 {
-	typedef int StyleVar;          // -> enum StyleVar_
-	typedef int StyleFlags;        // -> enum StyleFlags_
-	typedef int PinShape;          // -> enum PinShape_
-	typedef int AttributeFlags;    // -> enum AttributeFlags_
+	typedef int StyleVar;      // -> enum StyleVar_
+	typedef int StyleFlags;    // -> enum StyleFlags_
+	typedef int PinShape;      // -> enum PinShape_
+	typedef int PinFlags;      // -> enum PinFlags_
 
 	enum ColorVar : u8
 	{
@@ -95,7 +95,7 @@ namespace Rift::Nodes
 		PinShape_QuadFilled
 	};
 
-	enum class AttributeType : u8
+	enum class PinType : u8
 	{
 		None,
 		Input,
@@ -103,18 +103,18 @@ namespace Rift::Nodes
 	};
 
 	// This enum controls the way the attribute pins behave.
-	enum AttributeFlags_
+	enum PinFlags_
 	{
-		AttributeFlags_None = 0,
+		PinFlags_None = 0,
 		// Allow detaching a link by left-clicking and dragging the link at a pin it is connected
 		// to. NOTE: the user has to actually delete the link for this to work. A deleted link can
 		// be detected by calling IsLinkDestroyed() after EndNodeEditor().
-		AttributeFlags_EnableLinkDetachWithDragClick = 1 << 0,
+		PinFlags_EnableLinkDetachWithDragClick = 1 << 0,
 		// Visual snapping of an in progress link will trigger IsLink Created/Destroyed events.
 		// Allows for previewing the creation of a link while dragging it across attributes. NOTE:
 		// the user has to actually delete the link for this to work. A deleted link can be detected
 		// by calling IsLinkDestroyed() after EndNodeEditor().
-		AttributeFlags_EnableLinkCreationOnSnap = 1 << 1
+		PinFlags_EnableLinkCreationOnSnap = 1 << 1
 	};
 
 	struct IO
@@ -229,7 +229,7 @@ namespace Rift::Nodes
 	EditorContext& GetEditorContext();
 
 	CubicBezier MakeCubicBezier(
-	    v2 start, v2 end, const AttributeType startType, const float lineSegmentsPerLength);
+	    v2 start, v2 end, const PinType startType, const float lineSegmentsPerLength);
 
 	// Call this function if you are compiling UI in to a dll, separate from ImGui. Calling
 	// this function sets the GImGui global variable, which is not shared across dll
@@ -298,36 +298,31 @@ namespace Rift::Nodes
 	void BeginNodeTitleBar();
 	void EndNodeTitleBar();
 
-	// Attributes are ImGui UI elements embedded within the node. Attributes can have pin shapes
+	// Pins are ImGui UI elements embedded within the node. Pins can have pin shapes
 	// rendered next to them. Links are created between pins.
 	//
-	// The activity status of an attribute can be checked via the IsAttributeActive() and
-	// IsAnyAttributeActive() function calls. This is one easy way of checking for any changes
+	// The activity status of an attribute can be checked via the IsPinActive() and
+	// IsAnyPinActive() function calls. This is one easy way of checking for any changes
 	// made to an attribute's drag float UI, for instance.
 	//
 	// Each attribute id must be unique.
 
 	// Create an input attribute block. The pin is rendered on left side.
-	void BeginInputAttribute(i32 id, PinShape shape = PinShape_CircleFilled);
-	void EndInputAttribute();
+	void BeginInput(i32 id, PinShape shape = PinShape_CircleFilled);
+	void EndInput();
 	// Create an output attribute block. The pin is rendered on the right side.
-	void BeginOutputAttribute(i32 id, PinShape shape = PinShape_CircleFilled);
-	void EndOutputAttribute();
-	// Create a static attribute block. A static attribute has no pin, and therefore can't be
-	// linked to anything. However, you can still use IsAttributeActive() and
-	// IsAnyAttributeActive() to check for attribute activity.
-	void BeginStaticAttribute(i32 id);
-	void EndStaticAttribute();
+	void BeginOutput(i32 id, PinShape shape = PinShape_CircleFilled);
+	void EndOutput();
 
-	// Push a single AttributeFlags value. By default, only AttributeFlags_None is set.
-	void PushAttributeFlag(AttributeFlags flag);
-	void PopAttributeFlag();
+	// Push a single PinFlags value. By default, only PinFlags_None is set.
+	void PushPinFlag(PinFlags flag);
+	void PopPinFlag();
 
 	// Render a link between attributes.
-	// The attributes ids used here must match the ids used in Begin(Input|Output)Attribute
+	// The attributes ids used here must match the ids used in Begin(Input|Output)
 	// function calls. The order of start_attr and end_attr doesn't make a difference for
 	// rendering the link.
-	void Link(i32 id, i32 startAttributeId, i32 endAttributeId);
+	void Link(i32 id, i32 startPinId, i32 endPinId);
 
 	// Enable or disable the ability to click and drag a specific node.
 	void SetNodeDraggable(i32 nodeId, const bool draggable);
@@ -387,30 +382,29 @@ namespace Rift::Nodes
 	void ClearLinkSelection(i32 linkId);
 	bool IsLinkSelected(i32 linkId);
 
-	// Was the previous attribute active? This will continuously return true while the left
-	// mouse button is being pressed over the UI content of the attribute.
-	bool IsAttributeActive();
-	// Was any attribute active? If so, sets the active attribute id to the output function
+	// Was the previous pin active? This will continuously return true while the left
+	// mouse button is being pressed over the UI content of the pin.
+	bool IsPinActive();
+	// Was any pin active? If so, sets the active pin id to the output function
 	// argument.
-	bool IsAnyAttributeActive(i32* attributeId = nullptr);
+	bool IsAnyPinActive(i32* attributeId = nullptr);
 
 	// Use the following functions to query a change of state for an existing link, or new link.
 	// Call these after EndNodeEditor().
 
 	// Did the user start dragging a new link from a pin?
-	bool IsLinkStarted(i32* startedAtAttributeId);
+	bool IsLinkStarted(i32* startedAtPinId);
 	// Did the user drop the dragged link before attaching it to a pin?
 	// There are two different kinds of situations to consider when handling this event:
 	// 1) a link which is created at a pin and then dropped
 	// 2) an existing link which is detached from a pin and then dropped
 	// Use the including_detached_links flag to control whether this function triggers when the
 	// user detaches a link and drops it.
-	bool IsLinkDropped(i32* startedAtAttributeId = nullptr, bool includingDetachedLinks = true);
+	bool IsLinkDropped(i32* startedAtPinId = nullptr, bool includingDetachedLinks = true);
 	// Did the user finish creating a new link?
-	bool IsLinkCreated(
-	    i32* startedAtAttributeId, i32* endedAtAttributeId, bool* createdFromSnap = nullptr);
-	bool IsLinkCreated(int* startedAtNodeId, i32* startedAtAttributeId, i32* endedAtNodeId,
-	    i32* endedAtAttributeId, bool* createdFromSnap = nullptr);
+	bool IsLinkCreated(i32* startedAtPinId, i32* endedAtPinId, bool* createdFromSnap = nullptr);
+	bool IsLinkCreated(int* startedAtNodeId, i32* startedAtPinId, i32* endedAtNodeId,
+	    i32* endedAtPinId, bool* createdFromSnap = nullptr);
 
 	// Was an existing link detached from a pin by the user? The detached link's id is assigned
 	// to the output argument linkId.

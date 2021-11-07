@@ -32,10 +32,10 @@ namespace Rift::Nodes
 
 	enum Scope_
 	{
-		Scope_None      = 1,
-		Scope_Editor    = 1 << 1,
-		Scope_Node      = 1 << 2,
-		Scope_Attribute = 1 << 3
+		Scope_None   = 1,
+		Scope_Editor = 1 << 1,
+		Scope_Node   = 1 << 2,
+		Scope_Pin    = 1 << 3
 	};
 
 	enum UIState_
@@ -186,8 +186,8 @@ namespace Rift::Nodes
 	{
 		i32 Id;
 		i32 ParentNodeIdx;
-		Rect AttributeRect;
-		AttributeType Type;
+		Rect rect;
+		PinType Type;
 		PinShape Shape;
 		v2 Pos;    // screen-space coordinates
 		i32 Flags;
@@ -200,11 +200,11 @@ namespace Rift::Nodes
 		PinData(const i32 pin_id)
 		    : Id(pin_id)
 		    , ParentNodeIdx()
-		    , AttributeRect()
-		    , Type(AttributeType::None)
+		    , rect()
+		    , Type(PinType::None)
 		    , Shape(PinShape_CircleFilled)
 		    , Pos()
-		    , Flags(AttributeFlags_None)
+		    , Flags(PinFlags_None)
 		    , ColorStyle()
 		{}
 	};
@@ -334,13 +334,13 @@ namespace Rift::Nodes
 		ImVector<StyleVarElement> StyleModifierStack;
 		ImGuiTextBuffer TextBuffer;
 
-		int CurrentAttributeFlags;
-		ImVector<int> AttributeFlagStack;
+		int CurrentPinFlags;
+		ImVector<int> pinFlagStack;
 
 		// UI element state
 		int CurrentNodeIdx;
 		int CurrentPinIdx;
-		int CurrentAttributeId;
+		int CurrentPinId;
 
 		ImOptionalIndex HoveredNodeIdx;
 		ImOptionalIndex HoveredLinkIdx;
@@ -354,8 +354,8 @@ namespace Rift::Nodes
 		// Unclear what parts of the code this relates to.
 		int UIState;
 
-		int ActiveAttributeId;
-		bool ActiveAttribute;
+		int activePinId;
+		bool activePin;
 
 		// ImGui::IO cache
 

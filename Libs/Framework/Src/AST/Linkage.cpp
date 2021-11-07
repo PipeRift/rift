@@ -1,9 +1,10 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "AST/Linkage.h"
+
 #include "AST/Components/CChild.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CParent.h"
-#include "AST/Linkage.h"
 #include "Misc/Checks.h"
 
 

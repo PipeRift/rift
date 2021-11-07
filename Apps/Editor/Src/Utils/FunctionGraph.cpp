@@ -1,8 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Utils/FunctionGraph.h"
+
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
-#include "Utils/FunctionGraph.h"
 #include "Utils/GraphColors.h"
 #include "Utils/TypeUtils.h"
 
@@ -245,6 +246,7 @@ namespace Rift::Graph
 			AST::Id compoundId = functionChildren->Last();
 			if (compounds.Has(compoundId))
 			{
+				// TODO: Connect one statement after another!
 				TArray<AST::Id>* statementChildren = AST::GetLinked(ast, compoundId);
 				for (AST::Id childId : *statementChildren)
 				{
@@ -327,7 +329,18 @@ namespace Rift::Graph
 			SetNodePosition(functionId, transform.position);
 		}
 
-		Nodes::PushStyleColor(ColorVar_TitleBar, Color::FromRGB(191, 56, 11));
+		static constexpr Color headerColor = functionColor;
+		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
+
+		Nodes::PushStyleColor(ColorVar_NodeBackground, bodyColor);
+		Nodes::PushStyleColor(ColorVar_NodeBackgroundHovered, bodyColor);
+		Nodes::PushStyleColor(ColorVar_NodeBackgroundSelected, bodyColor);
+		Nodes::PushStyleColor(ColorVar_TitleBar, headerColor);
+		Nodes::PushStyleColor(ColorVar_TitleBarHovered, GetHovered(headerColor));
+		Nodes::PushStyleColor(ColorVar_TitleBarSelected, headerColor);
+
+		// Nodes::PushStyleColor(ColorVar_TitleBar, Color::FromRGB(191, 56, 11));
+
 		Nodes::BeginNode(i32(functionId));
 		{
 			Nodes::BeginNodeTitleBar();
@@ -338,15 +351,15 @@ namespace Rift::Graph
 				static constexpr Color color = executionColor;
 				Nodes::PushStyleColor(ColorVar_Pin, color);
 				Nodes::PushStyleColor(ColorVar_PinHovered, GetHovered(color));
-				Nodes::BeginOutputAttribute(i32(functionId), PinShape_QuadFilled);
+				Nodes::BeginOutput(i32(functionId), PinShape_QuadFilled);
 				UI::Text("");
-				Nodes::EndOutputAttribute();
+				Nodes::EndOutput();
 				Nodes::PopStyleColor(2);
 			}
 			Nodes::EndNodeTitleBar();
 		}
 		Nodes::EndNode();
-		Nodes::PopStyleColor();
+		Nodes::PopStyleColor(6);
 
 		if (nodes->leftMouseDragging || nodes->leftMouseReleased)
 		{
@@ -376,15 +389,15 @@ namespace Rift::Graph
 				Nodes::PushStyleColor(ColorVar_Pin, color);
 				Nodes::PushStyleColor(ColorVar_PinHovered, GetHovered(color));
 
-				Nodes::BeginInputAttribute(i32(id), PinShape_QuadFilled);
+				Nodes::BeginInput(i32(id), PinShape_QuadFilled);
 				UI::Text("");
-				Nodes::EndInputAttribute();
+				Nodes::EndInput();
 				UI::SameLine();
 				UI::Text(name.data());
 				UI::SameLine();
-				Nodes::BeginOutputAttribute(i32(id) + 1, PinShape_QuadFilled);
+				Nodes::BeginOutput(i32(id) + 1, PinShape_QuadFilled);
 				UI::Text("");
-				Nodes::EndOutputAttribute();
+				Nodes::EndOutput();
 
 				Nodes::PopStyleColor(2);
 			}
@@ -393,9 +406,9 @@ namespace Rift::Graph
 			static constexpr Color pinColor = GetTypeColor<float>();
 			Nodes::PushStyleColor(ColorVar_Pin, pinColor);
 			Nodes::PushStyleColor(ColorVar_PinHovered, GetHovered(pinColor));
-			Nodes::BeginInputAttribute(i32(id) + 2, PinShape_CircleFilled);
+			Nodes::BeginInput(i32(id) + 2, PinShape_CircleFilled);
 			UI::Text("amount");
-			Nodes::EndInputAttribute();
+			Nodes::EndInput();
 			Nodes::PopStyleColor(2);
 
 			const auto* context = Nodes::GetCurrentContext();
@@ -425,11 +438,11 @@ namespace Rift::Graph
 
 		Nodes::BeginNode(i32(id));
 		{
-			Nodes::BeginOutputAttribute(i32(id), PinShape_CircleFilled);
+			Nodes::BeginOutput(i32(id), PinShape_CircleFilled);
 			PushInnerNodeStyle();
 			UI::Checkbox("##value", &value);
 			PopInnerNodeStyle();
-			Nodes::EndOutputAttribute();
+			Nodes::EndOutput();
 
 			const auto* context = Nodes::GetCurrentContext();
 			if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
@@ -458,7 +471,7 @@ namespace Rift::Graph
 
 		Nodes::BeginNode(i32(id));
 		{
-			Nodes::BeginOutputAttribute(i32(id), PinShape_CircleFilled);
+			Nodes::BeginOutput(i32(id), PinShape_CircleFilled);
 			PushInnerNodeStyle();
 			ImGuiStyle& style     = ImGui::GetStyle();
 			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
@@ -466,7 +479,7 @@ namespace Rift::Graph
 			const v2 size{Math::Max(minSize.x, textSize.x), Math::Max(minSize.y, textSize.y)};
 			UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
 			PopInnerNodeStyle();
-			Nodes::EndOutputAttribute();
+			Nodes::EndOutput();
 
 			const auto* context = Nodes::GetCurrentContext();
 			if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
