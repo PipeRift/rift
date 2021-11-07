@@ -1,6 +1,8 @@
+// Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
 #include "UI/Nodes.h"
+#include "UI/NodesMiniMap.h"
 #include "UI/UIImGui.h"
 
 #include <assert.h>
@@ -24,7 +26,6 @@ namespace Rift::Nodes
 	// [SECTION] internal enums
 
 	typedef int Scope;
-	typedef int AttributeType;
 	typedef int UIState;
 	typedef int ClickInteractionType;
 	typedef int LinkCreationType;
@@ -35,13 +36,6 @@ namespace Rift::Nodes
 		Scope_Editor    = 1 << 1,
 		Scope_Node      = 1 << 2,
 		Scope_Attribute = 1 << 3
-	};
-
-	enum AttributeType_
-	{
-		AttributeType_None,
-		AttributeType_Input,
-		AttributeType_Output
 	};
 
 	enum UIState_
@@ -207,7 +201,7 @@ namespace Rift::Nodes
 		    : Id(pin_id)
 		    , ParentNodeIdx()
 		    , AttributeRect()
-		    , Type(AttributeType_None)
+		    , Type(AttributeType::None)
 		    , Shape(PinShape_CircleFilled)
 		    , Pos()
 		    , Flags(AttributeFlags_None)
@@ -274,13 +268,14 @@ namespace Rift::Nodes
 
 	// [SECTION] global and editor context structs
 
+
 	struct EditorContext
 	{
-		ObjectPool<NodeData> Nodes;
-		ObjectPool<PinData> Pins;
+		ObjectPool<NodeData> nodes;
+		ObjectPool<PinData> pins;
 		ObjectPool<LinkData> Links;
 
-		ImVector<int> NodeDepthOrder;
+		ImVector<i32> NodeDepthOrder;
 
 		// ui related fields
 		v2 Panning;
@@ -289,38 +284,27 @@ namespace Rift::Nodes
 		// Nodes::EndNode() call.
 		Rect gridContentBounds;
 
-		ImVector<int> SelectedNodeIndices;
-		ImVector<int> SelectedLinkIndices;
+		ImVector<i32> SelectedNodeIndices;
+		ImVector<i32> SelectedLinkIndices;
 
 		// Relative origins of selected nodes for snapping of dragged nodes
 		ImVector<v2> SelectedNodeOrigins;
 		// Offset of the primary node origin relative to the mouse cursor.
 		v2 PrimaryNodeOffset;
 
-		ImClickInteractionState ClickInteraction;
+		ImClickInteractionState clickInteraction;
 
-		// Mini-map state set by MiniMap()
+		MiniMap miniMap;
 
-		bool miniMapEnabled = false;
-		MiniMapLocation miniMapLocation;
-		float miniMapSizeFraction                                               = 0.f;
-		MiniMapNodeHoveringCallback miniMapNodeHoveringCallback                 = nullptr;
-		MiniMapNodeHoveringCallbackUserData miniMapNodeHoveringCallbackUserData = nullptr;
-
-		// Mini-map state set during EndNodeEditor() call
-
-		Rect miniMapRectScreenSpace;
-		Rect miniMapContentScreenSpace;
-		float miniMapScaling = 0.f;
 
 		EditorContext()
-		    : Nodes()
-		    , Pins()
+		    : nodes()
+		    , pins()
 		    , Links()
 		    , Panning(0.f, 0.f)
 		    , SelectedNodeIndices()
 		    , SelectedLinkIndices()
-		    , ClickInteraction()
+		    , clickInteraction()
 		{}
 	};
 
@@ -375,24 +359,17 @@ namespace Rift::Nodes
 
 		// ImGui::IO cache
 
-		v2 MousePos;
+		v2 mousePosition;
 
 		bool LeftMouseClicked;
-		bool LeftMouseReleased;
+		bool leftMouseReleased;
 		bool AltMouseClicked;
-		bool LeftMouseDragging;
+		bool leftMouseDragging;
 		bool AltMouseDragging;
 		float AltMouseScrollDelta;
 		bool MultipleSelectModifier;
 	};
 
-
-	static inline EditorContext& GetEditorContext()
-	{
-		// No editor context was set! Did you forget to call Nodes::CreateContext()?
-		assert(gNodes->EditorCtx != nullptr);
-		return *gNodes->EditorCtx;
-	}
 
 	// [SECTION] ObjectPool implementation
 

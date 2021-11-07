@@ -1,8 +1,9 @@
-// Copyright 2015-2020 Piperift - All rights reserved
+// Copyright 2015-2021 Piperift - All rights reserved
+
+#include "Utils/FunctionGraph.h"
 
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
-#include "Utils/FunctionGraph.h"
 #include "Utils/GraphColors.h"
 #include "Utils/TypeUtils.h"
 
@@ -16,6 +17,7 @@
 #include <AST/Uniques/CTypeListUnique.h>
 #include <UI/Nodes.h>
 #include <UI/NodesInternal.h>
+#include <UI/NodesMiniMap.h>
 #include <UI/Style.h>
 
 
@@ -190,7 +192,7 @@ namespace Rift::Graph
 
 	void DrawCalls(AST::Tree& ast, TArray<AST::Id>& children)
 	{
-		auto calls = ast.MakeView<CCallExpr>();
+		auto calls         = ast.MakeView<CCallExpr>();
 		auto functionDecls = ast.MakeView<CFunctionDecl, CIdentifier>();
 		for (AST::Id child : children)
 		{
@@ -261,7 +263,7 @@ namespace Rift::Graph
 			DrawCalls(ast, *children);
 			DrawLiterals(ast, *children);
 
-			Nodes::MiniMap(0.2f, MiniMapLocation_TopRight);
+			Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
 			Nodes::EndNodeEditor();
 			PopNodeStyle();
 
@@ -286,7 +288,7 @@ namespace Rift::Graph
 
 		auto& transform = ast.GetOrAdd<CGraphTransform>(functionId);
 		if (UI::IsWindowAppearing()
-		    && !(nodes->LeftMouseDragging && Nodes::IsNodeSelected(i32(functionId))))
+		    && !(nodes->leftMouseDragging && Nodes::IsNodeSelected(i32(functionId))))
 		{
 			SetNodePosition(functionId, transform.position);
 		}
@@ -312,7 +314,7 @@ namespace Rift::Graph
 		Nodes::EndNode();
 		Nodes::PopStyleColor();
 
-		if (nodes->LeftMouseDragging || nodes->LeftMouseReleased)
+		if (nodes->leftMouseDragging || nodes->leftMouseReleased)
 		{
 			transform.position = GetNodePosition(functionId);
 			Types::Changed(AST::GetLinkedParent(ast, functionId), "Moved nodes");
@@ -366,7 +368,7 @@ namespace Rift::Graph
 			if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
 			{
 				Nodes::GetEditorContext()
-				    .Nodes.Pool[context->CurrentNodeIdx]
+				    .nodes.Pool[context->CurrentNodeIdx]
 				    .LayoutStyle.BorderThickness = 2.f;
 			}
 		}
@@ -399,7 +401,7 @@ namespace Rift::Graph
 			if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
 			{
 				Nodes::GetEditorContext()
-				    .Nodes.Pool[context->CurrentNodeIdx]
+				    .nodes.Pool[context->CurrentNodeIdx]
 				    .LayoutStyle.BorderThickness = 2.f;
 			}
 		}
@@ -436,7 +438,7 @@ namespace Rift::Graph
 			if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
 			{
 				Nodes::GetEditorContext()
-				    .Nodes.Pool[context->CurrentNodeIdx]
+				    .nodes.Pool[context->CurrentNodeIdx]
 				    .LayoutStyle.BorderThickness = 2.f;
 			}
 		}

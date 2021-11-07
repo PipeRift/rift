@@ -7,6 +7,8 @@
 #include "Utils/FunctionGraph.h"
 
 #include <UI/Nodes.h>
+#include <UI/NodesMiniMap.h>
+
 
 namespace Rift
 {
@@ -37,7 +39,7 @@ namespace Rift
 
 			Graph::DrawCallNode(AST::Id(958), "ApplyDamage");
 
-			Nodes::MiniMap(0.2f, MiniMapLocation_TopRight);
+			Nodes::DrawMiniMap(0.2f, MiniMapCorner::TopRight);
 			Nodes::EndNodeEditor();
 			Graph::PopNodeStyle();
 		}

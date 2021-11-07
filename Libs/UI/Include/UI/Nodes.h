@@ -1,3 +1,4 @@
+// Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
 #include <Math/Color.h>
@@ -14,11 +15,10 @@ struct ImGuiContext;
 
 namespace Rift::Nodes
 {
-	typedef int StyleVar;           // -> enum StyleVar_
-	typedef int StyleFlags;         // -> enum StyleFlags_
-	typedef int PinShape;           // -> enum PinShape_
-	typedef int AttributeFlags;     // -> enum AttributeFlags_
-	typedef int MiniMapLocation;    // -> enum MiniMapLocation_
+	typedef int StyleVar;          // -> enum StyleVar_
+	typedef int StyleFlags;        // -> enum StyleFlags_
+	typedef int PinShape;          // -> enum PinShape_
+	typedef int AttributeFlags;    // -> enum AttributeFlags_
 
 	enum ColorVar : u8
 	{
@@ -61,7 +61,7 @@ namespace Rift::Nodes
 		StyleVar_NodePadding,
 		StyleVar_NodeBorderThickness,
 		StyleVar_LinkThickness,
-		StyleVar_LinkLineSegmentsPerLength,
+		StyleVar_linkLineSegmentsPerLength,
 		StyleVar_LinkHoverDistance,
 		StyleVar_PinCircleRadius,
 		StyleVar_PinQuadSideLength,
@@ -70,7 +70,7 @@ namespace Rift::Nodes
 		StyleVar_PinHoverRadius,
 		StyleVar_PinOffset,
 		StyleVar_MiniMapPadding,
-		StyleVar_miniMapOffset,
+		StyleVar_MiniMapOffset,
 		StyleVar_COUNT
 	};
 
@@ -92,6 +92,13 @@ namespace Rift::Nodes
 		PinShape_TriangleFilled,
 		PinShape_Quad,
 		PinShape_QuadFilled
+	};
+
+	enum class AttributeType : u8
+	{
+		None,
+		Input,
+		Output
 	};
 
 	// This enum controls the way the attribute pins behave.
@@ -119,9 +126,9 @@ namespace Rift::Nodes
 			// view. Set to NULL by default. To enable this feature, set the modifier to point to a
 			// boolean indicating the state of a modifier. For example,
 			//
-			// Nodes::GetIO().EmulateThreeButtonMouse.Modifier = &ImGui::GetIO().KeyAlt;
+			// Nodes::GetIO().emulateThreeButtonMouse.Modifier = &ImGui::GetIO().KeyAlt;
 			const bool* Modifier;
-		} EmulateThreeButtonMouse;
+		} emulateThreeButtonMouse;
 
 		struct LinkDetachWithModifierClick
 		{
@@ -156,7 +163,7 @@ namespace Rift::Nodes
 
 		// Holding alt mouse button pans the node area, by default middle mouse button will be used
 		// Set based on ImGuiMouseButton values
-		int AltMouseButton;
+		i32 AltMouseButton;
 
 		// Panning speed when dragging an element and mouse is outside the main editor view.
 		float AutoPanningSpeed;
@@ -174,7 +181,7 @@ namespace Rift::Nodes
 		float NodeBorderThickness;
 
 		float LinkThickness;
-		float LinkLineSegmentsPerLength;
+		float linkLineSegmentsPerLength;
 		float LinkHoverDistance;
 
 		// The following variables control the look and behavior of the pins. The default size of
@@ -211,15 +218,11 @@ namespace Rift::Nodes
 		Style();
 	};
 
-
-	enum MiniMapLocation_
+	struct CubicBezier
 	{
-		MiniMapLocation_BottomLeft,
-		MiniMapLocation_BottomRight,
-		MiniMapLocation_TopLeft,
-		MiniMapLocation_TopRight,
+		v2 p0, p1, p2, p3;
+		i32 numSegments;
 	};
-
 
 	struct Context;
 
@@ -230,15 +233,11 @@ namespace Rift::Nodes
 	// nodes functions don't require you to explicitly create a context.
 	struct EditorContext;
 
-// Callback type used to specify special behavior when hovering a node in the minimap
-#ifndef MiniMapNodeHoveringCallback
-	typedef void (*MiniMapNodeHoveringCallback)(int, void*);
-#endif
 
-#ifndef MiniMapNodeHoveringCallbackUserData
-	typedef void* MiniMapNodeHoveringCallbackUserData;
-#endif
+	EditorContext& GetEditorContext();
 
+	CubicBezier MakeCubicBezier(
+	    v2 start, v2 end, const AttributeType startType, const float lineSegmentsPerLength);
 
 	// Call this function if you are compiling UI in to a dll, separate from ImGui. Calling
 	// this function sets the GImGui global variable, which is not shared across dll
@@ -278,6 +277,7 @@ namespace Rift::Nodes
 	v2 GridToEditorPosition(const EditorContext& editor, const v2& v);
 	v2 EditorToGridPosition(const EditorContext& editor, const v2& v);
 	v2 MiniMapToGridPosition(const EditorContext& editor, const v2& v);
+	v2 ScreenToMiniMapPosition(const EditorContext& editor, const v2& v);
 	v2 ScreenToGridPosition(const v2& v);
 	v2 GridToScreenPosition(const v2& v);
 	v2 GridToEditorPosition(const v2& v);
@@ -285,13 +285,6 @@ namespace Rift::Nodes
 	v2 MiniMapToGridPosition(const v2& v);
 	v2 ScreenToMiniMapPosition(const v2& v);
 
-
-	// Add a navigable minimap to the editor; call before EndNodeEditor after all
-	// nodes and links have been specified
-	void MiniMap(const float minimap_size_fraction               = 0.2f,
-	    const MiniMapLocation location                           = MiniMapLocation_TopLeft,
-	    const MiniMapNodeHoveringCallback node_hovering_callback = NULL,
-	    const MiniMapNodeHoveringCallbackUserData node_hovering_callback_data = NULL);
 
 	// Use PushStyleColor and PopStyleColor to modify Style::Colors mid-frame.
 	void PushStyleColor(ColorVar item, Color color);
