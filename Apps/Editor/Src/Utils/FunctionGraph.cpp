@@ -1,14 +1,14 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Utils/FunctionGraph.h"
-
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
+#include "Utils/FunctionGraph.h"
 #include "Utils/GraphColors.h"
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CBoolLiteral.h>
 #include <AST/Components/CCallExpr.h>
+#include <AST/Components/CCompoundStmt.h>
 #include <AST/Components/CFunctionDecl.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CStringLiteral.h>
@@ -178,15 +178,12 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawFunctionDecls(AST::Tree& ast, TArray<AST::Id>& children)
+	void DrawFunctionDecls(AST::Tree& ast, TArray<AST::Id>& functionDecls)
 	{
 		auto functions = ast.MakeView<CFunctionDecl>();
-		for (AST::Id child : children)
+		for (AST::Id functionId : functionDecls)
 		{
-			if (functions.Has(child))
-			{
-				DrawFunctionEntry(ast, child);
-			}
+			DrawFunctionDecl(ast, functionId);
 		}
 	}
 
@@ -233,6 +230,31 @@ namespace Rift::Graph
 		}
 	}
 
+	void DrawStatementLinks(AST::Tree& ast, TArray<AST::Id>& functionDecls)
+	{
+		auto statements = ast.MakeView<CStatement>();
+		auto compounds  = ast.MakeView<CCompoundStmt>();
+		for (AST::Id functionId : functionDecls)
+		{
+			TArray<AST::Id>* functionChildren = AST::GetLinked(ast, functionId);
+			if (!functionChildren || functionChildren->IsEmpty())
+			{
+				continue;
+			}
+
+			AST::Id compoundId = functionChildren->Last();
+			if (compounds.Has(compoundId))
+			{
+				TArray<AST::Id>* statementChildren = AST::GetLinked(ast, compoundId);
+				for (AST::Id childId : *statementChildren)
+				{
+					// Note: The id of the link is the destination pin
+					Nodes::Link(i32(childId), i32(compoundId), i32(childId));
+				}
+			}
+		}
+	}
+
 	void DrawFunctionGraph(AST::Tree& ast, AST::Id typeId, DockSpaceLayout& layout)
 	{
 		TArray<AST::Id>* children = AST::GetLinked(ast, typeId);
@@ -259,9 +281,21 @@ namespace Rift::Graph
 				wantsToOpenContextMenu = true;
 			}
 
-			DrawFunctionDecls(ast, *children);
+			TArray<AST::Id> functions;
+			auto functionsView = ast.MakeView<CFunctionDecl>();
+			for (AST::Id childId : *children)
+			{
+				if (functionsView.Has(childId))
+				{
+					functions.Add(childId);
+				}
+			}
+
+			DrawFunctionDecls(ast, functions);
 			DrawCalls(ast, *children);
 			DrawLiterals(ast, *children);
+
+			DrawStatementLinks(ast, functions);
 
 			Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
 			Nodes::EndNodeEditor();
@@ -276,7 +310,7 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawFunctionEntry(AST::Tree& ast, AST::Id functionId)
+	void DrawFunctionDecl(AST::Tree& ast, AST::Id functionId)
 	{
 		auto* nodes = Nodes::GetCurrentContext();
 

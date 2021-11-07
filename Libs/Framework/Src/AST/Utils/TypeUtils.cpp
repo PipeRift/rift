@@ -1,17 +1,19 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "AST/Utils/TypeUtils.h"
-
 #include "AST/Components/CBoolLiteral.h"
 #include "AST/Components/CCallExpr.h"
 #include "AST/Components/CClassDecl.h"
+#include "AST/Components/CCompoundStmt.h"
 #include "AST/Components/CFloatLiteral.h"
+#include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CFunctionLibraryDecl.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CStringLiteral.h"
 #include "AST/Components/CStructDecl.h"
+#include "AST/Components/CVariableDecl.h"
 #include "AST/Linkage.h"
 #include "AST/Serialization.h"
+#include "AST/Utils/TypeUtils.h"
 
 #include <Misc/Checks.h>
 #include <Profiler.h>
@@ -45,6 +47,42 @@ namespace Rift::Types
 			return TypeCategory::FunctionLibrary;
 		}
 		return TypeCategory::None;
+	}
+
+	AST::Id CreateClass(AST::Tree& ast, Name name)
+	{
+		AST::Id id = ast.Create();
+		ast.Add<CIdentifier>(id, name);
+		ast.Add<CStructDecl, CParent>(id);
+		return id;
+	}
+
+	AST::Id CreateStruct(AST::Tree& ast, Name name)
+	{
+		AST::Id id = ast.Create();
+		ast.Add<CIdentifier>(id, name);
+		ast.Add<CStructDecl, CParent>(id);
+		return id;
+	}
+
+	AST::Id CreateVariable(AST::Tree& ast, Name name)
+	{
+		AST::Id id = ast.Create();
+		ast.Add<CIdentifier>(id, name);
+		ast.Add<CVariableDecl, CParent>(id);
+		return id;
+	}
+
+	AST::Id CreateFunction(AST::Tree& ast, Name name)
+	{
+		AST::Id id = ast.Create();
+		ast.Add<CIdentifier>(id, name);
+		ast.Add<CFunctionDecl, CParent>(id);
+
+		AST::Id compoundId = ast.Create();
+		ast.Add<CCompoundStmt>(id);
+		AST::Link(ast, id, compoundId);
+		return id;
 	}
 
 	AST::Id CreateLiteral(AST::Tree& ast, AST::Id typeId, AST::Id parentId)

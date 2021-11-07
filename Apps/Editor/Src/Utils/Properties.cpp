@@ -1,9 +1,8 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Utils/Properties.h"
-
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
+#include "Utils/Properties.h"
 
 #include <AST/Components/CClassDecl.h>
 #include <AST/Components/CFunctionDecl.h>
@@ -12,6 +11,7 @@
 #include <AST/Components/CStructDecl.h>
 #include <AST/Components/CVariableDecl.h>
 #include <AST/Linkage.h>
+#include <AST/Utils/TypeUtils.h>
 #include <GLFW/glfw3.h>
 #include <UI/UI.h>
 
@@ -214,7 +214,7 @@ namespace Rift
 			Style::PushStyleCompact();
 			if (UI::Button("Add##Variable", ImVec2(-FLT_MIN, 0.0f)))
 			{
-				AST::Id newVariable = AST::CreateVariable(ast, "NewVariable");
+				AST::Id newVariable = Types::CreateVariable(ast, "NewVariable");
 				AST::Link(ast, typeId, newVariable);
 			}
 			Style::PopStyleCompact();
@@ -256,7 +256,7 @@ namespace Rift
 			Style::PushStyleCompact();
 			if (UI::Button("Add##Function", ImVec2(-FLT_MIN, 0.0f)))
 			{
-				AST::Id newFunction = AST::CreateFunction(ast, "NewFunction");
+				AST::Id newFunction = Types::CreateFunction(ast, "NewFunction");
 				AST::Link(ast, typeId, newFunction);
 			}
 			Style::PopStyleCompact();

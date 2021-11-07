@@ -367,7 +367,7 @@ namespace Rift::Nodes
 		bool leftMouseDragging;
 		bool AltMouseDragging;
 		float AltMouseScrollDelta;
-		bool MultipleSelectModifier;
+		bool multipleSelectModifier;
 	};
 
 

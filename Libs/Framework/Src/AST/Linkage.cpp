@@ -1,13 +1,9 @@
 // Copyright 2015-2020 Piperift - All rights reserved
-#include "AST/Linkage.h"
 
 #include "AST/Components/CChild.h"
-#include "AST/Components/CClassDecl.h"
-#include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CParent.h"
-#include "AST/Components/CStructDecl.h"
-#include "AST/Components/CVariableDecl.h"
+#include "AST/Linkage.h"
 #include "Misc/Checks.h"
 
 
@@ -24,40 +20,6 @@ namespace Rift::AST
 			}
 		}
 	}
-
-
-	Id CreateClass(Tree& ast, Name name)
-	{
-		Id id = ast.Create();
-		ast.Add<CIdentifier>(id, name);
-		ast.Add<CStructDecl, CParent>(id);
-		return id;
-	}
-
-	Id CreateStruct(Tree& ast, Name name)
-	{
-		Id id = ast.Create();
-		ast.Add<CIdentifier>(id, name);
-		ast.Add<CStructDecl, CParent>(id);
-		return id;
-	}
-
-	Id CreateVariable(Tree& ast, Name name)
-	{
-		Id id = ast.Create();
-		ast.Add<CIdentifier>(id, name);
-		ast.Add<CVariableDecl, CParent>(id);
-		return id;
-	}
-
-	Id CreateFunction(Tree& ast, Name name)
-	{
-		Id id = ast.Create();
-		ast.Add<CIdentifier>(id, name);
-		ast.Add<CFunctionDecl, CParent>(id);
-		return id;
-	}
-
 
 	void Link(Tree& ast, Id node, TArrayView<const Id> children)
 	{

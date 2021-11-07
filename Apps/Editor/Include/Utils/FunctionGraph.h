@@ -47,7 +47,7 @@ namespace Rift::Graph
 	void DrawContextMenu(AST::Tree& ast);
 	void DrawFunctionGraph(AST::Tree& ast, AST::Id typeId, DockSpaceLayout& layout);
 
-	void DrawFunctionEntry(AST::Tree& ast, AST::Id functionId);
+	void DrawFunctionDecl(AST::Tree& ast, AST::Id functionId);
 	void DrawCallNode(AST::Id id, StringView name);
 	void DrawBoolLiteralNode(AST::Id id, bool& value);
 	void DrawStringLiteralNode(AST::Id id, String& value);

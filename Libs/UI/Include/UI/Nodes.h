@@ -1,9 +1,10 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "UIImgui.h"
+
 #include <Math/Color.h>
 #include <Math/Vector.h>
-#include <stddef.h>
 
 
 #ifdef IMNODES_USER_CONFIG
@@ -120,56 +121,47 @@ namespace Rift::Nodes
 	{
 		struct EmulateThreeButtonMouse
 		{
-			EmulateThreeButtonMouse();
-
 			// The keyboard modifier to use in combination with mouse left click to pan the editor
-			// view. Set to NULL by default. To enable this feature, set the modifier to point to a
-			// boolean indicating the state of a modifier. For example,
+			// view. Set to nullptr by default. To enable this feature, set the modifier to point to
+			// a boolean indicating the state of a modifier. For example,
 			//
-			// Nodes::GetIO().emulateThreeButtonMouse.Modifier = &ImGui::GetIO().KeyAlt;
-			const bool* Modifier;
+			// Nodes::GetIO().emulateThreeButtonMouse.modifier = &ImGui::GetIO().KeyAlt;
+			const bool* modifier = nullptr;
 		} emulateThreeButtonMouse;
 
 		struct LinkDetachWithModifierClick
 		{
-			LinkDetachWithModifierClick();
-
 			// Pointer to a boolean value indicating when the desired modifier is pressed. Set to
-			// NULL by default. To enable the feature, set the modifier to point to a boolean
+			// nullptr by default. To enable the feature, set the modifier to point to a boolean
 			// indicating the state of a modifier. For example,
 			//
-			// Nodes::GetIO().LinkDetachWithModifierClick.Modifier = &ImGui::GetIO().KeyCtrl;
+			// Nodes::GetIO().linkDetachWithModifierClick.modifier = &ImGui::GetIO().KeyCtrl;
 			//
 			// Left-clicking a link with this modifier pressed will detach that link. NOTE: the user
 			// has to actually delete the link for this to work. A deleted link can be detected by
 			// calling IsLinkDestroyed() after EndNodeEditor().
-			const bool* Modifier;
-		} LinkDetachWithModifierClick;
+			const bool* modifier = nullptr;
+		} linkDetachWithModifierClick;
 
 		struct MultipleSelectModifier
 		{
-			MultipleSelectModifier();
-
 			// Pointer to a boolean value indicating when the desired modifier is pressed. Set to
-			// NULL by default. To enable the feature, set the modifier to point to a boolean
+			// nullptr by default. To enable the feature, set the modifier to point to a boolean
 			// indicating the state of a modifier. For example,
 			//
-			// Nodes::GetIO().MultipleSelectModifier.Modifier = &ImGui::GetIO().KeyCtrl;
+			// Nodes::GetIO().multipleSelectModifier.modifier = &ImGui::GetIO().KeyCtrl;
 			//
 			// Left-clicking a node with this modifier pressed will add the node to the list of
-			// currently selected nodes. If this value is NULL, the Ctrl key will be used.
-			const bool* Modifier;
-		} MultipleSelectModifier;
+			// currently selected nodes. If this value is nullptr, the Ctrl key will be used.
+			const bool* modifier = nullptr;
+		} multipleSelectModifier;
 
 		// Holding alt mouse button pans the node area, by default middle mouse button will be used
 		// Set based on ImGuiMouseButton values
-		i32 AltMouseButton;
+		i32 AltMouseButton = ImGuiMouseButton_Middle;
 
 		// Panning speed when dragging an element and mouse is outside the main editor view.
-		float AutoPanningSpeed;
-
-
-		IO();
+		float AutoPanningSpeed = 1000.f;
 	};
 
 	struct Style
@@ -245,7 +237,7 @@ namespace Rift::Nodes
 	void SetImGuiContext(ImGuiContext* ctx);
 
 	Context* CreateContext();
-	void DestroyContext(Context* ctx = NULL);    // NULL = destroy current context
+	void DestroyContext(Context* ctx = nullptr);    // nullptr = destroy current context
 	Context* GetCurrentContext();
 	void SetCurrentContext(Context* ctx);
 
@@ -254,7 +246,7 @@ namespace Rift::Nodes
 	void EditorContextSet(EditorContext*);
 	v2 GetEditorContextPanning();
 	void EditorContextResetPanning(const v2& pos);
-	void EditorContextMoveToNode(const int node_id);
+	void EditorContextMoveToNode(const i32 nodeId);
 
 	IO& GetIO();
 
@@ -291,14 +283,14 @@ namespace Rift::Nodes
 	void PopStyleColor(i32 count = 1);
 	void PushStyleVar(StyleVar style_item, float value);
 	void PushStyleVar(StyleVar style_item, const v2& value);
-	void PopStyleVar(int count = 1);
+	void PopStyleVar(i32 count = 1);
 
 	// id can be any positive or negative integer, but INT_MIN is currently reserved for
 	// internal use.
-	void BeginNode(int id);
+	void BeginNode(i32 id);
 	void EndNode();
 
-	v2 GetNodeDimensions(int id);
+	v2 GetNodeDimensions(i32 id);
 
 	// Place your node title bar content (such as the node title, using ImGui::Text) between the
 	// following function calls. These functions have to be called before adding any attributes,
@@ -316,15 +308,15 @@ namespace Rift::Nodes
 	// Each attribute id must be unique.
 
 	// Create an input attribute block. The pin is rendered on left side.
-	void BeginInputAttribute(int id, PinShape shape = PinShape_CircleFilled);
+	void BeginInputAttribute(i32 id, PinShape shape = PinShape_CircleFilled);
 	void EndInputAttribute();
 	// Create an output attribute block. The pin is rendered on the right side.
-	void BeginOutputAttribute(int id, PinShape shape = PinShape_CircleFilled);
+	void BeginOutputAttribute(i32 id, PinShape shape = PinShape_CircleFilled);
 	void EndOutputAttribute();
 	// Create a static attribute block. A static attribute has no pin, and therefore can't be
 	// linked to anything. However, you can still use IsAttributeActive() and
 	// IsAnyAttributeActive() to check for attribute activity.
-	void BeginStaticAttribute(int id);
+	void BeginStaticAttribute(i32 id);
 	void EndStaticAttribute();
 
 	// Push a single AttributeFlags value. By default, only AttributeFlags_None is set.
@@ -335,10 +327,10 @@ namespace Rift::Nodes
 	// The attributes ids used here must match the ids used in Begin(Input|Output)Attribute
 	// function calls. The order of start_attr and end_attr doesn't make a difference for
 	// rendering the link.
-	void Link(int id, int start_attribute_id, int end_attribute_id);
+	void Link(i32 id, i32 startAttributeId, i32 endAttributeId);
 
 	// Enable or disable the ability to click and drag a specific node.
-	void SetNodeDraggable(int node_id, const bool draggable);
+	void SetNodeDraggable(i32 nodeId, const bool draggable);
 
 	// The node's position can be expressed in three coordinate systems:
 	// * screen space coordinates, -- the origin is the upper left corner of the window.
@@ -351,13 +343,13 @@ namespace Rift::Nodes
 	// Use the following functions to get and set the node's coordinates in these coordinate
 	// systems.
 
-	void SetNodeScreenSpacePos(int node_id, const v2& screen_space_pos);
-	void SetNodeEditorSpacePos(int node_id, const v2& editor_space_pos);
-	void SetNodeGridSpacePos(int node_id, const v2& grid_pos);
+	void SetNodeScreenSpacePos(i32 nodeId, const v2& screen_space_pos);
+	void SetNodeEditorSpacePos(i32 nodeId, const v2& editor_space_pos);
+	void SetNodeGridSpacePos(i32 nodeId, const v2& grid_pos);
 
-	v2 GetNodeScreenSpacePos(const int node_id);
-	v2 GetNodeEditorSpacePos(const int node_id);
-	v2 GetNodeGridSpacePos(const int node_id);
+	v2 GetNodeScreenSpacePos(const i32 nodeId);
+	v2 GetNodeEditorSpacePos(const i32 nodeId);
+	v2 GetNodeGridSpacePos(const i32 nodeId);
 
 	// Returns true if the current node editor canvas is being hovered over by the mouse, and is
 	// not blocked by any other windows.
@@ -365,9 +357,9 @@ namespace Rift::Nodes
 	// The following functions return true if a UI element is being hovered over by the mouse
 	// cursor. Assigns the id of the UI element being hovered over to the function argument. Use
 	// these functions after EndNodeEditor() has been called.
-	bool IsNodeHovered(int* node_id);
-	bool IsLinkHovered(int* link_id);
-	bool IsPinHovered(int* attribute_id);
+	bool IsNodeHovered(i32* nodeId);
+	bool IsLinkHovered(i32* linkId);
+	bool IsPinHovered(i32* attributeId);
 
 	// Use The following two functions to query the number of selected nodes or links in the
 	// current editor. Use after calling EndNodeEditor().
@@ -376,8 +368,8 @@ namespace Rift::Nodes
 	// Get the selected node/link ids. The pointer argument should point to an integer array
 	// with at least as many elements as the respective NumSelectedNodes/NumSelectedLinks
 	// function call returned.
-	void GetSelectedNodes(int* node_ids);
-	void GetSelectedLinks(int* link_ids);
+	void GetSelectedNodes(i32* nodeIds);
+	void GetSelectedLinks(i32* linkIds);
 	// Clears the list of selected nodes/links. Useful if you want to delete a selected node or
 	// link.
 	void ClearNodeSelection();
@@ -388,39 +380,39 @@ namespace Rift::Nodes
 	// considered unselected. Clear-functions has the precondition that the object is currently
 	// considered selected. Preconditions listed above can be checked via
 	// IsNodeSelected/IsLinkSelected if not already known.
-	void SelectNode(int node_id);
-	void ClearNodeSelection(int node_id);
-	bool IsNodeSelected(int node_id);
-	void SelectLink(int link_id);
-	void ClearLinkSelection(int link_id);
-	bool IsLinkSelected(int link_id);
+	void SelectNode(i32 nodeId);
+	void ClearNodeSelection(i32 nodeId);
+	bool IsNodeSelected(i32 nodeId);
+	void SelectLink(i32 linkId);
+	void ClearLinkSelection(i32 linkId);
+	bool IsLinkSelected(i32 linkId);
 
 	// Was the previous attribute active? This will continuously return true while the left
 	// mouse button is being pressed over the UI content of the attribute.
 	bool IsAttributeActive();
 	// Was any attribute active? If so, sets the active attribute id to the output function
 	// argument.
-	bool IsAnyAttributeActive(int* attribute_id = NULL);
+	bool IsAnyAttributeActive(i32* attributeId = nullptr);
 
 	// Use the following functions to query a change of state for an existing link, or new link.
 	// Call these after EndNodeEditor().
 
 	// Did the user start dragging a new link from a pin?
-	bool IsLinkStarted(int* started_at_attribute_id);
+	bool IsLinkStarted(i32* startedAtAttributeId);
 	// Did the user drop the dragged link before attaching it to a pin?
 	// There are two different kinds of situations to consider when handling this event:
 	// 1) a link which is created at a pin and then dropped
 	// 2) an existing link which is detached from a pin and then dropped
 	// Use the including_detached_links flag to control whether this function triggers when the
 	// user detaches a link and drops it.
-	bool IsLinkDropped(int* started_at_attribute_id = NULL, bool including_detached_links = true);
+	bool IsLinkDropped(i32* startedAtAttributeId = nullptr, bool includingDetachedLinks = true);
 	// Did the user finish creating a new link?
 	bool IsLinkCreated(
-	    int* started_at_attribute_id, int* ended_at_attribute_id, bool* created_from_snap = NULL);
-	bool IsLinkCreated(int* started_at_node_id, int* started_at_attribute_id, int* ended_at_node_id,
-	    int* ended_at_attribute_id, bool* created_from_snap = NULL);
+	    i32* startedAtAttributeId, i32* endedAtAttributeId, bool* createdFromSnap = nullptr);
+	bool IsLinkCreated(int* startedAtNodeId, i32* startedAtAttributeId, i32* endedAtNodeId,
+	    i32* endedAtAttributeId, bool* createdFromSnap = nullptr);
 
 	// Was an existing link detached from a pin by the user? The detached link's id is assigned
-	// to the output argument link_id.
-	bool IsLinkDestroyed(int* link_id);
+	// to the output argument linkId.
+	bool IsLinkDestroyed(i32* linkId);
 }    // namespace Rift::Nodes

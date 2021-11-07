@@ -15,11 +15,6 @@ namespace Rift
 
 namespace Rift::AST
 {
-	Id CreateClass(Tree& ast, Name name);
-	Id CreateStruct(Tree& ast, Name name);
-	Id CreateVariable(Tree& ast, Name name);
-	Id CreateFunction(Tree& ast, Name name);
-
 	// Link a list of nodes at the end of the parent children list
 	void Link(Tree& ast, Id node, TArrayView<const Id> children);
 	// Link a list of nodes after prevChild in the list of children nodes

@@ -9,10 +9,8 @@
 // [SECTION] API implementation
 
 #include "UI/Nodes.h"
-
 #include "UI/NodesInternal.h"
 #include "UI/NodesMiniMap.h"
-#include "UI/UIImGui.h"
 
 #include <Math/Bezier.h>
 #include <Misc/Checks.h>
@@ -22,6 +20,7 @@
 #include <cmath>
 #include <cstring>    // strlen, strncmp
 #include <new>
+
 
 
 namespace Rift::Nodes
@@ -563,7 +562,7 @@ namespace Rift::Nodes
 		if (!editor.SelectedNodeIndices.contains(nodeIdx))
 		{
 			editor.SelectedLinkIndices.clear();
-			if (!gNodes->MultipleSelectModifier)
+			if (!gNodes->multipleSelectModifier)
 				editor.SelectedNodeIndices.clear();
 			editor.SelectedNodeIndices.push_back(nodeIdx);
 
@@ -575,7 +574,7 @@ namespace Rift::Nodes
 			depthStack.push_back(nodeIdx);
 		}
 		// Deselect a previously-selected node
-		else if (gNodes->MultipleSelectModifier)
+		else if (gNodes->multipleSelectModifier)
 		{
 			const i32* const nodePtr = editor.SelectedNodeIndices.find(nodeIdx);
 			editor.SelectedNodeIndices.erase(nodePtr);
@@ -635,9 +634,9 @@ namespace Rift::Nodes
 		// Check if we are clicking the link with the modifier pressed.
 		// This will in a link detach via clicking.
 
-		const bool modifierPressed = gNodes->Io.LinkDetachWithModifierClick.Modifier == nullptr
+		const bool modifierPressed = gNodes->Io.linkDetachWithModifierClick.modifier == nullptr
 		                               ? false
-		                               : *gNodes->Io.LinkDetachWithModifierClick.Modifier;
+		                               : *gNodes->Io.linkDetachWithModifierClick.modifier;
 
 		if (modifierPressed)
 		{
@@ -1610,19 +1609,6 @@ namespace Rift::Nodes
 
 	// [SECTION] API implementation
 
-	IO::EmulateThreeButtonMouse::EmulateThreeButtonMouse() : Modifier(nullptr) {}
-
-	IO::LinkDetachWithModifierClick::LinkDetachWithModifierClick() : Modifier(nullptr) {}
-
-	IO::MultipleSelectModifier::MultipleSelectModifier() : Modifier(nullptr) {}
-
-	IO::IO()
-	    : emulateThreeButtonMouse()
-	    , LinkDetachWithModifierClick()
-	    , AltMouseButton(ImGuiMouseButton_Middle)
-	    , AutoPanningSpeed(1000.0f)
-	{}
-
 	Style::Style()
 	    : GridSpacing(32.f)
 	    , NodeCornerRounding(4.f)
@@ -1875,16 +1861,16 @@ namespace Rift::Nodes
 		gNodes->leftMouseReleased = ImGui::IsMouseReleased(0);
 		gNodes->leftMouseDragging = ImGui::IsMouseDragging(0, 0.0f);
 		gNodes->AltMouseClicked =
-		    (gNodes->Io.emulateThreeButtonMouse.Modifier != nullptr
-		        && *gNodes->Io.emulateThreeButtonMouse.Modifier && gNodes->LeftMouseClicked)
+		    (gNodes->Io.emulateThreeButtonMouse.modifier != nullptr
+		        && *gNodes->Io.emulateThreeButtonMouse.modifier && gNodes->LeftMouseClicked)
 		    || ImGui::IsMouseClicked(gNodes->Io.AltMouseButton);
 		gNodes->AltMouseDragging =
-		    (gNodes->Io.emulateThreeButtonMouse.Modifier != nullptr && gNodes->leftMouseDragging
-		        && (*gNodes->Io.emulateThreeButtonMouse.Modifier))
+		    (gNodes->Io.emulateThreeButtonMouse.modifier != nullptr && gNodes->leftMouseDragging
+		        && (*gNodes->Io.emulateThreeButtonMouse.modifier))
 		    || ImGui::IsMouseDragging(gNodes->Io.AltMouseButton, 0.0f);
 		gNodes->AltMouseScrollDelta    = ImGui::GetIO().MouseWheel;
-		gNodes->MultipleSelectModifier = (gNodes->Io.MultipleSelectModifier.Modifier != nullptr
-		                                      ? *gNodes->Io.MultipleSelectModifier.Modifier
+		gNodes->multipleSelectModifier = (gNodes->Io.multipleSelectModifier.modifier != nullptr
+		                                      ? *gNodes->Io.multipleSelectModifier.modifier
 		                                      : ImGui::GetIO().KeyCtrl);
 		gNodes->ActiveAttribute        = false;
 
