@@ -1,10 +1,11 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "UI/NodesMiniMap.h"
-
-#include "Math/Math.h"
 #include "UI/Nodes.h"
 #include "UI/NodesInternal.h"
+#include "UI/NodesMiniMap.h"
+
+#include <Math/Math.h>
+#include <Math/Vector.h>
 
 
 namespace Rift::Nodes

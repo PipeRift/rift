@@ -196,7 +196,7 @@ namespace Rift::Graph
 		auto functionDecls = ast.MakeView<CFunctionDecl, CIdentifier>();
 		for (AST::Id child : children)
 		{
-			CCallExpr* call = calls.TryGet<CCallExpr>(child);
+			auto* call = calls.TryGet<CCallExpr>(child);
 			if (call)
 			{
 				StringView title = "Invalid";

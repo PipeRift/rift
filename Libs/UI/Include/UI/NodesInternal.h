@@ -162,7 +162,7 @@ namespace Rift::Nodes
 			float BorderThickness;
 		} LayoutStyle;
 
-		ImVector<int> PinIndices;
+		ImVector<int> pinIndices;
 		bool Draggable;
 
 		NodeData(const int node_id)
@@ -172,7 +172,7 @@ namespace Rift::Nodes
 		    , Rect(v2::Zero(), v2::Zero())
 		    , ColorStyle()
 		    , LayoutStyle()
-		    , PinIndices()
+		    , pinIndices()
 		    , Draggable(true)
 		{}
 
@@ -318,7 +318,7 @@ namespace Rift::Nodes
 		ImGuiStorage NodeIdxToSubmissionIdx;
 		ImVector<int> NodeIdxSubmissionOrder;
 		ImVector<int> NodeIndicesOverlappingWithMouse;
-		ImVector<int> OccludedPinIndices;
+		ImVector<int> occludedPinIndices;
 
 		// Canvas extents
 		v2 CanvasOriginScreenSpace;
@@ -403,7 +403,7 @@ namespace Rift::Nodes
 		{
 			if (nodes.InUse[i])
 			{
-				nodes.Pool[i].PinIndices.clear();
+				nodes.Pool[i].pinIndices.clear();
 			}
 			else
 			{

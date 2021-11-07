@@ -1080,9 +1080,9 @@ namespace Rift::Nodes
 				const Rect& rectAbove = editor.nodes.Pool[depthStack[nextDepthIdx]].Rect;
 
 				// Iterate over each pin
-				for (i32 idx = 0; idx < nodeBelow.PinIndices.Size; ++idx)
+				for (i32 idx = 0; idx < nodeBelow.pinIndices.Size; ++idx)
 				{
-					const i32 pinIdx = nodeBelow.PinIndices[idx];
+					const i32 pinIdx = nodeBelow.pinIndices[idx];
 					const v2& pinPos = editor.pins.Pool[pinIdx].Pos;
 
 					if (rectAbove.Contains(pinPos))
@@ -1453,9 +1453,9 @@ namespace Rift::Nodes
 			}
 		}
 
-		for (int PinIndice : node.PinIndices)
+		for (i32 pinIndex : node.pinIndices)
 		{
-			DrawPin(editor, PinIndice);
+			DrawPin(editor, pinIndex);
 		}
 
 		if (nodeHovered)
@@ -1551,7 +1551,7 @@ namespace Rift::Nodes
 		PinData& pin          = editor.pins.Pool[gNodes->CurrentPinIdx];
 		NodeData& node        = editor.nodes.Pool[gNodes->CurrentNodeIdx];
 		pin.AttributeRect     = GetItemRect();
-		node.PinIndices.push_back(gNodes->CurrentPinIdx);
+		node.pinIndices.push_back(gNodes->CurrentPinIdx);
 	}
 
 	void Initialize(Context* context)
@@ -1952,9 +1952,9 @@ namespace Rift::Nodes
 		{
 			// Pins needs some special care. We need to check the depth stack to see which pins are
 			// being occluded by other nodes.
-			ResolveOccludedPins(editor, gNodes->OccludedPinIndices);
+			ResolveOccludedPins(editor, gNodes->occludedPinIndices);
 
-			gNodes->HoveredPinIdx = ResolveHoveredPin(editor.pins, gNodes->OccludedPinIndices);
+			gNodes->HoveredPinIdx = ResolveHoveredPin(editor.pins, gNodes->occludedPinIndices);
 
 			if (!gNodes->HoveredPinIdx.HasValue())
 			{
