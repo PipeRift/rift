@@ -130,8 +130,8 @@ namespace Rift::Nodes
 	void MiniMap::DrawLink(EditorContext& editor, const i32 linkIdx)
 	{
 		const LinkData& link    = editor.Links.Pool[linkIdx];
-		const PinData& startPin = editor.pins.Pool[link.StartPinIdx];
-		const PinData& endPin   = editor.pins.Pool[link.EndPinIdx];
+		const PinData& startPin = editor.pins.Pool[link.outputPinIdx];
+		const PinData& endPin   = editor.pins.Pool[link.inputPinIdx];
 
 		const CubicBezier cubicBezier =
 		    MakeCubicBezier(ScreenToMiniMapPosition(editor, startPin.Pos),
@@ -191,17 +191,17 @@ namespace Rift::Nodes
 		    miniMapRect.min, miniMapRect.max, true /* i32ersect with editor clip-rect */);
 
 		// Draw links first so they appear under nodes, and we can use the same draw channel
-		for (i32 linkIdx = 0; linkIdx < editor.Links.Pool.size(); ++linkIdx)
+		for (i32 linkIdx = 0; linkIdx < editor.Links.Pool.Size(); ++linkIdx)
 		{
-			if (editor.Links.InUse[linkIdx])
+			if (editor.Links.InUse.IsSet(linkIdx))
 			{
 				DrawLink(editor, linkIdx);
 			}
 		}
 
-		for (i32 nodeIdx = 0; nodeIdx < editor.nodes.Pool.size(); ++nodeIdx)
+		for (i32 nodeIdx = 0; nodeIdx < editor.nodes.Pool.Size(); ++nodeIdx)
 		{
-			if (editor.nodes.InUse[nodeIdx])
+			if (editor.nodes.InUse.IsSet(nodeIdx))
 			{
 				DrawNode(editor, nodeIdx);
 			}

@@ -6,6 +6,8 @@
 #include "UI/UIImGui.h"
 
 #include <assert.h>
+#include <Containers/Array.h>
+#include <Containers/BitArray.h>
 #include <limits.h>
 #include <Math/Vector.h>
 
@@ -71,89 +73,83 @@ namespace Rift::Nodes
 	// {
 	//     T();
 	//
-	//     int id;
+	//     i32 id;
 	// };
 	template<typename T>
 	struct ObjectPool
 	{
-		ImVector<T> Pool;
-		ImVector<bool> InUse;
-		ImVector<int> FreeList;
+		TArray<T> Pool;
+		BitArray InUse;
+		TArray<i32> availableIds;
 		ImGuiStorage IdMap;
-
-		ObjectPool() : Pool(), InUse(), FreeList(), IdMap() {}
 	};
 
-	// Emulates std::optional<int> using the sentinel value `INVALID_INDEX`.
-	struct ImOptionalIndex
+
+	// Emulates std::optional<i32> using the sentinel value `INVALID_INDEX`.
+	struct OptionalIndex
 	{
-		ImOptionalIndex() : _Index(INVALID_INDEX) {}
-		ImOptionalIndex(const int value) : _Index(value) {}
-
-		// Observers
-
-		inline bool HasValue() const
+		OptionalIndex() : index(INVALID_INDEX) {}
+		OptionalIndex(const i32 value) : index(value) {}
+		OptionalIndex& operator=(const i32 value)
 		{
-			return _Index != INVALID_INDEX;
-		}
-
-		inline int Value() const
-		{
-			assert(HasValue());
-			return _Index;
-		}
-
-		// Modifiers
-
-		inline ImOptionalIndex& operator=(const int value)
-		{
-			_Index = value;
+			index = value;
 			return *this;
 		}
 
-		inline void Reset()
+		i32 Value() const
 		{
-			_Index = INVALID_INDEX;
+			assert(IsValid());
+			return index;
 		}
 
-		inline bool operator==(const ImOptionalIndex& rhs) const
+		void Reset()
 		{
-			return _Index == rhs._Index;
+			index = INVALID_INDEX;
 		}
 
-		inline bool operator==(const int rhs) const
+		bool IsValid() const
 		{
-			return _Index == rhs;
+			return index != INVALID_INDEX;
 		}
 
-		inline bool operator!=(const ImOptionalIndex& rhs) const
+		bool operator==(const OptionalIndex& rhs) const
 		{
-			return _Index != rhs._Index;
+			return index == rhs.index;
+		}
+		bool operator!=(const OptionalIndex& rhs) const
+		{
+			return index != rhs.index;
 		}
 
-		inline bool operator!=(const int rhs) const
+		bool operator==(const i32 rhs) const
 		{
-			return _Index != rhs;
+			return index == rhs;
+		}
+		bool operator!=(const i32 rhs) const
+		{
+			return index != rhs;
 		}
 
-		static const int INVALID_INDEX = -1;
+
+		static constexpr i32 INVALID_INDEX = -1;
 
 	private:
-		int _Index;
+		i32 index;
 	};
+
 
 	struct NodeData
 	{
 		i32 Id;
-		v2 Origin;    // The node origin is in editor space
+		v2 Origin = v2::Zero();    // The node origin is in editor space
 		Rect TitleBarContentRect;
-		Rect Rect;
+		Rect Rect{v2::Zero(), v2::Zero()};
 
 		struct
 		{
 			Color Background, BackgroundHovered, BackgroundSelected, Outline, Titlebar,
 			    TitlebarHovered, TitlebarSelected;
-		} ColorStyle;
+		} colorStyle;
 
 		struct
 		{
@@ -163,18 +159,9 @@ namespace Rift::Nodes
 		} LayoutStyle;
 
 		ImVector<int> pinIndices;
-		bool Draggable;
+		bool Draggable = true;
 
-		NodeData(const int node_id)
-		    : Id(node_id)
-		    , Origin(0.0f, 0.0f)
-		    , TitleBarContentRect()
-		    , Rect(v2::Zero(), v2::Zero())
-		    , ColorStyle()
-		    , LayoutStyle()
-		    , pinIndices()
-		    , Draggable(true)
-		{}
+		NodeData(const i32 nodeId = NO_INDEX) : Id(nodeId) {}
 
 		~NodeData()
 		{
@@ -182,54 +169,47 @@ namespace Rift::Nodes
 		}
 	};
 
+
 	struct PinData
 	{
 		i32 Id;
-		i32 ParentNodeIdx;
+		i32 ParentNodeIdx = NO_INDEX;
 		Rect rect;
-		PinType Type;
-		PinShape Shape;
+		PinType Type   = PinType::None;
+		PinShape Shape = PinShape_CircleFilled;
 		v2 Pos;    // screen-space coordinates
-		i32 Flags;
+		i32 Flags = PinFlags_None;
 
 		struct
 		{
 			Color Background, Hovered;
-		} ColorStyle;
+		} colorStyle;
 
-		PinData(const i32 pin_id)
-		    : Id(pin_id)
-		    , ParentNodeIdx()
-		    , rect()
-		    , Type(PinType::None)
-		    , Shape(PinShape_CircleFilled)
-		    , Pos()
-		    , Flags(PinFlags_None)
-		    , ColorStyle()
-		{}
+		PinData(const i32 pinId = NO_INDEX) : Id(pinId) {}
 	};
 
 	struct LinkData
 	{
-		i32 Id;
-		i32 StartPinIdx, EndPinIdx;
+		i32 Id           = 0;
+		i32 outputPinIdx = 0;
+		i32 inputPinIdx  = 0;
 
 		struct
 		{
 			Color Base, Hovered, Selected;
-		} ColorStyle;
+		} colorStyle;
 
-		LinkData(const i32 link_id) : Id(link_id), StartPinIdx(), EndPinIdx(), ColorStyle() {}
+		LinkData(const i32 linkId = NO_INDEX) : Id(linkId) {}
 	};
 
-	struct ImClickInteractionState
+	struct ClickInteractionState
 	{
 		ClickInteractionType Type;
 
 		struct
 		{
-			i32 StartPinIdx;
-			ImOptionalIndex EndPinIdx;
+			i32 outputPinIdx;
+			OptionalIndex inputPinIdx;
 			LinkCreationType Type;
 		} LinkCreation;
 
@@ -238,7 +218,7 @@ namespace Rift::Nodes
 			Rect Rect;    // Coordinates in grid space
 		} BoxSelector;
 
-		ImClickInteractionState() : Type(ClickInteractionType_None) {}
+		ClickInteractionState() : Type(ClickInteractionType_None) {}
 	};
 
 	struct ColElement
@@ -292,7 +272,7 @@ namespace Rift::Nodes
 		// Offset of the primary node origin relative to the mouse cursor.
 		v2 PrimaryNodeOffset;
 
-		ImClickInteractionState clickInteraction;
+		ClickInteractionState clickInteraction;
 
 		MiniMap miniMap;
 
@@ -342,12 +322,12 @@ namespace Rift::Nodes
 		int CurrentPinIdx;
 		int CurrentPinId;
 
-		ImOptionalIndex HoveredNodeIdx;
-		ImOptionalIndex HoveredLinkIdx;
-		ImOptionalIndex HoveredPinIdx;
+		OptionalIndex HoveredNodeIdx;
+		OptionalIndex HoveredLinkIdx;
+		OptionalIndex HoveredPinIdx;
 
-		ImOptionalIndex DeletedLinkIdx;
-		ImOptionalIndex SnapLinkIdx;
+		OptionalIndex DeletedLinkIdx;
+		OptionalIndex SnapLinkIdx;
 
 		// Event helper state
 		// TODO: this should be a part of a state machine, and not a member of the global struct.
@@ -383,15 +363,15 @@ namespace Rift::Nodes
 	template<typename T>
 	static inline void ObjectPoolUpdate(ObjectPool<T>& objects)
 	{
-		for (int i = 0; i < objects.InUse.size(); ++i)
+		for (int i = 0; i < objects.InUse.Size(); ++i)
 		{
 			const int id = objects.Pool[i].Id;
 
-			if (!objects.InUse[i] && objects.IdMap.GetInt(id, -1) == i)
+			if (!objects.InUse.IsSet(i) && objects.IdMap.GetInt(id, -1) == i)
 			{
 				objects.IdMap.SetInt(id, -1);
-				objects.FreeList.push_back(i);
-				(objects.Pool.Data + i)->~T();
+				objects.availableIds.Add(i);
+				(objects.Pool.Data() + i)->~T();
 			}
 		}
 	}
@@ -399,28 +379,28 @@ namespace Rift::Nodes
 	template<>
 	inline void ObjectPoolUpdate(ObjectPool<NodeData>& nodes)
 	{
-		for (int i = 0; i < nodes.InUse.size(); ++i)
+		for (i32 i = 0; i < nodes.InUse.Size(); ++i)
 		{
-			if (nodes.InUse[i])
+			if (nodes.InUse.IsSet(i))
 			{
 				nodes.Pool[i].pinIndices.clear();
 			}
 			else
 			{
-				const int id = nodes.Pool[i].Id;
+				const i32 id = nodes.Pool[i].Id;
 
 				if (nodes.IdMap.GetInt(id, -1) == i)
 				{
 					// Remove node idx form depth stack the first time we detect that this idx slot
 					// is unused
-					ImVector<int>& depth_stack = GetEditorContext().NodeDepthOrder;
-					const int* const elem      = depth_stack.find(i);
+					ImVector<i32>& depth_stack = GetEditorContext().NodeDepthOrder;
+					const i32* const elem      = depth_stack.find(i);
 					assert(elem != depth_stack.end());
 					depth_stack.erase(elem);
 
 					nodes.IdMap.SetInt(id, -1);
-					nodes.FreeList.push_back(i);
-					(nodes.Pool.Data + i)->~NodeData();
+					nodes.availableIds.Add(i);
+					(nodes.Pool.Data() + i)->~NodeData();
 				}
 			}
 		}
@@ -429,79 +409,79 @@ namespace Rift::Nodes
 	template<typename T>
 	static inline void ObjectPoolReset(ObjectPool<T>& objects)
 	{
-		if (!objects.InUse.empty())
+		if (!objects.InUse.IsEmpty())
 		{
-			memset(objects.InUse.Data, 0, objects.InUse.size_in_bytes());
+			objects.InUse.ClearBits();
 		}
 	}
 
 	template<typename T>
-	static inline int ObjectPoolFindOrCreateIndex(ObjectPool<T>& objects, const int id)
+	static inline i32 ObjectPoolFindOrCreateIndex(ObjectPool<T>& objects, const i32 id)
 	{
-		int index = objects.IdMap.GetInt(static_cast<ImGuiID>(id), -1);
+		i32 index = objects.IdMap.GetInt(static_cast<ImGuiID>(id), -1);
 
 		// Construct new object
 		if (index == -1)
 		{
-			if (objects.FreeList.empty())
+			if (objects.availableIds.IsEmpty())
 			{
-				index = objects.Pool.size();
-				IM_ASSERT(objects.Pool.size() == objects.InUse.size());
-				const int new_size = objects.Pool.size() + 1;
-				objects.Pool.resize(new_size);
-				objects.InUse.resize(new_size);
+				index = objects.Pool.Size();
+				IM_ASSERT(objects.Pool.Size() == objects.InUse.Size());
+				const i32 new_size = objects.Pool.Size() + 1;
+				objects.Pool.Resize(new_size);
+				objects.InUse.Resize(new_size);
 			}
 			else
 			{
-				index = objects.FreeList.back();
-				objects.FreeList.pop_back();
+				index = objects.availableIds.Last();
+				objects.availableIds.RemoveLast();
 			}
-			IM_PLACEMENT_NEW(objects.Pool.Data + index) T(id);
+			IM_PLACEMENT_NEW(objects.Pool.Data() + index) T(id);
 			objects.IdMap.SetInt(static_cast<ImGuiID>(id), index);
 		}
 
 		// Flag it as used
-		objects.InUse[index] = true;
+		objects.InUse.FillBit(index);
 
 		return index;
 	}
 
 	template<>
-	inline int ObjectPoolFindOrCreateIndex(ObjectPool<NodeData>& nodes, const int node_id)
+	inline i32 ObjectPoolFindOrCreateIndex(ObjectPool<NodeData>& nodes, const i32 node_id)
 	{
-		int node_idx = nodes.IdMap.GetInt(static_cast<ImGuiID>(node_id), -1);
+		i32 nodeIdx = nodes.IdMap.GetInt(static_cast<ImGuiID>(node_id), -1);
 
 		// Construct new node
-		if (node_idx == -1)
+		if (nodeIdx == -1)
 		{
-			if (nodes.FreeList.empty())
+			if (nodes.availableIds.IsEmpty())
 			{
-				node_idx = nodes.Pool.size();
-				IM_ASSERT(nodes.Pool.size() == nodes.InUse.size());
-				const int new_size = nodes.Pool.size() + 1;
-				nodes.Pool.resize(new_size);
-				nodes.InUse.resize(new_size);
+				nodeIdx = nodes.Pool.Size();
+				IM_ASSERT(nodes.Pool.Size() == nodes.InUse.Size());
+				const i32 new_size = nodes.Pool.Size() + 1;
+				nodes.Pool.Resize(new_size);
+				nodes.InUse.Resize(new_size);
 			}
 			else
 			{
-				node_idx = nodes.FreeList.back();
-				nodes.FreeList.pop_back();
+				nodeIdx = nodes.availableIds.Last();
+				nodes.availableIds.RemoveLast();
 			}
-			IM_PLACEMENT_NEW(nodes.Pool.Data + node_idx) NodeData(node_id);
-			nodes.IdMap.SetInt(static_cast<ImGuiID>(node_id), node_idx);
+			IM_PLACEMENT_NEW(nodes.Pool.Data() + nodeIdx) NodeData(node_id);
+			nodes.IdMap.SetInt(static_cast<ImGuiID>(node_id), nodeIdx);
 
 			EditorContext& editor = GetEditorContext();
-			editor.NodeDepthOrder.push_back(node_idx);
+			editor.NodeDepthOrder.push_back(nodeIdx);
 		}
 
 		// Flag node as used
-		nodes.InUse[node_idx] = true;
+		nodes.InUse.FillBit(nodeIdx);
 
-		return node_idx;
+		return nodeIdx;
 	}
 
 	template<typename T>
-	static inline T& ObjectPoolFindOrCreateObject(ObjectPool<T>& objects, const int id)
+	static inline T& ObjectPoolFindOrCreateObject(ObjectPool<T>& objects, const i32 id)
 	{
 		const int index = ObjectPoolFindOrCreateIndex(objects, id);
 		return objects.Pool[index];

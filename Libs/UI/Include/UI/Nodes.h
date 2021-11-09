@@ -97,9 +97,10 @@ namespace Rift::Nodes
 
 	enum class PinType : u8
 	{
-		None,
+		None = 0,
 		Input,
-		Output
+		Output,
+		Max
 	};
 
 	// This enum controls the way the attribute pins behave.

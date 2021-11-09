@@ -2,11 +2,14 @@
 
 #pragma once
 
+#include <Math/Vector.h>
 #include <Platform/Platform.h>
 
 
 namespace Rift::Nodes
 {
+	struct EditorContext;
+
 	enum class MiniMapCorner : u8
 	{
 		BottomLeft,
