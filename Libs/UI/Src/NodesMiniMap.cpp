@@ -98,7 +98,7 @@ namespace Rift::Nodes
 		const float miniMapNodeRounding = Math::Floor(node.LayoutStyle.CornerRounding * scaling);
 
 		Color miniMapNodeBackground;
-		if (editor.clickInteraction.Type == ClickInteractionType_None
+		if (editor.clickInteraction.type == ClickInteractionType_None
 		    && ImGui::IsMouseHoveringRect(nodeRect.min, nodeRect.max))
 		{
 			miniMapNodeBackground = gNodes->Style.colors[ColorVar_MiniMapNodeBackgroundHovered];
@@ -130,13 +130,13 @@ namespace Rift::Nodes
 	void MiniMap::DrawLink(EditorContext& editor, const i32 linkIdx)
 	{
 		const LinkData& link    = editor.Links.Pool[linkIdx];
-		const PinData& startPin = editor.pins.Pool[link.outputPinIdx];
-		const PinData& endPin   = editor.pins.Pool[link.inputPinIdx];
+		const PinData& outputData = editor.outputs.Pool[link.outputPin];
+		const PinData& inputData  = editor.inputs.Pool[link.inputPin];
 
-		const CubicBezier cubicBezier =
-		    MakeCubicBezier(ScreenToMiniMapPosition(editor, startPin.Pos),
-		        ScreenToMiniMapPosition(editor, endPin.Pos), startPin.Type,
-		        gNodes->Style.linkLineSegmentsPerLength / scaling);
+		const v2 outputPosition       = ScreenToMiniMapPosition(editor, outputData.position);
+		const v2 inputPosition        = ScreenToMiniMapPosition(editor, inputData.position);
+		const CubicBezier cubicBezier = MakeCubicBezier(outputPosition, inputPosition,
+		    PinType::Output, gNodes->Style.linkLineSegmentsPerLength / scaling);
 
 		// It's possible for a link to be deleted in begin_link_i32eraction. A user
 		// may detach a link, resulting in the link wire snapping to the mouse
@@ -226,7 +226,7 @@ namespace Rift::Nodes
 		ImGui::EndChild();
 
 		const bool centerOnClick = miniMapIsHovered && ImGui::IsMouseDown(ImGuiMouseButton_Left)
-		                        && editor.clickInteraction.Type == ClickInteractionType_None
+		                        && editor.clickInteraction.type == ClickInteractionType_None
 		                        && !gNodes->NodeIdxSubmissionOrder.empty();
 		if (centerOnClick)
 		{

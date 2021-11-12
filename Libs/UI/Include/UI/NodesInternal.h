@@ -158,7 +158,8 @@ namespace Rift::Nodes
 			float BorderThickness;
 		} LayoutStyle;
 
-		ImVector<int> pinIndices;
+		ImVector<i32> inputs;
+		ImVector<i32> outputs;
 		bool Draggable = true;
 
 		NodeData(const i32 nodeId = NO_INDEX) : Id(nodeId) {}
@@ -175,9 +176,8 @@ namespace Rift::Nodes
 		i32 Id;
 		i32 ParentNodeIdx = NO_INDEX;
 		Rect rect;
-		PinType Type   = PinType::None;
 		PinShape Shape = PinShape_CircleFilled;
-		v2 Pos;    // screen-space coordinates
+		v2 position;    // screen-space coordinates
 		i32 Flags = PinFlags_None;
 
 		struct
@@ -190,9 +190,9 @@ namespace Rift::Nodes
 
 	struct LinkData
 	{
-		i32 Id           = 0;
-		i32 outputPinIdx = 0;
-		i32 inputPinIdx  = 0;
+		i32 Id        = 0;
+		i32 outputPin = 0;
+		i32 inputPin  = 0;
 
 		struct
 		{
@@ -204,21 +204,21 @@ namespace Rift::Nodes
 
 	struct ClickInteractionState
 	{
-		ClickInteractionType Type;
+		ClickInteractionType type;
 
 		struct
 		{
-			i32 outputPinIdx;
-			OptionalIndex inputPinIdx;
-			LinkCreationType Type;
-		} LinkCreation;
+			i32 outputPin;
+			i32 inputPin;
+			LinkCreationType type;
+		} linkCreation;
 
 		struct
 		{
 			Rect Rect;    // Coordinates in grid space
-		} BoxSelector;
+		} boxSelector;
 
-		ClickInteractionState() : Type(ClickInteractionType_None) {}
+		ClickInteractionState() : type(ClickInteractionType_None) {}
 	};
 
 	struct ColElement
@@ -252,13 +252,14 @@ namespace Rift::Nodes
 	struct EditorContext
 	{
 		ObjectPool<NodeData> nodes;
-		ObjectPool<PinData> pins;
+		ObjectPool<PinData> outputs;
+		ObjectPool<PinData> inputs;
 		ObjectPool<LinkData> Links;
 
 		ImVector<i32> NodeDepthOrder;
 
 		// ui related fields
-		v2 Panning;
+		v2 Panning = v2::Zero();
 		v2 AutoPanningDelta;
 		// Minimum and maximum extents of all content in grid space. Valid after final
 		// Nodes::EndNode() call.
@@ -276,16 +277,32 @@ namespace Rift::Nodes
 
 		MiniMap miniMap;
 
-
-		EditorContext()
-		    : nodes()
-		    , pins()
-		    , Links()
-		    , Panning(0.f, 0.f)
-		    , SelectedNodeIndices()
-		    , SelectedLinkIndices()
-		    , clickInteraction()
-		{}
+		ObjectPool<PinData>& GetPinPool(PinType type)
+		{
+			switch (type)
+			{
+				default:
+				case PinType::Output: return outputs;
+				case PinType::Input: return inputs;
+			}
+		}
+		const ObjectPool<PinData>& GetPinPool(PinType type) const
+		{
+			switch (type)
+			{
+				default:
+				case PinType::Output: return outputs;
+				case PinType::Input: return inputs;
+			}
+		}
+		PinData& GetPinData(PinId pin)
+		{
+			return GetPinPool(pin.type).Pool[pin.index];
+		}
+		const PinData& GetPinData(PinId pin) const
+		{
+			return GetPinPool(pin.type).Pool[pin.index];
+		}
 	};
 
 	struct Context
@@ -296,9 +313,9 @@ namespace Rift::Nodes
 		// Canvas draw list and helper state
 		ImDrawList* CanvasDrawList;
 		ImGuiStorage NodeIdxToSubmissionIdx;
-		ImVector<int> NodeIdxSubmissionOrder;
-		ImVector<int> NodeIndicesOverlappingWithMouse;
-		ImVector<int> occludedPinIndices;
+		ImVector<i32> NodeIdxSubmissionOrder;
+		ImVector<i32> NodeIndicesOverlappingWithMouse;
+		ImVector<PinId> occludedPinIndices;
 
 		// Canvas extents
 		v2 CanvasOriginScreenSpace;
@@ -314,17 +331,17 @@ namespace Rift::Nodes
 		ImVector<StyleVarElement> StyleModifierStack;
 		ImGuiTextBuffer TextBuffer;
 
-		int CurrentPinFlags;
-		ImVector<int> pinFlagStack;
+		i32 CurrentPinFlags;
+		ImVector<i32> pinFlagStack;
 
 		// UI element state
-		int CurrentNodeIdx;
-		int CurrentPinIdx;
-		int CurrentPinId;
+		i32 CurrentNodeIdx;
+		PinId CurrentPinIdx;
+		i32 CurrentPinId;
 
 		OptionalIndex HoveredNodeIdx;
 		OptionalIndex HoveredLinkIdx;
-		OptionalIndex HoveredPinIdx;
+		PinId HoveredPinIdx;
 
 		OptionalIndex DeletedLinkIdx;
 		OptionalIndex SnapLinkIdx;
@@ -332,9 +349,9 @@ namespace Rift::Nodes
 		// Event helper state
 		// TODO: this should be a part of a state machine, and not a member of the global struct.
 		// Unclear what parts of the code this relates to.
-		int UIState;
+		i32 UIState;
 
-		int activePinId;
+		i32 activePinId;
 		bool activePin;
 
 		// ImGui::IO cache
@@ -354,10 +371,9 @@ namespace Rift::Nodes
 	// [SECTION] ObjectPool implementation
 
 	template<typename T>
-	static inline int ObjectPoolFind(const ObjectPool<T>& objects, const int id)
+	static inline i32 ObjectPoolFind(const ObjectPool<T>& objects, const i32 id)
 	{
-		const int index = objects.IdMap.GetInt(static_cast<ImGuiID>(id), -1);
-		return index;
+		return objects.IdMap.GetInt(static_cast<ImGuiID>(id), -1);
 	}
 
 	template<typename T>
@@ -383,7 +399,9 @@ namespace Rift::Nodes
 		{
 			if (nodes.InUse.IsSet(i))
 			{
-				nodes.Pool[i].pinIndices.clear();
+				auto& node = nodes.Pool[i];
+				node.inputs.clear();
+				node.outputs.clear();
 			}
 			else
 			{

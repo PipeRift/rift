@@ -9,7 +9,6 @@
 // [SECTION] API implementation
 
 #include "UI/Nodes.h"
-
 #include "UI/NodesInternal.h"
 #include "UI/NodesMiniMap.h"
 
@@ -516,19 +515,17 @@ namespace Rift::Nodes
 
 	// [SECTION] ui state logic
 
-	v2 GetScreenSpacePinCoordinates(
-	    const Rect& nodeRect, const Rect& attributeRect, const PinType type)
+	v2 GetScreenSpacePinCoordinates(const Rect& nodeRect, const PinType type, const Rect& pinRect)
 	{
-		assert(type == PinType::Input || type == PinType::Output);
 		const float x = type == PinType::Input ? (nodeRect.min.x - gNodes->Style.PinOffset)
 		                                       : (nodeRect.max.x + gNodes->Style.PinOffset);
-		return {x, 0.5f * (attributeRect.min.y + attributeRect.max.y)};
+		return {x, 0.5f * (pinRect.min.y + pinRect.max.y)};
 	}
 
-	v2 GetScreenSpacePinCoordinates(const EditorContext& editor, const PinData& pin)
+	v2 GetScreenSpacePinCoordinates(const EditorContext& editor, PinType type, const PinData& pin)
 	{
 		const Rect& parentNodeRect = editor.nodes.Pool[pin.ParentNodeIdx].Rect;
-		return GetScreenSpacePinCoordinates(parentNodeRect, pin.rect, pin.Type);
+		return GetScreenSpacePinCoordinates(parentNodeRect, type, pin.rect);
 	}
 
 	bool IsMouseInCanvas()
@@ -545,12 +542,12 @@ namespace Rift::Nodes
 		// Don't start selecting a node if we are e.g. already creating and dragging
 		// a new link! New link creation can happen when the mouse is clicked over
 		// a node, but within the hover radius of a pin.
-		if (editor.clickInteraction.Type != ClickInteractionType_None)
+		if (editor.clickInteraction.type != ClickInteractionType_None)
 		{
 			return;
 		}
 
-		editor.clickInteraction.Type = ClickInteractionType_Node;
+		editor.clickInteraction.type = ClickInteractionType_Node;
 		// If the node is not already contained in the selection, then we want only
 		// the i32eraction node to be selected, effective immediately.
 		//
@@ -580,7 +577,7 @@ namespace Rift::Nodes
 			editor.SelectedNodeIndices.erase(nodePtr);
 
 			// Don't allow dragging after deselecting
-			editor.clickInteraction.Type = ClickInteractionType_None;
+			editor.clickInteraction.type = ClickInteractionType_None;
 		}
 
 		// To support snapping of multiple nodes, we need to store the offset of
@@ -600,7 +597,7 @@ namespace Rift::Nodes
 
 	void BeginLinkSelection(EditorContext& editor, const i32 linkIdx)
 	{
-		editor.clickInteraction.Type = ClickInteractionType_Link;
+		editor.clickInteraction.type = ClickInteractionType_Link;
 		// When a link is selected, clear all other selections, and insert the link
 		// as the sole selection.
 		editor.SelectedNodeIndices.clear();
@@ -608,72 +605,68 @@ namespace Rift::Nodes
 		editor.SelectedLinkIndices.push_back(linkIdx);
 	}
 
-	void BeginLinkDetach(EditorContext& editor, const i32 linkIdx, const i32 detachPinIdx)
+	void BeginLinkDetach(EditorContext& editor, i32 linkIdx, PinId detachPinIdx)
 	{
 		const LinkData& link         = editor.Links.Pool[linkIdx];
 		ClickInteractionState& state = editor.clickInteraction;
-		state.Type                   = ClickInteractionType_LinkCreation;
-		state.LinkCreation.inputPinIdx.Reset();
-		state.LinkCreation.outputPinIdx =
-		    detachPinIdx == link.outputPinIdx ? link.inputPinIdx : link.outputPinIdx;
+		state.type                   = ClickInteractionType_LinkCreation;
+		state.linkCreation.inputPin  = NO_INDEX;
+		state.linkCreation.outputPin =
+		    detachPinIdx == link.outputPin ? link.inputPin : link.outputPin;
 		gNodes->DeletedLinkIdx = linkIdx;
 	}
 
-	void BeginLinkCreation(EditorContext& editor, const i32 hoveredPinIdx)
+	void BeginLinkCreation(EditorContext& editor, PinId hoveredPin)
 	{
-		editor.clickInteraction.Type                      = ClickInteractionType_LinkCreation;
-		editor.clickInteraction.LinkCreation.outputPinIdx = hoveredPinIdx;
-		editor.clickInteraction.LinkCreation.inputPinIdx.Reset();
-		editor.clickInteraction.LinkCreation.Type = LinkCreationType_Standard;
+		editor.clickInteraction.type                   = ClickInteractionType_LinkCreation;
+		editor.clickInteraction.linkCreation.outputPin = hoveredPin;
+		editor.clickInteraction.linkCreation.inputPin  = NO_INDEX;
+		editor.clickInteraction.linkCreation.type      = LinkCreationType_Standard;
 		gNodes->UIState |= UIState_LinkStarted;
 	}
 
 	void BeginLinkInteraction(
-	    EditorContext& editor, const i32 linkIdx, const OptionalIndex pinIdx = OptionalIndex())
+	    EditorContext& editor, const i32 linkIdx, const PinId pin = PinId::Invalid())
 	{
 		// Check if we are clicking the link with the modifier pressed.
 		// This will in a link detach via clicking.
-
-		const bool modifierPressed = gNodes->Io.linkDetachWithModifierClick.modifier == nullptr
-		                               ? false
-		                               : *gNodes->Io.linkDetachWithModifierClick.modifier;
+		const bool modifierPressed = gNodes->Io.linkDetachWithModifierClick.modifier
+		                          && *gNodes->Io.linkDetachWithModifierClick.modifier;
 
 		if (modifierPressed)
 		{
-			const LinkData& link    = editor.Links.Pool[linkIdx];
-			const PinData& startPin = editor.pins.Pool[link.outputPinIdx];
-			const PinData& endPin   = editor.pins.Pool[link.inputPinIdx];
-			const v2& mousePos      = gNodes->mousePosition;
-			const float distToStart = ImLengthSqr(startPin.Pos - mousePos);
-			const float distToEnd   = ImLengthSqr(endPin.Pos - mousePos);
-			const i32 closestPinIdx =
-			    distToStart < distToEnd ? link.outputPinIdx : link.inputPinIdx;
+			const LinkData& link     = editor.Links.Pool[linkIdx];
+			const PinData& outputPin = editor.outputs.Pool[link.outputPin];
+			const PinData& inputPin  = editor.inputs.Pool[link.inputPin];
+			const v2& mousePos       = gNodes->mousePosition;
+			const float distToStart  = ImLengthSqr(outputPin.position - mousePos);
+			const float distToEnd    = ImLengthSqr(inputPin.position - mousePos);
+			const PinId closestPin   = distToStart < distToEnd
+			                             ? PinId{link.outputPin, PinType::Output}
+			                             : PinId{link.inputPin, PinType::Input};
 
-			editor.clickInteraction.Type = ClickInteractionType_LinkCreation;
-			BeginLinkDetach(editor, linkIdx, closestPinIdx);
-			editor.clickInteraction.LinkCreation.Type = LinkCreationType_FromDetach;
+			editor.clickInteraction.type = ClickInteractionType_LinkCreation;
+			BeginLinkDetach(editor, linkIdx, closestPin);
+			editor.clickInteraction.linkCreation.type = LinkCreationType_FromDetach;
 		}
-		else
+		else if (pin)
 		{
-			if (pinIdx.IsValid())
-			{
-				const i32 hoveredPinFlags = editor.pins.Pool[pinIdx.Value()].Flags;
+			const i32 hoveredPinFlags = editor.GetPinData(pin).Flags;
 
-				// Check the 'click and drag to detach' case.
-				if (hoveredPinFlags & PinFlags_EnableLinkDetachWithDragClick)
-				{
-					BeginLinkDetach(editor, linkIdx, pinIdx.Value());
-					editor.clickInteraction.LinkCreation.Type = LinkCreationType_FromDetach;
-				}
-				else
-				{
-					BeginLinkCreation(editor, pinIdx.Value());
-				}
+			// Check the 'click and drag to detach' case.
+			if (hoveredPinFlags & PinFlags_EnableLinkDetachWithDragClick)
+			{
+				BeginLinkDetach(editor, linkIdx, pin);
+				editor.clickInteraction.linkCreation.type = LinkCreationType_FromDetach;
 			}
 			else
 			{
-				BeginLinkSelection(editor, linkIdx);
+				BeginLinkCreation(editor, pin);
 			}
+		}
+		else
+		{
+			BeginLinkSelection(editor, linkIdx);
 		}
 	}
 
@@ -681,13 +674,13 @@ namespace Rift::Nodes
 
 	void BeginCanvasInteraction(EditorContext& editor)
 	{
-		const bool anyUiElementHovered =
-		    gNodes->HoveredNodeIdx.IsValid() || gNodes->HoveredLinkIdx.IsValid()
-		    || gNodes->HoveredPinIdx.IsValid() || ImGui::IsAnyItemHovered();
+		const bool anyUIElementHovered = gNodes->HoveredNodeIdx.IsValid()
+		                              || gNodes->HoveredLinkIdx.IsValid() || gNodes->HoveredPinIdx
+		                              || ImGui::IsAnyItemHovered();
 
 		const bool mouseNotInCanvas = !IsMouseInCanvas();
 
-		if (editor.clickInteraction.Type != ClickInteractionType_None || anyUiElementHovered
+		if (editor.clickInteraction.type != ClickInteractionType_None || anyUIElementHovered
 		    || mouseNotInCanvas)
 		{
 			return;
@@ -697,12 +690,12 @@ namespace Rift::Nodes
 
 		if (startedPanning)
 		{
-			editor.clickInteraction.Type = ClickInteractionType_Panning;
+			editor.clickInteraction.type = ClickInteractionType_Panning;
 		}
 		else if (gNodes->LeftMouseClicked)
 		{
-			editor.clickInteraction.Type = ClickInteractionType_BoxSelection;
-			editor.clickInteraction.BoxSelector.Rect.min =
+			editor.clickInteraction.type = ClickInteractionType_BoxSelection;
+			editor.clickInteraction.boxSelector.Rect.min =
 			    ScreenToGridPosition(editor, gNodes->mousePosition);
 		}
 	}
@@ -751,17 +744,18 @@ namespace Rift::Nodes
 			{
 				const LinkData& link = editor.Links.Pool[linkIdx];
 
-				const PinData& pinStart   = editor.pins.Pool[link.outputPinIdx];
-				const PinData& pinEnd     = editor.pins.Pool[link.inputPinIdx];
-				const Rect& nodeStartRect = editor.nodes.Pool[pinStart.ParentNodeIdx].Rect;
-				const Rect& nodeEndRect   = editor.nodes.Pool[pinEnd.ParentNodeIdx].Rect;
+				const PinData& outputPin  = editor.outputs.Pool[link.outputPin];
+				const PinData& inputPin   = editor.inputs.Pool[link.inputPin];
+				const Rect& nodeStartRect = editor.nodes.Pool[outputPin.ParentNodeIdx].Rect;
+				const Rect& nodeEndRect   = editor.nodes.Pool[inputPin.ParentNodeIdx].Rect;
 
 				const v2 start =
-				    GetScreenSpacePinCoordinates(nodeStartRect, pinStart.rect, pinStart.Type);
-				const v2 end = GetScreenSpacePinCoordinates(nodeEndRect, pinEnd.rect, pinEnd.Type);
+				    GetScreenSpacePinCoordinates(nodeStartRect, PinType::Output, outputPin.rect);
+				const v2 end =
+				    GetScreenSpacePinCoordinates(nodeEndRect, PinType::Input, inputPin.rect);
 
 				// Test
-				if (RectangleOverlapsLink(boxRect, start, end, pinStart.Type))
+				if (RectangleOverlapsLink(boxRect, start, end, PinType::Output))
 				{
 					editor.SelectedLinkIndices.push_back(linkIdx);
 				}
@@ -786,6 +780,66 @@ namespace Rift::Nodes
 		return origin;
 	}
 
+	OptionalIndex FindDuplicateLink(const EditorContext& editor, const PinId pinA, const PinId pinB)
+	{
+		if (!pinA || !pinB || pinA.type == pinB.type)
+		{
+			// Pins must be valid and be one input and one output
+			return;
+		}
+
+		i32 outputPin = pinA.index;
+		i32 inputPin  = pinB.index;
+		if (pinB.type == PinType::Output)
+		{
+			Swap(outputPin, inputPin);
+		}
+
+		for (i32 i = 0; i < editor.Links.Pool.Size(); ++i)
+		{
+			if (editor.Links.InUse.IsSet(i))
+			{
+				continue;
+			}
+
+			const LinkData& link = editor.Links.Pool[i];
+			if (outputPin == link.outputPin && inputPin == link.inputPin)
+			{
+				return {i};
+			}
+		}
+		return {};
+	}
+
+	bool CanLinkSnapToPin(
+	    const EditorContext& editor, PinId originPin, PinId targetPin, OptionalIndex duplicateLink)
+	{
+		if (originPin.type == targetPin.type)
+		{
+			return false;    // The end pin must be of a different type
+		}
+
+		const PinData& originData = editor.GetPinData(originPin);
+		const PinData& targetData = editor.GetPinData(targetPin);
+
+		// The end pin must be in a different node
+		if (originData.ParentNodeIdx == targetData.ParentNodeIdx)
+		{
+			return false;
+		}
+
+
+		// The link to be created must not be a duplicate, unless it is the link which was
+		// created on snap. In that case we want to snap, since we want it to appear visually as
+		// if the created link remains snapped to the pin.
+		if (duplicateLink.IsValid() && !(duplicateLink == gNodes->SnapLinkIdx))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
 	void TranslateSelectedNodes(EditorContext& editor)
 	{
 		if (gNodes->leftMouseDragging || gNodes->leftMouseReleased)
@@ -805,261 +859,179 @@ namespace Rift::Nodes
 				}
 			}
 		}
+
+		if (gNodes->leftMouseReleased)
+		{
+			editor.clickInteraction.type = ClickInteractionType_None;
+		}
 	}
 
-	struct LinkPredicate
+	void UpdateBoxSelection(EditorContext& editor)
 	{
-		bool operator()(const LinkData& lhs, const LinkData& rhs) const
+		editor.clickInteraction.boxSelector.Rect.max =
+		    ScreenToGridPosition(editor, gNodes->mousePosition);
+
+		Rect boxRect = editor.clickInteraction.boxSelector.Rect;
+		boxRect.min  = GridToScreenPosition(editor, boxRect.min);
+		boxRect.max  = GridToScreenPosition(editor, boxRect.max);
+
+		BoxSelectorUpdateSelection(editor, boxRect);
+
+		const Color boxSelector        = gNodes->Style.colors[ColorVar_BoxSelector];
+		const Color boxSelectorOutline = gNodes->Style.colors[ColorVar_BoxSelectorOutline];
+		gNodes->CanvasDrawList->AddRectFilled(boxRect.min, boxRect.max, boxSelector.ToPackedABGR());
+		gNodes->CanvasDrawList->AddRect(
+		    boxRect.min, boxRect.max, boxSelectorOutline.ToPackedABGR());
+
+		if (gNodes->leftMouseReleased)
 		{
-			// Do a unique compare by sorting the pins' addresses.
-			// This catches duplicate links, whether they are in the
-			// same direction or not.
-			// Sorting by pin index should have the uniqueness guarantees as sorting
-			// by id -- each unique id will get one slot in the link pool array.
+			ImVector<i32>& depthStack         = editor.NodeDepthOrder;
+			const ImVector<i32>& selectedIdxs = editor.SelectedNodeIndices;
 
-			i32 lhsStart = lhs.outputPinIdx;
-			i32 lhsEnd   = lhs.inputPinIdx;
-			i32 rhsStart = rhs.outputPinIdx;
-			i32 rhsEnd   = rhs.inputPinIdx;
+			// Bump the selected node indices, in order, to the top of the depth stack.
+			// NOTE: this algorithm has worst case time complexity of O(N^2), if the
+			// node selection is ~ N (due to selected_idxs.contains()).
 
-			if (lhsStart > lhsEnd)
+			if ((selectedIdxs.Size > 0) && (selectedIdxs.Size < depthStack.Size))
 			{
-				ImSwap(lhsStart, lhsEnd);
-			}
+				// The number of indices moved. Stop after selected_idxs.Size
+				i32 numMoved = 0;
+				for (i32 i = 0; i < depthStack.Size - selectedIdxs.Size; ++i)
+				{
+					for (i32 nodeIdx = depthStack[i]; selectedIdxs.contains(nodeIdx);
+					     nodeIdx     = depthStack[i])
+					{
+						depthStack.erase(depthStack.begin() + static_cast<size_t>(i));
+						depthStack.push_back(nodeIdx);
+						++numMoved;
+					}
 
-			if (rhsStart > rhsEnd)
-			{
-				ImSwap(rhsStart, rhsEnd);
+					if (numMoved == selectedIdxs.Size)
+					{
+						break;
+					}
+				}
 			}
-
-			return lhsStart == rhsStart && lhsEnd == rhsEnd;
+			editor.clickInteraction.type = ClickInteractionType_None;
 		}
-	};
-
-	OptionalIndex FindDuplicateLink(
-	    const EditorContext& editor, const i32 startPinIdx, const i32 endPinIdx)
-	{
-		LinkData testLink(0);
-		testLink.outputPinIdx = startPinIdx;
-		testLink.inputPinIdx  = endPinIdx;
-		for (i32 linkIdx = 0; linkIdx < editor.Links.Pool.Size(); ++linkIdx)
-		{
-			const LinkData& link = editor.Links.Pool[linkIdx];
-			if (LinkPredicate()(testLink, link) && editor.Links.InUse.IsSet(linkIdx))
-			{
-				return OptionalIndex(linkIdx);
-			}
-		}
-
-		return {};
 	}
 
-	bool ShouldLinkSnapToPin(const EditorContext& editor, const PinData& startPin,
-	    const i32 hoveredPinIdx, const OptionalIndex duplicateLink)
+	void UpdateLinkCreation(EditorContext& editor)
 	{
-		const PinData& endPin = editor.pins.Pool[hoveredPinIdx];
+		PinId outputPin           = PinId::Output(editor.clickInteraction.linkCreation.outputPin);
+		PinId inputPin            = PinId::Input(editor.clickInteraction.linkCreation.inputPin);
+		const PinData& outputData = editor.outputs.Pool[outputPin.index];
 
-		// The end pin must be in a different node
-		if (startPin.ParentNodeIdx == endPin.ParentNodeIdx)
+		OptionalIndex maybeDuplicateLinkIdx;
+		if (gNodes->HoveredPinIdx)
 		{
-			return false;
+			maybeDuplicateLinkIdx = FindDuplicateLink(editor, outputPin, gNodes->HoveredPinIdx);
 		}
 
-		// The end pin must be of a different type
-		if (startPin.Type == endPin.Type)
+		const bool shouldSnap =
+		    gNodes->HoveredPinIdx
+		    && CanLinkSnapToPin(editor, outputPin, gNodes->HoveredPinIdx, maybeDuplicateLinkIdx);
+
+		// If we created on snap and the hovered pin is empty or changed, then we need
+		// signal that the link's state has changed.
+		const bool snappingPinChanged = inputPin && !(gNodes->HoveredPinIdx == inputPin);
+
+		// Detach the link that was created by this link event if it's no longer in snap
+		// range
+		if (snappingPinChanged && gNodes->SnapLinkIdx.IsValid())
 		{
-			return false;
+			BeginLinkDetach(editor, gNodes->SnapLinkIdx.Value(), inputPin);
 		}
 
-		// The link to be created must not be a duplicate, unless it is the link which was
-		// created on snap. In that case we want to snap, since we want it to appear visually as
-		// if the created link remains snapped to the pin.
-		if (duplicateLink.IsValid() && !(duplicateLink == gNodes->SnapLinkIdx))
+		const v2 outputPos = GetScreenSpacePinCoordinates(editor, outputPin.type, outputData);
+		// If we are within the hover radius of a receiving pin, snap the link
+		// endpoint to it
+		const v2 endPos = shouldSnap ? GetScreenSpacePinCoordinates(editor,
+		                      gNodes->HoveredPinIdx.type, editor.GetPinData(gNodes->HoveredPinIdx))
+		                             : gNodes->mousePosition;
+
+		const CubicBezier cubicBezier = MakeCubicBezier(
+		    outputPos, endPos, outputPin.type, gNodes->Style.linkLineSegmentsPerLength);
+
+		gNodes->CanvasDrawList->AddBezierCubic(cubicBezier.p0, cubicBezier.p1, cubicBezier.p2,
+		    cubicBezier.p3, gNodes->Style.colors[ColorVar_Link].ToPackedABGR(),
+		    gNodes->Style.LinkThickness, cubicBezier.numSegments);
+
+		const bool linkCreationOnSnap =
+		    gNodes->HoveredPinIdx
+		    && (editor.GetPinData(gNodes->HoveredPinIdx).Flags & PinFlags_EnableLinkCreationOnSnap);
+
+		if (!shouldSnap)
 		{
-			return false;
+			editor.clickInteraction.linkCreation.inputPin = NO_INDEX;
 		}
 
-		return true;
+		const bool createLink = shouldSnap && (gNodes->leftMouseReleased || linkCreationOnSnap);
+
+		if (createLink && !maybeDuplicateLinkIdx.IsValid())
+		{
+			// Avoid send OnLinkCreated() events every frame if the snap link is not
+			// saved (only applies for EnableLinkCreationOnSnap)
+			if (!gNodes->leftMouseReleased
+			    && editor.clickInteraction.linkCreation.inputPin == gNodes->HoveredPinIdx)
+			{
+				return;
+			}
+
+			gNodes->UIState |= UIState_LinkCreated;
+			editor.clickInteraction.linkCreation.inputPin = gNodes->HoveredPinIdx.index;
+		}
+
+		if (gNodes->leftMouseReleased)
+		{
+			editor.clickInteraction.type = ClickInteractionType_None;
+			if (!createLink)
+			{
+				gNodes->UIState |= UIState_LinkDropped;
+			}
+		}
+	}
+
+	void UpdatePanning(EditorContext& editor)
+	{
+		const bool dragging = gNodes->AltMouseDragging;
+
+		if (dragging)
+		{
+			editor.Panning += v2{ImGui::GetIO().MouseDelta};
+		}
+		else
+		{
+			editor.clickInteraction.type = ClickInteractionType_None;
+		}
 	}
 
 	void UpdateClickInteraction(EditorContext& editor)
 	{
-		switch (editor.clickInteraction.Type)
+		switch (editor.clickInteraction.type)
 		{
-			case ClickInteractionType_BoxSelection: {
-				editor.clickInteraction.BoxSelector.Rect.max =
-				    ScreenToGridPosition(editor, gNodes->mousePosition);
-
-				Rect boxRect = editor.clickInteraction.BoxSelector.Rect;
-				boxRect.min  = GridToScreenPosition(editor, boxRect.min);
-				boxRect.max  = GridToScreenPosition(editor, boxRect.max);
-
-				BoxSelectorUpdateSelection(editor, boxRect);
-
-				const Color boxSelector        = gNodes->Style.colors[ColorVar_BoxSelector];
-				const Color boxSelectorOutline = gNodes->Style.colors[ColorVar_BoxSelectorOutline];
-				gNodes->CanvasDrawList->AddRectFilled(
-				    boxRect.min, boxRect.max, boxSelector.ToPackedABGR());
-				gNodes->CanvasDrawList->AddRect(
-				    boxRect.min, boxRect.max, boxSelectorOutline.ToPackedABGR());
-
+			case ClickInteractionType_BoxSelection: UpdateBoxSelection(editor); break;
+			case ClickInteractionType_Node: TranslateSelectedNodes(editor); break;
+			case ClickInteractionType_Link:
 				if (gNodes->leftMouseReleased)
 				{
-					ImVector<i32>& depthStack         = editor.NodeDepthOrder;
-					const ImVector<i32>& selectedIdxs = editor.SelectedNodeIndices;
-
-					// Bump the selected node indices, in order, to the top of the depth stack.
-					// NOTE: this algorithm has worst case time complexity of O(N^2), if the
-					// node selection is ~ N (due to selected_idxs.contains()).
-
-					if ((selectedIdxs.Size > 0) && (selectedIdxs.Size < depthStack.Size))
-					{
-						// The number of indices moved. Stop after selected_idxs.Size
-						i32 numMoved = 0;
-						for (i32 i = 0; i < depthStack.Size - selectedIdxs.Size; ++i)
-						{
-							for (i32 nodeIdx = depthStack[i]; selectedIdxs.contains(nodeIdx);
-							     nodeIdx     = depthStack[i])
-							{
-								depthStack.erase(depthStack.begin() + static_cast<size_t>(i));
-								depthStack.push_back(nodeIdx);
-								++numMoved;
-							}
-
-							if (numMoved == selectedIdxs.Size)
-							{
-								break;
-							}
-						}
-					}
-
-					editor.clickInteraction.Type = ClickInteractionType_None;
+					editor.clickInteraction.type = ClickInteractionType_None;
 				}
 				break;
-			}
-			case ClickInteractionType_Node: {
-				TranslateSelectedNodes(editor);
-
-				if (gNodes->leftMouseReleased)
-				{
-					editor.clickInteraction.Type = ClickInteractionType_None;
-				}
-				break;
-			}
-			case ClickInteractionType_Link: {
-				if (gNodes->leftMouseReleased)
-				{
-					editor.clickInteraction.Type = ClickInteractionType_None;
-				}
-				break;
-			}
-			case ClickInteractionType_LinkCreation: {
-				const PinData& startPin =
-				    editor.pins.Pool[editor.clickInteraction.LinkCreation.outputPinIdx];
-
-				const OptionalIndex maybeDuplicateLinkIdx =
-				    gNodes->HoveredPinIdx.IsValid() ? FindDuplicateLink(editor,
-				        editor.clickInteraction.LinkCreation.outputPinIdx,
-				        gNodes->HoveredPinIdx.Value())
-				                                    : OptionalIndex();
-
-				const bool shouldSnap = gNodes->HoveredPinIdx.IsValid()
-				                     && ShouldLinkSnapToPin(editor, startPin,
-				                         gNodes->HoveredPinIdx.Value(), maybeDuplicateLinkIdx);
-
-				// If we created on snap and the hovered pin is empty or changed, then we need
-				// signal that the link's state has changed.
-				const bool snappingPinChanged =
-				    editor.clickInteraction.LinkCreation.inputPinIdx.IsValid()
-				    && !(gNodes->HoveredPinIdx == editor.clickInteraction.LinkCreation.inputPinIdx);
-
-				// Detach the link that was created by this link event if it's no longer in snap
-				// range
-				if (snappingPinChanged && gNodes->SnapLinkIdx.IsValid())
-				{
-					BeginLinkDetach(editor, gNodes->SnapLinkIdx.Value(),
-					    editor.clickInteraction.LinkCreation.inputPinIdx.Value());
-				}
-
-				const v2 startPos = GetScreenSpacePinCoordinates(editor, startPin);
-				// If we are within the hover radius of a receiving pin, snap the link
-				// endpoint to it
-				const v2 endPos = shouldSnap ? GetScreenSpacePinCoordinates(
-				                      editor, editor.pins.Pool[gNodes->HoveredPinIdx.Value()])
-				                             : gNodes->mousePosition;
-
-				const CubicBezier cubicBezier = MakeCubicBezier(
-				    startPos, endPos, startPin.Type, gNodes->Style.linkLineSegmentsPerLength);
-
-				gNodes->CanvasDrawList->AddBezierCubic(cubicBezier.p0, cubicBezier.p1,
-				    cubicBezier.p2, cubicBezier.p3,
-				    gNodes->Style.colors[ColorVar_Link].ToPackedABGR(), gNodes->Style.LinkThickness,
-				    cubicBezier.numSegments);
-
-				const bool linkCreationOnSnap =
-				    gNodes->HoveredPinIdx.IsValid()
-				    && (editor.pins.Pool[gNodes->HoveredPinIdx.Value()].Flags
-				        & PinFlags_EnableLinkCreationOnSnap);
-
-				if (!shouldSnap)
-				{
-					editor.clickInteraction.LinkCreation.inputPinIdx.Reset();
-				}
-
-				const bool createLink =
-				    shouldSnap && (gNodes->leftMouseReleased || linkCreationOnSnap);
-
-				if (createLink && !maybeDuplicateLinkIdx.IsValid())
-				{
-					// Avoid send OnLinkCreated() events every frame if the snap link is not
-					// saved (only applies for EnableLinkCreationOnSnap)
-					if (!gNodes->leftMouseReleased
-					    && editor.clickInteraction.LinkCreation.inputPinIdx
-					           == gNodes->HoveredPinIdx)
-					{
-						break;
-					}
-
-					gNodes->UIState |= UIState_LinkCreated;
-					editor.clickInteraction.LinkCreation.inputPinIdx =
-					    gNodes->HoveredPinIdx.Value();
-				}
-
-				if (gNodes->leftMouseReleased)
-				{
-					editor.clickInteraction.Type = ClickInteractionType_None;
-					if (!createLink)
-					{
-						gNodes->UIState |= UIState_LinkDropped;
-					}
-				}
-				break;
-			}
-			case ClickInteractionType_Panning: {
-				const bool dragging = gNodes->AltMouseDragging;
-
-				if (dragging)
-				{
-					editor.Panning += v2{ImGui::GetIO().MouseDelta};
-				}
-				else
-				{
-					editor.clickInteraction.Type = ClickInteractionType_None;
-				}
-				break;
-			}
+			case ClickInteractionType_LinkCreation: UpdateLinkCreation(editor); break;
+			case ClickInteractionType_Panning: UpdatePanning(editor); break;
 			case ClickInteractionType_ImGuiItem: {
 				if (gNodes->leftMouseReleased)
 				{
-					editor.clickInteraction.Type = ClickInteractionType_None;
+					editor.clickInteraction.type = ClickInteractionType_None;
 				}
 			}
-			case ClickInteractionType_None: break;
-			default: assert(!"Unreachable code!"); break;
+			case ClickInteractionType_None:
+			default: break;
 		}
 	}
 
-	void ResolveOccludedPins(const EditorContext& editor, ImVector<i32>& occludedPinIndices)
+	void ResolveOccludedPins(const EditorContext& editor, ImVector<PinId>& occludedPinIndices)
 	{
 		const ImVector<i32>& depthStack = editor.NodeDepthOrder;
 
@@ -1081,25 +1053,35 @@ namespace Rift::Nodes
 				const Rect& rectAbove = editor.nodes.Pool[depthStack[nextDepthIdx]].Rect;
 
 				// Iterate over each pin
-				for (i32 idx = 0; idx < nodeBelow.pinIndices.Size; ++idx)
+				for (i32 i = 0; i < nodeBelow.inputs.Size; ++i)
 				{
-					const i32 pinIdx = nodeBelow.pinIndices[idx];
-					const v2& pinPos = editor.pins.Pool[pinIdx].Pos;
+					const i32 pinIdx = nodeBelow.inputs[i];
+					const v2& pinPos = editor.inputs.Pool[pinIdx].position;
 
 					if (rectAbove.Contains(pinPos))
 					{
-						occludedPinIndices.push_back(pinIdx);
+						occludedPinIndices.push_back({pinIdx, PinType::Input});
+					}
+				}
+				for (i32 i = 0; i < nodeBelow.outputs.Size; ++i)
+				{
+					const i32 pinIdx = nodeBelow.outputs[i];
+					const v2& pinPos = editor.outputs.Pool[pinIdx].position;
+
+					if (rectAbove.Contains(pinPos))
+					{
+						occludedPinIndices.push_back({pinIdx, PinType::Output});
 					}
 				}
 			}
 		}
 	}
 
-	OptionalIndex ResolveHoveredPin(
-	    const ObjectPool<PinData>& pins, const ImVector<i32>& occludedPinIndices)
+	PinId ResolveHoveredPin(
+	    const ObjectPool<PinData>& pins, PinType type, const ImVector<PinId>& occludedPinIndices)
 	{
 		float smallestDistance = FLT_MAX;
-		OptionalIndex pinIdxWithSmallestDistance;
+		i32 pinIdxWithSmallestDistance = NO_INDEX;
 
 		const float hoverRadiusSqr = gNodes->Style.PinHoverRadius * gNodes->Style.PinHoverRadius;
 
@@ -1110,12 +1092,12 @@ namespace Rift::Nodes
 				continue;
 			}
 
-			if (occludedPinIndices.contains(idx))
+			if (occludedPinIndices.contains({idx, type}))
 			{
 				continue;
 			}
 
-			const v2& pinPos        = pins.Pool[idx].Pos;
+			const v2& pinPos        = pins.Pool[idx].position;
 			const float distanceSqr = ImLengthSqr(pinPos - gNodes->mousePosition);
 
 			// TODO: gNodes->Style.PinHoverRadius needs to be copied i32o pin data and the
@@ -1129,7 +1111,7 @@ namespace Rift::Nodes
 			}
 		}
 
-		return pinIdxWithSmallestDistance;
+		return {pinIdxWithSmallestDistance, type};
 	}
 
 	OptionalIndex ResolveHoveredNode(const ImVector<i32>& depthStack)
@@ -1163,8 +1145,8 @@ namespace Rift::Nodes
 		return OptionalIndex(nodeIdxOnTop);
 	}
 
-	OptionalIndex ResolveHoveredLink(
-	    const ObjectPool<LinkData>& links, const ObjectPool<PinData>& pins)
+	OptionalIndex ResolveHoveredLink(const ObjectPool<LinkData>& links,
+	    const ObjectPool<PinData>& outputs, const ObjectPool<PinData>& inputs)
 	{
 		float smallestDistance = FLT_MAX;
 		OptionalIndex linkIdxWithSmallestDistance;
@@ -1184,16 +1166,16 @@ namespace Rift::Nodes
 				continue;
 			}
 
-			const LinkData& link    = links.Pool[idx];
-			const PinData& startPin = pins.Pool[link.outputPinIdx];
-			const PinData& endPin   = pins.Pool[link.inputPinIdx];
+			const LinkData& link     = links.Pool[idx];
+			const PinData& outputPin = outputs.Pool[link.outputPin];
+			const PinData& inputPin  = inputs.Pool[link.inputPin];
 
 			// If there is a hovered pin links can only be considered hovered if they use that
 			// pin
-			if (gNodes->HoveredPinIdx.IsValid())
+			if (gNodes->HoveredPinIdx)
 			{
-				if (gNodes->HoveredPinIdx == link.outputPinIdx
-				    || gNodes->HoveredPinIdx == link.inputPinIdx)
+				if (gNodes->HoveredPinIdx == link.outputPin
+				    || gNodes->HoveredPinIdx == link.inputPin)
 				{
 					return idx;
 				}
@@ -1203,8 +1185,8 @@ namespace Rift::Nodes
 			// TODO: the calculated CubicBeziers could be cached since we generate them again
 			// when rendering the links
 
-			const CubicBezier cubicBezier = MakeCubicBezier(
-			    startPin.Pos, endPin.Pos, startPin.Type, gNodes->Style.linkLineSegmentsPerLength);
+			const CubicBezier cubicBezier = MakeCubicBezier(outputPin.position, inputPin.position,
+			    PinType::Output, gNodes->Style.linkLineSegmentsPerLength);
 
 			// The distance test
 			{
@@ -1386,20 +1368,20 @@ namespace Rift::Nodes
 		}
 	}
 
-	void DrawPin(EditorContext& editor, const i32 pinIdx)
+	void DrawPin(EditorContext& editor, const PinId pin)
 	{
-		PinData& pin               = editor.pins.Pool[pinIdx];
-		const Rect& parentNodeRect = editor.nodes.Pool[pin.ParentNodeIdx].Rect;
+		PinData& pinData           = editor.GetPinData(pin);
+		const Rect& parentNodeRect = editor.nodes.Pool[pinData.ParentNodeIdx].Rect;
 
-		pin.Pos = GetScreenSpacePinCoordinates(parentNodeRect, pin.rect, pin.Type);
+		pinData.position = GetScreenSpacePinCoordinates(parentNodeRect, pin.type, pinData.rect);
 
-		Color pinColor = pin.colorStyle.Background;
-		if (gNodes->HoveredPinIdx == pinIdx)
+		Color pinColor = pinData.colorStyle.Background;
+		if (gNodes->HoveredPinIdx == pin)
 		{
-			pinColor = pin.colorStyle.Hovered;
+			pinColor = pinData.colorStyle.Hovered;
 		}
 
-		DrawPinShape(pin.Pos, pin, pinColor);
+		DrawPinShape(pinData.position, pinData, pinColor);
 	}
 
 	void DrawNode(EditorContext& editor, const i32 nodeIdx)
@@ -1408,7 +1390,7 @@ namespace Rift::Nodes
 		ImGui::SetCursorPos(node.Origin + editor.Panning);
 
 		const bool nodeHovered = gNodes->HoveredNodeIdx == nodeIdx
-		                      && editor.clickInteraction.Type != ClickInteractionType_BoxSelection;
+		                      && editor.clickInteraction.type != ClickInteractionType_BoxSelection;
 
 		Color nodeBackground     = node.colorStyle.Background;
 		Color titlebarBackground = node.colorStyle.Titlebar;
@@ -1454,9 +1436,13 @@ namespace Rift::Nodes
 			}
 		}
 
-		for (i32 pinIndex : node.pinIndices)
+		for (i32 pinIndex : node.inputs)
 		{
-			DrawPin(editor, pinIndex);
+			DrawPin(editor, {pinIndex, PinType::Input});
+		}
+		for (i32 pinIndex : node.outputs)
+		{
+			DrawPin(editor, {pinIndex, PinType::Output});
 		}
 
 		if (nodeHovered)
@@ -1468,14 +1454,14 @@ namespace Rift::Nodes
 	void DrawLink(EditorContext& editor, const i32 linkIdx)
 	{
 		const LinkData& link    = editor.Links.Pool[linkIdx];
-		const PinData& startPin = editor.pins.Pool[link.outputPinIdx];
-		const PinData& endPin   = editor.pins.Pool[link.inputPinIdx];
+		const PinData& startPin = editor.outputs.Pool[link.outputPin];
+		const PinData& endPin   = editor.inputs.Pool[link.inputPin];
 
-		const CubicBezier cubicBezier = MakeCubicBezier(
-		    startPin.Pos, endPin.Pos, startPin.Type, gNodes->Style.linkLineSegmentsPerLength);
+		const CubicBezier cubicBezier = MakeCubicBezier(startPin.position, endPin.position,
+		    PinType::Output, gNodes->Style.linkLineSegmentsPerLength);
 
 		const bool linkHovered = gNodes->HoveredLinkIdx == linkIdx
-		                      && editor.clickInteraction.Type != ClickInteractionType_BoxSelection;
+		                      && editor.clickInteraction.type != ClickInteractionType_BoxSelection;
 
 		if (linkHovered)
 		{
@@ -1521,12 +1507,12 @@ namespace Rift::Nodes
 
 		gNodes->CurrentPinId = id;
 
-		const i32 pinIdx          = ObjectPoolFindOrCreateIndex(editor.pins, id);
-		gNodes->CurrentPinIdx     = pinIdx;
-		PinData& pin              = editor.pins.Pool[pinIdx];
+		auto& pool                = editor.GetPinPool(type);
+		const i32 pinIdx          = ObjectPoolFindOrCreateIndex(pool, id);
+		gNodes->CurrentPinIdx     = {pinIdx, type};
+		PinData& pin              = pool.Pool[pinIdx];
 		pin.Id                    = id;
 		pin.ParentNodeIdx         = nodeIdx;
-		pin.Type                  = type;
 		pin.Shape                 = shape;
 		pin.Flags                 = gNodes->CurrentPinFlags;
 		pin.colorStyle.Background = gNodes->Style.colors[ColorVar_Pin];
@@ -1548,10 +1534,15 @@ namespace Rift::Nodes
 		}
 
 		EditorContext& editor = GetEditorContext();
-		PinData& pin          = editor.pins.Pool[gNodes->CurrentPinIdx];
+		PinData& pin          = editor.GetPinData(gNodes->CurrentPinIdx);
 		NodeData& node        = editor.nodes.Pool[gNodes->CurrentNodeIdx];
 		pin.rect              = GetItemRect();
-		node.pinIndices.push_back(gNodes->CurrentPinIdx);
+
+		switch (gNodes->CurrentPinIdx.type)
+		{
+			case PinType::Input: node.inputs.push_back(gNodes->CurrentPinIdx.index); break;
+			case PinType::Output: node.outputs.push_back(gNodes->CurrentPinIdx.index);
+		}
 	}
 
 	void Initialize(Context* context)
@@ -1560,7 +1551,7 @@ namespace Rift::Nodes
 		context->CanvasRectScreenSpace   = Rect(v2(0.f, 0.f), v2(0.f, 0.f));
 		context->CurrentScope            = Scope_None;
 
-		context->CurrentPinIdx  = INT_MAX;
+		context->CurrentPinIdx  = PinId::Invalid();
 		context->CurrentNodeIdx = INT_MAX;
 
 		context->DefaultEditorCtx = EditorContextCreate();
@@ -1844,12 +1835,13 @@ namespace Rift::Nodes
 		editor.gridContentBounds = Rect(v2{FLT_MAX, FLT_MAX}, v2{FLT_MIN, FLT_MIN});
 		editor.miniMap.enabled   = false;
 		ObjectPoolReset(editor.nodes);
-		ObjectPoolReset(editor.pins);
+		ObjectPoolReset(editor.inputs);
+		ObjectPoolReset(editor.outputs);
 		ObjectPoolReset(editor.Links);
 
 		gNodes->HoveredNodeIdx.Reset();
 		gNodes->HoveredLinkIdx.Reset();
-		gNodes->HoveredPinIdx.Reset();
+		gNodes->HoveredPinIdx = PinId::Invalid();
 		gNodes->DeletedLinkIdx.Reset();
 		gNodes->SnapLinkIdx.Reset();
 
@@ -1923,7 +1915,7 @@ namespace Rift::Nodes
 
 		if (gNodes->LeftMouseClicked && ImGui::IsAnyItemActive())
 		{
-			editor.clickInteraction.Type = ClickInteractionType_ImGuiItem;
+			editor.clickInteraction.type = ClickInteractionType_ImGuiItem;
 		}
 
 		// Detect which UI element is being hovered over. Detection is done in a hierarchical
@@ -1933,17 +1925,23 @@ namespace Rift::Nodes
 		// since its an *overlay* with its own i32eraction behavior and must have precedence during
 		// mouse i32eraction.
 
-		if ((editor.clickInteraction.Type == ClickInteractionType_None
-		        || editor.clickInteraction.Type == ClickInteractionType_LinkCreation)
+		if ((editor.clickInteraction.type == ClickInteractionType_None
+		        || editor.clickInteraction.type == ClickInteractionType_LinkCreation)
 		    && IsMouseInCanvas() && !editor.miniMap.IsHovered())
 		{
 			// Pins needs some special care. We need to check the depth stack to see which pins are
 			// being occluded by other nodes.
 			ResolveOccludedPins(editor, gNodes->occludedPinIndices);
 
-			gNodes->HoveredPinIdx = ResolveHoveredPin(editor.pins, gNodes->occludedPinIndices);
+			gNodes->HoveredPinIdx =
+			    ResolveHoveredPin(editor.outputs, PinType::Output, gNodes->occludedPinIndices);
+			if (!gNodes->HoveredPinIdx)
+			{
+				gNodes->HoveredPinIdx =
+				    ResolveHoveredPin(editor.inputs, PinType::Input, gNodes->occludedPinIndices);
+			}
 
-			if (!gNodes->HoveredPinIdx.IsValid())
+			if (!gNodes->HoveredPinIdx)
 			{
 				// Resolve which node is actually on top and being hovered using the depth stack.
 				gNodes->HoveredNodeIdx = ResolveHoveredNode(editor.NodeDepthOrder);
@@ -1953,7 +1951,8 @@ namespace Rift::Nodes
 			// and dragging, we need to have both a link and pin hovered.
 			if (!gNodes->HoveredNodeIdx.IsValid())
 			{
-				gNodes->HoveredLinkIdx = ResolveHoveredLink(editor.Links, editor.pins);
+				gNodes->HoveredLinkIdx =
+				    ResolveHoveredLink(editor.Links, editor.outputs, editor.inputs);
 			}
 		}
 
@@ -1999,9 +1998,9 @@ namespace Rift::Nodes
 				BeginLinkInteraction(editor, gNodes->HoveredLinkIdx.Value(), gNodes->HoveredPinIdx);
 			}
 
-			else if (gNodes->LeftMouseClicked && gNodes->HoveredPinIdx.IsValid())
+			else if (gNodes->LeftMouseClicked && gNodes->HoveredPinIdx)
 			{
-				BeginLinkCreation(editor, gNodes->HoveredPinIdx.Value());
+				BeginLinkCreation(editor, gNodes->HoveredPinIdx);
 			}
 
 			else if (gNodes->LeftMouseClicked && gNodes->HoveredNodeIdx.IsValid())
@@ -2015,9 +2014,9 @@ namespace Rift::Nodes
 				BeginCanvasInteraction(editor);
 			}
 
-			bool shouldAutoPan = editor.clickInteraction.Type == ClickInteractionType_BoxSelection
-			                  || editor.clickInteraction.Type == ClickInteractionType_LinkCreation
-			                  || editor.clickInteraction.Type == ClickInteractionType_Node;
+			bool shouldAutoPan = editor.clickInteraction.type == ClickInteractionType_BoxSelection
+			                  || editor.clickInteraction.type == ClickInteractionType_LinkCreation
+			                  || editor.clickInteraction.type == ClickInteractionType_Node;
 			if (shouldAutoPan && !IsMouseInCanvas())
 			{
 				v2 mouse     = ImGui::GetMousePos();
@@ -2036,7 +2035,8 @@ namespace Rift::Nodes
 		// pool to detect unused node slots and remove those indices from the depth stack before
 		// sorting the node draw commands by depth.
 		ObjectPoolUpdate(editor.nodes);
-		ObjectPoolUpdate(editor.pins);
+		ObjectPoolUpdate(editor.inputs);
+		ObjectPoolUpdate(editor.outputs);
 
 		DrawListSortChannelsByDepth(editor.NodeDepthOrder);
 
@@ -2179,26 +2179,26 @@ namespace Rift::Nodes
 		gNodes->CurrentPinFlags = gNodes->pinFlagStack.back();
 	}
 
-	void Link(const i32 id, const i32 startPinId, const i32 endPinId)
+	void Link(const i32 id, const i32 outputPinId, const i32 inputPinId)
 	{
 		assert(gNodes->CurrentScope == Scope_Editor);
 
 		EditorContext& editor    = GetEditorContext();
 		LinkData& link           = ObjectPoolFindOrCreateObject(editor.Links, id);
 		link.Id                  = id;
-		link.outputPinIdx        = ObjectPoolFindOrCreateIndex(editor.pins, startPinId);
-		link.inputPinIdx         = ObjectPoolFindOrCreateIndex(editor.pins, endPinId);
+		link.outputPin           = ObjectPoolFindOrCreateIndex(editor.outputs, outputPinId);
+		link.inputPin            = ObjectPoolFindOrCreateIndex(editor.inputs, inputPinId);
 		link.colorStyle.Base     = gNodes->Style.colors[ColorVar_Link];
 		link.colorStyle.Hovered  = gNodes->Style.colors[ColorVar_LinkHovered];
 		link.colorStyle.Selected = gNodes->Style.colors[ColorVar_LinkSelected];
 
 		// Check if this link was created by the current link event
-		if ((editor.clickInteraction.Type == ClickInteractionType_LinkCreation
-		        && editor.pins.Pool[link.inputPinIdx].Flags & PinFlags_EnableLinkCreationOnSnap
-		        && editor.clickInteraction.LinkCreation.outputPinIdx == link.outputPinIdx
-		        && editor.clickInteraction.LinkCreation.inputPinIdx == link.inputPinIdx)
-		    || (editor.clickInteraction.LinkCreation.outputPinIdx == link.inputPinIdx
-		        && editor.clickInteraction.LinkCreation.inputPinIdx == link.outputPinIdx))
+		if ((editor.clickInteraction.type == ClickInteractionType_LinkCreation
+		        && editor.inputs.Pool[link.inputPin].Flags & PinFlags_EnableLinkCreationOnSnap
+		        && editor.clickInteraction.linkCreation.outputPin == link.outputPin
+		        && editor.clickInteraction.linkCreation.inputPin == link.inputPin)
+		    || (editor.clickInteraction.linkCreation.outputPin == link.inputPin
+		        && editor.clickInteraction.linkCreation.inputPin == link.outputPin))
 		{
 			gNodes->SnapLinkIdx = ObjectPoolFindOrCreateIndex(editor.Links, id);
 		}
@@ -2414,13 +2414,14 @@ namespace Rift::Nodes
 		assert(gNodes->CurrentScope != Scope_None);
 		assert(attr != nullptr);
 
-		const bool isHovered = gNodes->HoveredPinIdx.IsValid();
-		if (isHovered)
+		const bool isHovered = gNodes->HoveredPinIdx;
+		if (gNodes->HoveredPinIdx)
 		{
 			const EditorContext& editor = GetEditorContext();
-			*attr                       = editor.pins.Pool[gNodes->HoveredPinIdx.Value()].Id;
+			*attr                       = editor.GetPinData(gNodes->HoveredPinIdx).Id;
+			return true;
 		}
-		return isHovered;
+		return false;
 	}
 
 	i32 NumSelectedNodes()
@@ -2548,8 +2549,8 @@ namespace Rift::Nodes
 		if (isStarted)
 		{
 			const EditorContext& editor = GetEditorContext();
-			const i32 pinIdx            = editor.clickInteraction.LinkCreation.outputPinIdx;
-			*startedAtId                = editor.pins.Pool[pinIdx].Id;
+			const i32 pinIdx            = editor.clickInteraction.linkCreation.outputPin;
+			*startedAtId                = editor.GetPinData({pinIdx, PinType::Output}).Id;
 		}
 
 		return isStarted;
@@ -2565,99 +2566,76 @@ namespace Rift::Nodes
 		const bool linkDropped =
 		    (gNodes->UIState & UIState_LinkDropped) != 0
 		    && (includingDetachedLinks
-		        || editor.clickInteraction.LinkCreation.Type != LinkCreationType_FromDetach);
+		        || editor.clickInteraction.linkCreation.type != LinkCreationType_FromDetach);
 
 		if (linkDropped && startedAtId)
 		{
-			const i32 pinIdx = editor.clickInteraction.LinkCreation.outputPinIdx;
-			*startedAtId     = editor.pins.Pool[pinIdx].Id;
+			const i32 pinIdx = editor.clickInteraction.linkCreation.outputPin;
+			*startedAtId     = editor.GetPinData({pinIdx, PinType::Output}).Id;
 		}
 
 		return linkDropped;
 	}
 
-	bool IsLinkCreated(
-	    i32* const startedAtPinId, i32* const endedAtPinId, bool* const createdFromSnap)
+	bool IsLinkCreated(i32* outputPinId, i32* inputPinId, bool* createdFromSnap)
 	{
 		assert(gNodes->CurrentScope != Scope_None);
-		assert(startedAtPinId != nullptr);
-		assert(endedAtPinId != nullptr);
+		assert(outputPinId != nullptr);
+		assert(inputPinId != nullptr);
 
-		const bool isCreated = (gNodes->UIState & UIState_LinkCreated) != 0;
-
-		if (isCreated)
+		if ((gNodes->UIState & UIState_LinkCreated) != 0)
 		{
 			const EditorContext& editor = GetEditorContext();
-			const i32 startIdx          = editor.clickInteraction.LinkCreation.outputPinIdx;
-			const i32 endIdx            = editor.clickInteraction.LinkCreation.inputPinIdx.Value();
-			const PinData& startPin     = editor.pins.Pool[startIdx];
-			const PinData& endPin       = editor.pins.Pool[endIdx];
+			const PinData& outputData =
+			    editor.GetPinData(PinId::Output(editor.clickInteraction.linkCreation.outputPin));
+			const PinData& inputData =
+			    editor.GetPinData(PinId::Input(editor.clickInteraction.linkCreation.inputPin));
 
-			if (startPin.Type == PinType::Output)
-			{
-				*startedAtPinId = startPin.Id;
-				*endedAtPinId   = endPin.Id;
-			}
-			else
-			{
-				*startedAtPinId = endPin.Id;
-				*endedAtPinId   = startPin.Id;
-			}
+			*outputPinId = outputData.Id;
+			*inputPinId  = inputData.Id;
 
 			if (createdFromSnap)
 			{
 				*createdFromSnap =
-				    editor.clickInteraction.Type == ClickInteractionType_LinkCreation;
+				    editor.clickInteraction.type == ClickInteractionType_LinkCreation;
 			}
+			return true;
 		}
-
-		return isCreated;
+		return false;
 	}
 
-	bool IsLinkCreated(i32* startedAtNodeId, i32* startedAtPinId, i32* endedAtNodeId,
-	    i32* endedAtPinId, bool* createdFromSnap)
+	bool IsLinkCreated(i32* outputNodeId, i32* outputPinId, i32* inputNodeId, i32* inputPinId,
+	    bool* createdFromSnap)
 	{
 		assert(gNodes->CurrentScope != Scope_None);
-		assert(startedAtNodeId != nullptr);
-		assert(startedAtPinId != nullptr);
-		assert(endedAtNodeId != nullptr);
-		assert(endedAtPinId != nullptr);
+		assert(outputNodeId != nullptr);
+		assert(outputPinId != nullptr);
+		assert(inputNodeId != nullptr);
+		assert(inputPinId != nullptr);
 
-		const bool isCreated = (gNodes->UIState & UIState_LinkCreated) != 0;
-
-		if (isCreated)
+		if ((gNodes->UIState & UIState_LinkCreated) != 0)
 		{
 			const EditorContext& editor = GetEditorContext();
-			const i32 startIdx          = editor.clickInteraction.LinkCreation.outputPinIdx;
-			const i32 endIdx            = editor.clickInteraction.LinkCreation.inputPinIdx.Value();
-			const PinData& startPin     = editor.pins.Pool[startIdx];
-			const NodeData& startNode   = editor.nodes.Pool[startPin.ParentNodeIdx];
-			const PinData& endPin       = editor.pins.Pool[endIdx];
-			const NodeData& endNode     = editor.nodes.Pool[endPin.ParentNodeIdx];
+			const i32 outputPin         = editor.clickInteraction.linkCreation.outputPin;
+			const i32 inputPin          = editor.clickInteraction.linkCreation.inputPin;
+			const PinData& outputData   = editor.outputs.Pool[outputPin];
+			const NodeData& outputNode  = editor.nodes.Pool[outputData.ParentNodeIdx];
+			const PinData& inputData    = editor.inputs.Pool[inputPin];
+			const NodeData& inputNode   = editor.nodes.Pool[inputData.ParentNodeIdx];
 
-			if (startPin.Type == PinType::Output)
-			{
-				*startedAtPinId  = startPin.Id;
-				*startedAtNodeId = startNode.Id;
-				*endedAtPinId    = endPin.Id;
-				*endedAtNodeId   = endNode.Id;
-			}
-			else
-			{
-				*startedAtPinId  = endPin.Id;
-				*startedAtNodeId = endNode.Id;
-				*endedAtPinId    = startPin.Id;
-				*endedAtNodeId   = startNode.Id;
-			}
+			*outputPinId  = outputData.Id;
+			*outputNodeId = outputNode.Id;
+			*inputPinId   = inputData.Id;
+			*inputNodeId  = inputNode.Id;
 
 			if (createdFromSnap)
 			{
 				*createdFromSnap =
-				    editor.clickInteraction.Type == ClickInteractionType_LinkCreation;
+				    editor.clickInteraction.type == ClickInteractionType_LinkCreation;
 			}
+			return true;
 		}
-
-		return isCreated;
+		return false;
 	}
 
 	bool IsLinkDestroyed(i32* const linkId)

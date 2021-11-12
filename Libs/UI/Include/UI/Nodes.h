@@ -103,6 +103,37 @@ namespace Rift::Nodes
 		Max
 	};
 
+
+	struct PinId
+	{
+		i32 index    = NO_INDEX;
+		PinType type = PinType::None;
+
+
+		static constexpr PinId Output(i32 index)
+		{
+			return {index, PinType::Output};
+		}
+		static constexpr PinId Input(i32 index)
+		{
+			return {index, PinType::Input};
+		}
+		static constexpr PinId Invalid()
+		{
+			return {};
+		}
+
+		bool operator==(PinId other) const
+		{
+			return index == other.index && type == other.type;
+		}
+		operator bool() const
+		{
+			return index != NO_INDEX && type != PinType::None;
+		}
+	};
+
+
 	// This enum controls the way the attribute pins behave.
 	enum PinFlags_
 	{
