@@ -25,6 +25,8 @@ namespace Rift
 		if (UI::Begin("Graph Playground", &open))
 		{
 			Graph::PushNodeStyle();
+
+			Nodes::SetEditorContext(&nodesEditor);
 			Nodes::BeginNodeEditor();
 
 			if (UI::IsWindowAppearing())

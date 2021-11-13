@@ -5,6 +5,7 @@
 
 #include <AST/Types.h>
 #include <CoreObject.h>
+#include <UI/NodesInternal.h>
 #include <UI/UI.h>
 
 
@@ -24,6 +25,8 @@ namespace Rift
 
 		AST::Id selectedPropertyId      = AST::NoId;
 		AST::Id pendingDeletePropertyId = AST::NoId;
+
+		Nodes::EditorContext nodesEditor;
 	};
 
 	inline const Name CTypeEditor::rightNode{"rightNode"};

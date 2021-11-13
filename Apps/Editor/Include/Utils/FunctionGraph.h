@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "AST/Tree.h"
+#include "Components/CTypeEditor.h"
 
+#include <AST/Tree.h>
 #include <Math/Vector.h>
 
 
@@ -45,7 +46,7 @@ namespace Rift::Graph
 	void PopInnerNodeStyle();
 
 	void DrawContextMenu(AST::Tree& ast);
-	void DrawFunctionGraph(AST::Tree& ast, AST::Id typeId, DockSpaceLayout& layout);
+	void DrawTypeGraph(AST::Tree& ast, AST::Id typeId, CTypeEditor& typeEditor);
 
 	void DrawFunctionDecl(AST::Tree& ast, AST::Id functionId);
 	void DrawCallNode(AST::Id id, StringView name);

@@ -1555,7 +1555,7 @@ namespace Rift::Nodes
 		context->CurrentNodeIdx = INT_MAX;
 
 		context->DefaultEditorCtx = EditorContextCreate();
-		EditorContextSet(gNodes->DefaultEditorCtx);
+		SetEditorContext(gNodes->DefaultEditorCtx);
 
 		context->CurrentPinFlags = PinFlags_None;
 		context->pinFlagStack.push_back(gNodes->CurrentPinFlags);
@@ -1660,7 +1660,7 @@ namespace Rift::Nodes
 		ImGui::MemFree(ctx);
 	}
 
-	void EditorContextSet(EditorContext* ctx)
+	void SetEditorContext(EditorContext* ctx)
 	{
 		gNodes->EditorCtx = ctx;
 	}

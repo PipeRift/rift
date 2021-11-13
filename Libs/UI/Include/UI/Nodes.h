@@ -275,7 +275,7 @@ namespace Rift::Nodes
 
 	EditorContext* EditorContextCreate();
 	void EditorContextFree(EditorContext*);
-	void EditorContextSet(EditorContext*);
+	void SetEditorContext(EditorContext*);
 	v2 GetEditorContextPanning();
 	void EditorContextResetPanning(const v2& pos);
 	void EditorContextMoveToNode(const i32 nodeId);

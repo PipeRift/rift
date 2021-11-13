@@ -392,7 +392,6 @@ namespace Rift::EditorSystem
 		{
 			ZoneScopedN("Draw Type");
 
-
 			auto& typeEditor = typeEditors.Get<CTypeEditor>(typeId);
 			auto& file       = typeEditors.Get<CFileRef>(typeId);
 
@@ -422,7 +421,7 @@ namespace Rift::EditorSystem
 				if (Declarations::IsClass(ast, typeId)
 				    || Declarations::IsFunctionLibrary(ast, typeId))
 				{
-					Graph::DrawFunctionGraph(ast, typeId, typeEditor.layout);
+					Graph::DrawTypeGraph(ast, typeId, typeEditor);
 				}
 				DrawProperties(ast, typeId, typeEditor.layout);
 			}

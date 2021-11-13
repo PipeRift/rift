@@ -3,6 +3,7 @@
 
 #include "AST/Tree.h"
 
+#include <UI/NodesInternal.h>
 #include <UI/UI.h>
 
 
@@ -11,6 +12,8 @@ namespace Rift
 	struct GraphPlayground
 	{
 		bool open = true;
+
+		Nodes::EditorContext nodesEditor;
 
 
 		GraphPlayground() {}

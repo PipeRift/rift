@@ -269,7 +269,7 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawFunctionGraph(AST::Tree& ast, AST::Id typeId, DockSpaceLayout& layout)
+	void DrawTypeGraph(AST::Tree& ast, AST::Id typeId, CTypeEditor& typeEditor)
 	{
 		TArray<AST::Id>* children = AST::GetLinked(ast, typeId);
 		if (!children)
@@ -277,7 +277,7 @@ namespace Rift::Graph
 			return;
 		}
 
-		layout.BindNextWindowToNode(CTypeEditor::centralNode);
+		typeEditor.layout.BindNextWindowToNode(CTypeEditor::centralNode);
 		static String graphId;
 		graphId.clear();
 		Strings::FormatTo(graphId, "Graph##{}", typeId);
@@ -287,6 +287,7 @@ namespace Rift::Graph
 		{
 			PushNodeStyle();
 
+			Nodes::SetEditorContext(&typeEditor.nodesEditor);
 			Nodes::BeginNodeEditor();
 
 			if (!ImGui::IsAnyItemHovered() && Nodes::IsEditorHovered()
