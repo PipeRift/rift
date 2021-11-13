@@ -1,16 +1,20 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "AST/Serialization.h"
-
+#include "AST/Components/CBoolLiteral.h"
+#include "AST/Components/CCallExpr.h"
 #include "AST/Components/CChild.h"
 #include "AST/Components/CClassDecl.h"
+#include "AST/Components/CCompoundStmt.h"
+#include "AST/Components/CFloatLiteral.h"
 #include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CParent.h"
+#include "AST/Components/CStringLiteral.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CVariableDecl.h"
 #include "AST/Components/Views/CGraphTransform.h"
 #include "AST/Linkage.h"
+#include "AST/Serialization.h"
 
 #include <Reflection/TypeName.h>
 
@@ -116,6 +120,11 @@ namespace Rift
 			ReadPool<CClassDecl>(*this, ast);
 			ReadPool<CVariableDecl>(*this, ast);
 			ReadPool<CFunctionDecl>(*this, ast);
+			ReadPool<CCallExpr>(*this, ast);
+			ReadPool<CCompoundStmt>(*this, ast);
+			ReadPool<CBoolLiteral>(*this, ast);
+			ReadPool<CFloatLiteral>(*this, ast);
+			ReadPool<CStringLiteral>(*this, ast);
 			ReadPool<CGraphTransform>(*this, ast);
 			Leave();
 		}
@@ -148,6 +157,11 @@ namespace Rift
 			WritePool<CClassDecl>(*this, ast, treeEntities);
 			WritePool<CVariableDecl>(*this, ast, treeEntities);
 			WritePool<CFunctionDecl>(*this, ast, treeEntities);
+			WritePool<CCallExpr>(*this, ast, treeEntities);
+			WritePool<CCompoundStmt>(*this, ast, treeEntities);
+			WritePool<CBoolLiteral>(*this, ast, treeEntities);
+			WritePool<CFloatLiteral>(*this, ast, treeEntities);
+			WritePool<CStringLiteral>(*this, ast, treeEntities);
 			WritePool<CGraphTransform>(*this, ast, treeEntities);
 			Leave();
 		}
