@@ -2179,15 +2179,15 @@ namespace Rift::Nodes
 		gNodes->CurrentPinFlags = gNodes->pinFlagStack.back();
 	}
 
-	void Link(const i32 id, const i32 outputPinId, const i32 inputPinId)
+	void Link(i32 id, i32 outputPin, i32 inputPin)
 	{
 		assert(gNodes->CurrentScope == Scope_Editor);
 
 		EditorContext& editor    = GetEditorContext();
 		LinkData& link           = ObjectPoolFindOrCreateObject(editor.Links, id);
 		link.Id                  = id;
-		link.outputPin           = ObjectPoolFindOrCreateIndex(editor.outputs, outputPinId);
-		link.inputPin            = ObjectPoolFindOrCreateIndex(editor.inputs, inputPinId);
+		link.outputPin           = ObjectPoolFindOrCreateIndex(editor.outputs, outputPin);
+		link.inputPin            = ObjectPoolFindOrCreateIndex(editor.inputs, inputPin);
 		link.colorStyle.Base     = gNodes->Style.colors[ColorVar_Link];
 		link.colorStyle.Hovered  = gNodes->Style.colors[ColorVar_LinkHovered];
 		link.colorStyle.Selected = gNodes->Style.colors[ColorVar_LinkSelected];
@@ -2539,27 +2539,26 @@ namespace Rift::Nodes
 		return true;
 	}
 
-	bool IsLinkStarted(i32* const startedAtId)
+	bool IsLinkStarted(i32* outputId)
 	{
 		// Call this function after EndNodeEditor()!
 		assert(gNodes->CurrentScope != Scope_None);
-		assert(startedAtId != nullptr);
-
-		const bool isStarted = (gNodes->UIState & UIState_LinkStarted) != 0;
-		if (isStarted)
+		assert(outputId != nullptr);
+		if ((gNodes->UIState & UIState_LinkStarted) != 0)
 		{
 			const EditorContext& editor = GetEditorContext();
 			const i32 pinIdx            = editor.clickInteraction.linkCreation.outputPin;
-			*startedAtId                = editor.GetPinData({pinIdx, PinType::Output}).Id;
+			*outputId                   = editor.GetPinData({pinIdx, PinType::Output}).Id;
+			return true;
 		}
-
-		return isStarted;
+		return false;
 	}
 
-	bool IsLinkDropped(i32* const startedAtId, const bool includingDetachedLinks)
+	bool IsLinkDropped(i32* outputId, bool includingDetachedLinks)
 	{
 		// Call this function after EndNodeEditor()!
 		assert(gNodes->CurrentScope != Scope_None);
+		assert(outputId != nullptr);
 
 		const EditorContext& editor = GetEditorContext();
 
@@ -2568,10 +2567,10 @@ namespace Rift::Nodes
 		    && (includingDetachedLinks
 		        || editor.clickInteraction.linkCreation.type != LinkCreationType_FromDetach);
 
-		if (linkDropped && startedAtId)
+		if (linkDropped && outputId)
 		{
 			const i32 pinIdx = editor.clickInteraction.linkCreation.outputPin;
-			*startedAtId     = editor.GetPinData({pinIdx, PinType::Output}).Id;
+			*outputId        = editor.GetPinData({pinIdx, PinType::Output}).Id;
 		}
 
 		return linkDropped;

@@ -246,12 +246,24 @@ namespace Rift::Graph
 			AST::Id compoundId = functionChildren->Last();
 			if (compounds.Has(compoundId))
 			{
-				// TODO: Connect one statement after another!
 				TArray<AST::Id>* statementChildren = AST::GetLinked(ast, compoundId);
-				for (AST::Id childId : *statementChildren)
+				if (!statementChildren || statementChildren->IsEmpty())
 				{
+					continue;
+				}
+
+				AST::Id outputId = statementChildren->First();
+
+				// Connect function to first statement
+				Nodes::Link(i32(functionId), i32(functionId), i32(outputId));
+
+				for (i32 i = 1; i < statementChildren->Size(); ++i)
+				{
+					AST::Id inputId = (*statementChildren)[i];
+
 					// Note: The id of the link is the destination pin
-					Nodes::Link(i32(childId), i32(compoundId), i32(childId));
+					Nodes::Link(i32(outputId), i32(outputId), i32(inputId));
+					outputId = inputId;
 				}
 			}
 		}
@@ -395,7 +407,7 @@ namespace Rift::Graph
 				UI::SameLine();
 				UI::Text(name.data());
 				UI::SameLine();
-				Nodes::BeginOutput(i32(id) + 1, PinShape_QuadFilled);
+				Nodes::BeginOutput(i32(id), PinShape_QuadFilled);
 				UI::Text("");
 				Nodes::EndOutput();
 

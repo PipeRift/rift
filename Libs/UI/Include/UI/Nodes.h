@@ -354,7 +354,7 @@ namespace Rift::Nodes
 	// The attributes ids used here must match the ids used in Begin(Input|Output)
 	// function calls. The order of start_attr and end_attr doesn't make a difference for
 	// rendering the link.
-	void Link(i32 id, i32 startPinId, i32 endPinId);
+	void Link(i32 id, i32 outputPin, i32 inputPin);
 
 	// Enable or disable the ability to click and drag a specific node.
 	void SetNodeDraggable(i32 nodeId, const bool draggable);
@@ -425,18 +425,18 @@ namespace Rift::Nodes
 	// Call these after EndNodeEditor().
 
 	// Did the user start dragging a new link from a pin?
-	bool IsLinkStarted(i32* startedAtPinId);
+	bool IsLinkStarted(i32* outputPinId);
 	// Did the user drop the dragged link before attaching it to a pin?
 	// There are two different kinds of situations to consider when handling this event:
 	// 1) a link which is created at a pin and then dropped
 	// 2) an existing link which is detached from a pin and then dropped
 	// Use the including_detached_links flag to control whether this function triggers when the
 	// user detaches a link and drops it.
-	bool IsLinkDropped(i32* startedAtPinId = nullptr, bool includingDetachedLinks = true);
+	bool IsLinkDropped(i32* outputPinId = nullptr, bool includingDetachedLinks = true);
 	// Did the user finish creating a new link?
-	bool IsLinkCreated(i32* startedAtPinId, i32* endedAtPinId, bool* createdFromSnap = nullptr);
-	bool IsLinkCreated(int* startedAtNodeId, i32* startedAtPinId, i32* endedAtNodeId,
-	    i32* endedAtPinId, bool* createdFromSnap = nullptr);
+	bool IsLinkCreated(i32* outputPinId, i32* inputPinId, bool* createdFromSnap = nullptr);
+	bool IsLinkCreated(int* outputNodeId, i32* outputPinId, i32* inputNodeId, i32* inputPinId,
+	    bool* createdFromSnap = nullptr);
 
 	// Was an existing link detached from a pin by the user? The detached link's id is assigned
 	// to the output argument linkId.
