@@ -129,7 +129,7 @@ namespace Rift::Nodes
 
 	void MiniMap::DrawLink(EditorContext& editor, const i32 linkIdx)
 	{
-		const LinkData& link    = editor.Links.Pool[linkIdx];
+		const LinkData& link      = editor.Links.Pool[linkIdx];
 		const PinData& outputData = editor.outputs.Pool[link.outputPin];
 		const PinData& inputData  = editor.inputs.Pool[link.inputPin];
 

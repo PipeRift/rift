@@ -1,5 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "AST/Serialization.h"
+
 #include "AST/Components/CBoolLiteral.h"
 #include "AST/Components/CCallExpr.h"
 #include "AST/Components/CChild.h"
@@ -14,7 +16,6 @@
 #include "AST/Components/CVariableDecl.h"
 #include "AST/Components/Views/CGraphTransform.h"
 #include "AST/Linkage.h"
-#include "AST/Serialization.h"
 
 #include <Reflection/TypeName.h>
 

@@ -9,6 +9,7 @@
 // [SECTION] API implementation
 
 #include "UI/Nodes.h"
+
 #include "UI/NodesInternal.h"
 #include "UI/NodesMiniMap.h"
 
@@ -1080,7 +1081,7 @@ namespace Rift::Nodes
 	PinId ResolveHoveredPin(
 	    const ObjectPool<PinData>& pins, PinType type, const ImVector<PinId>& occludedPinIndices)
 	{
-		float smallestDistance = FLT_MAX;
+		float smallestDistance         = FLT_MAX;
 		i32 pinIdxWithSmallestDistance = NO_INDEX;
 
 		const float hoverRadiusSqr = gNodes->Style.PinHoverRadius * gNodes->Style.PinHoverRadius;
