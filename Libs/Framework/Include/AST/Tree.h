@@ -5,9 +5,11 @@
 #include "AST/Components/CParent.h"
 #include "AST/Entt/RegistryTraits.h"
 #include "AST/IdRegistry.h"
+#include "AST/Pool.h"
 #include "AST/Types.h"
 #include "AST/View.h"
 
+#include <Memory/UniquePtr.h>
 #include <Strings/Name.h>
 
 #include <entt/entity/registry.hpp>
@@ -42,6 +44,9 @@ namespace Rift::AST
 		TOwnPtr<View<TExclude<>, CChild>> childView;
 		TOwnPtr<View<TExclude<>, CParent>> parentView;
 		NativeTypeIds nativeTypes;
+
+		TArray<Refl::TypeId> poolIds;
+		TArray<TUniquePtr<BasePool>> poolInstances;
 
 
 	public:
@@ -306,6 +311,9 @@ namespace Rift::AST
 			return AST::NoId;
 		}
 
+		template<typename T>
+		TPool<T>& GetPool() const;
+
 #pragma endregion ECS API
 
 		void CopyFrom(const Tree& other);
@@ -313,5 +321,44 @@ namespace Rift::AST
 	private:
 		void SetupNativeTypes();
 		void CachePools();
+
+
+		BasePool* FindPool(Refl::TypeId componentId) const;
+
+		// Adds a pool. Never call if a pool already exists
+		template<typename T>
+		TPool<T>& AddPool();
 	};
+
+	template<typename T>
+	inline TPool<T>& Tree::GetPool() const
+	{
+		constexpr Refl::TypeId componentId = Refl::TypeId::Get<T>();
+		if (BasePool* pool = FindPool(componentId))
+		{
+			return *static_cast<TPool<T>*>(pool);
+		}
+		return const_cast<Tree*>(this)->AddPool<T>();
+	}
+
+	inline BasePool* Tree::FindPool(Refl::TypeId componentId) const
+	{
+		for (i32 i = 0; i < poolIds.Size(); ++i)
+		{
+			if (componentId == poolIds[i])
+			{
+				return poolInstances[i].Get();
+			}
+		}
+		return nullptr;
+	}
+
+	template<typename T>
+	inline TPool<T>& Tree::AddPool()
+	{
+		poolIds.Add(Refl::TypeId::Get<T>());
+		auto* newPool = poolInstances.AddRef(MakeUnique<TPool<T>>()).Get();
+		// TODO: Static inheritance methods
+		return *newPool;
+	}
 }    // namespace Rift::AST

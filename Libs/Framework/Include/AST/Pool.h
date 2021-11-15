@@ -7,110 +7,114 @@
 #include <TypeTraits.h>
 
 
-struct BasePool
+namespace Rift::AST
 {
-	bool Has() const = 0;
-	bool Set() const = 0;
-	bool Get() const = 0;
-	bool Get() const = 0;
-};
-
-
-template<typename T>
-	requires(IsEmpty<T>)
-struct TPool : public BasePool
-{
-	void Add(AST::Id id)
+	struct BasePool
 	{
-		data.Insert(id);
-	}
+		virtual ~BasePool() {}
+	};
 
-	bool Remove(AST::Id id)
+
+	template<typename T>
+	struct TPool : public BasePool
 	{
-		return data.Remove(id) > 0;
-	}
+		void Add(Id id)
+		{
+			data.Insert(id);
+		}
 
-	T* TryGet(AST::Id id)
+		bool Remove(Id id)
+		{
+			return data.Remove(id) > 0;
+		}
+
+		T* TryGet(Id id)
+		{
+			auto it = data.FindIt(id);
+			return it != data.end() ? it->second : nullptr;
+		}
+
+		const T* TryGet(Id id) const
+		{
+			auto it = data.FindIt(id);
+			return it != data.end() ? it->second : nullptr;
+		}
+
+		T& Get(Id id)
+		{
+			auto it = data.FindIt(id);
+			Check(it != data.end() && "Component not found on id. Can't dereference its value");
+			return it->second;
+		}
+
+		const T& Get(Id id) const
+		{
+			auto it = data.FindIt(id);
+			Check(it != data.end() && "Component not found on id. Can't dereference its value");
+			return it->second;
+		}
+
+		bool Has(Id id) const
+		{
+			return data.Contains(id);
+		}
+
+
+	private:
+		TMap<Id, T> data;
+	};
+
+
+	/** TPool specification for empty component types.
+	 * Empty components don't store component data, only existance
+	 */
+	template<typename T>
+		requires(IsEmpty<T>())
+	struct TPool<T> : public BasePool
 	{
-		// There is no instance in empty TryGet in empty types returns default constructed
-		return nullptr;
-	}
+		void Add(Id id)
+		{
+			data.Insert(id);
+		}
 
-	const T* TryGet(AST::Id id) const
-	{
-		// There is no instance in empty TryGet in empty types returns default constructed
-		return nullptr;
-	}
+		bool Remove(Id id)
+		{
+			return data.Remove(id) > 0;
+		}
 
-	T& Get(AST::Id id)
-	{
-		static_assert(false, "Get() not allowed on empty components. No data is stored on them.");
-		return *TryGet(id);
-	}
+		T* TryGet(Id id)
+		{
+			// There is no instance in empty TryGet in empty types returns default constructed
+			return nullptr;
+		}
 
-	const T& Get(AST::Id id) const
-	{
-		static_assert(false, "Get() not allowed on empty components. No data is stored on them.");
-		return *TryGet(id);
-	}
+		const T* TryGet(Id id) const
+		{
+			// There is no instance in empty TryGet in empty types returns default constructed
+			return nullptr;
+		}
 
-	bool Has(AST::Id id) const
-	{
-		return data.Contains(id);
-	}
+		T& Get(Id id)
+		{
+			static_assert(
+			    false, "Get() not allowed on empty components. No data is stored on them.");
+			return *TryGet(id);
+		}
 
+		const T& Get(Id id) const
+		{
+			static_assert(
+			    false, "Get() not allowed on empty components. No data is stored on them.");
+			return *TryGet(id);
+		}
 
-private:
-	TSet<AST::Id> data;
-};
-
-
-template<typename T>
-	requires(!IsEmpty<T>)
-struct TPool : public BasePool
-{
-	void Add(AST::Id id)
-	{
-		data.Insert(id);
-	}
-
-	bool Remove(AST::Id id)
-	{
-		return data.Remove(id) > 0;
-	}
-
-	T* TryGet(AST::Id id)
-	{
-		auto it = data.FindIt(id);
-		return it != data.end() ? it->second : nullptr;
-	}
-
-	const T* TryGet(AST::Id id) const
-	{
-		auto it = data.FindIt(id);
-		return it != data.end() ? it->second : nullptr;
-	}
-
-	T& Get(AST::Id id)
-	{
-		auto it = data.FindIt(id);
-		Check(it != data.end() && "Component not found on id. Can't dereference its value");
-		return it->second;
-	}
-
-	const T& Get(AST::Id id) const
-	{
-		auto it = data.FindIt(id);
-		Check(it != data.end() && "Component not found on id. Can't dereference its value");
-		return it->second;
-	}
-
-	bool Has(AST::Id id) const
-	{
-		return data.Contains(id);
-	}
+		bool Has(Id id) const
+		{
+			return data.Contains(id);
+		}
 
 
-private:
-	TMap<AST::Id, T> data;
-};
+	private:
+		TSet<Id> data;
+	};
+}    // namespace Rift::AST
