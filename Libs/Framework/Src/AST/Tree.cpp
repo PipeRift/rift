@@ -32,21 +32,21 @@ namespace Rift::AST
 
 	Id Tree::Create()
 	{
-		return registry.create();
+		return idRegistry.Create();
 	}
-	Id Tree::Create(const Id hint)
+	void Tree::Create(TArrayView<Id> ids)
 	{
-		return registry.create(Move(hint));
-	}
-
-	void Tree::Destroy(const Id node)
-	{
-		registry.destroy(node);
+		idRegistry.Create(ids);
 	}
 
-	void Tree::Destroy(const Id node, const VersionType version)
+	void Tree::Destroy(const Id id)
 	{
-		registry.destroy(node, version);
+		idRegistry.Destroy(id);
+	}
+
+	void Tree::Destroy(TArrayView<const Id> ids)
+	{
+		idRegistry.Destroy(ids);
 	}
 
 	void Tree::SetupNativeTypes()

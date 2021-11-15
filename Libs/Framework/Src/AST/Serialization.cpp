@@ -107,7 +107,7 @@ namespace Rift
 		}
 
 		// Create all non-root entities
-		ast.Create(ASTIds.begin() + maxSize, ASTIds.end());
+		ast.Create({ASTIds.Data() + maxSize, ASTIds.Data() + ASTIds.Size()});
 
 		// Next("roots", roots); // Not needed
 		if (EnterNext("components"))

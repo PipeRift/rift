@@ -131,7 +131,7 @@ namespace Rift::LoadSystem
 
 
 		ids.Resize(paths.Size());
-		ast.Create(ids.begin(), ids.end());
+		ast.Create(ids);
 
 		for (i32 i = 0; i < ids.Size(); ++i)
 		{
@@ -176,7 +176,7 @@ namespace Rift::LoadSystem
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
 			typeIds.Resize(modulePaths.paths.Size());
-			ast.Create(typeIds.begin(), typeIds.end());
+			ast.Create(typeIds);
 
 			for (i32 i = 0; i < typeIds.Size(); ++i)
 			{

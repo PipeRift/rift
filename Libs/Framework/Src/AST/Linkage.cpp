@@ -223,7 +223,7 @@ namespace Rift::AST
 		Unlink(ast, nodes, true);
 
 		UnlinkAllChildren(ast, nodes);
-		ast.Destroy(nodes.begin(), nodes.end());
+		ast.Destroy(nodes);
 	}
 
 	void RemoveDeep(Tree& ast, TArrayView<Id> nodes)
@@ -233,7 +233,7 @@ namespace Rift::AST
 		TArray<Id> allNodes;
 		allNodes.Append(nodes);
 		GetLinkedDeep(ast, nodes, allNodes);
-		ast.Destroy(allNodes.begin(), allNodes.end());
+		ast.Destroy(allNodes);
 	}
 
 

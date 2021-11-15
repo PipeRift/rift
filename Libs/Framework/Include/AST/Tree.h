@@ -4,6 +4,7 @@
 #include "AST/Components/CChild.h"
 #include "AST/Components/CParent.h"
 #include "AST/Entt/RegistryTraits.h"
+#include "AST/IdRegistry.h"
 #include "AST/Types.h"
 #include "AST/View.h"
 
@@ -36,6 +37,7 @@ namespace Rift::AST
 		using Pool     = Registry::poly_storage;
 
 	private:
+		IdRegistry idRegistry;
 		Registry registry;
 		TOwnPtr<View<TExclude<>, CChild>> childView;
 		TOwnPtr<View<TExclude<>, CParent>> parentView;
@@ -51,19 +53,10 @@ namespace Rift::AST
 
 #pragma region ECS API
 		Id Create();
-		Id Create(const Id hint);
-		template<typename It>
-		void Create(It first, It last)
-		{
-			registry.create(first, last);
-		}
-		void Destroy(const Id node);
-		void Destroy(const Id node, const VersionType version);
-		template<typename It>
-		void Destroy(It first, It last)
-		{
-			registry.destroy(first, last);
-		}
+		void Create(Id id);
+		void Create(TArrayView<Id> ids);
+		void Destroy(Id id);
+		void Destroy(TArrayView<const Id> ids);
 
 		/**
 		 * Adds Component to an entity (if the entity doesnt have it already)

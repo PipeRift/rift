@@ -12,16 +12,75 @@ namespace Rift
 {
 	namespace AST
 	{
+		template<typename, typename = void>
+		struct BaseIdTraits;
+		template<typename, typename = void>
+		struct IdTraits;
+
+		template<>
+		struct BaseIdTraits<u32>
+		{
+			using Entity     = u32;
+			using Index      = u32;
+			using Version    = u16;
+			using Difference = i64;
+
+			static constexpr Entity indexMask   = 0xfffff;
+			static constexpr Entity versionMask = 0xfff;
+			static constexpr sizet indexShift   = 20u;
+		};
+
+		template<>
+		struct BaseIdTraits<u64>
+		{
+			using Entity     = u64;
+			using Index      = u32;
+			using Version    = u32;
+			using Difference = i64;
+
+			static constexpr Entity indexMask   = 0xffffffff;
+			static constexpr Entity versionMask = 0xffffffff;
+			static constexpr sizet indexShift   = 32u;
+		};
+
+		template<IsEnum T>
+		struct IdTraits<T> : public BaseIdTraits<UnderlyingType<T>>
+		{
+			using Parent     = BaseIdTraits<UnderlyingType<T>>;
+			using Entity     = Parent::Entity;
+			using Index      = Parent::Index;
+			using Version    = Parent::Version;
+			using Difference = Parent::Difference;
+
+
+			static constexpr Index GetIndex(T id)
+			{
+				return Index(Entity(id) & Parent::indexMask);
+			}
+
+			static constexpr Version GetVersion(T id)
+			{
+				constexpr auto mask = Parent::versionMask << Parent::indexShift;
+				return Version((Entity(id) & mask) >> Parent::indexShift);
+			}
+
+			static constexpr T Make(
+			    Index index = Parent::indexMask, Version version = Parent::versionMask)
+			{
+				return T{(index & Parent::indexMask) | (Entity(version) << Parent::indexShift)};
+			}
+		};
+
+		template<typename T>
+			requires(std::is_class_v<T>)
+		struct IdTraits<T> : IdTraits<typename T::EntityType>
+		{};
+
+
 		enum class Id : u32
 		{};
 
-		constexpr entt::null_t NoId = entt::null;
-
-		inline constexpr bool operator!(Id id)
-		{
-			return id == NoId;
-		}
-
+		constexpr Id NoId = IdTraits<Id>::Make();
 	}    // namespace AST
 
 	namespace Serl
@@ -34,17 +93,9 @@ namespace Rift
 REFLECT_NATIVE_TYPE(Rift::AST::Id);
 
 
-namespace entt
-{
-	// template <>
-	// struct entt_traits<Rift::AST::Id> : public entt_traits<Rift::u32>
-	//{};
-}    // namespace entt
-
-
 namespace Rift::AST
 {
-	using VersionType = entt::entt_traits<Id>::version_type;
+	using VersionType = IdTraits<Id>::Version;
 
 	template<typename... Type>
 	using TExclude = entt::exclude_t<Type...>;
