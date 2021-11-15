@@ -4,6 +4,7 @@
 
 #include <Containers/Map.h>
 #include <Containers/Set.h>
+#include <Memory/UniquePtr.h>
 #include <TypeTraits.h>
 
 
@@ -116,5 +117,17 @@ namespace Rift::AST
 
 	private:
 		TSet<Id> data;
+	};
+
+
+	struct PoolInstance
+	{
+		Refl::TypeId componentId;
+		TUniquePtr<BasePool> instance;
+
+		bool operator<(const PoolInstance& other) const
+		{
+			return componentId.GetId() < other.componentId.GetId();
+		}
 	};
 }    // namespace Rift::AST

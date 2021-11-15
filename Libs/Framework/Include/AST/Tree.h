@@ -45,8 +45,7 @@ namespace Rift::AST
 		TOwnPtr<View<TExclude<>, CParent>> parentView;
 		NativeTypeIds nativeTypes;
 
-		TArray<Refl::TypeId> poolIds;
-		TArray<TUniquePtr<BasePool>> poolInstances;
+		TArray<PoolInstance> pools;
 
 
 	public:
@@ -311,8 +310,10 @@ namespace Rift::AST
 			return AST::NoId;
 		}
 
+		// Finds or creates a pool
 		template<typename T>
-		TPool<T>& GetPool() const;
+		TPool<T>& AssurePool() const;
+		BasePool* FindPool(Refl::TypeId componentId) const;
 
 #pragma endregion ECS API
 
@@ -321,44 +322,26 @@ namespace Rift::AST
 	private:
 		void SetupNativeTypes();
 		void CachePools();
-
-
-		BasePool* FindPool(Refl::TypeId componentId) const;
-
-		// Adds a pool. Never call if a pool already exists
-		template<typename T>
-		TPool<T>& AddPool();
 	};
 
 	template<typename T>
-	inline TPool<T>& Tree::GetPool() const
+	inline TPool<T>& Tree::AssurePool() const
 	{
 		constexpr Refl::TypeId componentId = Refl::TypeId::Get<T>();
-		if (BasePool* pool = FindPool(componentId))
+
+		const TPair<i32, bool> result = pools.FindOrAddSorted({componentId});
+		PoolInstance& pool            = pools[result.first];
+		if (result.second)    // Added a new pool
 		{
-			return *static_cast<TPool<T>*>(pool);
+			pool.instance = MakeUnique<TPool<T>>());
+			// TODO: Static inheritance methods
 		}
-		return const_cast<Tree*>(this)->AddPool<T>();
+		return *static_cast<TPool<T>*>(pool.instance.Get());
 	}
 
 	inline BasePool* Tree::FindPool(Refl::TypeId componentId) const
 	{
-		for (i32 i = 0; i < poolIds.Size(); ++i)
-		{
-			if (componentId == poolIds[i])
-			{
-				return poolInstances[i].Get();
-			}
-		}
-		return nullptr;
-	}
-
-	template<typename T>
-	inline TPool<T>& Tree::AddPool()
-	{
-		poolIds.Add(Refl::TypeId::Get<T>());
-		auto* newPool = poolInstances.AddRef(MakeUnique<TPool<T>>()).Get();
-		// TODO: Static inheritance methods
-		return *newPool;
+		const i32 index = pools.FindSortedEqual(PoolInstance{componentId});
+		return index != NO_INDEX ? pools[index].instance.Get() : nullptr;
 	}
 }    // namespace Rift::AST
