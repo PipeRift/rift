@@ -212,15 +212,18 @@ namespace Rift::AST
 		auto MakeView(TExclude<Exclude...> excluded = {}) const
 		    -> View<TExclude<Exclude...>, std::add_const_t<Component>...>
 		{
-			return View<TExclude<Exclude...>, std::add_const_t<Component>...>{
-			    registry.view<Component...>(excluded)};
+			static_assert(sizeof...(Component) > 0, "Exclusion-only views are not supported");
+			return {AssurePool<std::remove_const_t<Component>>()...,
+			    AssurePool<std::remove_const_t<Exclude>>()...};
 		}
 
 		template<typename... Component, typename... Exclude>
 		auto MakeView(TExclude<Exclude...> excluded = {})
 		    -> View<TExclude<Exclude...>, Component...>
 		{
-			return View<TExclude<Exclude...>, Component...>{registry.view<Component...>(excluded)};
+			static_assert(sizeof...(Component) > 0, "Exclusion-only views are not supported");
+			return {AssurePool<std::remove_const_t<Component>>()...,
+			    AssurePool<std::remove_const_t<Exclude>>()...};
 		}
 
 		template<typename Callback>
