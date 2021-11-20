@@ -91,7 +91,7 @@ namespace Rift
 		if (Modules::HasProject(newAST))
 		{
 			ast = Move(newAST);
-			ast.SetUnique<CEditorUnique>();
+			ast.SetStatic<CEditorUnique>();
 
 			EditorSystem::Init(ast);
 			SetUIConfigFile(Modules::GetProjectPath(ast) / "Saved/UI.ini");

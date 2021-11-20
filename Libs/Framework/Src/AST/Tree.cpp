@@ -12,7 +12,7 @@
 
 namespace Rift::AST
 {
-	Tree::Tree() : registry{}
+	Tree::Tree()
 	{
 		SetupNativeTypes();
 		CachePools();
@@ -20,12 +20,15 @@ namespace Rift::AST
 
 	Tree::Tree(Tree&& other) noexcept
 	{
-		registry = Move(other.registry);
+		idRegistry = Move(other.idRegistry);
+		pools      = Move(other.pools);
 		CachePools();
 	}
 	Tree& Tree::operator=(Tree&& other) noexcept
 	{
-		registry = Move(other.registry);
+		Reset();
+		idRegistry = Move(other.idRegistry);
+		pools      = Move(other.pools);
 		CachePools();
 		return *this;
 	}
@@ -47,6 +50,12 @@ namespace Rift::AST
 	void Tree::Destroy(TArrayView<const Id> ids)
 	{
 		idRegistry.Destroy(ids);
+	}
+
+	Pool* Tree::FindPool(Refl::TypeId componentId) const
+	{
+		const i32 index = pools.FindSortedEqual(PoolInstance{componentId});
+		return index != NO_INDEX ? pools[index].instance : nullptr;
 	}
 
 	void Tree::SetupNativeTypes()
@@ -114,11 +123,11 @@ namespace Rift::AST
 
 	void Tree::CachePools()
 	{
-		registry.prepare<CChild>();
-		registry.prepare<CParent>();
+		AssurePool<CChild>();
+		AssurePool<CParent>();
 
-		childView  = MakeOwned<View<TExclude<>, CChild>>(MakeView<CChild>());
-		parentView = MakeOwned<View<TExclude<>, CParent>>(MakeView<CParent>());
+		childView  = MakeOwned<TQuery<TExclude<>, CChild>>(Query<CChild>());
+		parentView = MakeOwned<TQuery<TExclude<>, CParent>>(Query<CParent>());
 	}
 
 	void Tree::CopyFrom(const Tree& other)
@@ -126,18 +135,20 @@ namespace Rift::AST
 		Reset();
 
 		// Copy entities
-		registry.assign(other.registry.data(), other.registry.data() + other.registry.size(),
-		    other.registry.destroyed());
+		idRegistry = other.idRegistry;
 
 		// Copy components
-		other.registry.visit([&other, this](const auto info) {
-			other.registry.storage(info)->copy_to(registry);
-		});
-		CachePools();
+		pools.Empty();
+		for (const PoolInstance& pool : other.pools)
+		{
+			// pool.Clone(*this);
+		}
 
 		// Copy non-transient unique components
 		// TODO: Use reflection for this
-		SetUnique<CModulesUnique>(other.GetUnique<CModulesUnique>());
-		SetUnique<CTypesUnique>(other.GetUnique<CTypesUnique>());
+		SetStatic<CModulesUnique>(other.GetStatic<CModulesUnique>());
+		SetStatic<CTypesUnique>(other.GetStatic<CTypesUnique>());
+
+		CachePools();
 	}
 }    // namespace Rift::AST

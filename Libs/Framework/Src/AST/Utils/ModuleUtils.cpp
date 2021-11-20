@@ -47,8 +47,8 @@ namespace Rift::Modules
 		}
 
 		AST::Tree ast;
-		ast.SetUnique<CModulesUnique>();
-		ast.SetUnique<CTypesUnique>();
+		ast.SetStatic<CModulesUnique>();
+		ast.SetStatic<CTypesUnique>();
 		LoadSystem::Init(ast);
 		TypeSystem::Init(ast);
 

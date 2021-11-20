@@ -24,7 +24,7 @@ namespace Rift::EditorSystem
 {
 	void OnProjectEditorOpen(AST::Tree& ast)
 	{
-		auto& editor = ast.GetUnique<CEditorUnique>();
+		auto& editor = ast.GetStatic<CEditorUnique>();
 		editor.layout.OnBuild([](auto& builder) {
 			// ==================================== //
 			//          |                           //
@@ -46,9 +46,9 @@ namespace Rift::EditorSystem
 		editor.layout.Reset();
 	}
 
-	void OnTypeEditorOpen(AST::Tree::Registry& registry, AST::Id typeId)
+	void OnTypeEditorOpen(AST::Tree& ast, AST::Id typeId)
 	{
-		auto& typeEditor = registry.get<CTypeEditor>(typeId);
+		auto& typeEditor = ast.Get<CTypeEditor>(typeId);
 		typeEditor.layout.OnBuild([](auto& builder) {
 			// =================================== //
 			//                           |         //
@@ -74,7 +74,12 @@ namespace Rift::EditorSystem
 	void Init(AST::Tree& ast)
 	{
 		OnProjectEditorOpen(ast);
-		ast.OnConstruct<CTypeEditor>().connect<&OnTypeEditorOpen>();
+		ast.OnAdd<CTypeEditor>().Bind([&ast](auto ids) {
+			for (AST::Id id : ids)
+			{
+				OnTypeEditorOpen(ast, id);
+			}
+		});
 	}
 
 	// Root Editor
@@ -238,11 +243,11 @@ namespace Rift::EditorSystem
 	{
 		ZoneScopedN("EditorSystem::DrawProject");
 
-		if (!Ensure(ast.HasUnique<CEditorUnique>()))
+		if (!Ensure(ast.HasStatic<CEditorUnique>()))
 		{
 			return;
 		}
-		auto& editor = ast.GetUnique<CEditorUnique>();
+		auto& editor = ast.GetStatic<CEditorUnique>();
 
 		const auto& path = Modules::GetProjectPath(ast);
 		UI::PushID(Hash<Path>()(path));
@@ -294,7 +299,7 @@ namespace Rift::EditorSystem
 				if (UI::MenuItem("Save All", "CTRL+SHFT+S"))
 				{
 					// TODO: Only save dirty types
-					auto typeEditors = ast.MakeView<CType, CTypeEditor, CFileRef>();
+					auto typeEditors = ast.Query<CType, CTypeEditor, CFileRef>();
 					TArray<TPair<Path, String>> fileDatas;
 					for (AST::Id typeId : typeEditors)
 					{
@@ -372,7 +377,7 @@ namespace Rift::EditorSystem
 				{
 					editorData.layout.Reset();
 
-					auto openTypes = ast.MakeView<CTypeEditor>();
+					auto openTypes = ast.Query<CTypeEditor>();
 					for (AST::Id typeId : openTypes)
 					{
 						auto& editor = openTypes.Get<CTypeEditor>(typeId);
@@ -387,7 +392,7 @@ namespace Rift::EditorSystem
 
 	void DrawTypes(AST::Tree& ast, CEditorUnique& editor)
 	{
-		auto typeEditors = ast.MakeView<CType, CTypeEditor, CFileRef>();
+		auto typeEditors = ast.Query<CType, CTypeEditor, CFileRef>();
 		for (AST::Id typeId : typeEditors)
 		{
 			ZoneScopedN("Draw Type");

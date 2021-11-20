@@ -25,7 +25,7 @@ namespace Rift
 {
 	void FileExplorerPanel::Draw(AST::Tree& ast)
 	{
-		auto& editor = ast.GetUnique<CEditorUnique>();
+		auto& editor = ast.GetStatic<CEditorUnique>();
 		editor.layout.BindNextWindowToNode(CEditorUnique::leftNode);
 
 		if (UI::Begin(
@@ -159,7 +159,7 @@ namespace Rift
 		projectModuleId = Modules::GetProjectId(ast);
 
 		// Create module folders
-		auto modules = ast.MakeView<CModule>();
+		auto modules = ast.Query<CModule>();
 		TMap<AST::Id, Path> moduleFolders;
 		moduleFolders.Reserve(u32(modules.Size()));
 		for (AST::Id moduleId : modules)
@@ -204,7 +204,7 @@ namespace Rift
 		}
 
 		// Create items
-		auto fileTypes = ast.MakeView<CType, CFileRef>();
+		auto fileTypes = ast.Query<CType, CFileRef>();
 		for (AST::Id typeId : fileTypes)
 		{
 			auto& file = fileTypes.Get<CFileRef>(typeId);

@@ -10,42 +10,41 @@
 
 namespace Rift::TypeSystem
 {
-	void OnNewType(AST::Tree::Registry& registry, AST::Id typeId)
-	{
-		if (const CIdentifier* identifier = registry.try_get<const CIdentifier>(typeId))
-		{
-			auto& typeList = registry.ctx<CTypeListUnique>();
-			typeList.types.Insert(identifier->name, typeId);
-		}
-	}
-
-	void OnDeleteType(AST::Tree::Registry& registry, AST::Id typeId)
-	{
-		if (const CIdentifier* identifier = registry.try_get<const CIdentifier>(typeId))
-		{
-			auto& typeList = registry.ctx<CTypeListUnique>();
-			typeList.types.Remove(identifier->name);
-		}
-	}
-
 	void Init(AST::Tree& ast)
 	{
-		auto& typeList = ast.GetOrSetUnique<CTypeListUnique>();
+		auto& typeList = ast.GetOrSetStatic<CTypeListUnique>();
 		typeList.types.Empty();
 
 		// Cache existing types
-		auto onlyTypesView = ast.MakeView<const CType>();
+		auto onlyTypesView = ast.Query<const CType>();
 		typeList.types.Reserve(u32(onlyTypesView.Size()));
 
-		auto typesView = ast.MakeView<const CType, const CIdentifier>();
+		auto typesView = ast.Query<const CType, const CIdentifier>();
 		for (AST::Id typeId : typesView)
 		{
 			const CIdentifier& identifier = typesView.Get<const CIdentifier>(typeId);
 			typeList.types.Insert(identifier.name, typeId);
 		}
 
-		ast.OnConstruct<CType>().connect<&OnNewType>();
-		ast.OnDestroy<CType>().connect<&OnDeleteType>();
+		ast.OnAdd<CType>().Bind([&ast, &typeList](auto ids) {
+			for (AST::Id id : ids)
+			{
+				if (const CIdentifier* identifier = ast.TryGet<const CIdentifier>(id))
+				{
+					typeList.types.Insert(identifier->name, id);
+				}
+			}
+		});
+
+		ast.OnRemove<CType>().Bind([&ast, &typeList](auto ids) {
+			for (AST::Id id : ids)
+			{
+				if (const CIdentifier* identifier = ast.TryGet<const CIdentifier>(id))
+				{
+					typeList.types.Remove(identifier->name);
+				}
+			}
+		});
 	}
 
 	void RunChecks(AST::Tree& ast)

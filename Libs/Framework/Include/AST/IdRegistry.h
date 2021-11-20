@@ -15,6 +15,12 @@ namespace Rift::AST
 		using Index   = Traits::Index;
 		using Version = Traits::Version;
 
+		IdRegistry()                        = default;
+		IdRegistry(IdRegistry&& other)      = default;
+		IdRegistry(const IdRegistry& other) = default;
+		IdRegistry& operator=(IdRegistry&& other) = default;
+		IdRegistry& operator=(const IdRegistry& other) = default;
+
 
 		Id Create();
 		void Create(TArrayView<Id> newIds);
@@ -27,10 +33,32 @@ namespace Rift::AST
 			return entities.Size() - available.Size();
 		}
 
+		template<typename Callback>
+		void Each(Callback cb) const
+		{
+			if (available.IsEmpty())
+			{
+				for (i32 i = entities.Size(); i; ++i)
+				{
+					cb(entities[i]);
+				}
+			}
+			else
+			{
+				for (i32 i = 0; i < entities.Size(); ++i)
+				{
+					const Id id = entities[i];
+					if (Traits::GetIndex(id) == i)
+					{
+						cb(id);
+					}
+				}
+			}
+		}
 
 	private:
 
-		TArray<Version> entities;
+		TArray<Id> entities;
 		TArray<Index> available;
 	};
 }    // namespace Rift::AST

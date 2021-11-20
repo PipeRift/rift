@@ -26,7 +26,7 @@ namespace Rift
 
 		static ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable
 		                             | ImGuiTableFlags_Hideable | ImGuiTableFlags_SizingStretchProp;
-		if (auto* types = ast.TryGetUnique<CTypeListUnique>())
+		if (auto* types = ast.TryGetStatic<CTypeListUnique>())
 		{
 			UI::BeginChild("typesTableChild",
 			    ImVec2(0.f, Math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
@@ -36,7 +36,7 @@ namespace Rift
 				UI::TableSetupColumn("Id");
 				UI::TableHeadersRow();
 
-				auto identifiers = ast.MakeView<CIdentifier>();
+				auto identifiers = ast.Query<CIdentifier>();
 				for (const auto& it : types->types)
 				{
 					UI::TableNextRow();
@@ -102,14 +102,14 @@ namespace Rift
 
 				if (showHierarchy && !filter.IsActive())
 				{
-					auto rootView = ast.MakeView<CParent>(AST::TExclude<CChild>{});
-					for (auto root : rootView)
+					auto roots = ast.Query<CParent>(AST::TExclude<CChild>{});
+					for (auto root : roots)
 					{
 						DrawNode(ast, root, true);
 					}
 
-					auto orphanView = ast.MakeView<CIdentifier>(AST::TExclude<CChild, CParent>{});
-					for (auto orphan : orphanView)
+					auto orphans = ast.Query<CIdentifier>(AST::TExclude<CChild, CParent>{});
+					for (auto orphan : orphans)
 					{
 						DrawNode(ast, orphan, true);
 					}

@@ -10,7 +10,7 @@ void Rift::OptimizationSystem::PruneDisconnected(AST::Tree& ast)
 	TArray<AST::Id> nodesToRemove;
 
 	// TODO: Gather type dangling nodes
-	// auto childView = ast.MakeView<CChild>();
+	// auto childView = ast.Query<CChild>();
 	// ast.Each([&childView, &nodesToRemove](AST::Id id) {
 	//	if (!childView.Has(id))
 	//	{

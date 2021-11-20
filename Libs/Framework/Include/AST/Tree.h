@@ -12,11 +12,31 @@
 #include <Memory/UniquePtr.h>
 #include <Strings/Name.h>
 
+#include <any>
 #include <entt/entity/registry.hpp>
 
 
 namespace Rift::AST
 {
+	struct SortLessStatics
+	{
+		constexpr bool operator()(const OwnPtr& a, const OwnPtr& b) const
+		{
+			return a.GetType() < b.GetType();
+		}
+
+		constexpr bool operator()(Refl::TypeId a, const OwnPtr& b) const
+		{
+			return a < b.GetType();
+		}
+
+		constexpr bool operator()(const OwnPtr& a, Refl::TypeId b) const
+		{
+			return a.GetType() < b;
+		}
+	};
+
+
 	struct NativeTypeIds
 	{
 		AST::Id boolId   = AST::NoId;
@@ -36,16 +56,14 @@ namespace Rift::AST
 	struct Tree
 	{
 		using Registry = entt::basic_registry<Id>;
-		using Pool     = Registry::poly_storage;
 
 	private:
 		IdRegistry idRegistry;
-		Registry registry;
-		TOwnPtr<View<TExclude<>, CChild>> childView;
-		TOwnPtr<View<TExclude<>, CParent>> parentView;
+		mutable TArray<PoolInstance> pools;
+		TOwnPtr<TQuery<TExclude<>, CChild>> childView;
+		TOwnPtr<TQuery<TExclude<>, CParent>> parentView;
 		NativeTypeIds nativeTypes;
-
-		TArray<PoolInstance> pools;
+		TArray<OwnPtr> statics;
 
 
 	public:
@@ -62,180 +80,226 @@ namespace Rift::AST
 		void Destroy(Id id);
 		void Destroy(TArrayView<const Id> ids);
 
-		/**
-		 * Adds Component to an entity (if the entity doesnt have it already)
-		 */
+		// Adds Component to an entity (if the entity doesnt have it already)
 		template<typename Component, typename... Args>
-		decltype(auto) Add(Id node, Args&&... args)
+		decltype(auto) Add(Id id, Args&&... args)
 		{
-			return registry.emplace<Component>(node, Forward<Args>(args)...);
+			Check(IsValid(id));
+			return AssurePool<Component>().Add(id, Forward<Args>(args)...);
 		}
 
-		template<typename... Components>
-		void Add(Id node) requires(sizeof...(Components) > 1)
-		{
-			(Add<Components>(node), ...);
-		}
-
-		/**
-		 * If the entity has Component, it will be replaced
-		 */
-		template<typename Component, typename... Args>
-		decltype(auto) Replace(Id node, Args&&... args)
-		{
-			return registry.replace<Component>(node, Forward<Args>(args)...);
-		}
-
-		/**
-		 * Adds Component to an entity (if the entity already has it, it will be replaced)
-		 */
-		template<typename Component, typename... Args>
-		decltype(auto) Emplace(Id node, Args&&... args)
-		{
-			return registry.emplace_or_replace<Component>(node, Forward<Args>(args)...);
-		}
-
+		// Adds Component to an entity (if the entity doesnt have it already)
 		template<typename... Component>
-		void Remove(const Id node)
+		void Add(Id id) requires(sizeof...(Component) > 1)
 		{
-			registry.remove<Component...>(node);
-		}
-
-		void RemoveAll(const Id node)
-		{
-			registry.remove_all(node);
-		}
-
-		template<typename... Component>
-		decltype(auto) Get(const Id node) const
-		{
-			return registry.get<Component...>(node);
-		}
-
-		template<typename... Component>
-		decltype(auto) Get(const Id node)
-		{
-			return registry.get<Component...>(node);
-		}
-
-		template<typename... Component>
-		decltype(auto) TryGet(const Id node) const
-		{
-			return registry.try_get<Component...>(node);
-		}
-
-		template<typename... Component>
-		decltype(auto) TryGet(const Id node)
-		{
-			return registry.try_get<Component...>(node);
-		}
-
-		template<typename Component, typename... Args>
-		auto& GetOrAdd(const Id node, Args&&... args)
-		{
-			return registry.get_or_emplace<Component>(node, Forward<Args>(args)...);
-		}
-
-
-		template<typename... Component>
-		bool HasAny(Id node) const
-		{
-			return registry.any_of<Component...>(node);
-		}
-
-		template<typename... Component>
-		bool HasAll(Id node) const
-		{
-			return registry.all_of<Component...>(node);
+			Check(IsValid(id));
+			(Add<Component>(id), ...);
 		}
 
 		template<typename Component>
-		bool Has(Id node) const
+		Component& GetOrAdd(Id id)
 		{
-			return HasAny<Component>(node);
-		}
-
-		bool IsValid(Id node) const
-		{
-			return registry.valid(node);
+			Check(IsValid(id));
+			return AssurePool<Component>().GetOrAdd(id);
 		}
 
 
-		template<typename Component, typename... Args>
-		Component& SetUnique(Args&&... args)
+		template<typename Component>
+		void Remove(const Id id)
 		{
-			return registry.set<Component>(std::forward<Args>(args)...);
+			FindPool<Component>()->Remove(id);
 		}
-
-		template<typename Component, typename... Args>
-		Component& GetOrSetUnique(Args&&... args)
+		template<typename... Component>
+		void Remove(const Id id) requires(sizeof...(Component) > 1)
 		{
-			if (Component* existing = TryGetUnique<Component>())
+			(FindPool<Component>()->Remove(id), ...);
+		}
+		template<typename... Component>
+		void Remove(TArrayView<const Id> ids) requires(sizeof...(Component) > 0)
+		{
+			for (Id id : ids)
 			{
-				return *existing;
+				Check(IsValid(id));
 			}
-			return SetUnique<Component>(std::forward<Args>(args)...);
+			(FindPool<Component>()->Remove(ids), ...);
 		}
 
 		template<typename Component>
-		const Component& GetUnique() const
+		Component& Get(const Id id) const
 		{
-			return registry.ctx<const Component>();
+			Check(IsValid(id));
+			auto* const pool = FindPool<Component>();
+			Check(pool);
+			return pool->Get(id);
+		}
+		template<typename... Component>
+		TTuple<Component&...> Get(const Id id) const requires(sizeof...(Component) > 1)
+		{
+			Check(IsValid(id));
+			return std::forward_as_tuple(Get<Component>(id), ...);
+		}
+		template<typename Component>
+		Component* TryGet(const Id id) const
+		{
+			Check(IsValid(id));
+			auto* const pool = FindPool<Component>();
+			return pool ? pool->TryGet(id) : nullptr;
+		}
+		template<typename... Component>
+		TTuple<Component*...> TryGet(const Id id) const requires(sizeof...(Component) > 1)
+		{
+			Check(IsValid(id));
+			return std::forward_as_tuple(TryGet<Component>(id), ...);
+		}
+
+
+		template<typename... Component>
+		bool HasAny(Id id) const
+		{
+			return [id](const auto*... cpool) {
+				return ((cpool && cpool->Has(id)) || ...);
+			}(FindPool<Component>()...);
+		}
+
+		template<typename... Component>
+		bool HasAll(Id id) const
+		{
+			return [id](const auto*... cpool) {
+				return ((cpool && cpool->Has(id)) && ...);
+			}(FindPool<Component>()...);
 		}
 
 		template<typename Component>
-		Component& GetUnique()
+		bool Has(Id id) const
 		{
-			return registry.ctx<Component>();
+			return HasAny<Component>(id);
 		}
 
-		template<typename Component>
-		const Component* TryGetUnique() const
+		bool IsValid(Id id) const
 		{
-			return registry.try_ctx<const Component>();
+			return idRegistry.IsValid(id);
 		}
 
-		template<typename Component>
-		Component* TryGetUnique()
+		bool IsOrphan(const Id id) const
 		{
-			return registry.try_ctx<Component>();
+			for (const auto& pool : pools)
+			{
+				if (pool.instance->Has(id))
+				{
+					return false;
+				}
+			}
+			return true;
 		}
 
-		template<typename Component>
-		bool HasUnique() const
+		template<typename Static, typename... Args>
+		Static& SetStatic(Args&&... args)
 		{
-			return TryGetUnique<const Component>() != nullptr;
+			const Refl::TypeId typeId = Refl::TypeId::Get<Static>();
+
+			// Find static first to replace it
+			i32 index = statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(typeId);
+			if (index != NO_INDEX)
+			{
+				// Found, replace instance
+				OwnPtr& instance = statics[index];
+				instance         = MakeOwned<Static>(std::forward<Args>(args)...);
+				return *instance.GetUnsafe<Static>();
+			}
+
+			// Not found. return new instance
+			index =
+			    statics.AddSorted<SortLessStatics>(MakeOwned<Static>(std::forward<Args>(args)...));
+			return *statics[index].GetUnsafe<Static>();
+		}
+
+		template<typename Static, typename... Args>
+		Static& GetOrSetStatic(Args&&... args)
+		{
+			const Refl::TypeId typeId = Refl::TypeId::Get<Static>();
+			i32 index                 = statics.LowerBound<Refl::TypeId, SortLessStatics>(typeId);
+			if (index != NO_INDEX)
+			{
+				if (typeId != statics[index].GetType())
+				{
+					// Not found, insert sorted
+					statics.Insert(index, MakeOwned<Static>(std::forward<Args>(args)...));
+				}
+				return *statics[index].GetUnsafe<Static>();
+			}
+			// Not found, insert sorted
+			index =
+			    statics.AddSorted<SortLessStatics>(MakeOwned<Static>(std::forward<Args>(args)...));
+			return *statics[index].GetUnsafe<Static>();
+		}
+
+		template<typename Static>
+		Static& GetStatic()
+		{
+			return *TryGetStatic<Static>();
+		}
+		template<typename Static>
+		const Static& GetStatic() const
+		{
+			return *TryGetStatic<Static>();
+		}
+
+		template<typename Static>
+		Static* TryGetStatic()
+		{
+			const i32 index =
+			    statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(Refl::TypeId::Get<Static>());
+			return index != NO_INDEX ? statics[index].GetUnsafe<Static>() : nullptr;
+		}
+		template<typename Static>
+		const Static* TryGetStatic() const
+		{
+			const i32 index =
+			    statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(Refl::TypeId::Get<Static>());
+			return index != NO_INDEX ? statics[index].GetUnsafe<Static>() : nullptr;
+		}
+
+		template<typename Static>
+		bool HasStatic() const
+		{
+			const i32 index =
+			    statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(Refl::TypeId::Get<Static>());
+			return index != NO_INDEX;
 		}
 
 
 		template<typename... Component, typename... Exclude>
-		auto MakeView(TExclude<Exclude...> excluded = {}) const
-		    -> View<TExclude<Exclude...>, std::add_const_t<Component>...>
+		TQuery<TExclude<Exclude...>, std::add_const_t<Component>...> Query(
+		    TExclude<Exclude...> = {}) const
 		{
 			static_assert(sizeof...(Component) > 0, "Exclusion-only views are not supported");
-			return {AssurePool<std::remove_const_t<Component>>()...,
-			    AssurePool<std::remove_const_t<Exclude>>()...};
+			return {
+			    {&AssurePool<std::remove_const_t<Component>>()...}, {&AssurePool<Exclude>()...}};
 		}
 
 		template<typename... Component, typename... Exclude>
-		auto MakeView(TExclude<Exclude...> excluded = {})
-		    -> View<TExclude<Exclude...>, Component...>
+		TQuery<TExclude<Exclude...>, Component...> Query(TExclude<Exclude...> = {})
 		{
 			static_assert(sizeof...(Component) > 0, "Exclusion-only views are not supported");
-			return {AssurePool<std::remove_const_t<Component>>()...,
-			    AssurePool<std::remove_const_t<Exclude>>()...};
+			return {
+			    {&AssurePool<std::remove_const_t<Component>>()...}, {&AssurePool<Exclude>()...}};
 		}
 
 		template<typename Callback>
 		void Each(Callback cb) const
 		{
-			registry.each(cb);
+			idRegistry.Each(cb);
 		}
 
 		template<typename Callback>
 		void EachOrphan(Callback cb) const
 		{
-			registry.orphans(cb);
+			Each([this, &cb](const Id id) {
+				if (IsOrphan(id))
+				{
+					cb(id);
+				}
+			});
 		}
 
 		template<typename... Components>
@@ -246,46 +310,41 @@ namespace Rift::AST
 
 		void Reset()
 		{
-			registry = {};
+			pools.Empty();
+			idRegistry = {};
 			CachePools();
 		}
 
-		View<TExclude<>, CParent>& GetParentView()
+		TQuery<TExclude<>, CParent>& GetParentView()
 		{
 			return *parentView;
 		}
 
-		View<TExclude<>, CChild>& GetChildView()
+		TQuery<TExclude<>, CChild>& GetChildView()
 		{
 			return *childView;
 		}
 
-		const View<TExclude<>, CParent>& GetParentView() const
+		const TQuery<TExclude<>, CParent>& GetParentView() const
 		{
 			return *parentView;
 		}
 
-		const View<TExclude<>, CChild>& GetChildView() const
+		const TQuery<TExclude<>, CChild>& GetChildView() const
 		{
 			return *childView;
 		}
 
 		template<typename Component>
-		auto OnConstruct()
+		TBroadcast<TArrayView<const Id>> OnAdd()
 		{
-			return registry.on_construct<Component>();
+			return AssurePool<Component>().OnAdd();
 		}
 
 		template<typename Component>
-		auto OnDestroy()
+		TBroadcast<TArrayView<const Id>>& OnRemove()
 		{
-			return registry.on_destroy<Component>();
-		}
-
-		template<typename Component>
-		auto OnUpdate()
-		{
-			return registry.on_update<Component>();
+			return AssurePool<Component>().OnRemove();
 		}
 
 		const NativeTypeIds& GetNativeTypes() const
@@ -293,19 +352,10 @@ namespace Rift::AST
 			return nativeTypes;
 		}
 
-		Registry& GetRegistry()
-		{
-			return registry;
-		}
-		const Registry& GetRegistry() const
-		{
-			return registry;
-		}
-
 		template<typename Component>
 		AST::Id GetFirstId() const
 		{
-			auto view = MakeView<Component>();
+			auto view = Query<Component>();
 			if (view.Size() > 0)
 			{
 				return *view.begin();
@@ -316,7 +366,14 @@ namespace Rift::AST
 		// Finds or creates a pool
 		template<typename T>
 		TPool<T>& AssurePool() const;
-		BasePool* FindPool(Refl::TypeId componentId) const;
+
+		Pool* FindPool(Refl::TypeId componentId) const;
+
+		template<typename T>
+		TPool<T>* FindPool() const
+		{
+			return static_cast<TPool<T>*>(FindPool(Refl::TypeId::Get<T>()));
+		}
 
 #pragma endregion ECS API
 
@@ -336,15 +393,9 @@ namespace Rift::AST
 		PoolInstance& pool            = pools[result.first];
 		if (result.second)    // Added a new pool
 		{
-			pool.instance = MakeUnique<TPool<T>>());
+			pool.instance = new TPool<std::remove_const_t<T>>();
 			// TODO: Static inheritance methods
 		}
-		return *static_cast<TPool<T>*>(pool.instance.Get());
-	}
-
-	inline BasePool* Tree::FindPool(Refl::TypeId componentId) const
-	{
-		const i32 index = pools.FindSortedEqual(PoolInstance{componentId});
-		return index != NO_INDEX ? pools[index].instance.Get() : nullptr;
+		return *static_cast<TPool<T>*>(pool.instance);
 	}
 }    // namespace Rift::AST

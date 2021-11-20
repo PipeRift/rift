@@ -42,7 +42,7 @@ namespace Rift
 					T comp;
 					ct.BeginObject();
 					ct.Serialize(comp);
-					ast.Emplace<T>(node, Move(comp));
+					ast.Add<T>(node, Move(comp));
 					ct.Leave();
 				}
 			}
@@ -53,7 +53,7 @@ namespace Rift
 	template<typename T>
 	void WritePool(ASTWriteContext& ct, AST::Tree& ast, const TArray<AST::Id>& nodes)
 	{
-		auto view = ast.MakeView<T>();
+		auto view = ast.Query<T>();
 
 		// FIX: yyjson doesn't seem to take into account stringview length when generating text
 		// Temporarely fixed by caching component name keys

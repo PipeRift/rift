@@ -84,7 +84,7 @@ namespace Rift::Compiler::Cpp
 		Name projectName = Modules::GetProjectName(context.ast);
 		SetProject(code, context, projectName.ToString(), "0.1");
 
-		auto modules = context.ast.MakeView<CModule>();
+		auto modules = context.ast.Query<CModule>();
 		for (AST::Id moduleId : modules)
 		{
 			Name name = Modules::GetModuleName(context.ast, moduleId);

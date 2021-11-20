@@ -189,7 +189,7 @@ namespace Rift
 	{
 		if (UI::CollapsingHeader("Variables", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			auto variableView = ast.MakeView<CVariableDecl>();
+			auto variableView = ast.Query<CVariableDecl>();
 			UI::Indent(10.f);
 			if (auto* children = AST::GetLinked(ast, typeId))
 			{
@@ -231,7 +231,7 @@ namespace Rift
 		                               | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
 		if (UI::CollapsingHeader("Functions", flags))
 		{
-			auto functionView = ast.MakeView<CFunctionDecl>();
+			auto functionView = ast.Query<CFunctionDecl>();
 			UI::Indent(10.f);
 
 			if (auto* children = AST::GetLinked(ast, typeId))
