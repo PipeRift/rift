@@ -1,11 +1,10 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Systems/EditorSystem.h"
-
 #include "Components/CTypeEditor.h"
 #include "Editor.h"
 #include "Files/FileDialog.h"
-#include "Uniques/CEditorUnique.h"
+#include "Statics/SEditor.h"
+#include "Systems/EditorSystem.h"
 #include "Utils/FunctionGraph.h"
 #include "Utils/Properties.h"
 #include "Utils/TypeUtils.h"
@@ -24,7 +23,7 @@ namespace Rift::EditorSystem
 {
 	void OnProjectEditorOpen(AST::Tree& ast)
 	{
-		auto& editor = ast.GetStatic<CEditorUnique>();
+		auto& editor = ast.GetStatic<SEditor>();
 		editor.layout.OnBuild([](auto& builder) {
 			// ==================================== //
 			//          |                           //
@@ -34,11 +33,11 @@ namespace Rift::EditorSystem
 			//          |                           //
 			//          |                           //
 			// ==================================== //
-			builder.Split(builder.GetRootNode(), ImGuiDir_Left, 0.2f, CEditorUnique::leftNode,
-			    CEditorUnique::centralNode);
+			builder.Split(builder.GetRootNode(), ImGuiDir_Left, 0.2f, SEditor::leftNode,
+			    SEditor::centralNode);
 
-			builder.GetNodeLocalFlags(CEditorUnique::leftNode) |= ImGuiDockNodeFlags_AutoHideTabBar;
-			builder.GetNodeLocalFlags(CEditorUnique::centralNode) |= ImGuiDockNodeFlags_CentralNode;
+			builder.GetNodeLocalFlags(SEditor::leftNode) |= ImGuiDockNodeFlags_AutoHideTabBar;
+			builder.GetNodeLocalFlags(SEditor::centralNode) |= ImGuiDockNodeFlags_CentralNode;
 		});
 
 		// TODO: Reseting until we are able to know if the layout was saved before. Reset if it
@@ -83,17 +82,17 @@ namespace Rift::EditorSystem
 	}
 
 	// Root Editor
-	void CreateRootDockspace(CEditorUnique& editor);
+	void CreateRootDockspace(SEditor& editor);
 	void CreateTypeDockspace(CTypeEditor& editor, const char* id);
 	void DrawMenuBar(AST::Tree& ast);
 	void DrawProjectPickerPopup(AST::Tree& ast);
 
 	// Project Editor
 	void DrawProject(AST::Tree& ast);
-	void DrawProjectMenuBar(AST::Tree& ast, CEditorUnique& editorData);
+	void DrawProjectMenuBar(AST::Tree& ast, SEditor& editorData);
 
 	// Type Editor
-	void DrawTypes(AST::Tree& ast, CEditorUnique& editor);
+	void DrawTypes(AST::Tree& ast, SEditor& editor);
 
 
 	void Draw(AST::Tree& ast)
@@ -132,7 +131,7 @@ namespace Rift::EditorSystem
 #endif
 	}
 
-	void CreateRootDockspace(CEditorUnique& editor)
+	void CreateRootDockspace(SEditor& editor)
 	{
 		ZoneScoped;
 		ImGuiDockNodeFlags dockingFlags = ImGuiDockNodeFlags_None;
@@ -243,11 +242,11 @@ namespace Rift::EditorSystem
 	{
 		ZoneScopedN("EditorSystem::DrawProject");
 
-		if (!Ensure(ast.HasStatic<CEditorUnique>()))
+		if (!Ensure(ast.HasStatic<SEditor>()))
 		{
 			return;
 		}
-		auto& editor = ast.GetStatic<CEditorUnique>();
+		auto& editor = ast.GetStatic<SEditor>();
 
 		const auto& path = Modules::GetProjectPath(ast);
 		UI::PushID(Hash<Path>()(path));
@@ -273,7 +272,7 @@ namespace Rift::EditorSystem
 		UI::PopID();
 	}
 
-	void DrawProjectMenuBar(AST::Tree& ast, CEditorUnique& editorData)
+	void DrawProjectMenuBar(AST::Tree& ast, SEditor& editorData)
 	{
 		if (UI::BeginMainMenuBar())
 		{
@@ -390,7 +389,7 @@ namespace Rift::EditorSystem
 		}
 	}
 
-	void DrawTypes(AST::Tree& ast, CEditorUnique& editor)
+	void DrawTypes(AST::Tree& ast, SEditor& editor)
 	{
 		auto typeEditors = ast.Query<CType, CTypeEditor, CFileRef>();
 		for (AST::Id typeId : typeEditors)
@@ -411,7 +410,7 @@ namespace Rift::EditorSystem
 				typeEditor.pendingFocus = false;
 			}
 
-			editor.layout.BindNextWindowToNode(CEditorUnique::centralNode);
+			editor.layout.BindNextWindowToNode(SEditor::centralNode);
 
 			UI::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 			UI::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);

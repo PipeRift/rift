@@ -6,8 +6,8 @@
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CParent.h>
+#include <AST/Statics/STypeList.h>
 #include <AST/Tree.h>
-#include <AST/Uniques/CTypeListUnique.h>
 #include <Framework/Paths.h>
 #include <UI/UI.h>
 

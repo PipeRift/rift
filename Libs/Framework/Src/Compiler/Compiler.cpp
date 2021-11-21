@@ -1,10 +1,9 @@
 // Copyright 2015-2020 Piperift - All rights reserved
-#include "Compiler/Compiler.h"
-
+#include "AST/Statics/SModules.h"
 #include "AST/Systems/LoadSystem.h"
 #include "AST/Systems/TypeSystem.h"
-#include "AST/Uniques/CModulesUnique.h"
 #include "AST/Utils/ModuleUtils.h"
+#include "Compiler/Compiler.h"
 #include "Compiler/CompilerContext.h"
 #include "Compiler/Cpp/CppBackend.h"
 #include "Compiler/Systems/CompileTimeSystem.h"

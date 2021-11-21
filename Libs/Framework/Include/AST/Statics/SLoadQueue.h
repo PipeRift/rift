@@ -15,9 +15,9 @@ namespace Rift
 	};
 
 	// Keeps a list of entities to load from disk
-	struct CLoadQueueUnique : public Struct
+	struct SLoadQueue : public Struct
 	{
-		STRUCT(CLoadQueueUnique, Struct)
+		STRUCT(SLoadQueue, Struct)
 
 		TArray<AST::Id> pendingSyncLoad;
 		TArray<AST::Id> pendingAsyncLoad;

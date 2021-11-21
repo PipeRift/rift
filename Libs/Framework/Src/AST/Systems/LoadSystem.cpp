@@ -1,7 +1,5 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "AST/Systems/LoadSystem.h"
-
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/CFunctionLibraryDecl.h"
@@ -10,10 +8,11 @@
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CType.h"
 #include "AST/Serialization.h"
-#include "AST/Uniques/CLoadQueueUnique.h"
-#include "AST/Uniques/CModulesUnique.h"
-#include "AST/Uniques/CStringLoadUnique.h"
-#include "AST/Uniques/CTypesUnique.h"
+#include "AST/Statics/SLoadQueue.h"
+#include "AST/Statics/SModules.h"
+#include "AST/Statics/SStringLoad.h"
+#include "AST/Statics/STypes.h"
+#include "AST/Systems/LoadSystem.h"
 #include "AST/Utils/ModuleIterator.h"
 #include "AST/Utils/ModuleUtils.h"
 #include "AST/Utils/TypeIterator.h"
@@ -28,8 +27,8 @@ namespace Rift::LoadSystem
 {
 	void Init(AST::Tree& ast)
 	{
-		ast.SetStatic<CLoadQueueUnique>();
-		ast.SetStatic<CStringLoadUnique>();
+		ast.SetStatic<SLoadQueue>();
+		ast.SetStatic<SStringLoad>();
 	}
 
 	void Run(AST::Tree& ast)
@@ -150,7 +149,7 @@ namespace Rift::LoadSystem
 	{
 		ZoneScopedNC("CreateTypesFromPaths", 0x459bd1);
 
-		auto* types = ast.TryGetStatic<CTypesUnique>();
+		auto* types = ast.TryGetStatic<STypes>();
 		if (!types)
 		{
 			return;

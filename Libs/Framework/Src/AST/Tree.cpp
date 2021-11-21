@@ -1,12 +1,11 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "AST/Tree.h"
-
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CNativeDecl.h"
 #include "AST/Components/CType.h"
-#include "AST/Uniques/CModulesUnique.h"
-#include "AST/Uniques/CTypesUnique.h"
+#include "AST/Statics/SModules.h"
+#include "AST/Statics/STypes.h"
+#include "AST/Tree.h"
 #include "Compiler/Cpp/Components/CCppNativeName.h"
 
 
@@ -153,13 +152,13 @@ namespace Rift::AST
 
 		// Copy non-transient unique components
 		// TODO: Use reflection for this
-		if (auto* modulesStatic = other.TryGetStatic<CModulesUnique>())
+		if (auto* modulesStatic = other.TryGetStatic<SModules>())
 		{
-			SetStatic<CModulesUnique>(*modulesStatic);
+			SetStatic<SModules>(*modulesStatic);
 		}
-		if (auto* typesStatic = other.TryGetStatic<CTypesUnique>())
+		if (auto* typesStatic = other.TryGetStatic<STypes>())
 		{
-			SetStatic<CTypesUnique>(*typesStatic);
+			SetStatic<STypes>(*typesStatic);
 		}
 
 		CachePools();
