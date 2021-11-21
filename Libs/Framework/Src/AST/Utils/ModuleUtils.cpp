@@ -1,15 +1,14 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "AST/Utils/ModuleUtils.h"
-
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CModule.h"
 #include "AST/Components/CProject.h"
+#include "AST/Statics/SModules.h"
+#include "AST/Statics/STypes.h"
 #include "AST/Systems/LoadSystem.h"
 #include "AST/Systems/TypeSystem.h"
-#include "AST/Uniques/CModulesUnique.h"
-#include "AST/Uniques/CTypesUnique.h"
+#include "AST/Utils/ModuleUtils.h"
 #include "Framework/Paths.h"
 
 #include <Files/Files.h>
@@ -47,8 +46,8 @@ namespace Rift::Modules
 		}
 
 		AST::Tree ast;
-		ast.SetUnique<CModulesUnique>();
-		ast.SetUnique<CTypesUnique>();
+		ast.SetStatic<SModules>();
+		ast.SetStatic<STypes>();
 		LoadSystem::Init(ast);
 		TypeSystem::Init(ast);
 
@@ -61,7 +60,7 @@ namespace Rift::Modules
 		TArray<String> strings;
 		LoadSystem::LoadFileStrings(ast, projectId, strings);
 		LoadSystem::DeserializeModules(ast, projectId, strings);
-		return ast;
+		return Move(ast);
 	}
 
 	void CloseProject(AST::Tree& ast)

@@ -1,9 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Utils/FunctionGraph.h"
-
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
+#include "Utils/FunctionGraph.h"
 #include "Utils/GraphColors.h"
 #include "Utils/TypeUtils.h"
 
@@ -15,7 +14,7 @@
 #include <AST/Components/CStringLiteral.h>
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Linkage.h>
-#include <AST/Uniques/CTypeListUnique.h>
+#include <AST/Statics/STypeList.h>
 #include <UI/Nodes.h>
 #include <UI/NodesInternal.h>
 #include <UI/NodesMiniMap.h>
@@ -119,8 +118,8 @@ namespace Rift::Graph
 			if (filter.IsActive() || ImGui::TreeNode("Constructors"))
 			{
 				String makeStr{};
-				auto& typeList   = ast.GetUnique<CTypeListUnique>();
-				auto identifiers = ast.MakeView<CIdentifier>();
+				auto& typeList   = ast.GetStatic<STypeList>();
+				auto identifiers = ast.Query<CIdentifier>();
 				for (const auto& type : typeList.types)
 				{
 					if (auto* iden = identifiers.TryGet<CIdentifier>(type.second))
@@ -149,8 +148,8 @@ namespace Rift::Graph
 
 			if (filter.IsActive() || ImGui::TreeNode("Functions"))
 			{
-				auto functions   = ast.MakeView<CFunctionDecl>();
-				auto identifiers = ast.MakeView<CIdentifier>();
+				auto functions   = ast.Query<CFunctionDecl>();
+				auto identifiers = ast.Query<CIdentifier>();
 				for (AST::Id functionId : functions)
 				{
 					if (auto* iden = identifiers.TryGet<CIdentifier>(functionId))
@@ -181,7 +180,7 @@ namespace Rift::Graph
 
 	void DrawFunctionDecls(AST::Tree& ast, TArray<AST::Id>& functionDecls)
 	{
-		auto functions = ast.MakeView<CFunctionDecl>();
+		auto functions = ast.Query<CFunctionDecl>();
 		for (AST::Id functionId : functionDecls)
 		{
 			DrawFunctionDecl(ast, functionId);
@@ -190,8 +189,8 @@ namespace Rift::Graph
 
 	void DrawCalls(AST::Tree& ast, TArray<AST::Id>& children)
 	{
-		auto calls         = ast.MakeView<CCallExpr>();
-		auto functionDecls = ast.MakeView<CFunctionDecl, CIdentifier>();
+		auto calls         = ast.Query<CCallExpr>();
+		auto functionDecls = ast.Query<CFunctionDecl, CIdentifier>();
 		for (AST::Id child : children)
 		{
 			auto* call = calls.TryGet<CCallExpr>(child);
@@ -212,7 +211,7 @@ namespace Rift::Graph
 
 	void DrawLiterals(AST::Tree& ast, TArray<AST::Id>& children)
 	{
-		auto boolLiterals = ast.MakeView<CBoolLiteral>();
+		auto boolLiterals = ast.Query<CBoolLiteral>();
 		for (AST::Id child : children)
 		{
 			if (auto* literal = boolLiterals.TryGet<CBoolLiteral>(child))
@@ -221,7 +220,7 @@ namespace Rift::Graph
 			}
 		}
 
-		auto stringLiterals = ast.MakeView<CStringLiteral>();
+		auto stringLiterals = ast.Query<CStringLiteral>();
 		for (AST::Id child : children)
 		{
 			if (auto* literal = stringLiterals.TryGet<CStringLiteral>(child))
@@ -233,8 +232,8 @@ namespace Rift::Graph
 
 	void DrawStatementLinks(AST::Tree& ast, TArray<AST::Id>& functionDecls)
 	{
-		auto statements = ast.MakeView<CStatement>();
-		auto compounds  = ast.MakeView<CCompoundStmt>();
+		auto statements = ast.Query<CStatement>();
+		auto compounds  = ast.Query<CCompoundStmt>();
 		for (AST::Id functionId : functionDecls)
 		{
 			TArray<AST::Id>* functionChildren = AST::GetLinked(ast, functionId);
@@ -297,10 +296,10 @@ namespace Rift::Graph
 			}
 
 			TArray<AST::Id> functions;
-			auto functionsView = ast.MakeView<CFunctionDecl>();
+			auto functionsQuery = ast.Query<CFunctionDecl>();
 			for (AST::Id childId : *children)
 			{
-				if (functionsView.Has(childId))
+				if (functionsQuery.Has(childId))
 				{
 					functions.Add(childId);
 				}

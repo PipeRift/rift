@@ -11,7 +11,6 @@ rift_target_define_platform(Rift)
 rift_target_shared_output_directory(Rift)
 target_link_libraries(Rift PUBLIC
     Rift::Core
-    EnTT
 )
 
 install(TARGETS Rift

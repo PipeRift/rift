@@ -3,110 +3,289 @@
 
 #include "AST/Types.h"
 
-#include <entt/entity/view.hpp>
-
 
 namespace Rift::AST
 {
+	namespace Internal
+	{
+		template<typename PoolIt, sizet allOf, sizet noneOf>
+		class ViewIterator
+		{
+			static constexpr sizet i = sizeof(PoolIt);
+
+			PoolIt first;
+			PoolIt last;
+			PoolIt it;
+			std::array<const Pool*, allOf> pools;
+			std::array<const Pool*, noneOf> excluded;
+
+
+		public:
+			using iterator_type     = PoolIt;
+			using difference_type   = typename std::iterator_traits<PoolIt>::difference_type;
+			using value_type        = typename std::iterator_traits<PoolIt>::value_type;
+			using pointer           = typename std::iterator_traits<PoolIt>::pointer;
+			using reference         = typename std::iterator_traits<PoolIt>::reference;
+			using iterator_category = std::bidirectional_iterator_tag;
+
+			ViewIterator() : first{}, last{}, it{}, pools{}, excluded{} {}
+
+			ViewIterator(PoolIt from, PoolIt to, PoolIt curr, std::array<const Pool*, allOf> pools,
+			    std::array<const Pool*, noneOf> excluded)
+			    : first{from}, last{to}, it{curr}, pools{pools}, excluded{excluded}
+			{
+				if (it != last && !IsValid())
+				{
+					++(*this);
+				}
+			}
+
+			ViewIterator& operator++()
+			{
+				while (++it != last && !IsValid())
+					;
+				return *this;
+			}
+
+			ViewIterator operator++(int)
+			{
+				Iterator orig = *this;
+				return ++(*this), orig;
+			}
+
+			ViewIterator& operator--()
+			{
+				while (--it != first && !IsValid())
+					;
+				return *this;
+			}
+
+			ViewIterator operator--(int)
+			{
+				Iterator orig = *this;
+				return operator--(), orig;
+			}
+
+			[[nodiscard]] bool operator==(const ViewIterator& other) const
+			{
+				return other.it == it;
+			}
+
+			[[nodiscard]] bool operator!=(const ViewIterator& other) const
+			{
+				return !(*this == other);
+			}
+
+			[[nodiscard]] pointer operator->() const
+			{
+				return &*it;
+			}
+
+			[[nodiscard]] reference operator*() const
+			{
+				return *operator->();
+			}
+
+		private:
+			bool IsValid() const
+			{
+				const Id id = *it;
+
+				const bool included = std::apply(
+				    [id](const auto*... curr) {
+					return (curr->Has(id) && ...);
+				    },
+				    pools);
+
+				return included
+				    && std::apply(
+				        [id](const auto*... curr) {
+					return (!curr->Has(id) && ...);
+				        },
+				        excluded);
+			}
+		};
+	}    // namespace Internal
+
+
+	struct BaseView
+	{
+	private:
+		mutable const Pool* iterablePool;
+	};
+
+
 	template<typename...>
-	struct View;
+	struct TQuery;
 
 
 	template<typename... Exclude, typename... Component>
-	struct View<TExclude<Exclude...>, Component...>
+	struct TQuery<TExclude<Exclude...>, Component...> : public BaseView
 	{
-		using EnTTView        = entt::basic_view<Id, TExclude<Exclude...>, Component...>;
-		using Iterator        = typename EnTTView::iterator;
-		using ReverseIterator = typename EnTTView::reverse_iterator;
+		template<typename C>
+		using Mut = std::remove_const_t<C>;
+
+		using Iterator =
+		    Internal::ViewIterator<Pool::Iterator, sizeof...(Component) - 1u, sizeof...(Exclude)>;
+		using ReverseIterator = Internal::ViewIterator<Pool::ReverseIterator,
+		    sizeof...(Component) - 1u, sizeof...(Exclude)>;
 
 	private:
-		EnTTView view;
+		const TTuple<TPool<Mut<Component>>*...> pools;
+		const TTuple<TPool<Exclude>*...> excluded;
+		mutable const Pool* iterablePool;
 
 
 	public:
-		View(EnTTView view) : view(view) {}
+		TQuery(TTuple<TPool<Mut<Component>>*...> pools, TTuple<TPool<Exclude>*...> excluded = {})
+		    : pools{pools}, excluded{excluded}, iterablePool{GetCandidateIterablePool()}
+		{}
 
 		Iterator begin() const
 		{
-			return view.begin();
+			return {iterablePool->begin(), iterablePool->end(), iterablePool->begin(),
+			    GetSecondaryPoolsArray(), GetExcludedPoolsArray()};
 		}
 
 		Iterator end() const
 		{
-			return view.end();
+			return {iterablePool->begin(), iterablePool->end(), iterablePool->end(),
+			    GetSecondaryPoolsArray(), GetExcludedPoolsArray()};
 		}
 
 		ReverseIterator rbegin() const
 		{
-			return view.rbegin();
+			return {iterablePool->rbegin(), iterablePool->rend(), iterablePool->rbegin(),
+			    GetSecondaryPoolsArray(), GetExcludedPoolsArray()};
 		}
 
 		ReverseIterator rend() const
 		{
-			return view.rend();
+			return {iterablePool->rbegin(), iterablePool->rend(), iterablePool->rend(),
+			    GetSecondaryPoolsArray(), GetExcludedPoolsArray()};
 		}
 
 		Id Front() const
 		{
-			return view.front();
+			const auto it = begin();
+			return it != end() ? *it : AST::NoId;
 		}
 
 		Id Back() const
 		{
-			return view.back();
+			const auto it = rbegin();
+			return it != rend() ? *it : AST::NoId;
 		}
 
-		Iterator Find(const Id node) const
+		Iterator Find(const Id id) const
 		{
-			return view.find(node);
+			const auto it = Iterator{iterablePool->begin(), iterablePool->end(),
+			    iterablePool->find(id), GetSecondaryPoolsArray(), GetExcludedPoolsArray()};
+			return (it != end() && *it == id) ? it : end();
 		}
 
 		template<typename Func>
 		void Each(Func func) const
 		{
-			view.each(func);
+			((GetPool<Component>(pools) == iterableView ? Traverse<Component>(Move(func)) : void()),
+			    ...)
 		}
 
-		template<typename Comp, typename Func>
+		template<typename C, typename Func>
 		void Each(Func func) const
 		{
-			view.template each<Comp>(func);
+			Use<C>();
+			Traverse<Comp>(Move(func));
 		}
 
-		bool Has(const Id node) const
+		bool Has(Id id) const
 		{
-			return view.contains(node);
+			return (GetPool<Component>()->Has(id) && ...)
+			    && (!GetExcluded<Exclude>()->Has(id) && ...);
 		}
 
-		template<typename... Comp>
-		decltype(auto) Get(const Id node) const
+		template<typename C>
+		C& Get(Id id) const
 		{
-			return view.template get<Comp...>(node);
+			return GetPool<C>()->Get(id);
 		}
 
-		template<typename Comp>
-		Comp* TryGet(const Id node)
+		template<typename C>
+		C* TryGet(Id id)
 		{
-			if (Has(node))
+			return GetPool<C>()->TryGet(id);
+		}
+
+		template<typename C>
+		const C* TryGet(Id id) const
+		{
+			return GetPool<C>()->TryGet(id);
+		}
+
+		// @brief Forces the type to use to drive iterations
+		template<typename C>
+		void Use() const
+		{
+			iterableView = GetPool<C>(pools);
+		}
+
+		i32 Size() const
+		{
+			static_assert(sizeof...(Component) == 1 && sizeof...(Exclude) == 0,
+			    "Can only get the size of a single component view.");
+			return GetPool<Component...>()->Size();
+		}
+
+	private:
+		template<typename T>
+		TPool<Mut<T>>* GetPool() const
+		{
+			return std::get<TPool<Mut<T>>*>(pools);
+		}
+		template<typename T>
+		TPool<T>* GetExcluded() const
+		{
+			return std::get<TPool<Mut<T>>*>(excluded);
+		}
+
+		const Pool* GetCandidateIterablePool() const
+		{
+			// Find smallest pool
+			return (std::min)({static_cast<const Pool*>(GetPool<Component>())...},
+			    [](const auto* lhs, const auto* rhs) {
+				return lhs->Size() < rhs->Size();
+			});
+		}
+
+		auto GetSecondaryPoolsArray() const
+		{
+			std::size_t i = 0;
+			std::array<const Pool*, sizeof...(Component) - 1u> other{};
+
+			(static_cast<void>(std::get<TPool<Mut<Component>>*>(pools) == iterablePool
+			                       ? void()
+			                       : void(other[i++] = std::get<TPool<Mut<Component>>*>(pools))),
+			    ...);
+			return other;
+		}
+
+		auto GetExcludedPoolsArray() const
+		{
+			return std::array<const Pool*, sizeof...(Exclude)>{
+			    std::get<TPool<Exclude>*>(excluded)...};
+		}
+
+		template<typename C, typename Func>
+		void Traverse(Func func) const
+		{
+			for (const auto id : &static_cast<const Pool*>(GetPool<C>()))
 			{
-				return &view.template get<Comp>(node);
+				if (((IsSame<C, Component> || GetPool<Component>()->Has(id)) && ...)
+				    && (!GetExcluded<Exclude>()->Has(id) && ...))
+				{
+					std::apply(func, id);
+				}
 			}
-			return nullptr;
-		}
-
-		template<typename Comp>
-		const Comp* TryGet(const Id node) const
-		{
-			if (Has(node))
-			{
-				return &view.template get<Comp>(node);
-			}
-			return nullptr;
-		}
-
-		sizet Size() const
-		{
-			return view.size();
 		}
 	};
 }    // namespace Rift::AST

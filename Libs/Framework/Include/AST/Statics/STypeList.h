@@ -16,9 +16,9 @@ namespace Rift
 	};
 
 	// Keeps a list of entities to load from disk
-	struct CTypeListUnique : public Struct
+	struct STypeList : public Struct
 	{
-		STRUCT(CTypeListUnique, Struct)
+		STRUCT(STypeList, Struct)
 
 		TMap<Name, AST::Id> types;
 	};

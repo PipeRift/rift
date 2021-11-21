@@ -15,9 +15,9 @@
 
 namespace Rift
 {
-	struct CEditorUnique : public Struct
+	struct SEditor : public Struct
 	{
-		STRUCT(CEditorUnique, Struct)
+		STRUCT(SEditor, Struct)
 
 		ImGuiID dockspaceID = 0;
 		DockSpaceLayout layout;
@@ -36,6 +36,6 @@ namespace Rift
 		bool skipFrameAfterMenu = false;
 	};
 
-	inline const Name CEditorUnique::leftNode{"leftNode"};
-	inline const Name CEditorUnique::centralNode{"centralNode"};
+	inline const Name SEditor::leftNode{"leftNode"};
+	inline const Name SEditor::centralNode{"centralNode"};
 }    // namespace Rift

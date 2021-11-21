@@ -9,9 +9,9 @@
 namespace Rift
 {
 	// Contains loaded string data from disk
-	struct CStringLoadUnique : public Struct
+	struct SStringLoad : public Struct
 	{
-		STRUCT(CStringLoadUnique, Struct)
+		STRUCT(SStringLoad, Struct)
 
 		// This buffers are always in sync with size
 		// They bind by array index an Id, path and loaded string

@@ -1,7 +1,5 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "AST/Systems/LoadSystem.h"
-
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/CFunctionLibraryDecl.h"
@@ -10,10 +8,11 @@
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CType.h"
 #include "AST/Serialization.h"
-#include "AST/Uniques/CLoadQueueUnique.h"
-#include "AST/Uniques/CModulesUnique.h"
-#include "AST/Uniques/CStringLoadUnique.h"
-#include "AST/Uniques/CTypesUnique.h"
+#include "AST/Statics/SLoadQueue.h"
+#include "AST/Statics/SModules.h"
+#include "AST/Statics/SStringLoad.h"
+#include "AST/Statics/STypes.h"
+#include "AST/Systems/LoadSystem.h"
 #include "AST/Utils/ModuleIterator.h"
 #include "AST/Utils/ModuleUtils.h"
 #include "AST/Utils/TypeIterator.h"
@@ -28,8 +27,8 @@ namespace Rift::LoadSystem
 {
 	void Init(AST::Tree& ast)
 	{
-		ast.SetUnique<CLoadQueueUnique>();
-		ast.SetUnique<CStringLoadUnique>();
+		ast.SetStatic<SLoadQueue>();
+		ast.SetStatic<SStringLoad>();
 	}
 
 	void Run(AST::Tree& ast)
@@ -83,7 +82,7 @@ namespace Rift::LoadSystem
 		ZoneScopedNC("ScanTypes", 0x459bd1);
 
 		pathsByModule.Empty(false);
-		auto modulesView = ast.MakeView<CModule>();
+		auto modulesView = ast.Query<CModule>();
 
 		// Cache module paths in a Set
 		TSet<Path> modulePaths;
@@ -114,7 +113,7 @@ namespace Rift::LoadSystem
 		ZoneScopedNC("CreateModulesFromPaths", 0x459bd1);
 
 		// Remove existing Modules
-		auto modulesView = ast.MakeView<CModule, CFileRef>();
+		auto modulesView = ast.Query<CModule, CFileRef>();
 		paths.RemoveIfSwap([&modulesView](const Path& path) {
 			bool moduleExists = false;
 			for (AST::Id otherId : modulesView)
@@ -131,7 +130,7 @@ namespace Rift::LoadSystem
 
 
 		ids.Resize(paths.Size());
-		ast.Create(ids.begin(), ids.end());
+		ast.Create(ids);
 
 		for (i32 i = 0; i < ids.Size(); ++i)
 		{
@@ -150,7 +149,7 @@ namespace Rift::LoadSystem
 	{
 		ZoneScopedNC("CreateTypesFromPaths", 0x459bd1);
 
-		auto* types = ast.TryGetUnique<CTypesUnique>();
+		auto* types = ast.TryGetStatic<STypes>();
 		if (!types)
 		{
 			return;
@@ -176,7 +175,7 @@ namespace Rift::LoadSystem
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
 			typeIds.Resize(modulePaths.paths.Size());
-			ast.Create(typeIds.begin(), typeIds.end());
+			ast.Create(typeIds);
 
 			for (i32 i = 0; i < typeIds.Size(); ++i)
 			{
@@ -203,7 +202,7 @@ namespace Rift::LoadSystem
 
 		strings.Resize(nodes.Size());
 
-		auto filesView = ast.MakeView<CFileRef>();
+		auto filesView = ast.Query<CFileRef>();
 		for (i32 i = 0; i < nodes.Size(); ++i)
 		{
 			if (auto* file = filesView.TryGet<CFileRef>(nodes[i])) [[likely]]
@@ -239,7 +238,7 @@ namespace Rift::LoadSystem
 			ct.Next("name", name);
 			if (!name.empty())
 			{
-				ast.Emplace<CIdentifier>(moduleIds[i], name);
+				ast.Add<CIdentifier>(moduleIds[i], {name});
 			}
 		}
 	}
@@ -272,7 +271,7 @@ namespace Rift::LoadSystem
 			ct.Next("name", name);
 			if (!name.empty())
 			{
-				ast.Emplace<CIdentifier>(entity, name);
+				ast.Add<CIdentifier>(entity, {name});
 			}
 		}
 	}

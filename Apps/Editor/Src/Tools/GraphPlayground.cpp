@@ -1,9 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Tools/GraphPlayground.h"
-
 #include "DockSpaceLayout.h"
-#include "Uniques/CEditorUnique.h"
+#include "Statics/SEditor.h"
+#include "Tools/GraphPlayground.h"
 #include "Utils/FunctionGraph.h"
 
 #include <UI/Nodes.h>
@@ -21,7 +20,7 @@ namespace Rift
 			return;
 		}
 
-		layout.BindNextWindowToNode(CEditorUnique::centralNode);
+		layout.BindNextWindowToNode(SEditor::centralNode);
 		if (UI::Begin("Graph Playground", &open))
 		{
 			Graph::PushNodeStyle();

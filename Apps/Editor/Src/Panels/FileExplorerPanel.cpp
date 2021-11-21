@@ -1,11 +1,10 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Panels/FileExplorerPanel.h"
-
 #include "Editor.h"
+#include "Panels/FileExplorerPanel.h"
+#include "Statics/SEditor.h"
 #include "UI/Style.h"
 #include "UI/UI.h"
-#include "Uniques/CEditorUnique.h"
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CFileRef.h>
@@ -25,8 +24,8 @@ namespace Rift
 {
 	void FileExplorerPanel::Draw(AST::Tree& ast)
 	{
-		auto& editor = ast.GetUnique<CEditorUnique>();
-		editor.layout.BindNextWindowToNode(CEditorUnique::leftNode);
+		auto& editor = ast.GetStatic<SEditor>();
+		editor.layout.BindNextWindowToNode(SEditor::leftNode);
 
 		if (UI::Begin(
 		        "File Explorer", &bOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar))
@@ -159,7 +158,7 @@ namespace Rift
 		projectModuleId = Modules::GetProjectId(ast);
 
 		// Create module folders
-		auto modules = ast.MakeView<CModule>();
+		auto modules = ast.Query<CModule>();
 		TMap<AST::Id, Path> moduleFolders;
 		moduleFolders.Reserve(u32(modules.Size()));
 		for (AST::Id moduleId : modules)
@@ -204,7 +203,7 @@ namespace Rift
 		}
 
 		// Create items
-		auto fileTypes = ast.MakeView<CType, CFileRef>();
+		auto fileTypes = ast.Query<CType, CFileRef>();
 		for (AST::Id typeId : fileTypes)
 		{
 			auto& file = fileTypes.Get<CFileRef>(typeId);

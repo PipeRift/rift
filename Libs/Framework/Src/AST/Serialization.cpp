@@ -39,10 +39,16 @@ namespace Rift
 
 				if (ct.EnterNext(key))
 				{
-					T comp;
 					ct.BeginObject();
-					ct.Serialize(comp);
-					ast.Emplace<T>(node, Move(comp));
+					if constexpr (!IsEmpty<T>())
+					{
+						T& comp = ast.GetOrAdd<T>(node);
+						ct.Serialize(comp);
+					}
+					else if (!ast.Has<T>(node))
+					{
+						ast.Add<T>(node);
+					}
 					ct.Leave();
 				}
 			}
@@ -53,7 +59,7 @@ namespace Rift
 	template<typename T>
 	void WritePool(ASTWriteContext& ct, AST::Tree& ast, const TArray<AST::Id>& nodes)
 	{
-		auto view = ast.MakeView<T>();
+		auto view = ast.Query<T>();
 
 		// FIX: yyjson doesn't seem to take into account stringview length when generating text
 		// Temporarely fixed by caching component name keys
@@ -107,7 +113,7 @@ namespace Rift
 		}
 
 		// Create all non-root entities
-		ast.Create(ASTIds.begin() + maxSize, ASTIds.end());
+		ast.Create({ASTIds.Data() + maxSize, ASTIds.Data() + ASTIds.Size()});
 
 		// Next("roots", roots); // Not needed
 		if (EnterNext("components"))
