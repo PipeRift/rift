@@ -31,7 +31,7 @@ struct EmptyComponent
 
 struct NonEmptyComponent
 {
-	float a = 0.f;
+	i32 a = 0;
 };
 
 
@@ -67,8 +67,32 @@ go_bandit([]() {
 			AssertThat(ast.TryGet<NonEmptyComponent>(id), Equals(nullptr));
 		});
 
-		xit("Can add many components", [&]() {});
-		xit("Can remove many components", [&]() {});
+		it("Can add many components", [&]() {
+			AST::Tree ast;
+			TArray<AST::Id> ids{3};
+			ast.Create(ids);
+			ast.Add<NonEmptyComponent>(ids, {2});
+
+			for (AST::Id id : ids)
+			{
+				auto* data = ast.TryGet<NonEmptyComponent>(id);
+				AssertThat(data, !Equals(nullptr));
+				AssertThat(data->a, Equals(2));
+			}
+		});
+		it("Can remove many components", [&]() {
+			AST::Tree ast;
+			TArray<AST::Id> ids{3};
+			ast.Create(ids);
+			ast.Add<NonEmptyComponent>(ids, {2});
+
+			TArrayView<AST::Id> firstTwo{ids.Data(), ids.Data() + 2};
+			ast.Remove<NonEmptyComponent>(firstTwo);
+
+			AssertThat(ast.TryGet<NonEmptyComponent>(ids[0]), Equals(nullptr));
+			AssertThat(ast.TryGet<NonEmptyComponent>(ids[1]), Equals(nullptr));
+			AssertThat(ast.TryGet<NonEmptyComponent>(ids[2]), !Equals(nullptr));
+		});
 
 		it("Components are removed after node is deleted", [&]() {
 			AST::Tree ast;
@@ -82,6 +106,32 @@ go_bandit([]() {
 			AssertThat(ast.TryGet<EmptyComponent>(id), Equals(nullptr));
 			AssertThat(ast.Has<NonEmptyComponent>(id), Is().False());
 			AssertThat(ast.TryGet<NonEmptyComponent>(id), Equals(nullptr));
+		});
+
+		it("Components keep state", [&]() {
+			AST::Tree ast;
+			AST::Id id = ast.Create();
+			ast.Add<NonEmptyComponent>(id, {2});
+			AssertThat(ast.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
+			AssertThat(ast.Get<NonEmptyComponent>(id).a, Equals(2));
+		});
+
+		it("Can copy registry", []() {
+			AST::Tree asta;
+
+			AST::Id id = asta.Create();
+			asta.Add<EmptyComponent, NonEmptyComponent>(id);
+			AST::Id id2 = asta.Create();
+			asta.Add<NonEmptyComponent>(id2, {2});
+
+			AST::Tree astb;
+			astb.CopyFrom(asta);
+			AssertThat(astb.Has<EmptyComponent>(id), Is().True());
+			AssertThat(astb.TryGet<EmptyComponent>(id), !Equals(nullptr));
+			AssertThat(astb.Has<NonEmptyComponent>(id), Is().True());
+
+			// Holds component values
+			AssertThat(astb.Get<NonEmptyComponent>(id2).a, Equals(2));
 		});
 	});
 });

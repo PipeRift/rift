@@ -29,6 +29,11 @@ namespace Rift::AST
 		{
 			Super::in_place_pop(id, nullptr);
 		}
+
+		void Reserve(sizet capacity)
+		{
+			Super::reserve(capacity);
+		}
 	};
 
 
@@ -41,205 +46,6 @@ namespace Rift::AST
 		static_assert(AllocatorTraits::propagate_on_container_move_assignment::value);
 		using Chunk = T*;
 
-	private:
-
-		STLAllocator<T, Allocator> allocator;
-		TArray<Chunk> chunks;
-
-
-	public:
-		T* Get(sizet index) const
-		{
-			return chunks[GetChunk(index)] + GetOffset(index);
-		}
-
-		void Reserve(sizet size)
-		{
-			const i32 neededChunks = GetChunk(size - 1) + 1;
-			if (neededChunks <= chunks.Size())    // There are enough buckets
-			{
-				return;
-			}
-
-			chunks.Reserve(neededChunks);
-			while (chunks.Size() < neededChunks)
-			{
-				chunks.Add(AllocatorTraits::allocate(allocator, chunkSize));
-			}
-		}
-
-		// Release chunks to an specific size. No destructors are called
-		void Release(sizet size)
-		{
-			const i32 usedChunks = i32(Size() / chunkSize);
-			if (usedChunks >= chunks.Size())
-			{
-				return;
-			}
-
-			for (auto pos = usedChunks; pos < chunks.Size(); ++pos)
-			{
-				AllocatorTraits::deallocate(allocator, chunks[pos], chunkSize);
-			}
-			chunks.RemoveLast(chunks.Size() - usedChunks);
-		}
-
-		// Release chunks to an specific size. No destructors are called
-		void Reset()
-		{
-			for (Chunk chunk : chunks)
-			{
-				AllocatorTraits::deallocate(allocator, chunk, chunkSize);
-			}
-			chunks.Empty();
-		}
-
-		template<typename... Args>
-		T* Push(sizet index, Args&&... args)
-		{
-			CheckMsg(index < (chunks.Size() * chunkSize), "Out of bounds index");
-			T* instance = chunks[GetChunk(index)] + GetOffset(index);
-			if constexpr (std::is_aggregate_v<T>)
-			{
-				AllocatorTraits::construct(allocator, instance, T{std::forward<Args>(args)...});
-			}
-			else
-			{
-				AllocatorTraits::construct(allocator, instance, std::forward<Args>(args)...);
-			}
-			return instance;
-		}
-
-		void PopSwap(sizet index, sizet last)
-		{
-			T& item     = chunks[GetChunk(index)][GetOffset(index)];
-			T& lastItem = chunks[GetChunk(last)][GetOffset(last)];
-			Swap(item, lastItem);
-			AllocatorTraits::destroy(allocator, &lastItem);
-		}
-		void Pop(sizet index)
-		{
-			T& item = chunks[GetChunk(index)][GetOffset(index)];
-			AllocatorTraits::destroy(allocator, &item);
-		}
-
-		static i32 GetChunk(sizet index)
-		{
-			return i32(index / chunkSize);
-		}
-
-		static sizet GetOffset(sizet index)
-		{
-			return index & (chunkSize - 1);
-		}
-	};
-
-
-	template<typename T, typename Allocator>
-		requires(IsEmpty<T>())
-	struct TPoolData<T, Allocator>
-	{
-	public:
-		T* Get(sizet index) const
-		{
-			return nullptr;
-		}
-		void Reserve(sizet size) {}
-		void Release(sizet size) {}
-		void Reset() {}
-		T* Push(sizet index)
-		{
-			return nullptr;
-		}
-		void PopSwap(sizet index, sizet last) {}
-		void Pop(sizet index) {}
-	};
-
-
-	struct Pool
-	{
-		enum class DeletionPolicy : u8
-		{
-			Swap,
-			InPlace
-		};
-
-		using Index = IdTraits<Id>::Index;
-
-		using Iterator        = TPoolSet<>::iterator;
-		using ReverseIterator = TPoolSet<>::reverse_iterator;
-
-
-	protected:
-		TPoolSet<> set;
-		DeletionPolicy deletionPolicy;
-
-		TBroadcast<TArrayView<const Id>> onAdd;
-		TBroadcast<TArrayView<const Id>> onRemove;
-
-
-		Pool(DeletionPolicy inDeletionPolicy)
-		    : set{entt::deletion_policy(u8(inDeletionPolicy))}, deletionPolicy{inDeletionPolicy}
-		{}
-
-	public:
-		virtual ~Pool() {}
-
-		bool Has(Id id) const
-		{
-			return set.contains(id);
-		}
-
-		virtual bool Remove(Id id)                          = 0;
-		virtual void RemoveUnsafe(Id id)                    = 0;
-		virtual i32 Remove(TArrayView<const Id> ids)        = 0;
-		virtual void RemoveUnsafe(TArrayView<const Id> ids) = 0;
-
-		sizet Size() const
-		{
-			return set.size();
-		}
-
-		Iterator begin() const
-		{
-			return set.begin();
-		}
-
-		Iterator end() const
-		{
-			return set.end();
-		}
-
-		ReverseIterator rbegin() const
-		{
-			return set.rbegin();
-		}
-
-		ReverseIterator rend() const
-		{
-			return set.rend();
-		}
-
-		TBroadcast<TArrayView<const Id>>& OnAdd()
-		{
-			return onAdd;
-		}
-
-		TBroadcast<TArrayView<const Id>>& OnRemove()
-		{
-			return onRemove;
-		}
-	};
-
-
-	template<typename T, typename Allocator = Memory::DefaultAllocator>
-	struct TPool : public Pool
-	{
-	private:
-		TPoolData<T, Allocator> data;
-
-
-	public:
 		template<typename Value>
 		struct TPoolIterator final
 		{
@@ -251,8 +57,8 @@ namespace Rift::AST
 
 			TPoolIterator() = default;
 
-			TPoolIterator(Value* const* chunk, const difference_type index)
-			    : chunk{chunk}, index{index}
+			TPoolIterator(Value* const* chunks, const difference_type index)
+			    : chunks{chunks}, index{index}
 			{}
 
 			TPoolIterator& operator++()
@@ -306,8 +112,8 @@ namespace Rift::AST
 
 			reference operator[](const difference_type value) const
 			{
-				const auto pos = size_type(index - value - 1);
-				return (*chunk)[GetChunk(pos)][GetOffset(pos)];
+				const sizet pos{index - value - 1};
+				return (*chunks)[GetChunk(pos)][GetOffset(pos)];
 			}
 
 			bool operator==(const TPoolIterator& other) const
@@ -327,28 +133,18 @@ namespace Rift::AST
 
 			pointer operator->() const
 			{
-				const size_type pos{index - 1u};
-				return std::addressof((*chunk)[GetChunk(pos)][GetOffset(pos)]);
+				const sizet pos{index - 1u};
+				return std::addressof(chunks[GetChunk(pos)][GetOffset(pos)]);
 			}
 
 			reference operator*() const
 			{
-				const size_type pos{index - 1u};
-				return (*chunk)[GetChunk(pos)][GetOffset(pos)];
-			}
-
-			static i32 GetChunk(sizet index)
-			{
-				return TPoolData<T>::GetChunk(index);
-			}
-
-			static sizet GetOffset(sizet index)
-			{
-				return TPoolData<T>::GetOffset(index);
+				const sizet pos{index - 1u};
+				return chunks[GetChunk(pos)][GetOffset(pos)];
 			}
 
 		private:
-			Value* const* chunk;
+			Value* const* chunks;
 			difference_type index;
 		};
 
@@ -359,6 +155,289 @@ namespace Rift::AST
 		using ReverseIterator = std::reverse_iterator<Iterator>;
 		/*! @brief Constant reverse iterator type. */
 		using ConstReverseIterator = std::reverse_iterator<ConstIterator>;
+
+
+	private:
+
+		STLAllocator<T, Allocator> allocator;
+		TArray<Chunk> chunks;
+		sizet size = 0;
+
+
+	public:
+		T* Get(sizet index) const
+		{
+			return chunks[GetChunk(index)] + GetOffset(index);
+		}
+
+		void Reserve(sizet capacity)
+		{
+			const i32 neededChunks = GetChunk(capacity - 1) + 1;
+			if (neededChunks <= chunks.Size())    // There are enough buckets
+			{
+				return;
+			}
+
+			chunks.Reserve(neededChunks);
+			while (chunks.Size() < neededChunks)
+			{
+				chunks.Add(AllocatorTraits::allocate(allocator, chunkSize));
+			}
+		}
+
+		// Release chunks to an specific size. No destructors are called
+		void Release(sizet newSize)
+		{
+			CheckMsg(newSize >= size, "Cant erelease memory below used size");
+			const i32 usedChunks = i32(newSize / chunkSize);
+			if (usedChunks >= chunks.Size())
+			{
+				return;
+			}
+
+			for (auto pos = usedChunks; pos < chunks.Size(); ++pos)
+			{
+				AllocatorTraits::deallocate(allocator, chunks[pos], chunkSize);
+			}
+			chunks.RemoveLast(chunks.Size() - usedChunks);
+		}
+
+		// Release chunks to an specific size. No destructors are called
+		void Reset()
+		{
+			for (Chunk chunk : chunks)
+			{
+				AllocatorTraits::deallocate(allocator, chunk, chunkSize);
+			}
+			chunks.Empty();
+		}
+
+		T* Push(sizet index, T&& value)
+		{
+			CheckMsg(index < (chunks.Size() * chunkSize), "Out of bounds index");
+			++size;
+			T* instance = chunks[GetChunk(index)] + GetOffset(index);
+			if constexpr (std::is_aggregate_v<T>)
+			{
+				AllocatorTraits::construct(allocator, instance, Move(value));
+			}
+			else
+			{
+				AllocatorTraits::construct(allocator, instance, Move(value));
+			}
+			return instance;
+		}
+
+		T* Push(sizet index, const T& value)
+		{
+			CheckMsg(index < (chunks.Size() * chunkSize), "Out of bounds index");
+			++size;
+			T* instance = chunks[GetChunk(index)] + GetOffset(index);
+			if constexpr (std::is_aggregate_v<T>)
+			{
+				AllocatorTraits::construct(allocator, instance, value);
+			}
+			else
+			{
+				AllocatorTraits::construct(allocator, instance, value);
+			}
+			return instance;
+		}
+
+		void PopSwap(sizet index, sizet last)
+		{
+			T& item     = chunks[GetChunk(index)][GetOffset(index)];
+			T& lastItem = chunks[GetChunk(last)][GetOffset(last)];
+			Swap(item, lastItem);
+			AllocatorTraits::destroy(allocator, &lastItem);
+			--size;
+		}
+		void Pop(sizet index)
+		{
+			T& item = chunks[GetChunk(index)][GetOffset(index)];
+			AllocatorTraits::destroy(allocator, &item);
+			--size;
+		}
+
+		static i32 GetChunk(sizet index)
+		{
+			return i32(index / chunkSize);
+		}
+
+		static sizet GetOffset(sizet index)
+		{
+			return index & (chunkSize - 1);
+		}
+
+		ConstIterator cbegin() const
+		{
+			const sizet index = size;
+			return ConstIterator{chunks.Data(), index};
+		}
+
+		ConstIterator begin() const
+		{
+			return cbegin();
+		}
+
+		Iterator begin()
+		{
+			const sizet index = size;
+			return Iterator{chunks.Data(), index};
+		}
+		Iterator end()
+		{
+			return iterator{chunks.Data(), {}};
+		}
+		Iterator end() const
+		{
+			return cend();
+		}
+		Iterator cend() const
+		{
+			return Iterator{chunks.Data(), {}};
+		}
+
+		ConstReverseIterator crbegin() const
+		{
+			return std::make_reverse_iterator(cend());
+		}
+
+		ConstReverseIterator rbegin() const
+		{
+			return crbegin();
+		}
+
+		ReverseIterator rbegin()
+		{
+			return std::make_reverse_iterator(end());
+		}
+
+		ConstReverseIterator crend() const
+		{
+			return std::make_reverse_iterator(cbegin());
+		}
+
+		ConstReverseIterator rend() const
+		{
+			return crend();
+		}
+
+		ReverseIterator rend()
+		{
+			return std::make_reverse_iterator(begin());
+		}
+	};
+
+
+	template<typename T, typename Allocator>
+		requires(IsEmpty<T>())
+	struct TPoolData<T, Allocator>
+	{
+	public:
+		T* Get(sizet index) const
+		{
+			return nullptr;
+		}
+		void Reserve(sizet size) {}
+		void Release(sizet size) {}
+		void Reset() {}
+		T* Push(sizet index, const T&)
+		{
+			return nullptr;
+		}
+		T* Push(sizet index, T&&)
+		{
+			return nullptr;
+		}
+		void PopSwap(sizet index, sizet last) {}
+		void Pop(sizet index) {}
+	};
+
+
+	struct Pool
+	{
+		enum class DeletionPolicy : u8
+		{
+			Swap,
+			InPlace
+		};
+
+		using Index = IdTraits<Id>::Index;
+
+		using Iterator        = TPoolSet<>::iterator;
+		using ReverseIterator = TPoolSet<>::reverse_iterator;
+
+
+	protected:
+		TPoolSet<> set;
+		DeletionPolicy deletionPolicy;
+
+		TBroadcast<TArrayView<const Id>> onAdd;
+		TBroadcast<TArrayView<const Id>> onRemove;
+
+
+		Pool(DeletionPolicy inDeletionPolicy)
+		    : set{entt::deletion_policy(u8(inDeletionPolicy))}, deletionPolicy{inDeletionPolicy}
+		{}
+
+	public:
+		virtual ~Pool() {}
+
+		bool Has(Id id) const
+		{
+			return set.contains(id);
+		}
+
+		virtual bool Remove(Id id)                          = 0;
+		virtual void RemoveUnsafe(Id id)                    = 0;
+		virtual i32 Remove(TArrayView<const Id> ids)        = 0;
+		virtual void RemoveUnsafe(TArrayView<const Id> ids) = 0;
+
+		virtual Pool* Clone() = 0;
+
+		sizet Size() const
+		{
+			return set.size();
+		}
+
+		Iterator begin() const
+		{
+			return set.begin();
+		}
+
+		Iterator end() const
+		{
+			return set.end();
+		}
+
+		ReverseIterator rbegin() const
+		{
+			return set.rbegin();
+		}
+
+		ReverseIterator rend() const
+		{
+			return set.rend();
+		}
+
+		TBroadcast<TArrayView<const Id>>& OnAdd()
+		{
+			return onAdd;
+		}
+
+		TBroadcast<TArrayView<const Id>>& OnRemove()
+		{
+			return onRemove;
+		}
+	};
+
+
+	template<typename T, typename Allocator = Memory::DefaultAllocator>
+	struct TPool : public Pool
+	{
+	private:
+		TPoolData<T, Allocator> data;
 
 
 	public:
@@ -385,20 +464,37 @@ namespace Rift::AST
 			data.Reset();
 		}
 
-		template<typename... Args>
-		void Add(Id id, Args&&...) requires(IsEmpty<T>())
+		void Add(Id id, const T&) requires(IsEmpty<T>())
 		{
 			set.emplace(id);
 			onAdd.Broadcast({id});
 		}
 
-		template<typename... Args>
-		T& Add(Id id, Args&&... args) requires(!IsEmpty<T>())
+		T& Add(Id id, const T& v) requires(!IsEmpty<T>())
 		{
 			const auto i = set.slot();
 			data.Reserve(i + 1u);
 
-			T& value = *data.Push(i, Forward<Args>(args)...);
+			T& value = *data.Push(i, v);
+
+			const auto setI = set.emplace(id);
+			if (!Ensure(i == setI)) [[unlikely]]
+			{
+				Log::Error("Misplaced component");
+				data.Pop(i);
+			}
+			else
+			{
+				onAdd.Broadcast({id});
+			}
+			return value;
+		}
+		T& Add(Id id, T&& v = {}) requires(!IsEmpty<T>())
+		{
+			const auto i = set.slot();
+			data.Reserve(i + 1u);
+
+			T& value = *data.Push(i, Forward<T>(v));
 
 			const auto setI = set.emplace(id);
 			if (!Ensure(i == setI)) [[unlikely]]
@@ -416,34 +512,49 @@ namespace Rift::AST
 		template<typename It>
 		void Add(It first, It last, const T& value = {})
 		{
-			const sizet newSize = set.size() + std::distance(first, last);
+			const sizet numToAdd = std::distance(first, last);
+			const sizet newSize  = set.size() + numToAdd;
 			set.Reserve(newSize);
 			data.Reserve(newSize);
 
+			TArray<Id> ids;
+			ids.Reserve(numToAdd);
 			for (It it = first; it != last; ++it)
 			{
-				data.Push(set.size(), value);
-				set.emplace_back(*it);
+				ids.Add(*it);
 			}
 
-			onAdd.Broadcast({*first, *last});
+			for (Id id : ids)
+			{
+				data.Push(set.size(), value);
+				set.emplace_back(id);
+			}
+			onAdd.Broadcast(ids);
 		}
 
 		template<typename It, typename CIt>
 		void Add(It first, It last, CIt from) requires(
 		    IsSame<std::decay_t<typename std::iterator_traits<CIt>::value_type>, T>)
 		{
-			const sizet newSize = set.size() + std::distance(first, last);
+			const sizet numToAdd = std::distance(first, last);
+			const sizet newSize  = set.size() + numToAdd;
 			set.Reserve(newSize);
 			data.Reserve(newSize);
 
-			for (It it = first; it != last; ++it, ++from)
+			TArray<Id> ids;
+			ids.Reserve(numToAdd);
+			for (It it = first; it != last; ++it)
 			{
-				data.Push(set.size(), *from);
-				set.emplace_back(*it);
+				ids.Add(*it);
 			}
 
-			onAdd.Broadcast({*first, *last});
+			for (Id id : ids)
+			{
+				data.Push(set.size(), *from);
+				set.emplace_back(id);
+				++from;
+			}
+			onAdd.Broadcast(ids);
 		}
 
 		T& GetOrAdd(const Id id) requires(!IsEmpty<T>())
@@ -541,9 +652,24 @@ namespace Rift::AST
 			return Has(id) ? data.Get(set.index(id)) : nullptr;
 		}
 
+		Pool* Clone() override
+		{
+			TPool<T>* newPool = new TPool<T>();
+
+			if constexpr (IsEmpty<T>())
+			{
+				newPool->Add(set.begin(), set.end(), {});
+			}
+			else
+			{
+				newPool->Add(set.begin(), set.end(), data.begin());
+			}
+			return newPool;
+		}
+
 		void Reserve(sizet size)
 		{
-			set.reserve(size);
+			set.Reserve(size);
 			if (size > set.Size())
 			{
 				data.Reserve(size);
@@ -583,75 +709,18 @@ namespace Rift::AST
 			data.Pop(set.index(id));
 			set.Pop(id);
 		}
-
-
-		ConstIterator cbegin() const
-		{
-			const sizet index = Size();
-			return ConstIterator{chunks.Data(), index};
-		}
-
-		ConstIterator begin() const
-		{
-			return cbegin();
-		}
-
-		Iterator begin()
-		{
-			const sizet index = Size();
-			return Iterator{chunks.Data(), index};
-		}
-		Iterator end()
-		{
-			return iterator{chunks.Data(), {}};
-		}
-		Iterator end() const
-		{
-			return cend();
-		}
-		Iterator cend() const
-		{
-			return Iterator{chunks.Data(), {}};
-		}
-
-		ConstReverseIterator crbegin() const
-		{
-			return std::make_reverse_iterator(cend());
-		}
-
-		ConstReverseIterator rbegin() const
-		{
-			return crbegin();
-		}
-
-		ReverseIterator rbegin()
-		{
-			return std::make_reverse_iterator(end());
-		}
-
-		ConstReverseIterator crend() const
-		{
-			return std::make_reverse_iterator(cbegin());
-		}
-
-		ConstReverseIterator rend() const
-		{
-			return crend();
-		}
-
-		ReverseIterator rend()
-		{
-			return std::make_reverse_iterator(begin());
-		}
 	};
 
 
 	struct PoolInstance
 	{
 		Refl::TypeId componentId;
+
+	private:
 		Pool* instance = nullptr;
 
 
+	public:
 		PoolInstance(Refl::TypeId componentId) : componentId{componentId} {}
 		PoolInstance(PoolInstance&& other)
 		{
@@ -668,6 +737,20 @@ namespace Rift::AST
 			other.instance = nullptr;
 			return *this;
 		}
+		explicit PoolInstance(const PoolInstance& other)
+		{
+			componentId = other.componentId;
+			if (other.instance)
+			{
+				instance = other.instance->Clone();
+			}
+		}
+
+		Pool* GetInstance() const
+		{
+			return instance;
+		}
+
 		~PoolInstance()
 		{
 			delete instance;
@@ -675,6 +758,14 @@ namespace Rift::AST
 		bool operator<(const PoolInstance& other) const
 		{
 			return componentId.GetId() < other.componentId.GetId();
+		}
+
+		template<typename T>
+		void Create()
+		{
+			Check(!instance);
+			instance = new TPool<std::remove_const_t<T>>();
+			// TODO: Static inheritance methods
 		}
 	};
 }    // namespace Rift::AST

@@ -81,11 +81,17 @@ namespace Rift::AST
 		void Destroy(TArrayView<const Id> ids);
 
 		// Adds Component to an entity (if the entity doesnt have it already)
-		template<typename Component, typename... Args>
-		decltype(auto) Add(Id id, Args&&... args)
+		template<typename Component>
+		decltype(auto) Add(Id id, Component&& value = {})
 		{
 			Check(IsValid(id));
-			return AssurePool<Component>().Add(id, Forward<Args>(args)...);
+			return AssurePool<Component>().Add(id, Forward<Component>(value));
+		}
+		template<typename Component>
+		decltype(auto) Add(Id id, const Component& value)
+		{
+			Check(IsValid(id));
+			return AssurePool<Component>().Add(id, value);
 		}
 
 		// Adds Component to an entity (if the entity doesnt have it already)
@@ -94,6 +100,19 @@ namespace Rift::AST
 		{
 			Check(IsValid(id));
 			(Add<Component>(id), ...);
+		}
+
+		template<typename Component>
+		decltype(auto) Add(TArrayView<const Id> ids, const Component& value = {})
+		{
+			return AssurePool<Component>().Add(ids.begin(), ids.end(), value);
+		}
+
+		// Adds Component to an entity (if the entity doesnt have it already)
+		template<typename... Component>
+		void Add(TArrayView<const Id> ids) requires(sizeof...(Component) > 1)
+		{
+			(Add<Component>(ids), ...);
 		}
 
 		template<typename Component>
@@ -184,7 +203,7 @@ namespace Rift::AST
 		{
 			for (const auto& pool : pools)
 			{
-				if (pool.instance->Has(id))
+				if (pool.GetInstance()->Has(id))
 				{
 					return false;
 				}
@@ -203,13 +222,12 @@ namespace Rift::AST
 			{
 				// Found, replace instance
 				OwnPtr& instance = statics[index];
-				instance         = MakeOwned<Static>(std::forward<Args>(args)...);
+				instance         = MakeOwned<Static>(Forward<Args>(args)...);
 				return *instance.GetUnsafe<Static>();
 			}
 
 			// Not found. return new instance
-			index =
-			    statics.AddSorted<SortLessStatics>(MakeOwned<Static>(std::forward<Args>(args)...));
+			index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(Forward<Args>(args)...));
 			return *statics[index].GetUnsafe<Static>();
 		}
 
@@ -223,13 +241,12 @@ namespace Rift::AST
 				if (typeId != statics[index].GetType())
 				{
 					// Not found, insert sorted
-					statics.Insert(index, MakeOwned<Static>(std::forward<Args>(args)...));
+					statics.Insert(index, MakeOwned<Static>(Forward<Args>(args)...));
 				}
 				return *statics[index].GetUnsafe<Static>();
 			}
 			// Not found, insert sorted
-			index =
-			    statics.AddSorted<SortLessStatics>(MakeOwned<Static>(std::forward<Args>(args)...));
+			index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(Forward<Args>(args)...));
 			return *statics[index].GetUnsafe<Static>();
 		}
 
@@ -310,8 +327,8 @@ namespace Rift::AST
 
 		void Reset()
 		{
-			pools.Empty();
 			idRegistry = {};
+			pools.Empty();
 			CachePools();
 		}
 
@@ -393,9 +410,8 @@ namespace Rift::AST
 		PoolInstance& pool            = pools[result.first];
 		if (result.second)    // Added a new pool
 		{
-			pool.instance = new TPool<std::remove_const_t<T>>();
-			// TODO: Static inheritance methods
+			pool.Create<T>();
 		}
-		return *static_cast<TPool<T>*>(pool.instance);
+		return *static_cast<TPool<T>*>(pool.GetInstance());
 	}
 }    // namespace Rift::AST

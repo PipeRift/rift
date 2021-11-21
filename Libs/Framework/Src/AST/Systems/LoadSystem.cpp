@@ -239,7 +239,7 @@ namespace Rift::LoadSystem
 			ct.Next("name", name);
 			if (!name.empty())
 			{
-				ast.Add<CIdentifier>(moduleIds[i], name);
+				ast.Add<CIdentifier>(moduleIds[i], {name});
 			}
 		}
 	}
@@ -272,7 +272,7 @@ namespace Rift::LoadSystem
 			ct.Next("name", name);
 			if (!name.empty())
 			{
-				ast.Add<CIdentifier>(entity, name);
+				ast.Add<CIdentifier>(entity, {name});
 			}
 		}
 	}
