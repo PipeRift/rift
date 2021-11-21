@@ -60,7 +60,7 @@ namespace Rift::Modules
 		TArray<String> strings;
 		LoadSystem::LoadFileStrings(ast, projectId, strings);
 		LoadSystem::DeserializeModules(ast, projectId, strings);
-		return ast;
+		return Move(ast);
 	}
 
 	void CloseProject(AST::Tree& ast)

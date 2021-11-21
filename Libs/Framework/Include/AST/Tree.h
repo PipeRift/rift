@@ -3,7 +3,6 @@
 
 #include "AST/Components/CChild.h"
 #include "AST/Components/CParent.h"
-#include "AST/Entt/RegistryTraits.h"
 #include "AST/IdRegistry.h"
 #include "AST/Pool.h"
 #include "AST/Types.h"
@@ -13,7 +12,6 @@
 #include <Strings/Name.h>
 
 #include <any>
-#include <entt/entity/registry.hpp>
 
 
 namespace Rift::AST
@@ -55,15 +53,14 @@ namespace Rift::AST
 
 	struct Tree
 	{
-		using Registry = entt::basic_registry<Id>;
-
 	private:
 		IdRegistry idRegistry;
 		mutable TArray<PoolInstance> pools;
+		TArray<OwnPtr> statics;
+
 		TOwnPtr<TQuery<TExclude<>, CChild>> childView;
 		TOwnPtr<TQuery<TExclude<>, CParent>> parentView;
 		NativeTypeIds nativeTypes;
-		TArray<OwnPtr> statics;
 
 
 	public:
@@ -210,8 +207,8 @@ namespace Rift::AST
 			return true;
 		}
 
-		template<typename Static, typename... Args>
-		Static& SetStatic(Args&&... args)
+		template<typename Static>
+		Static& SetStatic(Static&& value = {})
 		{
 			const Refl::TypeId typeId = Refl::TypeId::Get<Static>();
 
@@ -221,17 +218,37 @@ namespace Rift::AST
 			{
 				// Found, replace instance
 				OwnPtr& instance = statics[index];
-				instance         = MakeOwned<Static>(Forward<Args>(args)...);
+				instance         = MakeOwned<Static>(Forward<Static>(value));
 				return *instance.GetUnsafe<Static>();
 			}
 
 			// Not found. return new instance
-			index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(Forward<Args>(args)...));
+			index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(Forward<Static>(value)));
 			return *statics[index].GetUnsafe<Static>();
 		}
 
-		template<typename Static, typename... Args>
-		Static& GetOrSetStatic(Args&&... args)
+		template<typename Static>
+		Static& SetStatic(const Static& value)
+		{
+			const Refl::TypeId typeId = Refl::TypeId::Get<Static>();
+
+			// Find static first to replace it
+			i32 index = statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(typeId);
+			if (index != NO_INDEX)
+			{
+				// Found, replace instance
+				OwnPtr& instance = statics[index];
+				instance         = MakeOwned<Static>(value);
+				return *instance.GetUnsafe<Static>();
+			}
+
+			// Not found. return new instance
+			index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(value));
+			return *statics[index].GetUnsafe<Static>();
+		}
+
+		template<typename Static>
+		Static& GetOrSetStatic(Static&& newValue = {})
 		{
 			const Refl::TypeId typeId = Refl::TypeId::Get<Static>();
 			i32 index                 = statics.LowerBound<Refl::TypeId, SortLessStatics>(typeId);
@@ -240,13 +257,46 @@ namespace Rift::AST
 				if (typeId != statics[index].GetType())
 				{
 					// Not found, insert sorted
-					statics.Insert(index, MakeOwned<Static>(Forward<Args>(args)...));
+					statics.Insert(index, MakeOwned<Static>(Forward<Static>(newValue)));
 				}
 				return *statics[index].GetUnsafe<Static>();
 			}
 			// Not found, insert sorted
-			index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(Forward<Args>(args)...));
+			index =
+			    statics.AddSorted<SortLessStatics>(MakeOwned<Static>(Forward<Static>(newValue)));
 			return *statics[index].GetUnsafe<Static>();
+		}
+
+		template<typename Static>
+		Static& GetOrSetStatic(const Static& newValue)
+		{
+			const Refl::TypeId typeId = Refl::TypeId::Get<Static>();
+			i32 index                 = statics.LowerBound<Refl::TypeId, SortLessStatics>(typeId);
+			if (index != NO_INDEX)
+			{
+				if (typeId != statics[index].GetType())
+				{
+					// Not found, insert sorted
+					statics.Insert(index, MakeOwned<Static>(newValue));
+				}
+				return *statics[index].GetUnsafe<Static>();
+			}
+			// Not found, insert sorted
+			index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(newValue));
+			return *statics[index].GetUnsafe<Static>();
+		}
+
+		template<typename Static>
+		bool RemoveStatic()
+		{
+			const Refl::TypeId typeId = Refl::TypeId::Get<Static>();
+			const i32 index = statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(typeId);
+			if (index != NO_INDEX)
+			{
+				statics.RemoveAt(index);
+				return true;
+			}
+			return false;
 		}
 
 		template<typename Static>

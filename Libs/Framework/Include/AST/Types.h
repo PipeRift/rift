@@ -4,8 +4,7 @@
 #include <Platform/Platform.h>
 #include <Reflection/Registry/NativeTypeBuilder.h>
 #include <Serialization/ContextsFwd.h>
-
-#include <entt/entt.hpp>
+#include <Templates/TypeList.h>
 
 
 namespace Rift
@@ -51,24 +50,6 @@ namespace Rift
 			using Index      = Parent::Index;
 			using Version    = Parent::Version;
 			using Difference = Parent::Difference;
-
-
-			static constexpr Index GetIndex(T id)
-			{
-				return Index(Entity(id) & Parent::indexMask);
-			}
-
-			static constexpr Version GetVersion(T id)
-			{
-				constexpr auto mask = Parent::versionMask << Parent::indexShift;
-				return Version((Entity(id) & mask) >> Parent::indexShift);
-			}
-
-			static constexpr T Make(
-			    Index index = Parent::indexMask, Version version = Parent::versionMask)
-			{
-				return T{(index & Parent::indexMask) | (Entity(version) << Parent::indexShift)};
-			}
 		};
 
 		template<typename T>
@@ -80,7 +61,26 @@ namespace Rift
 		enum class Id : u32
 		{};
 
-		constexpr Id NoId = IdTraits<Id>::Make();
+		static constexpr Id MakeId(IdTraits<Id>::Index index = IdTraits<Id>::indexMask,
+		    IdTraits<Id>::Version version                    = IdTraits<Id>::versionMask)
+		{
+			return Id{(index & IdTraits<Id>::indexMask)
+			          | (IdTraits<Id>::Entity(version) << IdTraits<Id>::indexShift)};
+		}
+
+		constexpr Id NoId = MakeId();
+
+		static constexpr IdTraits<Id>::Index GetIndex(Id id)
+		{
+			return IdTraits<Id>::Index{IdTraits<Id>::Entity(id) & IdTraits<Id>::indexMask};
+		}
+
+		static constexpr IdTraits<Id>::Version GetVersion(Id id)
+		{
+			constexpr auto mask = IdTraits<Id>::versionMask << IdTraits<Id>::indexShift;
+			return IdTraits<Id>::Version{
+			    (IdTraits<Id>::Entity(id) & mask) >> IdTraits<Id>::indexShift};
+		}
 	}    // namespace AST
 
 	namespace Serl
@@ -98,10 +98,8 @@ namespace Rift::AST
 	using VersionType = IdTraits<Id>::Version;
 
 	template<typename... Type>
-	using TExclude = entt::exclude_t<Type...>;
+	using TExclude = TTypeList<Type...>;
 
-	template<typename... Type>
-	using TTypeList = entt::type_list<Type...>;
 }    // namespace Rift::AST
 
 

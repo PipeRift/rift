@@ -14,7 +14,7 @@ namespace Rift::AST
 			return entities[index];
 		}
 
-		const Id id = Traits::Make(entities.Size(), 0);
+		const Id id = MakeId(entities.Size(), 0);
 		entities.Add(id);
 		return id;
 	}
@@ -34,7 +34,7 @@ namespace Rift::AST
 		entities.Reserve(entities.Size() + remainingSize);
 		for (i32 i = availablesUsed; i < newIds.Size(); ++i)
 		{
-			const Id id = Traits::Make(entities.Size(), 0);
+			const Id id = MakeId(entities.Size(), 0);
 			entities.Add(id);
 			newIds[i] = id;
 		}
@@ -42,14 +42,14 @@ namespace Rift::AST
 
 	bool IdRegistry::Destroy(Id id)
 	{
-		const Index index = Traits::GetIndex(id);
+		const Index index = GetIndex(id);
 		if (entities.IsValidIndex(index))
 		{
 			Id& storedId = entities[index];
 			if (id == storedId)
 			{
 				// Increase version to invalidate current entity
-				storedId = Traits::Make(index, Traits::GetVersion(storedId) + 1u);
+				storedId = MakeId(index, GetVersion(storedId) + 1u);
 				available.Add(index);
 				return true;
 			}
@@ -63,14 +63,14 @@ namespace Rift::AST
 		const u32 lastAvailable = available.Size();
 		for (AST::Id id : ids)
 		{
-			const Index index = Traits::GetIndex(id);
+			const Index index = GetIndex(id);
 			if (entities.IsValidIndex(index))
 			{
 				Id& storedId = entities[index];
 				if (id == storedId)
 				{
 					// Increase version to invalidate current entity
-					storedId = Traits::Make(index, Traits::GetVersion(storedId) + 1u);
+					storedId = MakeId(index, GetVersion(storedId) + 1u);
 					available.Add(index);
 				}
 			}
@@ -80,7 +80,7 @@ namespace Rift::AST
 
 	bool IdRegistry::IsValid(Id id) const
 	{
-		const Index index = Traits::GetIndex(id);
+		const Index index = GetIndex(id);
 		return entities.IsValidIndex(index) && entities[index] == id;
 	}
 }    // namespace Rift::AST

@@ -39,10 +39,16 @@ namespace Rift
 
 				if (ct.EnterNext(key))
 				{
-					T comp;
 					ct.BeginObject();
-					ct.Serialize(comp);
-					ast.Add<T>(node, Move(comp));
+					if constexpr (!IsEmpty<T>())
+					{
+						T& comp = ast.GetOrAdd<T>(node);
+						ct.Serialize(comp);
+					}
+					else if (!ast.Has<T>(node))
+					{
+						ast.Add<T>(node);
+					}
 					ct.Leave();
 				}
 			}

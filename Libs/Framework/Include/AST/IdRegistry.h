@@ -48,7 +48,7 @@ namespace Rift::AST
 				for (i32 i = 0; i < entities.Size(); ++i)
 				{
 					const Id id = entities[i];
-					if (Traits::GetIndex(id) == i)
+					if (GetIndex(id) == i)
 					{
 						cb(id);
 					}

@@ -26,7 +26,7 @@ namespace Rift
 
 		static ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable
 		                             | ImGuiTableFlags_Hideable | ImGuiTableFlags_SizingStretchProp;
-		if (auto* types = ast.TryGetStatic<CTypeListUnique>())
+		if (auto* types = ast.TryGetStatic<STypeList>())
 		{
 			UI::BeginChild("typesTableChild",
 			    ImVec2(0.f, Math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));

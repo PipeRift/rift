@@ -21,6 +21,7 @@ namespace Rift::AST
 	{
 		idRegistry = Move(other.idRegistry);
 		pools      = Move(other.pools);
+		statics    = Move(other.statics);
 		CachePools();
 	}
 	Tree& Tree::operator=(Tree&& other) noexcept
@@ -28,6 +29,7 @@ namespace Rift::AST
 		Reset();
 		idRegistry = Move(other.idRegistry);
 		pools      = Move(other.pools);
+		statics    = Move(other.statics);
 		CachePools();
 		return *this;
 	}

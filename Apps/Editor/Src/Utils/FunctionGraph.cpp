@@ -118,7 +118,7 @@ namespace Rift::Graph
 			if (filter.IsActive() || ImGui::TreeNode("Constructors"))
 			{
 				String makeStr{};
-				auto& typeList   = ast.GetStatic<CTypeListUnique>();
+				auto& typeList   = ast.GetStatic<STypeList>();
 				auto identifiers = ast.Query<CIdentifier>();
 				for (const auto& type : typeList.types)
 				{

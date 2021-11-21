@@ -11,7 +11,7 @@ namespace Rift::TypeSystem
 {
 	void Init(AST::Tree& ast)
 	{
-		auto& typeList = ast.GetOrSetStatic<CTypeListUnique>();
+		auto& typeList = ast.GetOrSetStatic<STypeList>();
 		typeList.types.Empty();
 
 		// Cache existing types

@@ -1,5 +1,6 @@
 
 
+#include "AST/Entt/sparse_set.hpp"
 #include "AST/Types.h"
 
 #include <Containers/BitArray.h>
@@ -13,9 +14,9 @@
 namespace Rift::AST
 {
 	template<typename Allocator = Memory::DefaultAllocator>
-	struct TPoolSet : public entt::basic_sparse_set<Id, STLAllocator<Id, Allocator>>
+	struct TPoolSet : public entt::basic_sparse_set<STLAllocator<Id, Allocator>>
 	{
-		using Super = entt::basic_sparse_set<Id, STLAllocator<Id, Allocator>>;
+		using Super = entt::basic_sparse_set<STLAllocator<Id, Allocator>>;
 
 	public:
 		using Super::Super;
@@ -466,12 +467,23 @@ namespace Rift::AST
 
 		void Add(Id id, const T&) requires(IsEmpty<T>())
 		{
+			if (Has(id))
+			{
+				return;
+			}
+
 			set.emplace(id);
 			onAdd.Broadcast({id});
 		}
 
 		T& Add(Id id, const T& v) requires(!IsEmpty<T>())
 		{
+			if (Has(id))
+			{
+				return (Get(id) = v);
+			}
+
+			Check(!Has(id));
 			const auto i = set.slot();
 			data.Reserve(i + 1u);
 
@@ -491,6 +503,11 @@ namespace Rift::AST
 		}
 		T& Add(Id id, T&& v = {}) requires(!IsEmpty<T>())
 		{
+			if (Has(id))
+			{
+				return (Get(id) = Move(v));
+			}
+
 			const auto i = set.slot();
 			data.Reserve(i + 1u);
 
@@ -526,8 +543,18 @@ namespace Rift::AST
 
 			for (Id id : ids)
 			{
-				data.Push(set.size(), value);
-				set.emplace_back(id);
+				if (Has(id))
+				{
+					if constexpr (!IsEmpty<T>())
+					{
+						Get(id) = value;
+					}
+				}
+				else
+				{
+					data.Push(set.size(), value);
+					set.emplace_back(id);
+				}
 			}
 			onAdd.Broadcast(ids);
 		}
@@ -550,8 +577,18 @@ namespace Rift::AST
 
 			for (Id id : ids)
 			{
-				data.Push(set.size(), *from);
-				set.emplace_back(id);
+				if (Has(id))
+				{
+					if constexpr (!IsEmpty<T>())
+					{
+						Get(id) = *from;
+					}
+				}
+				else
+				{
+					data.Push(set.size(), *from);
+					set.emplace_back(id);
+				}
 				++from;
 			}
 			onAdd.Broadcast(ids);

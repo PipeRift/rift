@@ -8,8 +8,6 @@ set(CLI11_BUILD_TESTS OFF CACHE BOOL "Build CLI11 tests")
 set(CMAKE_POLICY_DEFAULT_CMP0054 NEW)
 add_subdirectory(CLI11)
 
-add_subdirectory(entt)
-
 find_package(OpenGL REQUIRED)
 add_library(gl3w STATIC gl3w/GL/gl3w.c)
 target_include_directories(gl3w PUBLIC gl3w)
