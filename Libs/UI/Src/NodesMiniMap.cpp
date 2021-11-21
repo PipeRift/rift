@@ -106,7 +106,7 @@ namespace Rift::Nodes
 			// Run user callback when hovering a mini-map node
 			if (nodeHoveringCallback)
 			{
-				nodeHoveringCallback(node.Id, nodeHoveringCallbackUserData);
+				nodeHoveringCallback(node.id, nodeHoveringCallbackUserData);
 			}
 		}
 		else if (editor.SelectedNodeIndices.contains(nodeIdx))
@@ -248,7 +248,7 @@ namespace Rift::Nodes
 		assert(minimapSizeFraction > 0.f && minimapSizeFraction <= 1.f);
 
 		// Remember to call before EndNodeEditor
-		assert(gNodes->CurrentScope == Scope_Editor);
+		assert(gNodes->currentScope == Scope::Editor);
 
 		EditorContext& editor = GetEditorContext();
 

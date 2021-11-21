@@ -27,17 +27,16 @@ namespace Rift::Nodes
 
 	// [SECTION] internal enums
 
-	typedef int Scope;
 	typedef int UIState;
 	typedef int ClickInteractionType;
 	typedef int LinkCreationType;
 
-	enum Scope_
+	enum class Scope : u8
 	{
-		Scope_None   = 1,
-		Scope_Editor = 1 << 1,
-		Scope_Node   = 1 << 2,
-		Scope_Pin    = 1 << 3
+		None   = 0,
+		Editor = 1 << 0,
+		Node   = 1 << 1,
+		Pin    = 1 << 2
 	};
 
 	enum UIState_
@@ -140,7 +139,7 @@ namespace Rift::Nodes
 
 	struct NodeData
 	{
-		i32 Id;
+		Id id;
 		v2 Origin = v2::Zero();    // The node origin is in editor space
 		Rect TitleBarContentRect;
 		Rect Rect{v2::Zero(), v2::Zero()};
@@ -162,19 +161,15 @@ namespace Rift::Nodes
 		ImVector<i32> outputs;
 		bool Draggable = true;
 
-		NodeData(const i32 nodeId = NO_INDEX) : Id(nodeId) {}
 
-		~NodeData()
-		{
-			Id = INT_MIN;
-		}
+		NodeData(const Id id = NoId()) : id(id) {}
 	};
 
 
 	struct PinData
 	{
-		i32 Id;
-		i32 ParentNodeIdx = NO_INDEX;
+		Id id;
+		i32 parentNodeIdx = NO_INDEX;
 		Rect rect;
 		PinShape Shape = PinShape_CircleFilled;
 		v2 position;    // screen-space coordinates
@@ -185,21 +180,21 @@ namespace Rift::Nodes
 			Color Background, Hovered;
 		} colorStyle;
 
-		PinData(const i32 pinId = NO_INDEX) : Id(pinId) {}
+		PinData(const Id id = NoId()) : id(id) {}
 	};
 
 	struct LinkData
 	{
-		i32 Id        = 0;
-		i32 outputPin = 0;
-		i32 inputPin  = 0;
+		Id id        = NoId();
+		Id outputPin = NoId();
+		Id inputPin  = NoId();
 
 		struct
 		{
 			Color Base, Hovered, Selected;
 		} colorStyle;
 
-		LinkData(const i32 linkId = NO_INDEX) : Id(linkId) {}
+		LinkData(const Id linkId = NoId()) : id(linkId) {}
 	};
 
 	struct ClickInteractionState
@@ -297,11 +292,13 @@ namespace Rift::Nodes
 		}
 		PinData& GetPinData(PinId pin)
 		{
+			// TODO: Incompatible id types!
 			return GetPinPool(pin.type).Pool[pin.index];
 		}
 		const PinData& GetPinData(PinId pin) const
 		{
-			return GetPinPool(pin.type).Pool[pin.index];
+			// TODO: Incompatible id types!
+			return GetPinPool(pin.type).Pool[i32(pin.index)];
 		}
 	};
 
@@ -322,7 +319,7 @@ namespace Rift::Nodes
 		Rect CanvasRectScreenSpace;
 
 		// Debug helpers
-		Scope CurrentScope;
+		Scope currentScope;
 
 		// Configuration state
 		IO Io;
@@ -371,7 +368,7 @@ namespace Rift::Nodes
 	// [SECTION] ObjectPool implementation
 
 	template<typename T>
-	static inline i32 ObjectPoolFind(const ObjectPool<T>& objects, const i32 id)
+	static inline i32 ObjectPoolFind(const ObjectPool<T>& objects, const Id id)
 	{
 		return objects.IdMap.GetInt(static_cast<ImGuiID>(id), -1);
 	}
@@ -379,9 +376,9 @@ namespace Rift::Nodes
 	template<typename T>
 	static inline void ObjectPoolUpdate(ObjectPool<T>& objects)
 	{
-		for (int i = 0; i < objects.InUse.Size(); ++i)
+		for (i32 i = 0; i < objects.InUse.Size(); ++i)
 		{
-			const int id = objects.Pool[i].Id;
+			const Id id = objects.Pool[i].id;
 
 			if (!objects.InUse.IsSet(i) && objects.IdMap.GetInt(id, -1) == i)
 			{
@@ -405,9 +402,9 @@ namespace Rift::Nodes
 			}
 			else
 			{
-				const i32 id = nodes.Pool[i].Id;
+				const Id id = nodes.Pool[i].id;
 
-				if (nodes.IdMap.GetInt(id, -1) == i)
+				if (nodes.IdMap.GetInt(i32(id), -1) == i)
 				{
 					// Remove node idx form depth stack the first time we detect that this idx slot
 					// is unused
@@ -416,7 +413,7 @@ namespace Rift::Nodes
 					assert(elem != depth_stack.end());
 					depth_stack.erase(elem);
 
-					nodes.IdMap.SetInt(id, -1);
+					nodes.IdMap.SetInt(i32(id), -1);
 					nodes.availableIds.Add(i);
 					(nodes.Pool.Data() + i)->~NodeData();
 				}
@@ -465,9 +462,9 @@ namespace Rift::Nodes
 	}
 
 	template<>
-	inline i32 ObjectPoolFindOrCreateIndex(ObjectPool<NodeData>& nodes, const i32 node_id)
+	inline i32 ObjectPoolFindOrCreateIndex(ObjectPool<NodeData>& nodes, const Id nodeId)
 	{
-		i32 nodeIdx = nodes.IdMap.GetInt(static_cast<ImGuiID>(node_id), -1);
+		i32 nodeIdx = nodes.IdMap.GetInt(static_cast<ImGuiID>(i32(nodeId)), -1);
 
 		// Construct new node
 		if (nodeIdx == -1)
@@ -485,8 +482,8 @@ namespace Rift::Nodes
 				nodeIdx = nodes.availableIds.Last();
 				nodes.availableIds.RemoveLast();
 			}
-			IM_PLACEMENT_NEW(nodes.Pool.Data() + nodeIdx) NodeData(node_id);
-			nodes.IdMap.SetInt(static_cast<ImGuiID>(node_id), nodeIdx);
+			IM_PLACEMENT_NEW(nodes.Pool.Data() + nodeIdx) NodeData(nodeId);
+			nodes.IdMap.SetInt(static_cast<ImGuiID>(i32(nodeId)), nodeIdx);
 
 			EditorContext& editor = GetEditorContext();
 			editor.NodeDepthOrder.push_back(nodeIdx);
@@ -499,7 +496,7 @@ namespace Rift::Nodes
 	}
 
 	template<typename T>
-	static inline T& ObjectPoolFindOrCreateObject(ObjectPool<T>& objects, const i32 id)
+	static inline T& ObjectPoolFindOrCreateObject(ObjectPool<T>& objects, const Id id)
 	{
 		const int index = ObjectPoolFindOrCreateIndex(objects, id);
 		return objects.Pool[index];

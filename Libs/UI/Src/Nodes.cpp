@@ -525,7 +525,7 @@ namespace Rift::Nodes
 
 	v2 GetScreenSpacePinCoordinates(const EditorContext& editor, PinType type, const PinData& pin)
 	{
-		const Rect& parentNodeRect = editor.nodes.Pool[pin.ParentNodeIdx].Rect;
+		const Rect& parentNodeRect = editor.nodes.Pool[pin.parentNodeIdx].Rect;
 		return GetScreenSpacePinCoordinates(parentNodeRect, type, pin.rect);
 	}
 
@@ -611,7 +611,7 @@ namespace Rift::Nodes
 		const LinkData& link         = editor.Links.Pool[linkIdx];
 		ClickInteractionState& state = editor.clickInteraction;
 		state.type                   = ClickInteractionType_LinkCreation;
-		state.linkCreation.inputPin  = NO_INDEX;
+		state.linkCreation.inputPin  = NoId();
 		state.linkCreation.outputPin =
 		    detachPinIdx == link.outputPin ? link.inputPin : link.outputPin;
 		gNodes->DeletedLinkIdx = linkIdx;
@@ -621,7 +621,7 @@ namespace Rift::Nodes
 	{
 		editor.clickInteraction.type                   = ClickInteractionType_LinkCreation;
 		editor.clickInteraction.linkCreation.outputPin = hoveredPin;
-		editor.clickInteraction.linkCreation.inputPin  = NO_INDEX;
+		editor.clickInteraction.linkCreation.inputPin  = NoId();
 		editor.clickInteraction.linkCreation.type      = LinkCreationType_Standard;
 		gNodes->UIState |= UIState_LinkStarted;
 	}
@@ -747,8 +747,8 @@ namespace Rift::Nodes
 
 				const PinData& outputPin  = editor.outputs.Pool[link.outputPin];
 				const PinData& inputPin   = editor.inputs.Pool[link.inputPin];
-				const Rect& nodeStartRect = editor.nodes.Pool[outputPin.ParentNodeIdx].Rect;
-				const Rect& nodeEndRect   = editor.nodes.Pool[inputPin.ParentNodeIdx].Rect;
+				const Rect& nodeStartRect = editor.nodes.Pool[outputPin.parentNodeIdx].Rect;
+				const Rect& nodeEndRect   = editor.nodes.Pool[inputPin.parentNodeIdx].Rect;
 
 				const v2 start =
 				    GetScreenSpacePinCoordinates(nodeStartRect, PinType::Output, outputPin.rect);
@@ -789,8 +789,8 @@ namespace Rift::Nodes
 			return;
 		}
 
-		i32 outputPin = pinA.index;
-		i32 inputPin  = pinB.index;
+		Id outputPin = pinA.index;
+		Id inputPin  = pinB.index;
 		if (pinB.type == PinType::Output)
 		{
 			Swap(outputPin, inputPin);
@@ -824,7 +824,7 @@ namespace Rift::Nodes
 		const PinData& targetData = editor.GetPinData(targetPin);
 
 		// The end pin must be in a different node
-		if (originData.ParentNodeIdx == targetData.ParentNodeIdx)
+		if (originData.parentNodeIdx == targetData.parentNodeIdx)
 		{
 			return false;
 		}
@@ -964,7 +964,7 @@ namespace Rift::Nodes
 
 		if (!shouldSnap)
 		{
-			editor.clickInteraction.linkCreation.inputPin = NO_INDEX;
+			editor.clickInteraction.linkCreation.inputPin = NoId();
 		}
 
 		const bool createLink = shouldSnap && (gNodes->leftMouseReleased || linkCreationOnSnap);
@@ -1082,7 +1082,7 @@ namespace Rift::Nodes
 	    const ObjectPool<PinData>& pins, PinType type, const ImVector<PinId>& occludedPinIndices)
 	{
 		float smallestDistance         = FLT_MAX;
-		i32 pinIdxWithSmallestDistance = NO_INDEX;
+		Id pinIdxWithSmallestDistance  = NoId();
 
 		const float hoverRadiusSqr = gNodes->Style.PinHoverRadius * gNodes->Style.PinHoverRadius;
 
@@ -1108,7 +1108,7 @@ namespace Rift::Nodes
 			if (distanceSqr < hoverRadiusSqr && distanceSqr < smallestDistance)
 			{
 				smallestDistance           = distanceSqr;
-				pinIdxWithSmallestDistance = idx;
+				pinIdxWithSmallestDistance = Id(idx);
 			}
 		}
 
@@ -1372,7 +1372,7 @@ namespace Rift::Nodes
 	void DrawPin(EditorContext& editor, const PinId pin)
 	{
 		PinData& pinData           = editor.GetPinData(pin);
-		const Rect& parentNodeRect = editor.nodes.Pool[pinData.ParentNodeIdx].Rect;
+		const Rect& parentNodeRect = editor.nodes.Pool[pinData.parentNodeIdx].Rect;
 
 		pinData.position = GetScreenSpacePinCoordinates(parentNodeRect, pin.type, pinData.rect);
 
@@ -1498,8 +1498,8 @@ namespace Rift::Nodes
 	{
 		// Make sure to call BeginNode() before calling
 		// BeginPin()
-		assert(gNodes->CurrentScope == Scope_Node);
-		gNodes->CurrentScope = Scope_Pin;
+		assert(gNodes->currentScope == Scope::Node);
+		gNodes->currentScope = Scope::Pin;
 
 		ImGui::BeginGroup();
 		ImGui::PushID(id);
@@ -1512,8 +1512,8 @@ namespace Rift::Nodes
 		const i32 pinIdx          = ObjectPoolFindOrCreateIndex(pool, id);
 		gNodes->CurrentPinIdx     = {pinIdx, type};
 		PinData& pin              = pool.Pool[pinIdx];
-		pin.Id                    = id;
-		pin.ParentNodeIdx         = nodeIdx;
+		pin.id                    = id;
+		pin.parentNodeIdx         = nodeIdx;
 		pin.Shape                 = shape;
 		pin.Flags                 = gNodes->CurrentPinFlags;
 		pin.colorStyle.Background = gNodes->Style.colors[ColorVar_Pin];
@@ -1522,8 +1522,8 @@ namespace Rift::Nodes
 
 	void EndPin()
 	{
-		assert(gNodes->CurrentScope == Scope_Pin);
-		gNodes->CurrentScope = Scope_Node;
+		assert(gNodes->currentScope == Scope::Pin);
+		gNodes->currentScope = Scope::Node;
 
 		ImGui::PopID();
 		ImGui::EndGroup();
@@ -1550,7 +1550,7 @@ namespace Rift::Nodes
 	{
 		context->CanvasOriginScreenSpace = v2(0.0f, 0.0f);
 		context->CanvasRectScreenSpace   = Rect(v2(0.f, 0.f), v2(0.f, 0.f));
-		context->CurrentScope            = Scope_None;
+		context->currentScope            = Scope::None;
 
 		context->CurrentPinIdx  = PinId::Invalid();
 		context->CurrentNodeIdx = INT_MAX;
@@ -1826,8 +1826,8 @@ namespace Rift::Nodes
 
 	void BeginNodeEditor()
 	{
-		assert(gNodes->CurrentScope == Scope_None);
-		gNodes->CurrentScope = Scope_Editor;
+		assert(gNodes->currentScope == Scope::None);
+		gNodes->currentScope = Scope::Editor;
 
 		// Reset state from previous pass
 
@@ -1899,8 +1899,8 @@ namespace Rift::Nodes
 
 	void EndNodeEditor()
 	{
-		assert(gNodes->CurrentScope == Scope_Editor);
-		gNodes->CurrentScope = Scope_None;
+		assert(gNodes->currentScope == Scope::Editor);
+		gNodes->currentScope = Scope::None;
 
 		EditorContext& editor = GetEditorContext();
 
@@ -2058,8 +2058,8 @@ namespace Rift::Nodes
 	void BeginNode(const i32 nodeId)
 	{
 		// Remember to call BeginNodeEditor before calling BeginNode
-		assert(gNodes->CurrentScope == Scope_Editor);
-		gNodes->CurrentScope = Scope_Node;
+		assert(gNodes->currentScope == Scope::Editor);
+		gNodes->currentScope = Scope::Node;
 
 		EditorContext& editor = GetEditorContext();
 
@@ -2086,14 +2086,14 @@ namespace Rift::Nodes
 		DrawListAddNode(nodeIdx);
 		DrawListActivateCurrentNodeForeground();
 
-		ImGui::PushID(node.Id);
+		ImGui::PushID(node.id);
 		ImGui::BeginGroup();
 	}
 
 	void EndNode()
 	{
-		assert(gNodes->CurrentScope == Scope_Node);
-		gNodes->CurrentScope = Scope_Editor;
+		assert(gNodes->currentScope == Scope::Node);
+		gNodes->currentScope = Scope::Editor;
 
 		EditorContext& editor = GetEditorContext();
 
@@ -2125,13 +2125,13 @@ namespace Rift::Nodes
 
 	void BeginNodeTitleBar()
 	{
-		assert(gNodes->CurrentScope == Scope_Node);
+		assert(gNodes->currentScope == Scope::Node);
 		ImGui::BeginGroup();
 	}
 
 	void EndNodeTitleBar()
 	{
-		assert(gNodes->CurrentScope == Scope_Node);
+		assert(gNodes->currentScope == Scope::Node);
 		ImGui::EndGroup();
 
 		EditorContext& editor    = GetEditorContext();
@@ -2182,11 +2182,11 @@ namespace Rift::Nodes
 
 	void Link(i32 id, i32 outputPin, i32 inputPin)
 	{
-		assert(gNodes->CurrentScope == Scope_Editor);
+		assert(gNodes->currentScope == Scope::Editor);
 
 		EditorContext& editor    = GetEditorContext();
 		LinkData& link           = ObjectPoolFindOrCreateObject(editor.Links, id);
-		link.Id                  = id;
+		link.id                  = id;
 		link.outputPin           = ObjectPoolFindOrCreateIndex(editor.outputs, outputPin);
 		link.inputPin            = ObjectPoolFindOrCreateIndex(editor.inputs, inputPin);
 		link.colorStyle.Base     = gNodes->Style.colors[ColorVar_Link];
@@ -2322,35 +2322,35 @@ namespace Rift::Nodes
 		}
 	}
 
-	void SetNodeScreenSpacePos(const i32 nodeId, const v2& screenSpacePos)
+	void SetNodeScreenSpacePos(const Id nodeId, const v2& screenSpacePos)
 	{
 		EditorContext& editor = GetEditorContext();
 		NodeData& node        = ObjectPoolFindOrCreateObject(editor.nodes, nodeId);
 		node.Origin           = ScreenToGridPosition(editor, screenSpacePos);
 	}
 
-	void SetNodeEditorSpacePos(const i32 nodeId, const v2& editorSpacePos)
+	void SetNodeEditorSpacePos(const Id nodeId, const v2& editorSpacePos)
 	{
 		EditorContext& editor = GetEditorContext();
 		NodeData& node        = ObjectPoolFindOrCreateObject(editor.nodes, nodeId);
 		node.Origin           = EditorToGridPosition(editor, editorSpacePos);
 	}
 
-	void SetNodeGridSpacePos(const i32 nodeId, const v2& gridPos)
+	void SetNodeGridSpacePos(const Id nodeId, const v2& gridPos)
 	{
 		EditorContext& editor = GetEditorContext();
 		NodeData& node        = ObjectPoolFindOrCreateObject(editor.nodes, nodeId);
 		node.Origin           = gridPos;
 	}
 
-	void SetNodeDraggable(const i32 nodeId, const bool draggable)
+	void SetNodeDraggable(const Id nodeId, const bool draggable)
 	{
 		EditorContext& editor = GetEditorContext();
 		NodeData& node        = ObjectPoolFindOrCreateObject(editor.nodes, nodeId);
 		node.Draggable        = draggable;
 	}
 
-	v2 GetNodeScreenSpacePos(const i32 nodeId)
+	v2 GetNodeScreenSpacePos(const Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
 		const i32 nodeIdx     = ObjectPoolFind(editor.nodes, nodeId);
@@ -2359,7 +2359,7 @@ namespace Rift::Nodes
 		return GridToScreenPosition(editor, node.Origin);
 	}
 
-	v2 GetNodeEditorSpacePos(const i32 nodeId)
+	v2 GetNodeEditorSpacePos(const Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
 		const i32 nodeIdx     = ObjectPoolFind(editor.nodes, nodeId);
@@ -2368,7 +2368,7 @@ namespace Rift::Nodes
 		return GridToEditorPosition(editor, node.Origin);
 	}
 
-	v2 GetNodeGridSpacePos(const i32 nodeId)
+	v2 GetNodeGridSpacePos(const Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
 		const i32 nodeIdx     = ObjectPoolFind(editor.nodes, nodeId);
@@ -2382,44 +2382,44 @@ namespace Rift::Nodes
 		return IsMouseInCanvas();
 	}
 
-	bool IsNodeHovered(i32* const nodeId)
+	bool IsNodeHovered(Id* const nodeId)
 	{
-		assert(gNodes->CurrentScope != Scope_None);
+		assert(gNodes->currentScope != Scope::None);
 		assert(nodeId != nullptr);
 
 		const bool isHovered = gNodes->HoveredNodeIdx.IsValid();
 		if (isHovered)
 		{
 			const EditorContext& editor = GetEditorContext();
-			*nodeId                     = editor.nodes.Pool[gNodes->HoveredNodeIdx.Value()].Id;
+			*nodeId                     = editor.nodes.Pool[gNodes->HoveredNodeIdx.Value()].id;
 		}
 		return isHovered;
 	}
 
-	bool IsLinkHovered(i32* const linkId)
+	bool IsLinkHovered(Id* const linkId)
 	{
-		assert(gNodes->CurrentScope != Scope_None);
+		assert(gNodes->currentScope != Scope::None);
 		assert(linkId != nullptr);
 
 		const bool isHovered = gNodes->HoveredLinkIdx.IsValid();
 		if (isHovered)
 		{
 			const EditorContext& editor = GetEditorContext();
-			*linkId                     = editor.Links.Pool[gNodes->HoveredLinkIdx.Value()].Id;
+			*linkId                     = editor.Links.Pool[gNodes->HoveredLinkIdx.Value()].id;
 		}
 		return isHovered;
 	}
 
-	bool IsPinHovered(i32* const attr)
+	bool IsPinHovered(Id* const pin)
 	{
-		assert(gNodes->CurrentScope != Scope_None);
-		assert(attr != nullptr);
+		assert(gNodes->currentScope != Scope::None);
+		assert(pin != nullptr);
 
 		const bool isHovered = gNodes->HoveredPinIdx;
 		if (gNodes->HoveredPinIdx)
 		{
 			const EditorContext& editor = GetEditorContext();
-			*attr                       = editor.GetPinData(gNodes->HoveredPinIdx).Id;
+			*pin                        = editor.GetPinData(gNodes->HoveredPinIdx).id;
 			return true;
 		}
 		return false;
@@ -2427,19 +2427,19 @@ namespace Rift::Nodes
 
 	i32 NumSelectedNodes()
 	{
-		assert(gNodes->CurrentScope != Scope_None);
+		assert(gNodes->currentScope != Scope::None);
 		const EditorContext& editor = GetEditorContext();
 		return editor.SelectedNodeIndices.size();
 	}
 
 	i32 NumSelectedLinks()
 	{
-		assert(gNodes->CurrentScope != Scope_None);
+		assert(gNodes->currentScope != Scope::None);
 		const EditorContext& editor = GetEditorContext();
 		return editor.SelectedLinkIndices.size();
 	}
 
-	void GetSelectedNodes(i32* nodeIds)
+	void GetSelectedNodes(Id* nodeIds)
 	{
 		assert(nodeIds != nullptr);
 
@@ -2447,11 +2447,11 @@ namespace Rift::Nodes
 		for (i32 i = 0; i < editor.SelectedNodeIndices.size(); ++i)
 		{
 			const i32 nodeIdx = editor.SelectedNodeIndices[i];
-			nodeIds[i]        = editor.nodes.Pool[nodeIdx].Id;
+			nodeIds[i]        = editor.nodes.Pool[nodeIdx].id;
 		}
 	}
 
-	void GetSelectedLinks(i32* linkIds)
+	void GetSelectedLinks(Id* linkIds)
 	{
 		assert(linkIds != nullptr);
 
@@ -2459,7 +2459,7 @@ namespace Rift::Nodes
 		for (i32 i = 0; i < editor.SelectedLinkIndices.size(); ++i)
 		{
 			const i32 linkIdx = editor.SelectedLinkIndices[i];
-			linkIds[i]        = editor.Links.Pool[linkIdx].Id;
+			linkIds[i]        = editor.Links.Pool[linkIdx].id;
 		}
 	}
 
@@ -2469,7 +2469,7 @@ namespace Rift::Nodes
 		editor.SelectedNodeIndices.clear();
 	}
 
-	void ClearNodeSelection(i32 nodeId)
+	void ClearNodeSelection(Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
 		ClearObjectSelection(editor.nodes, editor.SelectedNodeIndices, nodeId);
@@ -2481,31 +2481,31 @@ namespace Rift::Nodes
 		editor.SelectedLinkIndices.clear();
 	}
 
-	void ClearLinkSelection(i32 linkId)
+	void ClearLinkSelection(Id linkId)
 	{
 		EditorContext& editor = GetEditorContext();
 		ClearObjectSelection(editor.Links, editor.SelectedLinkIndices, linkId);
 	}
 
-	void SelectNode(i32 nodeId)
+	void SelectNode(Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
 		SelectObject(editor.nodes, editor.SelectedNodeIndices, nodeId);
 	}
 
-	void SelectLink(i32 linkId)
+	void SelectLink(Id linkId)
 	{
 		EditorContext& editor = GetEditorContext();
 		SelectObject(editor.Links, editor.SelectedLinkIndices, linkId);
 	}
 
-	bool IsNodeSelected(i32 nodeId)
+	bool IsNodeSelected(Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
 		return IsObjectSelected(editor.nodes, editor.SelectedNodeIndices, nodeId);
 	}
 
-	bool IsLinkSelected(i32 linkId)
+	bool IsLinkSelected(Id linkId)
 	{
 		EditorContext& editor = GetEditorContext();
 		return IsObjectSelected(editor.Links, editor.SelectedLinkIndices, linkId);
@@ -2513,7 +2513,7 @@ namespace Rift::Nodes
 
 	bool IsPinActive()
 	{
-		assert((gNodes->CurrentScope & Scope_Node) != 0);
+		Check(HasFlag(gNodes->currentScope, Scope::Node));
 
 		if (!gNodes->activePin)
 		{
@@ -2523,9 +2523,9 @@ namespace Rift::Nodes
 		return gNodes->activePinId == gNodes->CurrentPinId;
 	}
 
-	bool IsAnyPinActive(i32* const pinId)
+	bool IsAnyPinActive(Id* const pinId)
 	{
-		assert((gNodes->CurrentScope & (Scope_Node | Scope_Pin)) == 0);
+		Check(!HasAnyFlags(gNodes->currentScope, (Scope::Node | Scope::Pin)));
 
 		if (!gNodes->activePin)
 		{
@@ -2540,26 +2540,26 @@ namespace Rift::Nodes
 		return true;
 	}
 
-	bool IsLinkStarted(i32* outputId)
+	bool IsLinkStarted(Id* outputId)
 	{
 		// Call this function after EndNodeEditor()!
-		assert(gNodes->CurrentScope != Scope_None);
+		assert(gNodes->currentScope != Scope::None);
 		assert(outputId != nullptr);
 		if ((gNodes->UIState & UIState_LinkStarted) != 0)
 		{
 			const EditorContext& editor = GetEditorContext();
 			const i32 pinIdx            = editor.clickInteraction.linkCreation.outputPin;
-			*outputId                   = editor.GetPinData({pinIdx, PinType::Output}).Id;
+			*outputId                   = editor.GetPinData({pinIdx, PinType::Output}).id;
 			return true;
 		}
 		return false;
 	}
 
-	bool IsLinkDropped(i32* outputId, bool includingDetachedLinks)
+	bool IsLinkDropped(Id* outputId, bool includingDetachedLinks)
 	{
 		// Call this function after EndNodeEditor()!
-		assert(gNodes->CurrentScope != Scope_None);
-		assert(outputId != nullptr);
+		Check(gNodes->currentScope != Scope::None);
+		Check(outputId != nullptr);
 
 		const EditorContext& editor = GetEditorContext();
 
@@ -2570,18 +2570,16 @@ namespace Rift::Nodes
 
 		if (linkDropped && outputId)
 		{
-			const i32 pinIdx = editor.clickInteraction.linkCreation.outputPin;
-			*outputId        = editor.GetPinData({pinIdx, PinType::Output}).Id;
+			const Id pinIdx = editor.clickInteraction.linkCreation.outputPin;
+			*outputId       = editor.GetPinData({pinIdx, PinType::Output}).id;
 		}
 
 		return linkDropped;
 	}
 
-	bool IsLinkCreated(i32* outputPinId, i32* inputPinId, bool* createdFromSnap)
+	bool IsLinkCreated(Id& outputPinId, Id& inputPinId, bool* createdFromSnap)
 	{
-		assert(gNodes->CurrentScope != Scope_None);
-		assert(outputPinId != nullptr);
-		assert(inputPinId != nullptr);
+		Check(gNodes->currentScope == Scope::None);
 
 		if ((gNodes->UIState & UIState_LinkCreated) != 0)
 		{
@@ -2591,8 +2589,8 @@ namespace Rift::Nodes
 			const PinData& inputData =
 			    editor.GetPinData(PinId::Input(editor.clickInteraction.linkCreation.inputPin));
 
-			*outputPinId = outputData.Id;
-			*inputPinId  = inputData.Id;
+			outputPinId = outputData.id;
+			inputPinId  = inputData.id;
 
 			if (createdFromSnap)
 			{
@@ -2604,14 +2602,10 @@ namespace Rift::Nodes
 		return false;
 	}
 
-	bool IsLinkCreated(i32* outputNodeId, i32* outputPinId, i32* inputNodeId, i32* inputPinId,
-	    bool* createdFromSnap)
+	bool IsLinkCreated(
+	    Id& outputNodeId, Id& outputPinId, Id& inputNodeId, Id& inputPinId, bool* createdFromSnap)
 	{
-		assert(gNodes->CurrentScope != Scope_None);
-		assert(outputNodeId != nullptr);
-		assert(outputPinId != nullptr);
-		assert(inputNodeId != nullptr);
-		assert(inputPinId != nullptr);
+		Check(gNodes->currentScope == Scope::None);
 
 		if ((gNodes->UIState & UIState_LinkCreated) != 0)
 		{
@@ -2619,14 +2613,14 @@ namespace Rift::Nodes
 			const i32 outputPin         = editor.clickInteraction.linkCreation.outputPin;
 			const i32 inputPin          = editor.clickInteraction.linkCreation.inputPin;
 			const PinData& outputData   = editor.outputs.Pool[outputPin];
-			const NodeData& outputNode  = editor.nodes.Pool[outputData.ParentNodeIdx];
+			const NodeData& outputNode  = editor.nodes.Pool[outputData.parentNodeIdx];
 			const PinData& inputData    = editor.inputs.Pool[inputPin];
-			const NodeData& inputNode   = editor.nodes.Pool[inputData.ParentNodeIdx];
+			const NodeData& inputNode   = editor.nodes.Pool[inputData.parentNodeIdx];
 
-			*outputPinId  = outputData.Id;
-			*outputNodeId = outputNode.Id;
-			*inputPinId   = inputData.Id;
-			*inputNodeId  = inputNode.Id;
+			outputPinId  = outputData.id;
+			outputNodeId = outputNode.id;
+			inputPinId   = inputData.id;
+			inputNodeId  = inputNode.id;
 
 			if (createdFromSnap)
 			{
@@ -2638,16 +2632,16 @@ namespace Rift::Nodes
 		return false;
 	}
 
-	bool IsLinkDestroyed(i32* const linkId)
+	bool IsLinkDestroyed(Id& linkId)
 	{
-		assert(gNodes->CurrentScope != Scope_None);
+		Check(gNodes->currentScope == Scope::None);
 
 		const bool linkDestroyed = gNodes->DeletedLinkIdx.IsValid();
 		if (linkDestroyed)
 		{
 			const EditorContext& editor = GetEditorContext();
 			const i32 linkIdx           = gNodes->DeletedLinkIdx.Value();
-			*linkId                     = editor.Links.Pool[linkIdx].Id;
+			linkId                      = editor.Links.Pool[linkIdx].id;
 		}
 
 		return linkDestroyed;

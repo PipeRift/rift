@@ -284,10 +284,9 @@ namespace Rift::Graph
 		bool wantsToOpenContextMenu = false;
 		UI::Begin(graphId.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
 		{
-			PushNodeStyle();
-
 			Nodes::SetEditorContext(&typeEditor.nodesEditor);
 			Nodes::BeginNodeEditor();
+			PushNodeStyle();
 
 			if (!ImGui::IsAnyItemHovered() && Nodes::IsEditorHovered()
 			    && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
@@ -312,8 +311,21 @@ namespace Rift::Graph
 			DrawStatementLinks(ast, functions);
 
 			Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
-			Nodes::EndNodeEditor();
 			PopNodeStyle();
+			Nodes::EndNodeEditor();
+
+			Nodes::Id startPin, endPin;
+			if (Nodes::IsLinkCreated(startPin, endPin))
+			{
+				Log::Info("New link!");
+				AST::Link(ast, AST::Id(startPin), AST::Id(endPin));
+			}
+			Nodes::Id linkId;
+			if (Nodes::IsLinkDestroyed(linkId))
+			{
+				// Link to type, meaning disconnected
+				AST::Link(ast, typeId, AST::Id(linkId));
+			}
 
 			if (wantsToOpenContextMenu)
 			{
