@@ -160,7 +160,6 @@ namespace Rift::AST
 		template<typename Component>
 		Component* TryGet(const Id id) const
 		{
-			Check(IsValid(id));
 			auto* const pool = FindPool<Component>();
 			return pool ? pool->TryGet(id) : nullptr;
 		}

@@ -45,11 +45,19 @@ namespace Rift::AST
 	void Tree::Destroy(const Id id)
 	{
 		idRegistry.Destroy(id);
+		for (auto& pool : pools)
+		{
+			pool.GetInstance()->Remove(id);
+		}
 	}
 
 	void Tree::Destroy(TArrayView<const Id> ids)
 	{
 		idRegistry.Destroy(ids);
+		for (auto& pool : pools)
+		{
+			pool.GetInstance()->Remove(ids);
+		}
 	}
 
 	Pool* Tree::FindPool(Refl::TypeId componentId) const

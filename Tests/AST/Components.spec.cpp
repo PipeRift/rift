@@ -108,7 +108,7 @@ go_bandit([]() {
 			AssertThat(ast.TryGet<NonEmptyComponent>(id), Equals(nullptr));
 		});
 
-		it("Components keep state", [&]() {
+		it("Components keep state when added", [&]() {
 			AST::Tree ast;
 			AST::Id id = ast.Create();
 			ast.Add<NonEmptyComponent>(id, {2});
@@ -127,8 +127,8 @@ go_bandit([]() {
 			AST::Tree astb;
 			astb.CopyFrom(asta);
 			AssertThat(astb.Has<EmptyComponent>(id), Is().True());
-			AssertThat(astb.TryGet<EmptyComponent>(id), !Equals(nullptr));
 			AssertThat(astb.Has<NonEmptyComponent>(id), Is().True());
+			AssertThat(astb.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
 
 			// Holds component values
 			AssertThat(astb.Get<NonEmptyComponent>(id2).a, Equals(2));
