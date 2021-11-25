@@ -4,7 +4,7 @@
 #include "AST/Types.h"
 
 #include <Containers/Array.h>
-#include <Containers/ArrayView.h>
+#include <Containers/Span.h>
 
 
 namespace Rift::AST
@@ -23,9 +23,9 @@ namespace Rift::AST
 
 
 		Id Create();
-		void Create(TArrayView<Id> newIds);
+		void Create(TSpan<Id> newIds);
 		bool Destroy(Id id);
-		bool Destroy(TArrayView<const Id> ids);
+		bool Destroy(TSpan<const Id> ids);
 		bool IsValid(Id id) const;
 
 		u32 Size() const

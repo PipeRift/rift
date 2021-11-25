@@ -1,11 +1,12 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "AST/Tree.h"
+
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CNativeDecl.h"
 #include "AST/Components/CType.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
-#include "AST/Tree.h"
 #include "Compiler/Cpp/Components/CCppNativeName.h"
 
 
@@ -38,7 +39,7 @@ namespace Rift::AST
 	{
 		return idRegistry.Create();
 	}
-	void Tree::Create(TArrayView<Id> ids)
+	void Tree::Create(TSpan<Id> ids)
 	{
 		idRegistry.Create(ids);
 	}
@@ -52,7 +53,7 @@ namespace Rift::AST
 		}
 	}
 
-	void Tree::Destroy(TArrayView<const Id> ids)
+	void Tree::Destroy(TSpan<const Id> ids)
 	{
 		idRegistry.Destroy(ids);
 		for (auto& pool : pools)

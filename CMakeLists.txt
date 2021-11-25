@@ -1,14 +1,15 @@
 # CMake version
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required (VERSION 3.16)
 MESSAGE(STATUS "CMAKE_ROOT: " ${CMAKE_ROOT})
 
+
+set(CMAKE_VERBOSE_MAKEFILE OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 
-# Turn on the verbose
-set(CMAKE_VERBOSE_MAKEFILE OFF)
-# Export commands for Clangd
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+################################################################################
+# Project
 
 project(Rift VERSION 0.1 LANGUAGES CXX C)
 

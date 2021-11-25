@@ -15,4 +15,4 @@ The code is validated on the following platforms/compilers:
 | clang   | clang  | clang |
 | msvc    | gcc    |       |
 
-Architectures **X64** and **ARM64** are supported.
+Architectures **x64** and **ARM64** are supported.

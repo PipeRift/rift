@@ -1081,8 +1081,8 @@ namespace Rift::Nodes
 	PinId ResolveHoveredPin(
 	    const ObjectPool<PinData>& pins, PinType type, const ImVector<PinId>& occludedPinIndices)
 	{
-		float smallestDistance         = FLT_MAX;
-		Id pinIdxWithSmallestDistance  = NoId();
+		float smallestDistance        = FLT_MAX;
+		Id pinIdxWithSmallestDistance = NoId();
 
 		const float hoverRadiusSqr = gNodes->Style.PinHoverRadius * gNodes->Style.PinHoverRadius;
 

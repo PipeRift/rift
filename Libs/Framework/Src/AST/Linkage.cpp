@@ -22,7 +22,7 @@ namespace Rift::AST
 		}
 	}
 
-	void Link(Tree& ast, Id node, TArrayView<const Id> children)
+	void Link(Tree& ast, Id node, TSpan<const Id> children)
 	{
 		children.Each([&ast, node](Id child) {
 			if (CChild* cChild = GetCChild(ast, child))
@@ -42,7 +42,7 @@ namespace Rift::AST
 		ast.GetOrAdd<CParent>(node).children.Append(children);
 	}
 
-	void TransferLinks(Tree& ast, TArrayView<Id> children, Id destination)
+	void TransferLinks(Tree& ast, TSpan<Id> children, Id destination)
 	{
 		Unlink(ast, children, true);
 		Link(ast, destination, children);
@@ -52,7 +52,7 @@ namespace Rift::AST
 
 	void TransferLinks(Tree& ast, Id node, Id child) {}
 
-	void Unlink(Tree& ast, TArrayView<Id> children, bool keepComponents)
+	void Unlink(Tree& ast, TSpan<Id> children, bool keepComponents)
 	{
 		TArray<Id> parents;
 		parents.Reserve(children.Size());
@@ -115,7 +115,7 @@ namespace Rift::AST
 		}
 	}
 
-	void UnlinkAllChildren(Tree& ast, TArrayView<Id> parents, bool keepComponents)
+	void UnlinkAllChildren(Tree& ast, TSpan<Id> parents, bool keepComponents)
 	{
 		if (keepComponents)
 		{
@@ -159,7 +159,7 @@ namespace Rift::AST
 		return parent ? &parent->children : nullptr;
 	}
 
-	void GetLinked(const Tree& ast, TArrayView<const Id> nodes, TArray<Id>& outLinkedNodes)
+	void GetLinked(const Tree& ast, TSpan<const Id> nodes, TArray<Id>& outLinkedNodes)
 	{
 		nodes.Each([&ast, &outLinkedNodes](Id node) {
 			if (const CParent* const parent = GetCParent(ast, node))
@@ -170,7 +170,7 @@ namespace Rift::AST
 	}
 
 	void GetLinkedDeep(
-	    const Tree& ast, TArrayView<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth)
+	    const Tree& ast, TSpan<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth)
 	{
 		if (depth == 0)
 		{
@@ -204,7 +204,7 @@ namespace Rift::AST
 		return AST::NoId;
 	}
 
-	TArray<Id> GetLinkedParents(const Tree& ast, TArrayView<Id> nodes)
+	TArray<Id> GetLinkedParents(const Tree& ast, TSpan<Id> nodes)
 	{
 		TArray<Id> parents;
 		for (Id nodeId : nodes)
@@ -218,7 +218,7 @@ namespace Rift::AST
 		return Move(parents);
 	}
 
-	void Remove(Tree& ast, TArrayView<Id> nodes)
+	void Remove(Tree& ast, TSpan<Id> nodes)
 	{
 		Unlink(ast, nodes, true);
 
@@ -226,7 +226,7 @@ namespace Rift::AST
 		ast.Destroy(nodes);
 	}
 
-	void RemoveDeep(Tree& ast, TArrayView<Id> nodes)
+	void RemoveDeep(Tree& ast, TSpan<Id> nodes)
 	{
 		Unlink(ast, nodes, true);
 
@@ -257,7 +257,7 @@ namespace Rift::AST
 		return reinterpret_cast<const CParent*>(ast.GetParentView().TryGet<CParent>(node));
 	}
 
-	bool FixParentLinks(Tree& ast, TArrayView<Id> parents)
+	bool FixParentLinks(Tree& ast, TSpan<Id> parents)
 	{
 		bool fixed = false;
 		for (Id parentId : parents)
@@ -285,7 +285,7 @@ namespace Rift::AST
 		return fixed;
 	}
 
-	bool ValidateParentLinks(const Tree& ast, TArrayView<Id> parents)
+	bool ValidateParentLinks(const Tree& ast, TSpan<Id> parents)
 	{
 		for (Id parentId : parents)
 		{

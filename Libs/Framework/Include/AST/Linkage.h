@@ -3,7 +3,7 @@
 
 #include "AST/Tree.h"
 
-#include <Containers/ArrayView.h>
+#include <Containers/Span.h>
 
 
 namespace Rift
@@ -16,32 +16,32 @@ namespace Rift
 namespace Rift::AST
 {
 	// Link a list of nodes at the end of the parent children list
-	void Link(Tree& ast, Id node, TArrayView<const Id> children);
+	void Link(Tree& ast, Id node, TSpan<const Id> children);
 	// Link a list of nodes after prevChild in the list of children nodes
-	void LinkAfter(Tree& ast, Id node, Id prevChild, TArrayView<Id> children);
-	void TransferLinks(Tree& ast, TArrayView<Id> children, Id destination);
+	void LinkAfter(Tree& ast, Id node, Id prevChild, TSpan<Id> children);
+	void TransferLinks(Tree& ast, TSpan<Id> children, Id destination);
 	void TransferAllLinks(Tree& ast, Id origin, Id destination);
 	// void TransferAllLinks(Tree& ast, Id origin, Id destination, const TArray<Id>& children);
-	void Unlink(Tree& ast, TArrayView<Id> children, bool keepComponents);
-	void UnlinkAllChildren(Tree& ast, TArrayView<Id> parents, bool keepComponents = false);
+	void Unlink(Tree& ast, TSpan<Id> children, bool keepComponents);
+	void UnlinkAllChildren(Tree& ast, TSpan<Id> parents, bool keepComponents = false);
 
 	TArray<Id>* GetLinked(Tree& ast, Id node);
 	const TArray<Id>* GetLinked(const Tree& ast, Id node);
-	void GetLinked(const Tree& ast, TArrayView<const Id> nodes, TArray<Id>& outLinkedNodes);
+	void GetLinked(const Tree& ast, TSpan<const Id> nodes, TArray<Id>& outLinkedNodes);
 	/**
 	 * Finds all nodes connected recursively.
 	 */
 	void GetLinkedDeep(
-	    const Tree& ast, TArrayView<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth = 0);
+	    const Tree& ast, TSpan<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth = 0);
 	Id GetLinkedParent(Tree& ast, Id node);
-	TArray<Id> GetLinkedParents(const Tree& ast, TArrayView<Id> nodes);
+	TArray<Id> GetLinkedParents(const Tree& ast, TSpan<Id> nodes);
 
 	// void Copy(Tree& ast, const TArray<Id>& nodes, TArray<Id>& outNewNodes);
 	// void CopyDeep(Tree& ast, const TArray<Id>& rootNodes, TArray<Id>& outNewRootNodes);
 	// void CopyAndTransferAllChildrenDeep(Tree& ast, Id root, Id otherRoot);
 
-	void Remove(Tree& ast, TArrayView<Id> nodes);
-	void RemoveDeep(Tree& ast, TArrayView<Id> nodes);
+	void Remove(Tree& ast, TSpan<Id> nodes);
+	void RemoveDeep(Tree& ast, TSpan<Id> nodes);
 
 	/**
 	 * @returns the CChild of a valid node. If the node doesnt have this component, nullptr is
@@ -63,7 +63,7 @@ namespace Rift::AST
 	 * @parents: where to look for children to fix up
 	 * @return true if an incorrect link was found and fixed
 	 */
-	bool FixParentLinks(Tree& ast, TArrayView<Id> parents);
+	bool FixParentLinks(Tree& ast, TSpan<Id> parents);
 
 	/**
 	 * Iterates children nodes looking for invalid child->parent links
@@ -72,5 +72,5 @@ namespace Rift::AST
 	 * @parents: where to look for children
 	 * @return true if an incorrect link was found
 	 */
-	bool ValidateParentLinks(const Tree& ast, TArrayView<Id> parents);
+	bool ValidateParentLinks(const Tree& ast, TSpan<Id> parents);
 }    // namespace Rift::AST

@@ -1,25 +1,56 @@
-// Copyright 2015-2020 Piperift - All rights reserved
+// Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Types.h"
+#include "AST/Components/CType.h"
+#include "AST/Tree.h"
 
-#include <Misc/Guid.h>
-#include <Object/Struct.h>
+#include <Misc/Checks.h>
 
 
 namespace Rift::AST
 {
-	struct TypeRef : public Struct
+	struct TypeRef
 	{
-		STRUCT(TypeRef, Struct)
+	private:
+		Tree& ast;
+		AST::Id typeId = AST::NoId;
 
-		PROP(id)
-		AST::Id id;
+	public:
+		TypeRef(Tree& ast, AST::Id typeId) : ast(ast), typeId(typeId)
+		{
+			if (!IsNone(typeId))
+			{
+				Ensure(ast.Has<CType>(typeId));
+			}
+		}
 
-		PROP(guid)
-		Guid guid;
+		Tree& GetAST()
+		{
+			return ast;
+		}
+		const Tree& GetAST() const
+		{
+			return ast;
+		}
+
+		AST::Id GetId() const
+		{
+			return typeId;
+		}
+
+		bool IsValid() const
+		{
+			return !IsNone(typeId);
+		}
+
+
+		operator AST::Id() const
+		{
+			return typeId;
+		}
+		operator bool() const
+		{
+			return IsValid();
+		}
 	};
-
-	void Read(Serl::ReadContext& ct, TypeRef& value);
-	void Write(Serl::WriteContext& ct, const TypeRef& value);
 }    // namespace Rift::AST

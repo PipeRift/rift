@@ -215,5 +215,13 @@
         "Libs\\Framework",
         "Libs\\UI"
     ],
-    "favorites.sortOrder": "ASC"
+    "favorites.sortOrder": "ASC",
+    "clangd.fallbackFlags": [
+        "--compile-commands-dir=/Build"
+    ],
+    "clangd.arguments": [
+        "--background-index"
+    ],
+    "lldb.showDisassembly": "auto",
+    "lldb.dereferencePointers": true
 }

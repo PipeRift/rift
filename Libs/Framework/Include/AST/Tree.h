@@ -73,9 +73,9 @@ namespace Rift::AST
 #pragma region ECS API
 		Id Create();
 		void Create(Id id);
-		void Create(TArrayView<Id> ids);
+		void Create(TSpan<Id> ids);
 		void Destroy(Id id);
-		void Destroy(TArrayView<const Id> ids);
+		void Destroy(TSpan<const Id> ids);
 
 		// Adds Component to an entity (if the entity doesnt have it already)
 		template<typename Component>
@@ -100,14 +100,14 @@ namespace Rift::AST
 		}
 
 		template<typename Component>
-		decltype(auto) Add(TArrayView<const Id> ids, const Component& value = {})
+		decltype(auto) Add(TSpan<const Id> ids, const Component& value = {})
 		{
 			return AssurePool<Component>().Add(ids.begin(), ids.end(), value);
 		}
 
 		// Adds Component to an entity (if the entity doesnt have it already)
 		template<typename... Component>
-		void Add(TArrayView<const Id> ids) requires(sizeof...(Component) > 1)
+		void Add(TSpan<const Id> ids) requires(sizeof...(Component) > 1)
 		{
 			(Add<Component>(ids), ...);
 		}
@@ -131,7 +131,7 @@ namespace Rift::AST
 			(FindPool<Component>()->Remove(id), ...);
 		}
 		template<typename... Component>
-		void Remove(TArrayView<const Id> ids) requires(sizeof...(Component) > 0)
+		void Remove(TSpan<const Id> ids) requires(sizeof...(Component) > 0)
 		{
 			for (Id id : ids)
 			{
@@ -402,13 +402,13 @@ namespace Rift::AST
 		}
 
 		template<typename Component>
-		TBroadcast<TArrayView<const Id>> OnAdd()
+		TBroadcast<TSpan<const Id>> OnAdd()
 		{
 			return AssurePool<Component>().OnAdd();
 		}
 
 		template<typename Component>
-		TBroadcast<TArrayView<const Id>>& OnRemove()
+		TBroadcast<TSpan<const Id>>& OnRemove()
 		{
 			return AssurePool<Component>().OnRemove();
 		}

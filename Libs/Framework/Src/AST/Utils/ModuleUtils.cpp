@@ -1,5 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "AST/Utils/ModuleUtils.h"
+
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CModule.h"
@@ -8,7 +10,6 @@
 #include "AST/Statics/STypes.h"
 #include "AST/Systems/LoadSystem.h"
 #include "AST/Systems/TypeSystem.h"
-#include "AST/Utils/ModuleUtils.h"
 #include "Framework/Paths.h"
 
 #include <Files/Files.h>

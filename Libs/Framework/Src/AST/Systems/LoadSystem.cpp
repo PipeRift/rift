@@ -1,5 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "AST/Systems/LoadSystem.h"
+
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/CFunctionLibraryDecl.h"
@@ -12,7 +14,6 @@
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/SStringLoad.h"
 #include "AST/Statics/STypes.h"
-#include "AST/Systems/LoadSystem.h"
 #include "AST/Utils/ModuleIterator.h"
 #include "AST/Utils/ModuleUtils.h"
 #include "AST/Utils/TypeIterator.h"
@@ -145,7 +146,7 @@ namespace Rift::LoadSystem
 	}
 
 	void CreateTypesFromPaths(
-	    AST::Tree& ast, TArrayView<ModuleTypePaths> pathsByModule, TArray<AST::Id>& ids)
+	    AST::Tree& ast, TSpan<ModuleTypePaths> pathsByModule, TArray<AST::Id>& ids)
 	{
 		ZoneScopedNC("CreateTypesFromPaths", 0x459bd1);
 
@@ -196,7 +197,7 @@ namespace Rift::LoadSystem
 		}
 	}
 
-	void LoadFileStrings(AST::Tree& ast, TArrayView<AST::Id> nodes, TArray<String>& strings)
+	void LoadFileStrings(AST::Tree& ast, TSpan<AST::Id> nodes, TArray<String>& strings)
 	{
 		ZoneScopedNC("LoadFileStrings", 0x459bd1);
 
@@ -217,8 +218,7 @@ namespace Rift::LoadSystem
 		}
 	}
 
-	void DeserializeModules(
-	    AST::Tree& ast, TArrayView<AST::Id> moduleIds, TArrayView<String> strings)
+	void DeserializeModules(AST::Tree& ast, TSpan<AST::Id> moduleIds, TSpan<String> strings)
 	{
 		ZoneScopedNC("DeserializeModules", 0x459bd1);
 		Check(moduleIds.Size() == strings.Size());
@@ -243,7 +243,7 @@ namespace Rift::LoadSystem
 		}
 	}
 
-	void DeserializeTypes(AST::Tree& ast, TArrayView<AST::Id> typeIds, TArrayView<String> strings)
+	void DeserializeTypes(AST::Tree& ast, TSpan<AST::Id> typeIds, TSpan<String> strings)
 	{
 		ZoneScopedNC("DeserializeTypes", 0x459bd1);
 		Check(typeIds.Size() == strings.Size());

@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Launch",
-            "type": "cppvsdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${command:cmake.launchTargetPath}",
             "args": [],
@@ -17,7 +17,7 @@
         },
         {
             "name": "Test Core",
-            "type": "cppvsdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/Build/Bin/RiftCoreTests.exe",
             "args": [
@@ -30,7 +30,7 @@
         },
         {
             "name": "Test Rift",
-            "type": "cppvsdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/Build/Bin/RiftTests.exe",
             "args": [

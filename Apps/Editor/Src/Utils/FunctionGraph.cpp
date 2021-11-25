@@ -1,8 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Utils/FunctionGraph.h"
+
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
-#include "Utils/FunctionGraph.h"
 #include "Utils/GraphColors.h"
 #include "Utils/TypeUtils.h"
 

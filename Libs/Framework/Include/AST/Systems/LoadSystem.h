@@ -4,7 +4,7 @@
 #include "AST/Tree.h"
 
 #include <Containers/Array.h>
-#include <Containers/ArrayView.h>
+#include <Containers/Span.h>
 
 
 namespace Rift::AST
@@ -38,12 +38,11 @@ namespace Rift::LoadSystem
 
 	void CreateModulesFromPaths(AST::Tree& ast, TArray<Path>& paths, TArray<AST::Id>& ids);
 	void CreateTypesFromPaths(
-	    AST::Tree& ast, TArrayView<ModuleTypePaths> pathsByModule, TArray<AST::Id>& ids);
+	    AST::Tree& ast, TSpan<ModuleTypePaths> pathsByModule, TArray<AST::Id>& ids);
 
-	void LoadFileStrings(AST::Tree& ast, TArrayView<AST::Id> nodes, TArray<String>& strings);
+	void LoadFileStrings(AST::Tree& ast, TSpan<AST::Id> nodes, TArray<String>& strings);
 
-	void DeserializeModules(
-	    AST::Tree& ast, TArrayView<AST::Id> moduleIds, TArrayView<String> strings);
-	void DeserializeTypes(AST::Tree& ast, TArrayView<AST::Id> typeIds, TArrayView<String> strings);
+	void DeserializeModules(AST::Tree& ast, TSpan<AST::Id> moduleIds, TSpan<String> strings);
+	void DeserializeTypes(AST::Tree& ast, TSpan<AST::Id> typeIds, TSpan<String> strings);
 
 }    // namespace Rift::LoadSystem

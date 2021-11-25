@@ -86,7 +86,7 @@ go_bandit([]() {
 			ast.Create(ids);
 			ast.Add<NonEmptyComponent>(ids, {2});
 
-			TArrayView<AST::Id> firstTwo{ids.Data(), ids.Data() + 2};
+			TSpan<AST::Id> firstTwo{ids.Data(), ids.Data() + 2};
 			ast.Remove<NonEmptyComponent>(firstTwo);
 
 			AssertThat(ast.TryGet<NonEmptyComponent>(ids[0]), Equals(nullptr));

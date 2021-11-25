@@ -3,6 +3,7 @@
 #pragma once
 
 #include "AST/Tree.h"
+#include "AST/TypeRef.h"
 
 #include <AST/Components/CType.h>
 
@@ -14,8 +15,10 @@ namespace Rift::Types
 
 	AST::Id CreateClass(AST::Tree& ast, Name name);
 	AST::Id CreateStruct(AST::Tree& ast, Name name);
-	AST::Id CreateVariable(AST::Tree& ast, Name name);
-	AST::Id CreateFunction(AST::Tree& ast, Name name);
+
+	AST::Id AddVariable(AST::TypeRef type, Name name);
+	AST::Id AddFunction(AST::TypeRef type, Name name);
+
 	AST::Id CreateLiteral(AST::Tree& ast, AST::Id typeId, AST::Id parentId);
 	AST::Id CreateCall(AST::Tree& ast, AST::Id functionId, AST::Id parentId);
 

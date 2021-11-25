@@ -1,8 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Tools/GraphPlayground.h"
+
 #include "DockSpaceLayout.h"
 #include "Statics/SEditor.h"
-#include "Tools/GraphPlayground.h"
 #include "Utils/FunctionGraph.h"
 
 #include <UI/Nodes.h>

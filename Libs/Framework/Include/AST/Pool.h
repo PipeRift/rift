@@ -374,8 +374,8 @@ namespace Rift::AST
 		TPoolSet<> set;
 		DeletionPolicy deletionPolicy;
 
-		TBroadcast<TArrayView<const Id>> onAdd;
-		TBroadcast<TArrayView<const Id>> onRemove;
+		TBroadcast<TSpan<const Id>> onAdd;
+		TBroadcast<TSpan<const Id>> onRemove;
 
 
 		Pool(DeletionPolicy inDeletionPolicy)
@@ -390,10 +390,10 @@ namespace Rift::AST
 			return set.contains(id);
 		}
 
-		virtual bool Remove(Id id)                          = 0;
-		virtual void RemoveUnsafe(Id id)                    = 0;
-		virtual i32 Remove(TArrayView<const Id> ids)        = 0;
-		virtual void RemoveUnsafe(TArrayView<const Id> ids) = 0;
+		virtual bool Remove(Id id)                     = 0;
+		virtual void RemoveUnsafe(Id id)               = 0;
+		virtual i32 Remove(TSpan<const Id> ids)        = 0;
+		virtual void RemoveUnsafe(TSpan<const Id> ids) = 0;
 
 		virtual Pool* Clone() = 0;
 
@@ -422,12 +422,12 @@ namespace Rift::AST
 			return set.rend();
 		}
 
-		TBroadcast<TArrayView<const Id>>& OnAdd()
+		TBroadcast<TSpan<const Id>>& OnAdd()
 		{
 			return onAdd;
 		}
 
-		TBroadcast<TArrayView<const Id>>& OnRemove()
+		TBroadcast<TSpan<const Id>>& OnRemove()
 		{
 			return onRemove;
 		}
@@ -619,7 +619,7 @@ namespace Rift::AST
 				PopSwap(id);
 		}
 
-		i32 Remove(TArrayView<const Id> ids) override
+		i32 Remove(TSpan<const Id> ids) override
 		{
 			i32 removed = 0;
 			onRemove.Broadcast(ids);
@@ -648,7 +648,7 @@ namespace Rift::AST
 			return removed;
 		}
 
-		void RemoveUnsafe(TArrayView<const Id> ids) override
+		void RemoveUnsafe(TSpan<const Id> ids) override
 		{
 			onRemove.Broadcast(ids);
 			if (deletionPolicy == DeletionPolicy::InPlace)
@@ -763,15 +763,15 @@ namespace Rift::AST
 		{
 			componentId       = other.componentId;
 			other.componentId = Refl::TypeId::None();
-			instance       = Move(other.instance);
-			other.instance = nullptr;
+			instance          = Move(other.instance);
+			other.instance    = nullptr;
 		}
 		PoolInstance& operator=(PoolInstance&& other)
 		{
 			componentId       = other.componentId;
 			other.componentId = Refl::TypeId::None();
-			instance       = Move(other.instance);
-			other.instance = nullptr;
+			instance          = Move(other.instance);
+			other.instance    = nullptr;
 			return *this;
 		}
 		explicit PoolInstance(const PoolInstance& other)

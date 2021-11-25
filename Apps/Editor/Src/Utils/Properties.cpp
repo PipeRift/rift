@@ -12,6 +12,7 @@
 #include <AST/Components/CStructDecl.h>
 #include <AST/Components/CVariableDecl.h>
 #include <AST/Linkage.h>
+#include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/TypeUtils.h>
 #include <GLFW/glfw3.h>
 #include <UI/UI.h>
@@ -215,8 +216,7 @@ namespace Rift
 			Style::PushStyleCompact();
 			if (UI::Button("Add##Variable", ImVec2(-FLT_MIN, 0.0f)))
 			{
-				AST::Id newVariable = Types::CreateVariable(ast, "NewVariable");
-				AST::Link(ast, typeId, newVariable);
+				Types::AddVariable({ast, typeId}, "NewVariable");
 			}
 			Style::PopStyleCompact();
 			UI::Unindent(10.f);
@@ -257,7 +257,7 @@ namespace Rift
 			Style::PushStyleCompact();
 			if (UI::Button("Add##Function", ImVec2(-FLT_MIN, 0.0f)))
 			{
-				AST::Id newFunction = Types::CreateFunction(ast, "NewFunction");
+				AST::Id newFunction = Types::AddFunction({ast, typeId}, "NewFunction");
 				AST::Link(ast, typeId, newFunction);
 			}
 			Style::PopStyleCompact();

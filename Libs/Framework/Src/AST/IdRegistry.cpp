@@ -19,7 +19,7 @@ namespace Rift::AST
 		return id;
 	}
 
-	void IdRegistry::Create(TArrayView<Id> newIds)
+	void IdRegistry::Create(TSpan<Id> newIds)
 	{
 		const i32 availablesUsed = Math::Min(newIds.Size(), available.Size());
 		for (i32 i = 0; i < availablesUsed; ++i)
@@ -57,7 +57,7 @@ namespace Rift::AST
 		return false;
 	}
 
-	bool IdRegistry::Destroy(TArrayView<const Id> ids)
+	bool IdRegistry::Destroy(TSpan<const Id> ids)
 	{
 		available.Reserve(available.Size() + ids.Size());
 		const u32 lastAvailable = available.Size();

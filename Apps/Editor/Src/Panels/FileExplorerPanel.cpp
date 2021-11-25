@@ -1,7 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Editor.h"
 #include "Panels/FileExplorerPanel.h"
+
+#include "Editor.h"
 #include "Statics/SEditor.h"
 #include "UI/Style.h"
 #include "UI/UI.h"

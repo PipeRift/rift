@@ -66,16 +66,25 @@ namespace Rift::Types
 		return id;
 	}
 
-	AST::Id CreateVariable(AST::Tree& ast, Name name)
+	AST::Id AddVariable(AST::TypeRef type, Name name)
 	{
+		AST::Tree& ast = type.GetAST();
+
 		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);
 		ast.Add<CVariableDecl, CParent>(id);
+
+		if (type)
+		{
+			AST::Link(ast, type, id);
+		}
 		return id;
 	}
 
-	AST::Id CreateFunction(AST::Tree& ast, Name name)
+	AST::Id AddFunction(AST::TypeRef type, Name name)
 	{
+		AST::Tree& ast = type.GetAST();
+
 		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);
 		ast.Add<CFunctionDecl, CParent>(id);
@@ -83,6 +92,11 @@ namespace Rift::Types
 		AST::Id compoundId = ast.Create();
 		ast.Add<CCompoundStmt>(id);
 		AST::Link(ast, id, compoundId);
+
+		if (type)
+		{
+			AST::Link(ast, type, id);
+		}
 		return id;
 	}
 

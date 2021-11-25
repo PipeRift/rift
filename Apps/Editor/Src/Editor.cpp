@@ -1,6 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Editor.h"
+
 #include "Statics/SEditor.h"
 #include "Systems/EditorSystem.h"
 #include "Utils/FunctionGraph.h"

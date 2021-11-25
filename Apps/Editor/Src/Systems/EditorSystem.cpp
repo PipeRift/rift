@@ -1,10 +1,11 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
+#include "Systems/EditorSystem.h"
+
 #include "Components/CTypeEditor.h"
 #include "Editor.h"
 #include "Files/FileDialog.h"
 #include "Statics/SEditor.h"
-#include "Systems/EditorSystem.h"
 #include "Utils/FunctionGraph.h"
 #include "Utils/Properties.h"
 #include "Utils/TypeUtils.h"
