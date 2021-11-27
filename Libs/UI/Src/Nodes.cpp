@@ -687,13 +687,13 @@ namespace Rift::Nodes
 			return;
 		}
 
-		const bool startedPanning = gNodes->AltMouseClicked;
+		const bool startedPanning = gNodes->altMouseClicked;
 
 		if (startedPanning)
 		{
 			editor.clickInteraction.type = ClickInteractionType_Panning;
 		}
-		else if (gNodes->LeftMouseClicked)
+		else if (gNodes->leftMouseClicked)
 		{
 			editor.clickInteraction.type = ClickInteractionType_BoxSelection;
 			editor.clickInteraction.boxSelector.Rect.min =
@@ -995,7 +995,7 @@ namespace Rift::Nodes
 
 	void UpdatePanning(EditorContext& editor)
 	{
-		const bool dragging = gNodes->AltMouseDragging;
+		const bool dragging = gNodes->altMouseDragging;
 
 		if (dragging)
 		{
@@ -1851,18 +1851,18 @@ namespace Rift::Nodes
 		gNodes->UIState = UIState_None;
 
 		gNodes->mousePosition     = ImGui::GetIO().MousePos;
-		gNodes->LeftMouseClicked  = ImGui::IsMouseClicked(0);
+		gNodes->leftMouseClicked  = ImGui::IsMouseClicked(0);
 		gNodes->leftMouseReleased = ImGui::IsMouseReleased(0);
 		gNodes->leftMouseDragging = ImGui::IsMouseDragging(0, 0.0f);
-		gNodes->AltMouseClicked =
+		gNodes->altMouseClicked =
 		    (gNodes->Io.emulateThreeButtonMouse.modifier != nullptr
-		        && *gNodes->Io.emulateThreeButtonMouse.modifier && gNodes->LeftMouseClicked)
+		        && *gNodes->Io.emulateThreeButtonMouse.modifier && gNodes->leftMouseClicked)
 		    || ImGui::IsMouseClicked(gNodes->Io.AltMouseButton);
-		gNodes->AltMouseDragging =
+		gNodes->altMouseDragging =
 		    (gNodes->Io.emulateThreeButtonMouse.modifier != nullptr && gNodes->leftMouseDragging
 		        && (*gNodes->Io.emulateThreeButtonMouse.modifier))
 		    || ImGui::IsMouseDragging(gNodes->Io.AltMouseButton, 0.0f);
-		gNodes->AltMouseScrollDelta    = ImGui::GetIO().MouseWheel;
+		gNodes->altMouseScrollDelta    = ImGui::GetIO().MouseWheel;
 		gNodes->multipleSelectModifier = (gNodes->Io.multipleSelectModifier.modifier != nullptr
 		                                      ? *gNodes->Io.multipleSelectModifier.modifier
 		                                      : ImGui::GetIO().KeyCtrl);
@@ -1914,7 +1914,7 @@ namespace Rift::Nodes
 
 		// Detect ImGui i32eraction first, because it blocks i32eraction with the rest of the UI
 
-		if (gNodes->LeftMouseClicked && ImGui::IsAnyItemActive())
+		if (gNodes->leftMouseClicked && ImGui::IsAnyItemActive())
 		{
 			editor.clickInteraction.type = ClickInteractionType_ImGuiItem;
 		}
@@ -1994,23 +1994,23 @@ namespace Rift::Nodes
 
 		if (!editor.miniMap.IsHovered())
 		{
-			if (gNodes->LeftMouseClicked && gNodes->HoveredLinkIdx.IsValid())
+			if (gNodes->leftMouseClicked && gNodes->HoveredLinkIdx.IsValid())
 			{
 				BeginLinkInteraction(editor, gNodes->HoveredLinkIdx.Value(), gNodes->HoveredPinIdx);
 			}
 
-			else if (gNodes->LeftMouseClicked && gNodes->HoveredPinIdx)
+			else if (gNodes->leftMouseClicked && gNodes->HoveredPinIdx)
 			{
 				BeginLinkCreation(editor, gNodes->HoveredPinIdx);
 			}
 
-			else if (gNodes->LeftMouseClicked && gNodes->HoveredNodeIdx.IsValid())
+			else if (gNodes->leftMouseClicked && gNodes->HoveredNodeIdx.IsValid())
 			{
 				BeginNodeSelection(editor, gNodes->HoveredNodeIdx.Value());
 			}
 
-			else if (gNodes->LeftMouseClicked || gNodes->leftMouseReleased
-			         || gNodes->AltMouseClicked || gNodes->AltMouseScrollDelta != 0.f)
+			else if (gNodes->leftMouseClicked || gNodes->leftMouseReleased
+			         || gNodes->altMouseClicked || gNodes->altMouseScrollDelta != 0.f)
 			{
 				BeginCanvasInteraction(editor);
 			}

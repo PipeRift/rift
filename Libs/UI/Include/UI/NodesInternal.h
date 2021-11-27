@@ -355,12 +355,12 @@ namespace Rift::Nodes
 
 		v2 mousePosition;
 
-		bool LeftMouseClicked;
+		bool leftMouseClicked;
 		bool leftMouseReleased;
-		bool AltMouseClicked;
+		bool altMouseClicked;
 		bool leftMouseDragging;
-		bool AltMouseDragging;
-		float AltMouseScrollDelta;
+		bool altMouseDragging;
+		float altMouseScrollDelta;
 		bool multipleSelectModifier;
 	};
 
@@ -408,10 +408,10 @@ namespace Rift::Nodes
 				{
 					// Remove node idx form depth stack the first time we detect that this idx slot
 					// is unused
-					ImVector<i32>& depth_stack = GetEditorContext().NodeDepthOrder;
-					const i32* const elem      = depth_stack.find(i);
-					assert(elem != depth_stack.end());
-					depth_stack.erase(elem);
+					ImVector<i32>& depthStack = GetEditorContext().NodeDepthOrder;
+					const i32* const elem     = depthStack.find(i);
+					assert(elem != depthStack.end());
+					depthStack.erase(elem);
 
 					nodes.idMap.SetInt(i32(id), -1);
 					nodes.availableIds.Add(i);
@@ -473,9 +473,9 @@ namespace Rift::Nodes
 			{
 				nodeIdx = nodes.Pool.Size();
 				IM_ASSERT(nodes.Pool.Size() == nodes.InUse.Size());
-				const i32 new_size = nodes.Pool.Size() + 1;
-				nodes.Pool.Resize(new_size);
-				nodes.InUse.Resize(new_size);
+				const i32 newSize = nodes.Pool.Size() + 1;
+				nodes.Pool.Resize(newSize);
+				nodes.InUse.Resize(newSize);
 			}
 			else
 			{
