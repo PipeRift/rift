@@ -3,7 +3,7 @@
 
 #include "UI/Nodes.h"
 #include "UI/NodesMiniMap.h"
-#include "UI/UIImGui.h"
+#include "UI/UIImgui.h"
 
 #include <assert.h>
 #include <Containers/Array.h>
@@ -27,9 +27,9 @@ namespace Rift::Nodes
 
 	// [SECTION] internal enums
 
-	typedef int UIState;
-	typedef int ClickInteractionType;
-	typedef int LinkCreationType;
+	using UIState              = int;
+	using ClickInteractionType = int;
+	using LinkCreationType     = int;
 
 	enum class Scope : u8
 	{
@@ -80,7 +80,7 @@ namespace Rift::Nodes
 		TArray<T> Pool;
 		BitArray InUse;
 		TArray<i32> availableIds;
-		ImGuiStorage IdMap;
+		ImGuiStorage idMap;
 	};
 
 
@@ -370,7 +370,7 @@ namespace Rift::Nodes
 	template<typename T>
 	static inline i32 ObjectPoolFind(const ObjectPool<T>& objects, const Id id)
 	{
-		return objects.IdMap.GetInt(static_cast<ImGuiID>(id), -1);
+		return objects.idMap.GetInt(static_cast<ImGuiID>(id), -1);
 	}
 
 	template<typename T>
@@ -380,9 +380,9 @@ namespace Rift::Nodes
 		{
 			const Id id = objects.Pool[i].id;
 
-			if (!objects.InUse.IsSet(i) && objects.IdMap.GetInt(id, -1) == i)
+			if (!objects.InUse.IsSet(i) && objects.idMap.GetInt(id, -1) == i)
 			{
-				objects.IdMap.SetInt(id, -1);
+				objects.idMap.SetInt(id, -1);
 				objects.availableIds.Add(i);
 				(objects.Pool.Data() + i)->~T();
 			}
@@ -404,7 +404,7 @@ namespace Rift::Nodes
 			{
 				const Id id = nodes.Pool[i].id;
 
-				if (nodes.IdMap.GetInt(i32(id), -1) == i)
+				if (nodes.idMap.GetInt(i32(id), -1) == i)
 				{
 					// Remove node idx form depth stack the first time we detect that this idx slot
 					// is unused
@@ -413,7 +413,7 @@ namespace Rift::Nodes
 					assert(elem != depth_stack.end());
 					depth_stack.erase(elem);
 
-					nodes.IdMap.SetInt(i32(id), -1);
+					nodes.idMap.SetInt(i32(id), -1);
 					nodes.availableIds.Add(i);
 					(nodes.Pool.Data() + i)->~NodeData();
 				}
@@ -433,7 +433,7 @@ namespace Rift::Nodes
 	template<typename T>
 	static inline i32 ObjectPoolFindOrCreateIndex(ObjectPool<T>& objects, const i32 id)
 	{
-		i32 index = objects.IdMap.GetInt(static_cast<ImGuiID>(id), -1);
+		i32 index = objects.idMap.GetInt(static_cast<ImGuiID>(id), -1);
 
 		// Construct new object
 		if (index == -1)
@@ -442,9 +442,9 @@ namespace Rift::Nodes
 			{
 				index = objects.Pool.Size();
 				IM_ASSERT(objects.Pool.Size() == objects.InUse.Size());
-				const i32 new_size = objects.Pool.Size() + 1;
-				objects.Pool.Resize(new_size);
-				objects.InUse.Resize(new_size);
+				const i32 newSize = objects.Pool.Size() + 1;
+				objects.Pool.Resize(newSize);
+				objects.InUse.Resize(newSize);
 			}
 			else
 			{
@@ -452,7 +452,7 @@ namespace Rift::Nodes
 				objects.availableIds.RemoveLast();
 			}
 			IM_PLACEMENT_NEW(objects.Pool.Data() + index) T(id);
-			objects.IdMap.SetInt(static_cast<ImGuiID>(id), index);
+			objects.idMap.SetInt(static_cast<ImGuiID>(id), index);
 		}
 
 		// Flag it as used
@@ -464,7 +464,7 @@ namespace Rift::Nodes
 	template<>
 	inline i32 ObjectPoolFindOrCreateIndex(ObjectPool<NodeData>& nodes, const Id nodeId)
 	{
-		i32 nodeIdx = nodes.IdMap.GetInt(static_cast<ImGuiID>(i32(nodeId)), -1);
+		i32 nodeIdx = nodes.idMap.GetInt(static_cast<ImGuiID>(i32(nodeId)), -1);
 
 		// Construct new node
 		if (nodeIdx == -1)
@@ -483,7 +483,7 @@ namespace Rift::Nodes
 				nodes.availableIds.RemoveLast();
 			}
 			IM_PLACEMENT_NEW(nodes.Pool.Data() + nodeIdx) NodeData(nodeId);
-			nodes.IdMap.SetInt(static_cast<ImGuiID>(i32(nodeId)), nodeIdx);
+			nodes.idMap.SetInt(static_cast<ImGuiID>(i32(nodeId)), nodeIdx);
 
 			EditorContext& editor = GetEditorContext();
 			editor.NodeDepthOrder.push_back(nodeIdx);
