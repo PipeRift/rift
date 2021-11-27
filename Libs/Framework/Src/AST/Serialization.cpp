@@ -82,7 +82,7 @@ namespace Rift
 					}
 					else
 					{
-						ct.Next(StringView{key}, view.Get<T>(node));
+						ct.Next(StringView{key}, view.template Get<T>(node));
 					}
 				}
 			}

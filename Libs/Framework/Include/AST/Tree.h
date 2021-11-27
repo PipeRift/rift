@@ -67,8 +67,8 @@ namespace Rift::AST
 		Tree();
 		Tree(const Tree& other) = delete;
 		Tree& operator=(const Tree& other) = delete;
-		Tree(Tree&& other);
-		Tree& operator=(Tree&& other);
+		Tree(Tree&& other) noexcept;
+		Tree& operator=(Tree&& other) noexcept;
 
 #pragma region ECS API
 		Id Create();
@@ -152,7 +152,7 @@ namespace Rift::AST
 		TTuple<Component&...> Get(const Id id) const requires(sizeof...(Component) > 1)
 		{
 			Check(IsValid(id));
-			return std::forward_as_tuple(Get<Component>(id), ...);
+			return std::forward_as_tuple(Get<Component>(id)...);
 		}
 		template<typename Component>
 		Component* TryGet(const Id id) const
@@ -164,7 +164,7 @@ namespace Rift::AST
 		TTuple<Component*...> TryGet(const Id id) const requires(sizeof...(Component) > 1)
 		{
 			Check(IsValid(id));
-			return std::forward_as_tuple(TryGet<Component>(id), ...);
+			return std::forward_as_tuple(TryGet<Component>(id)...);
 		}
 
 
@@ -368,10 +368,10 @@ namespace Rift::AST
 			});
 		}
 
-		template<typename... Components>
+		template<typename... Component>
 		void Clear()
 		{
-			registry.clear<Components...>();
+			(ClearPool<Component>(), ...);
 		}
 
 		void Reset()
@@ -448,6 +448,15 @@ namespace Rift::AST
 	private:
 		void SetupNativeTypes();
 		void CachePools();
+
+		template<typename Component>
+		void ClearPool()
+		{
+			if (auto* pool = FindPool<Component>())
+			{
+				pool->Reset();
+			}
+		}
 	};
 
 	template<typename T>

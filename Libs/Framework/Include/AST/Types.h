@@ -46,10 +46,10 @@ namespace Rift
 		struct IdTraits<T> : public BaseIdTraits<UnderlyingType<T>>
 		{
 			using Parent     = BaseIdTraits<UnderlyingType<T>>;
-			using Entity     = Parent::Entity;
-			using Index      = Parent::Index;
-			using Version    = Parent::Version;
-			using Difference = Parent::Difference;
+			using Entity     = typename Parent::Entity;
+			using Index      = typename Parent::Index;
+			using Version    = typename Parent::Version;
+			using Difference = typename Parent::Difference;
 		};
 
 		template<typename T>

@@ -1,6 +1,7 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 #pragma once
 
+#include "AST/Pool.h"
 #include "AST/Types.h"
 
 
@@ -49,7 +50,7 @@ namespace Rift::AST
 
 			ViewIterator operator++(int)
 			{
-				Iterator orig = *this;
+				ViewIterator orig = *this;
 				return ++(*this), orig;
 			}
 
@@ -62,7 +63,7 @@ namespace Rift::AST
 
 			ViewIterator operator--(int)
 			{
-				Iterator orig = *this;
+				ViewIterator orig = *this;
 				return operator--(), orig;
 			}
 
@@ -180,22 +181,22 @@ namespace Rift::AST
 		Iterator Find(const Id id) const
 		{
 			const auto it = Iterator{iterablePool->begin(), iterablePool->end(),
-			    iterablePool->find(id), GetSecondaryPoolsArray(), GetExcludedPoolsArray()};
+			    iterablePool->Find(id), GetSecondaryPoolsArray(), GetExcludedPoolsArray()};
 			return (it != end() && *it == id) ? it : end();
 		}
 
 		template<typename Func>
 		void Each(Func func) const
 		{
-			((GetPool<Component>(pools) == iterableView ? Traverse<Component>(Move(func)) : void()),
-			    ...)
+			((GetPool<Component>(pools) == iterablePool ? Traverse<Component>(Move(func)) : void()),
+			    ...);
 		}
 
 		template<typename C, typename Func>
 		void Each(Func func) const
 		{
 			Use<C>();
-			Traverse<Comp>(Move(func));
+			Traverse<C>(Move(func));
 		}
 
 		bool Has(Id id) const
@@ -226,7 +227,7 @@ namespace Rift::AST
 		template<typename C>
 		void Use() const
 		{
-			iterableView = GetPool<C>(pools);
+			iterablePool = GetPool<C>(pools);
 		}
 
 		i32 Size() const
@@ -278,7 +279,7 @@ namespace Rift::AST
 		template<typename C, typename Func>
 		void Traverse(Func func) const
 		{
-			for (const auto id : &static_cast<const Pool*>(GetPool<C>()))
+			for (const auto id : *static_cast<const Pool*>(GetPool<C>()))
 			{
 				if (((IsSame<C, Component> || GetPool<Component>()->Has(id)) && ...)
 				    && (!GetExcluded<Exclude>()->Has(id) && ...))

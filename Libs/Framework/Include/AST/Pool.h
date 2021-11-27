@@ -1,4 +1,6 @@
 
+// Copyright 2015-2021 Piperift - All rights reserved
+#pragma once
 
 #include "AST/Entt/sparse_set.hpp"
 #include "AST/Types.h"
@@ -6,6 +8,7 @@
 #include <Containers/BitArray.h>
 #include <Containers/Map.h>
 #include <Containers/Set.h>
+#include <Containers/Span.h>
 #include <Events/Broadcast.h>
 #include <Memory/STLAllocator.h>
 #include <TypeTraits.h>
@@ -14,26 +17,21 @@
 namespace Rift::AST
 {
 	template<typename Allocator = Memory::DefaultAllocator>
-	struct TPoolSet : public entt::basic_sparse_set<STLAllocator<Id, Allocator>>
+	struct TPoolSet : public Rift::AST::BasicSparseSet<STLAllocator<Id, Allocator>>
 	{
-		using Super = entt::basic_sparse_set<STLAllocator<Id, Allocator>>;
+		using Super = Rift::AST::BasicSparseSet<STLAllocator<Id, Allocator>>;
 
 	public:
 		using Super::Super;
 
 		void PopSwap(Id id)
 		{
-			Super::swap_and_pop(id, nullptr);
+			Super::SwapAndPop(id, nullptr);
 		}
 
 		void Pop(Id id)
 		{
-			Super::in_place_pop(id, nullptr);
-		}
-
-		void Reserve(sizet capacity)
-		{
-			Super::reserve(capacity);
+			Super::InPlacePop(id, nullptr);
 		}
 	};
 
@@ -288,7 +286,7 @@ namespace Rift::AST
 		}
 		Iterator end()
 		{
-			return iterator{chunks.Data(), {}};
+			return Iterator{chunks.Data(), {}};
 		}
 		Iterator end() const
 		{
@@ -358,12 +356,6 @@ namespace Rift::AST
 
 	struct Pool
 	{
-		enum class DeletionPolicy : u8
-		{
-			Swap,
-			InPlace
-		};
-
 		using Index = IdTraits<Id>::Index;
 
 		using Iterator        = TPoolSet<>::iterator;
@@ -379,7 +371,7 @@ namespace Rift::AST
 
 
 		Pool(DeletionPolicy inDeletionPolicy)
-		    : set{entt::deletion_policy(u8(inDeletionPolicy))}, deletionPolicy{inDeletionPolicy}
+		    : set{DeletionPolicy(u8(inDeletionPolicy))}, deletionPolicy{inDeletionPolicy}
 		{}
 
 	public:
@@ -387,7 +379,7 @@ namespace Rift::AST
 
 		bool Has(Id id) const
 		{
-			return set.contains(id);
+			return set.Contains(id);
 		}
 
 		virtual bool Remove(Id id)                     = 0;
@@ -397,9 +389,14 @@ namespace Rift::AST
 
 		virtual Pool* Clone() = 0;
 
+		Iterator Find(const Id id) const
+		{
+			return set.Find(id);
+		}
+
 		sizet Size() const
 		{
-			return set.size();
+			return set.Size();
 		}
 
 		Iterator begin() const
@@ -461,8 +458,7 @@ namespace Rift::AST
 		}
 		~TPool() override
 		{
-			set.clear();
-			data.Reset();
+			Reset();
 		}
 
 		void Add(Id id, const T&) requires(IsEmpty<T>())
@@ -472,7 +468,7 @@ namespace Rift::AST
 				return;
 			}
 
-			set.emplace(id);
+			set.Emplace(id);
 			onAdd.Broadcast({id});
 		}
 
@@ -484,12 +480,12 @@ namespace Rift::AST
 			}
 
 			Check(!Has(id));
-			const auto i = set.slot();
+			const auto i = set.Slot();
 			data.Reserve(i + 1u);
 
 			T& value = *data.Push(i, v);
 
-			const auto setI = set.emplace(id);
+			const auto setI = set.Emplace(id);
 			if (!Ensure(i == setI)) [[unlikely]]
 			{
 				Log::Error("Misplaced component");
@@ -508,12 +504,12 @@ namespace Rift::AST
 				return (Get(id) = Move(v));
 			}
 
-			const auto i = set.slot();
+			const auto i = set.Slot();
 			data.Reserve(i + 1u);
 
 			T& value = *data.Push(i, Forward<T>(v));
 
-			const auto setI = set.emplace(id);
+			const auto setI = set.Emplace(id);
 			if (!Ensure(i == setI)) [[unlikely]]
 			{
 				Log::Error("Misplaced component");
@@ -530,7 +526,7 @@ namespace Rift::AST
 		void Add(It first, It last, const T& value = {})
 		{
 			const sizet numToAdd = std::distance(first, last);
-			const sizet newSize  = set.size() + numToAdd;
+			const sizet newSize  = set.Size() + numToAdd;
 			set.Reserve(newSize);
 			data.Reserve(newSize);
 
@@ -552,8 +548,8 @@ namespace Rift::AST
 				}
 				else
 				{
-					data.Push(set.size(), value);
-					set.emplace_back(id);
+					data.Push(set.Size(), value);
+					set.EmplaceBack(id);
 				}
 			}
 			onAdd.Broadcast(ids);
@@ -564,7 +560,7 @@ namespace Rift::AST
 		    IsSame<std::decay_t<typename std::iterator_traits<CIt>::value_type>, T>)
 		{
 			const sizet numToAdd = std::distance(first, last);
-			const sizet newSize  = set.size() + numToAdd;
+			const sizet newSize  = set.Size() + numToAdd;
 			set.Reserve(newSize);
 			data.Reserve(newSize);
 
@@ -586,8 +582,8 @@ namespace Rift::AST
 				}
 				else
 				{
-					data.Push(set.size(), *from);
-					set.emplace_back(id);
+					data.Push(set.Size(), *from);
+					set.EmplaceBack(id);
 				}
 				++from;
 			}
@@ -671,27 +667,27 @@ namespace Rift::AST
 
 		T& Get(Id id) requires(!IsEmpty<T>())
 		{
-			return *data.Get(set.index(id));
+			return *data.Get(set.Index(id));
 		}
 
 		const T& Get(Id id) const requires(!IsEmpty<T>())
 		{
-			return *data.Get(set.index(id));
+			return *data.Get(set.Index(id));
 		}
 
 		T* TryGet(Id id)
 		{
-			return Has(id) ? data.Get(set.index(id)) : nullptr;
+			return Has(id) ? data.Get(set.Index(id)) : nullptr;
 		}
 
 		const T* TryGet(Id id) const
 		{
-			return Has(id) ? data.Get(set.index(id)) : nullptr;
+			return Has(id) ? data.Get(set.Index(id)) : nullptr;
 		}
 
 		Pool* Clone() override
 		{
-			TPool<T>* newPool = new TPool<T>();
+			auto* newPool = new TPool<T>();
 
 			if constexpr (IsEmpty<T>())
 			{
@@ -715,8 +711,14 @@ namespace Rift::AST
 
 		void Shrink()
 		{
-			set.shrink_to_fit();
+			set.ShrinkToFit();
 			data.Release(set.Size());
+		}
+
+		void Reset()
+		{
+			set.Clear();
+			data.Reset();
 		}
 
 	private:
@@ -737,13 +739,13 @@ namespace Rift::AST
 
 		void PopSwap(Id id)
 		{
-			data.PopSwap(set.index(id), set.size() - 1u);
+			data.PopSwap(set.Index(id), set.Size() - 1u);
 			set.PopSwap(id);
 		}
 
 		void Pop(Id id)
 		{
-			data.Pop(set.index(id));
+			data.Pop(set.Index(id));
 			set.Pop(id);
 		}
 	};
