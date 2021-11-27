@@ -270,8 +270,7 @@ namespace Rift::AST
 
 		ConstIterator cbegin() const
 		{
-			const sizet index = size;
-			return ConstIterator{chunks.Data(), index};
+			return ConstIterator{chunks.Data(), IdTraits<Id>::Difference(size)};
 		}
 
 		ConstIterator begin() const
@@ -281,8 +280,7 @@ namespace Rift::AST
 
 		Iterator begin()
 		{
-			const sizet index = size;
-			return Iterator{chunks.Data(), index};
+			return Iterator{chunks.Data(), IdTraits<Id>::Difference(size)};
 		}
 		Iterator end()
 		{
