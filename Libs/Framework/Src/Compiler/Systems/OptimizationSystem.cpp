@@ -2,7 +2,7 @@
 
 #include "Compiler/Systems/OptimizationSystem.h"
 
-#include "AST/Hierarchy.h"
+#include "AST/Utils/Hierarchy.h"
 
 
 void Rift::OptimizationSystem::PruneDisconnected(AST::Tree& ast)
@@ -18,5 +18,5 @@ void Rift::OptimizationSystem::PruneDisconnected(AST::Tree& ast)
 	//	}
 	//});
 
-	AST::RemoveDeep(ast, nodesToRemove);
+	AST::Hierarchy::RemoveDeep(ast, nodesToRemove);
 }

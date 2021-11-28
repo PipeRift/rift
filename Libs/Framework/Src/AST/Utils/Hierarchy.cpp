@@ -1,6 +1,6 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "AST/Hierarchy.h"
+#include "AST/Utils/Hierarchy.h"
 
 #include "AST/Components/CChild.h"
 #include "AST/Components/CIdentifier.h"
@@ -8,7 +8,7 @@
 #include "Misc/Checks.h"
 
 
-namespace Rift::AST
+namespace Rift::AST::Hierarchy
 {
 	void RemoveChildFromCParent(Tree& ast, Id parent, Id child)
 	{
@@ -40,6 +40,29 @@ namespace Rift::AST
 			}
 		});
 		ast.GetOrAdd<CParent>(node).children.Append(children);
+	}
+
+	void AddChildrenAfter(Tree& ast, Id node, TSpan<Id> children, Id prevChild)
+	{
+		children.Each([&ast, node](Id child) {
+			if (CChild* cChild = GetCChild(ast, child))
+			{
+				if (EnsureMsg(IsNone(cChild->parent),
+				        "A node trying to be linked already has a parent. Consider using "
+				        "TransferChildren()"))
+				{
+					cChild->parent = node;
+				}
+			}
+			else
+			{
+				ast.Add<CChild>(child).parent = node;
+			}
+		});
+
+		auto& childrenList  = ast.GetOrAdd<CParent>(node).children;
+		const i32 prevIndex = childrenList.FindIndex(prevChild);
+		childrenList.InsertRange(prevIndex, children);
 	}
 
 	void TransferChildren(Tree& ast, TSpan<Id> children, Id destination)
@@ -195,7 +218,7 @@ namespace Rift::AST
 		}
 	}
 
-	Id GetLinkedParent(Tree& ast, Id node)
+	Id GetParent(Tree& ast, Id node)
 	{
 		if (auto* child = GetCChild(ast, node))
 		{
@@ -204,7 +227,7 @@ namespace Rift::AST
 		return AST::NoId;
 	}
 
-	TArray<Id> GetLinkedParents(const Tree& ast, TSpan<Id> nodes)
+	TArray<Id> GetParents(const Tree& ast, TSpan<Id> nodes)
 	{
 		TArray<Id> parents;
 		for (Id nodeId : nodes)
@@ -303,4 +326,4 @@ namespace Rift::AST
 		}
 		return true;
 	}
-}    // namespace Rift::AST
+}    // namespace Rift::AST::Hierarchy

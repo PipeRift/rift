@@ -10,7 +10,7 @@
 
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
-#include <AST/Hierarchy.h>
+#include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/TypeUtils.h>
 #include <Files/FileDialog.h>

@@ -18,7 +18,7 @@ namespace Rift::AST::Hierarchy
 	// Link a list of nodes at the end of the parent children list
 	void AddChildren(Tree& ast, Id node, TSpan<const Id> children);
 	// Link a list of nodes after prevChild in the list of children nodes
-	void AddChildrenAfter(Tree& ast, Id node, Id prevChild, TSpan<Id> children);
+	void AddChildrenAfter(Tree& ast, Id node, TSpan<Id> children, Id prevChild);
 	void TransferChildren(Tree& ast, TSpan<Id> children, Id destination);
 	void TransferAllChildren(Tree& ast, Id origin, Id destination);
 	void RemoveChildren(Tree& ast, TSpan<Id> children, bool keepComponents);
@@ -32,8 +32,8 @@ namespace Rift::AST::Hierarchy
 	 */
 	void GetLinkedDeep(
 	    const Tree& ast, TSpan<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth = 0);
-	Id GetLinkedParent(Tree& ast, Id node);
-	TArray<Id> GetLinkedParents(const Tree& ast, TSpan<Id> nodes);
+	Id GetParent(Tree& ast, Id node);
+	TArray<Id> GetParents(const Tree& ast, TSpan<Id> nodes);
 
 	// void Copy(Tree& ast, const TArray<Id>& nodes, TArray<Id>& outNewNodes);
 	// void CopyDeep(Tree& ast, const TArray<Id>& rootNodes, TArray<Id>& outNewRootNodes);

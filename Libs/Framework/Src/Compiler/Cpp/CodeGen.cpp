@@ -12,8 +12,8 @@
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CType.h"
 #include "AST/Components/CVariableDecl.h"
-#include "AST/Hierarchy.h"
 #include "AST/Tree.h"
+#include "AST/Utils/Hierarchy.h"
 #include "AST/Utils/ModuleUtils.h"
 #include "Compiler/CompilerContext.h"
 #include "Compiler/Cpp/Components/CCppCodeGenFragment.h"
@@ -147,7 +147,7 @@ namespace Rift::Compiler::Cpp
 	{
 		auto variables = ast.Query<const CIdentifier, const CVariableDecl>();
 
-		if (const CParent* parent = AST::GetCOwner(ast, owner))
+		if (const CParent* parent = AST::Hierarchy::GetCParent(ast, owner))
 		{
 			for (AST::Id entity : parent->children)
 			{
@@ -191,7 +191,7 @@ namespace Rift::Compiler::Cpp
 		{
 			StringView ownerName;
 
-			const CChild* parent = AST::GetCOwned(ast, entity);
+			const CChild* parent = AST::Hierarchy::GetCChild(ast, entity);
 			if (parent && ast.IsValid(parent->parent))
 			{
 				if (const auto* parentId = classesView.TryGet<const CIdentifier>(parent->parent))
@@ -214,7 +214,7 @@ namespace Rift::Compiler::Cpp
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
-			const CChild* child = AST::GetCOwned(ast, entity);
+			const CChild* child = AST::Hierarchy::GetCChild(ast, entity);
 			if (child && ast.IsValid(child->parent))
 			{
 				if (auto* parentId = classesView.TryGet<const CIdentifier>(child->parent))
@@ -265,7 +265,7 @@ namespace Rift::Compiler::Cpp
 		AddInclude(code, "stdint.h");
 
 		TArray<AST::Id> classes, structs;
-		AST::GetLinked(ast, moduleId, classes);
+		AST::Hierarchy::GetLinked(ast, moduleId, classes);
 		structs = classes;
 
 		auto classesView = ast.Query<const CClassDecl, const CType, const CIdentifier>();
@@ -288,7 +288,8 @@ namespace Rift::Compiler::Cpp
 
 
 		TArray<AST::Id> functions;
-		AST::GetLinkedDeep(ast, moduleId, functions, 2);    // Module->Types->Functions = depth 2
+		// Module->Types->Functions = depth 2
+		AST::Hierarchy::GetLinkedDeep(ast, moduleId, functions, 2);
 
 		auto functionsView = ast.Query<const CIdentifier, const CFunctionDecl>();
 		functions.RemoveIfSwap([&functionsView](AST::Id entity) {

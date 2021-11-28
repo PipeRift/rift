@@ -11,8 +11,8 @@
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CStructDecl.h>
 #include <AST/Components/CVariableDecl.h>
-#include <AST/Hierarchy.h>
 #include <AST/Utils/FunctionUtils.h>
+#include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/TypeUtils.h>
 #include <GLFW/glfw3.h>
 #include <UI/UI.h>
@@ -192,7 +192,7 @@ namespace Rift
 		{
 			auto variableView = ast.Query<CVariableDecl>();
 			UI::Indent(10.f);
-			if (auto* children = AST::GetLinked(ast, typeId))
+			if (auto* children = AST::Hierarchy::GetLinked(ast, typeId))
 			{
 				UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
 				if (UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit))
@@ -234,7 +234,7 @@ namespace Rift
 			auto functionView = ast.Query<CFunctionDecl>();
 			UI::Indent(10.f);
 
-			if (auto* children = AST::GetLinked(ast, typeId))
+			if (auto* children = AST::Hierarchy::GetLinked(ast, typeId))
 			{
 				UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
 				if (UI::BeginTable("##functionTable", 1, ImGuiTableFlags_SizingFixedFit))
@@ -258,7 +258,7 @@ namespace Rift
 			if (UI::Button("Add##Function", ImVec2(-FLT_MIN, 0.0f)))
 			{
 				AST::Id newFunction = Types::AddFunction({ast, typeId}, "NewFunction");
-				AST::AddChildren(ast, typeId, newFunction);
+				AST::Hierarchy::AddChildren(ast, typeId, newFunction);
 			}
 			Style::PopStyleCompact();
 			UI::Unindent(10.f);
@@ -290,7 +290,7 @@ namespace Rift
 
 		if (!IsNone(editor.pendingDeletePropertyId))
 		{
-			AST::RemoveDeep(ast, editor.pendingDeletePropertyId);
+			AST::Hierarchy::RemoveDeep(ast, editor.pendingDeletePropertyId);
 			editor.pendingDeletePropertyId = AST::NoId;
 		}
 	}

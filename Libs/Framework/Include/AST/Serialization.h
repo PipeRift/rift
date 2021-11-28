@@ -5,68 +5,67 @@
 #include "Serialization/Contexts.h"
 
 
-namespace Rift
+namespace Rift::AST
 {
-	class ASTReadContext : public Serl::ReadContext
+	class ReadContext : public Serl::ReadContext
 	{
-		AST::Tree& ast;
+		Tree& ast;
 
-		// While serializing we create ids as AST::Ids appear and link them.
+		// While serializing we create ids as Ids appear and link them.
 		u32 nodeCount = 0;
-		TArray<AST::Id> ASTIds;
+		TArray<Id> ids;
 
 
 	public:
-		ASTReadContext(const Serl::ReadContext& parent, AST::Tree& ast)
+		ReadContext(const Serl::ReadContext& parent, Tree& ast)
 		    : Serl::ReadContext(parent), ast(ast)
 		{}
 
-		void SerializeRoots(TArray<AST::Id>& roots);
+		void SerializeRoots(TArray<Id>& roots);
 
-		void SerializeRoot(AST::Id& root)
+		void SerializeRoot(Id& root)
 		{
-			TArray<AST::Id> roots{root};
+			TArray<Id> roots{root};
 			SerializeRoots(roots);
-			root = roots.IsEmpty() ? AST::NoId : roots[0];
+			root = roots.IsEmpty() ? NoId : roots[0];
 		}
 
-		const TArray<AST::Id>& GetASTIds() const
+		const TArray<Id>& GetIds() const
 		{
-			return ASTIds;
+			return ids;
 		}
 	};
 
 
-	class ASTWriteContext : public Serl::WriteContext
+	class WriteContext : public Serl::WriteContext
 	{
-		AST::Tree& ast;
+		Tree& ast;
 		bool includeChildren;
 
-		// While serializing we create ids as AST::Ids appear and link them.
+		// While serializing we create ids as Ids appear and link them.
 		u32 nodeCount = 0;
-		TMap<AST::Id, u32> ASTIdToIndexes;
+		TMap<Id, i32> idToIndexes;
 
 
 	public:
-		ASTWriteContext(
-		    const Serl::WriteContext& parent, AST::Tree& ast, bool includeChildren = true)
+		WriteContext(const Serl::WriteContext& parent, Tree& ast, bool includeChildren = true)
 		    : Serl::WriteContext(parent), ast(ast), includeChildren{includeChildren}
 		{}
 
-		void SerializeRoots(const TArray<AST::Id>& roots);
+		void SerializeRoots(const TArray<Id>& roots);
 
-		void SerializeRoot(const AST::Id& root)
+		void SerializeRoot(const Id& root)
 		{
-			TArray<AST::Id> roots{root};
+			TArray<Id> roots{root};
 			SerializeRoots(roots);
 		}
 
-		const TMap<AST::Id, u32>& GetASTIdToIndexes() const
+		const TMap<Id, i32>& GetIdToIndexes() const
 		{
-			return ASTIdToIndexes;
+			return idToIndexes;
 		}
 
 	private:
-		void RetrieveHierarchy(const TArray<AST::Id>& roots, TArray<AST::Id>& children);
+		void RetrieveHierarchy(const TArray<Id>& roots, TArray<Id>& children);
 	};
-}    // namespace Rift
+}    // namespace Rift::AST

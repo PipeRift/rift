@@ -7,7 +7,7 @@
 #include "AST/Components/CCompoundStmt.h"
 #include "AST/Components/CFloatLiteral.h"
 #include "AST/Components/CStringLiteral.h"
-#include "AST/Hierarchy.h"
+#include "AST/Utils/Hierarchy.h"
 
 
 namespace Rift::Functions
@@ -62,7 +62,7 @@ namespace Rift::Functions
 		auto* cChild   = ast.GetChildView().TryGet<CChild>(prevStmt);
 		if (cChild && ast.Has<CCompoundStmt>(cChild->parent))
 		{
-			AST::AddChildrenAfter(type.GetAST(), cChild->parent, prevStmt, stmt);
+			AST::Hierarchy::AddChildrenAfter(type.GetAST(), cChild->parent, prevStmt, stmt);
 			return true;
 		}
 		return false;

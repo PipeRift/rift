@@ -11,15 +11,15 @@ namespace Rift::Serl
 {
 	void Read(Serl::ReadContext& ct, AST::Id& val)
 	{
-		auto* astCt = dynamic_cast<ASTReadContext*>(&ct);
-		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTReadContext"))
+		auto* astCt = dynamic_cast<AST::ReadContext*>(&ct);
+		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTReadContext")) [[likely]]
 		{
-			u32 dataId;
+			i32 dataId;
 			astCt->Serialize(dataId);
 
 			if (dataId >= 0) [[likely]]
 			{
-				val = astCt->GetASTIds()[dataId];
+				val = astCt->GetIds()[dataId];
 			}
 			else
 			{
@@ -30,10 +30,10 @@ namespace Rift::Serl
 
 	void Write(Serl::WriteContext& ct, AST::Id val)
 	{
-		auto* astCt = dynamic_cast<ASTWriteContext*>(&ct);
-		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTWriteContext"))
+		auto* astCt = dynamic_cast<AST::WriteContext*>(&ct);
+		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTWriteContext")) [[likely]]
 		{
-			const u32* dataId = astCt->GetASTIdToIndexes().Find(val);
+			const i32* dataId = astCt->GetIdToIndexes().Find(val);
 			if (dataId) [[likely]]
 			{
 				astCt->Serialize(*dataId);

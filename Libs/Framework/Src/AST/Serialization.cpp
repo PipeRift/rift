@@ -15,25 +15,25 @@
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CVariableDecl.h"
 #include "AST/Components/Views/CGraphTransform.h"
-#include "AST/Hierarchy.h"
+#include "AST/Utils/Hierarchy.h"
 
 #include <Reflection/TypeName.h>
 
 
-namespace Rift
+namespace Rift::AST
 {
 	template<typename T>
-	void ReadPool(ASTReadContext& ct, AST::Tree& ast)
+	void ReadPool(ReadContext& ct, Tree& ast)
 	{
 		if (ct.EnterNext(GetTypeName<T>(false)))
 		{
-			const auto& nodes = ct.GetASTIds();
+			const auto& nodes = ct.GetIds();
 
 			String key;
 			ct.BeginObject();
 			for (i32 i = 0; i < nodes.Size(); ++i)
 			{
-				const AST::Id node = nodes[i];
+				const Id node = nodes[i];
 				key.clear();
 				Strings::FormatTo(key, "{}", i);
 
@@ -57,7 +57,7 @@ namespace Rift
 	}
 
 	template<typename T>
-	void WritePool(ASTWriteContext& ct, AST::Tree& ast, const TArray<AST::Id>& nodes)
+	void WritePool(WriteContext& ct, Tree& ast, const TArray<Id>& nodes)
 	{
 		auto view = ast.Query<T>();
 
@@ -70,7 +70,7 @@ namespace Rift
 			ct.BeginObject();
 			for (i32 i = 0; i < nodes.Size(); ++i)
 			{
-				const AST::Id node = nodes[i];
+				const Id node = nodes[i];
 				key.clear();
 				Strings::FormatTo(key, "{}", i);
 
@@ -91,29 +91,29 @@ namespace Rift
 		ct.PopFlags();
 	}
 
-	void ASTReadContext::SerializeRoots(TArray<AST::Id>& roots)
+	void ReadContext::SerializeRoots(TArray<Id>& roots)
 	{
-		TArray<AST::Id> parents = AST::GetLinkedParents(ast, roots);
+		TArray<Id> parents = Hierarchy::GetParents(ast, roots);
 
 		Next("count", nodeCount);
-		ASTIds.Resize(nodeCount);
+		ids.Resize(i32(nodeCount));
 		// Create or assign root ids
-		const i32 maxSize = Math::Min(roots.Size(), ASTIds.Size());
+		const i32 maxSize = Math::Min(roots.Size(), ids.Size());
 		for (i32 i = 0; i < maxSize; ++i)
 		{
-			const AST::Id root = roots[i];
-			if (root != AST::NoId)
+			const Id root = roots[i];
+			if (root != NoId)
 			{
-				ASTIds[i] = root;
+				ids[i] = root;
 			}
 			else
 			{
-				ASTIds[i] = ast.Create();
+				ids[i] = ast.Create();
 			}
 		}
 
 		// Create all non-root entities
-		ast.Create({ASTIds.Data() + maxSize, ASTIds.Data() + ASTIds.Size()});
+		ast.Create({ids.Data() + maxSize, ids.Data() + ids.Size()});
 
 		// Next("roots", roots); // Not needed
 		if (EnterNext("components"))
@@ -136,20 +136,20 @@ namespace Rift
 			Leave();
 		}
 
-		AST::FixParentLinks(ast, parents);
+		Hierarchy::FixParentLinks(ast, parents);
 	}
 
-	void ASTWriteContext::SerializeRoots(const TArray<AST::Id>& roots)
+	void WriteContext::SerializeRoots(const TArray<Id>& roots)
 	{
-		TArray<AST::Id> treeEntities;
+		TArray<Id> treeEntities;
 		RetrieveHierarchy(roots, treeEntities);
 		nodeCount = treeEntities.Size();
 		Next("count", nodeCount);
 
-		ASTIdToIndexes.Reserve(nodeCount);
-		for (u32 i = 0; i < nodeCount; ++i)
+		idToIndexes.Reserve(nodeCount);
+		for (i32 i = 0; i < i32(nodeCount); ++i)
 		{
-			ASTIdToIndexes.Insert(treeEntities[i], i);
+			idToIndexes.Insert(treeEntities[i], i);
 		}
 
 		Next("roots", roots);
@@ -174,12 +174,12 @@ namespace Rift
 		}
 	}
 
-	void ASTWriteContext::RetrieveHierarchy(const TArray<AST::Id>& roots, TArray<AST::Id>& children)
+	void WriteContext::RetrieveHierarchy(const TArray<Id>& roots, TArray<Id>& children)
 	{
 		children.Append(roots);
 		if (includeChildren)
 		{
-			AST::GetLinkedDeep(ast, roots, children);
+			Hierarchy::GetLinkedDeep(ast, roots, children);
 		}
 	}
-}    // namespace Rift
+}    // namespace Rift::AST

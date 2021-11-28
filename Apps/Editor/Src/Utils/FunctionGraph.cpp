@@ -14,9 +14,9 @@
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CStringLiteral.h>
 #include <AST/Components/Views/CGraphTransform.h>
-#include <AST/Hierarchy.h>
 #include <AST/Statics/STypeList.h>
 #include <AST/Utils/FunctionUtils.h>
+#include <AST/Utils/Hierarchy.h>
 #include <UI/Nodes.h>
 #include <UI/NodesInternal.h>
 #include <UI/NodesMiniMap.h>
@@ -238,7 +238,7 @@ namespace Rift::Graph
 		auto compounds  = ast.Query<CCompoundStmt>();
 		for (AST::Id functionId : functionDecls)
 		{
-			TArray<AST::Id>* functionChildren = AST::GetLinked(ast, functionId);
+			TArray<AST::Id>* functionChildren = AST::Hierarchy::GetLinked(ast, functionId);
 			if (!functionChildren || functionChildren->IsEmpty())
 			{
 				continue;
@@ -247,7 +247,7 @@ namespace Rift::Graph
 			AST::Id compoundId = functionChildren->Last();
 			if (compounds.Has(compoundId))
 			{
-				TArray<AST::Id>* statementChildren = AST::GetLinked(ast, compoundId);
+				TArray<AST::Id>* statementChildren = AST::Hierarchy::GetLinked(ast, compoundId);
 				if (!statementChildren || statementChildren->IsEmpty())
 				{
 					continue;
@@ -272,7 +272,7 @@ namespace Rift::Graph
 
 	void DrawTypeGraph(AST::Tree& ast, AST::Id typeId, CTypeEditor& typeEditor)
 	{
-		TArray<AST::Id>* children = AST::GetLinked(ast, typeId);
+		TArray<AST::Id>* children = AST::Hierarchy::GetLinked(ast, typeId);
 		if (!children)
 		{
 			return;
@@ -320,13 +320,13 @@ namespace Rift::Graph
 			if (Nodes::IsLinkCreated(startPin, endPin))
 			{
 				Log::Info("New link!");
-				AST::AddChildren(ast, AST::Id(startPin), AST::Id(endPin));
+				AST::Hierarchy::AddChildren(ast, AST::Id(startPin), AST::Id(endPin));
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))
 			{
 				// Link to type, meaning disconnected
-				AST::AddChildren(ast, typeId, AST::Id(linkId));
+				AST::Hierarchy::AddChildren(ast, typeId, AST::Id(linkId));
 			}
 
 			if (wantsToOpenContextMenu)
@@ -390,7 +390,7 @@ namespace Rift::Graph
 		if (nodes->leftMouseDragging || nodes->leftMouseReleased)
 		{
 			transform.position = GetNodePosition(functionId);
-			Types::Changed(AST::GetLinkedParent(ast, functionId), "Moved nodes");
+			Types::Changed(AST::Hierarchy::GetParent(ast, functionId), "Moved nodes");
 		}
 	}
 

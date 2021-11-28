@@ -9,8 +9,8 @@
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CVariableDecl.h"
-#include "AST/Hierarchy.h"
 #include "AST/Serialization.h"
+#include "AST/Utils/Hierarchy.h"
 
 #include <Misc/Checks.h>
 #include <Profiler.h>
@@ -67,7 +67,7 @@ namespace Rift::Types
 
 		if (type)
 		{
-			AST::AddChildren(ast, type, id);
+			AST::Hierarchy::AddChildren(ast, type, id);
 		}
 		return id;
 	}
@@ -82,11 +82,11 @@ namespace Rift::Types
 
 		AST::Id compoundId = ast.Create();
 		ast.Add<CCompoundStmt>(id);
-		AST::AddChildren(ast, id, compoundId);
+		AST::Hierarchy::AddChildren(ast, id, compoundId);
 
 		if (type)
 		{
-			AST::AddChildren(ast, type, id);
+			AST::Hierarchy::AddChildren(ast, type, id);
 		}
 		return id;
 	}
@@ -96,7 +96,7 @@ namespace Rift::Types
 		ZoneScoped;
 		Serl::JsonFormatWriter writer{};
 
-		ASTWriteContext ct{writer.GetContext(), ast, true};
+		AST::WriteContext ct{writer.GetContext(), ast, true};
 		ct.BeginObject();
 		ct.Next("type", GetCategory(ast, id));
 		ct.SerializeRoot(id);
