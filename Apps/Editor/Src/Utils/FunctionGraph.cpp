@@ -16,6 +16,7 @@
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Linkage.h>
 #include <AST/Statics/STypeList.h>
+#include <AST/Utils/FunctionUtils.h>
 #include <UI/Nodes.h>
 #include <UI/NodesInternal.h>
 #include <UI/NodesMiniMap.h>
@@ -131,7 +132,7 @@ namespace Rift::Graph
 						{
 							if (ImGui::MenuItem(makeStr.c_str()))
 							{
-								AST::Id newId = Types::CreateLiteral(ast, type.second, typeId);
+								AST::Id newId = Functions::AddLiteral({ast, typeId}, type.second);
 								if (newId != AST::NoId)
 								{
 									ast.Add<CGraphTransform>(newId, gridPos);
@@ -160,7 +161,7 @@ namespace Rift::Graph
 						{
 							if (ImGui::MenuItem(name.c_str()))
 							{
-								AST::Id newId = Types::CreateCall(ast, functionId, typeId);
+								AST::Id newId = Functions::AddCall({ast, typeId}, functionId);
 								if (newId != AST::NoId)
 								{
 									ast.Add<CGraphTransform>(newId, gridPos);

@@ -2,15 +2,11 @@
 
 #include "AST/Utils/TypeUtils.h"
 
-#include "AST/Components/CBoolLiteral.h"
-#include "AST/Components/CCallExpr.h"
 #include "AST/Components/CClassDecl.h"
 #include "AST/Components/CCompoundStmt.h"
-#include "AST/Components/CFloatLiteral.h"
 #include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CFunctionLibraryDecl.h"
 #include "AST/Components/CIdentifier.h"
-#include "AST/Components/CStringLiteral.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CVariableDecl.h"
 #include "AST/Linkage.h"
@@ -50,19 +46,14 @@ namespace Rift::Types
 		return TypeCategory::None;
 	}
 
-	AST::Id CreateClass(AST::Tree& ast, Name name)
+	AST::Id CreateType(AST::Tree& ast, TypeCategory type, Name name)
 	{
 		AST::Id id = ast.Create();
-		ast.Add<CIdentifier>(id, name);
-		ast.Add<CStructDecl, CParent>(id);
-		return id;
-	}
-
-	AST::Id CreateStruct(AST::Tree& ast, Name name)
-	{
-		AST::Id id = ast.Create();
-		ast.Add<CIdentifier>(id, name);
-		ast.Add<CStructDecl, CParent>(id);
+		InitTypeFromCategory(ast, id, type);
+		if (!name.IsNone())
+		{
+			ast.Add<CIdentifier>(id, name);
+		}
 		return id;
 	}
 
@@ -98,49 +89,6 @@ namespace Rift::Types
 			AST::Link(ast, type, id);
 		}
 		return id;
-	}
-
-	AST::Id CreateLiteral(AST::Tree& ast, AST::Id typeId, AST::Id parentId)
-	{
-		const AST::Id literalId = ast.Create();
-
-		bool created        = false;
-		const auto& natives = ast.GetNativeTypes();
-		if (typeId == natives.boolId)
-		{
-			ast.Add<CBoolLiteral>(literalId);
-			created = true;
-		}
-		else if (typeId == natives.floatId)
-		{
-			ast.Add<CFloatLiteral>(literalId);
-			created = true;
-		}
-		else if (typeId == natives.stringId)
-		{
-			ast.Add<CStringLiteral>(literalId);
-			created = true;
-		}
-
-		if (!created)
-		{
-			ast.Destroy(literalId);
-			return AST::NoId;
-		}
-		AST::Link(ast, parentId, literalId);
-		return literalId;
-	}
-
-	AST::Id CreateCall(AST::Tree& ast, AST::Id functionId, AST::Id parentId)
-	{
-		const AST::Id callId = ast.Create();
-
-		// TODO: Reference the function
-		auto& expr      = ast.Add<CCallExpr>(callId);
-		expr.functionId = functionId;
-
-		AST::Link(ast, parentId, callId);
-		return callId;
 	}
 
 	void Serialize(AST::Tree& ast, AST::Id id, String& data)

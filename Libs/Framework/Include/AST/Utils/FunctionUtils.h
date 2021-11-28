@@ -11,15 +11,9 @@ namespace Rift::Functions
 {
 	AST::Id GetCompoundStmt(AST::TypeRef type, AST::Id functionId);
 
-	/**
-	 * @brief Connects an statement to a previous statement or statement compound (making it the
-	 * first )
-	 * @param ast
-	 * @param ownerTypeId
-	 * @param statementId
-	 * @param targetId
-	 * @return true if connection succeeded
-	 */
-	bool ExtractStatements(AST::TypeRef type, AST::Id statementId, AST::Id targetId) {}
-	bool InsertStatement(AST::TypeRef type, AST::Id statement, TSpan<AST::Id> statements) {}
+	AST::Id AddLiteral(AST::TypeRef type, AST::Id literalTypeId);
+	AST::Id AddCall(AST::TypeRef type, AST::Id targetFunctionId);
+
+	bool InsertStmtAfter(AST::TypeRef type, AST::Id stmt, AST::Id prevStmt);
+	AST::Id FindStmtType(const AST::Tree& ast, AST::Id stmt);
 }    // namespace Rift::Functions

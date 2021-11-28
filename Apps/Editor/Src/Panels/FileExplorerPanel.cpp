@@ -367,12 +367,14 @@ namespace Rift
         },
 		    true);
 
-		AST::Id tmpType = ast.Create();
-		Types::InitTypeFromCategory(ast, tmpType, category);
+		AST::Id typeId = Types::CreateType(ast, category);
+		ast.Add<CFileRef>(typeId, filename);
 
 		String data;
-		Types::Serialize(ast, tmpType, data);
+		Types::Serialize(ast, typeId, data);
 		Files::SaveStringFile(filename, data);
-		ast.Destroy(tmpType);
+
+		// Destroy the temporal type after saving it
+		ast.Destroy(typeId);
 	}
 }    // namespace Rift
