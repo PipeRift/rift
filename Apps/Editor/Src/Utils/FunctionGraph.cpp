@@ -14,7 +14,7 @@
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CStringLiteral.h>
 #include <AST/Components/Views/CGraphTransform.h>
-#include <AST/Linkage.h>
+#include <AST/Hierarchy.h>
 #include <AST/Statics/STypeList.h>
 #include <AST/Utils/FunctionUtils.h>
 #include <UI/Nodes.h>
@@ -320,13 +320,13 @@ namespace Rift::Graph
 			if (Nodes::IsLinkCreated(startPin, endPin))
 			{
 				Log::Info("New link!");
-				AST::Link(ast, AST::Id(startPin), AST::Id(endPin));
+				AST::AddChildren(ast, AST::Id(startPin), AST::Id(endPin));
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))
 			{
 				// Link to type, meaning disconnected
-				AST::Link(ast, typeId, AST::Id(linkId));
+				AST::AddChildren(ast, typeId, AST::Id(linkId));
 			}
 
 			if (wantsToOpenContextMenu)

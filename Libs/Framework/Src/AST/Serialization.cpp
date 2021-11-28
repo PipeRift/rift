@@ -15,7 +15,7 @@
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CVariableDecl.h"
 #include "AST/Components/Views/CGraphTransform.h"
-#include "AST/Linkage.h"
+#include "AST/Hierarchy.h"
 
 #include <Reflection/TypeName.h>
 

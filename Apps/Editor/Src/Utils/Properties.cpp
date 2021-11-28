@@ -11,7 +11,7 @@
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CStructDecl.h>
 #include <AST/Components/CVariableDecl.h>
-#include <AST/Linkage.h>
+#include <AST/Hierarchy.h>
 #include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/TypeUtils.h>
 #include <GLFW/glfw3.h>
@@ -258,7 +258,7 @@ namespace Rift
 			if (UI::Button("Add##Function", ImVec2(-FLT_MIN, 0.0f)))
 			{
 				AST::Id newFunction = Types::AddFunction({ast, typeId}, "NewFunction");
-				AST::Link(ast, typeId, newFunction);
+				AST::AddChildren(ast, typeId, newFunction);
 			}
 			Style::PopStyleCompact();
 			UI::Unindent(10.f);

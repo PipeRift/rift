@@ -9,7 +9,7 @@
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CVariableDecl.h"
-#include "AST/Linkage.h"
+#include "AST/Hierarchy.h"
 #include "AST/Serialization.h"
 
 #include <Misc/Checks.h>
@@ -67,7 +67,7 @@ namespace Rift::Types
 
 		if (type)
 		{
-			AST::Link(ast, type, id);
+			AST::AddChildren(ast, type, id);
 		}
 		return id;
 	}
@@ -82,11 +82,11 @@ namespace Rift::Types
 
 		AST::Id compoundId = ast.Create();
 		ast.Add<CCompoundStmt>(id);
-		AST::Link(ast, id, compoundId);
+		AST::AddChildren(ast, id, compoundId);
 
 		if (type)
 		{
-			AST::Link(ast, type, id);
+			AST::AddChildren(ast, type, id);
 		}
 		return id;
 	}

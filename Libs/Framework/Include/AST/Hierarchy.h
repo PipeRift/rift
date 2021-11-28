@@ -13,17 +13,16 @@ namespace Rift
 }    // namespace Rift
 
 
-namespace Rift::AST
+namespace Rift::AST::Hierarchy
 {
 	// Link a list of nodes at the end of the parent children list
-	void Link(Tree& ast, Id node, TSpan<const Id> children);
+	void AddChildren(Tree& ast, Id node, TSpan<const Id> children);
 	// Link a list of nodes after prevChild in the list of children nodes
-	void LinkAfter(Tree& ast, Id node, Id prevChild, TSpan<Id> children);
-	void TransferLinks(Tree& ast, TSpan<Id> children, Id destination);
-	void TransferAllLinks(Tree& ast, Id origin, Id destination);
-	// void TransferAllLinks(Tree& ast, Id origin, Id destination, const TArray<Id>& children);
-	void Unlink(Tree& ast, TSpan<Id> children, bool keepComponents);
-	void UnlinkAllChildren(Tree& ast, TSpan<Id> parents, bool keepComponents = false);
+	void AddChildrenAfter(Tree& ast, Id node, Id prevChild, TSpan<Id> children);
+	void TransferChildren(Tree& ast, TSpan<Id> children, Id destination);
+	void TransferAllChildren(Tree& ast, Id origin, Id destination);
+	void RemoveChildren(Tree& ast, TSpan<Id> children, bool keepComponents);
+	void RemoveAllChildren(Tree& ast, TSpan<Id> parents, bool keepComponents = false);
 
 	TArray<Id>* GetLinked(Tree& ast, Id node);
 	const TArray<Id>* GetLinked(const Tree& ast, Id node);
@@ -73,4 +72,4 @@ namespace Rift::AST
 	 * @return true if an incorrect link was found
 	 */
 	bool ValidateParentLinks(const Tree& ast, TSpan<Id> parents);
-}    // namespace Rift::AST
+}    // namespace Rift::AST::Hierarchy

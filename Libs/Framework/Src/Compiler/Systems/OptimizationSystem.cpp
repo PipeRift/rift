@@ -2,7 +2,7 @@
 
 #include "Compiler/Systems/OptimizationSystem.h"
 
-#include "AST/Linkage.h"
+#include "AST/Hierarchy.h"
 
 
 void Rift::OptimizationSystem::PruneDisconnected(AST::Tree& ast)

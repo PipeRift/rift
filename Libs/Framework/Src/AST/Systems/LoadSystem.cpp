@@ -19,7 +19,7 @@
 #include "AST/Utils/TypeIterator.h"
 #include "AST/Utils/TypeUtils.h"
 
-#include <AST/Linkage.h>
+#include <AST/Hierarchy.h>
 #include <Files/Files.h>
 #include <Serialization/Formats/JsonFormat.h>
 
@@ -142,7 +142,7 @@ namespace Rift::LoadSystem
 
 		// Link modules to the project
 		const AST::Id projectId = Modules::GetProjectId(ast);
-		AST::Link(ast, projectId, ids);
+		AST::AddChildren(ast, projectId, ids);
 	}
 
 	void CreateTypesFromPaths(
@@ -192,7 +192,7 @@ namespace Rift::LoadSystem
 				Name pathName = modulePaths.pathNames[i];
 				types->typesByPath.Insert(pathName, typeIds[i]);
 			}
-			AST::Link(ast, modulePaths.moduleId, typeIds);
+			AST::AddChildren(ast, modulePaths.moduleId, typeIds);
 			ids.Append(typeIds);
 		}
 	}

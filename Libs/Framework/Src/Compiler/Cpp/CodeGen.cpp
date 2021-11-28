@@ -12,7 +12,7 @@
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CType.h"
 #include "AST/Components/CVariableDecl.h"
-#include "AST/Linkage.h"
+#include "AST/Hierarchy.h"
 #include "AST/Tree.h"
 #include "AST/Utils/ModuleUtils.h"
 #include "Compiler/CompilerContext.h"
@@ -147,7 +147,7 @@ namespace Rift::Compiler::Cpp
 	{
 		auto variables = ast.Query<const CIdentifier, const CVariableDecl>();
 
-		if (const CParent* parent = AST::GetCParent(ast, owner))
+		if (const CParent* parent = AST::GetCOwner(ast, owner))
 		{
 			for (AST::Id entity : parent->children)
 			{
@@ -191,7 +191,7 @@ namespace Rift::Compiler::Cpp
 		{
 			StringView ownerName;
 
-			const CChild* parent = AST::GetCChild(ast, entity);
+			const CChild* parent = AST::GetCOwned(ast, entity);
 			if (parent && ast.IsValid(parent->parent))
 			{
 				if (const auto* parentId = classesView.TryGet<const CIdentifier>(parent->parent))
@@ -214,7 +214,7 @@ namespace Rift::Compiler::Cpp
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
-			const CChild* child = AST::GetCChild(ast, entity);
+			const CChild* child = AST::GetCOwned(ast, entity);
 			if (child && ast.IsValid(child->parent))
 			{
 				if (auto* parentId = classesView.TryGet<const CIdentifier>(child->parent))

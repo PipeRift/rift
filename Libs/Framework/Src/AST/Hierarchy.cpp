@@ -1,6 +1,6 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "AST/Linkage.h"
+#include "AST/Hierarchy.h"
 
 #include "AST/Components/CChild.h"
 #include "AST/Components/CIdentifier.h"
@@ -22,14 +22,14 @@ namespace Rift::AST
 		}
 	}
 
-	void Link(Tree& ast, Id node, TSpan<const Id> children)
+	void AddChildren(Tree& ast, Id node, TSpan<const Id> children)
 	{
 		children.Each([&ast, node](Id child) {
 			if (CChild* cChild = GetCChild(ast, child))
 			{
 				if (EnsureMsg(IsNone(cChild->parent),
 				        "A node trying to be linked already has a parent. Consider using "
-				        "TransferLinks()"))
+				        "TransferChildren()"))
 				{
 					cChild->parent = node;
 				}
@@ -42,17 +42,17 @@ namespace Rift::AST
 		ast.GetOrAdd<CParent>(node).children.Append(children);
 	}
 
-	void TransferLinks(Tree& ast, TSpan<Id> children, Id destination)
+	void TransferChildren(Tree& ast, TSpan<Id> children, Id destination)
 	{
-		Unlink(ast, children, true);
-		Link(ast, destination, children);
+		RemoveChildren(ast, children, true);
+		AddChildren(ast, destination, children);
 	}
 
-	void TransferAllLinks(Tree& ast, Id origin, Id destination) {}
+	void TransferAllChildren(Tree& ast, Id origin, Id destination) {}
 
-	void TransferLinks(Tree& ast, Id node, Id child) {}
+	void TransferChildren(Tree& ast, Id node, Id child) {}
 
-	void Unlink(Tree& ast, TSpan<Id> children, bool keepComponents)
+	void RemoveChildren(Tree& ast, TSpan<Id> children, bool keepComponents)
 	{
 		TArray<Id> parents;
 		parents.Reserve(children.Size());
@@ -115,7 +115,7 @@ namespace Rift::AST
 		}
 	}
 
-	void UnlinkAllChildren(Tree& ast, TSpan<Id> parents, bool keepComponents)
+	void RemoveAllChildren(Tree& ast, TSpan<Id> parents, bool keepComponents)
 	{
 		if (keepComponents)
 		{
@@ -220,15 +220,15 @@ namespace Rift::AST
 
 	void Remove(Tree& ast, TSpan<Id> nodes)
 	{
-		Unlink(ast, nodes, true);
+		RemoveChildren(ast, nodes, true);
 
-		UnlinkAllChildren(ast, nodes);
+		RemoveAllChildren(ast, nodes);
 		ast.Destroy(nodes);
 	}
 
 	void RemoveDeep(Tree& ast, TSpan<Id> nodes)
 	{
-		Unlink(ast, nodes, true);
+		RemoveChildren(ast, nodes, true);
 
 		TArray<Id> allNodes;
 		allNodes.Append(nodes);
