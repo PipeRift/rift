@@ -299,7 +299,7 @@ namespace Rift::EditorSystem
 				if (UI::MenuItem("Save All", "CTRL+SHFT+S"))
 				{
 					// TODO: Only save dirty types
-					auto typeEditors = ast.Query<CType, CTypeEditor, CFileRef>();
+					auto typeEditors = ast.Filter<CType, CTypeEditor, CFileRef>();
 					TArray<TPair<Path, String>> fileDatas;
 					for (AST::Id typeId : typeEditors)
 					{
@@ -377,7 +377,7 @@ namespace Rift::EditorSystem
 				{
 					editorData.layout.Reset();
 
-					auto openTypes = ast.Query<CTypeEditor>();
+					auto openTypes = ast.Filter<CTypeEditor>();
 					for (AST::Id typeId : openTypes)
 					{
 						auto& editor = openTypes.Get<CTypeEditor>(typeId);
@@ -392,7 +392,7 @@ namespace Rift::EditorSystem
 
 	void DrawTypes(AST::Tree& ast, SEditor& editor)
 	{
-		auto typeEditors = ast.Query<CType, CTypeEditor, CFileRef>();
+		auto typeEditors = ast.Filter<CType, CTypeEditor, CFileRef>();
 		for (AST::Id typeId : typeEditors)
 		{
 			ZoneScopedN("Draw Type");

@@ -3,10 +3,10 @@
 
 #include "AST/Components/CChild.h"
 #include "AST/Components/CParent.h"
+#include "AST/Filter.h"
 #include "AST/IdRegistry.h"
 #include "AST/Pool.h"
 #include "AST/Types.h"
-#include "AST/View.h"
 
 #include <Memory/UniquePtr.h>
 #include <Strings/Name.h>
@@ -58,9 +58,9 @@ namespace Rift::AST
 		mutable TArray<PoolInstance> pools;
 		TArray<OwnPtr> statics;
 
-		TOwnPtr<TQuery<TExclude<>, CChild>> childView;
-		TOwnPtr<TQuery<TExclude<>, CParent>> parentView;
 		NativeTypeIds nativeTypes;
+		TOwnPtr<TFilter<TInclude<CParent>, TExclude<>>> parentView;
+		TOwnPtr<TFilter<TInclude<CChild>, TExclude<>>> childView;
 
 
 	public:
@@ -335,7 +335,7 @@ namespace Rift::AST
 
 
 		template<typename... Component, typename... Exclude>
-		TQuery<TExclude<Exclude...>, std::add_const_t<Component>...> Query(
+		TFilter<TInclude<std::add_const_t<Component>...>, TExclude<Exclude...>> Filter(
 		    TExclude<Exclude...> = {}) const
 		{
 			static_assert(sizeof...(Component) > 0, "Exclusion-only views are not supported");
@@ -344,7 +344,7 @@ namespace Rift::AST
 		}
 
 		template<typename... Component, typename... Exclude>
-		TQuery<TExclude<Exclude...>, Component...> Query(TExclude<Exclude...> = {})
+		TFilter<TInclude<Component...>, TExclude<Exclude...>> Filter(TExclude<Exclude...> = {})
 		{
 			static_assert(sizeof...(Component) > 0, "Exclusion-only views are not supported");
 			return {
@@ -381,22 +381,22 @@ namespace Rift::AST
 			CachePools();
 		}
 
-		TQuery<TExclude<>, CParent>& GetParentView()
+		TFilter<TInclude<CParent>>& GetParentView()
 		{
 			return *parentView;
 		}
 
-		TQuery<TExclude<>, CChild>& GetChildView()
+		TFilter<TInclude<CChild>>& GetChildView()
 		{
 			return *childView;
 		}
 
-		const TQuery<TExclude<>, CParent>& GetParentView() const
+		const TFilter<TInclude<CParent>>& GetParentView() const
 		{
 			return *parentView;
 		}
 
-		const TQuery<TExclude<>, CChild>& GetChildView() const
+		const TFilter<TInclude<CChild>>& GetChildView() const
 		{
 			return *childView;
 		}
@@ -421,7 +421,7 @@ namespace Rift::AST
 		template<typename Component>
 		AST::Id GetFirstId() const
 		{
-			auto view = Query<Component>();
+			auto view = Filter<Component>();
 			if (view.Size() > 0)
 			{
 				return *view.begin();

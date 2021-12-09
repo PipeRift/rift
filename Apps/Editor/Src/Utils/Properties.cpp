@@ -190,9 +190,9 @@ namespace Rift
 	{
 		if (UI::CollapsingHeader("Variables", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			auto variableView = ast.Query<CVariableDecl>();
+			auto variableView = ast.Filter<CVariableDecl>();
 			UI::Indent(10.f);
-			if (auto* children = AST::Hierarchy::GetLinked(ast, typeId))
+			if (auto* children = AST::Hierarchy::GetChildren(ast, typeId))
 			{
 				UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
 				if (UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit))
@@ -231,10 +231,10 @@ namespace Rift
 		                               | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
 		if (UI::CollapsingHeader("Functions", flags))
 		{
-			auto functionView = ast.Query<CFunctionDecl>();
+			auto functionView = ast.Filter<CFunctionDecl>();
 			UI::Indent(10.f);
 
-			if (auto* children = AST::Hierarchy::GetLinked(ast, typeId))
+			if (auto* children = AST::Hierarchy::GetChildren(ast, typeId))
 			{
 				UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
 				if (UI::BeginTable("##functionTable", 1, ImGuiTableFlags_SizingFixedFit))

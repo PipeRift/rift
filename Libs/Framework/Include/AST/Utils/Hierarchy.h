@@ -24,13 +24,13 @@ namespace Rift::AST::Hierarchy
 	void RemoveChildren(Tree& ast, TSpan<Id> children, bool keepComponents);
 	void RemoveAllChildren(Tree& ast, TSpan<Id> parents, bool keepComponents = false);
 
-	TArray<Id>* GetLinked(Tree& ast, Id node);
-	const TArray<Id>* GetLinked(const Tree& ast, Id node);
-	void GetLinked(const Tree& ast, TSpan<const Id> nodes, TArray<Id>& outLinkedNodes);
+	TArray<Id>* GetChildren(Tree& ast, Id node);
+	const TArray<Id>* GetChildren(const Tree& ast, Id node);
+	void GetChildren(const Tree& ast, TSpan<const Id> nodes, TArray<Id>& outLinkedNodes);
 	/**
 	 * Finds all nodes connected recursively.
 	 */
-	void GetLinkedDeep(
+	void GetChildrenDeep(
 	    const Tree& ast, TSpan<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth = 0);
 	Id GetParent(Tree& ast, Id node);
 	TArray<Id> GetParents(const Tree& ast, TSpan<Id> nodes);

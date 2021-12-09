@@ -99,7 +99,7 @@ namespace Rift::Compiler::Cpp
 			context.AddError("Failed to copy code");
 			return;
 		}
-		auto modules = context.ast.Query<CModule>();
+		auto modules = context.ast.Filter<CModule>();
 		for (AST::Id moduleId : modules)
 		{
 			Name name = Modules::GetModuleName(context.ast, moduleId);

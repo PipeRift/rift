@@ -2,6 +2,7 @@
 
 #include "Utils/FunctionGraph.h"
 
+#include "AST/Utils/StatementGraph.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "Utils/GraphColors.h"
@@ -121,7 +122,7 @@ namespace Rift::Graph
 			{
 				String makeStr{};
 				auto& typeList   = ast.GetStatic<STypeList>();
-				auto identifiers = ast.Query<CIdentifier>();
+				auto identifiers = ast.Filter<CIdentifier>();
 				for (const auto& type : typeList.types)
 				{
 					if (auto* iden = identifiers.TryGet<CIdentifier>(type.second))
@@ -150,8 +151,8 @@ namespace Rift::Graph
 
 			if (filter.IsActive() || ImGui::TreeNode("Functions"))
 			{
-				auto functions   = ast.Query<CFunctionDecl>();
-				auto identifiers = ast.Query<CIdentifier>();
+				auto functions   = ast.Filter<CFunctionDecl>();
+				auto identifiers = ast.Filter<CIdentifier>();
 				for (AST::Id functionId : functions)
 				{
 					if (auto* iden = identifiers.TryGet<CIdentifier>(functionId))
@@ -182,7 +183,7 @@ namespace Rift::Graph
 
 	void DrawFunctionDecls(AST::Tree& ast, TArray<AST::Id>& functionDecls)
 	{
-		auto functions = ast.Query<CFunctionDecl>();
+		auto functions = ast.Filter<CFunctionDecl>();
 		for (AST::Id functionId : functionDecls)
 		{
 			DrawFunctionDecl(ast, functionId);
@@ -191,8 +192,8 @@ namespace Rift::Graph
 
 	void DrawCalls(AST::Tree& ast, TArray<AST::Id>& children)
 	{
-		auto calls         = ast.Query<CCallExpr>();
-		auto functionDecls = ast.Query<CFunctionDecl, CIdentifier>();
+		auto calls         = ast.Filter<CCallExpr>();
+		auto functionDecls = ast.Filter<CFunctionDecl, CIdentifier>();
 		for (AST::Id child : children)
 		{
 			auto* call = calls.TryGet<CCallExpr>(child);
@@ -213,7 +214,7 @@ namespace Rift::Graph
 
 	void DrawLiterals(AST::Tree& ast, TArray<AST::Id>& children)
 	{
-		auto boolLiterals = ast.Query<CBoolLiteral>();
+		auto boolLiterals = ast.Filter<CBoolLiteral>();
 		for (AST::Id child : children)
 		{
 			if (auto* literal = boolLiterals.TryGet<CBoolLiteral>(child))
@@ -222,7 +223,7 @@ namespace Rift::Graph
 			}
 		}
 
-		auto stringLiterals = ast.Query<CStringLiteral>();
+		auto stringLiterals = ast.Filter<CStringLiteral>();
 		for (AST::Id child : children)
 		{
 			if (auto* literal = stringLiterals.TryGet<CStringLiteral>(child))
@@ -234,11 +235,11 @@ namespace Rift::Graph
 
 	void DrawStatementLinks(AST::Tree& ast, TArray<AST::Id>& functionDecls)
 	{
-		auto statements = ast.Query<CStatement>();
-		auto compounds  = ast.Query<CCompoundStmt>();
+		auto statements = ast.Filter<CStatement>();
+		auto compounds  = ast.Filter<CCompoundStmt>();
 		for (AST::Id functionId : functionDecls)
 		{
-			TArray<AST::Id>* functionChildren = AST::Hierarchy::GetLinked(ast, functionId);
+			TArray<AST::Id>* functionChildren = AST::Hierarchy::GetChildren(ast, functionId);
 			if (!functionChildren || functionChildren->IsEmpty())
 			{
 				continue;
@@ -247,7 +248,7 @@ namespace Rift::Graph
 			AST::Id compoundId = functionChildren->Last();
 			if (compounds.Has(compoundId))
 			{
-				TArray<AST::Id>* statementChildren = AST::Hierarchy::GetLinked(ast, compoundId);
+				TArray<AST::Id>* statementChildren = AST::Hierarchy::GetChildren(ast, compoundId);
 				if (!statementChildren || statementChildren->IsEmpty())
 				{
 					continue;
@@ -272,7 +273,7 @@ namespace Rift::Graph
 
 	void DrawTypeGraph(AST::Tree& ast, AST::Id typeId, CTypeEditor& typeEditor)
 	{
-		TArray<AST::Id>* children = AST::Hierarchy::GetLinked(ast, typeId);
+		TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, typeId);
 		if (!children)
 		{
 			return;
@@ -297,7 +298,7 @@ namespace Rift::Graph
 			}
 
 			TArray<AST::Id> functions;
-			auto functionsQuery = ast.Query<CFunctionDecl>();
+			auto functionsQuery = ast.Filter<CFunctionDecl>();
 			for (AST::Id childId : *children)
 			{
 				if (functionsQuery.Has(childId))
@@ -320,13 +321,13 @@ namespace Rift::Graph
 			if (Nodes::IsLinkCreated(startPin, endPin))
 			{
 				Log::Info("New link!");
-				AST::Hierarchy::AddChildren(ast, AST::Id(startPin), AST::Id(endPin));
+				AST::StatementGraph::Connect(ast, AST::Id(startPin), AST::Id(endPin));
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))
 			{
-				// Link to type, meaning disconnected
-				AST::Hierarchy::AddChildren(ast, typeId, AST::Id(linkId));
+				// linkId is always the outputId
+				AST::StatementGraph::DisconnectAllInputs(ast, AST::Id(linkId));
 			}
 
 			if (wantsToOpenContextMenu)

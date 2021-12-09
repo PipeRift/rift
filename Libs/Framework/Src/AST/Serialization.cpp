@@ -59,7 +59,7 @@ namespace Rift::AST
 	template<typename T>
 	void WritePool(WriteContext& ct, Tree& ast, const TArray<Id>& nodes)
 	{
-		auto view = ast.Query<T>();
+		auto view = ast.Filter<T>();
 
 		// FIX: yyjson doesn't seem to take into account stringview length when generating text
 		// Temporarely fixed by caching component name keys
@@ -179,7 +179,7 @@ namespace Rift::AST
 		children.Append(roots);
 		if (includeChildren)
 		{
-			Hierarchy::GetLinkedDeep(ast, roots, children);
+			Hierarchy::GetChildrenDeep(ast, roots, children);
 		}
 	}
 }    // namespace Rift::AST

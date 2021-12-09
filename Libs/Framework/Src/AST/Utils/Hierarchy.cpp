@@ -170,19 +170,19 @@ namespace Rift::AST::Hierarchy
 		}
 	}
 
-	TArray<Id>* GetLinked(Tree& ast, Id node)
+	TArray<Id>* GetChildren(Tree& ast, Id node)
 	{
 		CParent* const parent = GetCParent(ast, node);
 		return parent ? &parent->children : nullptr;
 	}
 
-	const TArray<Id>* GetLinked(const Tree& ast, Id node)
+	const TArray<Id>* GetChildren(const Tree& ast, Id node)
 	{
 		const CParent* const parent = GetCParent(ast, node);
 		return parent ? &parent->children : nullptr;
 	}
 
-	void GetLinked(const Tree& ast, TSpan<const Id> nodes, TArray<Id>& outLinkedNodes)
+	void GetChildren(const Tree& ast, TSpan<const Id> nodes, TArray<Id>& outLinkedNodes)
 	{
 		nodes.Each([&ast, &outLinkedNodes](Id node) {
 			if (const CParent* const parent = GetCParent(ast, node))
@@ -192,7 +192,7 @@ namespace Rift::AST::Hierarchy
 		});
 	}
 
-	void GetLinkedDeep(
+	void GetChildrenDeep(
 	    const Tree& ast, TSpan<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth)
 	{
 		if (depth == 0)
@@ -255,7 +255,7 @@ namespace Rift::AST::Hierarchy
 
 		TArray<Id> allNodes;
 		allNodes.Append(nodes);
-		GetLinkedDeep(ast, nodes, allNodes);
+		GetChildrenDeep(ast, nodes, allNodes);
 		ast.Destroy(allNodes);
 	}
 
