@@ -136,8 +136,8 @@ namespace Rift::AST
 		AssurePool<CParent>();
 		AssurePool<CChild>();
 
-		parentView = MakeOwned<TFilter<TInclude<CParent>>>(Filter<CParent>());
-		childView  = MakeOwned<TFilter<TInclude<CChild>>>(Filter<CChild>());
+		parentView = MakeOwned<TFilter<Access::Include<CParent>>>(Filter<CParent>());
+		childView  = MakeOwned<TFilter<Access::Include<CChild>>>(Filter<CChild>());
 	}
 
 	void Tree::CopyFrom(const Tree& other)

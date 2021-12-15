@@ -116,44 +116,25 @@ namespace Rift::AST
 	};
 
 
-	template<typename...>
-	struct TBasicFilter;
-
-
-	template<typename... IncludeComp, typename... ExcludeComp>
-	struct TBasicFilter<TInclude<IncludeComp...>, TExclude<ExcludeComp...>> : public BaseFilter
+	template<typename Access>
+	struct TFilter : public BaseFilter
 	{
-		using Included = TTypeList<IncludeComp...>;
-		using Excluded = TTypeList<ExcludeComp...>;
-
-
-		template<typename C>
-		using Mut = std::remove_const_t<C>;
-
-		using Iterator = Internal::TFilterIterator<Pool::Iterator, sizeof...(IncludeComp) - 1u,
-		    sizeof...(ExcludeComp)>;
-		using ReverseIterator = Internal::TFilterIterator<Pool::ReverseIterator,
-		    sizeof...(IncludeComp) - 1u, sizeof...(ExcludeComp)>;
+		using Iterator        = typename Access::Iterator;
+		using ReverseIterator = typename Access::ReverseIterator;
 
 	private:
-		const TTuple<TPool<Mut<IncludeComp>>*...> includedPools;
-		const TTuple<TPool<Mut<ExcludeComp>>*...> excludedPools;
+		Access access;
 		mutable const Pool* iterablePool;
 
 
 	public:
-		TBasicFilter(TTuple<TPool<Mut<IncludeComp>>*...> included,
-		    TTuple<TPool<Mut<ExcludeComp>>*...> excluded = {})
-		    : includedPools{Move(included)}
-		    , excludedPools{Move(excluded)}
-		    , iterablePool{GetCandidateIterablePool()}
-		{}
+		TFilter(Access access) : access{Move(access)}, iterablePool{access.GetSmallestPool()} {}
 
 		// Copy of a subset of a query
 		// template<typename... Include2, typename... Exclude2>
 		// TBasicFilter(const TBasicFilter<TInclude<Include2...>, TExclude<Exclude2...>>& other)
 		//{
-		//	includedPools = std::tie<TPool<Mut<IncludeComp>>*...>(
+		//	included = std::tie<TPool<Mut<IncludeComp>>*...>(
 		//	    std::get<TPool<Mut<IncludeComp>>*>(other.pools)...);
 		//	excludedPools = std::tie<TPool<Mut<ExcludeComp>>*...>(
 		//	    std::get<TPool<Mut<ExcludeComp>>*>(other.excluded)...);
@@ -163,25 +144,25 @@ namespace Rift::AST
 		Iterator begin() const
 		{
 			return {iterablePool->begin(), iterablePool->end(), iterablePool->begin(),
-			    GetSecondaryPoolsArray(), GetExcludedPoolsArray()};
+			    access.GetPoolArray(iterablePool), access.GetExcludedPoolArray()};
 		}
 
 		Iterator end() const
 		{
 			return {iterablePool->begin(), iterablePool->end(), iterablePool->end(),
-			    GetSecondaryPoolsArray(), GetExcludedPoolsArray()};
+			    access.GetPoolArray(iterablePool), access.GetExcludedPoolArray()};
 		}
 
 		ReverseIterator rbegin() const
 		{
 			return {iterablePool->rbegin(), iterablePool->rend(), iterablePool->rbegin(),
-			    GetSecondaryPoolsArray(), GetExcludedPoolsArray()};
+			    access.GetPoolArray(iterablePool), access.GetExcludedPoolArray()};
 		}
 
 		ReverseIterator rend() const
 		{
 			return {iterablePool->rbegin(), iterablePool->rend(), iterablePool->rend(),
-			    GetSecondaryPoolsArray(), GetExcludedPoolsArray()};
+			    access.GetPoolArray(iterablePool), access.GetExcludedPoolArray()};
 		}
 
 		Id Front() const
@@ -199,18 +180,18 @@ namespace Rift::AST
 		Iterator Find(const Id id) const
 		{
 			const auto it = Iterator{iterablePool->begin(), iterablePool->end(),
-			    iterablePool->Find(id), GetSecondaryPoolsArray(), GetExcludedPoolsArray()};
+			    iterablePool->Find(id), GetPoolsArray(), GetExcludedPoolsArray()};
 			return (it != end() && *it == id) ? it : end();
 		}
 
-		template<typename Func>
+		/*template<typename Func>
 		void Each(Func func) const
 		{
-			((GetPool<IncludeComp>(includedPools) == iterablePool
-			         ? Traverse<IncludeComp>(Move(func))
-			         : void()),
-			    ...);
-		}
+		    ((access.GetPool<IncludeComp>(included) == iterablePool
+		             ? Traverse<IncludeComp>(Move(func))
+		             : void()),
+		        ...);
+		}*/
 
 		template<typename C, typename Func>
 		void Each(Func func) const
@@ -221,143 +202,51 @@ namespace Rift::AST
 
 		bool Has(Id id) const
 		{
-			return (GetPool<IncludeComp>()->Has(id) && ...)
-			    && (!GetExcluded<ExcludeComp>()->Has(id) && ...);
+			return access.Has(id);
 		}
 
 		template<typename C>
 		C& Get(Id id) const
 		{
-			return GetPool<C>()->Get(id);
+			return access.GetPool<C>()->Get(id);
 		}
 
 		template<typename C>
 		C* TryGet(Id id)
 		{
-			return GetPool<C>()->TryGet(id);
+			return access.GetPool<C>()->TryGet(id);
 		}
 
 		template<typename C>
 		const C* TryGet(Id id) const
 		{
-			return GetPool<C>()->TryGet(id);
+			return access.GetPool<C>()->TryGet(id);
 		}
 
 		// @brief Forces the type to use to drive iterations
 		template<typename C>
 		void Use() const
 		{
-			iterablePool = GetPool<C>(includedPools);
+			iterablePool = access.GetPool<C>();
 		}
 
 		i32 Size() const
 		{
-			static_assert(sizeof...(IncludeComp) == 1 && sizeof...(ExcludeComp) == 0,
-			    "Can only get the size of a single component view.");
-			return GetPool<IncludeComp...>()->Size();
+			return access.Size();
 		}
 
 	protected:
-		template<typename T>
-		TPool<Mut<T>>* GetPool() const
-		{
-			return std::get<TPool<Mut<T>>*>(includedPools);
-		}
-		template<typename T>
-		TPool<T>* GetExcluded() const
-		{
-			return std::get<TPool<Mut<T>>*>(excludedPools);
-		}
-
-		const Pool* GetCandidateIterablePool() const
-		{
-			// Find smallest pool
-			return (std::min)({static_cast<const Pool*>(GetPool<IncludeComp>())...},
-			    [](const auto* lhs, const auto* rhs) {
-				return lhs->Size() < rhs->Size();
-			});
-		}
-
-		auto GetSecondaryPoolsArray() const
-		{
-			std::size_t i = 0;
-			std::array<const Pool*, sizeof...(IncludeComp) - 1u> other{};
-
-			(static_cast<void>(
-			     std::get<TPool<Mut<IncludeComp>>*>(includedPools) == iterablePool
-			         ? void()
-			         : void(other[i++] = std::get<TPool<Mut<IncludeComp>>*>(includedPools))),
-			    ...);
-			return other;
-		}
-
-		auto GetExcludedPoolsArray() const
-		{
-			return std::array<const Pool*, sizeof...(ExcludeComp)>{
-			    std::get<TPool<ExcludeComp>*>(excludedPools)...};
-		}
-
-		template<typename C, typename Func>
+		/*template<typename C, typename Func>
 		void Traverse(Func func) const
 		{
-			for (const auto id : *static_cast<const Pool*>(GetPool<C>()))
-			{
-				if (((IsSame<C, IncludeComp> || GetPool<IncludeComp>()->Has(id)) && ...)
-				    && (!GetExcluded<ExcludeComp>()->Has(id) && ...))
-				{
-					std::apply(func, id);
-				}
-			}
-		}
+		    for (const auto id : *static_cast<const Pool*>(access.GetPool<C>()))
+		    {
+		        if (((IsSame<C, IncludeComp> || access.GetPool<IncludeComp>()->Has(id)) && ...)
+		            && (!access.GetExcluded<ExcludeComp>()->Has(id) && ...))
+		        {
+		            std::apply(func, id);
+		        }
+		    }
+		}*/
 	};
-
-
-	//////////////////////////////////////////////////
-	// Static filter signatures
-
-	template<typename...>
-	struct TFilter;
-
-
-	template<typename... IncludeComp, typename... ExcludeComp>
-	struct TFilter<TInclude<IncludeComp...>, TExclude<ExcludeComp...>>
-	    : public TBasicFilter<TInclude<IncludeComp...>, TExclude<ExcludeComp...>>
-	{
-		// Syntax helpers
-		template<typename... T>
-		using Include = TFilter<TInclude<IncludeComp..., T...>, TExclude<ExcludeComp...>>;
-		template<typename... T>
-		using Exclude = TFilter<TInclude<IncludeComp...>, TExclude<ExcludeComp..., T...>>;
-	};
-
-	/*template<typename... IncludeComp>
-	struct TFilter<TInclude<IncludeComp...>>
-	    : public TBasicFilter<TInclude<IncludeComp...>, TExclude<>>
-	{
-	    // Syntax helpers
-	    template<typename... T>
-	    using Include = TFilter<JoinList<IncludeComp..., T...>>;
-	    template<typename... T>
-	    using Exclude = TFilter<TInclude<IncludeComp...>, TExclude<T...>>;
-	};
-
-	template<typename... IncludeComp>
-	struct TFilter<void, IncludeComp...> : public TBasicFilter<TInclude<IncludeComp...>, TExclude<>>
-	{
-	    // Syntax helpers
-	    template<typename... T>
-	    using Include = TFilter<JoinList<IncludeComp..., T...>>;
-	    template<typename... T>
-	    using Exclude = TFilter<TInclude<IncludeComp...>, TExclude<T...>>;
-	};
-
-	template<>
-	struct TFilter<> : public TBasicFilter<TInclude<>, TExclude<>>
-	{
-	    // Syntax helpers
-	    template<typename... T>
-	    using Include = TFilter<TInclude<T...>>;
-	    template<typename... T>
-	    using Exclude = TFilter<TInclude<>, TExclude<T...>>;
-	};*/
 }    // namespace Rift::AST

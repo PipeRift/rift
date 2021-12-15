@@ -1,6 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "AST/Access.h"
 #include "AST/Components/CChild.h"
 #include "AST/Components/CParent.h"
 #include "AST/Filter.h"
@@ -59,8 +60,8 @@ namespace Rift::AST
 		TArray<OwnPtr> statics;
 
 		NativeTypeIds nativeTypes;
-		TOwnPtr<TFilter<TInclude<CParent>, TExclude<>>> parentView;
-		TOwnPtr<TFilter<TInclude<CChild>, TExclude<>>> childView;
+		TOwnPtr<TFilter<Access::Include<CParent>>> parentView;
+		TOwnPtr<TFilter<Access::Include<CChild>>> childView;
 
 
 	public:
@@ -335,20 +336,28 @@ namespace Rift::AST
 
 
 		template<typename... Component, typename... Exclude>
-		TFilter<TInclude<std::add_const_t<Component>...>, TExclude<Exclude...>> Filter(
+		TFilter<TAccess<TInclude<std::add_const_t<Component>...>, TExclude<Exclude...>>> Filter(
 		    TExclude<Exclude...> = {}) const
 		{
-			static_assert(sizeof...(Component) > 0, "Exclusion-only views are not supported");
+			static_assert(sizeof...(Component) > 0, "Exclusion-only filters are not supported");
+			using FilterAccess =
+			    TAccess<TInclude<std::add_const_t<Component>...>, TExclude<Exclude...>>;
 			return {
-			    {&AssurePool<std::remove_const_t<Component>>()...}, {&AssurePool<Exclude>()...}};
+			    FilterAccess{
+                             {&AssurePool<Mut<Component>>()...}, {&AssurePool<Const<Exclude>>()...}}
+            };
 		}
 
 		template<typename... Component, typename... Exclude>
-		TFilter<TInclude<Component...>, TExclude<Exclude...>> Filter(TExclude<Exclude...> = {})
+		TFilter<TAccess<TInclude<Component...>, TExclude<Exclude...>>> Filter(
+		    TExclude<Exclude...> = {})
 		{
-			static_assert(sizeof...(Component) > 0, "Exclusion-only views are not supported");
+			static_assert(sizeof...(Component) > 0, "Exclusion-only filters are not supported");
+			using FilterAccess = TAccess<TInclude<Component...>, TExclude<Exclude...>>;
 			return {
-			    {&AssurePool<std::remove_const_t<Component>>()...}, {&AssurePool<Exclude>()...}};
+			    FilterAccess{
+                             {&AssurePool<Mut<Component>>()...}, {&AssurePool<Const<Exclude>>()...}}
+            };
 		}
 
 		template<typename Callback>
@@ -381,22 +390,22 @@ namespace Rift::AST
 			CachePools();
 		}
 
-		TFilter<TInclude<CParent>>& GetParentView()
+		TFilter<Access::Include<CParent>>& GetParentView()
 		{
 			return *parentView;
 		}
 
-		TFilter<TInclude<CChild>>& GetChildView()
+		TFilter<Access::Include<CChild>>& GetChildView()
 		{
 			return *childView;
 		}
 
-		const TFilter<TInclude<CParent>>& GetParentView() const
+		const TFilter<Access::Include<CParent>>& GetParentView() const
 		{
 			return *parentView;
 		}
 
-		const TFilter<TInclude<CChild>>& GetChildView() const
+		const TFilter<Access::Include<CChild>>& GetChildView() const
 		{
 			return *childView;
 		}
