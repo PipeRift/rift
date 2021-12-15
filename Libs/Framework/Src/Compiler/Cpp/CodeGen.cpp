@@ -129,7 +129,7 @@ namespace Rift::Compiler::Cpp
 	void ForwardDeclareTypes(String& code, const AST::Tree& ast, AST::Id moduleId,
 	    const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
-		auto identifiers = ast.Query<const CIdentifier>();
+		auto identifiers = ast.Filter<const CIdentifier>();
 		for (AST::Id entity : structs)
 		{
 			const auto& identifier = identifiers.Get<const CIdentifier>(entity);
@@ -145,7 +145,7 @@ namespace Rift::Compiler::Cpp
 
 	void AddTypeVariables(String& code, const AST::Tree& ast, AST::Id owner)
 	{
-		auto variables = ast.Query<const CIdentifier, const CVariableDecl>();
+		auto variables = ast.Filter<const CIdentifier, const CVariableDecl>();
 
 		if (const CParent* parent = AST::Hierarchy::GetCParent(ast, owner))
 		{
@@ -163,7 +163,7 @@ namespace Rift::Compiler::Cpp
 	void DeclareTypes(String& code, const AST::Tree& ast, AST::Id moduleId,
 	    const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
-		auto identifiers = ast.Query<const CIdentifier>();
+		auto identifiers = ast.Filter<const CIdentifier>();
 		for (AST::Id entity : structs)
 		{
 			auto& identifier = identifiers.Get<const CIdentifier>(entity);
@@ -185,8 +185,8 @@ namespace Rift::Compiler::Cpp
 	void DeclareFunctions(
 	    String& code, const AST::Tree& ast, AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
-		auto identifiers = ast.Query<const CIdentifier>();
-		auto classesView = ast.Query<const CIdentifier, const CClassDecl>();
+		auto identifiers = ast.Filter<const CIdentifier>();
+		auto classesView = ast.Filter<const CIdentifier, const CClassDecl>();
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
@@ -209,8 +209,8 @@ namespace Rift::Compiler::Cpp
 	void DefineFunctions(
 	    String& code, const AST::Tree& ast, AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
-		auto identifiers = ast.Query<const CIdentifier>();
-		auto classesView = ast.Query<const CIdentifier, const CClassDecl>();
+		auto identifiers = ast.Filter<const CIdentifier>();
+		auto classesView = ast.Filter<const CIdentifier, const CClassDecl>();
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
@@ -230,7 +230,7 @@ namespace Rift::Compiler::Cpp
 
 	void GenParameters(AST::Tree& ast)
 	{
-		auto parameters = ast.Query<const CParameterDecl>();
+		auto parameters = ast.Filter<const CParameterDecl>();
 		for (AST::Id entity : parameters)
 		{
 			const auto& param = parameters.Get<const CParameterDecl>(entity);
@@ -265,15 +265,15 @@ namespace Rift::Compiler::Cpp
 		AddInclude(code, "stdint.h");
 
 		TArray<AST::Id> classes, structs;
-		AST::Hierarchy::GetLinked(ast, moduleId, classes);
+		AST::Hierarchy::GetChildren(ast, moduleId, classes);
 		structs = classes;
 
-		auto classesView = ast.Query<const CClassDecl, const CType, const CIdentifier>();
+		auto classesView = ast.Filter<const CClassDecl, const CType, const CIdentifier>();
 		classes.RemoveIfSwap([&classesView](AST::Id entity) {
 			return !classesView.Has(entity);
 		});
 
-		auto structsView = ast.Query<const CStructDecl, const CType, const CIdentifier>();
+		auto structsView = ast.Filter<const CStructDecl, const CType, const CIdentifier>();
 		structs.RemoveIfSwap([&structsView](AST::Id entity) {
 			return !structsView.Has(entity);
 		});
@@ -289,9 +289,9 @@ namespace Rift::Compiler::Cpp
 
 		TArray<AST::Id> functions;
 		// Module->Types->Functions = depth 2
-		AST::Hierarchy::GetLinkedDeep(ast, moduleId, functions, 2);
+		AST::Hierarchy::GetChildrenDeep(ast, moduleId, functions, 2);
 
-		auto functionsView = ast.Query<const CIdentifier, const CFunctionDecl>();
+		auto functionsView = ast.Filter<const CIdentifier, const CFunctionDecl>();
 		functions.RemoveIfSwap([&functionsView](AST::Id entity) {
 			return !functionsView.Has(entity);
 		});
@@ -330,7 +330,7 @@ namespace Rift::Compiler::Cpp
 
 		GenParameters(context.ast);
 
-		auto modules = context.ast.Query<CModule>();
+		auto modules = context.ast.Filter<CModule>();
 		for (AST::Id moduleId : modules)
 		{
 			GenerateModuleCode(context, moduleId, generatePath);

@@ -159,7 +159,7 @@ namespace Rift
 		projectModuleId = Modules::GetProjectId(ast);
 
 		// Create module folders
-		auto modules = ast.Query<CModule>();
+		auto modules = ast.Filter<CModule>();
 		TMap<AST::Id, Path> moduleFolders;
 		moduleFolders.Reserve(u32(modules.Size()));
 		for (AST::Id moduleId : modules)
@@ -204,7 +204,7 @@ namespace Rift
 		}
 
 		// Create items
-		auto fileTypes = ast.Query<CType, CFileRef>();
+		auto fileTypes = ast.Filter<CType, CFileRef>();
 		for (AST::Id typeId : fileTypes)
 		{
 			auto& file = fileTypes.Get<CFileRef>(typeId);

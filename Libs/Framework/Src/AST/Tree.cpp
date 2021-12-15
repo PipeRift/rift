@@ -133,11 +133,11 @@ namespace Rift::AST
 
 	void Tree::CachePools()
 	{
-		AssurePool<CChild>();
 		AssurePool<CParent>();
+		AssurePool<CChild>();
 
-		childView  = MakeOwned<TQuery<TExclude<>, CChild>>(Query<CChild>());
-		parentView = MakeOwned<TQuery<TExclude<>, CParent>>(Query<CParent>());
+		parentView = MakeOwned<TFilter<Access::Include<CParent>>>(Filter<CParent>());
+		childView  = MakeOwned<TFilter<Access::Include<CChild>>>(Filter<CChild>());
 	}
 
 	void Tree::CopyFrom(const Tree& other)

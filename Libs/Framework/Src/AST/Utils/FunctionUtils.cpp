@@ -42,6 +42,11 @@ namespace Rift::Functions
 			ast.Destroy(literalId);
 			return AST::NoId;
 		}
+
+		if (type)
+		{
+			AST::Hierarchy::AddChildren(ast, type.GetId(), literalId);
+		}
 		return literalId;
 	}
 
@@ -53,6 +58,11 @@ namespace Rift::Functions
 		// TODO: Reference the function
 		auto& expr      = ast.Add<CCallExpr>(callId);
 		expr.functionId = targetFunctionId;
+
+		if (type)
+		{
+			AST::Hierarchy::AddChildren(ast, type.GetId(), callId);
+		}
 		return callId;
 	}
 

@@ -97,9 +97,30 @@ namespace Rift::AST
 {
 	using VersionType = IdTraits<Id>::Version;
 
-	template<typename... Type>
-	using TExclude = TTypeList<Type...>;
 
+	template<typename... Component>
+	struct TInclude
+	{
+		using List = TTypeList<Component...>;
+	};
+
+	template<typename... Component>
+	struct TExclude
+	{
+		using List = TTypeList<Component...>;
+	};
+
+	template<typename... Component>
+	struct TInclude<TTypeList<Component...>>
+	{
+		using List = TTypeList<Component...>;
+	};
+
+	template<typename... Component>
+	struct TExclude<TTypeList<Component...>>
+	{
+		using List = TTypeList<Component...>;
+	};
 }    // namespace Rift::AST
 
 

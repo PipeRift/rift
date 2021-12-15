@@ -16,10 +16,10 @@ namespace Rift::TypeSystem
 		typeList.types.Empty();
 
 		// Cache existing types
-		auto onlyTypesView = ast.Query<const CType>();
+		auto onlyTypesView = ast.Filter<const CType>();
 		typeList.types.Reserve(u32(onlyTypesView.Size()));
 
-		auto typesView = ast.Query<const CType, const CIdentifier>();
+		auto typesView = ast.Filter<const CType, const CIdentifier>();
 		for (AST::Id typeId : typesView)
 		{
 			const CIdentifier& identifier = typesView.Get<const CIdentifier>(typeId);

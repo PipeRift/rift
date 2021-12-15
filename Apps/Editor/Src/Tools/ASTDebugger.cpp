@@ -36,7 +36,7 @@ namespace Rift
 				UI::TableSetupColumn("Id");
 				UI::TableHeadersRow();
 
-				auto identifiers = ast.Query<CIdentifier>();
+				auto identifiers = ast.Filter<CIdentifier>();
 				for (const auto& it : types->types)
 				{
 					UI::TableNextRow();
@@ -102,13 +102,13 @@ namespace Rift
 
 				if (showHierarchy && !filter.IsActive())
 				{
-					auto roots = ast.Query<CParent>(AST::TExclude<CChild>{});
+					auto roots = ast.Filter<CParent>(AST::TExclude<CChild>{});
 					for (auto root : roots)
 					{
 						DrawNode(ast, root, true);
 					}
 
-					auto orphans = ast.Query<CIdentifier>(AST::TExclude<CChild, CParent>{});
+					auto orphans = ast.Filter<CIdentifier>(AST::TExclude<CChild, CParent>{});
 					for (auto orphan : orphans)
 					{
 						DrawNode(ast, orphan, true);
