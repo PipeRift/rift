@@ -786,7 +786,7 @@ namespace Rift::Nodes
 		if (!pinA || !pinB || pinA.type == pinB.type)
 		{
 			// Pins must be valid and be one input and one output
-			return;
+			return {};
 		}
 
 		Id outputPin = pinA.index;

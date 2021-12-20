@@ -12,7 +12,10 @@
 
 namespace Rift::Functions
 {
-	AST::Id GetCompoundStmt(AST::TypeRef type, AST::Id functionId) {}
+	AST::Id GetCompoundStmt(AST::TypeRef type, AST::Id functionId)
+	{
+		return AST::NoId;
+	}
 
 	AST::Id AddLiteral(AST::TypeRef type, AST::Id literalTypeId)
 	{

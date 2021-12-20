@@ -7,117 +7,8 @@
 
 namespace Rift::AST
 {
-	namespace Internal
-	{
-		template<typename PoolIt, sizet allOf, sizet noneOf>
-		class TFilterIterator
-		{
-			static constexpr sizet i = sizeof(PoolIt);
-
-			PoolIt first;
-			PoolIt last;
-			PoolIt it;
-			std::array<const Pool*, allOf> pools;
-			std::array<const Pool*, noneOf> excluded;
-
-
-		public:
-			using iterator_type     = PoolIt;
-			using difference_type   = typename std::iterator_traits<PoolIt>::difference_type;
-			using value_type        = typename std::iterator_traits<PoolIt>::value_type;
-			using pointer           = typename std::iterator_traits<PoolIt>::pointer;
-			using reference         = typename std::iterator_traits<PoolIt>::reference;
-			using iterator_category = std::bidirectional_iterator_tag;
-
-			TFilterIterator() : first{}, last{}, it{}, pools{}, excluded{} {}
-
-			TFilterIterator(PoolIt from, PoolIt to, PoolIt curr,
-			    std::array<const Pool*, allOf> pools, std::array<const Pool*, noneOf> excluded)
-			    : first{from}, last{to}, it{curr}, pools{pools}, excluded{excluded}
-			{
-				if (it != last && !IsValid())
-				{
-					++(*this);
-				}
-			}
-
-			TFilterIterator& operator++()
-			{
-				while (++it != last && !IsValid())
-					;
-				return *this;
-			}
-
-			TFilterIterator operator++(int)
-			{
-				TFilterIterator orig = *this;
-				return ++(*this), orig;
-			}
-
-			TFilterIterator& operator--()
-			{
-				while (--it != first && !IsValid())
-					;
-				return *this;
-			}
-
-			TFilterIterator operator--(int)
-			{
-				TFilterIterator orig = *this;
-				return operator--(), orig;
-			}
-
-			[[nodiscard]] bool operator==(const TFilterIterator& other) const
-			{
-				return other.it == it;
-			}
-
-			[[nodiscard]] bool operator!=(const TFilterIterator& other) const
-			{
-				return !(*this == other);
-			}
-
-			[[nodiscard]] pointer operator->() const
-			{
-				return &*it;
-			}
-
-			[[nodiscard]] reference operator*() const
-			{
-				return *operator->();
-			}
-
-		private:
-			bool IsValid() const
-			{
-				const Id id = *it;
-
-				const bool included = std::apply(
-				    [id](const auto*... curr) {
-					return (curr->Has(id) && ...);
-				    },
-				    pools);
-
-				return included
-				    && std::apply(
-				        [id](const auto*... curr) {
-					return (!curr->Has(id) && ...);
-				        },
-				        excluded);
-			}
-		};
-	}    // namespace Internal
-
-
-	struct BaseFilter
-	{
-	private:
-		mutable const Pool* iterablePool;
-	};
-
-
 	template<typename Access>
-	struct TFilter : public BaseFilter
+	struct TFilter
 	{
 		using Iterator        = typename Access::Iterator;
 		using ReverseIterator = typename Access::ReverseIterator;
@@ -180,24 +71,47 @@ namespace Rift::AST
 		Iterator Find(const Id id) const
 		{
 			const auto it = Iterator{iterablePool->begin(), iterablePool->end(),
-			    iterablePool->Find(id), GetPoolsArray(), GetExcludedPoolsArray()};
+			    iterablePool->Find(id), access.GetPoolArray(), access.GetExcludedPoolArray()};
 			return (it != end() && *it == id) ? it : end();
 		}
 
-		/*template<typename Func>
-		void Each(Func func) const
+		void Each(TFunction<void(Id)> func) const
 		{
-		    ((access.GetPool<IncludeComp>(included) == iterablePool
-		             ? Traverse<IncludeComp>(Move(func))
-		             : void()),
-		        ...);
-		}*/
+			auto endIt = end();
+			for (auto it = begin(); it != endIt; ++it)
+			{
+				func(*it);
+			}
+		}
 
-		template<typename C, typename Func>
-		void Each(Func func) const
+		void EachBreak(TFunction<bool(Id)> func) const
 		{
+			auto endIt = end();
+			for (auto it = begin(); it != endIt; ++it)
+			{
+				if (!func(*it))
+				{
+					break;
+				}
+			}
+		}
+
+		template<typename C>
+		void Each(TFunction<void(Id)> func) const
+		{
+			const Pool* lastIterablePool = iterablePool;
 			Use<C>();
-			Traverse<C>(Move(func));
+			Each(Move(func));
+			iterablePool = lastIterablePool;
+		}
+
+		template<typename C>
+		void EachBreak(TFunction<bool(Id)> func) const
+		{
+			const Pool* lastIterablePool = iterablePool;
+			Use<C>();
+			EachBreak(Move(func));
+			iterablePool = lastIterablePool;
 		}
 
 		bool Has(Id id) const
@@ -234,19 +148,5 @@ namespace Rift::AST
 		{
 			return access.Size();
 		}
-
-	protected:
-		/*template<typename C, typename Func>
-		void Traverse(Func func) const
-		{
-		    for (const auto id : *static_cast<const Pool*>(access.GetPool<C>()))
-		    {
-		        if (((IsSame<C, IncludeComp> || access.GetPool<IncludeComp>()->Has(id)) && ...)
-		            && (!access.GetExcluded<ExcludeComp>()->Has(id) && ...))
-		        {
-		            std::apply(func, id);
-		        }
-		    }
-		}*/
 	};
 }    // namespace Rift::AST

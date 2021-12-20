@@ -132,13 +132,13 @@ namespace Rift::AST
 
 			pointer operator->() const
 			{
-				const sizet pos{index - 1u};
+				const sizet pos = sizet(index - 1);
 				return std::addressof(chunks[GetChunk(pos)][GetOffset(pos)]);
 			}
 
 			reference operator*() const
 			{
-				const sizet pos{index - 1u};
+				const sizet pos = sizet(index - 1);
 				return chunks[GetChunk(pos)][GetOffset(pos)];
 			}
 

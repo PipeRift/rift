@@ -133,5 +133,20 @@ go_bandit([]() {
 			// Holds component values
 			AssertThat(astb.Get<NonEmptyComponent>(id2).a, Equals(2));
 		});
+
+		it("Can check components", [&]() {
+			AST::Tree ast;
+			AST::Id id = AST::NoId;
+			AssertThat(ast.Has<EmptyComponent>(id), Is().False());
+			AssertThat(ast.Has<NonEmptyComponent>(id), Is().False());
+
+			id = ast.Create();
+			AssertThat(ast.Has<EmptyComponent>(id), Is().False());
+			AssertThat(ast.Has<NonEmptyComponent>(id), Is().False());
+
+			ast.Add<EmptyComponent, NonEmptyComponent>(id);
+			AssertThat(ast.Has<EmptyComponent>(id), Is().True());
+			AssertThat(ast.Has<NonEmptyComponent>(id), Is().True());
+		});
 	});
 });

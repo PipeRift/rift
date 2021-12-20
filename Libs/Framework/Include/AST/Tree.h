@@ -334,18 +334,20 @@ namespace Rift::AST
 			return index != NO_INDEX;
 		}
 
+		template<typename... Component, typename... Exclude>
+		TAccess<TInclude<Component...>, TExclude<Exclude...>> Access(
+		    TExclude<Exclude...> = {}) const
+		{
+			return {*this};
+		}
+
 
 		template<typename... Component, typename... Exclude>
-		TFilter<TAccess<TInclude<std::add_const_t<Component>...>, TExclude<Exclude...>>> Filter(
+		TFilter<TAccess<TInclude<Const<Component>...>, TExclude<Exclude...>>> Filter(
 		    TExclude<Exclude...> = {}) const
 		{
 			static_assert(sizeof...(Component) > 0, "Exclusion-only filters are not supported");
-			using FilterAccess =
-			    TAccess<TInclude<std::add_const_t<Component>...>, TExclude<Exclude...>>;
-			return {
-			    FilterAccess{
-                             {&AssurePool<Mut<Component>>()...}, {&AssurePool<Const<Exclude>>()...}}
-            };
+			return {Access<Const<Component>...>(TExclude<Exclude...>{})};
 		}
 
 		template<typename... Component, typename... Exclude>
@@ -353,11 +355,7 @@ namespace Rift::AST
 		    TExclude<Exclude...> = {})
 		{
 			static_assert(sizeof...(Component) > 0, "Exclusion-only filters are not supported");
-			using FilterAccess = TAccess<TInclude<Component...>, TExclude<Exclude...>>;
-			return {
-			    FilterAccess{
-                             {&AssurePool<Mut<Component>>()...}, {&AssurePool<Const<Exclude>>()...}}
-            };
+			return {Access<Component...>(TExclude<Exclude...>{})};
 		}
 
 		template<typename Callback>

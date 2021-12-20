@@ -12,6 +12,9 @@
 
 namespace Rift::AST
 {
+	struct Tree;
+
+
 	template<typename PoolIt>
 	class TAccessIterator
 	{
@@ -117,6 +120,8 @@ namespace Rift::AST
 	template<typename... IncludeComp, typename... ExcludeComp>
 	struct TAccess<TInclude<IncludeComp...>, TExclude<ExcludeComp...>>
 	{
+		static_assert(sizeof...(IncludeComp) > 0, "Exclusion-only access are not supported");
+
 		using Iterator        = TAccessIterator<Pool::Iterator>;
 		using ReverseIterator = TAccessIterator<Pool::ReverseIterator>;
 
@@ -130,25 +135,33 @@ namespace Rift::AST
 
 	protected:
 		const TTuple<TPool<Mut<IncludeComp>>*...> included;
-		const TTuple<TPool<Const<ExcludeComp>>*...> excluded;
+		const TTuple<const TPool<Mut<ExcludeComp>>*...> excluded;
 
 
 	public:
-		TAccess(TTuple<TPool<Mut<IncludeComp>>*...> included,
-		    TTuple<TPool<Const<ExcludeComp>>*...> excluded = {})
-		    : included{Move(included)}, excluded{Move(excluded)}
+		TAccess(const Tree& ast)
+		    : included{&ast.AssurePool<Mut<IncludeComp>>()...}
+		    , excluded{&ast.AssurePool<Mut<ExcludeComp>>()...}
 		{}
 
 		template<typename T>
 		TPool<Mut<T>>* GetPool() const
 		{
-			return std::get<TPool<Mut<T>>*>(included);
+			if constexpr (Contains<TPool<Mut<T>>*, decltype(included)>())
+			{
+				return std::get<TPool<Mut<T>>*>(included);
+			}
+			return nullptr;
 		}
 
 		template<typename T>
-		TPool<Const<T>>* GetExcludedPool() const
+		const TPool<T>* GetExcludedPool() const
 		{
-			return std::get<TPool<Const<T>>*>(excluded);
+			if constexpr (Contains<const TPool<Mut<T>>*, decltype(excluded)>())
+			{
+				return std::get<const TPool<Mut<T>>*>(excluded);
+			}
+			return nullptr;
 		}
 
 		Pool* GetSmallestPool() const
@@ -162,8 +175,8 @@ namespace Rift::AST
 
 		bool Has(Id id) const
 		{
-			return (GetPool<IncludeComp>()->Has(id) && ...)
-			    && (!GetExcluded<ExcludeComp>()->Has(id) && ...);
+			return id != AST::NoId && (GetPool<IncludeComp>()->Has(id) && ...)
+			    && (!GetExcludedPool<ExcludeComp>()->Has(id) && ...);
 		}
 
 		// Get the size of an access to one single component

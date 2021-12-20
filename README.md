@@ -10,9 +10,9 @@ Rift is a **compiled**, **typed** and **visual** programming language.
 
 The code is validated on the following platforms/compilers:
 
-| Windows | Ubuntu | Mac   |
-| ------- | ------ | ----- |
-| clang   | clang  | clang |
-| msvc    | gcc    |       |
+| Windows  | Ubuntu   | Mac      |
+| -------- | -------- | -------- |
+| Clang 12 | Clang 12 | Clang 12 |
+| MSVC     | GCC      |          |
 
 Architectures **x64** and **ARM64** are supported.
