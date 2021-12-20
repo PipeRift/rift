@@ -9,13 +9,12 @@
 
 namespace Rift::AST::StatementGraph
 {
-	/** Check that a and b are connected (in any direction) */
 	bool CanConnect(const Tree& ast, AST::Id a, AST::Id b);
 
-	void Connect(Tree& ast, TSpan<const AST::Id> outputs, AST::Id input);
+	void Connect(Tree& ast, AST::Id outputNode, AST::Id outputPin, AST::Id inputNode);
+	// Disconnects a particular edge. (Note: edge ids are the same as input nodes)
+	bool Disconnect(Tree& ast, AST::Id edgeId);
 
-	/** Disconnect provided outputs from input */
-	void Disconnect(Tree& ast, TSpan<const AST::Id> outputs, AST::Id input);
 	/** Disconnects all inputs and outputs from a list of ids */
 	void DisconnectAll(Tree& ast, TSpan<const AST::Id> ids);
 	void DisconnectAllInputs(Tree& ast, TSpan<const AST::Id> outputs);

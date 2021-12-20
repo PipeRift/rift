@@ -8,11 +8,11 @@
 
 namespace Rift
 {
-	struct CStatementOutput : public Struct
+	struct CStatementOutputs : public Struct
 	{
-		STRUCT(CStatementOutput, Struct)
+		STRUCT(CStatementOutputs, Struct)
 
-		PROP(input)
-		AST::Id input;
+		PROP(edgeInputNodes)
+		TArray<AST::Id> edgeInputNodes;
 	};
 }    // namespace Rift

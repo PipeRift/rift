@@ -12,7 +12,9 @@ namespace Rift
 	{
 		STRUCT(CStatementInput, Struct)
 
-		PROP(output)
-		AST::Id output;
+		PROP(edgeOutputNode)
+		AST::Id edgeOutputNode = AST::NoId;
+		PROP(edgeOutputPin)
+		AST::Id edgeOutputPin = AST::NoId;
 	};
 }    // namespace Rift

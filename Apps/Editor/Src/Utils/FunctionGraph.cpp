@@ -321,13 +321,13 @@ namespace Rift::Graph
 			if (Nodes::IsLinkCreated(startPin, endPin))
 			{
 				Log::Info("New link!");
-				AST::StatementGraph::Connect(ast, AST::Id(startPin), AST::Id(endPin));
+				// AST::StatementGraph::Connect(ast, AST::Id(startPin), AST::Id(endPin));
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))
 			{
 				// linkId is always the outputId
-				AST::StatementGraph::DisconnectAllInputs(ast, AST::Id(linkId));
+				AST::StatementGraph::Disconnect(ast, AST::Id(linkId));
 			}
 
 			if (wantsToOpenContextMenu)
