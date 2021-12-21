@@ -5,65 +5,99 @@
 #include "AST/Components/CStatementInput.h"
 #include "AST/Components/CStatementOutputs.h"
 #include "AST/Types.h"
+#include "AST/Utils/Hierarchy.h"
 
 
 namespace Rift::AST::StatementGraph
 {
 	void Connect(Tree& ast, Id outputNode, Id outputPin, Id inputNode)
 	{
-		Check(!IsNone(outputNode) && !IsNone(outputPin) && !IsNone(inputNode));
+		if (!Ensure(!IsNone(outputNode) && !IsNone(outputPin) && !IsNone(inputNode)))
+		{
+			return;
+		}
 
 		// Link input
 		{
 			auto& inputComp = ast.GetOrAdd<CStatementInput>(inputNode);
 			// Disconnect previous output connected to input if any
-			if (inputComp.edgeOutputNode != AST::NoId)
+			if (inputComp.linkOutputNode != AST::NoId)
 			{
-				auto& lastOutputsComp = ast.Get<CStatementOutputs>(inputComp.edgeOutputNode);
-				lastOutputsComp.edgePins.FindRef(outputPin) = AST::NoId;
+				auto& lastOutputsComp = ast.Get<CStatementOutputs>(inputComp.linkOutputNode);
+				lastOutputsComp.linkPins.FindRef(outputPin) = AST::NoId;
 			}
-			inputComp.edgeOutputNode = outputNode;
+			inputComp.linkOutputNode = outputNode;
 		}
 
 		// Link output
 		{
 			auto& outputsComp  = ast.GetOrAdd<CStatementOutputs>(outputNode);
-			const i32 pinIndex = outputsComp.edgePins.FindIndex(outputPin);
+			const i32 pinIndex = outputsComp.linkPins.FindIndex(outputPin);
 			if (pinIndex != NO_INDEX)
 			{
-				Id& lastInputNode = outputsComp.edgeInputNodes[pinIndex];
+				Id& lastInputNode = outputsComp.linkInputNodes[pinIndex];
 				// Disconnect previous input connected to output if any
 				if (lastInputNode != AST::NoId)
 				{
-					ast.Get<CStatementInput>(lastInputNode).edgeOutputNode = AST::NoId;
+					ast.Get<CStatementInput>(lastInputNode).linkOutputNode = AST::NoId;
 				}
 				lastInputNode = inputNode;
 				return;
 			}
 			// Pin didnt exist on the graph
-			outputsComp.edgePins.Add(outputPin);
-			outputsComp.edgeInputNodes.Add(inputNode);
+			outputsComp.linkPins.Add(outputPin);
+			outputsComp.linkInputNodes.Add(inputNode);
 		}
 	}
 
-	bool Disconnect(Tree& ast, Id edgeId)
+	void Connect(Tree& ast, AST::Id outputPin, AST::Id inputPin)
 	{
-		Check(!IsNone(edgeId));
+		const Id outputNode = Hierarchy::GetParent(ast, outputPin);
+		const Id inputNode  = Hierarchy::GetParent(ast, inputPin);
+		Connect(ast, outputNode, outputPin, inputNode);
+	}
 
-		const Id inputNode = edgeId;
-		if (auto* inputComp = ast.TryGet<CStatementInput>(inputNode))
+	bool Disconnect(Tree& ast, Id linkId)
+	{
+		if (IsNone(linkId))
 		{
-			if (EnsureMsg(IsNone(inputComp->edgeOutputNode),
-			        "Trying to disconnect a disconnected node")) [[likely]]
+			return false;
+		}
+
+		const Id inputNode = linkId;
+		auto* inputComp    = ast.TryGet<CStatementInput>(inputNode);
+		if (EnsureMsg(inputComp && !IsNone(inputComp->linkOutputNode),
+		        "Trying to disconnect a unexistant link")) [[likely]]
+		{
+			// We expect the other side to have outputs component
+			auto& outputsComp = ast.Get<CStatementOutputs>(inputComp->linkOutputNode);
+			if (Id* lastInputNode = outputsComp.linkInputNodes.Find(inputNode)) [[likely]]
 			{
-				// We expect the other side to have outputs component
-				const auto& outputsComp = ast.Get<CStatementOutputs>(inputComp->edgeOutputNode);
-				if (Id* lastInputNode = outputsComp.edgeInputNodes.Find(inputNode)) [[likely]]
-				{
-					*lastInputNode = AST::NoId;
-				}
-				inputComp->edgeOutputNode = AST::NoId;
-				return true;
+				*lastInputNode = AST::NoId;
+			}
+			inputComp->linkOutputNode = AST::NoId;
+			return true;
+		}
+		return false;
+	}
+
+	bool DisconnectFromInputPin(Tree& ast, AST::Id inputPin)
+	{
+		return Disconnect(ast, Hierarchy::GetParent(ast, inputPin));
+	}
+	bool DisconnectFromOutputPin(Tree& ast, AST::Id outputPin)
+	{
+		return DisconnectFromOutputPin(ast, outputPin, Hierarchy::GetParent(ast, outputPin));
+	}
+	bool DisconnectFromOutputPin(Tree& ast, AST::Id outputPin, AST::Id outputNode)
+	{
+		// NOTE: Can be optimized if needed since outputs is accessed twice counting Disconnect()
+		if (auto* outputsComp = ast.TryGet<CStatementOutputs>(outputNode))
+		{
+			i32 pinIndex = outputsComp->linkPins.FindIndex(outputPin);
+			if (pinIndex != NO_INDEX) [[likely]]
+			{
+				return Disconnect(ast, outputsComp->linkInputNodes[pinIndex]);
 			}
 		}
 		return false;
