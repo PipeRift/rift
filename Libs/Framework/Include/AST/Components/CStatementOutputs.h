@@ -12,6 +12,9 @@ namespace Rift
 	{
 		STRUCT(CStatementOutputs, Struct)
 
+		// Both arrays keep the same index to the input node and the output pin
+		PROP(edgePins)
+		TArray<AST::Id> edgePins;
 		PROP(edgeInputNodes)
 		TArray<AST::Id> edgeInputNodes;
 	};

@@ -14,7 +14,5 @@ namespace Rift
 
 		PROP(edgeOutputNode)
 		AST::Id edgeOutputNode = AST::NoId;
-		PROP(edgeOutputPin)
-		AST::Id edgeOutputPin = AST::NoId;
 	};
 }    // namespace Rift

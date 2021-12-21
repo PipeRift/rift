@@ -12,6 +12,7 @@ namespace Rift::AST::StatementGraph
 	bool CanConnect(const Tree& ast, AST::Id a, AST::Id b);
 
 	void Connect(Tree& ast, AST::Id outputNode, AST::Id outputPin, AST::Id inputNode);
+	void Connect(Tree& ast, AST::Id outputPin, AST::Id inputPin);
 	// Disconnects a particular edge. (Note: edge ids are the same as input nodes)
 	bool Disconnect(Tree& ast, AST::Id edgeId);
 
