@@ -11,7 +11,7 @@ namespace Rift
 {
 	struct GraphPlayground
 	{
-		bool open = true;
+		bool open = false;
 
 		Nodes::EditorContext nodesEditor;
 

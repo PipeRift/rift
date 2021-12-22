@@ -10,16 +10,37 @@
 
 namespace Rift::AST::StatementGraph
 {
-	void Connect(Tree& ast, Id outputNode, Id outputPin, Id inputNode)
+	bool CanConnect(const Tree& ast, AST::Id outputNode, AST::Id inputNode)
+	{
+		if (outputNode == inputNode)
+		{
+			return false;
+		}
+
+		if (!ast.Has<CStatementOutputs>(outputNode) || !ast.Has<CStatementInput>(inputNode))
+		{
+			return false;
+		}
+
+		// TODO: Ensure outputNode doesnt loop to inputNode
+		return true;
+	}
+
+	bool Connect(Tree& ast, Id outputNode, Id outputPin, Id inputNode)
 	{
 		if (!Ensure(!IsNone(outputNode) && !IsNone(outputPin) && !IsNone(inputNode)))
 		{
-			return;
+			return false;
+		}
+
+		if (!CanConnect(ast, outputNode, inputNode))
+		{
+			return false;
 		}
 
 		// Link input
 		{
-			auto& inputComp = ast.GetOrAdd<CStatementInput>(inputNode);
+			auto& inputComp = ast.Get<CStatementInput>(inputNode);
 			// Disconnect previous output connected to input if any
 			if (inputComp.linkOutputNode != AST::NoId)
 			{
@@ -42,19 +63,22 @@ namespace Rift::AST::StatementGraph
 					ast.Get<CStatementInput>(lastInputNode).linkOutputNode = AST::NoId;
 				}
 				lastInputNode = inputNode;
-				return;
 			}
-			// Pin didnt exist on the graph
-			outputsComp.linkPins.Add(outputPin);
-			outputsComp.linkInputNodes.Add(inputNode);
+			else
+			{
+				// Pin didnt exist on the graph
+				outputsComp.linkPins.Add(outputPin);
+				outputsComp.linkInputNodes.Add(inputNode);
+			}
 		}
+		return true;
 	}
 
-	void Connect(Tree& ast, AST::Id outputPin, AST::Id inputPin)
+	bool Connect(Tree& ast, AST::Id outputPin, AST::Id inputPin)
 	{
 		const Id outputNode = Hierarchy::GetParent(ast, outputPin);
-		const Id inputNode  = Hierarchy::GetParent(ast, inputPin);
-		Connect(ast, outputNode, outputPin, inputNode);
+		// NOTE: Input pin ids equal input node ids
+		return Connect(ast, outputNode, outputPin, inputPin);
 	}
 
 	bool Disconnect(Tree& ast, Id linkId)
@@ -83,7 +107,8 @@ namespace Rift::AST::StatementGraph
 
 	bool DisconnectFromInputPin(Tree& ast, AST::Id inputPin)
 	{
-		return Disconnect(ast, Hierarchy::GetParent(ast, inputPin));
+		// NOTE: Input pin ids equal input node ids
+		return Disconnect(ast, inputPin);
 	}
 	bool DisconnectFromOutputPin(Tree& ast, AST::Id outputPin)
 	{
@@ -91,7 +116,8 @@ namespace Rift::AST::StatementGraph
 	}
 	bool DisconnectFromOutputPin(Tree& ast, AST::Id outputPin, AST::Id outputNode)
 	{
-		// NOTE: Can be optimized if needed since outputs is accessed twice counting Disconnect()
+		// NOTE: Can be optimized if needed since outputs is accessed twice counting
+		// Disconnect()
 		if (auto* outputsComp = ast.TryGet<CStatementOutputs>(outputNode))
 		{
 			i32 pinIndex = outputsComp->linkPins.FindIndex(outputPin);

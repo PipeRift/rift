@@ -13,6 +13,7 @@
 #include <AST/Components/CFunctionDecl.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CStatementInput.h>
+#include <AST/Components/CStatementOutputs.h>
 #include <AST/Components/CStringLiteral.h>
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Statics/STypeList.h>
@@ -233,41 +234,36 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawStatementLinks(AST::Tree& ast, TArray<AST::Id>& functionDecls)
+	void DrawStatementLinks(AST::Tree& ast, const TArray<AST::Id>& children)
 	{
-		auto stmtInputs = ast.Filter<CStatementInput>();
-		for (AST::Id functionId : functionDecls)
+		Nodes::PushStyleVar(StyleVar_LinkThickness, 2.f);
+		Nodes::PushStyleColor(Nodes::ColorVar_Link, executionColor);
+		Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, GetHovered(executionColor));
+		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, selectedColor);
+
+		auto stmtOutputs = ast.Filter<CStatementOutputs>();
+		for (AST::Id childId : children)
 		{
-			TArray<AST::Id>* functionChildren = AST::Hierarchy::GetChildren(ast, functionId);
-			if (!functionChildren || functionChildren->IsEmpty())
+			if (auto* childOutputs = stmtOutputs.TryGet<CStatementOutputs>(childId))
 			{
-				continue;
-			}
-
-			AST::Id compoundId = functionChildren->Last();
-			if (stmtInputs.Has(compoundId))
-			{
-				TArray<AST::Id>* statementChildren = AST::Hierarchy::GetChildren(ast, compoundId);
-				if (!statementChildren || statementChildren->IsEmpty())
+				CheckMsg(childOutputs->linkInputNodes.Size() == childOutputs->linkPins.Size(),
+				    "Inputs and pins must match. Graph might be corrupted.");
+				for (i32 i = 0; i < childOutputs->linkInputNodes.Size(); ++i)
 				{
-					continue;
-				}
-
-				AST::Id outputId = statementChildren->First();
-
-				// Connect function to first statement
-				Nodes::Link(i32(functionId), i32(functionId), i32(outputId));
-
-				for (i32 i = 1; i < statementChildren->Size(); ++i)
-				{
-					AST::Id inputId = (*statementChildren)[i];
-
-					// Note: The id of the link is the destination pin
-					Nodes::Link(i32(outputId), i32(outputId), i32(inputId));
-					outputId = inputId;
+					const AST::Id outputPinId = childOutputs->linkPins[i];
+					const AST::Id inputNodeId = childOutputs->linkInputNodes[i];
+					if (!IsNone(outputPinId) && !IsNone(inputNodeId))
+					{
+						// NOTE: Input pin ids equal input node ids
+						// TODO: Execution pin ids atm are the same as the node id. Implement proper
+						// output pin support
+						Nodes::Link(i32(inputNodeId), i32(outputPinId), i32(inputNodeId));
+					}
 				}
 			}
 		}
+		Nodes::PopStyleVar();
+		Nodes::PopStyleColor(3);
 	}
 
 	void DrawTypeGraph(AST::Tree& ast, AST::Id typeId, CTypeEditor& typeEditor)
@@ -310,7 +306,7 @@ namespace Rift::Graph
 			DrawCalls(ast, *children);
 			DrawLiterals(ast, *children);
 
-			DrawStatementLinks(ast, functions);
+			DrawStatementLinks(ast, *children);
 
 			Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
 			PopNodeStyle();
@@ -319,8 +315,13 @@ namespace Rift::Graph
 			Nodes::Id startPin, endPin;
 			if (Nodes::IsLinkCreated(startPin, endPin))
 			{
-				Log::Info("New link!");
-				// AST::StatementGraph::Connect(ast, AST::Id(startPin), AST::Id(endPin));
+				AST::Id outputPin{startPin};
+				AST::Id inputPin{endPin};
+				if (ast.Has<CStatementInput>(outputPin))
+				{
+					Swap(outputPin, inputPin);
+				}
+				AST::StatementGraph::Connect(ast, outputPin, outputPin, inputPin);
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))
@@ -432,9 +433,9 @@ namespace Rift::Graph
 			static constexpr Color pinColor = GetTypeColor<float>();
 			Nodes::PushStyleColor(ColorVar_Pin, pinColor);
 			Nodes::PushStyleColor(ColorVar_PinHovered, GetHovered(pinColor));
-			Nodes::BeginInput(i32(id) + 2, PinShape_CircleFilled);
-			UI::Text("amount");
-			Nodes::EndInput();
+			// Nodes::BeginInput(i32(id) + 2, PinShape_CircleFilled);
+			// UI::Text("amount");
+			// Nodes::EndInput();
 			Nodes::PopStyleColor(2);
 
 			const auto* context = Nodes::GetCurrentContext();

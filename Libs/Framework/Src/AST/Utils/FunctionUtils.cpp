@@ -5,6 +5,8 @@
 #include "AST/Components/CBoolLiteral.h"
 #include "AST/Components/CCallExpr.h"
 #include "AST/Components/CFloatLiteral.h"
+#include "AST/Components/CStatementInput.h"
+#include "AST/Components/CStatementOutputs.h"
 #include "AST/Components/CStringLiteral.h"
 #include "AST/Utils/Hierarchy.h"
 
@@ -57,7 +59,8 @@ namespace Rift::Functions
 		AST::Tree& ast       = type.GetAST();
 		const AST::Id callId = ast.Create();
 
-		// TODO: Reference the function
+		ast.Add<CStatementInput, CStatementOutputs>(callId);
+
 		auto& expr      = ast.Add<CCallExpr>(callId);
 		expr.functionId = targetFunctionId;
 
