@@ -1099,7 +1099,7 @@ namespace Rift::Nodes
 			}
 
 			const v2& pinPos        = pins.Pool[idx].position;
-			const float distanceSqr = ImLengthSqr(pinPos - gNodes->mousePosition);
+			const float distanceSqr = (pinPos - gNodes->mousePosition).LengthSquared();
 
 			// TODO: gNodes->Style.PinHoverRadius needs to be copied i32o pin data and the
 			// pin-local value used here. This is no longer called in
@@ -1998,7 +1998,6 @@ namespace Rift::Nodes
 			{
 				BeginLinkInteraction(editor, gNodes->HoveredLinkIdx.Value(), gNodes->HoveredPinIdx);
 			}
-
 			else if (gNodes->leftMouseClicked && gNodes->HoveredPinIdx)
 			{
 				BeginLinkCreation(editor, gNodes->HoveredPinIdx);

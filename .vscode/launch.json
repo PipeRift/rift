@@ -12,7 +12,7 @@
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/Project",
-            "terminal": "integrated"
+            "console": "integratedTerminal"
         },
         {
             "name": "Test Core",
