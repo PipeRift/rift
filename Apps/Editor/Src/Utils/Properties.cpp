@@ -257,8 +257,7 @@ namespace Rift
 			Style::PushStyleCompact();
 			if (UI::Button("Add##Function", ImVec2(-FLT_MIN, 0.0f)))
 			{
-				AST::Id newFunction = Types::AddFunction({ast, typeId}, "NewFunction");
-				AST::Hierarchy::AddChildren(ast, typeId, newFunction);
+				Types::AddFunction({ast, typeId}, "NewFunction");
 			}
 			Style::PopStyleCompact();
 			UI::Unindent(10.f);

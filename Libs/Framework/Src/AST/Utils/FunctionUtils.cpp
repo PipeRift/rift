@@ -4,7 +4,6 @@
 
 #include "AST/Components/CBoolLiteral.h"
 #include "AST/Components/CCallExpr.h"
-#include "AST/Components/CCompoundStmt.h"
 #include "AST/Components/CFloatLiteral.h"
 #include "AST/Components/CStringLiteral.h"
 #include "AST/Utils/Hierarchy.h"
@@ -69,17 +68,6 @@ namespace Rift::Functions
 		return callId;
 	}
 
-	bool InsertStmtAfter(AST::TypeRef type, AST::Id stmt, AST::Id prevStmt)
-	{
-		AST::Tree& ast = type.GetAST();
-		auto* cChild   = ast.GetChildView().TryGet<CChild>(prevStmt);
-		if (cChild && ast.Has<CCompoundStmt>(cChild->parent))
-		{
-			AST::Hierarchy::AddChildrenAfter(type.GetAST(), cChild->parent, prevStmt, stmt);
-			return true;
-		}
-		return false;
-	}
 	AST::Id FindStmtType(const AST::Tree& ast, AST::Id stmt)
 	{
 		AST::Id parentId;

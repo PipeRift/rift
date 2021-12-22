@@ -3,10 +3,10 @@
 #include "AST/Utils/TypeUtils.h"
 
 #include "AST/Components/CClassDecl.h"
-#include "AST/Components/CCompoundStmt.h"
 #include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CFunctionLibraryDecl.h"
 #include "AST/Components/CIdentifier.h"
+#include "AST/Components/CStatementOutputs.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CVariableDecl.h"
 #include "AST/Serialization.h"
@@ -79,10 +79,7 @@ namespace Rift::Types
 		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);
 		ast.Add<CFunctionDecl, CParent>(id);
-
-		AST::Id compoundId = ast.Create();
-		ast.Add<CCompoundStmt>(id);
-		AST::Hierarchy::AddChildren(ast, id, compoundId);
+		ast.Add<CStatementOutputs>(id);
 
 		if (type)
 		{

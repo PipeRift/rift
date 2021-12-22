@@ -6,11 +6,12 @@
 #include "AST/Components/CCallExpr.h"
 #include "AST/Components/CChild.h"
 #include "AST/Components/CClassDecl.h"
-#include "AST/Components/CCompoundStmt.h"
 #include "AST/Components/CFloatLiteral.h"
 #include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CParent.h"
+#include "AST/Components/CStatementInput.h"
+#include "AST/Components/CStatementOutputs.h"
 #include "AST/Components/CStringLiteral.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CVariableDecl.h"
@@ -128,7 +129,8 @@ namespace Rift::AST
 			ReadPool<CVariableDecl>(*this, ast);
 			ReadPool<CFunctionDecl>(*this, ast);
 			ReadPool<CCallExpr>(*this, ast);
-			ReadPool<CCompoundStmt>(*this, ast);
+			ReadPool<CStatementOutputs>(*this, ast);
+			ReadPool<CStatementInput>(*this, ast);
 			ReadPool<CBoolLiteral>(*this, ast);
 			ReadPool<CFloatLiteral>(*this, ast);
 			ReadPool<CStringLiteral>(*this, ast);
@@ -165,7 +167,8 @@ namespace Rift::AST
 			WritePool<CVariableDecl>(*this, ast, treeEntities);
 			WritePool<CFunctionDecl>(*this, ast, treeEntities);
 			WritePool<CCallExpr>(*this, ast, treeEntities);
-			WritePool<CCompoundStmt>(*this, ast, treeEntities);
+			WritePool<CStatementOutputs>(*this, ast, treeEntities);
+			WritePool<CStatementInput>(*this, ast, treeEntities);
 			WritePool<CBoolLiteral>(*this, ast, treeEntities);
 			WritePool<CFloatLiteral>(*this, ast, treeEntities);
 			WritePool<CStringLiteral>(*this, ast, treeEntities);

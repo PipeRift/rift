@@ -10,9 +10,9 @@
 
 #include <AST/Components/CBoolLiteral.h>
 #include <AST/Components/CCallExpr.h>
-#include <AST/Components/CCompoundStmt.h>
 #include <AST/Components/CFunctionDecl.h>
 #include <AST/Components/CIdentifier.h>
+#include <AST/Components/CStatementInput.h>
 #include <AST/Components/CStringLiteral.h>
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Statics/STypeList.h>
@@ -235,8 +235,7 @@ namespace Rift::Graph
 
 	void DrawStatementLinks(AST::Tree& ast, TArray<AST::Id>& functionDecls)
 	{
-		auto statements = ast.Filter<CStatement>();
-		auto compounds  = ast.Filter<CCompoundStmt>();
+		auto stmtInputs = ast.Filter<CStatementInput>();
 		for (AST::Id functionId : functionDecls)
 		{
 			TArray<AST::Id>* functionChildren = AST::Hierarchy::GetChildren(ast, functionId);
@@ -246,7 +245,7 @@ namespace Rift::Graph
 			}
 
 			AST::Id compoundId = functionChildren->Last();
-			if (compounds.Has(compoundId))
+			if (stmtInputs.Has(compoundId))
 			{
 				TArray<AST::Id>* statementChildren = AST::Hierarchy::GetChildren(ast, compoundId);
 				if (!statementChildren || statementChildren->IsEmpty())
