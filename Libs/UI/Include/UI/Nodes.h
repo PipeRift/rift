@@ -114,32 +114,36 @@ namespace Rift::Nodes
 	};
 
 
-	struct PinId
+	struct PinIdx
 	{
-		Id index     = NoId();
+		i32 index    = NO_INDEX;
 		PinType type = PinType::None;
 
 
-		static constexpr PinId Output(Id index)
+		static constexpr PinIdx Output(i32 index)
 		{
 			return {index, PinType::Output};
 		}
-		static constexpr PinId Input(Id index)
+		static constexpr PinIdx Input(i32 index)
 		{
 			return {index, PinType::Input};
 		}
-		static constexpr PinId Invalid()
+		static constexpr PinIdx Invalid()
 		{
 			return {};
 		}
 
-		bool operator==(PinId other) const
+		bool operator==(PinIdx other) const
 		{
 			return index == other.index && type == other.type;
 		}
 		operator bool() const
 		{
-			return index != NoId() && type != PinType::None;
+			return index != NO_INDEX && type != PinType::None;
+		}
+		operator i32() const
+		{
+			return index;
 		}
 	};
 

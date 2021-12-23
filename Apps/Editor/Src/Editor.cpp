@@ -10,6 +10,7 @@
 #include <AST/Systems/LoadSystem.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Files/Files.h>
+#include <Log.h>
 #include <Profiler.h>
 #include <RiftContext.h>
 #include <UI/Window.h>
@@ -23,11 +24,14 @@ namespace Rift
 		InitializeContext<RiftContext>();
 
 		// Setup window
+		Log::Info("Initializing editor...");
 		if (!Rift::UI::Init())
 		{
+			Log::Error("Failed to initialize editor");
 			return 1;
 		}
 		Graph::Init();
+		Log::Info("Editor is ready");
 
 		while (!UI::WantsToClose())
 		{

@@ -93,6 +93,7 @@ namespace Rift::EditorSystem
 	void DrawProjectMenuBar(AST::Tree& ast, SEditor& editorData);
 
 	// Type Editor
+	void DrawTypeMenuBar(AST::Tree& ast, AST::Id typeId);
 	void DrawTypes(AST::Tree& ast, SEditor& editor);
 
 
@@ -390,6 +391,20 @@ namespace Rift::EditorSystem
 		}
 	}
 
+	void DrawTypeMenuBar(AST::Tree& ast, AST::Id typeId)
+	{
+		if (UI::BeginMenuBar())
+		{
+			if (UI::BeginMenu("View"))
+			{
+				if (UI::MenuItem("Graph")) {}
+				if (UI::MenuItem("Properties")) {}
+				UI::EndMenu();
+			}
+			UI::EndMenuBar();
+		}
+	}
+
 	void DrawTypes(AST::Tree& ast, SEditor& editor)
 	{
 		auto typeEditors = ast.Filter<CType, CTypeEditor, CFileRef>();
@@ -416,9 +431,11 @@ namespace Rift::EditorSystem
 			UI::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 			UI::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);
 			UI::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-			if (UI::Begin(windowName.c_str(), &isOpen))
+			if (UI::Begin(windowName.c_str(), &isOpen, ImGuiWindowFlags_MenuBar))
 			{
 				UI::PopStyleVar(3);
+
+				DrawTypeMenuBar(ast, typeId);
 
 				CreateTypeDockspace(typeEditor, windowName.c_str());
 				typeEditor.layout.Tick(typeEditor.dockspaceID);

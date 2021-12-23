@@ -250,14 +250,14 @@ namespace Rift::Graph
 				    "Inputs and pins must match. Graph might be corrupted.");
 				for (i32 i = 0; i < childOutputs->linkInputNodes.Size(); ++i)
 				{
-					const AST::Id outputPinId = childOutputs->linkPins[i];
-					const AST::Id inputNodeId = childOutputs->linkInputNodes[i];
-					if (!IsNone(outputPinId) && !IsNone(inputNodeId))
+					const AST::Id outputPinIdx = childOutputs->linkPins[i];
+					const AST::Id inputNodeId  = childOutputs->linkInputNodes[i];
+					if (!IsNone(outputPinIdx) && !IsNone(inputNodeId))
 					{
 						// NOTE: Input pin ids equal input node ids
 						// TODO: Execution pin ids atm are the same as the node id. Implement proper
 						// output pin support
-						Nodes::Link(i32(inputNodeId), i32(outputPinId), i32(inputNodeId));
+						Nodes::Link(i32(inputNodeId), i32(outputPinIdx), i32(inputNodeId));
 					}
 				}
 			}

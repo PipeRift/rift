@@ -186,8 +186,8 @@ namespace Rift::Nodes
 	struct LinkData
 	{
 		Id id        = NoId();
-		Id outputPin = NoId();
-		Id inputPin  = NoId();
+		Id outputIdx = NO_INDEX;
+		Id inputIdx  = NO_INDEX;
 
 		struct
 		{
@@ -203,8 +203,8 @@ namespace Rift::Nodes
 
 		struct
 		{
-			i32 outputPin;
-			i32 inputPin;
+			i32 outputIdx;
+			i32 inputIdx;
 			LinkCreationType type;
 		} linkCreation;
 
@@ -290,12 +290,12 @@ namespace Rift::Nodes
 				case PinType::Input: return inputs;
 			}
 		}
-		PinData& GetPinData(PinId pin)
+		PinData& GetPinData(PinIdx pin)
 		{
 			// TODO: Incompatible id types!
 			return GetPinPool(pin.type).Pool[pin.index];
 		}
-		const PinData& GetPinData(PinId pin) const
+		const PinData& GetPinData(PinIdx pin) const
 		{
 			// TODO: Incompatible id types!
 			return GetPinPool(pin.type).Pool[i32(pin.index)];
@@ -312,7 +312,7 @@ namespace Rift::Nodes
 		ImGuiStorage NodeIdxToSubmissionIdx;
 		ImVector<i32> NodeIdxSubmissionOrder;
 		ImVector<i32> NodeIndicesOverlappingWithMouse;
-		ImVector<PinId> occludedPinIndices;
+		ImVector<PinIdx> occludedPinIndices;
 
 		// Canvas extents
 		v2 CanvasOriginScreenSpace;
@@ -333,12 +333,12 @@ namespace Rift::Nodes
 
 		// UI element state
 		i32 CurrentNodeIdx;
-		PinId CurrentPinIdx;
+		PinIdx CurrentPinIdx;
 		i32 CurrentPinId;
 
 		OptionalIndex HoveredNodeIdx;
 		OptionalIndex HoveredLinkIdx;
-		PinId HoveredPinIdx;
+		PinIdx HoveredPinIdx;
 
 		OptionalIndex DeletedLinkIdx;
 		OptionalIndex SnapLinkIdx;
@@ -441,7 +441,7 @@ namespace Rift::Nodes
 			if (objects.availableIds.IsEmpty())
 			{
 				index = objects.Pool.Size();
-				IM_ASSERT(objects.Pool.Size() == objects.InUse.Size());
+				Check(objects.Pool.Size() == objects.InUse.Size());
 				const i32 newSize = objects.Pool.Size() + 1;
 				objects.Pool.Resize(newSize);
 				objects.InUse.Resize(newSize);
@@ -451,13 +451,12 @@ namespace Rift::Nodes
 				index = objects.availableIds.Last();
 				objects.availableIds.RemoveLast();
 			}
-			IM_PLACEMENT_NEW(objects.Pool.Data() + index) T(id);
+			objects.Pool[index] = T{id};
 			objects.idMap.SetInt(static_cast<ImGuiID>(id), index);
 		}
 
 		// Flag it as used
 		objects.InUse.FillBit(index);
-
 		return index;
 	}
 

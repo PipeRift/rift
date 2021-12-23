@@ -215,7 +215,6 @@
         "Libs\\Framework",
         "Libs\\UI"
     ],
-    "favorites.sortOrder": "ASC",
     "clangd.fallbackFlags": [
         "--compile-commands-dir=/Build"
     ],

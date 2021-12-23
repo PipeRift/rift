@@ -2,13 +2,16 @@
 
 #include "Editor.h"
 
+#ifndef RUN_AS_CLI
+#	define RUN_AS_CLI 1
+#endif
 
 int RunEditor()
 {
 	return Rift::Editor::Get().Run();
 }
 
-#if PLATFORM_WINDOWS
+#if PLATFORM_WINDOWS && !RUN_AS_CLI
 #	pragma comment(linker, "/subsystem:windows")
 #	include <windows.h>
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)

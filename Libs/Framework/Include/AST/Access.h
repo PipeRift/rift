@@ -95,6 +95,10 @@ namespace Rift::AST
 		bool IsValid() const
 		{
 			const Id id = *it;
+			if (IsNone(id))
+			{
+				return false;
+			}
 			for (const Pool* pool : pools)
 			{
 				if (!pool->Has(id))
