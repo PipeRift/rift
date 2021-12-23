@@ -105,4 +105,29 @@ namespace Rift::Types
 
 		data = writer.ToString();
 	}
+
+	bool IsClass(const AST::Tree& ast, AST::Id typeId)
+	{
+		return ast.Has<CClassDecl>(typeId);
+	}
+
+	bool IsStruct(const AST::Tree& ast, AST::Id typeId)
+	{
+		return ast.Has<CStructDecl>(typeId);
+	}
+
+	bool IsFunctionLibrary(const AST::Tree& ast, AST::Id typeId)
+	{
+		return ast.Has<CFunctionLibraryDecl>(typeId);
+	}
+
+	bool CanContainVariables(const AST::Tree& ast, AST::Id typeId)
+	{
+		return ast.HasAny<CClassDecl, CStructDecl>(typeId);
+	}
+
+	bool CanContainFunctions(const AST::Tree& ast, AST::Id typeId)
+	{
+		return ast.HasAny<CClassDecl, CFunctionLibraryDecl>(typeId);
+	}
 }    // namespace Rift::Types

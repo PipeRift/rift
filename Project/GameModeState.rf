@@ -1,0 +1,25 @@
+{
+    "type": "Struct",
+    "count": 1,
+    "roots": [
+        0
+    ],
+    "components": {
+        "CChild": {},
+        "CParent": {},
+        "CIdentifier": {},
+        "CStructDecl": {
+            "0": {}
+        },
+        "CClassDecl": {},
+        "CVariableDecl": {},
+        "CFunctionDecl": {},
+        "CCallExpr": {},
+        "CStatementOutputs": {},
+        "CStatementInput": {},
+        "CBoolLiteral": {},
+        "CFloatLiteral": {},
+        "CStringLiteral": {},
+        "CGraphTransform": {}
+    }
+}

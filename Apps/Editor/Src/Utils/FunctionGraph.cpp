@@ -5,6 +5,7 @@
 #include "AST/Utils/StatementGraph.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
+#include "imgui.h"
 #include "Utils/GraphColors.h"
 #include "Utils/TypeUtils.h"
 
@@ -182,7 +183,7 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawFunctionDecls(AST::Tree& ast, TArray<AST::Id>& functionDecls)
+	void DrawFunctionDecls(AST::Tree& ast, const TArray<AST::Id>& functionDecls)
 	{
 		auto functions = ast.Filter<CFunctionDecl>();
 		for (AST::Id functionId : functionDecls)
@@ -191,7 +192,7 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawCalls(AST::Tree& ast, TArray<AST::Id>& children)
+	void DrawCalls(AST::Tree& ast, const TArray<AST::Id>& children)
 	{
 		auto calls         = ast.Filter<CCallExpr>();
 		auto functionDecls = ast.Filter<CFunctionDecl, CIdentifier>();
@@ -213,7 +214,7 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawLiterals(AST::Tree& ast, TArray<AST::Id>& children)
+	void DrawLiterals(AST::Tree& ast, const TArray<AST::Id>& children)
 	{
 		auto boolLiterals = ast.Filter<CBoolLiteral>();
 		for (AST::Id child : children)
@@ -268,13 +269,7 @@ namespace Rift::Graph
 
 	void DrawTypeGraph(AST::Tree& ast, AST::Id typeId, CTypeEditor& typeEditor)
 	{
-		TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, typeId);
-		if (!children)
-		{
-			return;
-		}
-
-		typeEditor.layout.BindNextWindowToNode(CTypeEditor::centralNode);
+		typeEditor.layout.BindNextWindowToNode(CTypeEditor::centralNode, ImGuiCond_Appearing);
 		static String graphId;
 		graphId.clear();
 		Strings::FormatTo(graphId, "Graph##{}", typeId);
@@ -292,21 +287,24 @@ namespace Rift::Graph
 				wantsToOpenContextMenu = true;
 			}
 
-			TArray<AST::Id> functions;
-			auto functionsQuery = ast.Filter<CFunctionDecl>();
-			for (AST::Id childId : *children)
+			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, typeId))
 			{
-				if (functionsQuery.Has(childId))
+				TArray<AST::Id> functions;
+				auto functionsQuery = ast.Filter<CFunctionDecl>();
+				for (AST::Id childId : *children)
 				{
-					functions.Add(childId);
+					if (functionsQuery.Has(childId))
+					{
+						functions.Add(childId);
+					}
 				}
+
+				DrawFunctionDecls(ast, functions);
+				DrawCalls(ast, *children);
+				DrawLiterals(ast, *children);
+
+				DrawStatementLinks(ast, *children);
 			}
-
-			DrawFunctionDecls(ast, functions);
-			DrawCalls(ast, *children);
-			DrawLiterals(ast, *children);
-
-			DrawStatementLinks(ast, *children);
 
 			Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
 			PopNodeStyle();

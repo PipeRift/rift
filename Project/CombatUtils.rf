@@ -1,0 +1,27 @@
+{
+    "type": "FunctionLibrary",
+    "count": 1,
+    "roots": [
+        0
+    ],
+    "components": {
+        "CChild": {
+            "0": {
+                "parent": -1
+            }
+        },
+        "CParent": {},
+        "CIdentifier": {},
+        "CStructDecl": {},
+        "CClassDecl": {},
+        "CVariableDecl": {},
+        "CFunctionDecl": {},
+        "CCallExpr": {},
+        "CStatementOutputs": {},
+        "CStatementInput": {},
+        "CBoolLiteral": {},
+        "CFloatLiteral": {},
+        "CStringLiteral": {},
+        "CGraphTransform": {}
+    }
+}

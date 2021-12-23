@@ -265,22 +265,19 @@ namespace Rift
 		}
 	}
 
-	void DrawProperties(AST::Tree& ast, AST::Id typeId, struct DockSpaceLayout& layout)
+	void DrawProperties(AST::Tree& ast, AST::Id typeId)
 	{
 		auto& editor = ast.Get<CTypeEditor>(typeId);
 
-		layout.BindNextWindowToNode(CTypeEditor::rightNode);
 		const String windowName = Strings::Format("Properties##{}", typeId);
 		if (UI::Begin(windowName.c_str()))
 		{
-			// IsStruct || IsClass
-			if (ast.HasAny<CClassDecl, CStructDecl>(typeId))
+			if (Types::CanContainVariables(ast, typeId))
 			{
 				DrawVariables(ast, editor, typeId);
 			}
 
-			// IsClass || IsFunctionLibrary
-			if (ast.HasAny<CClassDecl, CFunctionLibraryDecl>(typeId))
+			if (Types::CanContainFunctions(ast, typeId))
 			{
 				DrawFunctions(ast, editor, typeId);
 			}

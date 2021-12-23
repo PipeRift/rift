@@ -2,9 +2,13 @@
 
 #include "Systems/EditorSystem.h"
 
+#include "AST/Utils/TypeUtils.h"
 #include "Components/CTypeEditor.h"
+#include "DockSpaceLayout.h"
 #include "Editor.h"
 #include "Files/FileDialog.h"
+#include "imgui.h"
+#include "imgui_internal.h"
 #include "Statics/SEditor.h"
 #include "Utils/FunctionGraph.h"
 #include "Utils/Properties.h"
@@ -13,11 +17,11 @@
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
 #include <AST/Components/CType.h>
-#include <AST/Utils/DeclarationUtils.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Containers/Array.h>
 #include <RiftContext.h>
+#include <UI/UI.h>
 
 
 namespace Rift::EditorSystem
@@ -163,6 +167,7 @@ namespace Rift::EditorSystem
 		UI::PopStyleVar(3);
 
 		editor.dockspaceID = UI::GetID("DockSpace");
+		editor.layout.Tick(editor.dockspaceID);
 		UI::DockSpace(editor.dockspaceID, ImVec2(0.0f, 0.0f), dockingFlags, nullptr);
 		UI::End();
 	}
@@ -173,6 +178,7 @@ namespace Rift::EditorSystem
 		ImGuiDockNodeFlags dockingFlags = ImGuiDockNodeFlags_None;
 
 		editor.dockspaceID = UI::GetID(id);
+		editor.layout.Tick(editor.dockspaceID);
 		UI::DockSpace(editor.dockspaceID, ImVec2(0.0f, 0.0f), dockingFlags, nullptr);
 	}
 
@@ -263,7 +269,6 @@ namespace Rift::EditorSystem
 		}
 
 		CreateRootDockspace(editor);
-		editor.layout.Tick(editor.dockspaceID);
 
 		DrawTypes(ast, editor);
 
@@ -397,7 +402,7 @@ namespace Rift::EditorSystem
 		{
 			if (UI::BeginMenu("View"))
 			{
-				if (UI::MenuItem("Graph")) {}
+				if (Types::CanContainFunctions(ast, typeId) && UI::MenuItem("Graph")) {}
 				if (UI::MenuItem("Properties")) {}
 				UI::EndMenu();
 			}
@@ -426,7 +431,7 @@ namespace Rift::EditorSystem
 				typeEditor.pendingFocus = false;
 			}
 
-			editor.layout.BindNextWindowToNode(SEditor::centralNode);
+			editor.layout.BindNextWindowToNode(SEditor::centralNode, ImGuiCond_Appearing);
 
 			UI::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 			UI::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.f);
@@ -438,14 +443,19 @@ namespace Rift::EditorSystem
 				DrawTypeMenuBar(ast, typeId);
 
 				CreateTypeDockspace(typeEditor, windowName.c_str());
-				typeEditor.layout.Tick(typeEditor.dockspaceID);
 
-				if (Declarations::IsClass(ast, typeId)
-				    || Declarations::IsFunctionLibrary(ast, typeId))
+				if (Types::CanContainFunctions(ast, typeId))
 				{
 					Graph::DrawTypeGraph(ast, typeId, typeEditor);
 				}
-				DrawProperties(ast, typeId, typeEditor.layout);
+
+				Name propertiesNode = CTypeEditor::rightNode;
+				if (!Types::CanContainFunctions(ast, typeId))
+				{
+					propertiesNode = DockSpaceLayout::rootNodeId;
+				}
+				typeEditor.layout.BindNextWindowToNode(propertiesNode, ImGuiCond_Appearing);
+				DrawProperties(ast, typeId);
 			}
 			else
 			{

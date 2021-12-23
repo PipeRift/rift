@@ -23,4 +23,10 @@ namespace Rift::Types
 
 	// TODO: Move from load system
 	// void Deserialize(AST::Tree& ast, AST::Id id, String& data);
+
+	bool IsClass(const AST::Tree& ast, AST::Id typeId);
+	bool IsStruct(const AST::Tree& ast, AST::Id typeId);
+	bool IsFunctionLibrary(const AST::Tree& ast, AST::Id typeId);
+	bool CanContainVariables(const AST::Tree& ast, AST::Id typeId);
+	bool CanContainFunctions(const AST::Tree& ast, AST::Id typeId);
 }    // namespace Rift::Types

@@ -4,6 +4,7 @@
 
 #include <imgui_internal.h>
 #include <Log.h>
+#include <UI/UI.h>
 
 
 namespace Rift
@@ -33,14 +34,14 @@ namespace Rift
 	ImGuiDockNodeFlags& DockSpaceLayout::Builder::GetNodeLocalFlags(Name nodeId)
 	{
 		const ImGuiID dockNodeId = layout.GetDockNodeId(nodeId);
-		assert(dockNodeId > 0);
+		Check(dockNodeId > 0);
 		return ImGui::DockBuilderGetNode(dockNodeId)->LocalFlags;
 	}
 
 	ImGuiDockNodeFlags& DockSpaceLayout::Builder::GetNodeSharedFlags(Name nodeId)
 	{
 		const ImGuiID dockNodeId = layout.GetDockNodeId(nodeId);
-		assert(dockNodeId > 0);
+		Check(dockNodeId > 0);
 		return ImGui::DockBuilderGetNode(dockNodeId)->SharedFlags;
 	}
 
@@ -53,13 +54,13 @@ namespace Rift
 		if (bCurrentlyReseting)
 		{
 			bCurrentlyReseting = false;
-			bWantsToReset      = false;
 		}
 
 		// If layout was not ever set or we want to reset, reset it
 		if (bWantsToReset || ImGui::DockBuilderGetNode(dockSpaceID) == nullptr)
 		{
-			DoReset(dockSpaceID);
+			Rebuild(dockSpaceID);
+			bWantsToReset      = false;
 			bCurrentlyReseting = true;
 		}
 	}
@@ -72,17 +73,20 @@ namespace Rift
 			ImGui::DockBuilderDockWindow(windowId.data(), dockId);
 		}
 	}
-	void DockSpaceLayout::BindNextWindowToNode(Name nodeId)
+	void DockSpaceLayout::BindNextWindowToNode(Name nodeId, ImGuiCond cond)
 	{
 		ImGuiID dockId = GetDockNodeId(nodeId);
 		if (dockId > 0)
 		{
-			ImGui::SetNextWindowDockID(
-			    dockId, bCurrentlyReseting ? ImGuiCond_Always : ImGuiCond_FirstUseEver);
+			if (bCurrentlyReseting)
+			{
+				cond = ImGuiCond_Always;
+			}
+			ImGui::SetNextWindowDockID(dockId, cond);
 		}
 	}
 
-	void DockSpaceLayout::DoReset(ImGuiID dockSpaceID)
+	void DockSpaceLayout::Rebuild(ImGuiID dockSpaceID)
 	{
 		// Clear out existing layout
 		ImGui::DockBuilderRemoveNode(dockSpaceID);

@@ -1,5 +1,5 @@
 {
-    "type": "FunctionLibrary",
+    "type": "Class",
     "count": 4,
     "roots": [
         0
@@ -39,23 +39,41 @@
         },
         "CIdentifier": {
             "1": {
-                "name": "DoSomething"
+                "name": "Add"
             },
             "2": {
-                "name": "Kill"
+                "name": "Remove"
             },
             "3": {
-                "name": "Hey"
+                "name": "Items"
             }
         },
         "CStructDecl": {},
-        "CClassDecl": {},
-        "CVariableDecl": {},
-        "CFunctionDecl": {
-            "1": {},
-            "2": {},
+        "CClassDecl": {
+            "0": {}
+        },
+        "CVariableDecl": {
             "3": {}
         },
+        "CFunctionDecl": {
+            "1": {},
+            "2": {}
+        },
+        "CCallExpr": {},
+        "CStatementOutputs": {
+            "1": {
+                "linkPins": [],
+                "linkInputNodes": []
+            },
+            "2": {
+                "linkPins": [],
+                "linkInputNodes": []
+            }
+        },
+        "CStatementInput": {},
+        "CBoolLiteral": {},
+        "CFloatLiteral": {},
+        "CStringLiteral": {},
         "CGraphTransform": {
             "1": {
                 "position": {
@@ -66,13 +84,7 @@
             "2": {
                 "position": {
                     "x": 0.0,
-                    "y": 0.0
-                }
-            },
-            "3": {
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0
+                    "y": 3.0
                 }
             }
         }

@@ -62,15 +62,10 @@ namespace Rift
 		}
 
 		void BindWindowToNode(StringView windowId, Name nodeId);
-		void BindNextWindowToNode(Name nodeId);
-
-		bool WantsToReset() const
-		{
-			return bWantsToReset;
-		}
+		void BindNextWindowToNode(Name nodeId, ImGuiCond cond = ImGuiCond_FirstUseEver);
 
 	private:
-		void DoReset(ImGuiID dockSpaceID);
+		void Rebuild(ImGuiID dockSpaceID);
 
 		ImGuiID GetDockNodeId(Name nameId) const
 		{

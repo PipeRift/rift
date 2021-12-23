@@ -15,5 +15,5 @@ namespace Rift
 	void DrawVariables(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId);
 	void DrawFunctions(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId);
 
-	void DrawProperties(AST::Tree& ast, AST::Id typeId, struct DockSpaceLayout& layout);
+	void DrawProperties(AST::Tree& ast, AST::Id typeId);
 }    // namespace Rift
