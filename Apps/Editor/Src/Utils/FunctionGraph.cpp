@@ -310,16 +310,12 @@ namespace Rift::Graph
 			PopNodeStyle();
 			Nodes::EndNodeEditor();
 
-			Nodes::Id startPin, endPin;
-			if (Nodes::IsLinkCreated(startPin, endPin))
+			Nodes::Id outputPin;
+			Nodes::Id inputPin;
+			if (Nodes::IsLinkCreated(outputPin, inputPin))
 			{
-				AST::Id outputPin{startPin};
-				AST::Id inputPin{endPin};
-				if (ast.Has<CStatementInput>(outputPin))
-				{
-					Swap(outputPin, inputPin);
-				}
-				AST::StatementGraph::Connect(ast, outputPin, outputPin, inputPin);
+				AST::StatementGraph::Connect(
+				    ast, AST::Id{outputPin}, AST::Id{outputPin}, AST::Id{inputPin});
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))

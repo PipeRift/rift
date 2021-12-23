@@ -1,6 +1,6 @@
 {
     "type": "FunctionLibrary",
-    "count": 1,
+    "count": 7,
     "roots": [
         0
     ],
@@ -8,20 +8,159 @@
         "CChild": {
             "0": {
                 "parent": -1
+            },
+            "1": {
+                "parent": 0
+            },
+            "2": {
+                "parent": 0
+            },
+            "3": {
+                "parent": 0
+            },
+            "4": {
+                "parent": 0
+            },
+            "5": {
+                "parent": 0
+            },
+            "6": {
+                "parent": 0
             }
         },
-        "CParent": {},
-        "CIdentifier": {},
+        "CParent": {
+            "0": {
+                "children": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                ]
+            },
+            "1": {
+                "children": []
+            },
+            "2": {
+                "children": []
+            },
+            "3": {
+                "children": []
+            },
+            "4": {
+                "children": []
+            }
+        },
+        "CIdentifier": {
+            "1": {
+                "name": "ApplyDamage"
+            },
+            "2": {
+                "name": "ApplySphereDamage"
+            },
+            "3": {
+                "name": "Kill"
+            },
+            "4": {
+                "name": "PlayParticleSystem"
+            }
+        },
         "CStructDecl": {},
         "CClassDecl": {},
         "CVariableDecl": {},
-        "CFunctionDecl": {},
-        "CCallExpr": {},
-        "CStatementOutputs": {},
-        "CStatementInput": {},
+        "CFunctionDecl": {
+            "1": {},
+            "2": {},
+            "3": {},
+            "4": {}
+        },
+        "CCallExpr": {
+            "5": {},
+            "6": {}
+        },
+        "CStatementOutputs": {
+            "1": {
+                "linkPins": [],
+                "linkInputNodes": []
+            },
+            "2": {
+                "linkPins": [],
+                "linkInputNodes": []
+            },
+            "3": {
+                "linkPins": [
+                    3
+                ],
+                "linkInputNodes": [
+                    5
+                ]
+            },
+            "4": {
+                "linkPins": [],
+                "linkInputNodes": []
+            },
+            "5": {
+                "linkPins": [
+                    5
+                ],
+                "linkInputNodes": [
+                    6
+                ]
+            },
+            "6": {
+                "linkPins": [],
+                "linkInputNodes": []
+            }
+        },
+        "CStatementInput": {
+            "5": {
+                "linkOutputNode": 3
+            },
+            "6": {
+                "linkOutputNode": 5
+            }
+        },
         "CBoolLiteral": {},
         "CFloatLiteral": {},
         "CStringLiteral": {},
-        "CGraphTransform": {}
+        "CGraphTransform": {
+            "1": {
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            },
+            "2": {
+                "position": {
+                    "x": 0.0,
+                    "y": 4.0
+                }
+            },
+            "3": {
+                "position": {
+                    "x": 0.0,
+                    "y": 8.0
+                }
+            },
+            "4": {
+                "position": {
+                    "x": 0.0,
+                    "y": 12.0
+                }
+            },
+            "5": {
+                "position": {
+                    "x": 112.0,
+                    "y": 145.0
+                }
+            },
+            "6": {
+                "position": {
+                    "x": 225.0,
+                    "y": 133.0
+                }
+            }
+        }
     }
 }

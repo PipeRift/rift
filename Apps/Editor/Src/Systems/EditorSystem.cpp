@@ -301,7 +301,6 @@ namespace Rift::EditorSystem
 				}
 				UI::Separator();
 				if (UI::MenuItem("Open File")) {}
-				if (UI::MenuItem("Save File", "CTRL+S")) {}
 				if (UI::MenuItem("Save All", "CTRL+SHFT+S"))
 				{
 					// TODO: Only save dirty types
@@ -400,6 +399,15 @@ namespace Rift::EditorSystem
 	{
 		if (UI::BeginMenuBar())
 		{
+			if (UI::MenuItem("Save", "CTRL+S"))
+			{
+				auto& file = ast.Get<CFileRef>(typeId);
+				TPair<Path, String> fileData{file.path, ""};
+				Types::Serialize(ast, typeId, fileData.second);
+				TaskSystem::Get().GetPool(TaskPool::Workers).silent_async([fileData]() {
+					Files::SaveStringFile(fileData.first, fileData.second);
+				});
+			}
 			if (UI::BeginMenu("View"))
 			{
 				if (Types::CanContainFunctions(ast, typeId) && UI::MenuItem("Graph")) {}
