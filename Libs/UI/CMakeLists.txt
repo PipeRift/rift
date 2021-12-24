@@ -15,6 +15,7 @@ target_link_libraries(RiftUI PUBLIC
     glfw
     gl3w
     imgui
+    IconFontCppHeaders
 )
 
 install(TARGETS RiftUI

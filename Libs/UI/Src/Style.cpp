@@ -77,8 +77,9 @@ namespace Rift::Style
 			font = &gFonts[name];
 		}
 
-		auto& io = ImGui::GetIO();
-		(*font)[mode].Add(size, io.Fonts->AddFontFromFileTTF(Paths::ToString(file).data(), size));
+		auto& io       = ImGui::GetIO();
+		ImFont* imFont = io.Fonts->AddFontFromFileTTF(Paths::ToString(file).data(), size);
+		(*font)[mode].Add(size, imFont);
 	}
 
 	void LoadFonts()

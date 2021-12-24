@@ -7,9 +7,11 @@
 #include "DockSpaceLayout.h"
 #include "Editor.h"
 #include "Files/FileDialog.h"
+#include "Files/Paths.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "Statics/SEditor.h"
+#include "UI/Notify.h"
 #include "Utils/FunctionGraph.h"
 #include "Utils/Properties.h"
 #include "Utils/TypeUtils.h"
@@ -313,6 +315,8 @@ namespace Rift::EditorSystem
 						Types::Serialize(ast, typeId, fileData.second);
 					}
 
+					UI::AddNotification({UI::ToastType::Info, 0.5f,
+					    Strings::Format("Saving {} files...", fileDatas.Size())});
 					TaskSystem::Get().GetPool(TaskPool::Workers).silent_async([fileDatas]() {
 						for (auto& fileData : fileDatas)
 						{
@@ -404,6 +408,9 @@ namespace Rift::EditorSystem
 				auto& file = ast.Get<CFileRef>(typeId);
 				TPair<Path, String> fileData{file.path, ""};
 				Types::Serialize(ast, typeId, fileData.second);
+
+				UI::AddNotification({UI::ToastType::Info, 0.5f,
+				    Strings::Format("Saving file {}...", Paths::GetFilename(file.path))});
 				TaskSystem::Get().GetPool(TaskPool::Workers).silent_async([fileData]() {
 					Files::SaveStringFile(fileData.first, fileData.second);
 				});

@@ -4,6 +4,7 @@
 
 #include "Statics/SEditor.h"
 #include "Systems/EditorSystem.h"
+#include "UI/Notify.h"
 #include "Utils/FunctionGraph.h"
 
 #include <AST/Statics/SModules.h>
@@ -72,6 +73,7 @@ namespace Rift
 	void Editor::Draw()
 	{
 		EditorSystem::Draw(ast);
+		UI::DrawNotifications();
 	}
 
 	void Editor::SetUIConfigFile(Path path)

@@ -9,7 +9,7 @@
 
 #define IM_VEC2_CLASS_EXTRA                                      \
 	constexpr ImVec2(Rift::v2 other) : x(other.x), y(other.y) {} \
-	constexpr operator Rift::v2()                                \
+	constexpr operator Rift::v2() const                          \
 	{                                                            \
 		return Rift::v2{x, y};                                   \
 	}
@@ -18,12 +18,12 @@
 	constexpr ImVec4(const Rift::LinearColor& other)                                            \
 	    : x(other.r), y(other.g), z(other.b), w(other.a)                                        \
 	{}                                                                                          \
-	constexpr operator Rift::LinearColor()                                                      \
+	constexpr operator Rift::LinearColor() const                                                \
 	{                                                                                           \
 		return Rift::LinearColor{x, y, z, w};                                                   \
 	}                                                                                           \
 	constexpr ImVec4(const Rift::v4& other) : x(other.x), y(other.y), z(other.z), w(other.w) {} \
-	constexpr operator Rift::v4()                                                               \
+	constexpr operator Rift::v4() const                                                         \
 	{                                                                                           \
 		return Rift::v4{x, y, z, w};                                                            \
 	}

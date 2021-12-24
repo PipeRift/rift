@@ -13,6 +13,11 @@ namespace Rift::Style
 	constexpr LinearColor whiteTextColor = LinearColor::White().Shade(0.05f);
 	constexpr LinearColor blackTextColor = LinearColor::Black().Tint(0.05f);
 
+	constexpr LinearColor infoColor    = LinearColor::FromHEX(0x2B8ED6);
+	constexpr LinearColor successColor = LinearColor::FromHEX(0x4DD62B);
+	constexpr LinearColor warningColor = LinearColor::FromHEX(0xD6AB2B);
+	constexpr LinearColor errorColor   = LinearColor::FromHEX(0xD62B2B);
+
 
 	constexpr LinearColor GetNeutralColor(u8 level)
 	{

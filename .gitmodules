@@ -10,3 +10,6 @@
 [submodule "Extern/glfw"]
 	path = Extern/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "Extern/IconFontCppHeaders"]
+	path = Extern/IconFontCppHeaders
+	url = https://github.com/juliettef/IconFontCppHeaders.git
