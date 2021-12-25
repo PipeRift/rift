@@ -4,11 +4,8 @@
 
 #include "Editor.h"
 #include "IconsFontAwesome5.h"
-#include "imgui.h"
 #include "Statics/SEditor.h"
 #include "Strings/StringView.h"
-#include "UI/Style.h"
-#include "UI/UI.h"
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CFileRef.h>
@@ -22,6 +19,8 @@
 #include <imgui_internal.h>
 #include <RiftContext.h>
 #include <Strings/FixedString.h>
+#include <UI/Style.h>
+#include <UI/UI.h>
 
 
 namespace Rift
@@ -315,13 +314,16 @@ namespace Rift
 			{
 				text = fileName;
 			}
+
 			UI::TreeNodeEx(
 			    text.data(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+
 			if (UI::BeginPopupContextItem())
 			{
 				DrawContextMenu(ast, item.path.ToString(), item.id);
 				UI::EndPopup();
 			}
+
 
 			if (UI::IsItemClicked())
 			{
@@ -329,6 +331,12 @@ namespace Rift
 				{
 					Types::OpenType(ast, item.id);
 				}
+			}
+
+			if (Types::IsTypeOpen(ast, item.id))
+			{
+				UI::SameLine(ImGui::GetContentRegionAvailWidth(), 0);
+				UI::Bullet();
 			}
 		}
 	}

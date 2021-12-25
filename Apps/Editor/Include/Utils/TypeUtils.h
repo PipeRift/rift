@@ -11,6 +11,7 @@ namespace Rift::Types
 {
 	void OpenType(AST::Tree& ast, AST::Id typeId);
 	void CloseType(AST::Tree& ast, AST::Id typeId);
+	bool IsTypeOpen(AST::Tree& ast, AST::Id typeId);
 
 	/**
 	 * Called after a change has been done to a type.

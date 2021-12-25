@@ -32,5 +32,10 @@ namespace Rift::Types
 		ast.Remove<CTypeEditor>(typeId);
 	}
 
+	bool IsTypeOpen(AST::Tree& ast, AST::Id typeId)
+	{
+		return ast.Has<CTypeEditor>(typeId);
+	}
+
 	void Changed(AST::Id typeId, StringView name) {}
 }    // namespace Rift::Types
