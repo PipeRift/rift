@@ -5,23 +5,21 @@
 #include "AST/Components/CBoolLiteral.h"
 #include "AST/Components/CCallExpr.h"
 #include "AST/Components/CFloatLiteral.h"
+#include "AST/Components/CFunctionDecl.h"
+#include "AST/Components/CIdentifier.h"
 #include "AST/Components/CStatementInput.h"
 #include "AST/Components/CStatementOutputs.h"
 #include "AST/Components/CStringLiteral.h"
+#include "AST/Statics/STypes.h"
 #include "AST/Utils/Hierarchy.h"
 
 
-namespace Rift::Functions
+namespace Rift::AST::Functions
 {
-	AST::Id GetCompoundStmt(AST::TypeRef type, AST::Id functionId)
+	Id AddLiteral(TypeRef type, Id literalTypeId)
 	{
-		return AST::NoId;
-	}
-
-	AST::Id AddLiteral(AST::TypeRef type, AST::Id literalTypeId)
-	{
-		AST::Tree& ast          = type.GetAST();
-		const AST::Id literalId = ast.Create();
+		Tree& ast          = type.GetAST();
+		const Id literalId = ast.Create();
 
 		bool created        = false;
 		const auto& natives = ast.GetNativeTypes();
@@ -44,44 +42,55 @@ namespace Rift::Functions
 		if (!created)
 		{
 			ast.Destroy(literalId);
-			return AST::NoId;
+			return NoId;
 		}
 
 		if (type)
 		{
-			AST::Hierarchy::AddChildren(ast, type.GetId(), literalId);
+			Hierarchy::AddChildren(ast, type.GetId(), literalId);
 		}
 		return literalId;
 	}
 
-	AST::Id AddCall(AST::TypeRef type, AST::Id targetFunctionId)
+	Id AddCall(TypeRef type, Id functionId)
 	{
-		AST::Tree& ast       = type.GetAST();
-		const AST::Id callId = ast.Create();
+		Tree& ast       = type.GetAST();
+		const Id callId = ast.Create();
 
 		ast.Add<CStatementInput, CStatementOutputs>(callId);
 
-		auto& expr      = ast.Add<CCallExpr>(callId);
-		expr.functionId = targetFunctionId;
+		const Id typeId = Hierarchy::GetParent(ast, functionId);
+		Check(!IsNone(typeId));
+		auto& expr        = ast.Add<CCallExpr>(callId);
+		expr.functionId   = functionId;
+		expr.typeName     = ast.Get<CType>(typeId).name;
+		expr.functionName = ast.Get<CIdentifier>(functionId).name;
 
 		if (type)
 		{
-			AST::Hierarchy::AddChildren(ast, type.GetId(), callId);
+			Hierarchy::AddChildren(ast, type.GetId(), callId);
 		}
 		return callId;
 	}
 
-	AST::Id FindStmtType(const AST::Tree& ast, AST::Id stmt)
+	Id FindFunctionByName(const Tree& ast, Name typeName, Name functionName)
 	{
-		AST::Id parentId;
-		while (auto* cChild = ast.GetChildView().TryGet<CChild>(parentId))
+		auto& types = ast.GetStatic<STypes>();
+		if (const Id* typeId = types.typesByName.Find(typeName))
 		{
-			parentId = cChild->parent;
-			if (ast.Has<CType>(parentId))
+			if (const auto* children = Hierarchy::GetChildren(ast, *typeId))
 			{
-				return parentId;
+				auto functions = ast.Filter<CFunctionDecl, CIdentifier>();
+				for (Id childId : *children)
+				{
+					if (functions.Has(childId)
+					    && functions.Get<CIdentifier>(childId).name == functionName)
+					{
+						return childId;
+					}
+				}
 			}
 		}
-		return AST::NoId;
+		return NoId;
 	}
-}    // namespace Rift::Functions
+}    // namespace Rift::AST::Functions

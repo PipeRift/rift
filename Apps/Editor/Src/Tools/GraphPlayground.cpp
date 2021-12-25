@@ -39,7 +39,7 @@ namespace Rift
 			static String stringValue;
 			Graph::DrawStringLiteralNode(AST::Id(1), stringValue);
 
-			Graph::DrawCallNode(AST::Id(958), "ApplyDamage");
+			Graph::DrawCallNode(AST::Id(958), "ApplyDamage", "DamageSystem");
 
 			Nodes::DrawMiniMap(0.2f, MiniMapCorner::TopRight);
 			Nodes::EndNodeEditor();

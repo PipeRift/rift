@@ -4,7 +4,7 @@
 
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CType.h"
-#include "AST/Statics/STypeList.h"
+#include "AST/Statics/STypes.h"
 #include "AST/Tree.h"
 
 
@@ -12,18 +12,18 @@ namespace Rift::TypeSystem
 {
 	void Init(AST::Tree& ast)
 	{
-		auto& typeList = ast.GetOrSetStatic<STypeList>();
-		typeList.types.Empty();
+		auto& typeList = ast.GetOrSetStatic<STypes>();
+		typeList.typesByName.Empty();
 
 		// Cache existing types
 		auto onlyTypesView = ast.Filter<const CType>();
-		typeList.types.Reserve(u32(onlyTypesView.Size()));
+		typeList.typesByName.Reserve(u32(onlyTypesView.Size()));
 
 		auto typesView = ast.Filter<const CType, const CIdentifier>();
 		for (AST::Id typeId : typesView)
 		{
 			const CIdentifier& identifier = typesView.Get<const CIdentifier>(typeId);
-			typeList.types.Insert(identifier.name, typeId);
+			typeList.typesByName.Insert(identifier.name, typeId);
 		}
 
 		ast.OnAdd<CType>().Bind([&ast, &typeList](auto ids) {
@@ -31,7 +31,7 @@ namespace Rift::TypeSystem
 			{
 				if (const CIdentifier* identifier = ast.TryGet<const CIdentifier>(id))
 				{
-					typeList.types.Insert(identifier->name, id);
+					typeList.typesByName.Insert(identifier->name, id);
 				}
 			}
 		});
@@ -41,7 +41,7 @@ namespace Rift::TypeSystem
 			{
 				if (const CIdentifier* identifier = ast.TryGet<const CIdentifier>(id))
 				{
-					typeList.types.Remove(identifier->name);
+					typeList.typesByName.Remove(identifier->name);
 				}
 			}
 		});

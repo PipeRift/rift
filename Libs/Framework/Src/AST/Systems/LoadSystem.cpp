@@ -183,7 +183,9 @@ namespace Rift::LoadSystem
 				AST::Id id = typeIds[i];
 				Path& path = modulePaths.paths[i];
 
-				ast.Add<CType>(id);
+				String filename = Paths::GetFilename(path);
+				filename        = Strings::RemoveFromEnd(filename, Paths::typeExtension);
+				ast.Add<CType>(id, {Name{filename}});
 				ast.Add<CFileRef>(id, Move(path));
 			}
 
@@ -250,29 +252,7 @@ namespace Rift::LoadSystem
 
 		for (i32 i = 0; i < typeIds.Size(); ++i)
 		{
-			Serl::JsonFormatReader reader{strings[i]};
-			if (!reader.IsValid())
-			{
-				continue;
-			}
-
-			AST::ReadContext ct{reader, ast};
-			ct.BeginObject();
-
-			AST::Id entity        = typeIds[i];
-			TypeCategory category = TypeCategory::None;
-			ct.Next("type", category);
-			Types::InitTypeFromCategory(ast, entity, category);
-
-			ct.SerializeRoot(entity);
-
-			// Root entity's optional name
-			StringView name;
-			ct.Next("name", name);
-			if (!name.empty())
-			{
-				ast.Add<CIdentifier>(entity, {name});
-			}
+			Types::Deserialize(ast, typeIds[i], strings[i]);
 		}
 	}
 }    // namespace Rift::LoadSystem

@@ -1,6 +1,6 @@
 {
     "type": "Class",
-    "count": 8,
+    "count": 4,
     "roots": [
         0
     ],
@@ -17,18 +17,6 @@
             },
             "3": {
                 "parent": 0
-            },
-            "4": {
-                "parent": 0
-            },
-            "5": {
-                "parent": 0
-            },
-            "6": {
-                "parent": 0
-            },
-            "7": {
-                "parent": 0
             }
         },
         "CParent": {
@@ -36,50 +24,35 @@
                 "children": [
                     1,
                     2,
-                    3,
-                    4,
-                    5,
-                    6,
-                    7
+                    3
                 ]
             },
             "1": {
-                "children": []
-            },
-            "2": {
-                "children": []
-            },
-            "3": {
                 "children": []
             }
         },
         "CIdentifier": {
             "1": {
                 "name": "Add"
-            },
-            "2": {
-                "name": "Remove"
-            },
-            "3": {
-                "name": "Items"
             }
         },
         "CStructDecl": {},
         "CClassDecl": {
             "0": {}
         },
-        "CVariableDecl": {
-            "3": {}
-        },
+        "CVariableDecl": {},
         "CFunctionDecl": {
-            "1": {},
-            "2": {}
+            "1": {}
         },
         "CCallExpr": {
-            "4": {},
-            "5": {},
-            "6": {},
-            "7": {}
+            "2": {
+                "typeName": "CombatUtils",
+                "functionName": "Attack"
+            },
+            "3": {
+                "typeName": "none",
+                "functionName": "none"
+            }
         },
         "CStatementOutputs": {
             "1": {
@@ -87,50 +60,20 @@
                 "linkInputNodes": []
             },
             "2": {
-                "linkPins": [
-                    2
-                ],
-                "linkInputNodes": [
-                    4
-                ]
-            },
-            "4": {
-                "linkPins": [
-                    4
-                ],
-                "linkInputNodes": [
-                    6
-                ]
-            },
-            "5": {
-                "linkPins": [
-                    5
-                ],
-                "linkInputNodes": [
-                    7
-                ]
-            },
-            "6": {
                 "linkPins": [],
                 "linkInputNodes": []
             },
-            "7": {
+            "3": {
                 "linkPins": [],
                 "linkInputNodes": []
             }
         },
         "CStatementInput": {
-            "4": {
-                "linkOutputNode": 2
-            },
-            "5": {
+            "2": {
                 "linkOutputNode": -1
             },
-            "6": {
-                "linkOutputNode": 4
-            },
-            "7": {
-                "linkOutputNode": 5
+            "3": {
+                "linkOutputNode": -1
             }
         },
         "CBoolLiteral": {},
@@ -145,32 +88,14 @@
             },
             "2": {
                 "position": {
-                    "x": 0.0,
-                    "y": 3.0
+                    "x": 114.0,
+                    "y": 48.0
                 }
             },
-            "4": {
+            "3": {
                 "position": {
-                    "x": 157.0,
-                    "y": 83.0
-                }
-            },
-            "5": {
-                "position": {
-                    "x": 248.0,
-                    "y": 68.0
-                }
-            },
-            "6": {
-                "position": {
-                    "x": 171.0,
-                    "y": 112.0
-                }
-            },
-            "7": {
-                "position": {
-                    "x": 1010.6764526367188,
-                    "y": 71.62481689453125
+                    "x": 225.0,
+                    "y": 138.0
                 }
             }
         }

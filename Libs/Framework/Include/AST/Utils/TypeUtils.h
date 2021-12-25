@@ -18,11 +18,8 @@ namespace Rift::Types
 	AST::Id AddVariable(AST::TypeRef type, Name name);
 	AST::Id AddFunction(AST::TypeRef type, Name name);
 
-
 	void Serialize(AST::Tree& ast, AST::Id id, String& data);
-
-	// TODO: Move from load system
-	// void Deserialize(AST::Tree& ast, AST::Id id, String& data);
+	void Deserialize(AST::Tree& ast, AST::Id id, const String& data);
 
 	bool IsClass(const AST::Tree& ast, AST::Id typeId);
 	bool IsStruct(const AST::Tree& ast, AST::Id typeId);

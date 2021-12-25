@@ -14,6 +14,7 @@
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CFileRef.h>
+#include <AST/Components/CIdentifier.h>
 #include <AST/Components/CModule.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
@@ -69,7 +70,6 @@ namespace Rift
 			DrawContextMenu(ast, {}, AST::NoId);
 			UI::EndPopup();
 		}
-
 
 		{
 			ZoneScopedN("Draw File Explorer");
@@ -387,20 +387,20 @@ namespace Rift
 	void FileExplorerPanel::DrawTypeActions(AST::Id id, CType& type) {}
 
 	void FileExplorerPanel::CreateType(
-	    AST::Tree& ast, StringView title, TypeCategory category, Path path)
+	    AST::Tree& ast, StringView title, TypeCategory category, Path folderPath)
 	{
-		const Path filename = Dialogs::SaveFile(title, path,
+		const Path path = Dialogs::SaveFile(title, folderPath,
 		    {
 		        {"Rift Type", Strings::Format("*.{}", Paths::typeExtension)}
         },
 		    true);
 
 		AST::Id typeId = Types::CreateType(ast, category);
-		ast.Add<CFileRef>(typeId, filename);
+		ast.Add<CFileRef>(typeId, path);
 
 		String data;
 		Types::Serialize(ast, typeId, data);
-		Files::SaveStringFile(filename, data);
+		Files::SaveStringFile(path, data);
 
 		// Destroy the temporal type after saving it
 		ast.Destroy(typeId);

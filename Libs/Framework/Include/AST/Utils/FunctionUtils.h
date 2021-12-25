@@ -7,13 +7,10 @@
 #include <AST/Components/CType.h>
 
 
-namespace Rift::Functions
+namespace Rift::AST::Functions
 {
-	AST::Id GetCompoundStmt(AST::TypeRef type, AST::Id functionId);
+	Id AddLiteral(TypeRef type, Id literalTypeId);
+	Id AddCall(TypeRef type, Id targetFunctionId);
 
-	AST::Id AddLiteral(AST::TypeRef type, AST::Id literalTypeId);
-	AST::Id AddCall(AST::TypeRef type, AST::Id targetFunctionId);
-
-	bool InsertStmtAfter(AST::TypeRef type, AST::Id stmt, AST::Id prevStmt);
-	AST::Id FindStmtType(const AST::Tree& ast, AST::Id stmt);
-}    // namespace Rift::Functions
+	Id FindFunctionByName(const Tree& ast, Name typeName, Name functionName);
+}    // namespace Rift::AST::Functions

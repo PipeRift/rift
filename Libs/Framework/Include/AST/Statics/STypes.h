@@ -12,6 +12,7 @@ namespace Rift
 	{
 		STRUCT(STypes, Struct)
 
+		TMap<Name, AST::Id> typesByName;
 		TMap<Name, AST::Id> typesByPath;
 	};
 }    // namespace Rift

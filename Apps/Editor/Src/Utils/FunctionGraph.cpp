@@ -17,7 +17,7 @@
 #include <AST/Components/CStatementOutputs.h>
 #include <AST/Components/CStringLiteral.h>
 #include <AST/Components/Views/CGraphTransform.h>
-#include <AST/Statics/STypeList.h>
+#include <AST/Statics/STypes.h>
 #include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/Hierarchy.h>
 #include <UI/Nodes.h>
@@ -123,9 +123,9 @@ namespace Rift::Graph
 			if (filter.IsActive() || ImGui::TreeNode("Constructors"))
 			{
 				String makeStr{};
-				auto& typeList   = ast.GetStatic<STypeList>();
+				auto& typeList   = ast.GetStatic<STypes>();
 				auto identifiers = ast.Filter<CIdentifier>();
-				for (const auto& type : typeList.types)
+				for (const auto& type : typeList.typesByName)
 				{
 					if (auto* iden = identifiers.TryGet<CIdentifier>(type.second))
 					{
@@ -135,7 +135,8 @@ namespace Rift::Graph
 						{
 							if (ImGui::MenuItem(makeStr.c_str()))
 							{
-								AST::Id newId = Functions::AddLiteral({ast, typeId}, type.second);
+								AST::Id newId =
+								    AST::Functions::AddLiteral({ast, typeId}, type.second);
 								if (newId != AST::NoId)
 								{
 									ast.Add<CGraphTransform>(newId, gridPos);
@@ -164,7 +165,7 @@ namespace Rift::Graph
 						{
 							if (ImGui::MenuItem(name.c_str()))
 							{
-								AST::Id newId = Functions::AddCall({ast, typeId}, functionId);
+								AST::Id newId = AST::Functions::AddCall({ast, typeId}, functionId);
 								if (newId != AST::NoId)
 								{
 									ast.Add<CGraphTransform>(newId, gridPos);
@@ -192,7 +193,7 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawCalls(AST::Tree& ast, const TArray<AST::Id>& children)
+	void DrawCalls(AST::Tree& ast, AST::Id typeId, const TArray<AST::Id>& children)
 	{
 		auto calls         = ast.Filter<CCallExpr>();
 		auto functionDecls = ast.Filter<CFunctionDecl, CIdentifier>();
@@ -201,15 +202,13 @@ namespace Rift::Graph
 			auto* call = calls.TryGet<CCallExpr>(child);
 			if (call)
 			{
-				StringView title = "Invalid";
-				if (ast.IsValid(call->functionId))
+				StringView functionName = call->functionName.ToString().c_str();
+				StringView typeName;
+				if (ast.Get<CType>(typeId).name != call->typeName)    // If not the same type
 				{
-					if (auto* iden = functionDecls.TryGet<CIdentifier>(call->functionId))
-					{
-						title = iden->name.ToString().c_str();
-					}
+					typeName = call->typeName.ToString().c_str();
 				}
-				DrawCallNode(child, title);
+				DrawCallNode(child, functionName, typeName);
 			}
 		}
 	}
@@ -300,7 +299,7 @@ namespace Rift::Graph
 				}
 
 				DrawFunctionDecls(ast, functions);
-				DrawCalls(ast, *children);
+				DrawCalls(ast, typeId, *children);
 				DrawLiterals(ast, *children);
 
 				DrawStatementLinks(ast, *children);
@@ -389,7 +388,7 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawCallNode(AST::Id id, StringView name)
+	void DrawCallNode(AST::Id id, StringView name, StringView typeName)
 	{
 		static constexpr Color headerColor = callColor;
 		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
@@ -414,7 +413,17 @@ namespace Rift::Graph
 				UI::Text("");
 				Nodes::EndInput();
 				UI::SameLine();
+
+				UI::BeginGroup();
 				UI::Text(name.data());
+				if (!typeName.empty())
+				{
+					// Rift::Style::PushTextColor(Rift::Style::whiteTextColor.Shade(0.3f));
+					// UI::Text(typeName.data());
+					// Rift::Style::PopTextColor();
+				}
+				UI::EndGroup();
+
 				UI::SameLine();
 				Nodes::BeginOutput(i32(id), PinShape_QuadFilled);
 				UI::Text("");

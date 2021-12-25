@@ -17,46 +17,11 @@ namespace Rift
 
 	struct CType : public Struct
 	{
-	public:
-		using Super    = Struct;
-		using ThisType = CType;
-		using BuilderType =
-		    Rift ::Refl ::TStructTypeBuilder<ThisType, Super, InitTypeFlags(Type_NoFlag)>;
-		static Rift ::Refl ::StructType* GetType()
-		{
-			return Rift ::GetType<ThisType>();
-		}
-		void SerializeReflection(Rift ::Serl ::CommonContext& ct)
-		{
-			Super ::SerializeReflection(ct);
-			__ReflSerializeProperty(ct, Rift ::Refl ::MetaCounter<0>{});
-		}
+		STRUCT(CType, Struct)
 
-	public:
-		static Rift ::Refl ::StructType* InitType()
-		{
-			BuilderType builder{Rift ::Name{"CType"}};
-			builder.onBuild = [](auto& builder) {
-				__ReflReflectProperty(builder, Rift ::Refl ::MetaCounter<0>{});
-				{
-					{}
-				}
-			};
-			builder.Initialize();
-			return builder.GetType();
-		}
+		PROP(name)
+		Name name;
 
-	private:
-		static constexpr Rift ::Refl ::MetaCounter<0> __refl_Counter(Rift ::Refl ::MetaCounter<0>);
-		template<Rift ::u32 N>
-		static void __ReflReflectProperty(BuilderType&, Rift ::Refl ::MetaCounter<N>)
-		{}
-		template<Rift ::u32 N>
-		void __ReflSerializeProperty(Rift ::Serl ::CommonContext&, Rift ::Refl ::MetaCounter<N>)
-		{}
-
-	public:
-
-		CType() {}
+		CType(Name name = {}) : name(name) {}
 	};
 }    // namespace Rift

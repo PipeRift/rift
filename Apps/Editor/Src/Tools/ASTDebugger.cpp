@@ -6,7 +6,7 @@
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CParent.h>
-#include <AST/Statics/STypeList.h>
+#include <AST/Statics/STypes.h>
 #include <AST/Tree.h>
 #include <Framework/Paths.h>
 #include <UI/UI.h>
@@ -26,7 +26,7 @@ namespace Rift
 
 		static ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable
 		                             | ImGuiTableFlags_Hideable | ImGuiTableFlags_SizingStretchProp;
-		if (auto* types = ast.TryGetStatic<STypeList>())
+		if (auto* types = ast.TryGetStatic<STypes>())
 		{
 			UI::BeginChild("typesTableChild",
 			    ImVec2(0.f, Math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
@@ -37,7 +37,7 @@ namespace Rift
 				UI::TableHeadersRow();
 
 				auto identifiers = ast.Filter<CIdentifier>();
-				for (const auto& it : types->types)
+				for (const auto& it : types->typesByName)
 				{
 					UI::TableNextRow();
 					UI::TableNextColumn();    // Name

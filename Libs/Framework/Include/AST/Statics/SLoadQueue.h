@@ -8,12 +8,6 @@
 
 namespace Rift
 {
-	enum class LoadMode : u8
-	{
-		Sync,
-		Async
-	};
-
 	// Keeps a list of entities to load from disk
 	struct SLoadQueue : public Struct
 	{

@@ -91,19 +91,31 @@ namespace Rift::Types
 	void Serialize(AST::Tree& ast, AST::Id id, String& data)
 	{
 		ZoneScoped;
-		Serl::JsonFormatWriter writer{};
 
+		Serl::JsonFormatWriter writer{};
 		AST::WriteContext ct{writer.GetContext(), ast, true};
 		ct.BeginObject();
 		ct.Next("type", GetCategory(ast, id));
 		ct.SerializeRoot(id);
+		data = writer.ToString();
+	}
 
-		if (auto* identifier = ast.TryGet<CIdentifier>(id))
+	void Deserialize(AST::Tree& ast, AST::Id id, const String& data)
+	{
+		Serl::JsonFormatReader reader{data};
+		if (!reader.IsValid())
 		{
-			ct.Next("name", identifier->name);
+			return;
 		}
 
-		data = writer.ToString();
+		AST::ReadContext ct{reader, ast};
+		ct.BeginObject();
+
+		TypeCategory category = TypeCategory::None;
+		ct.Next("type", category);
+		Types::InitTypeFromCategory(ast, id, category);
+
+		ct.SerializeRoot(id);
 	}
 
 	bool IsClass(const AST::Tree& ast, AST::Id typeId)
