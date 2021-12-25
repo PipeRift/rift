@@ -3,9 +3,14 @@
 #include "Panels/FileExplorerPanel.h"
 
 #include "Editor.h"
+#include "Files/Files.h"
+#include "Files/Paths.h"
+#include "Files/STDFileSystem.h"
 #include "IconsFontAwesome5.h"
+#include "imgui.h"
 #include "Statics/SEditor.h"
 #include "Strings/StringView.h"
+#include "UI/Widgets.h"
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CFileRef.h>
@@ -31,7 +36,7 @@ namespace Rift
 		editor.layout.BindNextWindowToNode(SEditor::leftNode);
 
 		if (UI::Begin(
-		        "File Explorer", &bOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar))
+		        "File Explorer", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar))
 		{
 			if (UI::BeginMenuBar())
 			{
@@ -53,7 +58,7 @@ namespace Rift
 	void FileExplorerPanel::DrawList(AST::Tree& ast)
 	{
 		ZoneScoped;
-		// if (bDirty)
+		// if (dirty)
 		{
 			CacheProjectFiles(ast);
 		}
@@ -68,7 +73,7 @@ namespace Rift
 
 		{
 			ZoneScopedN("Draw File Explorer");
-			for (const auto& item : folders[Name::None()].items)
+			for (auto& item : folders[Name::None()].items)
 			{
 				DrawItem(ast, item);
 			}
@@ -90,7 +95,8 @@ namespace Rift
 
 			if (UI::MenuItem("Rename"))
 			{
-				// file->renaming = true;
+				renameId     = itemId;
+				renameBuffer = Paths::GetFilename(path);
 			}
 			if (UI::MenuItem("Delete")) {}
 		}
@@ -151,7 +157,7 @@ namespace Rift
 	void FileExplorerPanel::CacheProjectFiles(AST::Tree& ast)
 	{
 		ZoneScopedN("Cache Project Files");
-		bDirty = false;
+		dirty = false;
 
 		folders.Empty();
 
@@ -173,7 +179,7 @@ namespace Rift
 			moduleFolders.Insert(moduleId, Move(folderPath));
 		}
 
-		// Create folders between modules
+		// Create folders bet§een modules
 		for (AST::Id oneId : modules)
 		{
 			bool insideOther = false;
@@ -230,11 +236,12 @@ namespace Rift
 		});
 	}
 
-	void FileExplorerPanel::DrawItem(AST::Tree& ast, const Item& item)
+	void FileExplorerPanel::DrawItem(AST::Tree& ast, Item& item)
 	{
+		const String path = item.path.ToString();
 		if (Folder* folder = folders.Find(item.path))
 		{
-			const StringView fileName = Paths::GetFilename(item.path.ToString());
+			const StringView fileName = Paths::GetFilename(path);
 
 			ImGuiTreeNodeFlags flags = 0;
 			if (folder->items.IsEmpty())
@@ -261,7 +268,7 @@ namespace Rift
 
 				if (UI::BeginPopupContextItem())
 				{
-					DrawContextMenu(ast, item.path.ToString(), item.id);
+					DrawContextMenu(ast, path, item.id);
 					UI::EndPopup();
 				}
 
@@ -284,7 +291,7 @@ namespace Rift
 				bool open         = UI::TreeNodeEx(text.data(), flags);
 				if (UI::BeginPopupContextItem())
 				{
-					DrawContextMenu(ast, item.path.ToString(), item.id);
+					DrawContextMenu(ast, path, item.id);
 					UI::EndPopup();
 				}
 				if (open)
@@ -300,7 +307,7 @@ namespace Rift
 		}
 		else
 		{
-			StringView fileName = Paths::GetFilename(item.path.ToString());
+			StringView fileName = Paths::GetFilename(path);
 			String text;
 			if (Strings::EndsWith(fileName, ".rf"))
 			{
@@ -315,12 +322,47 @@ namespace Rift
 				text = fileName;
 			}
 
-			UI::TreeNodeEx(
-			    text.data(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+			if (renameId != item.id)
+			{
+				UI::TreeNodeEx(
+				    text.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+				if (UI::IsItemHovered() && UI::IsKeyReleased(GLFW_KEY_F2))
+				{
+					renameId     = item.id;
+					renameBuffer = fileName;
+				}
+			}
+			else
+			{
+				UI::Indent();
+				if (!renameHasFocused)
+				{
+					renameHasFocused = true;
+					UI::SetKeyboardFocusHere();
+				}
+				UI::InputText("##newname", renameBuffer, ImGuiInputTextFlags_AutoSelectAll);
+				if (UI::IsItemDeactivatedAfterEdit())
+				{
+					renameId         = AST::NoId;
+					Path destination = Paths::FromString(Paths::GetParent(path)) / renameBuffer;
+					destination.replace_extension("rf");
+					// FIX: Type caches dont detect renamed types. Should provide helpers for that
+					Files::Rename(Paths::FromString(path), destination);
+					renameBuffer     = "";
+					renameHasFocused = false;
+				}
+				else if (UI::IsItemDeactivated())
+				{
+					renameId         = AST::NoId;
+					renameBuffer     = "";
+					renameHasFocused = false;
+				}
+				UI::Unindent();
+			}
 
 			if (UI::BeginPopupContextItem())
 			{
-				DrawContextMenu(ast, item.path.ToString(), item.id);
+				DrawContextMenu(ast, path, item.id);
 				UI::EndPopup();
 			}
 
@@ -340,55 +382,6 @@ namespace Rift
 			}
 		}
 	}
-
-	/*void FileExplorerPanel::DrawFile(AST::Tree& ast, File& file)
-	{
-	    if (!file.renaming)
-	    {
-	        UI::TreeNodeEx(
-	            file.name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-	        if (UI::IsItemHovered() && UI::IsKeyReleased(GLFW_KEY_F2))
-	        {
-	            file.renaming = true;
-	        }
-	    }
-	    else
-	    {
-	        UI::Indent();
-	        Style::PushStyleCompact();
-	        // TODO: Implement UI functions for string types
-	        TFixedString<128> buffer;
-
-	        UI::SetKeyboardFocusHere();
-	        if (UI::InputText("##newname", buffer.data(), buffer.size(),
-	                ImGuiInputTextFlags_EnterReturnsTrue))
-	        {
-	            file.renaming = false;
-	        }
-	        // if (!UI::IsItemActive())
-	        //{
-	        //	file.renaming = false;
-	        //}
-	        Style::PopStyleCompact();
-	        UI::Unindent();
-	    }
-
-
-	    if (UI::IsItemClicked())
-	    {
-	        if (UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-	        {
-	            // editor.OpenType(file.info);
-	        }
-	    }
-
-	    if (UI::BeginPopupContextItem())
-	    {
-	        const Path path = Paths::FromString(file.info.GetStrPath());
-	        DrawContextMenu(ast, path, &file);
-	        UI::EndPopup();
-	    }
-	}*/
 
 	void FileExplorerPanel::DrawModuleActions(AST::Id id, CModule& module) {}
 	void FileExplorerPanel::DrawTypeActions(AST::Id id, CType& type) {}

@@ -40,10 +40,13 @@ namespace Rift
 		AST::Id projectModuleId = AST::NoId;
 		TMap<Name, Folder> folders;
 
-		bool bOpen  = true;
-		bool bDirty = true;
+		bool open  = true;
+		bool dirty = true;
 
-		Filter filter = Filter::All;
+		Filter filter    = Filter::All;
+		AST::Id renameId = AST::NoId;
+		String renameBuffer;
+		bool renameHasFocused = false;
 
 
 	public:
@@ -62,7 +65,7 @@ namespace Rift
 
 	private:
 		void InsertItem(TMap<Name, Folder>& folders, const Item& item);
-		void DrawItem(AST::Tree& ast, const Item& item);
+		void DrawItem(AST::Tree& ast, Item& item);
 		// void DrawFile(AST::Tree& ast, File& file);
 
 		void DrawModuleActions(AST::Id id, struct CModule& module);

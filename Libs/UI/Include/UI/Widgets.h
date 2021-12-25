@@ -34,20 +34,20 @@ namespace Rift::UI
 	    const LinearColor& tintColor);
 
 	inline bool InputText(const char* label, char* buf, size_t buf_size,
-	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL,
-	    void* user_data = NULL)
+	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
+	    void* user_data = nullptr)
 	{
 		return ImGui::InputText(label, buf, buf_size, flags, callback, user_data);
 	}
 	inline bool InputTextMultiline(const char* label, char* buf, size_t buf_size,
 	    const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0,
-	    ImGuiInputTextCallback callback = NULL, void* user_data = NULL)
+	    ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr)
 	{
 		return ImGui::InputTextMultiline(label, buf, buf_size, size, flags, callback, user_data);
 	}
 	inline bool InputTextWithHint(const char* label, const char* hint, char* buf, size_t buf_size,
-	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL,
-	    void* user_data = NULL)
+	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
+	    void* user_data = nullptr)
 	{
 		return ImGui::InputTextWithHint(label, hint, buf, buf_size, flags, callback, user_data);
 	}
@@ -55,16 +55,16 @@ namespace Rift::UI
 	// ImGui::InputText() with String
 	// Because text input needs dynamic resizing, we need to setup a callback to grow the capacity
 	bool InputText(const char* label, String& str, ImGuiInputTextFlags flags = 0,
-	    ImGuiInputTextCallback callback = NULL, void* userData = NULL);
+	    ImGuiInputTextCallback callback = nullptr, void* userData = nullptr);
 	bool InputTextMultiline(const char* label, String& str, const ImVec2& size = ImVec2(0, 0),
-	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL,
-	    void* userData = NULL);
+	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
+	    void* userData = nullptr);
 	bool InputTextWithHint(const char* label, const char* hint, String& str,
-	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL,
-	    void* userData = NULL);
+	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
+	    void* userData = nullptr);
 
 
-	static bool Begin(const char* name, bool* p_open = NULL, ImGuiWindowFlags flags = 0)
+	static bool Begin(const char* name, bool* pOpen = nullptr, ImGuiWindowFlags flags = 0)
 	{
 		LinearColor titleColor = Style::GetNeutralColor(0);
 		UI::PushStyleColor(ImGuiCol_TitleBg, titleColor);
@@ -80,7 +80,7 @@ namespace Rift::UI
 		UI::PushStyleColor(ImGuiCol_TabHovered, Style::Hovered(tabColorActive));
 		Style::PushTextColor(Style::GetNeutralTextColor(1));
 
-		const bool value = ImGui::Begin(name, p_open, flags);
+		const bool value = ImGui::Begin(name, pOpen, flags);
 
 		UI::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.f, 3.f));
 		return value;
