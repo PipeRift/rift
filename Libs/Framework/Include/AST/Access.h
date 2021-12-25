@@ -95,7 +95,7 @@ namespace Rift::AST
 		bool IsValid() const
 		{
 			const Id id = *it;
-			if (IsNone(id))
+			if (AST::GetVersion(id) == AST::GetVersion(AST::NoId))
 			{
 				return false;
 			}
