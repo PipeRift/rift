@@ -405,7 +405,7 @@ namespace Rift::EditorSystem
 	{
 		if (UI::BeginMenuBar())
 		{
-			if (UI::MenuItem(ICON_FA_SAVE "Save", "CTRL+S"))
+			if (UI::MenuItem(ICON_FA_SAVE, "CTRL+S"))
 			{
 				auto& file = ast.Get<CFileRef>(typeId);
 				TPair<Path, String> fileData{file.path, ""};
