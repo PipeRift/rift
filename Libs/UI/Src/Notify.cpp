@@ -184,7 +184,7 @@ namespace Rift::UI
 				bool wasTitleRendered = false;
 
 				const char* icon = notification.GetIcon();
-				if (!icon)
+				if (icon)
 				{
 					ImGui::TextColored(textColor, icon);
 					wasTitleRendered = true;
@@ -195,12 +195,12 @@ namespace Rift::UI
 				if (!title.empty())
 				{
 					// If a title and an icon is set, we want to render on same line
-					if (!icon)
+					if (icon)
 					{
 						ImGui::SameLine();
 					}
 
-					ImGui::Text(title.c_str());
+					ImGui::TextColored(textColor, title.c_str());
 					wasTitleRendered = true;
 				}
 

@@ -3,7 +3,10 @@
 #include "Panels/FileExplorerPanel.h"
 
 #include "Editor.h"
+#include "IconsFontAwesome5.h"
+#include "imgui.h"
 #include "Statics/SEditor.h"
+#include "Strings/StringView.h"
 #include "UI/Style.h"
 #include "UI/UI.h"
 #include "Utils/TypeUtils.h"
@@ -232,17 +235,28 @@ namespace Rift
 	{
 		if (Folder* folder = folders.Find(item.path))
 		{
+			const StringView fileName = Paths::GetFilename(item.path.ToString());
+
+			ImGuiTreeNodeFlags flags = 0;
+			if (folder->items.IsEmpty())
+			{
+				flags |= ImGuiTreeNodeFlags_Bullet;
+			}
+
 			auto* module = item.id != AST::NoId ? ast.TryGet<CModule>(item.id) : nullptr;
 			if (module)
 			{
 				// TODO: Display module name
-				const StringView name = Paths::GetFilename(item.path.ToString());
+				const String text = Strings::Format(ICON_FA_BOX " {}", fileName);
 
-				const bool isProject = item.id == projectModuleId;
 				Style::PushHeaderColor(Style::primaryColor);
 				Style::PushStyleCompact();
-				bool open = UI::CollapsingHeader(
-				    name.data(), isProject ? ImGuiTreeNodeFlags_DefaultOpen : 0);
+				const bool isProject = item.id == projectModuleId;
+				if (item.id == projectModuleId)    // Is project
+				{
+					flags |= ImGuiTreeNodeFlags_DefaultOpen;
+				}
+				bool open = UI::CollapsingHeader(text.data(), flags);
 				Style::PopStyleCompact();
 				Style::PopHeaderColor();
 
@@ -254,7 +268,7 @@ namespace Rift
 
 				if (open)
 				{
-					UI::TreePush(name.data());
+					UI::TreePush(text.data());
 
 					SortFolder(*folder);
 					for (auto& childItem : folder->items)
@@ -267,8 +281,8 @@ namespace Rift
 			}
 			else    // Just a folder
 			{
-				const StringView name = Paths::GetFilename(item.path.ToString());
-				bool open             = UI::TreeNode(name.data());
+				const String text = Strings::Format(ICON_FA_FOLDER " {}", fileName);
+				bool open         = UI::TreeNodeEx(text.data(), flags);
 				if (UI::BeginPopupContextItem())
 				{
 					DrawContextMenu(ast, item.path.ToString(), item.id);
@@ -287,9 +301,22 @@ namespace Rift
 		}
 		else
 		{
-			StringView name = Paths::GetFilename(item.path.ToString());
+			StringView fileName = Paths::GetFilename(item.path.ToString());
+			String text;
+			if (Strings::EndsWith(fileName, ".rf"))
+			{
+				text = Strings::Format(ICON_FA_FILE_CODE " {}", fileName);
+			}
+			else if (Strings::EndsWith(fileName, ".rift"))
+			{
+				text = Strings::Format(ICON_FA_FILE_ALT " {}", fileName);
+			}
+			else
+			{
+				text = fileName;
+			}
 			UI::TreeNodeEx(
-			    name.data(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+			    text.data(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
 			if (UI::BeginPopupContextItem())
 			{
 				DrawContextMenu(ast, item.path.ToString(), item.id);

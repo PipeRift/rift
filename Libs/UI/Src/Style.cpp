@@ -2,10 +2,12 @@
 
 #include "UI/Style.h"
 
+#include "Files/Paths.h"
 #include "UI/Paths.h"
 #include "UI/UIImGui.h"
 
 #include <Containers/Array.h>
+#include <IconsFontAwesome5.h>
 #include <Log.h>
 #include <Math/Math.h>
 #include <Misc/Checks.h>
@@ -68,7 +70,15 @@ namespace Rift::Style
 	static TMap<Rift::Name, FontDescriptor> gFonts{};
 
 
-	void AddFont(Name name, FontMode mode, float size, Path file)
+	ImFont* AddFont(Path file, float size, const ImFontConfig* fontConfig = nullptr,
+	    const ImWchar* glyphRanges = nullptr)
+	{
+		auto& io = ImGui::GetIO();
+		return io.Fonts->AddFontFromFileTTF(
+		    Paths::ToString(file).data(), size, fontConfig, glyphRanges);
+	}
+
+	void AddTextFont(Name name, FontMode mode, float size, Path file)
 	{
 		FontDescriptor* font = gFonts.Find(name);
 		if (!font)
@@ -77,9 +87,17 @@ namespace Rift::Style
 			font = &gFonts[name];
 		}
 
-		auto& io       = ImGui::GetIO();
-		ImFont* imFont = io.Fonts->AddFontFromFileTTF(Paths::ToString(file).data(), size);
+		ImFont* imFont = AddFont(Paths::ToString(file).data(), size);
 		(*font)[mode].Add(size, imFont);
+
+		// Add Font Awesome icons
+		static const ImWchar iconsRanges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+		ImFontConfig iconsConfig;
+		iconsConfig.MergeMode        = true;
+		iconsConfig.PixelSnapH       = true;
+		iconsConfig.GlyphMinAdvanceX = 14.f;
+		// use FONT_ICON_FILE_NAME_FAR if you want regular instead of solid
+		AddFont(file.parent_path() / FONT_ICON_FILE_NAME_FAS, 14.0f, &iconsConfig, iconsRanges);
 	}
 
 	void LoadFonts()
@@ -90,22 +108,25 @@ namespace Rift::Style
 		auto resources = Paths::GetResourcesPath() / "Editor";
 
 		// Work Sans
-		AddFont("WorkSans", FontMode::Bold, 14.f, resources / "Fonts/WorkSans-Bold.ttf");
-		AddFont(
+		AddTextFont("WorkSans", FontMode::Bold, 14.f, resources / "Fonts/WorkSans-Bold.ttf");
+		AddTextFont(
 		    "WorkSans", FontMode::BoldItalic, 14.f, resources / "Fonts/WorkSans-BoldItalic.ttf");
-		AddFont("WorkSans", FontMode::Italic, 14.f, resources / "Fonts/WorkSans-Italic.ttf");
-		AddFont("WorkSans", FontMode::Light, 14.f, resources / "Fonts/WorkSans-Light.ttf");
-		AddFont(
+		AddTextFont("WorkSans", FontMode::Italic, 14.f, resources / "Fonts/WorkSans-Italic.ttf");
+		AddTextFont("WorkSans", FontMode::Light, 14.f, resources / "Fonts/WorkSans-Light.ttf");
+		AddTextFont(
 		    "WorkSans", FontMode::LightItalic, 14.f, resources / "Fonts/WorkSans-LightItalic.ttf");
-		AddFont("WorkSans", FontMode::Regular, 14.f, resources / "Fonts/WorkSans-Regular.ttf");
+		AddTextFont("WorkSans", FontMode::Regular, 14.f, resources / "Fonts/WorkSans-Regular.ttf");
 
 		// Karla
-		AddFont("Karla", FontMode::Bold, 14.f, resources / "Fonts/Karla-Bold.ttf");
-		AddFont("Karla", FontMode::BoldItalic, 14.f, resources / "Fonts/Karla-BoldItalic.ttf");
-		AddFont("Karla", FontMode::Italic, 14.f, resources / "Fonts/Karla-Italic.ttf");
-		AddFont("Karla", FontMode::Light, 14.f, resources / "Fonts/Karla-Light.ttf");
-		AddFont("Karla", FontMode::LightItalic, 14.f, resources / "Fonts/Karla-LightItalic.ttf");
-		AddFont("Karla", FontMode::Regular, 14.f, resources / "Fonts/Karla-Regular.ttf");
+		AddTextFont("Karla", FontMode::Bold, 14.f, resources / "Fonts/Karla-Bold.ttf");
+		AddTextFont("Karla", FontMode::BoldItalic, 14.f, resources / "Fonts/Karla-BoldItalic.ttf");
+		AddTextFont("Karla", FontMode::Italic, 14.f, resources / "Fonts/Karla-Italic.ttf");
+		AddTextFont("Karla", FontMode::Light, 14.f, resources / "Fonts/Karla-Light.ttf");
+		AddTextFont(
+		    "Karla", FontMode::LightItalic, 14.f, resources / "Fonts/Karla-LightItalic.ttf");
+		AddTextFont("Karla", FontMode::Regular, 14.f, resources / "Fonts/Karla-Regular.ttf");
+
+		io.Fonts->Build();
 	}
 
 	ImFont* FindFont(Rift::Name name, FontMode mode, float size)

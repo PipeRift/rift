@@ -22,6 +22,7 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Containers/Array.h>
+#include <IconsFontAwesome5.h>
 #include <RiftContext.h>
 #include <UI/UI.h>
 
@@ -303,7 +304,7 @@ namespace Rift::EditorSystem
 				}
 				UI::Separator();
 				if (UI::MenuItem("Open File")) {}
-				if (UI::MenuItem("Save All", "CTRL+SHFT+S"))
+				if (UI::MenuItem(ICON_FA_SAVE " Save All", "CTRL+SHFT+S"))
 				{
 					// TODO: Only save dirty types
 					auto typeEditors = ast.Filter<CType, CTypeEditor, CFileRef>();
@@ -315,8 +316,9 @@ namespace Rift::EditorSystem
 						Types::Serialize(ast, typeId, fileData.second);
 					}
 
-					UI::AddNotification({UI::ToastType::Info, 0.5f,
-					    Strings::Format("Saving {} files...", fileDatas.Size())});
+					UI::AddNotification({UI::ToastType::Success, 1.f,
+					    !fileDatas.IsEmpty() ? Strings::Format("Saved {} files", fileDatas.Size())
+					                         : "Nothing to save"});
 					TaskSystem::Get().GetPool(TaskPool::Workers).silent_async([fileDatas]() {
 						for (auto& fileData : fileDatas)
 						{
@@ -403,14 +405,14 @@ namespace Rift::EditorSystem
 	{
 		if (UI::BeginMenuBar())
 		{
-			if (UI::MenuItem("Save", "CTRL+S"))
+			if (UI::MenuItem(ICON_FA_SAVE "Save", "CTRL+S"))
 			{
 				auto& file = ast.Get<CFileRef>(typeId);
 				TPair<Path, String> fileData{file.path, ""};
 				Types::Serialize(ast, typeId, fileData.second);
 
-				UI::AddNotification({UI::ToastType::Info, 0.5f,
-				    Strings::Format("Saving file {}...", Paths::GetFilename(file.path))});
+				UI::AddNotification({UI::ToastType::Success, 1.f,
+				    Strings::Format("Saved file {}", Paths::GetFilename(file.path))});
 				TaskSystem::Get().GetPool(TaskPool::Workers).silent_async([fileData]() {
 					Files::SaveStringFile(fileData.first, fileData.second);
 				});
