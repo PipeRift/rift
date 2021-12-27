@@ -65,7 +65,7 @@ namespace Rift
 
 	private:
 		void InsertItem(TMap<Name, Folder>& folders, const Item& item);
-		void DrawItem(AST::Tree& ast, Item& item);
+		void DrawItem(AST::Tree& ast, const Item& item);
 		// void DrawFile(AST::Tree& ast, File& file);
 
 		void DrawModuleActions(AST::Id id, struct CModule& module);

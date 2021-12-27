@@ -179,7 +179,7 @@ namespace Rift
 			moduleFolders.Insert(moduleId, Move(folderPath));
 		}
 
-		// Create folders bet§een modules
+		// Create folders between modules
 		for (AST::Id oneId : modules)
 		{
 			bool insideOther = false;
@@ -236,13 +236,13 @@ namespace Rift
 		});
 	}
 
-	void FileExplorerPanel::DrawItem(AST::Tree& ast, Item& item)
+	void FileExplorerPanel::DrawItem(AST::Tree& ast, const Item& item)
 	{
-		const String path = item.path.ToString();
+		const String path         = item.path.ToString();
+		const StringView fileName = Paths::GetFilename(path);
+
 		if (Folder* folder = folders.Find(item.path))
 		{
-			const StringView fileName = Paths::GetFilename(path);
-
 			ImGuiTreeNodeFlags flags = 0;
 			if (folder->items.IsEmpty())
 			{
@@ -277,7 +277,7 @@ namespace Rift
 					UI::TreePush(text.data());
 
 					SortFolder(*folder);
-					for (auto& childItem : folder->items)
+					for (const auto& childItem : folder->items)
 					{
 						DrawItem(ast, childItem);
 					}
@@ -297,7 +297,7 @@ namespace Rift
 				if (open)
 				{
 					SortFolder(*folder);
-					for (auto& childItem : folder->items)
+					for (const auto& childItem : folder->items)
 					{
 						DrawItem(ast, childItem);
 					}
@@ -307,11 +307,10 @@ namespace Rift
 		}
 		else
 		{
-			StringView fileName = Paths::GetFilename(path);
 			String text;
 			if (Strings::EndsWith(fileName, ".rf"))
 			{
-				text = Strings::Format(ICON_FA_FILE_CODE " {}", fileName);
+				text = Strings::Format(ICON_FA_FILE_CODE " {}", fileName.data());
 			}
 			else if (Strings::EndsWith(fileName, ".rift"))
 			{
@@ -379,6 +378,7 @@ namespace Rift
 			{
 				UI::SameLine(ImGui::GetContentRegionAvailWidth(), 0);
 				UI::Bullet();
+				UI::NewLine();
 			}
 		}
 	}
