@@ -10,7 +10,7 @@
 
 namespace Rift::AST::StatementGraph
 {
-	bool CanConnect(const Tree& ast, AST::Id outputNode, AST::Id inputNode);
+	bool CanConnect(const Tree& ast, Id outputNode, Id outputPin, Id inputNode);
 
 	bool Connect(Tree& ast, AST::Id outputNode, AST::Id outputPin, AST::Id inputNode);
 	bool Connect(Tree& ast, AST::Id outputPin, AST::Id inputPin);
@@ -39,4 +39,7 @@ namespace Rift::AST::StatementGraph
 
 	/** Look for invalid ids and set them to NoId */
 	void CleanInvalidIds(Tree& ast);
+
+	// If two pins were to be connected, would they create a loop?
+	bool WouldLoop(const Tree& ast, Id outputNode, Id outputPin, Id inputNode);
 }    // namespace Rift::AST::StatementGraph

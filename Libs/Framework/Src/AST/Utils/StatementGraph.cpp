@@ -10,7 +10,7 @@
 
 namespace Rift::AST::StatementGraph
 {
-	bool CanConnect(const Tree& ast, AST::Id outputNode, AST::Id inputNode)
+	bool CanConnect(const Tree& ast, Id outputNode, Id outputPin, Id inputNode)
 	{
 		if (outputNode == inputNode)
 		{
@@ -22,8 +22,7 @@ namespace Rift::AST::StatementGraph
 			return false;
 		}
 
-		// TODO: Ensure outputNode doesnt loop to inputNode
-		return true;
+		return !WouldLoop(ast, outputNode, outputPin, inputNode);
 	}
 
 	bool Connect(Tree& ast, Id outputNode, Id outputPin, Id inputNode)
@@ -33,7 +32,7 @@ namespace Rift::AST::StatementGraph
 			return false;
 		}
 
-		if (!CanConnect(ast, outputNode, inputNode))
+		if (!CanConnect(ast, outputNode, outputPin, inputNode))
 		{
 			return false;
 		}
@@ -125,6 +124,21 @@ namespace Rift::AST::StatementGraph
 			{
 				return Disconnect(ast, outputsComp->linkInputNodes[pinIndex]);
 			}
+		}
+		return false;
+	}
+
+	bool WouldLoop(const Tree& ast, Id outputNode, Id outputPin, Id inputNode)
+	{
+		AST::Id currentNode = outputNode;
+		while (!IsNone(currentNode))
+		{
+			const auto& input = ast.Get<CStatementInput>(currentNode);
+			if (input.linkOutputNode == inputNode)
+			{
+				return true;
+			}
+			currentNode = input.linkOutputNode;
 		}
 		return false;
 	}
