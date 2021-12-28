@@ -3,23 +3,21 @@
 
 #include "AST/Tree.h"
 #include "AST/Types.h"
-#include "AST/Utils/StatementGraph.h"
+#include "AST/Utils/ExpressionGraph.h"
 
 #include <Containers/Span.h>
 
 
-// NOTE: In statement graphs, the Link Id is the Input Node Id
-namespace Rift::AST::StatementGraph
+// NOTE: In expression graphs, the Link Id is the Input Pin Id
+namespace Rift::AST::ExpressionGraph
 {
-	bool CanConnect(const Tree& ast, Id outputNode, Id outputPin, Id inputNode);
+	bool CanConnect(const Tree& ast, AST::Id outputPin, AST::Id inputPin);
 
-	bool Connect(Tree& ast, AST::Id outputNode, AST::Id outputPin, AST::Id inputNode);
 	bool Connect(Tree& ast, AST::Id outputPin, AST::Id inputPin);
 	// Disconnects a particular link. (Note: link ids are the same as input nodes)
 	bool Disconnect(Tree& ast, AST::Id linkId);
 	bool DisconnectFromInputPin(Tree& ast, AST::Id inputPin);
 	bool DisconnectFromOutputPin(Tree& ast, AST::Id outputPin);
-	bool DisconnectFromOutputPin(Tree& ast, AST::Id outputPin, AST::Id outputNode);
 
 	/**
 	 * @brief Disconnects all inputs and outputs from this ids and the children nodes
@@ -40,7 +38,4 @@ namespace Rift::AST::StatementGraph
 
 	/** Look for invalid ids and set them to NoId */
 	void CleanInvalidIds(Tree& ast);
-
-	// If two pins were to be connected, would they create a loop?
-	bool WouldLoop(const Tree& ast, Id outputNode, Id outputPin, Id inputNode);
-}    // namespace Rift::AST::StatementGraph
+}    // namespace Rift::AST::ExpressionGraph
