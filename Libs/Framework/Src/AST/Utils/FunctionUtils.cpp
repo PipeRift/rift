@@ -4,9 +4,12 @@
 
 #include "AST/Components/CBoolLiteral.h"
 #include "AST/Components/CCallExpr.h"
+#include "AST/Components/CExpressionInput.h"
+#include "AST/Components/CExpressionOutputs.h"
 #include "AST/Components/CFloatLiteral.h"
 #include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CIdentifier.h"
+#include "AST/Components/CParameterDecl.h"
 #include "AST/Components/CStatementInput.h"
 #include "AST/Components/CStatementOutputs.h"
 #include "AST/Components/CStringLiteral.h"
@@ -16,6 +19,28 @@
 
 namespace Rift::AST::Functions
 {
+	Id AddInputArgument(Tree& ast, Id functionId)
+	{
+		Id id = ast.Create();
+		ast.Add<CIdentifier>(id);
+		ast.Add<CParameterDecl>(id);
+		ast.Add<CExpressionOutputs>(id);
+
+		Hierarchy::AddChildren(ast, functionId, id);
+		return id;
+	}
+
+	Id AddOutputArgument(Tree& ast, Id functionId)
+	{
+		Id id = ast.Create();
+		ast.Add<CIdentifier>(id);
+		ast.Add<CParameterDecl>(id);
+		ast.Add<CExpressionInput>(id);
+
+		Hierarchy::AddChildren(ast, functionId, id);
+		return id;
+	}
+
 	Id AddLiteral(TypeRef type, Id literalTypeId)
 	{
 		Tree& ast          = type.GetAST();

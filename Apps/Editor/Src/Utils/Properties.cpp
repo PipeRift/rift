@@ -2,8 +2,10 @@
 
 #include "Utils/Properties.h"
 
+#include "AST/Types.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
+#include "imgui.h"
 
 #include <AST/Components/CClassDecl.h>
 #include <AST/Components/CFunctionDecl.h>
@@ -15,11 +17,90 @@
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/TypeUtils.h>
 #include <GLFW/glfw3.h>
+#include <IconsFontAwesome5.h>
+#include <Misc/EnumFlags.h>
 #include <UI/UI.h>
 
 
 namespace Rift
 {
+	using namespace EnumOperators;
+
+
+	void DrawField(AST::Tree& ast, CTypeEditor& editor, AST::Id fieldId, DrawFieldFlags flags)
+	{
+		CIdentifier* identifier = ast.TryGet<CIdentifier>(fieldId);
+		if (!identifier)
+		{
+			return;
+		}
+
+		UI::PushID(AST::GetIndex(fieldId));
+		UI::BeginGroup();
+		{
+			static const Color color{230, 69, 69};
+			static constexpr Color frameBg{122, 59, 41};
+			static constexpr float frameHeight = 20.f;
+
+
+			/*{    // Custom Selectable
+			    auto& style = ImGui::GetStyle();
+			    Style::PushHeaderColor(LinearColor::Transparent());
+
+			    // ImRect bb = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
+			    ImGui::Selectable("##selectArea", nullptr,
+			        ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap,
+			        ImVec2(0, frameHeight));
+
+
+			    Color bgColor = color.Shade(0.5f);
+			    // UI::RenderFrame(bb.Min, bb.Max, bgColor.DWColor(), false, 2.f);
+
+			    Style::PopHeaderColor();
+			}*/
+
+			String name = identifier->name.ToString();
+			if (UI::MutableText("##name", name))
+			{
+				identifier->name = Name{name};
+			}
+
+
+			UI::SameLine();
+			{
+				UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
+				UI::SetNextItemWidth(-FLT_MIN);
+				// TypeCombo();
+				UI::PopStyleVar();
+			}
+
+			UI::SameLine();
+			if (!HasFlag(flags, DrawFieldFlags::HideValue))
+			{
+				UI::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{4.f, 4.f});
+				UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
+				static float value = 2.f;
+				UI::SetNextItemWidth(-FLT_MIN);
+				UI::InputFloat("##defaultValue", &value, 0.f, 0.f, "%.2f");
+				UI::PopStyleVar(2);
+			}
+		}
+		UI::EndGroup();
+		UI::PopID();
+		if (UI::IsItemHovered() && UI::IsKeyReleased(GLFW_KEY_DELETE))
+		{
+			editor.pendingDeletePropertyId = fieldId;
+		}
+		if (UI::BeginPopupContextItem("##FieldContextMenu"))
+		{
+			if (UI::MenuItem("Delete"))
+			{
+				editor.pendingDeletePropertyId = fieldId;
+			}
+			UI::EndPopup();
+		}
+	}
+
 	void DrawVariable(AST::Tree& ast, CTypeEditor& editor, AST::Id variableId)
 	{
 		CIdentifier* identifier = ast.TryGet<CIdentifier>(variableId);
@@ -69,7 +150,7 @@ namespace Rift
 			{
 				bgColor = Style::Hovered(color);
 			}
-			UI::RenderFrame(bb.Min, bb.Max, bgColor.DWColor(), false, 3.f);
+			UI::RenderFrame(bb.Min, bb.Max, bgColor.DWColor(), false, 2.f);
 
 			Style::PopHeaderColor();
 		}
@@ -183,6 +264,18 @@ namespace Rift
 			identifier->name = Name{name};
 		}
 
+		if (auto* children = AST::Hierarchy::GetChildren(ast, functionId))
+		{
+			for (AST::Id childId : *children)
+			{
+				DrawField(ast, editor, childId, DrawFieldFlags::HideValue);
+			}
+		}
+		if (UI::Button(ICON_FA_PLUS "##FunctionInput"))
+		{
+			AST::Functions::AddInputArgument(ast, functionId);
+		}
+
 		UI::PopID();
 	}
 
@@ -214,7 +307,7 @@ namespace Rift
 			}
 
 			Style::PushStyleCompact();
-			if (UI::Button("Add##Variable", ImVec2(-FLT_MIN, 0.0f)))
+			if (UI::Button(ICON_FA_PLUS "##Variable", ImVec2(-FLT_MIN, 0.0f)))
 			{
 				Types::AddVariable({ast, typeId}, "NewVariable");
 			}
@@ -255,7 +348,7 @@ namespace Rift
 			}
 
 			Style::PushStyleCompact();
-			if (UI::Button("Add##Function", ImVec2(-FLT_MIN, 0.0f)))
+			if (UI::Button(ICON_FA_PLUS "##Function", ImVec2(-FLT_MIN, 0.0f)))
 			{
 				Types::AddFunction({ast, typeId}, "NewFunction");
 			}

@@ -9,6 +9,8 @@
 
 namespace Rift::AST::Functions
 {
+	Id AddInputArgument(Tree& ast, Id functionId);
+
 	Id AddLiteral(TypeRef type, Id literalTypeId);
 	Id AddCall(TypeRef type, Id targetFunctionId);
 

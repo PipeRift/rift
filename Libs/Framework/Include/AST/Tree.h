@@ -443,9 +443,9 @@ namespace Rift::AST
 		Pool* FindPool(Refl::TypeId componentId) const;
 
 		template<typename T>
-		TPool<T>* FindPool() const
+		CopyConst<TPool<Mut<T>>, T>* FindPool() const
 		{
-			return static_cast<TPool<T>*>(FindPool(Refl::TypeId::Get<T>()));
+			return static_cast<CopyConst<TPool<Mut<T>>, T>*>(FindPool(Refl::TypeId::Get<Mut<T>>()));
 		}
 
 #pragma endregion ECS API

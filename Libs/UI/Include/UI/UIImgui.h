@@ -54,11 +54,6 @@ namespace Rift::UI
 	{
 		ImGui::PushID(ptr_id);
 	}
-	// Push integer into the ID stack (will hash integer)
-	inline void PushID(i32 int_id)
-	{
-		ImGui::PushID(int_id);
-	}
 
 	inline ImGuiID GetID(const char* str_id)
 	{
@@ -88,9 +83,10 @@ namespace Rift::UI
 		UI::PushID(id.data(), id.data() + id.size());
 	}
 
-	inline void PushID(sizet sizet_id)
+	template<Integral T>
+	inline void PushID(T id)
 	{
-		UI::PushID(reinterpret_cast<void*>(sizet_id));
+		UI::PushID(reinterpret_cast<void*>(id));
 	}
 
 	inline ImGuiID GetID(StringView id)

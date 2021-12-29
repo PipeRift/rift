@@ -6,7 +6,6 @@
 #include "Files/Files.h"
 #include "Files/Paths.h"
 #include "Files/STDFileSystem.h"
-#include "IconsFontAwesome5.h"
 #include "imgui.h"
 #include "Statics/SEditor.h"
 #include "Strings/StringView.h"
@@ -22,6 +21,7 @@
 #include <Files/FileDialog.h>
 #include <Framework/Paths.h>
 #include <GLFW/glfw3.h>
+#include <IconsFontAwesome5.h>
 #include <imgui_internal.h>
 #include <RiftContext.h>
 #include <Strings/FixedString.h>
