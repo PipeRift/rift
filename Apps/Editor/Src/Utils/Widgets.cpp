@@ -2,6 +2,8 @@
 
 #include "Utils/Widgets.h"
 
+#include "imgui.h"
+
 #include <AST/Components/CClassDecl.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CNativeDecl.h>
@@ -38,12 +40,12 @@ namespace Rift::Editor
 
 	bool TypeCombo(AST::Tree& ast, StringView label, AST::Id& selectedId)
 	{
-		auto identifiers = ast.Filter<CType, CIdentifier>();
+		auto types = ast.Filter<CType>();
 
 		Name typeName;
 		if (!IsNone(selectedId))
 		{
-			auto& identifier = identifiers.Get<CIdentifier>(selectedId);
+			auto& identifier = types.Get<CType>(selectedId);
 			typeName         = identifier.name;
 		}
 
@@ -55,6 +57,7 @@ namespace Rift::Editor
 			{
 				UI::SetKeyboardFocusHere();
 			}
+			UI::SetNextItemWidth(-FLT_MIN);
 			filter.Draw("##Filter");
 
 			auto natives = ast.Filter<CType, CNativeDecl>();
@@ -63,13 +66,29 @@ namespace Rift::Editor
 
 			if (filter.IsActive())
 			{
-				ListTypesFromFilter(natives, selectedId, changed, filter);
-				ListTypesFromFilter(structs, selectedId, changed, filter);
-				ListTypesFromFilter(classes, selectedId, changed, filter);
+				if (UI::TreeNodeEx("Native##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ListTypesFromFilter(natives, selectedId, changed, filter);
+					UI::TreePop();
+				}
+				if (UI::TreeNodeEx("Structs##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ListTypesFromFilter(structs, selectedId, changed, filter);
+					UI::TreePop();
+				}
+				if (UI::TreeNodeEx("Classes##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ListTypesFromFilter(classes, selectedId, changed, filter);
+					UI::TreePop();
+				}
 			}
 			else
 			{
-				ListTypesFromFilter(natives, selectedId, changed, filter);
+				if (UI::TreeNodeEx("Native", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ListTypesFromFilter(natives, selectedId, changed, filter);
+					UI::TreePop();
+				}
 				if (UI::TreeNode("Structs"))
 				{
 					ListTypesFromFilter(structs, selectedId, changed, filter);

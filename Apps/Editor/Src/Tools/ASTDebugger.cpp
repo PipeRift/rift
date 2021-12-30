@@ -23,7 +23,6 @@ namespace Rift
 			return;
 		}
 
-
 		static ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable
 		                             | ImGuiTableFlags_Hideable | ImGuiTableFlags_SizingStretchProp;
 		if (auto* types = ast.TryGetStatic<STypes>())
@@ -36,7 +35,6 @@ namespace Rift
 				UI::TableSetupColumn("Id");
 				UI::TableHeadersRow();
 
-				auto identifiers = ast.Filter<CIdentifier>();
 				for (const auto& it : types->typesByName)
 				{
 					UI::TableNextRow();
