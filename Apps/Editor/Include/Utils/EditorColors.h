@@ -2,11 +2,12 @@
 
 #pragma once
 
+#include <AST/Tree.h>
 #include <Math/Color.h>
 #include <Reflection/TypeId.h>
 
 
-namespace Rift::Graph
+namespace Rift::Style
 {
 	constexpr Color selectedColor{Color::FromHEX(0xdba43f)};
 	constexpr Color executionColor{Color::FromHEX(0xdbdbdb)};
@@ -17,31 +18,30 @@ namespace Rift::Graph
 	template<typename T>
 	constexpr Color GetTypeColor()
 	{
-		if (IsSame<T, bool>)
+		if constexpr (IsSame<T, bool>)
 		{
 			return Color::FromHEX(0xF94144);
 		}
-		else if (FloatingPoint<T>)
+		else if constexpr (FloatingPoint<T>)
 		{
 			return Color::FromHEX(0x90BE6D);
 		}
-		else if (SignedIntegral<T>)
+		else if constexpr (SignedIntegral<T>)
 		{
 			return Color::FromHEX(0x43AA8B);
 		}
-		else if (UnsignedIntegral<T>)
+		else if constexpr (UnsignedIntegral<T>)
 		{
 			return Color::FromHEX(0x4D908E);
 		}
-		else if (IsSame<T, String>)
+		else if constexpr (IsSame<T, String>)
 		{
 			return Color::FromHEX(0xD44BFA);
 		}
 		return Color::Gray();
 	};
 
-	const Color GetHovered(Color source)
-	{
-		return source.Shade(0.3f);
-	}
-}    // namespace Rift::Graph
+	const Color GetTypeColor(const AST::Tree& ast, AST::Id id);
+
+	const Color GetHovered(Color source);
+}    // namespace Rift::Style

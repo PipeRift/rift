@@ -10,6 +10,9 @@ namespace Rift
 	{
 		STRUCT(CParameterDecl, CDeclaration)
 
+		PROP(typeId)
+		AST::Id typeId = AST::NoId;
+
 		PROP(type)
 		Name type;
 

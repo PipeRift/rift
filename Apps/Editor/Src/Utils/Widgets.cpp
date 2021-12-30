@@ -105,4 +105,9 @@ namespace Rift::Editor
 
 		return changed;
 	}
+
+	bool InputLiteralValue(AST::Tree& ast, StringView label, AST::Id literalId)
+	{
+		return false;
+	}
 }    // namespace Rift::Editor

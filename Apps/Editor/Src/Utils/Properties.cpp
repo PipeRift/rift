@@ -6,6 +6,7 @@
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "imgui.h"
+#include "Utils/EditorColors.h"
 #include "Utils/Widgets.h"
 
 #include <AST/Components/CClassDecl.h>
@@ -14,6 +15,7 @@
 #include <AST/Components/CFunctionDecl.h>
 #include <AST/Components/CFunctionLibraryDecl.h>
 #include <AST/Components/CIdentifier.h>
+#include <AST/Components/CParameterDecl.h>
 #include <AST/Components/CStructDecl.h>
 #include <AST/Components/CVariableDecl.h>
 #include <AST/Utils/FunctionUtils.h>
@@ -33,7 +35,8 @@ namespace Rift
 	void DrawField(AST::Tree& ast, CTypeEditor& editor, AST::Id fieldId, DrawFieldFlags flags)
 	{
 		CIdentifier* identifier = ast.TryGet<CIdentifier>(fieldId);
-		if (!identifier)
+		auto* paramDecl         = ast.TryGet<CParameterDecl>(fieldId);
+		if (!identifier || !paramDecl)
 		{
 			return;
 		}
@@ -41,26 +44,15 @@ namespace Rift
 		UI::BeginGroup();
 		UI::PushID(AST::GetIndex(fieldId));
 		{
-			static const Color color{230, 69, 69};
-			static constexpr Color frameBg{122, 59, 41};
+			const Color color                  = Style::GetTypeColor(ast, paramDecl->typeId);
 			static constexpr float frameHeight = 20.f;
 
 
-			/*{    // Custom Selectable
-			    auto& style = ImGui::GetStyle();
-			    Style::PushHeaderColor(LinearColor::Transparent());
-
-			    // ImRect bb = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
-			    ImGui::Selectable("##selectArea", nullptr,
-			        ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap,
-			        ImVec2(0, frameHeight));
-
-
-			    Color bgColor = color.Shade(0.5f);
-			    // UI::RenderFrame(bb.Min, bb.Max, bgColor.DWColor(), false, 2.f);
-
-			    Style::PopHeaderColor();
-			}*/
+			{    // Custom Selectable
+				Color bgColor = color;
+				ImRect bb     = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
+				UI::RenderFrame(bb.Min, bb.Max, bgColor.DWColor(), false, 2.f);
+			}
 
 			String name = identifier->name.ToString();
 			if (UI::MutableText("##name", name))
@@ -73,8 +65,7 @@ namespace Rift
 			{
 				UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 				UI::SetNextItemWidth(-FLT_MIN);
-				static AST::Id selected = AST::NoId;
-				Editor::TypeCombo(ast, "##type", selected);
+				Editor::TypeCombo(ast, "##type", paramDecl->typeId);
 				UI::PopStyleVar();
 			}
 
@@ -175,7 +166,6 @@ namespace Rift
 		{
 			identifier->name = Name{name};
 		}
-
 
 		UI::TableNextColumn();
 		{
@@ -322,7 +312,10 @@ namespace Rift
 			if (auto* children = AST::Hierarchy::GetChildren(ast, typeId))
 			{
 				UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
-				if (UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit))
+				bool showTable =
+				    UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit);
+				UI::PopStyleVar();
+				if (showTable)
 				{
 					ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.45f);
 					ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.25f);
@@ -337,7 +330,6 @@ namespace Rift
 					}
 					UI::EndTable();
 				}
-				UI::PopStyleVar();
 			}
 
 			Style::PushStyleCompact();
@@ -364,7 +356,10 @@ namespace Rift
 			if (auto* children = AST::Hierarchy::GetChildren(ast, typeId))
 			{
 				UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
-				if (UI::BeginTable("##functionTable", 1, ImGuiTableFlags_SizingFixedFit))
+				bool showTable =
+				    UI::BeginTable("##functionTable", 1, ImGuiTableFlags_SizingFixedFit);
+				UI::PopStyleVar();
+				if (showTable)
 				{
 					ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch);
 
@@ -378,7 +373,6 @@ namespace Rift
 					}
 					UI::EndTable();
 				}
-				UI::PopStyleVar();
 			}
 
 			Style::PushStyleCompact();
