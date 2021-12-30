@@ -3,6 +3,7 @@
 #include "AST/Utils/TypeUtils.h"
 
 #include "AST/Components/CClassDecl.h"
+#include "AST/Components/CFileRef.h"
 #include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CFunctionLibraryDecl.h"
 #include "AST/Components/CIdentifier.h"
@@ -12,6 +13,7 @@
 #include "AST/Serialization.h"
 #include "AST/Utils/Hierarchy.h"
 
+#include <Framework/Paths.h>
 #include <Misc/Checks.h>
 #include <Profiler.h>
 #include <Serialization/Formats/JsonFormat.h>
@@ -21,10 +23,17 @@ namespace Rift::Types
 {
 	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, TypeCategory category)
 	{
+		if (auto* fileRef = ast.TryGet<CFileRef>(id))
+		{
+			String fileName = Paths::GetFilename(fileRef->path);
+			fileName        = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
+			ast.Add<CType>(id, {Name{fileName}});
+		}
+
 		switch (category)
 		{
-			case TypeCategory::Class: ast.Add<CType, CClassDecl>(id); break;
-			case TypeCategory::Struct: ast.Add<CType, CStructDecl>(id); break;
+			case TypeCategory::Class: ast.Add<CClassDecl>(id); break;
+			case TypeCategory::Struct: ast.Add<CStructDecl>(id); break;
 			case TypeCategory::FunctionLibrary: ast.Add<CFunctionLibraryDecl>(id); break;
 		}
 	}

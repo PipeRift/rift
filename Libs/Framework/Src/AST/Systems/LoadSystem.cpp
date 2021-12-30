@@ -183,9 +183,6 @@ namespace Rift::LoadSystem
 				AST::Id id = typeIds[i];
 				Path& path = modulePaths.paths[i];
 
-				String filename = Paths::GetFilename(path);
-				filename        = Strings::RemoveFromEnd(filename, Paths::typeExtension);
-				ast.Add<CType>(id, {Name{filename}});
 				ast.Add<CFileRef>(id, Move(path));
 			}
 
