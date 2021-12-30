@@ -6,6 +6,8 @@
 #include "AST/Components/CCallExpr.h"
 #include "AST/Components/CChild.h"
 #include "AST/Components/CClassDecl.h"
+#include "AST/Components/CExpressionInput.h"
+#include "AST/Components/CExpressionOutputs.h"
 #include "AST/Components/CFloatLiteral.h"
 #include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CIdentifier.h"
@@ -19,6 +21,7 @@
 #include "AST/Utils/Hierarchy.h"
 
 #include <Reflection/TypeName.h>
+
 
 
 namespace Rift::AST
@@ -131,6 +134,8 @@ namespace Rift::AST
 			ReadPool<CCallExpr>(*this, ast);
 			ReadPool<CStatementOutputs>(*this, ast);
 			ReadPool<CStatementInput>(*this, ast);
+			ReadPool<CExpressionOutputs>(*this, ast);
+			ReadPool<CExpressionInput>(*this, ast);
 			ReadPool<CBoolLiteral>(*this, ast);
 			ReadPool<CFloatLiteral>(*this, ast);
 			ReadPool<CStringLiteral>(*this, ast);
@@ -169,6 +174,8 @@ namespace Rift::AST
 			WritePool<CCallExpr>(*this, ast, treeEntities);
 			WritePool<CStatementOutputs>(*this, ast, treeEntities);
 			WritePool<CStatementInput>(*this, ast, treeEntities);
+			WritePool<CExpressionOutputs>(*this, ast, treeEntities);
+			WritePool<CExpressionInput>(*this, ast, treeEntities);
 			WritePool<CBoolLiteral>(*this, ast, treeEntities);
 			WritePool<CFloatLiteral>(*this, ast, treeEntities);
 			WritePool<CStringLiteral>(*this, ast, treeEntities);
