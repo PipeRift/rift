@@ -23,8 +23,8 @@ namespace Rift::Types
 	{
 		switch (category)
 		{
-			case TypeCategory::Class: ast.Add<CClassDecl>(id); break;
-			case TypeCategory::Struct: ast.Add<CStructDecl>(id); break;
+			case TypeCategory::Class: ast.Add<CType, CClassDecl>(id); break;
+			case TypeCategory::Struct: ast.Add<CType, CStructDecl>(id); break;
 			case TypeCategory::FunctionLibrary: ast.Add<CFunctionLibraryDecl>(id); break;
 		}
 	}

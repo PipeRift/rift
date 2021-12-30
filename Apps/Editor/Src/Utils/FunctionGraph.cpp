@@ -123,20 +123,20 @@ namespace Rift::Graph
 			if (filter.IsActive() || ImGui::TreeNode("Constructors"))
 			{
 				String makeStr{};
-				auto& typeList   = ast.GetStatic<STypes>();
-				auto identifiers = ast.Filter<CIdentifier>();
-				for (const auto& type : typeList.typesByName)
+				auto& typeList = ast.GetStatic<STypes>();
+				auto types     = ast.Filter<CType>();
+				for (const auto& it : typeList.typesByName)
 				{
-					if (auto* iden = identifiers.TryGet<CIdentifier>(type.second))
+					if (auto* type = types.TryGet<CType>(it.second))
 					{
 						makeStr.clear();
-						Strings::FormatTo(makeStr, "Make {}", iden->name);
+						Strings::FormatTo(makeStr, "Make {}", type->name);
 						if (filter.PassFilter(makeStr.c_str(), makeStr.c_str() + makeStr.size()))
 						{
 							if (ImGui::MenuItem(makeStr.c_str()))
 							{
 								AST::Id newId =
-								    AST::Functions::AddLiteral({ast, typeId}, type.second);
+								    AST::Functions::AddLiteral({ast, typeId}, it.second);
 								if (newId != AST::NoId)
 								{
 									ast.Add<CGraphTransform>(newId, gridPos);

@@ -6,6 +6,7 @@
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "imgui.h"
+#include "Utils/Widgets.h"
 
 #include <AST/Components/CClassDecl.h>
 #include <AST/Components/CFunctionDecl.h>
@@ -22,6 +23,7 @@
 #include <UI/UI.h>
 
 
+
 namespace Rift
 {
 	using namespace EnumOperators;
@@ -35,8 +37,8 @@ namespace Rift
 			return;
 		}
 
-		UI::PushID(AST::GetIndex(fieldId));
 		UI::BeginGroup();
+		UI::PushID(AST::GetIndex(fieldId));
 		{
 			static const Color color{230, 69, 69};
 			static constexpr Color frameBg{122, 59, 41};
@@ -70,7 +72,8 @@ namespace Rift
 			{
 				UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 				UI::SetNextItemWidth(-FLT_MIN);
-				// TypeCombo();
+				static AST::Id selected = AST::NoId;
+				Editor::TypeCombo(ast, "##type", selected);
 				UI::PopStyleVar();
 			}
 
@@ -85,8 +88,8 @@ namespace Rift
 				UI::PopStyleVar(2);
 			}
 		}
-		UI::EndGroup();
 		UI::PopID();
+		UI::EndGroup();
 		if (UI::IsItemHovered() && UI::IsKeyReleased(GLFW_KEY_DELETE))
 		{
 			editor.pendingDeletePropertyId = fieldId;
@@ -268,7 +271,7 @@ namespace Rift
 		{
 			for (AST::Id childId : *children)
 			{
-				DrawField(ast, editor, childId, DrawFieldFlags::HideValue);
+				DrawField(ast, editor, childId);
 			}
 		}
 		if (UI::Button(ICON_FA_PLUS "##FunctionInput"))
