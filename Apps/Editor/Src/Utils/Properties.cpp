@@ -6,6 +6,7 @@
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "imgui.h"
+#include "Utils/EditorCOlors.h"
 #include "Utils/EditorColors.h"
 #include "Utils/Widgets.h"
 
@@ -99,20 +100,19 @@ namespace Rift
 	void DrawVariable(AST::Tree& ast, CTypeEditor& editor, AST::Id variableId)
 	{
 		CIdentifier* identifier = ast.TryGet<CIdentifier>(variableId);
-		if (!identifier)
+		auto* variableDecl      = ast.TryGet<CVariableDecl>(variableId);
+		if (!identifier || !variableDecl)
 		{
 			return;
 		}
 
 		ImGui::PushID(identifier);
 
-		static const Color color{230, 69, 69};
-		static constexpr Color frameBg{122, 59, 41};
+		const Color color                  = Style::GetTypeColor(ast, variableDecl->typeId);
 		static constexpr float frameHeight = 20.f;
 
 		UI::TableNextColumn();
 		{    // Custom Selectable
-			auto& style = ImGui::GetStyle();
 			Style::PushHeaderColor(LinearColor::Transparent());
 
 			ImRect bb = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
@@ -171,8 +171,7 @@ namespace Rift
 		{
 			UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 			UI::SetNextItemWidth(-FLT_MIN);
-			static AST::Id selected = AST::NoId;
-			Editor::TypeCombo(ast, "##type", selected);
+			Editor::TypeCombo(ast, "##type", variableDecl->typeId);
 			UI::PopStyleVar();
 		}
 
@@ -199,13 +198,11 @@ namespace Rift
 
 		ImGui::PushID(identifier);
 
-		static constexpr Color color{68, 135, 229};
-		static constexpr Color frameBG{41, 75, 122, 138};
+		static constexpr Color color       = Style::callColor;
 		static constexpr float frameHeight = 20.f;
 
 		UI::TableNextColumn();
 		{    // Custom Selectable
-			auto& style = ImGui::GetStyle();
 			Style::PushHeaderColor(LinearColor::Transparent());
 
 			ImRect bb = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());

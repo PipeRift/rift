@@ -11,6 +11,7 @@
 #include "AST/Components/CFloatLiteral.h"
 #include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CIdentifier.h"
+#include "AST/Components/CParameterDecl.h"
 #include "AST/Components/CParent.h"
 #include "AST/Components/CStatementInput.h"
 #include "AST/Components/CStatementOutputs.h"
@@ -21,7 +22,6 @@
 #include "AST/Utils/Hierarchy.h"
 
 #include <Reflection/TypeName.h>
-
 
 
 namespace Rift::AST
@@ -131,6 +131,7 @@ namespace Rift::AST
 			ReadPool<CClassDecl>(*this, ast);
 			ReadPool<CVariableDecl>(*this, ast);
 			ReadPool<CFunctionDecl>(*this, ast);
+			ReadPool<CParameterDecl>(*this, ast);
 			ReadPool<CCallExpr>(*this, ast);
 			ReadPool<CStatementOutputs>(*this, ast);
 			ReadPool<CStatementInput>(*this, ast);
@@ -171,6 +172,7 @@ namespace Rift::AST
 			WritePool<CClassDecl>(*this, ast, treeEntities);
 			WritePool<CVariableDecl>(*this, ast, treeEntities);
 			WritePool<CFunctionDecl>(*this, ast, treeEntities);
+			WritePool<CParameterDecl>(*this, ast, treeEntities);
 			WritePool<CCallExpr>(*this, ast, treeEntities);
 			WritePool<CStatementOutputs>(*this, ast, treeEntities);
 			WritePool<CStatementInput>(*this, ast, treeEntities);
