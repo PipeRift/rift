@@ -9,6 +9,8 @@
 #include "Utils/Widgets.h"
 
 #include <AST/Components/CClassDecl.h>
+#include <AST/Components/CExpressionInput.h>
+#include <AST/Components/CExpressionOutputs.h>
 #include <AST/Components/CFunctionDecl.h>
 #include <AST/Components/CFunctionLibraryDecl.h>
 #include <AST/Components/CIdentifier.h>
@@ -21,7 +23,6 @@
 #include <IconsFontAwesome5.h>
 #include <Misc/EnumFlags.h>
 #include <UI/UI.h>
-
 
 
 namespace Rift
@@ -144,10 +145,10 @@ namespace Rift
 				editor.selectedPropertyId = AST::NoId;
 			}
 
-			Color bgColor = color.Shade(0.5f);
+			Color bgColor = color;
 			if (selected)
 			{
-				bgColor = color;
+				bgColor = color.Tint(0.1f);
 			}
 			else if (UI::IsItemHovered())
 			{
@@ -180,7 +181,8 @@ namespace Rift
 		{
 			UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 			UI::SetNextItemWidth(-FLT_MIN);
-			// TypeCombo();
+			static AST::Id selected = AST::NoId;
+			Editor::TypeCombo(ast, "##type", selected);
 			UI::PopStyleVar();
 		}
 
@@ -237,10 +239,10 @@ namespace Rift
 				editor.selectedPropertyId = AST::NoId;
 			}
 
-			Color bgColor = color.Shade(0.5f);
+			Color bgColor = color;
 			if (selected)
 			{
-				bgColor = color;
+				bgColor = color.Tint(0.1f);
 			}
 			else if (UI::IsItemHovered())
 			{
@@ -267,18 +269,47 @@ namespace Rift
 			identifier->name = Name{name};
 		}
 
-		if (auto* children = AST::Hierarchy::GetChildren(ast, functionId))
+		if (UI::BeginTable("##fieldsTable", 3, ImGuiTableFlags_SizingFixedFit))
 		{
-			for (AST::Id childId : *children)
-			{
-				DrawField(ast, editor, childId);
-			}
-		}
-		if (UI::Button(ICON_FA_PLUS "##FunctionInput"))
-		{
-			AST::Functions::AddInputArgument(ast, functionId);
-		}
+			UI::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.5f);
+			UI::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.5f);
 
+			UI::TableNextRow();
+			UI::TableNextColumn();
+			if (auto* children = AST::Hierarchy::GetChildren(ast, functionId))
+			{
+				auto exprOutputs = ast.Filter<CExpressionOutputs>();
+				for (AST::Id childId : *children)
+				{
+					if (exprOutputs.Has(childId))
+					{
+						DrawField(ast, editor, childId);
+					}
+				}
+			}
+			if (UI::Button(ICON_FA_PLUS "##FunctionInput", ImVec2(-FLT_MIN, 0.0f)))
+			{
+				AST::Functions::AddInputArgument(ast, functionId);
+			}
+
+			UI::TableNextColumn();
+			if (auto* children = AST::Hierarchy::GetChildren(ast, functionId))
+			{
+				auto exprInputs = ast.Filter<CExpressionInput>();
+				for (AST::Id childId : *children)
+				{
+					if (exprInputs.Has(childId))
+					{
+						DrawField(ast, editor, childId);
+					}
+				}
+			}
+			if (UI::Button(ICON_FA_PLUS "##FunctionOutput", ImVec2(-FLT_MIN, 0.0f)))
+			{
+				AST::Functions::AddOutputArgument(ast, functionId);
+			}
+			UI::EndTable();
+		}
 		UI::PopID();
 	}
 

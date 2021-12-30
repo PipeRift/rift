@@ -157,7 +157,6 @@ namespace Rift::UI
 
 		if (editingId == id)    // Editing?
 		{
-			UI::SetNextItemWidth(-FLT_MIN);
 			UI::InputText("##mutableEdit", buffer, ImGuiInputTextFlags_AutoSelectAll);
 
 			if (UI::IsItemDeactivatedAfterEdit())
