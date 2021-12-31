@@ -57,8 +57,9 @@ namespace Rift
 			}
 
 			String name = identifier->name.ToString();
-			UI::SetNextItemWidth(-FLT_MIN);
-			if (UI::MutableText("##name", name))
+			UI::SetNextItemWidth(UI::GetContentRegionAvailWidth() * 0.5f);
+			UI::InputText("##name", name, ImGuiInputTextFlags_AutoSelectAll);
+			if (UI::IsItemDeactivatedAfterEdit())
 			{
 				identifier->name = Name{name};
 			}
@@ -228,7 +229,11 @@ namespace Rift
 			UI::Indent(extraIndent);
 
 			UI::SetNextItemWidth(-FLT_MIN);
-			UI::InputText("##name", functionName, ImGuiInputTextFlags_AutoSelectAll);
+
+			static String inputId;
+			inputId.clear();
+			Strings::FormatTo(inputId, "##name_{}", functionId);
+			UI::InputText(inputId.c_str(), functionName, ImGuiInputTextFlags_AutoSelectAll);
 			if (UI::IsItemDeactivatedAfterEdit())
 			{
 				identifier->name = Name{functionName};
