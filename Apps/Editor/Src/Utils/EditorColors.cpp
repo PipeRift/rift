@@ -35,9 +35,4 @@ namespace Rift::Style
 		}
 		return GetTypeColor<void>();
 	};
-
-	const Color GetHovered(Color source)
-	{
-		return source.Shade(0.3f);
-	}
 }    // namespace Rift::Style

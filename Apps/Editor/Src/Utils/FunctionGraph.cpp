@@ -236,8 +236,7 @@ namespace Rift::Graph
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 2.f);
 		Nodes::PushStyleColor(Nodes::ColorVar_Link, Style::executionColor);
-		Nodes::PushStyleColor(
-		    Nodes::ColorVar_LinkHovered, Style::GetHovered(Style::executionColor));
+		Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(Style::executionColor));
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
 
 		auto stmtOutputs = ast.Filter<CStatementOutputs>();
@@ -355,7 +354,7 @@ namespace Rift::Graph
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, bodyColor);
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, bodyColor);
 		Nodes::PushStyleColor(Nodes::ColorVar_TitleBar, headerColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, Style::GetHovered(headerColor));
+		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, Style::Hovered(headerColor));
 		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarSelected, headerColor);
 
 		// Nodes::PushStyleColor(ColorVar_TitleBar, Color::FromRGB(191, 56, 11));
@@ -369,7 +368,7 @@ namespace Rift::Graph
 
 				static constexpr Color color = Style::executionColor;
 				Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-				Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::GetHovered(color));
+				Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
 				Nodes::BeginOutput(i32(functionId), Nodes::PinShape_QuadFilled);
 				UI::Text("");
 				Nodes::EndOutput();
@@ -396,7 +395,7 @@ namespace Rift::Graph
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, bodyColor);
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, bodyColor);
 		Nodes::PushStyleColor(Nodes::ColorVar_TitleBar, headerColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, Style::GetHovered(headerColor));
+		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, Style::Hovered(headerColor));
 		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarSelected, headerColor);
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
 
@@ -406,7 +405,7 @@ namespace Rift::Graph
 			{
 				static constexpr Color color = Style::executionColor;
 				Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-				Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::GetHovered(color));
+				Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
 
 				Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
 				UI::Text("");
@@ -434,7 +433,7 @@ namespace Rift::Graph
 
 			static constexpr Color pinColor = Style::GetTypeColor<float>();
 			Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::GetHovered(pinColor));
+			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
 			// Nodes::BeginInput(i32(id) + 2, PinShape_CircleFilled);
 			// UI::Text("amount");
 			// Nodes::EndInput();
@@ -456,7 +455,7 @@ namespace Rift::Graph
 	void DrawBoolLiteralNode(AST::Id id, bool& value)
 	{
 		static constexpr Color color = Style::GetTypeColor<bool>();
-		static const Color darkColor = Style::GetHovered(color);
+		static const Color darkColor = Style::Hovered(color);
 
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, color);
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, darkColor);
@@ -489,7 +488,7 @@ namespace Rift::Graph
 	void DrawStringLiteralNode(AST::Id id, String& value)
 	{
 		static constexpr Color color = Style::GetTypeColor<String>();
-		static const Color darkColor = Style::GetHovered(color);
+		static const Color darkColor = Style::Hovered(color);
 
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, color);
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, darkColor);

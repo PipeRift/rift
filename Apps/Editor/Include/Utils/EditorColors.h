@@ -42,6 +42,4 @@ namespace Rift::Style
 	};
 
 	const Color GetTypeColor(const AST::Tree& ast, AST::Id id);
-
-	const Color GetHovered(Color source);
 }    // namespace Rift::Style

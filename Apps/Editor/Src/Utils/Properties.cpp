@@ -6,6 +6,7 @@
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "imgui.h"
+#include "UI/Style.h"
 #include "Utils/EditorCOlors.h"
 #include "Utils/EditorColors.h"
 #include "Utils/Widgets.h"
@@ -56,6 +57,7 @@ namespace Rift
 			}
 
 			String name = identifier->name.ToString();
+			UI::SetNextItemWidth(-FLT_MIN);
 			if (UI::MutableText("##name", name))
 			{
 				identifier->name = Name{name};
@@ -196,50 +198,21 @@ namespace Rift
 			return;
 		}
 
-		ImGui::PushID(identifier);
+		String functionName = identifier->name.ToString();
 
-		static constexpr Color color       = Style::callColor;
-		static constexpr float frameHeight = 20.f;
+		Style::PushHeaderColor(Style::callColor);
+		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
+		static String headerId;
+		headerId.clear();
+		Strings::FormatTo(headerId, "{}###{}", functionName, functionId);
+		bool open = UI::CollapsingHeader(headerId.c_str());
+		UI::PopStyleVar();
+		Style::PopHeaderColor();
 
-		UI::TableNextColumn();
-		{    // Custom Selectable
-			Style::PushHeaderColor(LinearColor::Transparent());
-
-			ImRect bb = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
-
-			bool selected = editor.selectedPropertyId == functionId;
-			ImGui::Selectable("##selectArea", &selected,
-			    ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap,
-			    ImVec2(0, frameHeight));
-
-			if (selected)
-			{
-				editor.selectedPropertyId = functionId;
-
-				if (UI::IsKeyReleased(GLFW_KEY_DELETE))
-				{
-					editor.pendingDeletePropertyId = functionId;
-				}
-			}
-			else if (editor.selectedPropertyId == functionId)    // If not selected but WAS selected
-			{
-				editor.selectedPropertyId = AST::NoId;
-			}
-
-			Color bgColor = color;
-			if (selected)
-			{
-				bgColor = color.Tint(0.1f);
-			}
-			else if (UI::IsItemHovered())
-			{
-				bgColor = Style::Hovered(color);
-			}
-			ImGui::RenderFrame(bb.Min, bb.Max, bgColor.DWColor(), false, 3.f);
-
-			Style::PopHeaderColor();
+		if (UI::IsItemHovered() && UI::IsKeyReleased(GLFW_KEY_DELETE))
+		{
+			editor.pendingDeletePropertyId = functionId;
 		}
-
 		if (ImGui::BeginPopupContextItem())
 		{
 			if (ImGui::MenuItem("Delete"))
@@ -249,55 +222,66 @@ namespace Rift
 			ImGui::EndPopup();
 		}
 
-		UI::SameLine();
-		String name = identifier->name.ToString();
-		if (UI::MutableText("##name", name))
+		if (open)
 		{
-			identifier->name = Name{name};
-		}
+			static constexpr float extraIndent = 10.f;
+			UI::Indent(extraIndent);
 
-		if (UI::BeginTable("##fieldsTable", 3, ImGuiTableFlags_SizingFixedFit))
-		{
-			UI::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.5f);
-			UI::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.5f);
-
-			UI::TableNextRow();
-			UI::TableNextColumn();
-			if (auto* children = AST::Hierarchy::GetChildren(ast, functionId))
+			UI::SetNextItemWidth(-FLT_MIN);
+			UI::InputText("##name", functionName, ImGuiInputTextFlags_AutoSelectAll);
+			if (UI::IsItemDeactivatedAfterEdit())
 			{
-				auto exprOutputs = ast.Filter<CExpressionOutputs>();
-				for (AST::Id childId : *children)
+				identifier->name = Name{functionName};
+			}
+
+			if (UI::BeginTable("##fieldsTable", 2, ImGuiTableFlags_SizingFixedFit))
+			{
+				UI::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.5f);
+				UI::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.5f);
+
+				UI::TableNextRow();
+				UI::TableNextColumn();
+				if (auto* children = AST::Hierarchy::GetChildren(ast, functionId))
 				{
-					if (exprOutputs.Has(childId))
+					auto exprOutputs = ast.Filter<CExpressionOutputs>();
+					for (AST::Id childId : *children)
 					{
-						DrawField(ast, editor, childId);
+						if (exprOutputs.Has(childId))
+						{
+							DrawField(ast, editor, childId);
+						}
 					}
 				}
-			}
-			if (UI::Button(ICON_FA_PLUS "##FunctionInput", ImVec2(-FLT_MIN, 0.0f)))
-			{
-				AST::Functions::AddInputArgument(ast, functionId);
-			}
-
-			UI::TableNextColumn();
-			if (auto* children = AST::Hierarchy::GetChildren(ast, functionId))
-			{
-				auto exprInputs = ast.Filter<CExpressionInput>();
-				for (AST::Id childId : *children)
+				Style::PushStyleCompact();
+				if (UI::Button(ICON_FA_PLUS "##FunctionInput", ImVec2(-FLT_MIN, 0.0f)))
 				{
-					if (exprInputs.Has(childId))
+					AST::Functions::AddInputArgument(ast, functionId);
+				}
+				Style::PopStyleCompact();
+
+				UI::TableNextColumn();
+				if (auto* children = AST::Hierarchy::GetChildren(ast, functionId))
+				{
+					auto exprInputs = ast.Filter<CExpressionInput>();
+					for (AST::Id childId : *children)
 					{
-						DrawField(ast, editor, childId);
+						if (exprInputs.Has(childId))
+						{
+							DrawField(ast, editor, childId);
+						}
 					}
 				}
+				Style::PushStyleCompact();
+				if (UI::Button(ICON_FA_PLUS "##FunctionOutput", ImVec2(-FLT_MIN, 0.0f)))
+				{
+					AST::Functions::AddOutputArgument(ast, functionId);
+				}
+				Style::PopStyleCompact();
+				UI::EndTable();
 			}
-			if (UI::Button(ICON_FA_PLUS "##FunctionOutput", ImVec2(-FLT_MIN, 0.0f)))
-			{
-				AST::Functions::AddOutputArgument(ast, functionId);
-			}
-			UI::EndTable();
+
+			UI::Unindent(extraIndent);
 		}
-		UI::PopID();
 	}
 
 	void DrawVariables(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId)
@@ -352,23 +336,12 @@ namespace Rift
 
 			if (auto* children = AST::Hierarchy::GetChildren(ast, typeId))
 			{
-				UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
-				bool showTable =
-				    UI::BeginTable("##functionTable", 1, ImGuiTableFlags_SizingFixedFit);
-				UI::PopStyleVar();
-				if (showTable)
+				for (AST::Id child : *children)
 				{
-					ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch);
-
-					for (AST::Id child : *children)
+					if (functionView.Has(child))
 					{
-						if (functionView.Has(child))
-						{
-							UI::TableNextRow();
-							DrawFunction(ast, editor, child);
-						}
+						DrawFunction(ast, editor, child);
 					}
-					UI::EndTable();
 				}
 			}
 

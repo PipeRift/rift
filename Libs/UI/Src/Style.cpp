@@ -211,8 +211,8 @@ namespace Rift::Style
 
 		colors[ImGuiCol_ModalWindowDimBg] = primaryColor.Shade(0.5f).Translucency(0.05f);
 
-		PushButtonColor(GetNeutralColor(5));
-		PushFrameBgColor(GetNeutralColor(3));
+		PushButtonColor(GetNeutralColor(3));
+		PushFrameBgColor(GetNeutralColor(2));
 		PushHeaderColor();
 
 		LoadFonts();
@@ -238,7 +238,7 @@ namespace Rift::Style
 
 	void PushFrameBgColor(LinearColor color)
 	{
-		UI::PushStyleColor(ImGuiCol_FrameBg, color.Shade(0.5f));
+		UI::PushStyleColor(ImGuiCol_FrameBg, color.Shade(0.3f));
 		UI::PushStyleColor(ImGuiCol_FrameBgHovered, Hovered(color));
 		UI::PushStyleColor(ImGuiCol_FrameBgActive, color);
 	}
@@ -250,9 +250,9 @@ namespace Rift::Style
 
 	void PushButtonColor(LinearColor color)
 	{
-		UI::PushStyleColor(ImGuiCol_Button, color.Shade(0.3f));
+		UI::PushStyleColor(ImGuiCol_Button, color);
 		UI::PushStyleColor(ImGuiCol_ButtonHovered, Hovered(color));
-		UI::PushStyleColor(ImGuiCol_ButtonActive, color);
+		UI::PushStyleColor(ImGuiCol_ButtonActive, color.Tint(0.1f));
 	}
 
 	void PopButtonColor()
@@ -262,9 +262,9 @@ namespace Rift::Style
 
 	void PushHeaderColor(LinearColor color)
 	{
-		UI::PushStyleColor(ImGuiCol_Header, color.Shade(0.3f));
+		UI::PushStyleColor(ImGuiCol_Header, color);
 		UI::PushStyleColor(ImGuiCol_HeaderHovered, Hovered(color));
-		UI::PushStyleColor(ImGuiCol_HeaderActive, color);
+		UI::PushStyleColor(ImGuiCol_HeaderActive, color.Tint(0.1f));
 	}
 
 	void PopHeaderColor()
