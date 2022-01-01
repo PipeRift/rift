@@ -97,6 +97,5 @@ namespace Rift::UI
 
 	ImRect GetWorkRect(v2 desiredSize, bool addhalfItemSpacing = true, v2 extent = v2::Zero());
 
-	bool MutableText(StringView label, String& text);
-	void SetEditingMutableText(StringView label);
+	bool MutableText(StringView label, String& text, ImGuiInputTextFlags flags = 0);
 }    // namespace Rift::UI

@@ -7,6 +7,7 @@
 #include "DockSpaceLayout.h"
 #include "imgui.h"
 #include "UI/Style.h"
+#include "UI/Widgets.h"
 #include "Utils/EditorCOlors.h"
 #include "Utils/EditorColors.h"
 #include "Utils/Widgets.h"
@@ -58,8 +59,8 @@ namespace Rift
 
 			String name = identifier->name.ToString();
 			UI::SetNextItemWidth(UI::GetContentRegionAvailWidth() * 0.5f);
-			UI::InputText("##name", name, ImGuiInputTextFlags_AutoSelectAll);
-			if (UI::IsItemDeactivatedAfterEdit())
+			if (UI::MutableText("##name", name,
+			        ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 			{
 				identifier->name = Name{name};
 			}
@@ -164,8 +165,10 @@ namespace Rift
 
 		UI::SameLine();
 
+		UI::SetNextItemWidth(-FLT_MIN);
 		String name = identifier->name.ToString();
-		if (UI::MutableText("##name", name))
+		if (UI::MutableText("##name", name,
+		        ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 		{
 			identifier->name = Name{name};
 		}
@@ -205,12 +208,13 @@ namespace Rift
 		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
 		static String headerId;
 		headerId.clear();
-		Strings::FormatTo(headerId, "{}###{}", functionName, functionId);
-		bool open = UI::CollapsingHeader(headerId.c_str());
+		Strings::FormatTo(headerId, " ###header_{}", functionId);
+		bool visible = true;
+		bool open    = UI::CollapsingHeader(headerId.c_str(), &visible);
 		UI::PopStyleVar();
 		Style::PopHeaderColor();
 
-		if (UI::IsItemHovered() && UI::IsKeyReleased(GLFW_KEY_DELETE))
+		if (!visible || (UI::IsItemHovered() && UI::IsKeyReleased(GLFW_KEY_DELETE)))
 		{
 			editor.pendingDeletePropertyId = functionId;
 		}
@@ -223,21 +227,24 @@ namespace Rift
 			ImGui::EndPopup();
 		}
 
+		UI::SameLine();
+		// Expand text input to the right excluding the close button
+		auto* g = UI::GetCurrentContext();
+		UI::SetNextItemWidth(
+		    UI::GetContentRegionAvailWidth() - (g->Style.FramePadding.x * 2.0f + g->FontSize));
+		static String inputId;
+		inputId.clear();
+		Strings::FormatTo(inputId, "##name_{}", functionId);
+		if (UI::MutableText(inputId, functionName,
+		        ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
+		{
+			identifier->name = Name{functionName};
+		}
+
 		if (open)
 		{
 			static constexpr float extraIndent = 10.f;
 			UI::Indent(extraIndent);
-
-			UI::SetNextItemWidth(-FLT_MIN);
-
-			static String inputId;
-			inputId.clear();
-			Strings::FormatTo(inputId, "##name_{}", functionId);
-			UI::InputText(inputId.c_str(), functionName, ImGuiInputTextFlags_AutoSelectAll);
-			if (UI::IsItemDeactivatedAfterEdit())
-			{
-				identifier->name = Name{functionName};
-			}
 
 			if (UI::BeginTable("##fieldsTable", 2, ImGuiTableFlags_SizingFixedFit))
 			{

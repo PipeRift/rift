@@ -147,63 +147,22 @@ namespace Rift::UI
 
 	static ImGuiID gPendingEditingId = 0;
 
-	bool MutableText(StringView label, String& text)
+	bool MutableText(StringView label, String& text, ImGuiInputTextFlags flags)
 	{
-		static ImGuiID editingId = 0;
-		static String buffer;
-
-		const ImGuiID id = UI::GetID(label);
-		ImGui::PushID(id);
-
-		if (editingId == id)    // Editing?
+		const ImGuiID id     = UI::GetID(label);
+		const bool isEditing = UI::GetActiveID() == id;
+		if (!isEditing)    // Is editing
 		{
-			UI::InputText("##mutableEdit", buffer, ImGuiInputTextFlags_AutoSelectAll);
-
-			if (UI::IsItemDeactivatedAfterEdit())
-			{
-				editingId = 0;
-				text      = buffer;
-				buffer    = {};
-				UI::PopID();
-				return true;
-			}
-			else if (UI::IsItemDeactivated())
-			{
-				editingId = 0;
-				buffer    = {};
-			}
-			UI::PopID();
-			return false;
+			UI::PushStyleColor(ImGuiCol_FrameBg, LinearColor::Transparent());
 		}
+		else
+		{}
 
-		if (gPendingEditingId == id
-		    || (UI::IsItemHovered() && UI::IsMouseDoubleClicked(ImGuiMouseButton_Left)))
+		const bool valueChanged = UI::InputText(label.data(), text, flags);
+		if (!isEditing)
 		{
-			if (gPendingEditingId == id)
-			{
-				gPendingEditingId = 0;
-			}
-			editingId = id;
-			buffer    = text;
-			UI::ActivateItem(UI::GetID("##mutableEdit"));
+			UI::PopStyleColor();
 		}
-
-		UI::PushStyleVar(ImGuiStyleVar_CellPadding, {16.f, 4.f});
-		UI::PushStyleColor(ImGuiCol_FrameBg, LinearColor::Transparent());
-
-		UI::SetNextItemWidth(-FLT_MIN);
-		UI::AlignTextToFramePadding();
-		UI::Text(text.data());
-
-		UI::PopStyleColor();
-		UI::PopStyleVar();
-
-		UI::PopID();
-		return false;
-	}
-
-	void SetEditingMutableText(StringView label)
-	{
-		gPendingEditingId = UI::GetID(label);
+		return valueChanged;
 	}
 }    // namespace Rift::UI
