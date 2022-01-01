@@ -2,6 +2,7 @@
 
 #include "Utils/FunctionGraph.h"
 
+#include "AST/Components/CParameterDecl.h"
 #include "AST/Utils/StatementGraph.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
@@ -11,8 +12,10 @@
 
 #include <AST/Components/CBoolLiteral.h>
 #include <AST/Components/CCallExpr.h>
+#include <AST/Components/CExpressionOutputs.h>
 #include <AST/Components/CFunctionDecl.h>
 #include <AST/Components/CIdentifier.h>
+#include <AST/Components/CParameterDecl.h>
 #include <AST/Components/CStatementInput.h>
 #include <AST/Components/CStatementOutputs.h>
 #include <AST/Components/CStringLiteral.h>
@@ -332,10 +335,11 @@ namespace Rift::Graph
 
 	void DrawFunctionDecl(AST::Tree& ast, AST::Id functionId)
 	{
-		auto* nodes = Nodes::GetCurrentContext();
+		auto* nodes      = Nodes::GetCurrentContext();
+		auto identifiers = ast.Filter<CIdentifier>();
 
 		Name name;
-		if (auto* identifier = ast.TryGet<CIdentifier>(functionId))
+		if (auto* identifier = identifiers.TryGet<CIdentifier>(functionId))
 		{
 			name = identifier->name;
 		}
@@ -375,6 +379,32 @@ namespace Rift::Graph
 				Nodes::PopStyleColor(2);
 			}
 			Nodes::EndNodeTitleBar();
+
+
+			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, functionId))
+			{
+				auto inputParameters = ast.Filter<CParameterDecl, CExpressionOutputs>();
+				for (AST::Id childId : *children)
+				{
+					if (inputParameters.Has(childId))
+					{
+						auto& param = inputParameters.Get<CParameterDecl>(childId);
+
+						const Color pinColor = Style::GetTypeColor(ast, param.typeId);
+						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+
+						Nodes::BeginOutput(i32(childId), Nodes::PinShape_CircleFilled);
+
+						auto* ident = identifiers.TryGet<CIdentifier>(childId);
+						String name = ident ? ident->name.ToString() : "";
+						UI::Text(name.c_str());
+
+						Nodes::EndOutput();
+						Nodes::PopStyleColor(2);
+					}
+				}
+			}
 		}
 		Nodes::EndNode();
 		Nodes::PopStyleColor(6);

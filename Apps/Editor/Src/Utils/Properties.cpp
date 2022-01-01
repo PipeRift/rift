@@ -57,9 +57,12 @@ namespace Rift
 				UI::RenderFrame(bb.Min, bb.Max, bgColor.DWColor(), false, 2.f);
 			}
 
-			String name = identifier->name.ToString();
 			UI::SetNextItemWidth(UI::GetContentRegionAvailWidth() * 0.5f);
-			if (UI::MutableText("##name", name,
+			static String nameId;
+			nameId.clear();
+			Strings::FormatTo(nameId, " ##name_{}", fieldId);
+			String name = identifier->name.ToString();
+			if (UI::MutableText(nameId, name,
 			        ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 			{
 				identifier->name = Name{name};
@@ -166,8 +169,11 @@ namespace Rift
 		UI::SameLine();
 
 		UI::SetNextItemWidth(-FLT_MIN);
+		static String nameId;
+		nameId.clear();
+		Strings::FormatTo(nameId, " ##name_{}", variableId);
 		String name = identifier->name.ToString();
-		if (UI::MutableText("##name", name,
+		if (UI::MutableText(nameId, name,
 		        ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 		{
 			identifier->name = Name{name};
