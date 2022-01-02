@@ -360,6 +360,7 @@ namespace Rift::Graph
 		Nodes::PushStyleColor(Nodes::ColorVar_TitleBar, headerColor);
 		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, Style::Hovered(headerColor));
 		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarSelected, headerColor);
+		Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
 
 		// Nodes::PushStyleColor(ColorVar_TitleBar, Color::FromRGB(191, 56, 11));
 
@@ -404,6 +405,14 @@ namespace Rift::Graph
 						Nodes::PopStyleColor(2);
 					}
 				}
+			}
+
+			if (Nodes::IsNodeSelected(i32(functionId)))
+			{
+				const auto* context = Nodes::GetCurrentContext();
+				Nodes::GetEditorContext()
+				    .nodes.Pool[context->CurrentNodeIdx]
+				    .LayoutStyle.BorderThickness = 2.f;
 			}
 		}
 		Nodes::EndNode();
@@ -461,17 +470,19 @@ namespace Rift::Graph
 			}
 			Nodes::EndNodeTitleBar();
 
-			static constexpr Color pinColor = Style::GetTypeColor<float>();
+			UI::BeginGroup();    // Inputs
+			const Color pinColor = Style::GetTypeColor<float>();
 			Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
 			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
 			// Nodes::BeginInput(i32(id) + 2, PinShape_CircleFilled);
 			// UI::Text("amount");
 			// Nodes::EndInput();
 			Nodes::PopStyleColor(2);
+			UI::EndGroup();
 
-			const auto* context = Nodes::GetCurrentContext();
-			if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
+			if (Nodes::IsNodeSelected(i32(id)))
 			{
+				const auto* context = Nodes::GetCurrentContext();
 				Nodes::GetEditorContext()
 				    .nodes.Pool[context->CurrentNodeIdx]
 				    .LayoutStyle.BorderThickness = 2.f;
