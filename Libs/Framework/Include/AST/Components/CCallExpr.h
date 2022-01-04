@@ -15,7 +15,7 @@ namespace Rift
 		STRUCT(CCallExpr, CExpression)
 
 		// Id pointing to the function declaration. Resolved after loading
-		PROP(functionId, Prop_Transient)
+		PROP(functionId, Prop_NotSerialized)
 		AST::Id functionId = AST::NoId;
 
 		PROP(typeName)

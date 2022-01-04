@@ -13,7 +13,7 @@ namespace Rift
 {
 	struct CTypeEditor : public Struct
 	{
-		STRUCT(CTypeEditor, Struct, Struct_Transient)
+		STRUCT(CTypeEditor, Struct, Struct_NotSerialized)
 
 		static const Name rightNode;
 		static const Name centralNode;

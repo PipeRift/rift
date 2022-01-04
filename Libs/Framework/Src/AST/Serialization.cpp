@@ -18,6 +18,7 @@
 #include "AST/Components/CStringLiteral.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CVariableDecl.h"
+#include "AST/Components/Tags/CNotSerialized.h"
 #include "AST/Components/Views/CGraphTransform.h"
 #include "AST/Utils/Hierarchy.h"
 
@@ -191,7 +192,29 @@ namespace Rift::AST
 		children.Append(roots);
 		if (includeChildren)
 		{
-			Hierarchy::GetChildrenDeep(ast, roots, children);
+			TArray<AST::Id> currentLinked{};
+			TArray<AST::Id> pendingInspection;
+			pendingInspection.Append(roots);
+			while (pendingInspection.Size() > 0)
+			{
+				RemoveIgnoredEntities(pendingInspection);
+				Hierarchy::GetChildren(ast, pendingInspection, currentLinked);
+				children.Append(currentLinked);
+				pendingInspection = Move(currentLinked);
+			}
+		}
+	}
+
+	void WriteContext::RemoveIgnoredEntities(TArray<Id>& entities)
+	{
+		auto notSerialized = ast.Filter<CNotSerialized>();
+		for (i32 i = 0; i < entities.Size(); ++i)
+		{
+			if (notSerialized.Has(entities[i]))
+			{
+				entities.RemoveAtSwapUnsafe(i);
+				--i;
+			}
 		}
 	}
 }    // namespace Rift::AST

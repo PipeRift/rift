@@ -197,24 +197,28 @@ namespace Rift::AST::Hierarchy
 	{
 		if (depth == 0)
 		{
-			depth = std::numeric_limits<u32>::max();
-		}
-
-		TArray<AST::Id> currentLinked{};
-		TArray<AST::Id> pendingInspection;
-		pendingInspection.Append(roots);
-		while (pendingInspection.Size() > 0 && depth > 0)
-		{
-			for (AST::Id parent : pendingInspection)
+			TArray<AST::Id> currentLinked{};
+			TArray<AST::Id> pendingInspection;
+			pendingInspection.Append(roots);
+			while (pendingInspection.Size() > 0)
 			{
-				if (const CParent* childrenComp = GetCParent(ast, parent))
-				{
-					currentLinked.Append(childrenComp->children);
-				}
+				GetChildren(ast, pendingInspection, currentLinked);
+				outLinkedNodes.Append(currentLinked);
+				pendingInspection = Move(currentLinked);
 			}
-			outLinkedNodes.Append(currentLinked);
-			pendingInspection = Move(currentLinked);
-			--depth;
+		}
+		else
+		{
+			TArray<AST::Id> currentLinked{};
+			TArray<AST::Id> pendingInspection;
+			pendingInspection.Append(roots);
+			while (pendingInspection.Size() > 0 && depth > 0)
+			{
+				GetChildren(ast, pendingInspection, currentLinked);
+				outLinkedNodes.Append(currentLinked);
+				pendingInspection = Move(currentLinked);
+				--depth;
+			}
 		}
 	}
 

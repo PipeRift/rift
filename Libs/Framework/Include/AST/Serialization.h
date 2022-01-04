@@ -67,5 +67,6 @@ namespace Rift::AST
 
 	private:
 		void RetrieveHierarchy(const TArray<Id>& roots, TArray<Id>& children);
+		void RemoveIgnoredEntities(TArray<Id>& entities);
 	};
 }    // namespace Rift::AST

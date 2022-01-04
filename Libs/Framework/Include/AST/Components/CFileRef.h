@@ -14,7 +14,7 @@ namespace Rift
 	 */
 	struct CFileRef : public Struct
 	{
-		STRUCT(CFileRef, Struct, Struct_Transient)
+		STRUCT(CFileRef, Struct, Struct_NotSerialized)
 
 		PROP(path)
 		Path path;

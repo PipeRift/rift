@@ -10,7 +10,7 @@ namespace Rift
 	{
 		STRUCT(CParameterDecl, CDeclaration)
 
-		PROP(typeId, Prop_Transient)
+		PROP(typeId, Prop_NotSerialized)
 		AST::Id typeId = AST::NoId;
 
 		PROP(type)
