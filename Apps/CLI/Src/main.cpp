@@ -19,7 +19,8 @@ int main(int argc, char** argv)
 	auto context = InitializeContext<RiftContext>();
 
 	const Path path{"Project"};
-	AST::Tree ast = Modules::OpenProject(path);
+	AST::Tree ast;
+	Modules::OpenProject(ast, path);
 
 	if (!Modules::HasProject(ast))
 	{

@@ -4,11 +4,11 @@
 
 #include <AST/Systems/LoadSystem.h>
 #include <AST/Utils/ModuleUtils.h>
+#include <bandit/bandit.h>
 #include <Context.h>
 #include <Files/Files.h>
 #include <Files/Paths.h>
 #include <Memory/OwnPtr.h>
-#include <bandit/bandit.h>
 
 #include <chrono>
 #include <thread>
@@ -40,14 +40,18 @@ go_bandit([]() {
 		it("Can load empty descriptor", [&]() {
 			Files::SaveStringFile(testProjectPath / Modules::moduleFile, "{}");
 
-			AST::Tree ast = Modules::OpenProject(testProjectPath);
+			AST::Tree ast;
+			bool result = Modules::OpenProject(ast, testProjectPath);
+			AssertThat(result, Equals(true));
 			AssertThat(Modules::HasProject(ast), Equals(true));
 		});
 
 		it("Project name equals the folder", [&]() {
 			Files::SaveStringFile(testProjectPath / Modules::moduleFile, "{}");
 
-			AST::Tree ast = Modules::OpenProject(testProjectPath);
+			AST::Tree ast;
+			bool result = Modules::OpenProject(ast, testProjectPath);
+			AssertThat(result, Equals(true));
 			AssertThat(Modules::HasProject(ast), Equals(true));
 
 			StringView projectName = Modules::GetProjectName(ast).ToString();
@@ -60,7 +64,9 @@ go_bandit([]() {
 			Files::SaveStringFile(
 			    testProjectPath / Modules::moduleFile, "{\"name\": \"SomeProject\"}");
 
-			AST::Tree ast = Modules::OpenProject(testProjectPath);
+			AST::Tree ast;
+			bool result = Modules::OpenProject(ast, testProjectPath);
+			AssertThat(result, Equals(true));
 			AssertThat(Modules::HasProject(ast), Equals(true));
 
 			StringView projectName = Modules::GetProjectName(ast).ToString();

@@ -409,7 +409,7 @@ namespace Rift::AST
 		}
 
 		template<typename Component>
-		TBroadcast<TSpan<const Id>> OnAdd()
+		TBroadcast<TSpan<const Id>>& OnAdd()
 		{
 			return AssurePool<Component>().OnAdd();
 		}

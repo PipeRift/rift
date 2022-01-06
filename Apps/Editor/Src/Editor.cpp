@@ -2,12 +2,14 @@
 
 #include "Editor.h"
 
+#include "AST/Systems/FunctionsSystem.h"
 #include "Statics/SEditor.h"
 #include "Systems/EditorSystem.h"
 #include "UI/Notify.h"
 #include "Utils/FunctionGraph.h"
 
 #include <AST/Statics/SModules.h>
+#include <AST/Systems/FunctionsSystem.h>
 #include <AST/Systems/LoadSystem.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Files/Files.h>
@@ -68,6 +70,8 @@ namespace Rift
 		}
 
 		LoadSystem::Run(ast);
+		FunctionsSystem::SyncCallArguments(ast);
+		FunctionsSystem::ClearAddedTags(ast);
 	}
 
 	void Editor::Draw()
@@ -93,10 +97,8 @@ namespace Rift
 			return false;
 		}
 
-		AST::Tree newAST = Modules::OpenProject(path);
-		if (Modules::HasProject(newAST))
+		if (Modules::OpenProject(ast, path))
 		{
-			ast = Move(newAST);
 			ast.SetStatic<SEditor>();
 
 			EditorSystem::Init(ast);

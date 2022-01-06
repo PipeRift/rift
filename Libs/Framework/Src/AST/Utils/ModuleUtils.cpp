@@ -8,6 +8,7 @@
 #include "AST/Components/CProject.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
+#include "AST/Systems/FunctionsSystem.h"
 #include "AST/Systems/LoadSystem.h"
 #include "AST/Systems/TypeSystem.h"
 #include "Framework/Paths.h"
@@ -18,12 +19,12 @@
 
 namespace Rift::Modules
 {
-	AST::Tree OpenProject(const Path& path)
+	bool OpenProject(AST::Tree& ast, const Path& path)
 	{
 		if (path.empty())
 		{
 			Log::Error("Cant open project: Invalid path");
-			return {};
+			return false;
 		}
 
 		Path folderPath;
@@ -43,14 +44,15 @@ namespace Rift::Modules
 		{
 			Log::Error(
 			    "Can't open project: Project file failed to load. Does it exist? Is it corrupted?");
-			return {};
+			return false;
 		}
 
-		AST::Tree ast;
+		ast = AST::Tree{};
 		ast.SetStatic<SModules>();
 		ast.SetStatic<STypes>();
 		LoadSystem::Init(ast);
 		TypeSystem::Init(ast);
+		FunctionsSystem::Init(ast);
 
 		// Create project node (root module)
 		AST::Id projectId = ast.Create();
@@ -61,7 +63,7 @@ namespace Rift::Modules
 		TArray<String> strings;
 		LoadSystem::LoadFileStrings(ast, projectId, strings);
 		LoadSystem::DeserializeModules(ast, projectId, strings);
-		return Move(ast);
+		return true;
 	}
 
 	void CloseProject(AST::Tree& ast)
