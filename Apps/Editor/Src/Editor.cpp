@@ -70,6 +70,7 @@ namespace Rift
 		}
 
 		LoadSystem::Run(ast);
+		FunctionsSystem::ResolveCallFunctionIds(ast);
 		FunctionsSystem::SyncCallArguments(ast);
 		FunctionsSystem::ClearAddedTags(ast);
 	}

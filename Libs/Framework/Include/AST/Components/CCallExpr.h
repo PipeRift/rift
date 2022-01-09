@@ -14,14 +14,23 @@ namespace Rift
 	{
 		STRUCT(CCallExpr, CExpression)
 
-		// Id pointing to the function declaration. Resolved after loading
-		PROP(functionId, Prop_NotSerialized)
-		AST::Id functionId = AST::NoId;
-
 		PROP(typeName)
 		Name typeName;
 
 		PROP(functionName)
 		Name functionName;
+	};
+
+	// Data pointing to the id of the function from CCallExpr's type and function names
+	struct CCallExprId : public CExpression
+	{
+		STRUCT(CCallExprId, CExpression, Struct_NotSerialized)
+
+		// Id pointing to the function declaration
+		PROP(functionId)
+		AST::Id functionId = AST::NoId;
+
+
+		CCallExprId(AST::Id functionId = AST::NoId) : functionId{functionId} {}
 	};
 }    // namespace Rift

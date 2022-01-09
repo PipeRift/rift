@@ -86,10 +86,11 @@ namespace Rift::AST::Functions
 
 		const Id typeId = Hierarchy::GetParent(ast, functionId);
 		Check(!IsNone(typeId));
-		auto& expr        = ast.Add<CCallExpr>(callId);
-		expr.functionId   = functionId;
-		expr.typeName     = ast.Get<CType>(typeId).name;
-		expr.functionName = ast.Get<CIdentifier>(functionId).name;
+		auto& callExpr        = ast.Add<CCallExpr>(callId);
+		callExpr.typeName     = ast.Get<CType>(typeId).name;
+		callExpr.functionName = ast.Get<CIdentifier>(functionId).name;
+		auto& callExprId      = ast.Add<CCallExprId>(callId);
+		callExprId.functionId = functionId;
 
 		if (type)
 		{

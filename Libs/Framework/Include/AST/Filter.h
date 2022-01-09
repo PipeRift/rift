@@ -120,6 +120,17 @@ namespace Rift::AST
 		}
 
 		template<typename C>
+		decltype(auto) Add(Id id, C&& value = {})
+		{
+			return access.template GetPool<C>()->Add(id, Forward<C>(value));
+		}
+		template<typename C>
+		decltype(auto) Add(Id id, const C& value)
+		{
+			return access.template GetPool<C>()->Add(id, value);
+		}
+
+		template<typename C>
 		C& Get(Id id) const
 		{
 			return access.template GetPool<C>()->Get(id);

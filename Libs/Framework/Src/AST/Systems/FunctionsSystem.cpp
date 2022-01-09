@@ -4,34 +4,46 @@
 
 #include "AST/Components/CCallExpr.h"
 #include "AST/Components/Tags/CAdded.h"
+#include "AST/Utils/FunctionUtils.h"
 
 
 namespace Rift::FunctionsSystem
 {
 	void Init(AST::Tree& ast)
 	{
-		ast.OnAdd<CCallExpr>().Bind([](auto& ast, auto ids) {
-			for (AST::Id id : ids)
-			{
-				ast.Add<CAdded<CCallExpr>>(id);
-			}
-			// TODO: Add range
+		ast.OnAdd<CCallExprId>().Bind([](auto& ast, auto ids) {
+			ast.Add<CAdded<CCallExprId>>(ids);
 		});
+	}
+
+	void ResolveCallFunctionIds(AST::Tree& ast)
+	{
+		auto callExprs   = ast.Filter<CCallExpr>(AST::TExclude<CCallExprId>());
+		auto callExprIds = ast.Filter<CCallExprId>();
+		for (AST::Id id : callExprs)
+		{
+			auto& call = callExprs.Get<CCallExpr>(id);
+			AST::Id functionId =
+			    AST::Functions::FindFunctionByName(ast, call.typeName, call.functionName);
+			if (!IsNone(functionId))
+			{
+				callExprIds.Add(id, CCallExprId{functionId});
+			}
+		}
 	}
 
 	void SyncCallArguments(AST::Tree& ast)
 	{
-		auto callExprs = ast.Filter<CAdded<CCallExpr>, CCallExpr>();
-		for (AST::Id id : callExprs)
+		auto addedCallExprs = ast.Filter<CAdded<CCallExprId>, CCallExprId>();
+		for (AST::Id id : addedCallExprs)
 		{
-			auto& expr = callExprs.Get<CCallExpr>(id);
-			expr.typeName;
+			auto& call = addedCallExprs.Get<CCallExprId>(id);
 			// Create arguments
 		}
 	}
 
 	void ClearAddedTags(AST::Tree& ast)
 	{
-		ast.AssurePool<CAdded<CCallExpr>>().Reset();
+		ast.AssurePool<CAdded<CCallExprId>>().Reset();
 	}
 }    // namespace Rift::FunctionsSystem
