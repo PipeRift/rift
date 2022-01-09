@@ -10,6 +10,7 @@
 #include <Containers/Set.h>
 #include <Containers/Span.h>
 #include <Events/Broadcast.h>
+#include <Memory/OwnPtr.h>
 #include <Memory/STLAllocator.h>
 #include <TypeTraits.h>
 
@@ -403,7 +404,7 @@ namespace Rift::AST
 		{
 			ast = &destinationAST;
 		}
-		virtual Pool* Clone() = 0;
+		virtual TOwnPtr<Pool> Clone() = 0;
 
 		AST::Tree& GetAST() const
 		{
@@ -690,9 +691,9 @@ namespace Rift::AST
 			return Has(id) ? data.Get(set.Index(id)) : nullptr;
 		}
 
-		Pool* Clone() override
+		TOwnPtr<Pool> Clone() override
 		{
-			auto* newPool = new TPool<T>(*ast);
+			auto newPool = MakeOwned<TPool<T>>(*ast);
 			if constexpr (IsEmpty<T>())
 			{
 				newPool->Add(set.begin(), set.end(), {});
@@ -701,7 +702,7 @@ namespace Rift::AST
 			{
 				newPool->Add(set.begin(), set.end(), data.begin());
 			}
-			return newPool;
+			return Move(newPool);
 		}
 
 		void Reserve(sizet size)
@@ -743,18 +744,17 @@ namespace Rift::AST
 	struct PoolInstance
 	{
 		Refl::TypeId componentId{};
-		Pool* pool = nullptr;
+		TOwnPtr<Pool> pool;
 
 
-		PoolInstance(Refl::TypeId componentId, Pool* pool = nullptr)
-		    : componentId{componentId}, pool{pool}
+		PoolInstance(Refl::TypeId componentId, TOwnPtr<Pool> pool = {})
+		    : componentId{componentId}, pool{Move(pool)}
 		{}
-		PoolInstance(PoolInstance&& other)
+		PoolInstance(PoolInstance&& other) noexcept
 		{
 			componentId       = other.componentId;
-			pool              = other.pool;
 			other.componentId = Refl::TypeId::None();
-			other.pool        = nullptr;
+			pool              = Move(other.pool);
 		}
 		explicit PoolInstance(const PoolInstance& other)
 		{
@@ -764,18 +764,22 @@ namespace Rift::AST
 				pool = other.pool->Clone();
 			}
 		}
+		PoolInstance& operator=(PoolInstance&& other)
+		{
+			componentId       = other.componentId;
+			other.componentId = Refl::TypeId::None();
+			pool              = Move(other.pool);
+			return *this;
+		}
 		PoolInstance& operator=(const PoolInstance& other)
 		{
 			componentId = other.componentId;
+			pool.Delete();
 			if (other.pool)
 			{
 				pool = other.pool->Clone();
 			}
 			return *this;
-		}
-		~PoolInstance()
-		{
-			delete pool;
 		}
 
 		Refl::TypeId GetId() const
@@ -785,7 +789,7 @@ namespace Rift::AST
 
 		Pool* GetPool() const
 		{
-			return pool;
+			return pool.Get();
 		}
 
 		bool operator<(const PoolInstance& other) const

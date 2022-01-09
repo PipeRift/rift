@@ -498,7 +498,7 @@ namespace Rift::AST
 
 		Tree& self = const_cast<Tree&>(*this);
 		PoolInstance instance{componentId};
-		instance.pool = new TPool<Mut<T>>(self);
+		instance.pool = Move(MakeOwned<TPool<Mut<T>>>(self));
 		return Move(instance);
 	}
 }    // namespace Rift::AST
