@@ -133,12 +133,16 @@ namespace Rift::AST::StatementGraph
 		AST::Id currentNode = outputNode;
 		while (!IsNone(currentNode))
 		{
-			const auto& input = ast.Get<CStatementInput>(currentNode);
-			if (input.linkOutputNode == inputNode)
+			const auto* input = ast.TryGet<CStatementInput>(currentNode);
+			if (!input)
+			{
+				return false;
+			}
+			else if (input->linkOutputNode == inputNode)
 			{
 				return true;
 			}
-			currentNode = input.linkOutputNode;
+			currentNode = input->linkOutputNode;
 		}
 		return false;
 	}

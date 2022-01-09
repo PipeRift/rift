@@ -86,7 +86,7 @@ namespace Rift::UI
 	template<Integral T>
 	inline void PushID(T id)
 	{
-		UI::PushID(reinterpret_cast<void*>(id));
+		UI::PushID(reinterpret_cast<void*>(sizet(id)));
 	}
 
 	inline ImGuiID GetID(StringView id)

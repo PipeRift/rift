@@ -149,12 +149,12 @@ namespace Rift::AST
 		// Copy entities
 		idRegistry = other.idRegistry;
 
-		// Copy component pools
+		// Copy component pools. Assume already sorted
 		for (const PoolInstance& otherInstance : other.pools)
 		{
 			PoolInstance instance{otherInstance};
 			instance.pool->TransferToTree(*this);
-			pools.AddSorted(Move(instance));
+			pools.Add(Move(instance));
 		}
 
 		// Copy non-transient unique components
@@ -174,12 +174,11 @@ namespace Rift::AST
 	void Tree::MoveFrom(Tree&& other)
 	{
 		idRegistry = Move(other.idRegistry);
-		pools.Reserve(other.pools.Size());
-		for (auto& pool : other.pools)
+		pools      = Move(other.pools);
+		for (auto& instance : pools)
 		{
-			pools.Add(Move(pool));
+			instance.pool->TransferToTree(*this);
 		}
-		other.pools.Empty();
 		statics = Move(other.statics);
 		CachePools();
 	}
