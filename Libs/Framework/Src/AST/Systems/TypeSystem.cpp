@@ -23,7 +23,7 @@ namespace Rift::TypeSystem
 			typeList.typesByName.Insert(type.name, typeId);
 		}
 
-		ast.OnAdd<CType>().Bind([&ast, &typeList](auto ids) {
+		ast.OnAdd<CType>().Bind([&typeList](auto& ast, auto ids) {
 			for (AST::Id id : ids)
 			{
 				if (const CType* type = ast.TryGet<const CType>(id))
@@ -33,7 +33,7 @@ namespace Rift::TypeSystem
 			}
 		});
 
-		ast.OnRemove<CType>().Bind([&ast, &typeList](auto ids) {
+		ast.OnRemove<CType>().Bind([&typeList](auto& ast, auto ids) {
 			for (AST::Id id : ids)
 			{
 				if (const CType* type = ast.TryGet<const CType>(id))

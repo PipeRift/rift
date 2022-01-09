@@ -124,8 +124,7 @@ go_bandit([]() {
 			AST::Id id2 = asta.Create();
 			asta.Add<NonEmptyComponent>(id2, {2});
 
-			AST::Tree astb;
-			astb.CopyFrom(asta);
+			AST::Tree astb{asta};
 			AssertThat(astb.Has<EmptyComponent>(id), Is().True());
 			AssertThat(astb.Has<NonEmptyComponent>(id), Is().True());
 			AssertThat(astb.TryGet<NonEmptyComponent>(id), !Equals(nullptr));

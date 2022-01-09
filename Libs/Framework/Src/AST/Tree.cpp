@@ -18,20 +18,24 @@ namespace Rift::AST
 		CachePools();
 	}
 
+	Tree::Tree(const Tree& other) noexcept
+	{
+		CopyFrom(other);
+	}
 	Tree::Tree(Tree&& other) noexcept
 	{
-		idRegistry = Move(other.idRegistry);
-		pools      = Move(other.pools);
-		statics    = Move(other.statics);
-		CachePools();
+		MoveFrom(Move(other));
+	}
+	Tree& Tree::operator=(const Tree& other) noexcept
+	{
+		Reset();
+		CopyFrom(other);
+		return *this;
 	}
 	Tree& Tree::operator=(Tree&& other) noexcept
 	{
 		Reset();
-		idRegistry = Move(other.idRegistry);
-		pools      = Move(other.pools);
-		statics    = Move(other.statics);
-		CachePools();
+		MoveFrom(Move(other));
 		return *this;
 	}
 
@@ -49,7 +53,7 @@ namespace Rift::AST
 		idRegistry.Destroy(id);
 		for (auto& pool : pools)
 		{
-			pool.GetInstance()->Remove(id);
+			pool.GetPool()->Remove(id);
 		}
 	}
 
@@ -58,14 +62,14 @@ namespace Rift::AST
 		idRegistry.Destroy(ids);
 		for (auto& pool : pools)
 		{
-			pool.GetInstance()->Remove(ids);
+			pool.GetPool()->Remove(ids);
 		}
 	}
 
 	Pool* Tree::FindPool(Refl::TypeId componentId) const
 	{
 		const i32 index = pools.FindSortedEqual(PoolInstance{componentId});
-		return index != NO_INDEX ? pools[index].GetInstance() : nullptr;
+		return index != NO_INDEX ? pools[index].GetPool() : nullptr;
 	}
 
 	void Tree::SetupNativeTypes()
@@ -142,15 +146,15 @@ namespace Rift::AST
 
 	void Tree::CopyFrom(const Tree& other)
 	{
-		Reset();
-
 		// Copy entities
 		idRegistry = other.idRegistry;
 
 		// Copy component pools
-		for (const PoolInstance& otherPool : other.pools)
+		for (const PoolInstance& otherInstance : other.pools)
 		{
-			pools.AddSorted(PoolInstance{otherPool});
+			PoolInstance instance{otherInstance};
+			instance.pool->TransferToTree(*this);
+			pools.AddSorted(Move(instance));
 		}
 
 		// Copy non-transient unique components
@@ -164,6 +168,19 @@ namespace Rift::AST
 			SetStatic<STypes>(*typesStatic);
 		}
 
+		CachePools();
+	}
+
+	void Tree::MoveFrom(Tree&& other)
+	{
+		idRegistry = Move(other.idRegistry);
+		pools.Reserve(other.pools.Size());
+		for (auto& pool : other.pools)
+		{
+			pools.Add(Move(pool));
+		}
+		other.pools.Empty();
+		statics = Move(other.statics);
 		CachePools();
 	}
 }    // namespace Rift::AST

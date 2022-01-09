@@ -81,7 +81,7 @@ namespace Rift::EditorSystem
 	void Init(AST::Tree& ast)
 	{
 		OnProjectEditorOpen(ast);
-		ast.OnAdd<CTypeEditor>().Bind([&ast](auto ids) {
+		ast.OnAdd<CTypeEditor>().Bind([](auto& ast, auto ids) {
 			for (AST::Id id : ids)
 			{
 				OnTypeEditorOpen(ast, id);
@@ -333,15 +333,13 @@ namespace Rift::EditorSystem
 			{
 				if (UI::MenuItem("Build current"))
 				{
-					AST::Tree compileAST;
-					compileAST.CopyFrom(ast);
+					AST::Tree compileAST{ast};    // Intentional copy
 					Rift::Compiler::Config config;
 					Rift::Compiler::Build(compileAST, config, Rift::Compiler::EBackend::Cpp);
 				}
 				if (UI::MenuItem("Build all"))
 				{
-					AST::Tree compileAST;
-					compileAST.CopyFrom(ast);
+					AST::Tree compileAST{ast};    // Intentional copy
 					Rift::Compiler::Config config;
 					Rift::Compiler::Build(compileAST, config, Rift::Compiler::EBackend::Cpp);
 				}

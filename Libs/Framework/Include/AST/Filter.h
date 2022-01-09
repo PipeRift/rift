@@ -122,26 +122,26 @@ namespace Rift::AST
 		template<typename C>
 		C& Get(Id id) const
 		{
-			return access.GetPool<C>()->Get(id);
+			return access.template GetPool<C>()->Get(id);
 		}
 
 		template<typename C>
 		C* TryGet(Id id)
 		{
-			return access.GetPool<C>()->TryGet(id);
+			return access.template GetPool<C>()->TryGet(id);
 		}
 
 		template<typename C>
 		const C* TryGet(Id id) const
 		{
-			return access.GetPool<C>()->TryGet(id);
+			return access.template GetPool<C>()->TryGet(id);
 		}
 
 		// @brief Forces the type to use to drive iterations
 		template<typename C>
 		void Use() const
 		{
-			iterablePool = access.GetPool<C>();
+			iterablePool = access.template GetPool<C>();
 		}
 
 		i32 Size() const

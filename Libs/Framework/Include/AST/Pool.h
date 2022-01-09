@@ -16,6 +16,9 @@
 
 namespace Rift::AST
 {
+	struct Tree;
+
+
 	template<typename Allocator = Memory::DefaultAllocator>
 	struct TPoolSet : public Rift::AST::BasicSparseSet<STLAllocator<Id, Allocator>>
 	{
@@ -364,13 +367,24 @@ namespace Rift::AST
 		TPoolSet<> set;
 		DeletionPolicy deletionPolicy;
 
-		TBroadcast<TSpan<const Id>> onAdd;
-		TBroadcast<TSpan<const Id>> onRemove;
+		AST::Tree* ast = nullptr;
+		TBroadcast<AST::Tree&, TSpan<const Id>> onAdd;
+		TBroadcast<AST::Tree&, TSpan<const Id>> onRemove;
 
 
-		Pool(DeletionPolicy inDeletionPolicy)
-		    : set{DeletionPolicy(u8(inDeletionPolicy))}, deletionPolicy{inDeletionPolicy}
+		Pool(AST::Tree& ast, DeletionPolicy inDeletionPolicy)
+		    : ast{&ast}, set{DeletionPolicy(u8(inDeletionPolicy))}, deletionPolicy{inDeletionPolicy}
 		{}
+
+		void OnAdded(TSpan<const Id> ids)
+		{
+			onAdd.Broadcast(*ast, ids);
+		}
+
+		void OnRemoved(TSpan<const Id> ids)
+		{
+			onRemove.Broadcast(*ast, ids);
+		}
 
 	public:
 		virtual ~Pool() {}
@@ -385,7 +399,16 @@ namespace Rift::AST
 		virtual i32 Remove(TSpan<const Id> ids)        = 0;
 		virtual void RemoveUnsafe(TSpan<const Id> ids) = 0;
 
+		virtual void TransferToTree(AST::Tree& destinationAST)
+		{
+			ast = &destinationAST;
+		}
 		virtual Pool* Clone() = 0;
+
+		AST::Tree& GetAST() const
+		{
+			return *ast;
+		}
 
 		Iterator Find(const Id id) const
 		{
@@ -417,12 +440,12 @@ namespace Rift::AST
 			return set.rend();
 		}
 
-		TBroadcast<TSpan<const Id>>& OnAdd()
+		TBroadcast<AST::Tree&, TSpan<const Id>>& OnAdd()
 		{
 			return onAdd;
 		}
 
-		TBroadcast<TSpan<const Id>>& OnRemove()
+		TBroadcast<AST::Tree&, TSpan<const Id>>& OnRemove()
 		{
 			return onRemove;
 		}
@@ -437,23 +460,7 @@ namespace Rift::AST
 
 
 	public:
-		TPool() : Pool(DeletionPolicy::InPlace) {}
-		TPool(const TPool& other)
-		{
-			CopyFrom(other);
-		}
-		TPool(TPool&& other)
-		{
-			MoveFrom(Move(other));
-		}
-		TPool& operator=(const TPool& other)
-		{
-			CopyFrom(other);
-		}
-		TPool& operator=(TPool&& other)
-		{
-			MoveFrom(Move(other));
-		}
+		TPool(AST::Tree& ast) : Pool(ast, DeletionPolicy::InPlace) {}
 		~TPool() override
 		{
 			Reset();
@@ -467,7 +474,7 @@ namespace Rift::AST
 			}
 
 			set.Emplace(id);
-			onAdd.Broadcast({id});
+			OnAdded({id});
 		}
 
 		T& Add(Id id, const T& v) requires(!IsEmpty<T>())
@@ -491,7 +498,7 @@ namespace Rift::AST
 			}
 			else
 			{
-				onAdd.Broadcast({id});
+				OnAdded({id});
 			}
 			return value;
 		}
@@ -515,7 +522,7 @@ namespace Rift::AST
 			}
 			else
 			{
-				onAdd.Broadcast({id});
+				OnAdded({id});
 			}
 			return value;
 		}
@@ -550,7 +557,7 @@ namespace Rift::AST
 					set.EmplaceBack(id);
 				}
 			}
-			onAdd.Broadcast(ids);
+			OnAdded(ids);
 		}
 
 		template<typename It, typename CIt>
@@ -585,7 +592,7 @@ namespace Rift::AST
 				}
 				++from;
 			}
-			onAdd.Broadcast(ids);
+			OnAdded(ids);
 		}
 
 		T& GetOrAdd(const Id id) requires(!IsEmpty<T>())
@@ -606,7 +613,7 @@ namespace Rift::AST
 		void RemoveUnsafe(Id id) override
 		{
 			Check(Has(id));
-			onRemove.Broadcast({id});
+			OnRemoved({id});
 			if (deletionPolicy == DeletionPolicy::InPlace)
 				Pop(id);
 			else
@@ -615,8 +622,8 @@ namespace Rift::AST
 
 		i32 Remove(TSpan<const Id> ids) override
 		{
+			OnRemoved(ids);
 			i32 removed = 0;
-			onRemove.Broadcast(ids);
 			if (deletionPolicy == DeletionPolicy::InPlace)
 			{
 				for (Id id : ids)
@@ -644,7 +651,7 @@ namespace Rift::AST
 
 		void RemoveUnsafe(TSpan<const Id> ids) override
 		{
-			onRemove.Broadcast(ids);
+			OnRemoved(ids);
 			if (deletionPolicy == DeletionPolicy::InPlace)
 			{
 				for (Id id : ids)
@@ -685,8 +692,7 @@ namespace Rift::AST
 
 		Pool* Clone() override
 		{
-			auto* newPool = new TPool<T>();
-
+			auto* newPool = new TPool<T>(*ast);
 			if constexpr (IsEmpty<T>())
 			{
 				newPool->Add(set.begin(), set.end(), {});
@@ -720,21 +726,6 @@ namespace Rift::AST
 		}
 
 	private:
-		void CopyFrom(const TPool& other)
-		{
-			set = other.set;
-			data.Reserve(set.Size());
-			Add(other.set.begin(), other.set.end(), other.begin());
-		}
-
-		void MoveFrom(TPool&& other)
-		{
-			set = Move(other.set);
-			data.Reset();
-
-			// TODO: Move!
-		}
-
 		void PopSwap(Id id)
 		{
 			data.PopSwap(set.Index(id), set.Size() - 1u);
@@ -751,58 +742,55 @@ namespace Rift::AST
 
 	struct PoolInstance
 	{
-		Refl::TypeId componentId;
-
-	private:
-		Pool* instance = nullptr;
+		Refl::TypeId componentId{};
+		Pool* pool = nullptr;
 
 
-	public:
-		PoolInstance(Refl::TypeId componentId) : componentId{componentId} {}
+		PoolInstance(Refl::TypeId componentId, Pool* pool = nullptr)
+		    : componentId{componentId}, pool{pool}
+		{}
 		PoolInstance(PoolInstance&& other)
 		{
 			componentId       = other.componentId;
+			pool              = other.pool;
 			other.componentId = Refl::TypeId::None();
-			instance          = Move(other.instance);
-			other.instance    = nullptr;
-		}
-		PoolInstance& operator=(PoolInstance&& other)
-		{
-			componentId       = other.componentId;
-			other.componentId = Refl::TypeId::None();
-			instance          = Move(other.instance);
-			other.instance    = nullptr;
-			return *this;
+			other.pool        = nullptr;
 		}
 		explicit PoolInstance(const PoolInstance& other)
 		{
 			componentId = other.componentId;
-			if (other.instance)
+			if (other.pool)
 			{
-				instance = other.instance->Clone();
+				pool = other.pool->Clone();
 			}
 		}
-
-		Pool* GetInstance() const
+		PoolInstance& operator=(const PoolInstance& other)
 		{
-			return instance;
+			componentId = other.componentId;
+			if (other.pool)
+			{
+				pool = other.pool->Clone();
+			}
+			return *this;
 		}
-
 		~PoolInstance()
 		{
-			delete instance;
+			delete pool;
 		}
+
+		Refl::TypeId GetId() const
+		{
+			return componentId;
+		}
+
+		Pool* GetPool() const
+		{
+			return pool;
+		}
+
 		bool operator<(const PoolInstance& other) const
 		{
 			return componentId.GetId() < other.componentId.GetId();
-		}
-
-		template<typename T>
-		void Create()
-		{
-			Check(!instance);
-			instance = new TPool<std::remove_const_t<T>>();
-			// TODO: Static inheritance methods
 		}
 	};
 }    // namespace Rift::AST

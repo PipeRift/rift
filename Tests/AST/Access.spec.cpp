@@ -35,9 +35,10 @@ go_bandit([]() {
 
 			it("Can check if contained", [&]() {
 				AST::Tree tree;
-				auto access         = tree.Access<Type>();
-				auto accessExcluded = tree.Access<Type>(AST::TExclude<TypeTwo>{});
-				AST::Id id          = AST::NoId;
+				AST::TPool<Type>& pool = tree.AssurePool<Type>();
+				auto access            = tree.Access<Type>();
+				auto accessExcluded    = tree.Access<Type>(AST::TExclude<TypeTwo>{});
+				AST::Id id             = AST::NoId;
 				AssertThat(access.Has(id), Is().False());
 				AssertThat(accessExcluded.Has(id), Is().False());
 

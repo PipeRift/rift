@@ -315,7 +315,7 @@ namespace Rift::Graph
 			if (Nodes::IsLinkCreated(outputPin, inputPin))
 			{
 				AST::StatementGraph::Connect(
-				    ast, AST::Id{outputPin}, AST::Id{outputPin}, AST::Id{inputPin});
+				    ast, AST::Id(outputPin), AST::Id(outputPin), AST::Id(inputPin));
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))

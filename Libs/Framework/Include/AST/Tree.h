@@ -66,9 +66,9 @@ namespace Rift::AST
 
 	public:
 		Tree();
-		Tree(const Tree& other) = delete;
-		Tree& operator=(const Tree& other) = delete;
-		Tree(Tree&& other) noexcept;
+		explicit Tree(const Tree& other) noexcept;
+		explicit Tree(Tree&& other) noexcept;
+		Tree& operator=(const Tree& other) noexcept;
 		Tree& operator=(Tree&& other) noexcept;
 
 #pragma region ECS API
@@ -198,9 +198,9 @@ namespace Rift::AST
 
 		bool IsOrphan(const Id id) const
 		{
-			for (const auto& pool : pools)
+			for (const auto& instance : pools)
 			{
-				if (pool.GetInstance()->Has(id))
+				if (instance.GetPool()->Has(id))
 				{
 					return false;
 				}
@@ -338,7 +338,7 @@ namespace Rift::AST
 		TAccess<TInclude<Component...>, TExclude<Exclude...>> Access(
 		    TExclude<Exclude...> = {}) const
 		{
-			return {*this};
+			return {{&AssurePool<Component>()...}, {&AssurePool<Exclude>()...}};
 		}
 
 
@@ -409,13 +409,13 @@ namespace Rift::AST
 		}
 
 		template<typename Component>
-		TBroadcast<TSpan<const Id>>& OnAdd()
+		TBroadcast<Tree&, TSpan<const Id>>& OnAdd()
 		{
 			return AssurePool<Component>().OnAdd();
 		}
 
 		template<typename Component>
-		TBroadcast<TSpan<const Id>>& OnRemove()
+		TBroadcast<Tree&, TSpan<const Id>>& OnRemove()
 		{
 			return AssurePool<Component>().OnRemove();
 		}
@@ -438,7 +438,7 @@ namespace Rift::AST
 
 		// Finds or creates a pool
 		template<typename T>
-		TPool<T>& AssurePool() const;
+		TPool<Mut<T>>& AssurePool() const;
 
 		Pool* FindPool(Refl::TypeId componentId) const;
 
@@ -449,10 +449,10 @@ namespace Rift::AST
 		}
 
 #pragma endregion ECS API
-
-		void CopyFrom(const Tree& other);
-
 	private:
+		void CopyFrom(const Tree& other);
+		void MoveFrom(Tree&& other);
+
 		void SetupNativeTypes();
 		void CachePools();
 
@@ -464,19 +464,41 @@ namespace Rift::AST
 				pool->Reset();
 			}
 		}
+
+		template<typename T>
+		PoolInstance CreatePoolInstance() const;
 	};
 
 	template<typename T>
-	inline TPool<T>& Tree::AssurePool() const
+	inline TPool<Mut<T>>& Tree::AssurePool() const
 	{
-		constexpr Refl::TypeId componentId = Refl::TypeId::Get<T>();
+		constexpr Refl::TypeId componentId = Refl::TypeId::Get<Mut<T>>();
 
-		const TPair<i32, bool> result = pools.FindOrAddSorted({componentId});
-		PoolInstance& pool            = pools[result.first];
-		if (result.second)    // Added a new pool
+		i32 index = pools.LowerBound(componentId);
+		if (index != NO_INDEX)
 		{
-			pool.Create<T>();
+			if (componentId != pools[index].GetId())
+			{
+				pools.Insert(index, CreatePoolInstance<T>());
+			}
 		}
-		return *static_cast<TPool<T>*>(pool.GetInstance());
+		else
+		{
+			index = pools.Add(CreatePoolInstance<T>());
+		}
+
+		Pool* pool = pools[index].GetPool();
+		return *static_cast<TPool<Mut<T>>*>(pool);
+	}
+
+	template<typename T>
+	inline PoolInstance Tree::CreatePoolInstance() const
+	{
+		constexpr Refl::TypeId componentId = Refl::TypeId::Get<Mut<T>>();
+
+		Tree& self = const_cast<Tree&>(*this);
+		PoolInstance instance{componentId};
+		instance.pool = new TPool<Mut<T>>(self);
+		return Move(instance);
 	}
 }    // namespace Rift::AST

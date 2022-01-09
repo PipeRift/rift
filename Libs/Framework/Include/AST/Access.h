@@ -12,9 +12,6 @@
 
 namespace Rift::AST
 {
-	struct Tree;
-
-
 	template<typename PoolIt>
 	class TAccessIterator
 	{
@@ -132,20 +129,24 @@ namespace Rift::AST
 		using Included = TTypeList<IncludeComp...>;
 		using Excluded = TTypeList<ExcludeComp...>;
 
+		using IncludedTuple = TTuple<TPool<Mut<IncludeComp>>*...>;
+		using ExcludedTuple = TTuple<const TPool<Mut<ExcludeComp>>*...>;
+
+
 		template<typename... T>
 		using Include = TAccess<TInclude<IncludeComp..., T...>, TExclude<ExcludeComp...>>;
 		template<typename... T>
 		using Exclude = TAccess<TInclude<ExcludeComp...>, TExclude<ExcludeComp..., T...>>;
 
+
 	protected:
-		const TTuple<TPool<Mut<IncludeComp>>*...> included;
-		const TTuple<const TPool<Mut<ExcludeComp>>*...> excluded;
+		IncludedTuple included;
+		ExcludedTuple excluded;
 
 
 	public:
-		TAccess(const Tree& ast)
-		    : included{&ast.AssurePool<Mut<IncludeComp>>()...}
-		    , excluded{&ast.AssurePool<Mut<ExcludeComp>>()...}
+		TAccess(IncludedTuple included, ExcludedTuple excluded)
+		    : included{included}, excluded{excluded}
 		{}
 
 		template<typename T>

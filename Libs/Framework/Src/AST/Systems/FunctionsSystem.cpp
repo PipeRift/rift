@@ -10,7 +10,7 @@ namespace Rift::FunctionsSystem
 {
 	void Init(AST::Tree& ast)
 	{
-		ast.OnAdd<CCallExpr>().Bind([&ast](auto ids) {
+		ast.OnAdd<CCallExpr>().Bind([](auto& ast, auto ids) {
 			for (AST::Id id : ids)
 			{
 				ast.Add<CAdded<CCallExpr>>(id);
