@@ -54,6 +54,17 @@ go_bandit([]() {
 				AssertThat(access.Has(id), Is().True());
 				AssertThat(accessExcluded.Has(id), Is().False());
 			});
+
+			it("Can initialize superset", [&]() {
+				AST::Tree tree;
+				AST::TPool<Type>& typePool = tree.AssurePool<Type>();
+
+				AST::Access::In<Type, TypeTwo> access = tree.Access<Type, TypeTwo>();
+				AST::Access::In<Type> superset{access};
+
+				AssertThat(access.GetPool<Type>(), Equals(&typePool));
+				AssertThat(superset.GetPool<Type>(), Equals(&typePool));
+			});
 		});
 
 		xdescribe("Runtime", []() {

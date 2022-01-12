@@ -120,6 +120,12 @@ namespace Rift::AST
 		}
 
 		template<typename C>
+		bool Has(Id id) const
+		{
+			return access.Has<C>(id);
+		}
+
+		template<typename C>
 		decltype(auto) Add(Id id, C&& value = {})
 		{
 			return access.template GetPool<C>()->Add(id, Forward<C>(value));
@@ -158,6 +164,58 @@ namespace Rift::AST
 		i32 Size() const
 		{
 			return access.Size();
+		}
+
+		/**
+		 * @return ids matching the filter from another array
+		 */
+		TArray<Id> FilterIds(const TArray<AST::Id>& ids)
+		{
+			TArray<Id> filtered;
+			for (Id id : ids)
+			{
+				if (Has(id))
+				{
+					filtered.Add(id);
+				}
+			}
+			return filtered;
+		}
+
+		/**
+		 * Removes elements not matching the filter from an array.
+		 * order of elements might change.
+		 * @see FilterIdsStable
+		 */
+		void FilterIds(TArray<AST::Id>& ids)
+		{
+			for (i32 i = 0; i < ids.Size(); ++i)
+			{
+				if (Has(ids[i]))
+				{
+					ids.RemoveAtSwap(i, false);
+					--i;
+				}
+			}
+			ids.Shrink();
+		}
+
+		/**
+		 * Removes elements not matching the filter from an array.
+		 * Ensures order of elements is kept
+		 * @see FilterIds
+		 */
+		void FilterIdsStable(TArray<AST::Id>& ids)
+		{
+			for (i32 i = 0; i < ids.Size(); ++i)
+			{
+				if (Has(ids[i]))
+				{
+					ids.RemoveAt(i, false);
+					--i;
+				}
+			}
+			ids.Shrink();
 		}
 	};
 }    // namespace Rift::AST

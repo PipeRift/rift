@@ -121,6 +121,9 @@ namespace Rift::AST
 	template<typename... IncludeComp, typename... ExcludeComp>
 	struct TAccess<TInclude<IncludeComp...>, TExclude<ExcludeComp...>>
 	{
+		template<typename... K>
+		friend struct TAccess;
+
 		static_assert(sizeof...(IncludeComp) > 0, "Exclusion-only access are not supported");
 
 		using Iterator        = TAccessIterator<Pool::Iterator>;
@@ -134,9 +137,9 @@ namespace Rift::AST
 
 
 		template<typename... T>
-		using Include = TAccess<TInclude<IncludeComp..., T...>, TExclude<ExcludeComp...>>;
+		using In = TAccess<TInclude<IncludeComp..., T...>, TExclude<ExcludeComp...>>;
 		template<typename... T>
-		using Exclude = TAccess<TInclude<ExcludeComp...>, TExclude<ExcludeComp..., T...>>;
+		using Ex = TAccess<TInclude<ExcludeComp...>, TExclude<ExcludeComp..., T...>>;
 
 
 	protected:
@@ -148,6 +151,45 @@ namespace Rift::AST
 		TAccess(IncludedTuple included, ExcludedTuple excluded)
 		    : included{included}, excluded{excluded}
 		{}
+
+		/**
+		 * Creates a superset access from other access
+		 * Access A can be created from access A|B
+		 */
+		template<typename... OtherIncludeComp, typename... OtherExcludeComp>
+		TAccess(const TAccess<TInclude<OtherIncludeComp...>, TExclude<OtherExcludeComp...>>& other)
+		    : included{std::get<TPool<Mut<IncludeComp>>*>(other.included)...}
+		    , excluded{std::get<const TPool<Mut<ExcludeComp>>*>(other.excluded)...}
+		{}
+
+		Pool* GetSmallestPool() const
+		{
+			// Find smallest pool
+			return (std::min)({static_cast<Pool*>(GetPool<IncludeComp>())...},
+			    [](const auto* lhs, const auto* rhs) {
+				return lhs->Size() < rhs->Size();
+			});
+		}
+
+		bool Has(Id id) const
+		{
+			return id != AST::NoId && (GetPool<IncludeComp>()->Has(id) && ...)
+			    && (!GetExcludedPool<ExcludeComp>()->Has(id) && ...);
+		}
+
+		template<typename T>
+		bool Has(Id id) const
+		{
+			return GetPool<T>()->Has(id);
+		}
+
+		// Get the size of an access to one single component
+		i32 Size() const
+		{
+			static_assert(sizeof...(IncludeComp) == 1 && sizeof...(ExcludeComp) == 0,
+			    "Can only get the size from single component access.");
+			return GetPool<IncludeComp...>()->Size();
+		}
 
 		template<typename T>
 		TPool<Mut<T>>* GetPool() const
@@ -169,39 +211,19 @@ namespace Rift::AST
 			return nullptr;
 		}
 
-		Pool* GetSmallestPool() const
+		TArray<Pool*> GetPoolArray(const Pool* ignoredPool = nullptr) const
 		{
-			// Find smallest pool
-			return (std::min)({static_cast<Pool*>(GetPool<IncludeComp>())...},
-			    [](const auto* lhs, const auto* rhs) {
-				return lhs->Size() < rhs->Size();
-			});
-		}
-
-		bool Has(Id id) const
-		{
-			return id != AST::NoId && (GetPool<IncludeComp>()->Has(id) && ...)
-			    && (!GetExcludedPool<ExcludeComp>()->Has(id) && ...);
-		}
-
-		// Get the size of an access to one single component
-		i32 Size() const
-		{
-			static_assert(sizeof...(IncludeComp) == 1 && sizeof...(ExcludeComp) == 0,
-			    "Can only get the size from single component access.");
-			return GetPool<IncludeComp...>()->Size();
-		}
-
-		TArray<Pool*> GetPoolArray(const Pool* ignoredPool) const
-		{
+			if (!ignoredPool)
+			{
+				return {GetPool<IncludeComp>()...};
+			}
 			TArray<Pool*> pools{};
 			pools.Reserve(sizeof...(IncludeComp) - 1u);
-
 			(static_cast<void>(GetPool<IncludeComp>() != ignoredPool
 			                       ? void(pools.Add(GetPool<IncludeComp>()))
 			                       : void()),
 			    ...);
-			return pools;
+			return Move(pools);
 		}
 
 		TArray<const Pool*> GetExcludedPoolArray() const
@@ -213,7 +235,7 @@ namespace Rift::AST
 	struct Access
 	{
 		template<typename... T>
-		using Include = TAccess<TInclude<T...>, TExclude<>>;
+		using In = TAccess<TInclude<T...>, TExclude<>>;
 	};
 
 	/*struct RuntimeAccess

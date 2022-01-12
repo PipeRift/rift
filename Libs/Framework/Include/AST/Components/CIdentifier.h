@@ -17,5 +17,14 @@ namespace Rift
 
 		CIdentifier() = default;
 		CIdentifier(Name name) : name(name) {}
+
+		bool operator==(const CIdentifier& other) const
+		{
+			return name == other.name;
+		}
+		bool operator==(Name other) const
+		{
+			return name == other;
+		}
 	};
 }    // namespace Rift

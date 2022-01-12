@@ -119,4 +119,29 @@ namespace Rift::AST::Functions
 		}
 		return NoId;
 	}
+
+	void GetCallArgs(
+	    const Tree& ast, TSpan<Id> callIds, TArray<Id>& inputArgIds, TArray<Id>& outputArgIds)
+	{
+		auto exprInputs  = ast.Filter<CExpressionInput>();
+		auto exprOutputs = ast.Filter<CExpressionOutputs>();
+
+		TArray<Id> children;
+		for (Id id : callIds)
+		{
+			Hierarchy::GetChildren(ast, id, children);
+		}
+
+		for (Id id : children)
+		{
+			if (exprInputs.Has(id))
+			{
+				inputArgIds.Add(id);
+			}
+			if (exprOutputs.Has(id))
+			{
+				outputArgIds.Add(id);
+			}
+		}
+	}
 }    // namespace Rift::AST::Functions

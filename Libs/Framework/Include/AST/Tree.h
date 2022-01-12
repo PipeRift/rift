@@ -60,8 +60,8 @@ namespace Rift::AST
 		TArray<OwnPtr> statics;
 
 		NativeTypeIds nativeTypes;
-		TOwnPtr<TFilter<Access::Include<CParent>>> parentView;
-		TOwnPtr<TFilter<Access::Include<CChild>>> childView;
+		TOwnPtr<TFilter<Access::In<CParent>>> parentView;
+		TOwnPtr<TFilter<Access::In<CChild>>> childView;
 
 
 	public:
@@ -388,22 +388,22 @@ namespace Rift::AST
 			CachePools();
 		}
 
-		TFilter<Access::Include<CParent>>& GetParentView()
+		TFilter<Access::In<CParent>>& GetParentView()
 		{
 			return *parentView;
 		}
 
-		TFilter<Access::Include<CChild>>& GetChildView()
+		TFilter<Access::In<CChild>>& GetChildView()
 		{
 			return *childView;
 		}
 
-		const TFilter<Access::Include<CParent>>& GetParentView() const
+		const TFilter<Access::In<CParent>>& GetParentView() const
 		{
 			return *parentView;
 		}
 
-		const TFilter<Access::Include<CChild>>& GetChildView() const
+		const TFilter<Access::In<CChild>>& GetChildView() const
 		{
 			return *childView;
 		}
