@@ -8,6 +8,7 @@
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CParameterDecl.h"
 #include "AST/Components/Tags/CAdded.h"
+#include "AST/Components/Tags/CInvalid.h"
 #include "AST/Utils/FunctionUtils.h"
 #include "AST/Utils/Hierarchy.h"
 
@@ -21,8 +22,9 @@ namespace Rift::FunctionsSystem
 		TArray<AST::Id> functionInputs;
 		TArray<AST::Id> functionOutputs;
 
-		TArray<AST::Id> outputArgs;
 		TArray<AST::Id> inputArgs;
+		TArray<AST::Id> outputArgs;
+		TArray<AST::Id> invalidArgs;
 	};
 
 
@@ -100,44 +102,70 @@ namespace Rift::FunctionsSystem
 			}
 		}
 
-		// Resolve current call parameters
+		// Resolve current call parameters and create missing new pins
 		for (auto& call : calls)
 		{
-			AST::Functions::GetCallArgs(ast, call.id, call.inputArgs, call.outputArgs);
-		}
+			TArray<AST::Id> currentInputs, currentOutputs;
+			AST::Functions::GetCallArgs(ast, call.id, currentInputs, currentOutputs);
 
-		// Update call parameters. Keep invalid & connected but mark as such
-		for (auto& call : calls)
-		{
-			TArray<AST::Id> invalidArgs;
-
-			for (AST::Id id : call.inputArgs)
+			for (AST::Id id : call.functionOutputs)
 			{
-				const CIdentifier& name = identifiers.Get<CIdentifier>(id);
-				const bool contained =
-				    call.functionOutputs.Contains([&identifiers, &name](AST::Id id) {
-					    return identifiers.Get<CIdentifier>(id) == name;
-				    });
-				if (!contained)
+				const auto& name = identifiers.Get<CIdentifier>(id);
+
+				const i32 idx = currentInputs.FindIndex([&identifiers, &name](AST::Id id) {
+					return identifiers.Get<CIdentifier>(id) == name;
+				});
+				if (idx != NO_INDEX)
 				{
-					invalidArgs.Add(id);
+					call.inputArgs.Add(currentInputs[idx]);
+					currentInputs.RemoveAtSwap(idx, false);
+				}
+				else
+				{
+					AST::Id id = ast.Create();
+					identifiers.Add<CIdentifier>(id, name);
+					exprInputs.Add<CExpressionInput>(id);
+					call.inputArgs.Add(id);
 				}
 			}
 
-			for (AST::Id id : call.outputArgs)
+			for (AST::Id id : call.functionInputs)
 			{
-				const CIdentifier& name = identifiers.Get<CIdentifier>(id);
-				const bool contained =
-				    call.functionInputs.Contains([&identifiers, &name](AST::Id id) {
-					    return identifiers.Get<CIdentifier>(id) == name;
-				    });
-				if (!contained)
+				const auto& name = identifiers.Get<CIdentifier>(id);
+
+				const i32 idx = currentOutputs.FindIndex([&identifiers, &name](AST::Id id) {
+					return identifiers.Get<CIdentifier>(id) == name;
+				});
+				if (idx != NO_INDEX)
 				{
-					invalidArgs.Add(id);
+					call.outputArgs.Add(currentOutputs[idx]);
+					currentOutputs.RemoveAtSwap(idx, false);
+				}
+				else
+				{
+					AST::Id id = ast.Create();
+					identifiers.Add<CIdentifier>(id, name);
+					exprOutputs.Add<CExpressionOutputs>(id);
+					call.outputArgs.Add(id);
 				}
 			}
+
+			call.invalidArgs.Append(currentInputs);
+			call.invalidArgs.Append(currentOutputs);
 		}
+
+		// Mark or delete invalid args
+		for (auto& call : calls)
+		{
+			ast.Add<CInvalid>(call.invalidArgs);
+		}
+
+		// TODO: Reassign arguments to their call
+
+		RemoveInvalidDisconnectedArgs(ast);
 	}
+
+	void RemoveInvalidDisconnectedArgs(AST::Tree& ast) {}
 
 	void ClearAddedTags(AST::Tree& ast)
 	{
