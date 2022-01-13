@@ -33,7 +33,6 @@ namespace Rift
 		int Run();
 
 		void Tick();
-		void Draw();
 
 		void SetUIConfigFile(Path path);
 

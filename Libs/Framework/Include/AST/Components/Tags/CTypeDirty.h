@@ -6,8 +6,9 @@
 
 namespace Rift
 {
-	struct CInvalid : public Struct
+	// Marks a type as dirty, meaning is has been modified
+	struct CTypeDirty : public Struct
 	{
-		STRUCT(CInvalid, Struct)
+		STRUCT(CTypeDirty, Struct, Struct_NotSerialized)
 	};
 }    // namespace Rift

@@ -138,6 +138,8 @@ namespace Rift::EditorSystem
 			ImGui::End();
 		}
 #endif
+
+		UI::DrawNotifications();
 	}
 
 	void CreateRootDockspace(SEditor& editor)

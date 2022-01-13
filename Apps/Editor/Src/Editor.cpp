@@ -5,12 +5,12 @@
 #include "AST/Systems/FunctionsSystem.h"
 #include "Statics/SEditor.h"
 #include "Systems/EditorSystem.h"
-#include "UI/Notify.h"
 #include "Utils/FunctionGraph.h"
 
 #include <AST/Statics/SModules.h>
 #include <AST/Systems/FunctionsSystem.h>
 #include <AST/Systems/LoadSystem.h>
+#include <AST/Systems/TransactionSystem.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Files/Files.h>
 #include <Log.h>
@@ -44,7 +44,6 @@ namespace Rift
 			UpdateConfig();
 
 			Tick();
-			Draw();
 			UI::Render();
 
 			frameTime.PostTick();
@@ -72,13 +71,11 @@ namespace Rift
 		LoadSystem::Run(ast);
 		FunctionsSystem::ResolveCallFunctionIds(ast);
 		FunctionsSystem::SyncCallArguments(ast);
-		FunctionsSystem::ClearAddedTags(ast);
-	}
 
-	void Editor::Draw()
-	{
 		EditorSystem::Draw(ast);
-		UI::DrawNotifications();
+
+		FunctionsSystem::ClearAddedTags(ast);
+		TransactionSystem::ClearTags(ast);
 	}
 
 	void Editor::SetUIConfigFile(Path path)

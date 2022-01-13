@@ -49,7 +49,7 @@ namespace Rift::Graph
 	void DrawTypeGraph(AST::Tree& ast, AST::Id typeId, CTypeEditor& typeEditor);
 
 	void DrawFunctionDecl(AST::Tree& ast, AST::Id functionId);
-	void DrawCallNode(AST::Id id, StringView name, StringView typeName = {});
+	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView typeName);
 	void DrawBoolLiteralNode(AST::Id id, bool& value);
 	void DrawStringLiteralNode(AST::Id id, String& value);
 

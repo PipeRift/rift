@@ -174,7 +174,7 @@ namespace Rift::AST
 			TArray<Id> filtered;
 			for (Id id : ids)
 			{
-				if (Has(id))
+				if (!Has(id))
 				{
 					filtered.Add(id);
 				}
@@ -191,9 +191,9 @@ namespace Rift::AST
 		{
 			for (i32 i = 0; i < ids.Size(); ++i)
 			{
-				if (Has(ids[i]))
+				if (!Has(ids[i]))
 				{
-					ids.RemoveAtSwap(i, false);
+					!ids.RemoveAtSwap(i, false);
 					--i;
 				}
 			}
@@ -209,7 +209,7 @@ namespace Rift::AST
 		{
 			for (i32 i = 0; i < ids.Size(); ++i)
 			{
-				if (Has(ids[i]))
+				if (!Has(ids[i]))
 				{
 					ids.RemoveAt(i, false);
 					--i;

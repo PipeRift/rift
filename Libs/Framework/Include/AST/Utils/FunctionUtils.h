@@ -17,6 +17,6 @@ namespace Rift::AST::Functions
 
 	Id FindFunctionByName(const Tree& ast, Name typeName, Name functionName);
 
-	void GetCallArgs(
-	    const Tree& ast, TSpan<Id> callIds, TArray<Id>& inputArgIds, TArray<Id>& outputArgIds);
+	void GetCallArgs(const Tree& ast, TSpan<Id> callIds, TArray<Id>& inputArgIds,
+	    TArray<Id>& outputArgIds, TArray<Id>& otherIds);
 }    // namespace Rift::AST::Functions

@@ -245,6 +245,21 @@ namespace Rift::AST::Hierarchy
 		return Move(parents);
 	}
 
+	AST::Id FindParent(AST::Tree& ast, AST::Id childId, const TFunction<bool(AST::Id)>& callback)
+	{
+		AST::Id parentId = GetParent(ast, childId);
+
+		while (!IsNone(parentId))
+		{
+			if (callback(parentId))
+			{
+				return parentId;
+			}
+			parentId = GetParent(ast, childId);
+		}
+		return AST::NoId;
+	}
+
 	void Remove(Tree& ast, TSpan<Id> nodes)
 	{
 		RemoveChildren(ast, nodes, true);

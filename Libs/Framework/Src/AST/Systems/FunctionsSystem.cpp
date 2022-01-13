@@ -25,6 +25,7 @@ namespace Rift::FunctionsSystem
 		TArray<AST::Id> inputArgs;
 		TArray<AST::Id> outputArgs;
 		TArray<AST::Id> invalidArgs;
+		TArray<AST::Id> unrelatedCallChildren;
 	};
 
 
@@ -106,7 +107,8 @@ namespace Rift::FunctionsSystem
 		for (auto& call : calls)
 		{
 			TArray<AST::Id> currentInputs, currentOutputs;
-			AST::Functions::GetCallArgs(ast, call.id, currentInputs, currentOutputs);
+			AST::Functions::GetCallArgs(
+			    ast, call.id, currentInputs, currentOutputs, call.unrelatedCallChildren);
 
 			for (AST::Id id : call.functionOutputs)
 			{
@@ -160,7 +162,14 @@ namespace Rift::FunctionsSystem
 			ast.Add<CInvalid>(call.invalidArgs);
 		}
 
-		// TODO: Reassign arguments to their call
+		for (auto& call : calls)
+		{
+			AST::Hierarchy::RemoveAllChildren(ast, call.id, true);
+			AST::Hierarchy::AddChildren(ast, call.id, call.inputArgs);
+			AST::Hierarchy::AddChildren(ast, call.id, call.outputArgs);
+			AST::Hierarchy::AddChildren(ast, call.id, call.invalidArgs);
+			AST::Hierarchy::AddChildren(ast, call.id, call.unrelatedCallChildren);
+		}
 
 		RemoveInvalidDisconnectedArgs(ast);
 	}

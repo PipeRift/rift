@@ -12,6 +12,7 @@
 
 #include <AST/Components/CBoolLiteral.h>
 #include <AST/Components/CCallExpr.h>
+#include <AST/Components/CExpressionInput.h>
 #include <AST/Components/CExpressionOutputs.h>
 #include <AST/Components/CFunctionDecl.h>
 #include <AST/Components/CIdentifier.h>
@@ -198,6 +199,7 @@ namespace Rift::Graph
 	{
 		auto calls         = ast.Filter<CCallExpr>();
 		auto functionDecls = ast.Filter<CFunctionDecl, CIdentifier>();
+
 		for (AST::Id child : children)
 		{
 			auto* call = calls.TryGet<CCallExpr>(child);
@@ -209,7 +211,7 @@ namespace Rift::Graph
 				{
 					typeName = call->typeName.ToString().c_str();
 				}
-				DrawCallNode(child, functionName, typeName);
+				DrawCallNode(ast, child, functionName, typeName);
 			}
 		}
 	}
@@ -425,7 +427,7 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawCallNode(AST::Id id, StringView name, StringView typeName)
+	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView typeName)
 	{
 		static constexpr Color headerColor = Style::callColor;
 		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
@@ -470,15 +472,46 @@ namespace Rift::Graph
 			}
 			Nodes::EndNodeTitleBar();
 
-			UI::BeginGroup();    // Inputs
-			const Color pinColor = Style::GetTypeColor<float>();
-			Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-			// Nodes::BeginInput(i32(id) + 2, PinShape_CircleFilled);
-			// UI::Text("amount");
-			// Nodes::EndInput();
-			Nodes::PopStyleColor(2);
-			UI::EndGroup();
+			if (TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, id))
+			{
+				auto callArgsView = ast.Filter<CIdentifier, CExpressionInput, CExpressionOutputs>();
+
+				UI::BeginGroup();    // Inputs
+				for (AST::Id inputId : *children)
+				{
+					if (callArgsView.Has<CExpressionInput>(inputId)
+					    && callArgsView.Has<CIdentifier>(inputId))
+					{
+						auto& name           = callArgsView.Get<CIdentifier>(inputId);
+						const Color pinColor = Style::GetTypeColor<float>();
+						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+						Nodes::BeginInput(i32(inputId), Nodes::PinShape_CircleFilled);
+						UI::Text(name.name.ToString().c_str());
+						Nodes::EndInput();
+						Nodes::PopStyleColor(2);
+					}
+				}
+				UI::EndGroup();
+
+				UI::BeginGroup();    // Outputs
+				for (AST::Id outputId : *children)
+				{
+					if (callArgsView.Has<CExpressionOutputs>(outputId)
+					    && callArgsView.Has<CIdentifier>(outputId))
+					{
+						auto& name           = callArgsView.Get<CIdentifier>(outputId);
+						const Color pinColor = Style::GetTypeColor<float>();
+						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+						Nodes::BeginOutput(i32(outputId), Nodes::PinShape_CircleFilled);
+						UI::Text(name.name.ToString().c_str());
+						Nodes::EndOutput();
+						Nodes::PopStyleColor(2);
+					}
+				}
+				UI::EndGroup();
+			}
 
 			if (Nodes::IsNodeSelected(i32(id)))
 			{

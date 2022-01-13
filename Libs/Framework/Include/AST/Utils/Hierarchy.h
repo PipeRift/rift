@@ -35,6 +35,11 @@ namespace Rift::AST::Hierarchy
 	Id GetParent(Tree& ast, Id node);
 	TArray<Id> GetParents(const Tree& ast, TSpan<Id> nodes);
 
+	/**
+	 * Find a parent id matching a delegate
+	 */
+	AST::Id FindParent(AST::Tree& ast, AST::Id child, const TFunction<bool(AST::Id)>& callback);
+
 	// void Copy(Tree& ast, const TArray<Id>& nodes, TArray<Id>& outNewNodes);
 	// void CopyDeep(Tree& ast, const TArray<Id>& rootNodes, TArray<Id>& outNewRootNodes);
 	// void CopyAndTransferAllChildrenDeep(Tree& ast, Id root, Id otherRoot);
