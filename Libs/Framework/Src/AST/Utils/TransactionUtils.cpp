@@ -10,18 +10,67 @@
 
 namespace Rift::AST::Transactions
 {
-	void Change(AST::Tree& ast, Id entityId)
-	{
-		// TODO: Queue a transaction and apply out of scope or manually
-		ast.Add<CChanged>(entityId);
+	// Transaction being recorded
+	static Transaction activeTransaction = {};
 
-		auto types      = ast.Filter<CType>();
-		const Id typeId = Hierarchy::FindParent(ast, entityId, [&types](Id parentId) {
+	ScopedTransaction::ScopedTransaction(Tree& ast, TSpan<Id> entityIds)
+	{
+		active = PreChange(ast, entityIds);
+	}
+	ScopedTransaction::ScopedTransaction(ScopedTransaction&& other)
+	{
+		active       = other.active;
+		other.active = false;
+	}
+	ScopedTransaction::~ScopedTransaction()
+	{
+		if (active)
+		{
+			PostChange();
+		}
+	}
+
+	bool PreChange(Tree& ast, TSpan<Id> entityIds)
+	{
+		if (!EnsureMsg(!activeTransaction.ast,
+		        "Tried to record a transaction while another is already being recorded"))
+		{
+			return false;
+		}
+
+		activeTransaction = Transaction{&ast};
+		activeTransaction.entityIds.Append(entityIds);
+		// TODO: Capture AST state
+		return true;
+	}
+
+	void PostChange()
+	{
+		if (!EnsureMsg(
+		        activeTransaction.ast, "Cant finish a transaction while none is being recorded"))
+		{
+			return;
+		}
+
+		Tree& ast = *activeTransaction.ast;
+
+		ast.Add<CChanged>(activeTransaction.entityIds);
+
+		// Mark types dirty
+		auto types = ast.Filter<CType>();
+		TArray<Id> typeIds;
+		Hierarchy::FindParents(ast, activeTransaction.entityIds, typeIds, [&types](Id parentId) {
 			return types.Has(parentId);
 		});
-		if (!IsNone(typeId))
+
+		// Transition ids can also be types. FindParents doesnt consider them
+		typeIds.Append(activeTransaction.entityIds);
+		types.FilterIds(typeIds);
+		if (!typeIds.IsEmpty())
 		{
-			ast.Add<CTypeDirty>(typeId);
+			ast.Add<CTypeDirty>(typeIds);
 		}
+
+		activeTransaction = {};
 	}
 }    // namespace Rift::AST::Transactions

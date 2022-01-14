@@ -7,7 +7,6 @@
 #include "DockSpaceLayout.h"
 #include "UI/Style.h"
 #include "UI/Widgets.h"
-#include "Utils/EditorCOlors.h"
 #include "Utils/EditorColors.h"
 #include "Utils/Widgets.h"
 
@@ -22,6 +21,7 @@
 #include <AST/Components/CVariableDecl.h>
 #include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/Hierarchy.h>
+#include <AST/Utils/TransactionUtils.h>
 #include <AST/Utils/TypeUtils.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
@@ -272,6 +272,7 @@ namespace Rift
 				Style::PushStyleCompact();
 				if (UI::Button(ICON_FA_PLUS "##FunctionInput", ImVec2(-FLT_MIN, 0.0f)))
 				{
+					ScopedChange(ast, functionId);
 					AST::Functions::AddInputArgument(ast, functionId);
 				}
 				Style::PopStyleCompact();
@@ -291,6 +292,7 @@ namespace Rift
 				Style::PushStyleCompact();
 				if (UI::Button(ICON_FA_PLUS "##FunctionOutput", ImVec2(-FLT_MIN, 0.0f)))
 				{
+					ScopedChange(ast, functionId);
 					AST::Functions::AddOutputArgument(ast, functionId);
 				}
 				Style::PopStyleCompact();
@@ -333,6 +335,7 @@ namespace Rift
 			Style::PushStyleCompact();
 			if (UI::Button(ICON_FA_PLUS "##Variable", ImVec2(-FLT_MIN, 0.0f)))
 			{
+				ScopedChange(ast, typeId);
 				Types::AddVariable({ast, typeId}, "NewVariable");
 			}
 			Style::PopStyleCompact();
@@ -365,6 +368,7 @@ namespace Rift
 			Style::PushStyleCompact();
 			if (UI::Button(ICON_FA_PLUS "##Function", ImVec2(-FLT_MIN, 0.0f)))
 			{
+				ScopedChange(ast, typeId);
 				Types::AddFunction({ast, typeId}, "NewFunction");
 			}
 			Style::PopStyleCompact();

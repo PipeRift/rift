@@ -33,12 +33,14 @@ namespace Rift::AST::Hierarchy
 	void GetChildrenDeep(
 	    const Tree& ast, TSpan<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth = 0);
 	Id GetParent(Tree& ast, Id node);
-	TArray<Id> GetParents(const Tree& ast, TSpan<Id> nodes);
+	void GetParents(const Tree& ast, TSpan<Id> children, TArray<Id>& outParents);
 
 	/**
 	 * Find a parent id matching a delegate
 	 */
 	AST::Id FindParent(AST::Tree& ast, AST::Id child, const TFunction<bool(AST::Id)>& callback);
+	void FindParents(AST::Tree& ast, TSpan<Id> children, TArray<Id>& outParents,
+	    const TFunction<bool(AST::Id)>& callback);
 
 	// void Copy(Tree& ast, const TArray<Id>& nodes, TArray<Id>& outNewNodes);
 	// void CopyDeep(Tree& ast, const TArray<Id>& rootNodes, TArray<Id>& outNewRootNodes);

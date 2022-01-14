@@ -231,33 +231,54 @@ namespace Rift::AST::Hierarchy
 		return AST::NoId;
 	}
 
-	TArray<Id> GetParents(const Tree& ast, TSpan<Id> nodes)
+	void GetParents(const Tree& ast, TSpan<Id> children, TArray<Id>& outParents)
 	{
-		TArray<Id> parents;
-		for (Id nodeId : nodes)
+		outParents.Empty(false);
+		for (Id childId : children)
 		{
-			const auto* child = GetCChild(ast, nodeId);
+			const auto* child = GetCChild(ast, childId);
 			if (child && child->parent != AST::NoId)
 			{
-				parents.AddUnique(child->parent);
+				outParents.AddUnique(child->parent);
 			}
 		}
-		return Move(parents);
 	}
 
 	AST::Id FindParent(AST::Tree& ast, AST::Id childId, const TFunction<bool(AST::Id)>& callback)
 	{
-		AST::Id parentId = GetParent(ast, childId);
-
-		while (!IsNone(parentId))
+		while (!IsNone(childId))
 		{
-			if (callback(parentId))
+			childId = GetParent(ast, childId);
+			if (callback(childId))
 			{
-				return parentId;
+				return childId;
 			}
-			parentId = GetParent(ast, childId);
 		}
 		return AST::NoId;
+	}
+	void FindParents(AST::Tree& ast, TSpan<Id> childrenIds, TArray<Id>& outParents,
+	    const TFunction<bool(AST::Id)>& callback)
+	{
+		outParents.Empty(false);
+
+		TArray<Id> children{childrenIds.begin(), childrenIds.Size()};
+		TArray<Id> parents;
+
+		while (children.Size() > 0)
+		{
+			GetParents(ast, children, parents);
+			for (i32 i = 0; i < parents.Size(); ++i)
+			{
+				const Id parentId = parents[i];
+				if (callback(parentId))
+				{
+					outParents.Add(parentId);
+					parents.RemoveAtSwap(i, false);
+				}
+			}
+			Swap(children, parents);
+			parents.Empty(false);
+		}
 	}
 
 	void Remove(Tree& ast, TSpan<Id> nodes)

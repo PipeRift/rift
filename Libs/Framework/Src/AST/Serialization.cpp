@@ -98,7 +98,8 @@ namespace Rift::AST
 
 	void ReadContext::SerializeRoots(TArray<Id>& roots)
 	{
-		TArray<Id> parents = Hierarchy::GetParents(ast, roots);
+		TArray<Id> parents;
+		Hierarchy::GetParents(ast, roots, parents);
 
 		Next("count", nodeCount);
 		ids.Resize(i32(nodeCount));

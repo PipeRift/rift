@@ -19,6 +19,7 @@
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
 #include <AST/Components/CType.h>
+#include <AST/Components/Tags/CTypeDirty.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Containers/Array.h>
@@ -440,7 +441,8 @@ namespace Rift::EditorSystem
 			bool isOpen               = true;
 			const String path         = Paths::ToString(file.path);
 			const StringView filename = Paths::GetFilename(path);
-			const String windowName   = Strings::Format("{}##{}", filename, typeId);
+			const StringView dirty    = ast.Has<CTypeDirty>(typeId) ? "*" : "";
+			const String windowName   = Strings::Format("{}{}###{}", filename, dirty, typeId);
 
 			if (typeEditor.pendingFocus)
 			{
