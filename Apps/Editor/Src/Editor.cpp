@@ -63,19 +63,21 @@ namespace Rift
 
 	void Editor::Tick()
 	{
-		if (!Modules::HasProject(ast))
+		if (Modules::HasProject(ast))
 		{
-			return;
+			FunctionsSystem::ClearAddedTags(ast);
+			TransactionSystem::ClearTags(ast);
+
+			LoadSystem::Run(ast);
+			FunctionsSystem::ResolveCallFunctionIds(ast);
+
+			EditorSystem::Draw(ast);
+			FunctionsSystem::SyncCallArguments(ast);
 		}
-
-		LoadSystem::Run(ast);
-		FunctionsSystem::ResolveCallFunctionIds(ast);
-		FunctionsSystem::SyncCallArguments(ast);
-
-		EditorSystem::Draw(ast);
-
-		FunctionsSystem::ClearAddedTags(ast);
-		TransactionSystem::ClearTags(ast);
+		else
+		{
+			EditorSystem::Draw(ast);
+		}
 	}
 
 	void Editor::SetUIConfigFile(Path path)

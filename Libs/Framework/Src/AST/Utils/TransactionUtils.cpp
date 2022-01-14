@@ -15,10 +15,10 @@ namespace Rift::AST::Transactions
 		// TODO: Queue a transaction and apply out of scope or manually
 		ast.Add<CChanged>(entityId);
 
-		auto types = ast.Filter<CType>();
-		Id typeId  = Hierarchy::FindParent(ast, entityId, [&types](Id parentId) {
-            return types.Has(parentId);
-		 });
+		auto types      = ast.Filter<CType>();
+		const Id typeId = Hierarchy::FindParent(ast, entityId, [&types](Id parentId) {
+			return types.Has(parentId);
+		});
 		if (!IsNone(typeId))
 		{
 			ast.Add<CTypeDirty>(typeId);

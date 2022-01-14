@@ -104,34 +104,15 @@ namespace Rift::FunctionsSystem
 		}
 
 		// Resolve current call parameters and create missing new pins
+		TArray<AST::Id> currentInputs, currentOutputs;
 		for (auto& call : calls)
 		{
-			TArray<AST::Id> currentInputs, currentOutputs;
+			currentInputs.Empty(false);
+			currentOutputs.Empty(false);
 			AST::Functions::GetCallArgs(
 			    ast, call.id, currentInputs, currentOutputs, call.unrelatedCallChildren);
 
 			for (AST::Id id : call.functionOutputs)
-			{
-				const auto& name = identifiers.Get<CIdentifier>(id);
-
-				const i32 idx = currentInputs.FindIndex([&identifiers, &name](AST::Id id) {
-					return identifiers.Get<CIdentifier>(id) == name;
-				});
-				if (idx != NO_INDEX)
-				{
-					call.inputArgs.Add(currentInputs[idx]);
-					currentInputs.RemoveAtSwap(idx, false);
-				}
-				else
-				{
-					AST::Id id = ast.Create();
-					identifiers.Add<CIdentifier>(id, name);
-					exprInputs.Add<CExpressionInput>(id);
-					call.inputArgs.Add(id);
-				}
-			}
-
-			for (AST::Id id : call.functionInputs)
 			{
 				const auto& name = identifiers.Get<CIdentifier>(id);
 
@@ -149,6 +130,27 @@ namespace Rift::FunctionsSystem
 					identifiers.Add<CIdentifier>(id, name);
 					exprOutputs.Add<CExpressionOutputs>(id);
 					call.outputArgs.Add(id);
+				}
+			}
+
+			for (AST::Id id : call.functionInputs)
+			{
+				const auto& name = identifiers.Get<CIdentifier>(id);
+
+				const i32 idx = currentInputs.FindIndex([&identifiers, &name](AST::Id id) {
+					return identifiers.Get<CIdentifier>(id) == name;
+				});
+				if (idx != NO_INDEX)
+				{
+					call.inputArgs.Add(currentInputs[idx]);
+					currentInputs.RemoveAtSwap(idx, false);
+				}
+				else
+				{
+					AST::Id id = ast.Create();
+					identifiers.Add<CIdentifier>(id, name);
+					exprInputs.Add<CExpressionInput>(id);
+					call.inputArgs.Add(id);
 				}
 			}
 
