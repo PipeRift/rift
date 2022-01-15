@@ -7,7 +7,7 @@
 #include "AST/Components/CExpressionOutputs.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CParameterDecl.h"
-#include "AST/Components/Tags/CAdded.h"
+#include "AST/Components/Tags/CDirty.h"
 #include "AST/Components/Tags/CInvalid.h"
 #include "AST/Utils/FunctionUtils.h"
 #include "AST/Utils/Hierarchy.h"
@@ -32,7 +32,7 @@ namespace Rift::FunctionsSystem
 	void Init(AST::Tree& ast)
 	{
 		ast.OnAdd<CCallExprId>().Bind([](auto& ast, auto ids) {
-			ast.Add<CAdded<CCallExprId>>(ids);
+			ast.Add<CCallDirty>(ids);
 		});
 	}
 
@@ -61,7 +61,7 @@ namespace Rift::FunctionsSystem
 
 		TArray<CallToSync> calls;
 
-		auto addedCallExprs = ast.Filter<CAdded<CCallExprId>, CCallExprId>();
+		auto addedCallExprs = ast.Filter<CCallDirty, CCallExprId>();
 		for (AST::Id id : addedCallExprs)
 		{
 			auto& call = addedCallExprs.Get<CCallExprId>(id);
@@ -98,8 +98,8 @@ namespace Rift::FunctionsSystem
 						}
 					}
 				}
-				identifiers.FilterIds(call.functionInputs);
-				identifiers.FilterIds(call.functionOutputs);
+				identifiers.FilterIdsStable(call.functionInputs);
+				identifiers.FilterIdsStable(call.functionOutputs);
 			}
 		}
 
@@ -180,6 +180,6 @@ namespace Rift::FunctionsSystem
 
 	void ClearAddedTags(AST::Tree& ast)
 	{
-		ast.AssurePool<CAdded<CCallExprId>>().Reset();
+		ast.AssurePool<CCallDirty>().Reset();
 	}
 }    // namespace Rift::FunctionsSystem

@@ -4,7 +4,7 @@
 
 #include "AST/Components/CType.h"
 #include "AST/Components/Tags/CChanged.h"
-#include "AST/Components/Tags/CTypeDirty.h"
+#include "AST/Components/Tags/CDirty.h"
 #include "AST/Utils/Hierarchy.h"
 
 

@@ -15,8 +15,5 @@ namespace Rift
 
 		PROP(type)
 		Name type;
-
-		PROP(name)
-		String name;
 	};
 }    // namespace Rift

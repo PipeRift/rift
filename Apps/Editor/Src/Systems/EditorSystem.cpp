@@ -19,7 +19,7 @@
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
 #include <AST/Components/CType.h>
-#include <AST/Components/Tags/CTypeDirty.h>
+#include <AST/Components/Tags/CDirty.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Containers/Array.h>

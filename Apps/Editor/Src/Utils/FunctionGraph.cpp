@@ -493,7 +493,7 @@ namespace Rift::Graph
 					}
 				}
 				UI::EndGroup();
-
+				UI::SameLine();
 				UI::BeginGroup();    // Outputs
 				for (AST::Id outputId : *children)
 				{

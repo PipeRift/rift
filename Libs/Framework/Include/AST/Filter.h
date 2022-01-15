@@ -193,7 +193,7 @@ namespace Rift::AST
 			{
 				if (!Has(ids[i]))
 				{
-					!ids.RemoveAtSwap(i, false);
+					ids.RemoveAtSwap(i, false);
 					--i;
 				}
 			}

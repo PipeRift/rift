@@ -230,14 +230,15 @@ namespace Rift::Compiler::Cpp
 
 	void GenParameters(AST::Tree& ast)
 	{
-		auto parameters = ast.Filter<const CParameterDecl>();
+		auto parameters = ast.Filter<const CParameterDecl, const CIdentifier>();
 		for (AST::Id entity : parameters)
 		{
 			const auto& param = parameters.Get<const CParameterDecl>(entity);
+			const auto& name  = parameters.Get<const CIdentifier>(entity);
 
 			auto& fragment = ast.Add<CCppCodeGenFragment>(entity);
 			fragment.code.clear();
-			Strings::FormatTo(fragment.code, "{} {}", param.type, param.name);
+			Strings::FormatTo(fragment.code, "{} {}", param.type, name.name);
 		}
 	}
 
