@@ -5,18 +5,15 @@
 #include "AST/Utils/Hierarchy.h"
 
 
-void Rift::OptimizationSystem::PruneDisconnected(AST::Tree& ast)
+namespace Rift::OptimizationSystem
 {
-	TArray<AST::Id> nodesToRemove;
+	void PruneDisconnectedStatements(AST::Tree& ast)
+	{
+		// TODO
+	}
 
-	// TODO: Gather type dangling nodes
-	// auto childView = ast.Filter<CChild>();
-	// ast.Each([&childView, &nodesToRemove](AST::Id id) {
-	//	if (!childView.Has(id))
-	//	{
-	//		nodesToRemove.Add(id);
-	//	}
-	//});
-
-	AST::Hierarchy::RemoveDeep(ast, nodesToRemove);
-}
+	void PruneDisconnectedExpressions(AST::Tree& ast)
+	{
+		// TODO
+	}
+}    // namespace Rift::OptimizationSystem

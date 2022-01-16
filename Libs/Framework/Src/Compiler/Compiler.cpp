@@ -7,7 +7,6 @@
 #include "AST/Utils/ModuleUtils.h"
 #include "Compiler/CompilerContext.h"
 #include "Compiler/Cpp/CppBackend.h"
-#include "Compiler/Systems/CompileTimeSystem.h"
 #include "Compiler/Systems/OptimizationSystem.h"
 #include "RiftContext.h"
 
@@ -28,7 +27,6 @@ namespace Rift::Compiler
 
 		LoadSystem::Init(ast);
 		TypeSystem::Init(ast);
-		CompileTimeSystem::Init(ast);
 
 		if (!Modules::HasProject(ast))
 		{
@@ -40,11 +38,8 @@ namespace Rift::Compiler
 		Log::Info("Loading files");
 		LoadSystem::Run(ast);
 
-		// PruneDisconnected(ast);
-
-		OptimizationSystem::PruneDisconnected(ast);
+		OptimizationSystem::PruneDisconnectedExpressions(ast);
 		TypeSystem::RunChecks(ast);
-		CompileTimeSystem::Run(ast);
 
 		switch (backend)
 		{

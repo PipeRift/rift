@@ -9,5 +9,6 @@ namespace Rift::AST
 
 namespace Rift::OptimizationSystem
 {
-	void PruneDisconnected(AST::Tree& ast);
+	void PruneDisconnectedStatements(AST::Tree& ast);
+	void PruneDisconnectedExpressions(AST::Tree& ast);
 }    // namespace Rift::OptimizationSystem
