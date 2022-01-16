@@ -5,12 +5,15 @@
 #include "AST/Components/CCallExpr.h"
 #include "AST/Components/CExpressionInput.h"
 #include "AST/Components/CExpressionOutputs.h"
+#include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CParameterDecl.h"
+#include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 #include "AST/Components/Tags/CInvalid.h"
 #include "AST/Utils/FunctionUtils.h"
 #include "AST/Utils/Hierarchy.h"
+
 
 namespace Rift::FunctionsSystem
 {
@@ -52,6 +55,26 @@ namespace Rift::FunctionsSystem
 		}
 	}
 
+	void PropagateDirtyIntoCalls(AST::Tree& ast)
+	{
+		auto changed = ast.Filter<CChanged>();
+		if (changed.Size() <= 0)
+		{
+			return;
+		}
+
+		auto callExprIds = ast.Filter<CCallExprId>(AST::TExclude<CCallDirty>{});
+		auto dirtyCalls  = ast.Filter<CCallDirty>();
+		for (AST::Id id : callExprIds)
+		{
+			const AST::Id functionId = callExprIds.Get<CCallExprId>(id).functionId;
+			if (!IsNone(functionId) && changed.Has(functionId))
+			{
+				dirtyCalls.Add<CCallDirty>(id);
+			}
+		}
+	}
+
 	void SyncCallArguments(AST::Tree& ast)
 	{
 		auto functionParams = ast.Filter<CParameterDecl, CExpressionInput, CExpressionOutputs>();
@@ -60,11 +83,10 @@ namespace Rift::FunctionsSystem
 		auto exprOutputs    = ast.Filter<CExpressionOutputs>();
 
 		TArray<CallToSync> calls;
-
-		auto addedCallExprs = ast.Filter<CCallDirty, CCallExprId>();
-		for (AST::Id id : addedCallExprs)
+		auto dirtyCallExprs = ast.Filter<CCallDirty, CCallExprId>();
+		for (AST::Id id : dirtyCallExprs)
 		{
-			auto& call = addedCallExprs.Get<CCallExprId>(id);
+			auto& call = dirtyCallExprs.Get<CCallExprId>(id);
 			if (IsNone(call.functionId))
 			{
 				continue;

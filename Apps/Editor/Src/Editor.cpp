@@ -72,6 +72,7 @@ namespace Rift
 			FunctionsSystem::ResolveCallFunctionIds(ast);
 
 			EditorSystem::Draw(ast);
+			FunctionsSystem::PropagateDirtyIntoCalls(ast);
 			FunctionsSystem::SyncCallArguments(ast);
 		}
 		else

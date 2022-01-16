@@ -34,7 +34,8 @@ namespace Rift
 	using namespace EnumOperators;
 
 
-	void DrawField(AST::Tree& ast, CTypeEditor& editor, AST::Id fieldId, DrawFieldFlags flags)
+	void DrawField(AST::Tree& ast, CTypeEditor& editor, AST::Id functionId, AST::Id fieldId,
+	    DrawFieldFlags flags)
 	{
 		CIdentifier* identifier = ast.TryGet<CIdentifier>(fieldId);
 		auto* paramDecl         = ast.TryGet<CParameterDecl>(fieldId);
@@ -64,6 +65,7 @@ namespace Rift
 			if (UI::MutableText(nameId, name,
 			        ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 			{
+				ScopedChange(ast, functionId);
 				identifier->name = Name{name};
 			}
 
@@ -265,7 +267,7 @@ namespace Rift
 					{
 						if (exprOutputs.Has(childId))
 						{
-							DrawField(ast, editor, childId);
+							DrawField(ast, editor, functionId, childId);
 						}
 					}
 				}
@@ -285,7 +287,7 @@ namespace Rift
 					{
 						if (exprInputs.Has(childId))
 						{
-							DrawField(ast, editor, childId);
+							DrawField(ast, editor, functionId, childId);
 						}
 					}
 				}
