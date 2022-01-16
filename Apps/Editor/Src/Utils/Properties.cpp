@@ -89,11 +89,15 @@ namespace Rift
 		}
 		UI::PopID();
 		UI::EndGroup();
+
 		if (UI::IsItemHovered() && UI::IsKeyReleased(GLFW_KEY_DELETE))
 		{
 			editor.pendingDeletePropertyId = fieldId;
 		}
-		if (UI::BeginPopupContextItem("##FieldContextMenu"))
+		static String contextName;
+		contextName.clear();
+		Strings::FormatTo(contextName, "##FieldContextMenu_{}", fieldId);
+		if (UI::BeginPopupContextItem(contextName.c_str()))
 		{
 			if (UI::MenuItem("Delete"))
 			{
