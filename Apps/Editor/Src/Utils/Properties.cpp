@@ -49,8 +49,6 @@ namespace Rift
 		{
 			const Color color                  = Style::GetTypeColor(ast, paramDecl->typeId);
 			static constexpr float frameHeight = 20.f;
-
-
 			{    // Custom Selectable
 				Color bgColor = color;
 				ImRect bb     = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());

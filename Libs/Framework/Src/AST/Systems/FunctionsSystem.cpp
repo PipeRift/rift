@@ -198,7 +198,29 @@ namespace Rift::FunctionsSystem
 		RemoveInvalidDisconnectedArgs(ast);
 	}
 
-	void RemoveInvalidDisconnectedArgs(AST::Tree& ast) {}
+	void RemoveInvalidDisconnectedArgs(AST::Tree& ast)
+	{
+		auto invalidInputs  = ast.Filter<CInvalid, CExpressionInput>();
+		auto invalidOutputs = ast.Filter<CInvalid, CExpressionOutputs>();
+		TArray<AST::Id> disconnectedPins;
+		for (AST::Id id : invalidInputs)
+		{
+			auto& input = invalidInputs.Get<CExpressionInput>(id);
+			if (IsNone(input.linkOutputPin))
+			{
+				disconnectedPins.Add(id);
+			}
+		}
+		for (AST::Id id : invalidOutputs)
+		{
+			auto& output = invalidOutputs.Get<CExpressionOutputs>(id);
+			if (output.linkInputPins.IsEmpty())
+			{
+				disconnectedPins.Add(id);
+			}
+		}
+		AST::Hierarchy::Remove(ast, disconnectedPins);
+	}
 
 	void ClearAddedTags(AST::Tree& ast)
 	{
