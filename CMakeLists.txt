@@ -6,7 +6,8 @@ MESSAGE(STATUS "CMAKE_ROOT: " ${CMAKE_ROOT})
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/Extern/vcpkg/scripts/buildsystems/vcpkg.cmake CACHE STRING "Vcpkg toolchain file")
+include(${CMAKE_CURRENT_SOURCE_DIR}/Extern/vcpkg/scripts/buildsystems/vcpkg.cmake)
 
 ################################################################################
 # Project

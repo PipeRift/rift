@@ -38,3 +38,8 @@ target_link_libraries(imgui PRIVATE glfw gl3w)
 
 add_library(IconFontCppHeaders INTERFACE)
 target_include_directories(IconFontCppHeaders INTERFACE IconFontCppHeaders)
+
+
+find_package(LLVM CONFIG REQUIRED)
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
