@@ -6,7 +6,6 @@
 #include "AST/Utils/StatementGraph.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
-#include "imgui.h"
 #include "Utils/EditorColors.h"
 #include "Utils/TypeUtils.h"
 
@@ -60,13 +59,13 @@ namespace Rift::Graph
 	}
 
 
-	void Graph::Init()
+	void Init()
 	{
 		Nodes::CreateContext();
 		settings.SetGridSize(settings.GetGridSize());
 	}
 
-	void Graph::Shutdown()
+	void Shutdown()
 	{
 		Nodes::DestroyContext();
 	}
@@ -370,7 +369,7 @@ namespace Rift::Graph
 		{
 			Nodes::BeginNodeTitleBar();
 			{
-				UI::Text(name.ToString().c_str());
+				UI::Text(name.ToString());
 				UI::SameLine();
 
 				static constexpr Color color = Style::executionColor;
@@ -401,7 +400,7 @@ namespace Rift::Graph
 
 						auto* ident = identifiers.TryGet<CIdentifier>(childId);
 						String name = ident ? ident->name.ToString() : "";
-						UI::Text(name.c_str());
+						UI::Text(name);
 
 						Nodes::EndOutput();
 						Nodes::PopStyleColor(2);
@@ -449,12 +448,12 @@ namespace Rift::Graph
 				Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
 
 				Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
-				UI::Text("");
+				UI::TextUnformatted("");
 				Nodes::EndInput();
 				UI::SameLine();
 
 				UI::BeginGroup();
-				UI::Text(name.data());
+				UI::TextUnformatted(name.data());
 				if (!typeName.empty())
 				{
 					// Rift::Style::PushTextColor(Rift::Style::whiteTextColor.Shade(0.3f));
@@ -465,7 +464,7 @@ namespace Rift::Graph
 
 				UI::SameLine();
 				Nodes::BeginOutput(i32(id), Nodes::PinShape_QuadFilled);
-				UI::Text("");
+				UI::TextUnformatted("");
 				Nodes::EndOutput();
 
 				Nodes::PopStyleColor(2);
@@ -487,7 +486,7 @@ namespace Rift::Graph
 						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
 						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
 						Nodes::BeginInput(i32(inputId), Nodes::PinShape_CircleFilled);
-						UI::Text(name.name.ToString().c_str());
+						UI::Text(name.name.ToString());
 						Nodes::EndInput();
 						Nodes::PopStyleColor(2);
 					}
@@ -505,7 +504,7 @@ namespace Rift::Graph
 						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
 						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
 						Nodes::BeginOutput(i32(outputId), Nodes::PinShape_CircleFilled);
-						UI::Text(name.name.ToString().c_str());
+						UI::Text(name.name.ToString());
 						Nodes::EndOutput();
 						Nodes::PopStyleColor(2);
 					}

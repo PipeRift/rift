@@ -2,8 +2,6 @@
 
 #include "Utils/Widgets.h"
 
-#include "imgui.h"
-
 #include <AST/Components/CClassDecl.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CNativeDecl.h>
@@ -20,7 +18,7 @@ namespace Rift::Editor
 	{
 		for (AST::Id id : filter)
 		{
-			auto& type         = filter.Get<CType>(id);
+			auto& type         = filter.template Get<CType>(id);
 			const String& name = type.name.ToString();
 
 			if (!searchFilter.PassFilter(name.c_str(), name.c_str() + name.size()))

@@ -19,17 +19,17 @@ namespace Rift::AST
 {
 	struct SortLessStatics
 	{
-		constexpr bool operator()(const OwnPtr& a, const OwnPtr& b) const
+		bool operator()(const OwnPtr& a, const OwnPtr& b) const
 		{
 			return a.GetType() < b.GetType();
 		}
 
-		constexpr bool operator()(Refl::TypeId a, const OwnPtr& b) const
+		bool operator()(Refl::TypeId a, const OwnPtr& b) const
 		{
 			return a < b.GetType();
 		}
 
-		constexpr bool operator()(const OwnPtr& a, Refl::TypeId b) const
+		bool operator()(const OwnPtr& a, Refl::TypeId b) const
 		{
 			return a.GetType() < b;
 		}
@@ -335,7 +335,7 @@ namespace Rift::AST
 		}
 
 		template<typename... Component, typename... Exclude>
-		TAccess<TInclude<Component...>, TExclude<Exclude...>> Access(
+		TAccess<TInclude<Component...>, TExclude<Exclude...>> MakeAccess(
 		    TExclude<Exclude...> = {}) const
 		{
 			return {{&AssurePool<Component>()...}, {&AssurePool<Exclude>()...}};
@@ -347,7 +347,7 @@ namespace Rift::AST
 		    TExclude<Exclude...> = {}) const
 		{
 			static_assert(sizeof...(Component) > 0, "Exclusion-only filters are not supported");
-			return {Access<Const<Component>...>(TExclude<Exclude...>{})};
+			return {MakeAccess<Const<Component>...>(TExclude<Exclude...>{})};
 		}
 
 		template<typename... Component, typename... Exclude>
@@ -355,7 +355,7 @@ namespace Rift::AST
 		    TExclude<Exclude...> = {})
 		{
 			static_assert(sizeof...(Component) > 0, "Exclusion-only filters are not supported");
-			return {Access<Component...>(TExclude<Exclude...>{})};
+			return {MakeAccess<Component...>(TExclude<Exclude...>{})};
 		}
 
 		template<typename Callback>

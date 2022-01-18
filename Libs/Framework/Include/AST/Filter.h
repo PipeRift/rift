@@ -122,7 +122,7 @@ namespace Rift::AST
 		template<typename C>
 		bool Has(Id id) const
 		{
-			return access.Has<C>(id);
+			return access.template Has<C>(id);
 		}
 
 		template<typename C>

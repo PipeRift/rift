@@ -8,7 +8,6 @@
 #include "Editor.h"
 #include "Files/FileDialog.h"
 #include "Files/Paths.h"
-#include "imgui.h"
 #include "imgui_internal.h"
 #include "Statics/SEditor.h"
 #include "UI/Notify.h"

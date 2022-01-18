@@ -24,10 +24,10 @@ namespace Rift::TypeSystem
 		}
 
 		ast.OnAdd<CType>().Bind([](auto& ast, auto ids) {
-			auto& typeList = ast.GetOrSetStatic<STypes>();
+			auto& typeList = ast.template GetOrSetStatic<STypes>();
 			for (AST::Id id : ids)
 			{
-				if (const CType* type = ast.TryGet<const CType>(id))
+				if (const CType* type = ast.template TryGet<const CType>(id))
 				{
 					typeList.typesByName.Insert(type->name, id);
 				}
@@ -35,10 +35,10 @@ namespace Rift::TypeSystem
 		});
 
 		ast.OnRemove<CType>().Bind([](auto& ast, auto ids) {
-			auto& typeList = ast.GetOrSetStatic<STypes>();
+			auto& typeList = ast.template GetOrSetStatic<STypes>();
 			for (AST::Id id : ids)
 			{
-				if (const CType* type = ast.TryGet<const CType>(id))
+				if (const CType* type = ast.template TryGet<const CType>(id))
 				{
 					typeList.typesByName.Remove(type->name);
 				}

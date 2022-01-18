@@ -39,14 +39,14 @@ namespace Rift
 				{
 					UI::TableNextRow();
 					UI::TableNextColumn();    // Name
-					UI::Text(it.first.ToString().c_str());
+					UI::Text(it.first.ToString());
 
 					UI::TableNextColumn();    // Id
 
 					static String idText;
 					idText.clear();
 					Strings::FormatTo(idText, "{}", it.second);
-					UI::Text(idText.c_str());
+					UI::Text(idText);
 				}
 
 				UI::EndTable();
@@ -185,16 +185,16 @@ namespace Rift
 		else
 		{
 			UI::Indent(10.f);
-			UI::Text(idText.c_str());
+			UI::Text(idText);
 			UI::Unindent(10.f);
 		}
 		Style::PopFont();
 		ImGui::TableNextColumn();
-		UI::Text(name.c_str());
+		UI::Text(name);
 
 		ImGui::TableNextColumn();
 		Style::PushFont("WorkSans", Style::FontMode::Italic);
-		UI::Text(path.c_str());
+		UI::Text(path);
 		Style::PopFont();
 
 		if (hasChildren && open)

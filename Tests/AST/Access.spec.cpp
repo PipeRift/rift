@@ -25,7 +25,7 @@ go_bandit([]() {
 		describe("Templated", []() {
 			it("Can cache pools", [&]() {
 				AST::Tree tree;
-				auto access = tree.Access<Type>(AST::TExclude<TypeTwo>{});
+				auto access = tree.MakeAccess<Type>(AST::TExclude<TypeTwo>{});
 
 				AssertThat(access.GetPool<Type>(), Equals(tree.FindPool<Type>()));
 				AssertThat(access.GetPool<TypeTwo>(), Equals(nullptr));
@@ -36,8 +36,8 @@ go_bandit([]() {
 			it("Can check if contained", [&]() {
 				AST::Tree tree;
 				AST::TPool<Type>& pool = tree.AssurePool<Type>();
-				auto access            = tree.Access<Type>();
-				auto accessExcluded    = tree.Access<Type>(AST::TExclude<TypeTwo>{});
+				auto access            = tree.MakeAccess<Type>();
+				auto accessExcluded    = tree.MakeAccess<Type>(AST::TExclude<TypeTwo>{});
 				AST::Id id             = AST::NoId;
 				AssertThat(access.Has(id), Is().False());
 				AssertThat(accessExcluded.Has(id), Is().False());
@@ -59,7 +59,7 @@ go_bandit([]() {
 				AST::Tree tree;
 				AST::TPool<Type>& typePool = tree.AssurePool<Type>();
 
-				AST::Access::In<Type, TypeTwo> access = tree.Access<Type, TypeTwo>();
+				AST::Access::In<Type, TypeTwo> access = tree.MakeAccess<Type, TypeTwo>();
 				AST::Access::In<Type> superset{access};
 
 				AssertThat(access.GetPool<Type>(), Equals(&typePool));

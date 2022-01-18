@@ -92,7 +92,7 @@ namespace Rift::Nodes
 		const v2 min = v2(Math::Min(cb.p0.x, cb.p3.x), Math::Min(cb.p0.y, cb.p3.y));
 		const v2 max = v2(Math::Max(cb.p0.x, cb.p3.x), Math::Max(cb.p0.y, cb.p3.y));
 
-		const float hoverDistance = gNodes->Style.LinkHoverDistance;
+		const float hoverDistance = gNodes->style.LinkHoverDistance;
 
 		Rect rect(min, max);
 		rect.Add(cb.p1);
@@ -209,7 +209,7 @@ namespace Rift::Nodes
 			// link
 
 			const CubicBezier cubicBezier =
-			    MakeCubicBezier(start, end, startType, gNodes->Style.linkLineSegmentsPerLength);
+			    MakeCubicBezier(start, end, startType, gNodes->style.linkLineSegmentsPerLength);
 			return RectangleOverlapsBezier(rectangle, cubicBezier);
 		}
 
@@ -519,14 +519,14 @@ namespace Rift::Nodes
 
 	v2 GetScreenSpacePinCoordinates(const Rect& nodeRect, const PinType type, const Rect& pinRect)
 	{
-		const float x = type == PinType::Input ? (nodeRect.min.x - gNodes->Style.PinOffset)
-		                                       : (nodeRect.max.x + gNodes->Style.PinOffset);
+		const float x = type == PinType::Input ? (nodeRect.min.x - gNodes->style.PinOffset)
+		                                       : (nodeRect.max.x + gNodes->style.PinOffset);
 		return {x, 0.5f * (pinRect.min.y + pinRect.max.y)};
 	}
 
 	v2 GetScreenSpacePinCoordinates(const EditorContext& editor, PinType type, const PinData& pin)
 	{
-		const Rect& parentNodeRect = editor.nodes.Pool[pin.parentNodeIdx].Rect;
+		const Rect& parentNodeRect = editor.nodes.Pool[pin.parentNodeIdx].rect;
 		return GetScreenSpacePinCoordinates(parentNodeRect, type, pin.rect);
 	}
 
@@ -636,8 +636,8 @@ namespace Rift::Nodes
 	{
 		// Check if we are clicking the link with the modifier pressed.
 		// This will in a link detach via clicking.
-		const bool modifierPressed = gNodes->Io.linkDetachWithModifierClick.modifier
-		                          && *gNodes->Io.linkDetachWithModifierClick.modifier;
+		const bool modifierPressed = gNodes->io.linkDetachWithModifierClick.modifier
+		                          && *gNodes->io.linkDetachWithModifierClick.modifier;
 
 		if (modifierPressed)
 		{
@@ -701,7 +701,7 @@ namespace Rift::Nodes
 		else if (gNodes->leftMouseClicked)
 		{
 			editor.clickInteraction.type = ClickInteractionType_BoxSelection;
-			editor.clickInteraction.boxSelector.Rect.min =
+			editor.clickInteraction.boxSelector.rect.min =
 			    ScreenToGridPosition(editor, gNodes->mousePosition);
 		}
 	}
@@ -731,7 +731,7 @@ namespace Rift::Nodes
 			if (editor.nodes.InUse.IsSet(nodeIdx))
 			{
 				NodeData& node = editor.nodes.Pool[nodeIdx];
-				if (boxRect.Overlaps(node.Rect))
+				if (boxRect.Overlaps(node.rect))
 				{
 					editor.SelectedNodeIndices.push_back(nodeIdx);
 				}
@@ -752,8 +752,8 @@ namespace Rift::Nodes
 
 				const PinData& outputPin  = editor.outputs.Pool[link.outputIdx];
 				const PinData& inputPin   = editor.inputs.Pool[link.inputIdx];
-				const Rect& nodeStartRect = editor.nodes.Pool[outputPin.parentNodeIdx].Rect;
-				const Rect& nodeEndRect   = editor.nodes.Pool[inputPin.parentNodeIdx].Rect;
+				const Rect& nodeStartRect = editor.nodes.Pool[outputPin.parentNodeIdx].rect;
+				const Rect& nodeEndRect   = editor.nodes.Pool[inputPin.parentNodeIdx].rect;
 
 				const v2 start =
 				    GetScreenSpacePinCoordinates(nodeStartRect, PinType::Output, outputPin.rect);
@@ -771,11 +771,11 @@ namespace Rift::Nodes
 
 	v2 SnapOrigi32oGrid(v2 origin)
 	{
-		if ((gNodes->Style.Flags & StyleFlags_GridSnapping)
-		    || ((gNodes->Style.Flags & StyleFlags_GridSnappingOnRelease)
+		if ((gNodes->style.Flags & StyleFlags_GridSnapping)
+		    || ((gNodes->style.Flags & StyleFlags_GridSnappingOnRelease)
 		        && gNodes->leftMouseReleased))
 		{
-			const float spacing  = gNodes->Style.GridSpacing;
+			const float spacing  = gNodes->style.GridSpacing;
 			const float spacing2 = spacing / 2.0f;
 			float modx           = fmodf(fabsf(origin.x) + spacing2, spacing) - spacing2;
 			float mody           = fmodf(fabsf(origin.y) + spacing2, spacing) - spacing2;
@@ -875,17 +875,17 @@ namespace Rift::Nodes
 
 	void UpdateBoxSelection(EditorContext& editor)
 	{
-		editor.clickInteraction.boxSelector.Rect.max =
+		editor.clickInteraction.boxSelector.rect.max =
 		    ScreenToGridPosition(editor, gNodes->mousePosition);
 
-		Rect boxRect = editor.clickInteraction.boxSelector.Rect;
+		Rect boxRect = editor.clickInteraction.boxSelector.rect;
 		boxRect.min  = GridToScreenPosition(editor, boxRect.min);
 		boxRect.max  = GridToScreenPosition(editor, boxRect.max);
 
 		BoxSelectorUpdateSelection(editor, boxRect);
 
-		const Color boxSelector        = gNodes->Style.colors[ColorVar_BoxSelector];
-		const Color boxSelectorOutline = gNodes->Style.colors[ColorVar_BoxSelectorOutline];
+		const Color boxSelector        = gNodes->style.colors[ColorVar_BoxSelector];
+		const Color boxSelectorOutline = gNodes->style.colors[ColorVar_BoxSelectorOutline];
 		gNodes->CanvasDrawList->AddRectFilled(boxRect.min, boxRect.max, boxSelector.ToPackedABGR());
 		gNodes->CanvasDrawList->AddRect(
 		    boxRect.min, boxRect.max, boxSelectorOutline.ToPackedABGR());
@@ -961,11 +961,11 @@ namespace Rift::Nodes
 		                             : gNodes->mousePosition;
 
 		const CubicBezier cubicBezier = MakeCubicBezier(
-		    startPos, endPos, startIdx.type, gNodes->Style.linkLineSegmentsPerLength);
+		    startPos, endPos, startIdx.type, gNodes->style.linkLineSegmentsPerLength);
 
 		gNodes->CanvasDrawList->AddBezierCubic(cubicBezier.p0, cubicBezier.p1, cubicBezier.p2,
-		    cubicBezier.p3, gNodes->Style.colors[ColorVar_Link].ToPackedABGR(),
-		    gNodes->Style.LinkThickness, cubicBezier.numSegments);
+		    cubicBezier.p3, gNodes->style.colors[ColorVar_Link].ToPackedABGR(),
+		    gNodes->style.LinkThickness, cubicBezier.numSegments);
 
 		const bool linkCreationOnSnap =
 		    gNodes->HoveredPinIdx
@@ -1073,7 +1073,7 @@ namespace Rift::Nodes
 			// Iterate over the rest of the depth stack to find nodes overlapping the pins
 			for (i32 nextDepthIdx = depthIdx + 1; nextDepthIdx < depthStack.Size; ++nextDepthIdx)
 			{
-				const Rect& rectAbove = editor.nodes.Pool[depthStack[nextDepthIdx]].Rect;
+				const Rect& rectAbove = editor.nodes.Pool[depthStack[nextDepthIdx]].rect;
 
 				// Iterate over each pin
 				for (i32 i = 0; i < nodeBelow.inputs.Size; ++i)
@@ -1106,7 +1106,7 @@ namespace Rift::Nodes
 		float smallestDistance         = FLT_MAX;
 		i32 pinIdxWithSmallestDistance = NO_INDEX;
 
-		const float hoverRadiusSqr = gNodes->Style.PinHoverRadius * gNodes->Style.PinHoverRadius;
+		const float hoverRadiusSqr = gNodes->style.PinHoverRadius * gNodes->style.PinHoverRadius;
 
 		for (i32 idx = 0; idx < pins.Pool.Size(); ++idx)
 		{
@@ -1123,7 +1123,7 @@ namespace Rift::Nodes
 			const v2& pinPos        = pins.Pool[idx].position;
 			const float distanceSqr = (pinPos - gNodes->mousePosition).LengthSquared();
 
-			// TODO: gNodes->Style.PinHoverRadius needs to be copied i32o pin data and the
+			// TODO: gNodes->style.PinHoverRadius needs to be copied i32o pin data and the
 			// pin-local value used here. This is no longer called in
 			// BeginPin/EndPin scope and the detected pin might have a different
 			// hover radius than what the user had when calling BeginPin/EndPin.
@@ -1209,7 +1209,7 @@ namespace Rift::Nodes
 			// when rendering the links
 
 			const CubicBezier cubicBezier = MakeCubicBezier(outputPin.position, inputPin.position,
-			    PinType::Output, gNodes->Style.linkLineSegmentsPerLength);
+			    PinType::Output, gNodes->style.linkLineSegmentsPerLength);
 
 			// The distance test
 			{
@@ -1222,11 +1222,11 @@ namespace Rift::Nodes
 					const float distance = GetDistanceToCubicBezier(
 					    gNodes->mousePosition, cubicBezier, cubicBezier.numSegments);
 
-					// TODO: gNodes->Style.LinkHoverDistance could be also copied i32o
+					// TODO: gNodes->style.LinkHoverDistance could be also copied i32o
 					// LinkData, since we're not calling this function in the same scope as
 					// Nodes::Link(). The rendered/detected link might have a different hover
 					// distance than what the user had specified when calling Link()
-					if (distance < gNodes->Style.LinkHoverDistance && distance < smallestDistance)
+					if (distance < gNodes->style.LinkHoverDistance && distance < smallestDistance)
 					{
 						smallestDistance            = distance;
 						linkIdxWithSmallestDistance = idx;
@@ -1262,27 +1262,27 @@ namespace Rift::Nodes
 		Rect expandedTitleRect = node.TitleBarContentRect;
 		expandedTitleRect.Expand(node.LayoutStyle.Padding);
 
-		return {expandedTitleRect.min, expandedTitleRect.min + v2(node.Rect.GetSize().x, 0.f)
+		return {expandedTitleRect.min, expandedTitleRect.min + v2(node.rect.GetSize().x, 0.f)
 		                                   + v2(0.f, expandedTitleRect.GetSize().y)};
 	}
 
 	void DrawGrid(EditorContext& editor, const v2& canvasSize)
 	{
 		const v2 offset   = editor.Panning;
-		u32 lineColor     = gNodes->Style.colors[ColorVar_GridLine].ToPackedABGR();
-		u32 lineColorPrim = gNodes->Style.colors[ColorVar_GridLinePrimary].ToPackedABGR();
-		bool drawPrimary  = gNodes->Style.Flags & StyleFlags_GridLinesPrimary;
+		u32 lineColor     = gNodes->style.colors[ColorVar_GridLine].ToPackedABGR();
+		u32 lineColorPrim = gNodes->style.colors[ColorVar_GridLinePrimary].ToPackedABGR();
+		bool drawPrimary  = gNodes->style.Flags & StyleFlags_GridLinesPrimary;
 
-		for (float x = fmodf(offset.x, gNodes->Style.GridSpacing); x < canvasSize.x;
-		     x += gNodes->Style.GridSpacing)
+		for (float x = fmodf(offset.x, gNodes->style.GridSpacing); x < canvasSize.x;
+		     x += gNodes->style.GridSpacing)
 		{
 			gNodes->CanvasDrawList->AddLine(EditorToScreenPosition(v2(x, 0.0f)),
 			    EditorToScreenPosition(v2(x, canvasSize.y)),
 			    offset.x - x == 0.f && drawPrimary ? lineColorPrim : lineColor);
 		}
 
-		for (float y = fmodf(offset.y, gNodes->Style.GridSpacing); y < canvasSize.y;
-		     y += gNodes->Style.GridSpacing)
+		for (float y = fmodf(offset.y, gNodes->style.GridSpacing); y < canvasSize.y;
+		     y += gNodes->style.GridSpacing)
 		{
 			gNodes->CanvasDrawList->AddLine(EditorToScreenPosition(v2(0.0f, y)),
 			    EditorToScreenPosition(v2(canvasSize.x, y)),
@@ -1345,24 +1345,24 @@ namespace Rift::Nodes
 		switch (pin.Shape)
 		{
 			case PinShape_Circle: {
-				gNodes->CanvasDrawList->AddCircle(pinPos, gNodes->Style.PinCircleRadius,
-				    pinColor.ToPackedABGR(), circleNumSegments, gNodes->Style.PinLineThickness);
+				gNodes->CanvasDrawList->AddCircle(pinPos, gNodes->style.PinCircleRadius,
+				    pinColor.ToPackedABGR(), circleNumSegments, gNodes->style.PinLineThickness);
 			}
 			break;
 			case PinShape_CircleFilled: {
-				gNodes->CanvasDrawList->AddCircleFilled(pinPos, gNodes->Style.PinCircleRadius,
+				gNodes->CanvasDrawList->AddCircleFilled(pinPos, gNodes->style.PinCircleRadius,
 				    pinColor.ToPackedABGR(), circleNumSegments);
 			}
 			break;
 			case PinShape_Quad: {
-				const QuadOffsets offset = CalculateQuadOffsets(gNodes->Style.PinQuadSideLength);
+				const QuadOffsets offset = CalculateQuadOffsets(gNodes->style.PinQuadSideLength);
 				gNodes->CanvasDrawList->AddQuad(pinPos + offset.topLeft, pinPos + offset.bottomLeft,
 				    pinPos + offset.bottomRight, pinPos + offset.topRight, pinColor.ToPackedABGR(),
-				    gNodes->Style.PinLineThickness);
+				    gNodes->style.PinLineThickness);
 			}
 			break;
 			case PinShape_QuadFilled: {
-				const QuadOffsets offset = CalculateQuadOffsets(gNodes->Style.PinQuadSideLength);
+				const QuadOffsets offset = CalculateQuadOffsets(gNodes->style.PinQuadSideLength);
 				gNodes->CanvasDrawList->AddQuadFilled(pinPos + offset.topLeft,
 				    pinPos + offset.bottomLeft, pinPos + offset.bottomRight,
 				    pinPos + offset.topRight, pinColor.ToPackedABGR());
@@ -1370,19 +1370,19 @@ namespace Rift::Nodes
 			break;
 			case PinShape_Triangle: {
 				const TriangleOffsets offset =
-				    CalculateTriangleOffsets(gNodes->Style.PinTriangleSideLength);
+				    CalculateTriangleOffsets(gNodes->style.PinTriangleSideLength);
 				gNodes->CanvasDrawList->AddTriangle(pinPos + offset.topLeft,
 				    pinPos + offset.bottomLeft, pinPos + offset.right, pinColor.ToPackedABGR(),
 				    // NOTE: for some weird reason, the line drawn by AddTriangle is
 				    // much thinner than the lines drawn by AddCircle or AddQuad.
 				    // Multiplying the line thickness by two seemed to solve the
 				    // problem at a few different thickness values.
-				    2.f * gNodes->Style.PinLineThickness);
+				    2.f * gNodes->style.PinLineThickness);
 			}
 			break;
 			case PinShape_TriangleFilled: {
 				const TriangleOffsets offset =
-				    CalculateTriangleOffsets(gNodes->Style.PinTriangleSideLength);
+				    CalculateTriangleOffsets(gNodes->style.PinTriangleSideLength);
 				gNodes->CanvasDrawList->AddTriangleFilled(pinPos + offset.topLeft,
 				    pinPos + offset.bottomLeft, pinPos + offset.right, pinColor.ToPackedABGR());
 			}
@@ -1394,7 +1394,7 @@ namespace Rift::Nodes
 	void DrawPin(EditorContext& editor, const PinIdx pin)
 	{
 		PinData& pinData           = editor.GetPinData(pin);
-		const Rect& parentNodeRect = editor.nodes.Pool[pinData.parentNodeIdx].Rect;
+		const Rect& parentNodeRect = editor.nodes.Pool[pinData.parentNodeIdx].rect;
 
 		pinData.position = GetScreenSpacePinCoordinates(parentNodeRect, pin.type, pinData.rect);
 
@@ -1430,7 +1430,7 @@ namespace Rift::Nodes
 
 		{
 			// node base
-			gNodes->CanvasDrawList->AddRectFilled(node.Rect.min, node.Rect.max,
+			gNodes->CanvasDrawList->AddRectFilled(node.rect.min, node.rect.max,
 			    nodeBackground.ToPackedABGR(), node.LayoutStyle.CornerRounding);
 
 			// title bar:
@@ -1443,14 +1443,14 @@ namespace Rift::Nodes
 				    ImDrawFlags_RoundCornersTop);
 			}
 
-			if ((gNodes->Style.Flags & StyleFlags_NodeOutline) != 0
+			if ((gNodes->style.Flags & StyleFlags_NodeOutline) != 0
 			    && node.LayoutStyle.BorderThickness > 0.f)
 			{
 				float halfBorder = node.LayoutStyle.BorderThickness * 0.5f;
-				v2 min           = node.Rect.min;
+				v2 min           = node.rect.min;
 				min.x -= halfBorder;
 				min.y -= halfBorder;
-				v2 max = node.Rect.max;
+				v2 max = node.rect.max;
 				max.x += halfBorder;
 				max.y += halfBorder;
 				gNodes->CanvasDrawList->AddRect(min, max, node.colorStyle.Outline.ToPackedABGR(),
@@ -1481,7 +1481,7 @@ namespace Rift::Nodes
 		const PinData& endPin   = editor.inputs.Pool[link.inputIdx];
 
 		const CubicBezier cubicBezier = MakeCubicBezier(startPin.position, endPin.position,
-		    PinType::Output, gNodes->Style.linkLineSegmentsPerLength);
+		    PinType::Output, gNodes->style.linkLineSegmentsPerLength);
 
 		const bool linkHovered = gNodes->HoveredLinkIdx == linkIdx
 		                      && editor.clickInteraction.type != ClickInteractionType_BoxSelection;
@@ -1512,7 +1512,7 @@ namespace Rift::Nodes
 		}
 
 		gNodes->CanvasDrawList->AddBezierCubic(cubicBezier.p0, cubicBezier.p1, cubicBezier.p2,
-		    cubicBezier.p3, linkColor.ToPackedABGR(), gNodes->Style.LinkThickness,
+		    cubicBezier.p3, linkColor.ToPackedABGR(), gNodes->style.LinkThickness,
 		    cubicBezier.numSegments);
 	}
 
@@ -1538,8 +1538,8 @@ namespace Rift::Nodes
 		pin.parentNodeIdx         = nodeIdx;
 		pin.Shape                 = shape;
 		pin.Flags                 = gNodes->CurrentPinFlags;
-		pin.colorStyle.Background = gNodes->Style.colors[ColorVar_Pin];
-		pin.colorStyle.Hovered    = gNodes->Style.colors[ColorVar_PinHovered];
+		pin.colorStyle.Background = gNodes->style.colors[ColorVar_Pin];
+		pin.colorStyle.Hovered    = gNodes->style.colors[ColorVar_PinHovered];
 	}
 
 	void EndPin()
@@ -1716,134 +1716,134 @@ namespace Rift::Nodes
 
 	IO& GetIO()
 	{
-		return gNodes->Io;
+		return gNodes->io;
 	}
 
 	Style& GetStyle()
 	{
-		return gNodes->Style;
+		return gNodes->style;
 	}
 
 	void StyleColorsDark()
 	{
-		gNodes->Style.colors[ColorVar_NodeBackground]         = Color::FromRGB(50, 50, 50);
-		gNodes->Style.colors[ColorVar_NodeBackgroundHovered]  = Color::FromRGB(75, 75, 75);
-		gNodes->Style.colors[ColorVar_NodeBackgroundSelected] = Color::FromRGB(75, 75, 75);
-		gNodes->Style.colors[ColorVar_NodeOutline]            = Color::FromRGB(100, 100, 100);
+		gNodes->style.colors[ColorVar_NodeBackground]         = Color::FromRGB(50, 50, 50);
+		gNodes->style.colors[ColorVar_NodeBackgroundHovered]  = Color::FromRGB(75, 75, 75);
+		gNodes->style.colors[ColorVar_NodeBackgroundSelected] = Color::FromRGB(75, 75, 75);
+		gNodes->style.colors[ColorVar_NodeOutline]            = Color::FromRGB(100, 100, 100);
 		// title bar colors match ImGui's titlebg colors
-		gNodes->Style.colors[ColorVar_TitleBar]         = Color::FromRGB(41, 74, 122);
-		gNodes->Style.colors[ColorVar_TitleBarHovered]  = Color::FromRGB(66, 150, 250);
-		gNodes->Style.colors[ColorVar_TitleBarSelected] = Color::FromRGB(66, 150, 250);
+		gNodes->style.colors[ColorVar_TitleBar]         = Color::FromRGB(41, 74, 122);
+		gNodes->style.colors[ColorVar_TitleBarHovered]  = Color::FromRGB(66, 150, 250);
+		gNodes->style.colors[ColorVar_TitleBarSelected] = Color::FromRGB(66, 150, 250);
 		// link colors match ImGui's slider grab colors
-		gNodes->Style.colors[ColorVar_Link]         = Color::FromRGB(61, 133, 224, 200);
-		gNodes->Style.colors[ColorVar_LinkHovered]  = Color::FromRGB(66, 150, 250);
-		gNodes->Style.colors[ColorVar_LinkSelected] = Color::FromRGB(66, 150, 250);
+		gNodes->style.colors[ColorVar_Link]         = Color::FromRGB(61, 133, 224, 200);
+		gNodes->style.colors[ColorVar_LinkHovered]  = Color::FromRGB(66, 150, 250);
+		gNodes->style.colors[ColorVar_LinkSelected] = Color::FromRGB(66, 150, 250);
 		// pin colors match ImGui's button colors
-		gNodes->Style.colors[ColorVar_Pin]        = Color::FromRGB(53, 150, 250, 180);
-		gNodes->Style.colors[ColorVar_PinHovered] = Color::FromRGB(53, 150, 250);
+		gNodes->style.colors[ColorVar_Pin]        = Color::FromRGB(53, 150, 250, 180);
+		gNodes->style.colors[ColorVar_PinHovered] = Color::FromRGB(53, 150, 250);
 
-		gNodes->Style.colors[ColorVar_BoxSelector]        = Color::FromRGB(61, 133, 224, 30);
-		gNodes->Style.colors[ColorVar_BoxSelectorOutline] = Color::FromRGB(61, 133, 224, 150);
+		gNodes->style.colors[ColorVar_BoxSelector]        = Color::FromRGB(61, 133, 224, 30);
+		gNodes->style.colors[ColorVar_BoxSelectorOutline] = Color::FromRGB(61, 133, 224, 150);
 
-		gNodes->Style.colors[ColorVar_GridBackground] = Color::FromRGB(40, 40, 50, 200);
-		gNodes->Style.colors[ColorVar_GridLine]       = Color::FromRGB(200, 200, 200, 40);
+		gNodes->style.colors[ColorVar_GridBackground] = Color::FromRGB(40, 40, 50, 200);
+		gNodes->style.colors[ColorVar_GridLine]       = Color::FromRGB(200, 200, 200, 40);
 
-		gNodes->Style.colors[ColorVar_GridLinePrimary] = Color::FromRGB(240, 240, 240, 60);
+		gNodes->style.colors[ColorVar_GridLinePrimary] = Color::FromRGB(240, 240, 240, 60);
 
 		// minimap colors
-		gNodes->Style.colors[ColorVar_MiniMapBackground]        = Color::FromRGB(25, 25, 25, 150);
-		gNodes->Style.colors[ColorVar_MiniMapBackgroundHovered] = Color::FromRGB(25, 25, 25, 200);
-		gNodes->Style.colors[ColorVar_MiniMapOutline]        = Color::FromRGB(150, 150, 150, 100);
-		gNodes->Style.colors[ColorVar_MiniMapOutlineHovered] = Color::FromRGB(150, 150, 150, 200);
-		gNodes->Style.colors[ColorVar_MiniMapNodeBackground] = Color::FromRGB(200, 200, 200, 100);
-		gNodes->Style.colors[ColorVar_MiniMapNodeBackgroundHovered] = Color::FromRGB(200, 200, 200);
-		gNodes->Style.colors[ColorVar_MiniMapNodeBackgroundSelected] =
-		    gNodes->Style.colors[ColorVar_MiniMapNodeBackgroundHovered];
-		gNodes->Style.colors[ColorVar_MiniMapNodeOutline] = Color::FromRGB(200, 200, 200, 100);
-		gNodes->Style.colors[ColorVar_MiniMapLink]        = gNodes->Style.colors[ColorVar_Link];
-		gNodes->Style.colors[ColorVar_MiniMapLinkSelected] =
-		    gNodes->Style.colors[ColorVar_LinkSelected];
-		gNodes->Style.colors[ColorVar_MiniMapCanvas]        = Color::FromRGB(200, 200, 200, 25);
-		gNodes->Style.colors[ColorVar_MiniMapCanvasOutline] = Color::FromRGB(200, 200, 200, 200);
+		gNodes->style.colors[ColorVar_MiniMapBackground]        = Color::FromRGB(25, 25, 25, 150);
+		gNodes->style.colors[ColorVar_MiniMapBackgroundHovered] = Color::FromRGB(25, 25, 25, 200);
+		gNodes->style.colors[ColorVar_MiniMapOutline]        = Color::FromRGB(150, 150, 150, 100);
+		gNodes->style.colors[ColorVar_MiniMapOutlineHovered] = Color::FromRGB(150, 150, 150, 200);
+		gNodes->style.colors[ColorVar_MiniMapNodeBackground] = Color::FromRGB(200, 200, 200, 100);
+		gNodes->style.colors[ColorVar_MiniMapNodeBackgroundHovered] = Color::FromRGB(200, 200, 200);
+		gNodes->style.colors[ColorVar_MiniMapNodeBackgroundSelected] =
+		    gNodes->style.colors[ColorVar_MiniMapNodeBackgroundHovered];
+		gNodes->style.colors[ColorVar_MiniMapNodeOutline] = Color::FromRGB(200, 200, 200, 100);
+		gNodes->style.colors[ColorVar_MiniMapLink]        = gNodes->style.colors[ColorVar_Link];
+		gNodes->style.colors[ColorVar_MiniMapLinkSelected] =
+		    gNodes->style.colors[ColorVar_LinkSelected];
+		gNodes->style.colors[ColorVar_MiniMapCanvas]        = Color::FromRGB(200, 200, 200, 25);
+		gNodes->style.colors[ColorVar_MiniMapCanvasOutline] = Color::FromRGB(200, 200, 200, 200);
 	}
 
 	void StyleColorsClassic()
 	{
-		gNodes->Style.colors[ColorVar_NodeBackground]         = Color::FromRGB(50, 50, 50);
-		gNodes->Style.colors[ColorVar_NodeBackgroundHovered]  = Color::FromRGB(75, 75, 75);
-		gNodes->Style.colors[ColorVar_NodeBackgroundSelected] = Color::FromRGB(75, 75, 75);
-		gNodes->Style.colors[ColorVar_NodeOutline]            = Color::FromRGB(100, 100, 100);
-		gNodes->Style.colors[ColorVar_TitleBar]               = Color::FromRGB(69, 69, 138);
-		gNodes->Style.colors[ColorVar_TitleBarHovered]        = Color::FromRGB(82, 82, 161);
-		gNodes->Style.colors[ColorVar_TitleBarSelected]       = Color::FromRGB(82, 82, 161);
-		gNodes->Style.colors[ColorVar_Link]                   = Color::FromRGB(255, 255, 255, 100);
-		gNodes->Style.colors[ColorVar_LinkHovered]            = Color::FromRGB(105, 99, 204, 153);
-		gNodes->Style.colors[ColorVar_LinkSelected]           = Color::FromRGB(105, 99, 204, 153);
-		gNodes->Style.colors[ColorVar_Pin]                    = Color::FromRGB(89, 102, 156, 170);
-		gNodes->Style.colors[ColorVar_PinHovered]             = Color::FromRGB(102, 122, 179, 200);
-		gNodes->Style.colors[ColorVar_BoxSelector]            = Color::FromRGB(82, 82, 161, 100);
-		gNodes->Style.colors[ColorVar_BoxSelectorOutline]     = Color::FromRGB(82, 82, 161);
-		gNodes->Style.colors[ColorVar_GridBackground]         = Color::FromRGB(40, 40, 50, 200);
-		gNodes->Style.colors[ColorVar_GridLine]               = Color::FromRGB(200, 200, 200, 40);
-		gNodes->Style.colors[ColorVar_GridLinePrimary]        = Color::FromRGB(240, 240, 240, 60);
+		gNodes->style.colors[ColorVar_NodeBackground]         = Color::FromRGB(50, 50, 50);
+		gNodes->style.colors[ColorVar_NodeBackgroundHovered]  = Color::FromRGB(75, 75, 75);
+		gNodes->style.colors[ColorVar_NodeBackgroundSelected] = Color::FromRGB(75, 75, 75);
+		gNodes->style.colors[ColorVar_NodeOutline]            = Color::FromRGB(100, 100, 100);
+		gNodes->style.colors[ColorVar_TitleBar]               = Color::FromRGB(69, 69, 138);
+		gNodes->style.colors[ColorVar_TitleBarHovered]        = Color::FromRGB(82, 82, 161);
+		gNodes->style.colors[ColorVar_TitleBarSelected]       = Color::FromRGB(82, 82, 161);
+		gNodes->style.colors[ColorVar_Link]                   = Color::FromRGB(255, 255, 255, 100);
+		gNodes->style.colors[ColorVar_LinkHovered]            = Color::FromRGB(105, 99, 204, 153);
+		gNodes->style.colors[ColorVar_LinkSelected]           = Color::FromRGB(105, 99, 204, 153);
+		gNodes->style.colors[ColorVar_Pin]                    = Color::FromRGB(89, 102, 156, 170);
+		gNodes->style.colors[ColorVar_PinHovered]             = Color::FromRGB(102, 122, 179, 200);
+		gNodes->style.colors[ColorVar_BoxSelector]            = Color::FromRGB(82, 82, 161, 100);
+		gNodes->style.colors[ColorVar_BoxSelectorOutline]     = Color::FromRGB(82, 82, 161);
+		gNodes->style.colors[ColorVar_GridBackground]         = Color::FromRGB(40, 40, 50, 200);
+		gNodes->style.colors[ColorVar_GridLine]               = Color::FromRGB(200, 200, 200, 40);
+		gNodes->style.colors[ColorVar_GridLinePrimary]        = Color::FromRGB(240, 240, 240, 60);
 
 		// minimap colors
-		gNodes->Style.colors[ColorVar_MiniMapBackground]        = Color::FromRGB(25, 25, 25, 100);
-		gNodes->Style.colors[ColorVar_MiniMapBackgroundHovered] = Color::FromRGB(25, 25, 25, 200);
-		gNodes->Style.colors[ColorVar_MiniMapOutline]        = Color::FromRGB(150, 150, 150, 100);
-		gNodes->Style.colors[ColorVar_MiniMapOutlineHovered] = Color::FromRGB(150, 150, 150, 200);
-		gNodes->Style.colors[ColorVar_MiniMapNodeBackground] = Color::FromRGB(200, 200, 200, 100);
-		gNodes->Style.colors[ColorVar_MiniMapNodeBackgroundSelected] =
-		    gNodes->Style.colors[ColorVar_MiniMapNodeBackgroundHovered];
-		gNodes->Style.colors[ColorVar_MiniMapNodeBackgroundSelected] =
+		gNodes->style.colors[ColorVar_MiniMapBackground]        = Color::FromRGB(25, 25, 25, 100);
+		gNodes->style.colors[ColorVar_MiniMapBackgroundHovered] = Color::FromRGB(25, 25, 25, 200);
+		gNodes->style.colors[ColorVar_MiniMapOutline]        = Color::FromRGB(150, 150, 150, 100);
+		gNodes->style.colors[ColorVar_MiniMapOutlineHovered] = Color::FromRGB(150, 150, 150, 200);
+		gNodes->style.colors[ColorVar_MiniMapNodeBackground] = Color::FromRGB(200, 200, 200, 100);
+		gNodes->style.colors[ColorVar_MiniMapNodeBackgroundSelected] =
+		    gNodes->style.colors[ColorVar_MiniMapNodeBackgroundHovered];
+		gNodes->style.colors[ColorVar_MiniMapNodeBackgroundSelected] =
 		    Color::FromRGB(200, 200, 240);
-		gNodes->Style.colors[ColorVar_MiniMapNodeOutline] = Color::FromRGB(200, 200, 200, 100);
-		gNodes->Style.colors[ColorVar_MiniMapLink]        = gNodes->Style.colors[ColorVar_Link];
-		gNodes->Style.colors[ColorVar_MiniMapLinkSelected] =
-		    gNodes->Style.colors[ColorVar_LinkSelected];
-		gNodes->Style.colors[ColorVar_MiniMapCanvas]        = Color::FromRGB(200, 200, 200, 25);
-		gNodes->Style.colors[ColorVar_MiniMapCanvasOutline] = Color::FromRGB(200, 200, 200, 200);
+		gNodes->style.colors[ColorVar_MiniMapNodeOutline] = Color::FromRGB(200, 200, 200, 100);
+		gNodes->style.colors[ColorVar_MiniMapLink]        = gNodes->style.colors[ColorVar_Link];
+		gNodes->style.colors[ColorVar_MiniMapLinkSelected] =
+		    gNodes->style.colors[ColorVar_LinkSelected];
+		gNodes->style.colors[ColorVar_MiniMapCanvas]        = Color::FromRGB(200, 200, 200, 25);
+		gNodes->style.colors[ColorVar_MiniMapCanvasOutline] = Color::FromRGB(200, 200, 200, 200);
 	}
 
 	void StyleColorsLight()
 	{
-		gNodes->Style.colors[ColorVar_NodeBackground]         = Color::FromRGB(240, 240, 240);
-		gNodes->Style.colors[ColorVar_NodeBackgroundHovered]  = Color::FromRGB(240, 240, 240);
-		gNodes->Style.colors[ColorVar_NodeBackgroundSelected] = Color::FromRGB(240, 240, 240);
-		gNodes->Style.colors[ColorVar_NodeOutline]            = Color::FromRGB(100, 100, 100);
-		gNodes->Style.colors[ColorVar_TitleBar]               = Color::FromRGB(248, 248, 248);
-		gNodes->Style.colors[ColorVar_TitleBarHovered]        = Color::FromRGB(209, 209, 209);
-		gNodes->Style.colors[ColorVar_TitleBarSelected]       = Color::FromRGB(209, 209, 209);
+		gNodes->style.colors[ColorVar_NodeBackground]         = Color::FromRGB(240, 240, 240);
+		gNodes->style.colors[ColorVar_NodeBackgroundHovered]  = Color::FromRGB(240, 240, 240);
+		gNodes->style.colors[ColorVar_NodeBackgroundSelected] = Color::FromRGB(240, 240, 240);
+		gNodes->style.colors[ColorVar_NodeOutline]            = Color::FromRGB(100, 100, 100);
+		gNodes->style.colors[ColorVar_TitleBar]               = Color::FromRGB(248, 248, 248);
+		gNodes->style.colors[ColorVar_TitleBarHovered]        = Color::FromRGB(209, 209, 209);
+		gNodes->style.colors[ColorVar_TitleBarSelected]       = Color::FromRGB(209, 209, 209);
 		// original imgui values: 66, 150, 250
-		gNodes->Style.colors[ColorVar_Link] = Color::FromRGB(66, 150, 250, 100);
+		gNodes->style.colors[ColorVar_Link] = Color::FromRGB(66, 150, 250, 100);
 		// original imgui values: 117, 138, 204
-		gNodes->Style.colors[ColorVar_LinkHovered]  = Color::FromRGB(66, 150, 250, 242);
-		gNodes->Style.colors[ColorVar_LinkSelected] = Color::FromRGB(66, 150, 250, 242);
+		gNodes->style.colors[ColorVar_LinkHovered]  = Color::FromRGB(66, 150, 250, 242);
+		gNodes->style.colors[ColorVar_LinkSelected] = Color::FromRGB(66, 150, 250, 242);
 		// original imgui values: 66, 150, 250
-		gNodes->Style.colors[ColorVar_Pin]                = Color::FromRGB(66, 150, 250, 160);
-		gNodes->Style.colors[ColorVar_PinHovered]         = Color::FromRGB(66, 150, 250);
-		gNodes->Style.colors[ColorVar_BoxSelector]        = Color::FromRGB(90, 170, 250, 30);
-		gNodes->Style.colors[ColorVar_BoxSelectorOutline] = Color::FromRGB(90, 170, 250, 150);
-		gNodes->Style.colors[ColorVar_GridBackground]     = Color::FromRGB(225, 225, 225);
-		gNodes->Style.colors[ColorVar_GridLine]           = Color::FromRGB(180, 180, 180, 100);
-		gNodes->Style.colors[ColorVar_GridLinePrimary]    = Color::FromRGB(120, 120, 120, 100);
+		gNodes->style.colors[ColorVar_Pin]                = Color::FromRGB(66, 150, 250, 160);
+		gNodes->style.colors[ColorVar_PinHovered]         = Color::FromRGB(66, 150, 250);
+		gNodes->style.colors[ColorVar_BoxSelector]        = Color::FromRGB(90, 170, 250, 30);
+		gNodes->style.colors[ColorVar_BoxSelectorOutline] = Color::FromRGB(90, 170, 250, 150);
+		gNodes->style.colors[ColorVar_GridBackground]     = Color::FromRGB(225, 225, 225);
+		gNodes->style.colors[ColorVar_GridLine]           = Color::FromRGB(180, 180, 180, 100);
+		gNodes->style.colors[ColorVar_GridLinePrimary]    = Color::FromRGB(120, 120, 120, 100);
 
 		// minimap colors
-		gNodes->Style.colors[ColorVar_MiniMapBackground]        = Color::FromRGB(25, 25, 25, 100);
-		gNodes->Style.colors[ColorVar_MiniMapBackgroundHovered] = Color::FromRGB(25, 25, 25, 200);
-		gNodes->Style.colors[ColorVar_MiniMapOutline]        = Color::FromRGB(150, 150, 150, 100);
-		gNodes->Style.colors[ColorVar_MiniMapOutlineHovered] = Color::FromRGB(150, 150, 150, 200);
-		gNodes->Style.colors[ColorVar_MiniMapNodeBackground] = Color::FromRGB(200, 200, 200, 100);
-		gNodes->Style.colors[ColorVar_MiniMapNodeBackgroundSelected] =
-		    gNodes->Style.colors[ColorVar_MiniMapNodeBackgroundHovered];
-		gNodes->Style.colors[ColorVar_MiniMapNodeBackgroundSelected] =
+		gNodes->style.colors[ColorVar_MiniMapBackground]        = Color::FromRGB(25, 25, 25, 100);
+		gNodes->style.colors[ColorVar_MiniMapBackgroundHovered] = Color::FromRGB(25, 25, 25, 200);
+		gNodes->style.colors[ColorVar_MiniMapOutline]        = Color::FromRGB(150, 150, 150, 100);
+		gNodes->style.colors[ColorVar_MiniMapOutlineHovered] = Color::FromRGB(150, 150, 150, 200);
+		gNodes->style.colors[ColorVar_MiniMapNodeBackground] = Color::FromRGB(200, 200, 200, 100);
+		gNodes->style.colors[ColorVar_MiniMapNodeBackgroundSelected] =
+		    gNodes->style.colors[ColorVar_MiniMapNodeBackgroundHovered];
+		gNodes->style.colors[ColorVar_MiniMapNodeBackgroundSelected] =
 		    Color::FromRGB(200, 200, 240);
-		gNodes->Style.colors[ColorVar_MiniMapNodeOutline] = Color::FromRGB(200, 200, 200, 100);
-		gNodes->Style.colors[ColorVar_MiniMapLink]        = gNodes->Style.colors[ColorVar_Link];
-		gNodes->Style.colors[ColorVar_MiniMapLinkSelected] =
-		    gNodes->Style.colors[ColorVar_LinkSelected];
-		gNodes->Style.colors[ColorVar_MiniMapCanvas]        = Color::FromRGB(200, 200, 200, 25);
-		gNodes->Style.colors[ColorVar_MiniMapCanvasOutline] = Color::FromRGB(200, 200, 200, 200);
+		gNodes->style.colors[ColorVar_MiniMapNodeOutline] = Color::FromRGB(200, 200, 200, 100);
+		gNodes->style.colors[ColorVar_MiniMapLink]        = gNodes->style.colors[ColorVar_Link];
+		gNodes->style.colors[ColorVar_MiniMapLinkSelected] =
+		    gNodes->style.colors[ColorVar_LinkSelected];
+		gNodes->style.colors[ColorVar_MiniMapCanvas]        = Color::FromRGB(200, 200, 200, 25);
+		gNodes->style.colors[ColorVar_MiniMapCanvasOutline] = Color::FromRGB(200, 200, 200, 200);
 	}
 
 	void BeginNodeEditor()
@@ -1877,16 +1877,16 @@ namespace Rift::Nodes
 		gNodes->leftMouseReleased = ImGui::IsMouseReleased(0);
 		gNodes->leftMouseDragging = ImGui::IsMouseDragging(0, 0.0f);
 		gNodes->altMouseClicked =
-		    (gNodes->Io.emulateThreeButtonMouse.modifier != nullptr
-		        && *gNodes->Io.emulateThreeButtonMouse.modifier && gNodes->leftMouseClicked)
-		    || ImGui::IsMouseClicked(gNodes->Io.AltMouseButton);
+		    (gNodes->io.emulateThreeButtonMouse.modifier != nullptr
+		        && *gNodes->io.emulateThreeButtonMouse.modifier && gNodes->leftMouseClicked)
+		    || ImGui::IsMouseClicked(gNodes->io.AltMouseButton);
 		gNodes->altMouseDragging =
-		    (gNodes->Io.emulateThreeButtonMouse.modifier != nullptr && gNodes->leftMouseDragging
-		        && (*gNodes->Io.emulateThreeButtonMouse.modifier))
-		    || ImGui::IsMouseDragging(gNodes->Io.AltMouseButton, 0.0f);
+		    (gNodes->io.emulateThreeButtonMouse.modifier != nullptr && gNodes->leftMouseDragging
+		        && (*gNodes->io.emulateThreeButtonMouse.modifier))
+		    || ImGui::IsMouseDragging(gNodes->io.AltMouseButton, 0.0f);
 		gNodes->altMouseScrollDelta    = ImGui::GetIO().MouseWheel;
-		gNodes->multipleSelectModifier = (gNodes->Io.multipleSelectModifier.modifier != nullptr
-		                                      ? *gNodes->Io.multipleSelectModifier.modifier
+		gNodes->multipleSelectModifier = (gNodes->io.multipleSelectModifier.modifier != nullptr
+		                                      ? *gNodes->io.multipleSelectModifier.modifier
 		                                      : ImGui::GetIO().KeyCtrl);
 		gNodes->activePin              = false;
 
@@ -1895,7 +1895,7 @@ namespace Rift::Nodes
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, v2(1.f, 1.f));
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, v2(0.f, 0.f));
 			ImGui::PushStyleColor(
-			    ImGuiCol_ChildBg, gNodes->Style.colors[ColorVar_GridBackground].ToPackedABGR());
+			    ImGuiCol_ChildBg, gNodes->style.colors[ColorVar_GridBackground].ToPackedABGR());
 			ImGui::BeginChild("scrolling_region", v2(0.f, 0.f), true,
 			    ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove
 			        | ImGuiWindowFlags_NoScrollWithMouse);
@@ -1911,7 +1911,7 @@ namespace Rift::Nodes
 				gNodes->CanvasRectScreenSpace =
 				    Rect(EditorToScreenPosition(v2(0.f, 0.f)), EditorToScreenPosition(canvasSize));
 
-				if (gNodes->Style.Flags & StyleFlags_GridLines)
+				if (gNodes->style.Flags & StyleFlags_GridLines)
 				{
 					DrawGrid(editor, canvasSize);
 				}
@@ -2048,7 +2048,7 @@ namespace Rift::Nodes
 				direction    = direction * ImInvLength(direction, 0.0);
 
 				editor.AutoPanningDelta =
-				    direction * ImGui::GetIO().DeltaTime * gNodes->Io.AutoPanningSpeed;
+				    direction * ImGui::GetIO().DeltaTime * gNodes->io.AutoPanningSpeed;
 				editor.Panning += editor.AutoPanningDelta;
 			}
 		}
@@ -2089,16 +2089,16 @@ namespace Rift::Nodes
 		gNodes->CurrentNodeIdx = nodeIdx;
 
 		NodeData& node                     = editor.nodes.Pool[nodeIdx];
-		node.colorStyle.Background         = gNodes->Style.colors[ColorVar_NodeBackground];
-		node.colorStyle.BackgroundHovered  = gNodes->Style.colors[ColorVar_NodeBackgroundHovered];
-		node.colorStyle.BackgroundSelected = gNodes->Style.colors[ColorVar_NodeBackgroundSelected];
-		node.colorStyle.Outline            = gNodes->Style.colors[ColorVar_NodeOutline];
-		node.colorStyle.Titlebar           = gNodes->Style.colors[ColorVar_TitleBar];
-		node.colorStyle.TitlebarHovered    = gNodes->Style.colors[ColorVar_TitleBarHovered];
-		node.colorStyle.TitlebarSelected   = gNodes->Style.colors[ColorVar_TitleBarSelected];
-		node.LayoutStyle.CornerRounding    = gNodes->Style.NodeCornerRounding;
-		node.LayoutStyle.Padding           = gNodes->Style.NodePadding;
-		node.LayoutStyle.BorderThickness   = gNodes->Style.NodeBorderThickness;
+		node.colorStyle.Background         = gNodes->style.colors[ColorVar_NodeBackground];
+		node.colorStyle.BackgroundHovered  = gNodes->style.colors[ColorVar_NodeBackgroundHovered];
+		node.colorStyle.BackgroundSelected = gNodes->style.colors[ColorVar_NodeBackgroundSelected];
+		node.colorStyle.Outline            = gNodes->style.colors[ColorVar_NodeOutline];
+		node.colorStyle.Titlebar           = gNodes->style.colors[ColorVar_TitleBar];
+		node.colorStyle.TitlebarHovered    = gNodes->style.colors[ColorVar_TitleBarHovered];
+		node.colorStyle.TitlebarSelected   = gNodes->style.colors[ColorVar_TitleBarSelected];
+		node.LayoutStyle.CornerRounding    = gNodes->style.NodeCornerRounding;
+		node.LayoutStyle.Padding           = gNodes->style.NodePadding;
+		node.LayoutStyle.BorderThickness   = gNodes->style.NodeBorderThickness;
 
 		// ImGui::SetCursorPos sets the cursor position, local to the current widget
 		// (in this case, the child object started in BeginNodeEditor). Use
@@ -2124,13 +2124,13 @@ namespace Rift::Nodes
 		ImGui::PopID();
 
 		NodeData& node = editor.nodes.Pool[gNodes->CurrentNodeIdx];
-		node.Rect      = GetItemRect();
-		node.Rect.Expand(node.LayoutStyle.Padding);
+		node.rect      = GetItemRect();
+		node.rect.Expand(node.LayoutStyle.Padding);
 
 		editor.gridContentBounds.Add(node.Origin);
-		editor.gridContentBounds.Add(node.Origin + node.Rect.GetSize());
+		editor.gridContentBounds.Add(node.Origin + node.rect.GetSize());
 
-		if (node.Rect.Contains(gNodes->mousePosition))
+		if (node.rect.Contains(gNodes->mousePosition))
 		{
 			gNodes->NodeIndicesOverlappingWithMouse.push_back(gNodes->CurrentNodeIdx);
 		}
@@ -2142,7 +2142,7 @@ namespace Rift::Nodes
 		const i32 nodeIdx     = ObjectPoolFind(editor.nodes, nodeId);
 		assert(nodeIdx != -1);    // invalid nodeId
 		const NodeData& node = editor.nodes.Pool[nodeIdx];
-		return node.Rect.GetSize();
+		return node.rect.GetSize();
 	}
 
 	void BeginNodeTitleBar()
@@ -2211,9 +2211,9 @@ namespace Rift::Nodes
 		link.id                  = id;
 		link.outputIdx           = ObjectPoolFindOrCreateIndex(editor.outputs, outputPin);
 		link.inputIdx            = ObjectPoolFindOrCreateIndex(editor.inputs, inputPin);
-		link.colorStyle.Base     = gNodes->Style.colors[ColorVar_Link];
-		link.colorStyle.Hovered  = gNodes->Style.colors[ColorVar_LinkHovered];
-		link.colorStyle.Selected = gNodes->Style.colors[ColorVar_LinkSelected];
+		link.colorStyle.Base     = gNodes->style.colors[ColorVar_Link];
+		link.colorStyle.Hovered  = gNodes->style.colors[ColorVar_LinkHovered];
+		link.colorStyle.Selected = gNodes->style.colors[ColorVar_LinkSelected];
 
 		// Check if this link was created by the current link event
 		if ((editor.clickInteraction.type == ClickInteractionType_LinkCreation
@@ -2229,8 +2229,8 @@ namespace Rift::Nodes
 
 	void PushStyleColor(const ColorVar item, Color color)
 	{
-		gNodes->ColorModifierStack.push_back(ColElement(item, gNodes->Style.colors[item]));
-		gNodes->Style.colors[item] = color;
+		gNodes->ColorModifierStack.push_back(ColElement(item, gNodes->style.colors[item]));
+		gNodes->style.colors[item] = color;
 	}
 
 	void PopStyleColor(i32 count)
@@ -2239,7 +2239,7 @@ namespace Rift::Nodes
 		while (count > 0)
 		{
 			const ColElement& elem          = gNodes->ColorModifierStack.back();
-			gNodes->Style.colors[elem.item] = elem.color;
+			gNodes->style.colors[elem.item] = elem.color;
 			gNodes->ColorModifierStack.pop_back();
 			--count;
 		}
@@ -2301,8 +2301,8 @@ namespace Rift::Nodes
 		const StyleVarInfo* varInfo = GetStyleVarInfo(item);
 		if (varInfo->type == ImGuiDataType_Float && varInfo->count == 1)
 		{
-			float& styleVar = *(float*)varInfo->GetVarPtr(&gNodes->Style);
-			gNodes->StyleModifierStack.push_back(StyleVarElement(item, styleVar));
+			float& styleVar = *(float*)varInfo->GetVarPtr(&gNodes->style);
+			gNodes->styleModifierStack.push_back(StyleVarElement(item, styleVar));
 			styleVar = value;
 			return;
 		}
@@ -2314,8 +2314,8 @@ namespace Rift::Nodes
 		const StyleVarInfo* varInfo = GetStyleVarInfo(item);
 		if (varInfo->type == ImGuiDataType_Float && varInfo->count == 2)
 		{
-			v2& styleVar = *(v2*)varInfo->GetVarPtr(&gNodes->Style);
-			gNodes->StyleModifierStack.push_back(StyleVarElement(item, styleVar));
+			v2& styleVar = *(v2*)varInfo->GetVarPtr(&gNodes->style);
+			gNodes->styleModifierStack.push_back(StyleVarElement(item, styleVar));
 			styleVar = value;
 			return;
 		}
@@ -2326,11 +2326,11 @@ namespace Rift::Nodes
 	{
 		while (count > 0)
 		{
-			assert(gNodes->StyleModifierStack.size() > 0);
-			const StyleVarElement styleBackup = gNodes->StyleModifierStack.back();
-			gNodes->StyleModifierStack.pop_back();
+			assert(gNodes->styleModifierStack.size() > 0);
+			const StyleVarElement styleBackup = gNodes->styleModifierStack.back();
+			gNodes->styleModifierStack.pop_back();
 			const StyleVarInfo* varInfo = GetStyleVarInfo(styleBackup.item);
-			void* styleVar              = varInfo->GetVarPtr(&gNodes->Style);
+			void* styleVar              = varInfo->GetVarPtr(&gNodes->style);
 			if (varInfo->type == ImGuiDataType_Float && varInfo->count == 1)
 			{
 				((float*)styleVar)[0] = styleBackup.value[0];

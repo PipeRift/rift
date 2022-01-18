@@ -25,8 +25,8 @@ namespace Rift::Nodes
 	{
 		EditorContext& editor = GetEditorContext();
 
-		const v2 offset       = gNodes->Style.miniMapOffset;
-		const v2 border       = gNodes->Style.miniMapPadding;
+		const v2 offset       = gNodes->style.miniMapOffset;
+		const v2 border       = gNodes->style.miniMapPadding;
 		const Rect editorRect = gNodes->CanvasRectScreenSpace;
 
 		// Compute the size of the mini-map area
@@ -91,8 +91,8 @@ namespace Rift::Nodes
 	{
 		const NodeData& node = editor.nodes.Pool[nodeIdx];
 
-		const Rect nodeRect{ScreenToMiniMapPosition(editor, node.Rect.min),
-		    ScreenToMiniMapPosition(editor, node.Rect.max)};
+		const Rect nodeRect{ScreenToMiniMapPosition(editor, node.rect.min),
+		    ScreenToMiniMapPosition(editor, node.rect.max)};
 
 		// Round to near whole pixel value for corner-rounding to prevent visual glitches
 		const float miniMapNodeRounding = Math::Floor(node.LayoutStyle.CornerRounding * scaling);
@@ -101,7 +101,7 @@ namespace Rift::Nodes
 		if (editor.clickInteraction.type == ClickInteractionType_None
 		    && ImGui::IsMouseHoveringRect(nodeRect.min, nodeRect.max))
 		{
-			miniMapNodeBackground = gNodes->Style.colors[ColorVar_MiniMapNodeBackgroundHovered];
+			miniMapNodeBackground = gNodes->style.colors[ColorVar_MiniMapNodeBackgroundHovered];
 
 			// Run user callback when hovering a mini-map node
 			if (nodeHoveringCallback)
@@ -111,14 +111,14 @@ namespace Rift::Nodes
 		}
 		else if (editor.SelectedNodeIndices.contains(nodeIdx))
 		{
-			miniMapNodeBackground = gNodes->Style.colors[ColorVar_MiniMapNodeBackgroundSelected];
+			miniMapNodeBackground = gNodes->style.colors[ColorVar_MiniMapNodeBackgroundSelected];
 		}
 		else
 		{
-			miniMapNodeBackground = gNodes->Style.colors[ColorVar_MiniMapNodeBackground];
+			miniMapNodeBackground = gNodes->style.colors[ColorVar_MiniMapNodeBackground];
 		}
 
-		const Color miniMapNodeOutline = gNodes->Style.colors[ColorVar_MiniMapNodeOutline];
+		const Color miniMapNodeOutline = gNodes->style.colors[ColorVar_MiniMapNodeOutline];
 
 		gNodes->CanvasDrawList->AddRectFilled(
 		    nodeRect.min, nodeRect.max, miniMapNodeBackground.ToPackedABGR(), miniMapNodeRounding);
@@ -136,7 +136,7 @@ namespace Rift::Nodes
 		const v2 outputPosition       = ScreenToMiniMapPosition(editor, outputData.position);
 		const v2 inputPosition        = ScreenToMiniMapPosition(editor, inputData.position);
 		const CubicBezier cubicBezier = MakeCubicBezier(outputPosition, inputPosition,
-		    PinType::Output, gNodes->Style.linkLineSegmentsPerLength / scaling);
+		    PinType::Output, gNodes->style.linkLineSegmentsPerLength / scaling);
 
 		// It's possible for a link to be deleted in begin_link_i32eraction. A user
 		// may detach a link, resulting in the link wire snapping to the mouse
@@ -149,12 +149,12 @@ namespace Rift::Nodes
 		}
 
 		const Color linkColor =
-		    gNodes->Style
+		    gNodes->style
 		        .colors[editor.SelectedLinkIndices.contains(linkIdx) ? ColorVar_MiniMapLinkSelected
 		                                                             : ColorVar_MiniMapLink];
 
 		gNodes->CanvasDrawList->AddBezierCubic(cubicBezier.p0, cubicBezier.p1, cubicBezier.p2,
-		    cubicBezier.p3, linkColor.ToPackedABGR(), gNodes->Style.LinkThickness * scaling,
+		    cubicBezier.p3, linkColor.ToPackedABGR(), gNodes->style.LinkThickness * scaling,
 		    cubicBezier.numSegments);
 	}
 
@@ -165,11 +165,11 @@ namespace Rift::Nodes
 		Color miniMapBackground;
 		if (IsHovered())
 		{
-			miniMapBackground = gNodes->Style.colors[ColorVar_MiniMapBackgroundHovered];
+			miniMapBackground = gNodes->style.colors[ColorVar_MiniMapBackgroundHovered];
 		}
 		else
 		{
-			miniMapBackground = gNodes->Style.colors[ColorVar_MiniMapBackground];
+			miniMapBackground = gNodes->style.colors[ColorVar_MiniMapBackground];
 		}
 
 		// Create a child window bellow mini-map, so it blocks all mouse i32eraction on canvas.
@@ -184,7 +184,7 @@ namespace Rift::Nodes
 		    miniMapRect.min, miniMapRect.max, miniMapBackground.ToPackedABGR());
 
 		gNodes->CanvasDrawList->AddRect(miniMapRect.min, miniMapRect.max,
-		    gNodes->Style.colors[ColorVar_MiniMapOutline].ToPackedABGR());
+		    gNodes->style.colors[ColorVar_MiniMapOutline].ToPackedABGR());
 
 		// Clip draw list items to mini-map rect (after drawing background/outline)
 		gNodes->CanvasDrawList->PushClipRect(
@@ -209,8 +209,8 @@ namespace Rift::Nodes
 
 		// Draw editor canvas rect inside mini-map
 		{
-			const Color canvasColor  = gNodes->Style.colors[ColorVar_MiniMapCanvas];
-			const Color outlineColor = gNodes->Style.colors[ColorVar_MiniMapCanvasOutline];
+			const Color canvasColor  = gNodes->style.colors[ColorVar_MiniMapCanvas];
+			const Color outlineColor = gNodes->style.colors[ColorVar_MiniMapCanvasOutline];
 			const Rect rect{ScreenToMiniMapPosition(editor, gNodes->CanvasRectScreenSpace.min),
 			    ScreenToMiniMapPosition(editor, gNodes->CanvasRectScreenSpace.max)};
 
