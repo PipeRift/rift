@@ -35,7 +35,7 @@ namespace Rift::FunctionsSystem
 	void Init(AST::Tree& ast)
 	{
 		ast.OnAdd<CCallExprId>().Bind([](auto& ast, auto ids) {
-			ast.Add<CCallDirty>(ids);
+			ast.template Add<CCallDirty>(ids);
 		});
 	}
 

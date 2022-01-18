@@ -78,8 +78,8 @@ namespace Rift
 		static constexpr IdTraits<Id>::Version GetVersion(Id id)
 		{
 			constexpr auto mask = IdTraits<Id>::versionMask << IdTraits<Id>::indexShift;
-			return IdTraits<Id>::Version{
-			    (IdTraits<Id>::Entity(id) & mask) >> IdTraits<Id>::indexShift};
+			return IdTraits<Id>::Version(
+			    (IdTraits<Id>::Entity(id) & mask) >> IdTraits<Id>::indexShift);
 		}
 	}    // namespace AST
 

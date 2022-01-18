@@ -7,6 +7,7 @@
 #include <Strings/String.h>
 #include <UI/UI.h>
 
+
 // External
 #include <imgui_internal.h>
 
@@ -196,12 +197,12 @@ namespace Rift
 				const float pctFontSize = (UI::GetFontSize() * usedPctLabel.size()) / 2.f;
 				UI::SameLine(UI::GetWindowContentRegionWidth() / 2 - pctFontSize / 2,
 				    UI::GetStyle().ItemInnerSpacing.x / 2);
-				UI::Text(usedPctLabel.c_str());
+				UI::Text(usedPctLabel);
 
 				UI::SetItemAllowOverlap();
 				const float usedFontSize = (UI::GetFontSize() * size.size()) / 2.f;
 				UI::SameLine(UI::GetWindowContentRegionWidth() - usedFontSize);
-				UI::Text(size.c_str());
+				UI::Text(size);
 
 				UI::PopStyleColor(2);
 			}

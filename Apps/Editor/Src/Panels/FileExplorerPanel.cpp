@@ -6,7 +6,6 @@
 #include "Files/Files.h"
 #include "Files/Paths.h"
 #include "Files/STDFileSystem.h"
-#include "imgui.h"
 #include "Statics/SEditor.h"
 #include "Strings/StringView.h"
 #include "UI/Widgets.h"

@@ -11,6 +11,7 @@
 #include <Math/Vector.h>
 #include <Strings/String.h>
 
+
 #define NOTIFY_USE_SEPARATOR
 
 
@@ -186,7 +187,7 @@ namespace Rift::UI
 				const char* icon = notification.GetIcon();
 				if (icon)
 				{
-					ImGui::TextColored(textColor, icon);
+					UI::TextColored(textColor, icon);
 					wasTitleRendered = true;
 				}
 
@@ -200,7 +201,7 @@ namespace Rift::UI
 						ImGui::SameLine();
 					}
 
-					ImGui::TextColored(textColor, title.c_str());
+					UI::TextColored(textColor, title);
 					wasTitleRendered = true;
 				}
 
@@ -223,7 +224,7 @@ namespace Rift::UI
 #endif
 					}
 
-					ImGui::Text(message.c_str());    // Render content text
+					UI::Text(message);    // Render content text
 				}
 
 				ImGui::PopTextWrapPos();

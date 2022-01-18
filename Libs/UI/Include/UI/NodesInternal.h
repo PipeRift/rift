@@ -142,7 +142,7 @@ namespace Rift::Nodes
 		Id id;
 		v2 Origin = v2::Zero();    // The node origin is in editor space
 		Rect TitleBarContentRect;
-		Rect Rect{v2::Zero(), v2::Zero()};
+		Rect rect{v2::Zero(), v2::Zero()};
 
 		struct
 		{
@@ -210,7 +210,7 @@ namespace Rift::Nodes
 
 		struct
 		{
-			Rect Rect;    // Coordinates in grid space
+			Rect rect;    // Coordinates in grid space
 		} boxSelector;
 
 		ClickInteractionState() : type(ClickInteractionType_None) {}
@@ -322,10 +322,10 @@ namespace Rift::Nodes
 		Scope currentScope;
 
 		// Configuration state
-		IO Io;
-		Style Style;
+		IO io;
+		Style style;
 		ImVector<ColElement> ColorModifierStack;
-		ImVector<StyleVarElement> StyleModifierStack;
+		ImVector<StyleVarElement> styleModifierStack;
 		ImGuiTextBuffer TextBuffer;
 
 		i32 CurrentPinFlags;

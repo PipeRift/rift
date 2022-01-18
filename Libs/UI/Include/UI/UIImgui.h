@@ -96,11 +96,44 @@ namespace Rift::UI
 
 	inline void PushStyleColor(ImGuiCol idx, const LinearColor& color)
 	{
-		UI::PushStyleColor(idx, ImVec4{color.r, color.g, color.b, color.a});
+		UI::PushStyleColor(idx, color);
 	}
 
 	inline void PushStyleColor(ImGuiCol idx, Color color)
 	{
 		UI::PushStyleColor(idx, color.DWColor());
 	}
+
+	inline void Text(const char* fmt, ...)
+	{
+		va_list args;
+		va_start(args, fmt);
+		TextV(fmt, args);
+		va_end(args);
+	}
+	inline void Text(StringView text)
+	{
+		TextUnformatted(text.data(), text.data() + text.size());
+	}
+
+	inline void TextColoredUnformatted(
+	    const LinearColor& color, const char* text, const char* textEnd = nullptr)
+	{
+		PushStyleColor(ImGuiCol_Text, color);
+		TextUnformatted(text, textEnd);
+		PopStyleColor();
+	}
+
+	inline void TextColored(const LinearColor& color, const char* fmt, ...)
+	{
+		va_list args;
+		va_start(args, fmt);
+		TextColoredV(color, fmt, args);
+		va_end(args);
+	}
+	inline void TextColored(const LinearColor& color, StringView text)
+	{
+		TextColoredUnformatted(color, text.data(), text.data() + text.size());
+	}
+
 }    // namespace Rift::UI
