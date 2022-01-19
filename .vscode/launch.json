@@ -9,7 +9,9 @@
             "type": "lldb",
             "request": "launch",
             "program": "${command:cmake.launchTargetPath}",
-            "args": [],
+            "args": [
+                "${workspaceFolder}/Project"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/Project",
             "console": "integratedTerminal"

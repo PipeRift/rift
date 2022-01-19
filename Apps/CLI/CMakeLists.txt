@@ -11,6 +11,8 @@ target_link_libraries(RiftCLI PUBLIC Rift::Rift CLI11)
 rift_target_define_platform(RiftCLI)
 rift_target_shared_output_directory(RiftCLI)
 
+set_icon(RiftCLI ../../Resources/Icon.ico)
+
 install(TARGETS RiftCLI
     EXPORT RiftTargets
     LIBRARY DESTINATION Lib

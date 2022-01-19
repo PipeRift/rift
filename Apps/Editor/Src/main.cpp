@@ -2,13 +2,16 @@
 
 #include "Editor.h"
 
+#include <iostream>
+
+
 #ifndef RUN_AS_CLI
 #	define RUN_AS_CLI 1
 #endif
 
-int RunEditor()
+int RunEditor(Rift::StringView projectPath)
 {
-	return Rift::Editor::Get().Run();
+	return Rift::Editor::Get().Run(projectPath);
 }
 
 #if PLATFORM_WINDOWS && !RUN_AS_CLI
@@ -16,11 +19,11 @@ int RunEditor()
 #	include <windows.h>
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
 {
-	return RunEditor();
+	return RunEditor(__argc > 1 ? __argv[1] : Rift::StringView{});
 }
 #else
-int main(int, char**)
+int main(int argc, char* argv[])
 {
-	return RunEditor();
+	return RunEditor(argc > 1 ? argv[1] : Rift::StringView{});
 }
 #endif
