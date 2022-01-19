@@ -30,7 +30,7 @@ namespace Rift
 
 		~Editor();
 
-		int Run();
+		int Run(StringView projectPath = {});
 
 		void Tick();
 

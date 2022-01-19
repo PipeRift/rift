@@ -8,6 +8,7 @@
 #include <RiftContext.h>
 
 #include <chrono>
+#include <CLI/CLI.hpp>
 
 
 using namespace Rift;
@@ -15,10 +16,15 @@ using namespace Rift;
 
 int main(int argc, char** argv)
 {
+	CLI::App app{"Rift compiler"};
+	String pathStr;
+	app.add_option("-p,--project", pathStr, "Project path to open")->required();
+	CLI11_PARSE(app, argc, argv);
+
 	ZoneScopedNC("CLI Execution", 0x459bd1);
 	auto context = InitializeContext<RiftContext>();
 
-	const Path path{"Project"};
+	const Path path = Paths::FromString(pathStr);
 	AST::Tree ast;
 	Modules::OpenProject(ast, path);
 

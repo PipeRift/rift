@@ -28,6 +28,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(CMake/DownloadProject.cmake)
 include(Libs/Core/CMake/Util.cmake)
 include(CMake/Util.cmake)
+include(CMake/SetIcon.cmake)
+include(CMake/CheckClangTools.cmake)
 
 add_subdirectory(Extern)
 
@@ -54,10 +56,6 @@ if(BUILD_TESTING AND RIFT_BUILD_TESTS)
 endif()
 
 # clang-format
-include(CMake/CheckClangTools.cmake)
-
-
-
 if(CLANG_FORMAT_EXE)
     # Additional targets to perform clang-format/clang-tidy
     file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS

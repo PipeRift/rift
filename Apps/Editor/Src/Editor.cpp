@@ -21,7 +21,7 @@
 
 namespace Rift
 {
-	int Editor::Run()
+	int Editor::Run(StringView projectPath)
 	{
 		FileWatcher::StartAsync();
 		InitializeContext<RiftContext>();
@@ -35,6 +35,9 @@ namespace Rift
 		}
 		Graph::Init();
 		Log::Info("Editor is ready");
+
+		// Open a project if a path has been provided
+		OpenProject(Paths::FromString(projectPath), false);
 
 		while (!UI::WantsToClose())
 		{

@@ -96,12 +96,12 @@ namespace Rift::UI
 
 	inline void PushStyleColor(ImGuiCol idx, const LinearColor& color)
 	{
-		UI::PushStyleColor(idx, color);
+		ImGui::PushStyleColor(idx, color);
 	}
 
 	inline void PushStyleColor(ImGuiCol idx, Color color)
 	{
-		UI::PushStyleColor(idx, color.DWColor());
+		ImGui::PushStyleColor(idx, color.DWColor());
 	}
 
 	inline void Text(const char* fmt, ...)

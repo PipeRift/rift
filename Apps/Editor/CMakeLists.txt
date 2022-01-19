@@ -14,6 +14,8 @@ target_link_libraries(RiftEditor PUBLIC
 rift_target_define_platform(RiftEditor)
 rift_target_shared_output_directory(RiftEditor)
 
+set_icon(RiftEditor ../../Resources/Icon.ico)
+
 install(TARGETS RiftEditor
     EXPORT RiftTargets
     LIBRARY DESTINATION Lib

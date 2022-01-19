@@ -23,7 +23,7 @@ namespace Rift::Modules
 	{
 		if (path.empty())
 		{
-			Log::Error("Cant open project: Invalid path");
+			Log::Error("Can't open project: Invalid path");
 			return false;
 		}
 
