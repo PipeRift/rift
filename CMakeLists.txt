@@ -33,16 +33,10 @@ include(CMake/CheckClangTools.cmake)
 
 add_subdirectory(Extern)
 
-# Framework
-set(RIFT_CORE_BUILD_TESTS ${RIFT_BUILD_TESTS} CACHE BOOL "Build RiftCore tests")
-add_subdirectory(Libs/Core)
-add_subdirectory(Libs/Framework)
+add_subdirectory(Libs)
 
-# CLI
+# Executables
 add_subdirectory(Apps/CLI)
-
-# Editor
-add_subdirectory(Libs/UI)
 add_subdirectory(Apps/Editor)
 
 # Resources folder

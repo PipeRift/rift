@@ -14,9 +14,7 @@
 cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 function(set_icon TARGET path_to_icon)
-  if (NOT WIN32)
-	message(WARNING "set_icon currently supports only Windows platform :(")
-  else (WIN32)
+  if (PLATFORM_WINDOWS)
 	# Name of icon
 	get_filename_component(icon-name ${path_to_icon} NAME_WE)
 	# Extension of icon
