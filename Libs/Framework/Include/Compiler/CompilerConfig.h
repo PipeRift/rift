@@ -4,15 +4,15 @@
 
 #include "AST/Tree.h"
 
-#include <CoreObject.h>
 #include <Reflection/Reflection.h>
+#include <Types/Struct.h>
 
 
 namespace Rift::Compiler
 {
 	struct Config : public Struct
 	{
-		// STRUCT(Config, Struct)
+		STRUCT(Config, Struct)
 
 		String buildMode{"Release"};
 

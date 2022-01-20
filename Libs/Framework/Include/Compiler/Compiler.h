@@ -4,8 +4,6 @@
 
 #include "Compiler/CompilerConfig.h"
 
-#include <CoreObject.h>
-
 
 namespace Rift::Compiler
 {
