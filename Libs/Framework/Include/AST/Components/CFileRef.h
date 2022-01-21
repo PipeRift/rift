@@ -3,7 +3,7 @@
 
 #include <AST/Tree.h>
 #include <Files/Paths.h>
-#include <Object/Struct.h>
+#include <Types/Struct.h>
 
 
 namespace Rift

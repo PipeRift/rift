@@ -4,7 +4,7 @@
 #include "AST/Components/CCallExpr.h"
 #include "AST/Components/CType.h"
 
-#include <Object/Struct.h>
+#include <Types/Struct.h>
 
 
 namespace Rift

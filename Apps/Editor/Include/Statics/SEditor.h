@@ -7,9 +7,9 @@
 #include "Tools/ASTDebugger.h"
 #include "Tools/GraphPlayground.h"
 
-#include <CoreObject.h>
 #include <Files/FileWatcher.h>
 #include <Memory/OwnPtr.h>
+#include <Types/Struct.h>
 #include <UI/UI.h>
 
 

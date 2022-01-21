@@ -13,3 +13,9 @@
 [submodule "Extern/IconFontCppHeaders"]
 	path = Extern/IconFontCppHeaders
 	url = https://github.com/juliettef/IconFontCppHeaders.git
+[submodule "Extern/LLVM"]
+	path = Extern/LLVM
+	url = https://github.com/llvm/llvm-project.git
+[submodule "Extern/vcpkg"]
+	path = Extern/vcpkg
+	url = https://github.com/microsoft/vcpkg.git

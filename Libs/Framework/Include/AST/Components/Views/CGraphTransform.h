@@ -2,7 +2,7 @@
 #pragma once
 
 #include <Math/Vector.h>
-#include <Object/Struct.h>
+#include <Types/Struct.h>
 
 
 namespace Rift

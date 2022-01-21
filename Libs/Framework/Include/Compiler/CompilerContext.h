@@ -4,9 +4,9 @@
 
 #include "Compiler/CompilerConfig.h"
 
-#include <CoreObject.h>
 #include <Profiler.h>
 #include <Reflection/Reflection.h>
+#include <Types/Struct.h>
 
 
 namespace Rift::Compiler
@@ -20,7 +20,7 @@ namespace Rift::Compiler
 	};
 
 
-	struct Context : public Struct
+	class Context : public Struct
 	{
 		STRUCT(Context, Struct)
 
@@ -29,6 +29,7 @@ namespace Rift::Compiler
 		TArray<CompileError> errors;
 
 
+	public:
 		Context(AST::Tree& ast, const Config& config) : ast{ast}, config{config} {}
 
 		// Errors

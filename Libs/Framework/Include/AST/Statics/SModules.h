@@ -3,7 +3,7 @@
 
 #include "AST/Types.h"
 
-#include <CoreObject.h>
+#include <Types/Struct.h>
 
 
 namespace Rift
