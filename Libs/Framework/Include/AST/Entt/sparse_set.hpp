@@ -1,6 +1,8 @@
-#pragma once
+// Copyright 2015-2022 Piperift - All rights reserved
 // Modified version of sparse_set.hpp from entt
 // https://github.com/skypjack/entt
+
+#pragma once
 
 #include "AST/Types.h"
 

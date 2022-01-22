@@ -1,4 +1,4 @@
-// Copyright 2015-2021 Piperift - All rights reserved
+// Copyright 2015-2022 Piperift - All rights reserved
 // Coding standards for Rift and Rift-Core
 
 // [header.format] Use .h for header files and .cpp for source files
@@ -56,7 +56,7 @@ public:
 
 
 // [header.class.name] templates have a T preffix
-template <typename T>
+template<typename T>
 class TSomeTemplate
 {};
 
