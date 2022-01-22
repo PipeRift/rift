@@ -1,7 +1,7 @@
 
 file(GLOB_RECURSE BACKEND_LLVM_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
 
-add_library(RiftBackendLLVM STATIC)
+add_library(RiftBackendLLVM SHARED)
 add_library(Rift::Backend::LLVM ALIAS RiftBackendLLVM)
 target_include_directories(RiftBackendLLVM PUBLIC Include)
 target_sources(RiftBackendLLVM PRIVATE ${BACKEND_LLVM_SOURCE_FILES})

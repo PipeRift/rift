@@ -2,10 +2,19 @@
 
 #pragma once
 
-#include "Compiler/Context.h"
+#include <Compiler/Backend.h>
 
 
 namespace Rift::Compiler::LLVM
 {
-	void Build(Context& ast) {}
+	class LLVMBackend : public Backend
+	{
+		CLASS(LLVMBackend, Backend)
+
+	public:
+		Name GetName() override
+		{
+			return "LLVM";
+		}
+	};
 }    // namespace Rift::Compiler::LLVM

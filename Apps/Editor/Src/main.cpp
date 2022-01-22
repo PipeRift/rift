@@ -2,6 +2,10 @@
 
 #include "Editor.h"
 
+// Backends
+#include <CppBackend.h>
+#include <LLVMBackend.h>
+
 #include <iostream>
 
 

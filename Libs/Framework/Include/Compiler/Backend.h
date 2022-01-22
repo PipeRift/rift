@@ -9,6 +9,12 @@ namespace Rift::Compiler
 {
 	class Backend : public Class
 	{
-		STRUCT(Backend, Class)
+		CLASS(Backend, Class)
+
+	public:
+		virtual Name GetName()
+		{
+			return Name::None();
+		}
 	};
 }    // namespace Rift::Compiler

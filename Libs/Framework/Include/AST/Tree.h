@@ -21,17 +21,17 @@ namespace Rift::AST
 	{
 		bool operator()(const OwnPtr& a, const OwnPtr& b) const
 		{
-			return a.GetType() < b.GetType();
+			return a.GetTypeId() < b.GetTypeId();
 		}
 
 		bool operator()(Refl::TypeId a, const OwnPtr& b) const
 		{
-			return a < b.GetType();
+			return a < b.GetTypeId();
 		}
 
 		bool operator()(const OwnPtr& a, Refl::TypeId b) const
 		{
-			return a.GetType() < b;
+			return a.GetTypeId() < b;
 		}
 	};
 
@@ -255,7 +255,7 @@ namespace Rift::AST
 			i32 index                 = statics.LowerBound<Refl::TypeId, SortLessStatics>(typeId);
 			if (index != NO_INDEX)
 			{
-				if (typeId != statics[index].GetType())
+				if (typeId != statics[index].GetTypeId())
 				{
 					// Not found, insert sorted
 					statics.Insert(index, MakeOwned<Static>(Forward<Static>(newValue)));
@@ -275,7 +275,7 @@ namespace Rift::AST
 			i32 index                 = statics.LowerBound<Refl::TypeId, SortLessStatics>(typeId);
 			if (index != NO_INDEX)
 			{
-				if (typeId != statics[index].GetType())
+				if (typeId != statics[index].GetTypeId())
 				{
 					// Not found, insert sorted
 					statics.Insert(index, MakeOwned<Static>(newValue));

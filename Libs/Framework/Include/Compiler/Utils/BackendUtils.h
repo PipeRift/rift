@@ -2,15 +2,17 @@
 
 #pragma once
 
+#include "Compiler/Backend.h"
 #include "Compiler/Context.h"
 
 #include <Memory/OwnPtr.h>
-#include <Refl/Static/ClassType.h>
+#include <Reflection/Static/ClassType.h>
 
 
 namespace Rift::Compiler
 {
-	TArray<Refl::ClassType*> FindBackends();
+	TArray<Refl::ClassType*> GetBackendTypes();
+	TArray<TOwnPtr<Backend>> CreateBackends();
 
 	TOwnPtr<Context> CreateBackend(Refl::ClassType* backendClass);
 }    // namespace Rift::Compiler

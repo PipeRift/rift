@@ -7,7 +7,12 @@ file(GLOB_RECURSE CLI_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
 target_sources(RiftCLI PRIVATE ${CLI_SOURCE_FILES})
 rift_target_enable_CPP20(RiftCLI)
 set_target_properties (RiftCLI PROPERTIES FOLDER Rift)
-target_link_libraries(RiftCLI PUBLIC Rift::Rift CLI11)
+target_link_libraries(RiftCLI PUBLIC
+    Rift::Rift
+    Rift::Backend::LLVM
+    Rift::Backend::CPP
+    CLI11
+)
 rift_target_define_platform(RiftCLI)
 rift_target_shared_output_directory(RiftCLI)
 

@@ -1,7 +1,7 @@
 
 file(GLOB_RECURSE BACKEND_CPP_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
 
-add_library(RiftBackendCPP STATIC)
+add_library(RiftBackendCPP SHARED)
 add_library(Rift::Backend::CPP ALIAS RiftBackendCPP)
 target_include_directories(RiftBackendCPP PUBLIC Include)
 target_sources(RiftBackendCPP PRIVATE ${BACKEND_CPP_SOURCE_FILES})

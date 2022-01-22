@@ -8,6 +8,8 @@ rift_target_enable_CPP20(RiftEditor)
 set_target_properties (RiftEditor PROPERTIES FOLDER Rift)
 target_link_libraries(RiftEditor PUBLIC
     Rift::Rift
+    Rift::Backend::LLVM
+    Rift::Backend::CPP
     Rift::UI
     CLI11
 )

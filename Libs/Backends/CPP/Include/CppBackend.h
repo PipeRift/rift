@@ -2,10 +2,19 @@
 
 #pragma once
 
-#include "Compiler/Context.h"
+#include <Compiler/Backend.h>
 
 
 namespace Rift::Compiler::Cpp
 {
-	void Build(Context& ast) {}
+	class CppBackend : public Backend
+	{
+		CLASS(CppBackend, Backend)
+
+	public:
+		Name GetName() override
+		{
+			return "Cpp";
+		}
+	};
 }    // namespace Rift::Compiler::Cpp
