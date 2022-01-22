@@ -5,7 +5,7 @@
 #include "AST/Systems/LoadSystem.h"
 #include "AST/Systems/TypeSystem.h"
 #include "AST/Utils/ModuleUtils.h"
-#include "Compiler/CompilerContext.h"
+#include "Compiler/Context.h"
 #include "Compiler/Cpp/CppBackend.h"
 #include "Compiler/Systems/OptimizationSystem.h"
 #include "RiftContext.h"

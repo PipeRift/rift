@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Compiler/CompilerContext.h"
+#include "Compiler/Context.h"
 
 
 namespace Rift::Compiler::Cpp

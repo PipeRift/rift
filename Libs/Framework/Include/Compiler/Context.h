@@ -20,7 +20,7 @@ namespace Rift::Compiler
 	};
 
 
-	class Context : public Struct
+	struct Context : public Struct
 	{
 		STRUCT(Context, Struct)
 

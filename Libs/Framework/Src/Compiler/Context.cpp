@@ -1,6 +1,6 @@
 // Copyright 2015-2020 Piperift - All rights reserved
 
-#include "Compiler/CompilerContext.h"
+#include "Compiler/Context.h"
 
 
 namespace Rift::Compiler

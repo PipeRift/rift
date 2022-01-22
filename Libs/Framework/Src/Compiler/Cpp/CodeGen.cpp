@@ -15,7 +15,7 @@
 #include "AST/Tree.h"
 #include "AST/Utils/Hierarchy.h"
 #include "AST/Utils/ModuleUtils.h"
-#include "Compiler/CompilerContext.h"
+#include "Compiler/Context.h"
 #include "Compiler/Cpp/Components/CCppCodeGenFragment.h"
 #include "Compiler/Cpp/CppBackend.h"
 
