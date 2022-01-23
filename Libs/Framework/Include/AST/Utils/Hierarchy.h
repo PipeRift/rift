@@ -32,7 +32,7 @@ namespace Rift::AST::Hierarchy
 	 */
 	void GetChildrenDeep(
 	    const Tree& ast, TSpan<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth = 0);
-	Id GetParent(Tree& ast, Id node);
+	Id GetParent(const Tree& ast, Id node);
 	void GetParents(const Tree& ast, TSpan<Id> children, TArray<Id>& outParents);
 
 	/**

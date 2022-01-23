@@ -47,7 +47,7 @@ namespace Rift::Compiler
 
 			if (std::system(generate.c_str()) > 0)
 			{
-				context.AddError("Failed to generate cmake.");
+				context.AddError("Failed to generate cmake code");
 				return;
 			}
 
@@ -56,7 +56,7 @@ namespace Rift::Compiler
 			    Paths::ToString(cmakePath), context.config.buildMode);
 			if (std::system(build.c_str()) > 0)
 			{
-				context.AddError("Failed to generate cmake.");
+				context.AddError("C++ build failed");
 				return;
 			}
 		}
@@ -95,7 +95,7 @@ namespace Rift::Compiler
 		Cpp::GenerateCode(context, codePath);
 		if (context.HasErrors())
 		{
-			context.AddError("Failed to generate C++ code.");
+			context.AddError("Failed to generate C++ code");
 			return;
 		}
 
@@ -114,7 +114,7 @@ namespace Rift::Compiler
 		Cpp::BuildCode(context, codePath, cmakePath);
 		if (context.HasErrors())
 		{
-			context.AddError("Failed to compile C++ code.");
+			context.AddError("Compilation failed while building C++ code");
 			return;
 		}
 

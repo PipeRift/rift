@@ -222,7 +222,7 @@ namespace Rift::AST::Hierarchy
 		}
 	}
 
-	Id GetParent(Tree& ast, Id node)
+	Id GetParent(const Tree& ast, Id node)
 	{
 		if (auto* child = GetCChild(ast, node))
 		{

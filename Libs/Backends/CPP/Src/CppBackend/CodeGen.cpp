@@ -129,17 +129,17 @@ namespace Rift::Compiler::Cpp
 	void ForwardDeclareTypes(String& code, const AST::Tree& ast, AST::Id moduleId,
 	    const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
-		auto identifiers = ast.Filter<const CIdentifier>();
+		auto types = ast.Filter<const CType>();
 		for (AST::Id entity : structs)
 		{
-			const auto& identifier = identifiers.Get<const CIdentifier>(entity);
-			ForwardDeclareStruct(code, identifier.name.ToString());
+			const auto& type = types.Get<const CType>(entity);
+			ForwardDeclareStruct(code, type.name.ToString());
 		}
 
 		for (AST::Id entity : classes)
 		{
-			const auto& identifier = identifiers.Get<const CIdentifier>(entity);
-			ForwardDeclareStruct(code, identifier.name.ToString());
+			const auto& type = types.Get<const CType>(entity);
+			ForwardDeclareStruct(code, type.name.ToString());
 		}
 	}
 
@@ -163,19 +163,19 @@ namespace Rift::Compiler::Cpp
 	void DeclareTypes(String& code, const AST::Tree& ast, AST::Id moduleId,
 	    const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
-		auto identifiers = ast.Filter<const CIdentifier>();
+		auto types = ast.Filter<const CType>();
 		for (AST::Id entity : structs)
 		{
-			auto& identifier = identifiers.Get<const CIdentifier>(entity);
-			DeclareStruct(code, identifier.name.ToString(), {}, [&ast, entity](String& innerCode) {
+			const auto& type = types.Get<const CType>(entity);
+			DeclareStruct(code, type.name.ToString(), {}, [&ast, entity](String& innerCode) {
 				AddTypeVariables(innerCode, ast, entity);
 			});
 		}
 
 		for (AST::Id entity : classes)
 		{
-			auto& identifier = identifiers.Get<const CIdentifier>(entity);
-			DeclareStruct(code, identifier.name.ToString(), {}, [&ast, entity](String& innerCode) {
+			const auto& type = types.Get<const CType>(entity);
+			DeclareStruct(code, type.name.ToString(), {}, [&ast, entity](String& innerCode) {
 				AddTypeVariables(innerCode, ast, entity);
 			});
 		}
@@ -186,17 +186,16 @@ namespace Rift::Compiler::Cpp
 	    String& code, const AST::Tree& ast, AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
 		auto identifiers = ast.Filter<const CIdentifier>();
-		auto classesView = ast.Filter<const CIdentifier, const CClassDecl>();
+		auto classesView = ast.Filter<const CType, const CClassDecl>();
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
-
-			const CChild* parent = AST::Hierarchy::GetCChild(ast, entity);
-			if (parent && ast.IsValid(parent->parent))
+			AST::Id parentId = AST::Hierarchy::GetParent(ast, entity);
+			if (!IsNone(parentId) && classesView.Has(parentId))
 			{
-				if (const auto* parentId = classesView.TryGet<const CIdentifier>(parent->parent))
+				if (auto* type = classesView.TryGet<const CType>(parentId))
 				{
-					ownerName = parentId->name.ToString();
+					ownerName = type->name.ToString();
 				}
 			}
 
@@ -210,16 +209,16 @@ namespace Rift::Compiler::Cpp
 	    String& code, const AST::Tree& ast, AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
 		auto identifiers = ast.Filter<const CIdentifier>();
-		auto classesView = ast.Filter<const CIdentifier, const CClassDecl>();
+		auto classesView = ast.Filter<const CType, const CClassDecl>();
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
-			const CChild* child = AST::Hierarchy::GetCChild(ast, entity);
-			if (child && ast.IsValid(child->parent))
+			AST::Id parentId = AST::Hierarchy::GetParent(ast, entity);
+			if (!IsNone(parentId) && classesView.Has(parentId))
 			{
-				if (auto* parentId = classesView.TryGet<const CIdentifier>(child->parent))
+				if (auto* type = classesView.TryGet<const CType>(parentId))
 				{
-					ownerName = parentId->name.ToString();
+					ownerName = type->name.ToString();
 				}
 			}
 
@@ -269,15 +268,11 @@ namespace Rift::Compiler::Cpp
 		AST::Hierarchy::GetChildren(ast, moduleId, classes);
 		structs = classes;
 
-		auto classesView = ast.Filter<const CClassDecl, const CType, const CIdentifier>();
-		classes.RemoveIfSwap([&classesView](AST::Id entity) {
-			return !classesView.Has(entity);
-		});
+		auto classesView = ast.Filter<const CClassDecl, const CType>();
+		classesView.FilterIds(classes);
 
-		auto structsView = ast.Filter<const CStructDecl, const CType, const CIdentifier>();
-		structs.RemoveIfSwap([&structsView](AST::Id entity) {
-			return !structsView.Has(entity);
-		});
+		auto structsView = ast.Filter<const CStructDecl, const CType>();
+		structsView.FilterIds(structs);
 
 		Spacing(code);
 		Comment(code, "Forward declarations");

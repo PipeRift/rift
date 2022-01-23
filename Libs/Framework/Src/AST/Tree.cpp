@@ -158,7 +158,7 @@ namespace Rift::AST
 			SetStatic<STypes>(*typesStatic);
 		}
 
-		SetupNativeTypes();
+		nativeTypes = other.nativeTypes;
 		CachePools();
 	}
 
@@ -170,9 +170,9 @@ namespace Rift::AST
 		{
 			instance.pool->TransferToTree(*this);
 		}
-		statics = Move(other.statics);
+		statics     = Move(other.statics);
+		nativeTypes = other.nativeTypes;
 
-		SetupNativeTypes();
 		CachePools();
 	}
 }    // namespace Rift::AST
