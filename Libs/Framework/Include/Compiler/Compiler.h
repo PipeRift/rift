@@ -2,17 +2,20 @@
 
 #pragma once
 
+#include "Compiler/Backend.h"
 #include "Compiler/CompilerConfig.h"
 
 
 namespace Rift::Compiler
 {
-	enum class EBackend : u8
+	void Build(AST::Tree& tree, const Config& config, TPtr<Backend> backend);
+
+	inline void Build(AST::Tree& tree, const Config& config, Refl::ClassType* backendType)
 	{
-		Cpp,
-		LLVM
-	};
-
-
-	void Build(AST::Tree& tree, const Config& config, EBackend backend);
+		if (backendType)
+		{
+			TOwnPtr<Backend> backend = MakeOwned<Backend>(backendType);
+			Build(tree, config, backend);
+		}
+	}
 }    // namespace Rift::Compiler

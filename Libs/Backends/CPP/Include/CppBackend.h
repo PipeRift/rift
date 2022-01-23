@@ -5,7 +5,7 @@
 #include <Compiler/Backend.h>
 
 
-namespace Rift::Compiler::Cpp
+namespace Rift::Compiler
 {
 	class CppBackend : public Backend
 	{
@@ -16,5 +16,7 @@ namespace Rift::Compiler::Cpp
 		{
 			return "Cpp";
 		}
+
+		void Build(Context& context) override;
 	};
-}    // namespace Rift::Compiler::Cpp
+}    // namespace Rift::Compiler

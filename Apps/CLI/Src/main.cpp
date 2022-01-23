@@ -45,6 +45,19 @@ namespace Rift
 		std::string stdDesc = Strings::Convert<std::string>(desc);
 		app.add_option("-b,--backend", selected, stdDesc, true);
 	}
+
+	TPtr<Compiler::Backend> FindBackendByName(
+	    const TArray<TOwnPtr<Compiler::Backend>>& backends, Name name)
+	{
+		TOwnPtr<Compiler::Backend>* backend = backends.Find([name](const auto& backend) {
+			return backend->GetName() == name;
+		});
+		if (backend)
+		{
+			return *backend;
+		}
+		return {};
+	}
 }    // namespace Rift
 
 int main(int argc, char** argv)
@@ -53,12 +66,14 @@ int main(int argc, char** argv)
 	String pathStr;
 	app.add_option("-p,--project", pathStr, "Project path")->required();
 
-	auto backends = Compiler::CreateBackends();
 
-	String backendStr;
-	Rift::AddBackendOption(app, backends, backendStr);
+	String selectedBackendStr;
+	auto availableBackends = Compiler::CreateBackends();
+	AddBackendOption(app, availableBackends, selectedBackendStr);
 
 	CLI11_PARSE(app, argc, argv);
+
+	TPtr<Compiler::Backend> backend = FindBackendByName(availableBackends, selectedBackendStr);
 
 	ZoneScopedNC("CLI Execution", 0x459bd1);
 	auto context = InitializeContext<RiftContext>();
@@ -73,8 +88,8 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	Rift::Compiler::Config config;
-	Rift::Compiler::Build(ast, config, Rift::Compiler::EBackend::Cpp);
+	Compiler::Config config;
+	Compiler::Build(ast, config, backend);
 
 	while (true)
 	{

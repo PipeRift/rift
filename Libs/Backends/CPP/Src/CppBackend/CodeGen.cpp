@@ -1,24 +1,24 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Compiler/Cpp/CodeGen.h"
+#include "CppBackend/CodeGen.h"
 
-#include "AST/Components/CChild.h"
-#include "AST/Components/CClassDecl.h"
-#include "AST/Components/CFunctionDecl.h"
-#include "AST/Components/CIdentifier.h"
-#include "AST/Components/CModule.h"
-#include "AST/Components/CParameterDecl.h"
-#include "AST/Components/CParent.h"
-#include "AST/Components/CStructDecl.h"
-#include "AST/Components/CType.h"
-#include "AST/Components/CVariableDecl.h"
-#include "AST/Tree.h"
-#include "AST/Utils/Hierarchy.h"
-#include "AST/Utils/ModuleUtils.h"
-#include "Compiler/Context.h"
-#include "Compiler/Cpp/Components/CCppCodeGenFragment.h"
-#include "Compiler/Cpp/CppBackend.h"
+#include "CppBackend.h"
+#include "CppBackend/Components/CCppCodeGenFragment.h"
 
+#include <AST/Components/CChild.h>
+#include <AST/Components/CClassDecl.h>
+#include <AST/Components/CFunctionDecl.h>
+#include <AST/Components/CIdentifier.h>
+#include <AST/Components/CModule.h>
+#include <AST/Components/CParameterDecl.h>
+#include <AST/Components/CParent.h>
+#include <AST/Components/CStructDecl.h>
+#include <AST/Components/CType.h>
+#include <AST/Components/CVariableDecl.h>
+#include <AST/Tree.h>
+#include <AST/Utils/Hierarchy.h>
+#include <AST/Utils/ModuleUtils.h>
+#include <Compiler/Context.h>
 #include <Files/Files.h>
 #include <Strings/String.h>
 

@@ -1,11 +1,11 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Compiler/Cpp/CMakeGen.h"
+#include "CppBackend/CMakeGen.h"
 
-#include "AST/Components/CModule.h"
-#include "AST/Utils/ModuleUtils.h"
-#include "Compiler/Cpp/CppBackend.h"
+#include "CppBackend.h"
 
+#include <AST/Components/CModule.h>
+#include <AST/Utils/ModuleUtils.h>
 #include <Files/Files.h>
 
 

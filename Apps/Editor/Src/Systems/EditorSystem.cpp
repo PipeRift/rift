@@ -22,6 +22,7 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Containers/Array.h>
+#include <CppBackend.h>
 #include <IconsFontAwesome5.h>
 #include <RiftContext.h>
 #include <UI/UI.h>
@@ -336,14 +337,14 @@ namespace Rift::EditorSystem
 				if (UI::MenuItem("Build current"))
 				{
 					AST::Tree compileAST{ast};    // Intentional copy
-					Rift::Compiler::Config config;
-					Rift::Compiler::Build(compileAST, config, Rift::Compiler::EBackend::Cpp);
+					Compiler::Config config;
+					Compiler::Build(compileAST, config, Compiler::CppBackend::GetStaticType());
 				}
 				if (UI::MenuItem("Build all"))
 				{
 					AST::Tree compileAST{ast};    // Intentional copy
-					Rift::Compiler::Config config;
-					Rift::Compiler::Build(compileAST, config, Rift::Compiler::EBackend::Cpp);
+					Compiler::Config config;
+					Compiler::Build(compileAST, config, Compiler::CppBackend::GetStaticType());
 				}
 				UI::EndMenu();
 			}

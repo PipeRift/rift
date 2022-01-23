@@ -5,7 +5,7 @@
 #include <Compiler/Backend.h>
 
 
-namespace Rift::Compiler::LLVM
+namespace Rift::Compiler
 {
 	class LLVMBackend : public Backend
 	{
@@ -16,5 +16,10 @@ namespace Rift::Compiler::LLVM
 		{
 			return "LLVM";
 		}
+
+		void Build(Context& context) override
+		{
+			context.AddError("LLVM backend is not yet supported.");
+		}
 	};
-}    // namespace Rift::Compiler::LLVM
+}    // namespace Rift::Compiler

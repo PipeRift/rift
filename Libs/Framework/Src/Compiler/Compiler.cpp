@@ -6,23 +6,20 @@
 #include "AST/Systems/TypeSystem.h"
 #include "AST/Utils/ModuleUtils.h"
 #include "Compiler/Context.h"
-#include "Compiler/Cpp/CppBackend.h"
 #include "Compiler/Systems/OptimizationSystem.h"
 #include "RiftContext.h"
 
 
 namespace Rift::Compiler
 {
-	void Build(AST::Tree& ast, const Config& config, EBackend backend)
+	void Build(AST::Tree& ast, const Config& config, TPtr<Backend> backend)
 	{
 		Context context{ast, config};
 
-		// Early backend check
-		switch (backend)
+		if (!backend)
 		{
-			case EBackend::Cpp: break;
-			case EBackend::LLVM: context.AddError("LLVM backend is not yet supported."); return;
-			default: context.AddError("Unknown backend."); return;
+			context.AddError("Invalid backend.");
+			return;
 		}
 
 		LoadSystem::Init(ast);
@@ -41,9 +38,6 @@ namespace Rift::Compiler
 		OptimizationSystem::PruneDisconnectedExpressions(ast);
 		TypeSystem::RunChecks(ast);
 
-		switch (backend)
-		{
-			case EBackend::Cpp: Cpp::Build(context); break;
-		}
+		backend->Build(context);
 	}
 }    // namespace Rift::Compiler

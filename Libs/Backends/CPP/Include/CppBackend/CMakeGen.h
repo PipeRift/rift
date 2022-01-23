@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "AST/Types.h"
-
+#include <AST/Types.h>
 #include <Files/Paths.h>
 
 

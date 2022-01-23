@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Compiler/Context.h"
+
 #include <Types/Class.h>
 
 
@@ -15,6 +17,12 @@ namespace Rift::Compiler
 		virtual Name GetName()
 		{
 			return Name::None();
+		}
+
+		virtual void Build(Context& context)
+		{
+			CheckMsg(false, "Backend '{}' tried to run but Build() is not implemented.",
+			    GetName().ToString());
 		}
 	};
 }    // namespace Rift::Compiler
