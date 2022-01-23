@@ -12,6 +12,7 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Context.h>
 #include <Files/Files.h>
+#include <Misc/DateTime.h>
 
 
 namespace Rift::Compiler
@@ -80,7 +81,7 @@ namespace Rift::Compiler
 		ZoneScopedC(0x459bd1);
 
 		Log::Info("Building project '{}'", Modules::GetProjectName(context.ast));
-
+		DateTime startTime = DateTime::Now();
 
 		Cpp::AssignNativeTypeNames(context.ast);
 
@@ -136,6 +137,7 @@ namespace Rift::Compiler
 			}
 		}
 
-		Log::Info("Build complete");
+		const float duration = (DateTime::Now() - startTime).GetTotalSeconds();
+		Log::Info("Build complete ({:.2f}s)", duration);
 	}
 }    // namespace Rift::Compiler
