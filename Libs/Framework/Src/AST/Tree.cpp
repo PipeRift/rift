@@ -73,6 +73,9 @@ namespace Rift::AST
 
 	void Tree::SetupNativeTypes()
 	{
+		// Remove any previous native types
+		Destroy(Filter<CNativeDecl>().GetIds());
+
 		nativeTypes.boolId = Create();
 		Add<CNativeDecl>(nativeTypes.boolId);
 		Add<CType>(nativeTypes.boolId, {"Bool"});
@@ -155,6 +158,7 @@ namespace Rift::AST
 			SetStatic<STypes>(*typesStatic);
 		}
 
+		SetupNativeTypes();
 		CachePools();
 	}
 
@@ -167,6 +171,8 @@ namespace Rift::AST
 			instance.pool->TransferToTree(*this);
 		}
 		statics = Move(other.statics);
+
+		SetupNativeTypes();
 		CachePools();
 	}
 }    // namespace Rift::AST

@@ -166,6 +166,17 @@ namespace Rift::AST
 			return access.Size();
 		}
 
+		TArray<AST::Id> GetIds()
+		{
+			TArray<AST::Id> ids;
+			auto endIt = end();
+			for (auto it = begin(); it != endIt; ++it)
+			{
+				ids.Add(*it);
+			}
+			return ids;
+		}
+
 		/**
 		 * @return ids matching the filter from another array
 		 */
