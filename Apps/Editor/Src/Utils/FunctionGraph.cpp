@@ -3,6 +3,7 @@
 #include "Utils/FunctionGraph.h"
 
 #include "AST/Components/CParameterDecl.h"
+#include "AST/Utils/ExpressionGraph.h"
 #include "AST/Utils/StatementGraph.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
@@ -252,20 +253,51 @@ namespace Rift::Graph
 				    "Inputs and pins must match. Graph might be corrupted.");
 				for (i32 i = 0; i < childOutputs->linkInputNodes.Size(); ++i)
 				{
-					const AST::Id outputPinIdx = childOutputs->linkPins[i];
-					const AST::Id inputNodeId  = childOutputs->linkInputNodes[i];
-					if (!IsNone(outputPinIdx) && !IsNone(inputNodeId))
+					const AST::Id outputPinId = childOutputs->linkPins[i];
+					const AST::Id inputNodeId = childOutputs->linkInputNodes[i];
+					if (!IsNone(outputPinId) && !IsNone(inputNodeId))
 					{
 						// NOTE: Input pin ids equal input node ids
 						// TODO: Execution pin ids atm are the same as the node id. Implement proper
 						// output pin support
-						Nodes::Link(i32(inputNodeId), i32(outputPinIdx), i32(inputNodeId));
+						Nodes::Link(i32(inputNodeId), i32(outputPinId), i32(inputNodeId));
 					}
 				}
 			}
 		}
-		Nodes::PopStyleVar();
 		Nodes::PopStyleColor(3);
+		Nodes::PopStyleVar();
+	}
+
+	void DrawExpressionLinks(AST::Tree& ast, const TArray<AST::Id>& children)
+	{
+		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 1.5f);
+		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
+
+		auto inputsFilter = ast.Filter<CExpressionInput>();
+		TArray<AST::Id> exprInputs;
+		AST::Hierarchy::GetChildren(ast, children, exprInputs);
+		inputsFilter.FilterIds(exprInputs);
+
+		for (AST::Id inputPinId : exprInputs)
+		{
+			const auto& input         = inputsFilter.Get<CExpressionInput>(inputPinId);
+			const AST::Id outputPinId = input.linkOutputPin;
+
+			if (!IsNone(outputPinId))
+			{
+				// #TODO: Implement link types
+				const Color color = Style::GetTypeColor<float>();
+				Nodes::PushStyleColor(Nodes::ColorVar_Link, color);
+				Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(color));
+
+				Nodes::Link(i32(inputPinId), i32(outputPinId), i32(inputPinId));
+
+				Nodes::PopStyleColor(2);
+			}
+		}
+		Nodes::PopStyleColor();
+		Nodes::PopStyleVar();
 	}
 
 	void DrawTypeGraph(AST::Tree& ast, AST::Id typeId, CTypeEditor& typeEditor)
@@ -303,8 +335,8 @@ namespace Rift::Graph
 				DrawFunctionDecls(ast, functions);
 				DrawCalls(ast, typeId, *children);
 				DrawLiterals(ast, *children);
-
 				DrawStatementLinks(ast, *children);
+				DrawExpressionLinks(ast, *children);
 			}
 
 			Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
@@ -315,14 +347,16 @@ namespace Rift::Graph
 			Nodes::Id inputPin;
 			if (Nodes::IsLinkCreated(outputPin, inputPin))
 			{
-				AST::StatementGraph::Connect(
+				AST::StatementGraph::TryConnect(
 				    ast, AST::Id(outputPin), AST::Id(outputPin), AST::Id(inputPin));
+				AST::ExpressionGraph::TryConnect(ast, AST::Id(outputPin), AST::Id(inputPin));
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))
 			{
 				// linkId is always the outputId
 				AST::StatementGraph::Disconnect(ast, AST::Id(linkId));
+				AST::ExpressionGraph::Disconnect(ast, AST::Id(linkId));
 			}
 
 			if (wantsToOpenContextMenu)

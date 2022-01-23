@@ -166,6 +166,10 @@ namespace Rift::AST
 			return access.Size();
 		}
 
+		/**
+		 * Get all ids matching the filter
+		 * @return ids matching the filter
+		 */
 		TArray<AST::Id> GetIds()
 		{
 			TArray<AST::Id> ids;
@@ -178,9 +182,11 @@ namespace Rift::AST
 		}
 
 		/**
+		 * Get ids matching the filter from a provided list
+		 * @param ids specific ids to filter
 		 * @return ids matching the filter from another array
 		 */
-		TArray<Id> FilterIds(const TArray<AST::Id>& ids)
+		TArray<Id> GetIds(const TArray<AST::Id>& ids)
 		{
 			TArray<Id> filtered;
 			for (Id id : ids)

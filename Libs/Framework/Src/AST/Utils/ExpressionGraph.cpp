@@ -26,7 +26,7 @@ namespace Rift::AST::ExpressionGraph
 		return true;
 	}
 
-	bool Connect(Tree& ast, Id outputPin, Id inputPin)
+	bool TryConnect(Tree& ast, Id outputPin, Id inputPin)
 	{
 		if (!Ensure(!IsNone(outputPin) && !IsNone(inputPin)))
 		{

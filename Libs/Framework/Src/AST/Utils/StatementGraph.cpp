@@ -25,7 +25,7 @@ namespace Rift::AST::StatementGraph
 		return !WouldLoop(ast, outputNode, outputPin, inputNode);
 	}
 
-	bool Connect(Tree& ast, Id outputNode, Id outputPin, Id inputNode)
+	bool TryConnect(Tree& ast, Id outputNode, Id outputPin, Id inputNode)
 	{
 		if (!Ensure(!IsNone(outputNode) && !IsNone(outputPin) && !IsNone(inputNode)))
 		{
@@ -73,11 +73,11 @@ namespace Rift::AST::StatementGraph
 		return true;
 	}
 
-	bool Connect(Tree& ast, AST::Id outputPin, AST::Id inputPin)
+	bool TryConnect(Tree& ast, AST::Id outputPin, AST::Id inputPin)
 	{
 		const Id outputNode = Hierarchy::GetParent(ast, outputPin);
 		// NOTE: Input pin ids equal input node ids
-		return Connect(ast, outputNode, outputPin, inputPin);
+		return TryConnect(ast, outputNode, outputPin, inputPin);
 	}
 
 	bool Disconnect(Tree& ast, Id linkId)

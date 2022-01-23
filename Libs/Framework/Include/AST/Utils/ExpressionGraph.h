@@ -13,7 +13,7 @@ namespace Rift::AST::ExpressionGraph
 {
 	bool CanConnect(const Tree& ast, AST::Id outputPin, AST::Id inputPin);
 
-	bool Connect(Tree& ast, AST::Id outputPin, AST::Id inputPin);
+	bool TryConnect(Tree& ast, AST::Id outputPin, AST::Id inputPin);
 	// Disconnects a particular link. (Note: link ids are the same as input nodes)
 	bool Disconnect(Tree& ast, AST::Id linkId);
 	bool DisconnectFromInputPin(Tree& ast, AST::Id inputPin);
