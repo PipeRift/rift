@@ -36,6 +36,12 @@ namespace Rift::Graph
 	inline Settings settings{};
 
 
+	namespace Literals
+	{
+		void DrawBoolNode(AST::Id id, bool& value);
+		void DrawStringNode(AST::Id id, String& value);
+	}    // namespace Literals
+
 	void Init();
 	void Shutdown();
 
@@ -50,8 +56,6 @@ namespace Rift::Graph
 
 	void DrawFunctionDecl(AST::Tree& ast, AST::Id functionId);
 	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView typeName);
-	void DrawBoolLiteralNode(AST::Id id, bool& value);
-	void DrawStringLiteralNode(AST::Id id, String& value);
 
 	void SetNodePosition(AST::Id id, v2 position);
 	v2 GetNodePosition(AST::Id id);

@@ -35,9 +35,9 @@ namespace Rift
 			}
 
 			static bool boolValue = false;
-			Graph::DrawBoolLiteralNode(AST::Id(0), boolValue);
+			Graph::Literals::DrawBoolNode(AST::Id(0), boolValue);
 			static String stringValue;
-			Graph::DrawStringLiteralNode(AST::Id(1), stringValue);
+			Graph::Literals::DrawStringNode(AST::Id(1), stringValue);
 
 			// Graph::DrawCallNode({}, AST::Id(958), "ApplyDamage", "DamageSystem");
 

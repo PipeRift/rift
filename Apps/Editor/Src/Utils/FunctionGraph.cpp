@@ -60,6 +60,180 @@ namespace Rift::Graph
 	}
 
 
+	namespace Literals
+	{
+		void DrawBoolNode(AST::Id id, bool& value)
+		{
+			static constexpr Color color = Style::GetTypeColor<bool>();
+			static const Color darkColor = Style::Hovered(color);
+
+			Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, color);
+			Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, darkColor);
+			Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, color);
+			Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
+			Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
+			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, darkColor);
+
+			Nodes::BeginNode(i32(id));
+			{
+				Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+				PushInnerNodeStyle();
+				UI::Checkbox("##value", &value);
+				PopInnerNodeStyle();
+				Nodes::EndOutput();
+
+				const auto* context = Nodes::GetCurrentContext();
+				if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
+				{
+					Nodes::GetEditorContext()
+					    .nodes.Pool[context->CurrentNodeIdx]
+					    .LayoutStyle.BorderThickness = 2.f;
+				}
+			}
+			Nodes::EndNode();
+
+			Nodes::PopStyleColor(6);
+		}
+
+		void DrawStringNode(AST::Id id, String& value)
+		{
+			static constexpr Color color = Style::GetTypeColor<String>();
+			static const Color darkColor = Style::Hovered(color);
+
+			Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, color);
+			Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, darkColor);
+			Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, color);
+			Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
+			Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
+			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, darkColor);
+
+			Nodes::BeginNode(i32(id));
+			{
+				Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+				PushInnerNodeStyle();
+				ImGuiStyle& style = ImGui::GetStyle();
+				const ImVec2 textSize =
+				    ImGui::CalcTextSize(value.data(), value.data() + value.size());
+				const v2 minSize{settings.GetGridSize() * 4.f, settings.GetGridSize()};
+				const v2 size{Math::Max(minSize.x, textSize.x), Math::Max(minSize.y, textSize.y)};
+				UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
+				PopInnerNodeStyle();
+				Nodes::EndOutput();
+
+				const auto* context = Nodes::GetCurrentContext();
+				if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
+				{
+					Nodes::GetEditorContext()
+					    .nodes.Pool[context->CurrentNodeIdx]
+					    .LayoutStyle.BorderThickness = 2.f;
+				}
+			}
+			Nodes::EndNode();
+
+			Nodes::PopStyleColor(6);
+		}
+	}    // namespace Literals
+
+	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView typeName)
+	{
+		static constexpr Color headerColor = Style::callColor;
+		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
+
+		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, bodyColor);
+		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, bodyColor);
+		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, bodyColor);
+		Nodes::PushStyleColor(Nodes::ColorVar_TitleBar, headerColor);
+		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, Style::Hovered(headerColor));
+		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarSelected, headerColor);
+		Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
+
+		Nodes::BeginNode(i32(id));
+		{
+			Nodes::BeginNodeTitleBar();
+			{
+				static constexpr Color color = Style::executionColor;
+				Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
+				Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+
+				Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
+				UI::TextUnformatted("");
+				Nodes::EndInput();
+				UI::SameLine();
+
+				UI::BeginGroup();
+				UI::TextUnformatted(name.data());
+				if (!typeName.empty())
+				{
+					// Rift::Style::PushTextColor(Rift::Style::whiteTextColor.Shade(0.3f));
+					// UI::Text(typeName.data());
+					// Rift::Style::PopTextColor();
+				}
+				UI::EndGroup();
+
+				UI::SameLine();
+				Nodes::BeginOutput(i32(id), Nodes::PinShape_QuadFilled);
+				UI::TextUnformatted("");
+				Nodes::EndOutput();
+
+				Nodes::PopStyleColor(2);
+			}
+			Nodes::EndNodeTitleBar();
+
+			if (TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, id))
+			{
+				auto callArgsView = ast.Filter<CIdentifier, CExpressionInput, CExpressionOutputs>();
+
+				UI::BeginGroup();    // Inputs
+				for (AST::Id inputId : *children)
+				{
+					if (callArgsView.Has<CExpressionInput>(inputId)
+					    && callArgsView.Has<CIdentifier>(inputId))
+					{
+						auto& name           = callArgsView.Get<CIdentifier>(inputId);
+						const Color pinColor = Style::GetTypeColor<float>();
+						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+						Nodes::BeginInput(i32(inputId), Nodes::PinShape_CircleFilled);
+						UI::Text(name.name.ToString());
+						Nodes::EndInput();
+						Nodes::PopStyleColor(2);
+					}
+				}
+				UI::EndGroup();
+				UI::SameLine();
+				UI::BeginGroup();    // Outputs
+				for (AST::Id outputId : *children)
+				{
+					if (callArgsView.Has<CExpressionOutputs>(outputId)
+					    && callArgsView.Has<CIdentifier>(outputId))
+					{
+						auto& name           = callArgsView.Get<CIdentifier>(outputId);
+						const Color pinColor = Style::GetTypeColor<float>();
+						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+						Nodes::BeginOutput(i32(outputId), Nodes::PinShape_CircleFilled);
+						UI::Text(name.name.ToString());
+						Nodes::EndOutput();
+						Nodes::PopStyleColor(2);
+					}
+				}
+				UI::EndGroup();
+			}
+
+			if (Nodes::IsNodeSelected(i32(id)))
+			{
+				const auto* context = Nodes::GetCurrentContext();
+				Nodes::GetEditorContext()
+				    .nodes.Pool[context->CurrentNodeIdx]
+				    .LayoutStyle.BorderThickness = 2.f;
+			}
+		}
+		Nodes::EndNode();
+
+		Nodes::PopStyleColor(7);
+	}
+
+
 	void Init()
 	{
 		Nodes::CreateContext();
@@ -223,7 +397,7 @@ namespace Rift::Graph
 		{
 			if (auto* literal = boolLiterals.TryGet<CBoolLiteral>(child))
 			{
-				DrawBoolLiteralNode(child, literal->value);
+				Literals::DrawBoolNode(child, literal->value);
 			}
 		}
 
@@ -232,7 +406,7 @@ namespace Rift::Graph
 		{
 			if (auto* literal = stringLiterals.TryGet<CStringLiteral>(child))
 			{
-				DrawStringLiteralNode(child, literal->value);
+				Literals::DrawStringNode(child, literal->value);
 			}
 		}
 	}
@@ -458,175 +632,6 @@ namespace Rift::Graph
 			transform.position = GetNodePosition(functionId);
 			Types::Changed(AST::Hierarchy::GetParent(ast, functionId), "Moved nodes");
 		}
-	}
-
-	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView typeName)
-	{
-		static constexpr Color headerColor = Style::callColor;
-		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
-
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, bodyColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, bodyColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, bodyColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_TitleBar, headerColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, Style::Hovered(headerColor));
-		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarSelected, headerColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
-
-		Nodes::BeginNode(i32(id));
-		{
-			Nodes::BeginNodeTitleBar();
-			{
-				static constexpr Color color = Style::executionColor;
-				Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-				Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
-
-				Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
-				UI::TextUnformatted("");
-				Nodes::EndInput();
-				UI::SameLine();
-
-				UI::BeginGroup();
-				UI::TextUnformatted(name.data());
-				if (!typeName.empty())
-				{
-					// Rift::Style::PushTextColor(Rift::Style::whiteTextColor.Shade(0.3f));
-					// UI::Text(typeName.data());
-					// Rift::Style::PopTextColor();
-				}
-				UI::EndGroup();
-
-				UI::SameLine();
-				Nodes::BeginOutput(i32(id), Nodes::PinShape_QuadFilled);
-				UI::TextUnformatted("");
-				Nodes::EndOutput();
-
-				Nodes::PopStyleColor(2);
-			}
-			Nodes::EndNodeTitleBar();
-
-			if (TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, id))
-			{
-				auto callArgsView = ast.Filter<CIdentifier, CExpressionInput, CExpressionOutputs>();
-
-				UI::BeginGroup();    // Inputs
-				for (AST::Id inputId : *children)
-				{
-					if (callArgsView.Has<CExpressionInput>(inputId)
-					    && callArgsView.Has<CIdentifier>(inputId))
-					{
-						auto& name           = callArgsView.Get<CIdentifier>(inputId);
-						const Color pinColor = Style::GetTypeColor<float>();
-						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-						Nodes::BeginInput(i32(inputId), Nodes::PinShape_CircleFilled);
-						UI::Text(name.name.ToString());
-						Nodes::EndInput();
-						Nodes::PopStyleColor(2);
-					}
-				}
-				UI::EndGroup();
-				UI::SameLine();
-				UI::BeginGroup();    // Outputs
-				for (AST::Id outputId : *children)
-				{
-					if (callArgsView.Has<CExpressionOutputs>(outputId)
-					    && callArgsView.Has<CIdentifier>(outputId))
-					{
-						auto& name           = callArgsView.Get<CIdentifier>(outputId);
-						const Color pinColor = Style::GetTypeColor<float>();
-						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-						Nodes::BeginOutput(i32(outputId), Nodes::PinShape_CircleFilled);
-						UI::Text(name.name.ToString());
-						Nodes::EndOutput();
-						Nodes::PopStyleColor(2);
-					}
-				}
-				UI::EndGroup();
-			}
-
-			if (Nodes::IsNodeSelected(i32(id)))
-			{
-				const auto* context = Nodes::GetCurrentContext();
-				Nodes::GetEditorContext()
-				    .nodes.Pool[context->CurrentNodeIdx]
-				    .LayoutStyle.BorderThickness = 2.f;
-			}
-		}
-		Nodes::EndNode();
-
-		Nodes::PopStyleColor(7);
-	}
-
-	void DrawBoolLiteralNode(AST::Id id, bool& value)
-	{
-		static constexpr Color color = Style::GetTypeColor<bool>();
-		static const Color darkColor = Style::Hovered(color);
-
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, darkColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, darkColor);
-
-		Nodes::BeginNode(i32(id));
-		{
-			Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
-			PushInnerNodeStyle();
-			UI::Checkbox("##value", &value);
-			PopInnerNodeStyle();
-			Nodes::EndOutput();
-
-			const auto* context = Nodes::GetCurrentContext();
-			if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
-			{
-				Nodes::GetEditorContext()
-				    .nodes.Pool[context->CurrentNodeIdx]
-				    .LayoutStyle.BorderThickness = 2.f;
-			}
-		}
-		Nodes::EndNode();
-
-		Nodes::PopStyleColor(6);
-	}
-
-	void DrawStringLiteralNode(AST::Id id, String& value)
-	{
-		static constexpr Color color = Style::GetTypeColor<String>();
-		static const Color darkColor = Style::Hovered(color);
-
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, darkColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, darkColor);
-
-		Nodes::BeginNode(i32(id));
-		{
-			Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
-			PushInnerNodeStyle();
-			ImGuiStyle& style     = ImGui::GetStyle();
-			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
-			const v2 minSize{settings.GetGridSize() * 4.f, settings.GetGridSize()};
-			const v2 size{Math::Max(minSize.x, textSize.x), Math::Max(minSize.y, textSize.y)};
-			UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
-			PopInnerNodeStyle();
-			Nodes::EndOutput();
-
-			const auto* context = Nodes::GetCurrentContext();
-			if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
-			{
-				Nodes::GetEditorContext()
-				    .nodes.Pool[context->CurrentNodeIdx]
-				    .LayoutStyle.BorderThickness = 2.f;
-			}
-		}
-		Nodes::EndNode();
-
-		Nodes::PopStyleColor(6);
 	}
 
 	void SetNodePosition(AST::Id id, v2 position)
