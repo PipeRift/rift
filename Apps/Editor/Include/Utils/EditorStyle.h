@@ -42,4 +42,11 @@ namespace Rift::Style
 	};
 
 	const Color GetTypeColor(const AST::Tree& ast, AST::Id id);
+
+
+	void PushNodeTitleColor(Color color);
+	void PopNodeTitleColor();
+
+	void PushNodeBackgroundColor(Color color);
+	void PopNodeBackgroundColor();
 }    // namespace Rift::Style

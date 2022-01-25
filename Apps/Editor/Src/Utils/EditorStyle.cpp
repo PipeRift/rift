@@ -1,6 +1,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Utils/EditorColors.h"
+#include "Utils/EditorStyle.h"
+
+#include <UI/Nodes.h>
+#include <UI/Style.h>
 
 
 namespace Rift::Style
@@ -34,5 +37,30 @@ namespace Rift::Style
 			return GetTypeColor<String>();
 		}
 		return GetTypeColor<void>();
-	};
+	}
+
+
+	void PushNodeTitleColor(Color color)
+	{
+		Nodes::PushStyleColor(Nodes::ColorVar_TitleBar, color);
+		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, Style::Hovered(color));
+		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarSelected, color);
+	}
+
+	void PopNodeTitleColor()
+	{
+		Nodes::PopStyleColor(3);
+	}
+
+	void PushNodeBackgroundColor(Color color)
+	{
+		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, color);
+		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, Style::Hovered(color));
+		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, color);
+	}
+
+	void PopNodeBackgroundColor()
+	{
+		Nodes::PopStyleColor(3);
+	}
 }    // namespace Rift::Style

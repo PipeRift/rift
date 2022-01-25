@@ -7,7 +7,7 @@
 #include "AST/Utils/StatementGraph.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
-#include "Utils/EditorColors.h"
+#include "Utils/EditorStyle.h"
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CBoolLiteral.h>
@@ -59,55 +59,60 @@ namespace Rift::Graph
 		return {0.f, settings.verticalMargin + settings.verticalPadding};
 	}
 
+	void BeginNode(AST::Id id)
+	{
+		Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
+		Nodes::BeginNode(i32(id));
+	}
+
+	void EndNode()
+	{
+		// Selection outline
+		const auto* context = Nodes::GetCurrentContext();
+		if (Nodes::IsNodeSelectedByIdx(context->CurrentNodeIdx))
+		{
+			Nodes::GetEditorContext()
+			    .nodes.Pool[context->CurrentNodeIdx]
+			    .LayoutStyle.BorderThickness = 2.f;
+		}
+
+		Nodes::EndNode();
+		Nodes::PopStyleColor(1);
+	}
+
 
 	namespace Literals
 	{
 		void DrawBoolNode(AST::Id id, bool& value)
 		{
 			static constexpr Color color = Style::GetTypeColor<bool>();
-			static const Color darkColor = Style::Hovered(color);
 
-			Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, color);
-			Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, darkColor);
-			Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, color);
-			Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
+			Style::PushNodeBackgroundColor(color);
 			Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, darkColor);
+			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
 
-			Nodes::BeginNode(i32(id));
+			BeginNode(id);
 			{
 				Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
 				PushInnerNodeStyle();
 				UI::Checkbox("##value", &value);
 				PopInnerNodeStyle();
 				Nodes::EndOutput();
-
-				const auto* context = Nodes::GetCurrentContext();
-				if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
-				{
-					Nodes::GetEditorContext()
-					    .nodes.Pool[context->CurrentNodeIdx]
-					    .LayoutStyle.BorderThickness = 2.f;
-				}
 			}
-			Nodes::EndNode();
-
-			Nodes::PopStyleColor(6);
+			EndNode();
+			Nodes::PopStyleColor(2);
+			Style::PopNodeBackgroundColor();
 		}
 
 		void DrawStringNode(AST::Id id, String& value)
 		{
 			static constexpr Color color = Style::GetTypeColor<String>();
-			static const Color darkColor = Style::Hovered(color);
 
-			Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, color);
-			Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, darkColor);
-			Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, color);
-			Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
+			Style::PushNodeBackgroundColor(color);
 			Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, darkColor);
+			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
 
-			Nodes::BeginNode(i32(id));
+			BeginNode(id);
 			{
 				Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
 				PushInnerNodeStyle();
@@ -119,35 +124,99 @@ namespace Rift::Graph
 				UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
 				PopInnerNodeStyle();
 				Nodes::EndOutput();
-
-				const auto* context = Nodes::GetCurrentContext();
-				if (Nodes::IsNodeSelected(context->CurrentNodeIdx))
-				{
-					Nodes::GetEditorContext()
-					    .nodes.Pool[context->CurrentNodeIdx]
-					    .LayoutStyle.BorderThickness = 2.f;
-				}
 			}
-			Nodes::EndNode();
+			EndNode();
 
-			Nodes::PopStyleColor(6);
+			Nodes::PopStyleColor(2);
+			Style::PopNodeBackgroundColor();
 		}
 	}    // namespace Literals
+
+
+	void DrawFunctionDecl(AST::Tree& ast, AST::Id functionId)
+	{
+		auto* nodes      = Nodes::GetCurrentContext();
+		auto identifiers = ast.Filter<CIdentifier>();
+
+		Name name;
+		if (auto* identifier = identifiers.TryGet<CIdentifier>(functionId))
+		{
+			name = identifier->name;
+		}
+
+		auto& transform = ast.GetOrAdd<CGraphTransform>(functionId);
+		if (UI::IsWindowAppearing()
+		    && !(nodes->leftMouseDragging && Nodes::IsNodeSelected(i32(functionId))))
+		{
+			SetNodePosition(functionId, transform.position);
+		}
+
+		static constexpr Color headerColor = Style::functionColor;
+		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
+
+		Style::PushNodeBackgroundColor(bodyColor);
+		Style::PushNodeTitleColor(headerColor);
+		BeginNode(functionId);
+		{
+			Nodes::BeginNodeTitleBar();
+			{
+				UI::Text(name.ToString());
+				UI::SameLine();
+
+				static constexpr Color color = Style::executionColor;
+				Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
+				Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+				Nodes::BeginOutput(i32(functionId), Nodes::PinShape_QuadFilled);
+				UI::Text("");
+				Nodes::EndOutput();
+				Nodes::PopStyleColor(2);
+			}
+			Nodes::EndNodeTitleBar();
+
+			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, functionId))
+			{
+				auto inputParameters = ast.Filter<CParameterDecl, CExpressionOutputs>();
+				for (AST::Id childId : *children)
+				{
+					if (inputParameters.Has(childId))
+					{
+						auto& param = inputParameters.Get<CParameterDecl>(childId);
+
+						const Color pinColor = Style::GetTypeColor(ast, param.typeId);
+						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+
+						Nodes::BeginOutput(i32(childId), Nodes::PinShape_CircleFilled);
+
+						auto* ident = identifiers.TryGet<CIdentifier>(childId);
+						String name = ident ? ident->name.ToString() : "";
+						UI::Text(name);
+
+						Nodes::EndOutput();
+						Nodes::PopStyleColor(2);
+					}
+				}
+			}
+		}
+		EndNode();
+		Style::PopNodeTitleColor();
+		Style::PopNodeBackgroundColor();
+
+		if (nodes->leftMouseDragging || nodes->leftMouseReleased)
+		{
+			transform.position = GetNodePosition(functionId);
+			Types::Changed(AST::Hierarchy::GetParent(ast, functionId), "Moved nodes");
+		}
+	}
 
 	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView typeName)
 	{
 		static constexpr Color headerColor = Style::callColor;
 		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
 
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, bodyColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, bodyColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, bodyColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_TitleBar, headerColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, Style::Hovered(headerColor));
-		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarSelected, headerColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
-
-		Nodes::BeginNode(i32(id));
+		Style::PushNodeBackgroundColor(bodyColor);
+		Style::PushNodeTitleColor(headerColor);
+		BeginNode(id);
 		{
 			Nodes::BeginNodeTitleBar();
 			{
@@ -219,18 +288,10 @@ namespace Rift::Graph
 				}
 				UI::EndGroup();
 			}
-
-			if (Nodes::IsNodeSelected(i32(id)))
-			{
-				const auto* context = Nodes::GetCurrentContext();
-				Nodes::GetEditorContext()
-				    .nodes.Pool[context->CurrentNodeIdx]
-				    .LayoutStyle.BorderThickness = 2.f;
-			}
 		}
-		Nodes::EndNode();
-
-		Nodes::PopStyleColor(7);
+		EndNode();
+		Style::PopNodeTitleColor();
+		Style::PopNodeBackgroundColor();
 	}
 
 
@@ -539,98 +600,6 @@ namespace Rift::Graph
 			}
 			DrawContextMenu(ast, typeId);
 			UI::End();
-		}
-	}
-
-	void DrawFunctionDecl(AST::Tree& ast, AST::Id functionId)
-	{
-		auto* nodes      = Nodes::GetCurrentContext();
-		auto identifiers = ast.Filter<CIdentifier>();
-
-		Name name;
-		if (auto* identifier = identifiers.TryGet<CIdentifier>(functionId))
-		{
-			name = identifier->name;
-		}
-
-		auto& transform = ast.GetOrAdd<CGraphTransform>(functionId);
-		if (UI::IsWindowAppearing()
-		    && !(nodes->leftMouseDragging && Nodes::IsNodeSelected(i32(functionId))))
-		{
-			SetNodePosition(functionId, transform.position);
-		}
-
-		static constexpr Color headerColor = Style::functionColor;
-		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
-
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, bodyColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, bodyColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, bodyColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_TitleBar, headerColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, Style::Hovered(headerColor));
-		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarSelected, headerColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
-
-		// Nodes::PushStyleColor(ColorVar_TitleBar, Color::FromRGB(191, 56, 11));
-
-		Nodes::BeginNode(i32(functionId));
-		{
-			Nodes::BeginNodeTitleBar();
-			{
-				UI::Text(name.ToString());
-				UI::SameLine();
-
-				static constexpr Color color = Style::executionColor;
-				Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-				Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
-				Nodes::BeginOutput(i32(functionId), Nodes::PinShape_QuadFilled);
-				UI::Text("");
-				Nodes::EndOutput();
-				Nodes::PopStyleColor(2);
-			}
-			Nodes::EndNodeTitleBar();
-
-
-			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, functionId))
-			{
-				auto inputParameters = ast.Filter<CParameterDecl, CExpressionOutputs>();
-				for (AST::Id childId : *children)
-				{
-					if (inputParameters.Has(childId))
-					{
-						auto& param = inputParameters.Get<CParameterDecl>(childId);
-
-						const Color pinColor = Style::GetTypeColor(ast, param.typeId);
-						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-
-						Nodes::BeginOutput(i32(childId), Nodes::PinShape_CircleFilled);
-
-						auto* ident = identifiers.TryGet<CIdentifier>(childId);
-						String name = ident ? ident->name.ToString() : "";
-						UI::Text(name);
-
-						Nodes::EndOutput();
-						Nodes::PopStyleColor(2);
-					}
-				}
-			}
-
-			if (Nodes::IsNodeSelected(i32(functionId)))
-			{
-				const auto* context = Nodes::GetCurrentContext();
-				Nodes::GetEditorContext()
-				    .nodes.Pool[context->CurrentNodeIdx]
-				    .LayoutStyle.BorderThickness = 2.f;
-			}
-		}
-		Nodes::EndNode();
-		Nodes::PopStyleColor(6);
-
-		if (nodes->leftMouseDragging || nodes->leftMouseReleased)
-		{
-			transform.position = GetNodePosition(functionId);
-			Types::Changed(AST::Hierarchy::GetParent(ast, functionId), "Moved nodes");
 		}
 	}
 

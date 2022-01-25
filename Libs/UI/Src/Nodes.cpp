@@ -1614,11 +1614,17 @@ namespace Rift::Nodes
 	}
 
 	template<typename T>
-	bool IsObjectSelected(
-	    const ObjectPool<T>& objects, ImVector<i32>& selectedIndices, const i32 id)
+	bool IsObjectSelectedByIdx(
+	    const ObjectPool<T>& objects, const ImVector<i32>& selectedIndices, const i32 idx)
 	{
-		const i32 idx = ObjectPoolFind(objects, id);
 		return selectedIndices.find(idx) != selectedIndices.end();
+	}
+
+	template<typename T>
+	bool IsObjectSelected(
+	    const ObjectPool<T>& objects, const ImVector<i32>& selectedIndices, const Id id)
+	{
+		return IsObjectSelectedByIdx(objects, selectedIndices, ObjectPoolFind(objects, id));
 	}
 
 
@@ -2526,11 +2532,22 @@ namespace Rift::Nodes
 		EditorContext& editor = GetEditorContext();
 		return IsObjectSelected(editor.nodes, editor.SelectedNodeIndices, nodeId);
 	}
+	bool IsNodeSelectedByIdx(i32 nodeIdx)
+	{
+		EditorContext& editor = GetEditorContext();
+		return IsObjectSelectedByIdx(editor.nodes, editor.SelectedNodeIndices, nodeIdx);
+	}
 
 	bool IsLinkSelected(Id linkId)
 	{
 		EditorContext& editor = GetEditorContext();
 		return IsObjectSelected(editor.Links, editor.SelectedLinkIndices, linkId);
+	}
+
+	bool IsLinkSelectedByIdx(i32 linkIdx)
+	{
+		EditorContext& editor = GetEditorContext();
+		return IsObjectSelectedByIdx(editor.Links, editor.SelectedLinkIndices, linkIdx);
 	}
 
 	bool IsPinActive()

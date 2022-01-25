@@ -7,7 +7,7 @@
 #include "DockSpaceLayout.h"
 #include "UI/Style.h"
 #include "UI/Widgets.h"
-#include "Utils/EditorColors.h"
+#include "Utils/EditorStyle.h"
 #include "Utils/Widgets.h"
 
 #include <AST/Components/CClassDecl.h>

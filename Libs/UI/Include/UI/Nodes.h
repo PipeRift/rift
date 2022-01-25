@@ -421,12 +421,14 @@ namespace Rift::Nodes
 	// considered unselected. Clear-functions has the precondition that the object is currently
 	// considered selected. Preconditions listed above can be checked via
 	// IsNodeSelected/IsLinkSelected if not already known.
-	void SelectNode(Id nodeId);
 	void ClearNodeSelection(Id nodeId);
-	bool IsNodeSelected(Id nodeId);
-	void SelectLink(Id linkId);
 	void ClearLinkSelection(Id linkId);
+	void SelectNode(Id nodeId);
+	void SelectLink(Id linkId);
+	bool IsNodeSelected(Id nodeId);
+	bool IsNodeSelectedByIdx(i32 nodeIdx);
 	bool IsLinkSelected(Id linkId);
+	bool IsLinkSelectedByIdx(i32 linkIdx);
 
 	// Was the previous pin active? This will continuously return true while the left
 	// mouse button is being pressed over the UI content of the pin.
