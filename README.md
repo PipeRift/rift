@@ -66,3 +66,9 @@ The code is validated on the following platforms/compilers:
 | MSVC        | GCC ^9      |             |
 
 It has also been tested on **x64** and **ARM64** architectures.
+
+## Credits
+Developed by Miguel Fernandez Arce (Muit) and every direct or indirect [contributors](https://github.com/piperift/rift/graphs/contributors) to the GitHub repository.
+
+## License
+Rift and its modules are licensed under the LGPLv3 License, see [LICENSE](https://github.com/piperift/rift/blob/master/LICENSE) for more information.
