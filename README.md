@@ -73,6 +73,6 @@ Developed by Miguel Fernandez Arce (Muit) and every direct or indirect [contribu
 ## License
 Rift is licensed under the LGPLv3 License, see [LICENSE](https://github.com/piperift/rift/blob/master/LICENSE) for more information.
 
-**Notice:**
-- All libraries outside of Rift are free to choose their own licenses even if they extend Rift's functionality as modules.
-- Some libraries inside Rift could also be licensed under more permissive licenses.
+All libraries outside of Rift are free to choose their own licenses even if they extend Rift's functionality as modules.
+
+Some libraries inside Rift could also be licensed under more permissive licenses.
