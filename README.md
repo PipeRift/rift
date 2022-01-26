@@ -71,4 +71,8 @@ It has also been tested on **x64** and **ARM64** architectures.
 Developed by Miguel Fernandez Arce (Muit) and every direct or indirect [contributors](https://github.com/piperift/rift/graphs/contributors) to the GitHub repository.
 
 ## License
-Rift and its modules are licensed under the LGPLv3 License, see [LICENSE](https://github.com/piperift/rift/blob/master/LICENSE) for more information.
+Rift is licensed under the LGPLv3 License, see [LICENSE](https://github.com/piperift/rift/blob/master/LICENSE) for more information.
+
+**Notice:**
+- All libraries outside of Rift are free to choose their own licenses even if they extend Rift's functionality as modules.
+- Some libraries inside Rift could also be licensed under more permissive licenses.
