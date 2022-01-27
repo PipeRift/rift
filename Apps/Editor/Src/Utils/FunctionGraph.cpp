@@ -20,6 +20,7 @@
 #include <AST/Components/CStatementInput.h>
 #include <AST/Components/CStatementOutputs.h>
 #include <AST/Components/CStringLiteral.h>
+#include <AST/Components/CVariableDecl.h>
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Utils/FunctionUtils.h>
@@ -209,7 +210,7 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView typeName)
+	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView ownerName)
 	{
 		static constexpr Color headerColor = Style::callColor;
 		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
@@ -231,10 +232,10 @@ namespace Rift::Graph
 
 				UI::BeginGroup();
 				UI::TextUnformatted(name.data());
-				if (!typeName.empty())
+				if (!ownerName.empty())
 				{
 					// Rift::Style::PushTextColor(Rift::Style::whiteTextColor.Shade(0.3f));
-					// UI::Text(typeName.data());
+					// UI::Text(ownerName.data());
 					// Rift::Style::PopTextColor();
 				}
 				UI::EndGroup();
@@ -389,6 +390,36 @@ namespace Rift::Graph
 				}
 			}
 
+			if (filter.IsActive() || ImGui::TreeNode("Variables"))
+			{
+				auto variables   = ast.Filter<CVariableDecl>();
+				auto identifiers = ast.Filter<CIdentifier>();
+				for (AST::Id variableId : variables)
+				{
+					if (auto* iden = identifiers.TryGet<CIdentifier>(variableId))
+					{
+						const String& name = iden->name.ToString();
+						if (filter.PassFilter(name.c_str(), name.c_str() + name.size()))
+						{
+							if (ImGui::MenuItem(name.c_str()))
+							{
+								AST::Id newId = AST::Functions::AddDeclarationReference(
+								    {ast, typeId}, variableId);
+								if (newId != AST::NoId)
+								{
+									ast.Add<CGraphTransform>(newId, gridPos);
+								}
+							}
+						}
+					}
+				}
+
+				if (!filter.IsActive())
+				{
+					ImGui::TreePop();
+				}
+			}
+
 			if (filter.IsActive() || ImGui::TreeNode("Functions"))
 			{
 				auto functions   = ast.Filter<CFunctionDecl>();
@@ -441,12 +472,12 @@ namespace Rift::Graph
 			if (call)
 			{
 				StringView functionName = call->functionName.ToString().c_str();
-				StringView typeName;
-				if (ast.Get<CType>(typeId).name != call->typeName)    // If not the same type
+				StringView ownerName;
+				if (ast.Get<CType>(typeId).name != call->ownerName)    // If not the same type
 				{
-					typeName = call->typeName.ToString().c_str();
+					ownerName = call->ownerName.ToString().c_str();
 				}
-				DrawCallNode(ast, child, functionName, typeName);
+				DrawCallNode(ast, child, functionName, ownerName);
 			}
 		}
 	}

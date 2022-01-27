@@ -47,7 +47,7 @@ namespace Rift::FunctionsSystem
 		{
 			auto& call = callExprs.Get<CCallExpr>(id);
 			AST::Id functionId =
-			    AST::Functions::FindFunctionByName(ast, call.typeName, call.functionName);
+			    AST::Functions::FindFunctionByName(ast, call.ownerName, call.functionName);
 			if (!IsNone(functionId))
 			{
 				callExprIds.Add(id, CCallExprId{functionId});

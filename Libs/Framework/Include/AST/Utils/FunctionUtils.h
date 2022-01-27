@@ -14,8 +14,9 @@ namespace Rift::AST::Functions
 
 	Id AddLiteral(TypeRef type, Id literalTypeId);
 	Id AddCall(TypeRef type, Id targetFunctionId);
+	Id AddDeclarationReference(TypeRef type, Id declId);
 
-	Id FindFunctionByName(const Tree& ast, Name typeName, Name functionName);
+	Id FindFunctionByName(const Tree& ast, Name ownerName, Name functionName);
 
 	void GetCallArgs(const Tree& ast, TSpan<Id> callIds, TArray<Id>& inputArgIds,
 	    TArray<Id>& outputArgIds, TArray<Id>& otherIds);

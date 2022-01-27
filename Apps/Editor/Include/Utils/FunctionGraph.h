@@ -41,6 +41,8 @@ namespace Rift::Graph
 		void DrawBoolNode(AST::Id id, bool& value);
 		void DrawStringNode(AST::Id id, String& value);
 	}    // namespace Literals
+	void DrawFunctionDecl(AST::Tree& ast, AST::Id functionId);
+	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView ownerName);
 
 	void Init();
 	void Shutdown();
@@ -54,8 +56,6 @@ namespace Rift::Graph
 	void DrawContextMenu(AST::Tree& ast);
 	void DrawTypeGraph(AST::Tree& ast, AST::Id typeId, CTypeEditor& typeEditor);
 
-	void DrawFunctionDecl(AST::Tree& ast, AST::Id functionId);
-	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView typeName);
 
 	void SetNodePosition(AST::Id id, v2 position);
 	v2 GetNodePosition(AST::Id id);

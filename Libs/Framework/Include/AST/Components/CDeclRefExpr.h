@@ -10,7 +10,18 @@ namespace Rift
 	{
 		STRUCT(CDeclRefExpr, CExpression)
 
+		PROP(ownerName)
+		Name ownerName;
+
 		PROP(name)
 		Name name;
+	};
+
+	struct CDeclRefExprId : public CExpression
+	{
+		STRUCT(CDeclRefExprId, CExpression)
+
+		PROP(declarationId)
+		AST::Id declarationId;
 	};
 }    // namespace Rift

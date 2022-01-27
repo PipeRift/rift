@@ -4,6 +4,7 @@
 
 #include "AST/Components/CBoolLiteral.h"
 #include "AST/Components/CCallExpr.h"
+#include "AST/Components/CDeclRefExpr.h"
 #include "AST/Components/CExpressionInput.h"
 #include "AST/Components/CExpressionOutputs.h"
 #include "AST/Components/CFloatLiteral.h"
@@ -87,7 +88,7 @@ namespace Rift::AST::Functions
 		const Id typeId = Hierarchy::GetParent(ast, functionId);
 		Check(!IsNone(typeId));
 		auto& callExpr        = ast.Add<CCallExpr>(callId);
-		callExpr.typeName     = ast.Get<CType>(typeId).name;
+		callExpr.ownerName    = ast.Get<CType>(typeId).name;
 		callExpr.functionName = ast.Get<CIdentifier>(functionId).name;
 		auto& callExprId      = ast.Add<CCallExprId>(callId);
 		callExprId.functionId = functionId;
@@ -99,10 +100,32 @@ namespace Rift::AST::Functions
 		return callId;
 	}
 
-	Id FindFunctionByName(const Tree& ast, Name typeName, Name functionName)
+	Id AddDeclarationReference(TypeRef type, Id declId)
+	{
+		Tree& ast   = type.GetAST();
+		const Id id = ast.Create();
+
+		ast.Add<CDeclRefExpr, CExpressionOutputs>(id);
+
+		const Id typeId = Hierarchy::GetParent(ast, declId);
+		Check(!IsNone(typeId));
+		auto& declRefExpr           = ast.Add<CDeclRefExpr>(id);
+		declRefExpr.ownerName       = ast.Get<CType>(typeId).name;
+		declRefExpr.name            = ast.Get<CIdentifier>(declId).name;
+		auto& declRefExprId         = ast.Add<CDeclRefExprId>(id);
+		declRefExprId.declarationId = declId;
+
+		if (type)
+		{
+			Hierarchy::AddChildren(ast, type.GetId(), id);
+		}
+		return id;
+	}
+
+	Id FindFunctionByName(const Tree& ast, Name ownerName, Name functionName)
 	{
 		auto& types = ast.GetStatic<STypes>();
-		if (const Id* typeId = types.typesByName.Find(typeName))
+		if (const Id* typeId = types.typesByName.Find(ownerName))
 		{
 			if (const auto* children = Hierarchy::GetChildren(ast, *typeId))
 			{

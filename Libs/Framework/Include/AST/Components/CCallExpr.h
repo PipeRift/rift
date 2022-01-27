@@ -14,8 +14,8 @@ namespace Rift
 	{
 		STRUCT(CCallExpr, CExpression)
 
-		PROP(typeName)
-		Name typeName;
+		PROP(ownerName)
+		Name ownerName;
 
 		PROP(functionName)
 		Name functionName;

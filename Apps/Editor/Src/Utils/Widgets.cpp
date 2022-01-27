@@ -40,15 +40,15 @@ namespace Rift::Editor
 	{
 		auto types = ast.Filter<CType>();
 
-		Name typeName;
+		Name ownerName;
 		if (!IsNone(selectedId))
 		{
 			auto& identifier = types.Get<CType>(selectedId);
-			typeName         = identifier.name;
+			ownerName        = identifier.name;
 		}
 
 		bool changed = false;
-		if (UI::BeginCombo(label.data(), typeName.ToString().c_str()))
+		if (UI::BeginCombo(label.data(), ownerName.ToString().c_str()))
 		{
 			static ImGuiTextFilter filter;
 			if (UI::IsWindowAppearing())
