@@ -28,6 +28,12 @@ jobs:
       - name: Get CMake
         uses: lukka/get-cmake@latest
 
+      - name: Restore artifacts, or setup vcpkg for building artifacts
+        uses: lukka/run-vcpkg@v10
+        id: runvcpkg
+        with:
+          vcpkgDirectory: '${{ github.workspace }}/Extern/vcpkg'
+
       - name: Cache LLVM and Clang
         if: matrix.compiler == 'clang'
         id: cache-llvm
