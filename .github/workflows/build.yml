@@ -7,9 +7,8 @@ on:
 jobs:
   Build:
     name: ${{ matrix.os-name }} (${{ matrix.compiler }})
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     strategy:
-      runs-on: ${{ matrix.os }}
       matrix:
         name: [windows-msvc, windows-clang, ubuntu-clang, ubuntu-gcc, macos-clang]
         include:
