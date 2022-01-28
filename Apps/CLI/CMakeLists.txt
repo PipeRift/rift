@@ -10,7 +10,7 @@ set_target_properties (RiftCLI PROPERTIES FOLDER Rift)
 target_link_libraries(RiftCLI PUBLIC
     Rift::Rift
     Rift::Backend::LLVM
-    Rift::Backend::CPP
+    Rift::Backend::Cpp
     CLI11
 )
 rift_target_define_platform(RiftCLI)
