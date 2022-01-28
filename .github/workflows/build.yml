@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        name: [windows-msvc, windows-clang, ubuntu-clang, ubuntu-gcc, macos-clang]
+        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang]
         include:
           - name: windows-msvc
             os: windows-latest
@@ -24,15 +24,15 @@ jobs:
             compiler: clang
             cxx: clang-cl
             cc: clang-cl
-          - name: ubuntu-clang
+          - name: linux-clang
             os: ubuntu-latest
-            os-name: ubuntu
+            os-name: linux
             compiler: clang
             cxx: clang++
             cc: clang
-          - name: ubuntu-gcc
+          - name: linux-gcc
             os: ubuntu-latest
-            os-name: ubuntu
+            os-name: linux
             compiler: gcc
             cxx: g++-10
             cc: gcc-10
