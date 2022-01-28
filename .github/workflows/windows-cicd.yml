@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   Build:
     name: Build ${{ matrix.name }} (${{ matrix.build-type }})
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
@@ -14,12 +14,10 @@ jobs:
         include:
           - name: MSVC
             compiler: msvc
-            os: windows-latest
             cxx: cl
             cc: cl
           - name: Clang
             compiler: clang
-            os: windows-latest
             cxx: clang-cl
             cc: clang-cl
 

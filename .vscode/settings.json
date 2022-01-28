@@ -222,5 +222,8 @@
         "--background-index"
     ],
     "lldb.showDisassembly": "auto",
-    "lldb.dereferencePointers": true
+    "lldb.dereferencePointers": true,
+    "cmake.configureEnvironment": {
+        "CMAKE_TOOLCHAIN_FILE": "./Extern/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    }
 }

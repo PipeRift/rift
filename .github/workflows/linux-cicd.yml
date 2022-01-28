@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   Build:
     name: Build ${{ matrix.name }} (${{ matrix.build-type }})
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
@@ -14,12 +14,10 @@ jobs:
         include:
           - name: Clang
             compiler: clang
-            os: ubuntu-20.04
             cxx: clang++
             cc: clang
           - name: GCC
             compiler: gcc
-            os: ubuntu-20.04
             cxx: g++-10
             cc: gcc-10
 
