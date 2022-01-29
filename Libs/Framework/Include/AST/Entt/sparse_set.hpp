@@ -76,7 +76,7 @@ namespace Rift::AST
 
 		struct SparseSetIterator final
 		{
-			using Difference        = typename traits_type::Difference;
+			using difference_type        = typename traits_type::Difference;
 			using value_type        = AST::Id;
 			using pointer           = const value_type*;
 			using reference         = const value_type&;
@@ -84,7 +84,7 @@ namespace Rift::AST
 
 			SparseSetIterator() = default;
 
-			SparseSetIterator(const alloc_const_pointer* ref, const Difference idx)
+			SparseSetIterator(const alloc_const_pointer* ref, const difference_type idx)
 			    : packed{ref}, index{idx}
 			{}
 
@@ -110,34 +110,34 @@ namespace Rift::AST
 				return operator--(), orig;
 			}
 
-			SparseSetIterator& operator+=(const Difference value)
+			SparseSetIterator& operator+=(const difference_type value)
 			{
 				index -= value;
 				return *this;
 			}
 
-			SparseSetIterator operator+(const Difference value) const
+			SparseSetIterator operator+(const difference_type value) const
 			{
 				SparseSetIterator copy = *this;
 				return (copy += value);
 			}
 
-			SparseSetIterator& operator-=(const Difference value)
+			SparseSetIterator& operator-=(const difference_type value)
 			{
 				return (*this += -value);
 			}
 
-			SparseSetIterator operator-(const Difference value) const
+			SparseSetIterator operator-(const difference_type value) const
 			{
 				return (*this + -value);
 			}
 
-			Difference operator-(const SparseSetIterator& other) const
+			difference_type operator-(const SparseSetIterator& other) const
 			{
 				return other.index - index;
 			}
 
-			[[nodiscard]] reference operator[](const Difference value) const
+			[[nodiscard]] reference operator[](const difference_type value) const
 			{
 				const auto pos = size_type(index - value - 1u);
 				return (*packed)[pos];
@@ -186,7 +186,7 @@ namespace Rift::AST
 
 		private:
 			const alloc_const_pointer* packed;
-			Difference index;
+			difference_type index;
 		};
 
 		[[nodiscard]] static auto Page(const AST::Id entt)
