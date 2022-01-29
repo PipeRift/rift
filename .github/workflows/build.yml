@@ -15,30 +15,35 @@ jobs:
           - name: windows-msvc
             os: windows-latest
             os-name: windows
+            triplet: x64-windows
             compiler: msvc
             cxx: cl
             cc: cl
           - name: windows-clang
             os: windows-latest
             os-name: windows
+            triplet: x64-windows
             compiler: clang
             cxx: clang-cl
             cc: clang-cl
           - name: linux-clang
             os: ubuntu-latest
             os-name: linux
+            triplet: x64-linux
             compiler: clang
             cxx: clang++
             cc: clang
           - name: linux-gcc
             os: ubuntu-latest
             os-name: linux
+            triplet: x64-linux
             compiler: gcc
             cxx: g++-10
             cc: gcc-10
           - name: macos-clang
             os: macos-latest
             os-name: macos
+            triplet: x64-osx
             compiler: clang
             cxx: clang++
             cc: clang
@@ -67,10 +72,11 @@ jobs:
           CC: ${{ matrix.cc }}
 
       - name: Get vcpkg
-        uses: lukka/run-vcpkg@v10
+        uses: lukka/run-vcpkg@v7
         id: runvcpkg
         with:
           vcpkgDirectory: '${{ github.workspace }}/Extern/vcpkg'
+          vcpkgTriplet: '${{ matrix.triplet }}'
 
       - name: Build Release
         uses: lukka/run-cmake@v3.3
@@ -78,9 +84,10 @@ jobs:
           cmakeGenerator: 'Ninja'
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeBuildType: Release
-          useVcpkgToolchainFile: true
           buildWithCMakeArgs: --config Release
           buildDirectory: 'Build'
+          useVcpkgToolchainFile: true
+          vcpkgTriplet: ${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_TRIPLET_OUT }}
 
       - name: Upload binaries as artifacts
         uses: actions/upload-artifact@v2
@@ -98,6 +105,8 @@ jobs:
           cmakeBuildType: Debug
           buildWithCMakeArgs: --config Debug
           buildDirectory: 'Build'
+          useVcpkgToolchainFile: true
+          vcpkgTriplet: ${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_TRIPLET_OUT }}
 
       - name: Run Tests
         working-directory: ./Build
