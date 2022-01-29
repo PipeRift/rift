@@ -72,30 +72,15 @@ jobs:
         with:
           vcpkgDirectory: '${{ github.workspace }}/Extern/vcpkg'
 
-      - name: Build Clang Debug
-        uses: lukka/run-cmake@v3.3
-        id: runcmake
-        with:
-          cmakeGenerator: 'Ninja'
-          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-          cmakeBuildType: Debug
-          buildWithCMakeArgs: --config Debug -- -v
-          buildDirectory: 'Build'
-
-      - name: Run Tests
-        working-directory: ./Build
-        run: ctest --output-on-failure -j2 -C Debug
-
-      - name: Build Clang Release
+      - name: Build Release
         uses: lukka/run-cmake@v3.3
         with:
           cmakeGenerator: 'Ninja'
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeBuildType: Release
           useVcpkgToolchainFile: true
-          buildWithCMakeArgs: --config Release -- -v
+          buildWithCMakeArgs: --config Release
           buildDirectory: 'Build'
-
 
       - name: Upload binaries as artifacts
         uses: actions/upload-artifact@v2
@@ -103,3 +88,17 @@ jobs:
         with:
           name: rift-${{ matrix.name }}
           path: Build/Bin
+
+      - name: Build Debug
+        uses: lukka/run-cmake@v3.3
+        id: runcmake
+        with:
+          cmakeGenerator: 'Ninja'
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          cmakeBuildType: Debug
+          buildWithCMakeArgs: --config Debug
+          buildDirectory: 'Build'
+
+      - name: Run Tests
+        working-directory: ./Build
+        run: ctest --output-on-failure -j2 -C Debug
