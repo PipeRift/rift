@@ -11,7 +11,7 @@ NOTE: LLVM needs to be installed from source because binary installations dont p
 
 Now, build LLVM following the [instructions](https://github.com/llvm/llvm-project#getting-the-source-code-and-building-llvm).<br>
 Some tested steps are:
-- Generate with `cmake -S llvm -B build`
+- Generate with `cmake -S llvm -B build -DCMAKE_BUILD_TYPE=Release`
 - Build with `cmake --build build`
 
 ### 2. Clone Rift locally

@@ -9,6 +9,7 @@ jobs:
     name: ${{ matrix.os-name }} (${{ matrix.compiler }})
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang]
         include:
@@ -62,14 +63,17 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ runner.temp }}/llvm
-          key: llvm-13.0
+          key: llvm-13.0-${{ matrix.os }}
 
       - name: Install LLVM
-        uses: KyleMayes/install-llvm-action@v1
-        with:
-          version: "13.0"
-          directory: ${{ runner.temp }}/llvm
-          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+        if: ${{ steps.cache-llvm.outputs.cache-hit == 0 }}
+        run: |
+          cd ${{ runner.temp }}
+          git clone https://github.com/llvm/llvm-project.git llvm --branch release/13.x --depth 1
+          cd llvm
+          cmake -S llvm -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
+          cd ${{ github.workspace }}
 
       - name: Get CMake
         uses: lukka/get-cmake@latest
@@ -106,14 +110,6 @@ jobs:
           cmakeBuildType: Debug
           buildWithCMakeArgs: --config Debug
           buildDirectory: 'Build'
-          useVcpkgToolchainFile: true
-          vcpkgTriplet: ${{ matrix.triplet }}
-
-      - name: Configure
-        run: cmake -B Build -S . -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/Extern/vcpkg/scripts/buildsystems/vcpkg.cmake
-
-      - name: Build Debug
-        run: cmake --build Build --config Debug
 
       - name: Run Tests
         working-directory: ./Build
