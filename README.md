@@ -1,6 +1,5 @@
 # Rift
-
-[![license](https://img.shields.io/github/license/PipeRift/rift?labelColor=394047)](https://github.com/PipeRift/rift/blob/main/LICENSE) [![Code Quality](https://api.codacy.com/project/badge/Grade/a377314fe8ae4a2bb17159bce8a1ac76)](https://app.codacy.com/gh/PipeRift/rift?utm_source=github.com&utm_medium=referral&utm_content=PipeRift/rift&utm_campaign=Badge_Grade)
+[![build](https://github.com/PipeRift/rift/actions/workflows/build.yml/badge.svg)](https://github.com/PipeRift/rift/actions/workflows/build.yml) [![license](https://img.shields.io/github/license/PipeRift/rift?labelColor=394047)](https://github.com/PipeRift/rift/blob/main/LICENSE) [![Code Quality](https://api.codacy.com/project/badge/Grade/a377314fe8ae4a2bb17159bce8a1ac76)](https://app.codacy.com/gh/PipeRift/rift?utm_source=github.com&utm_medium=referral&utm_content=PipeRift/rift&utm_campaign=Badge_Grade)
 
 Rift is a **compiled**, **typed** and **visual** programming language.
 
@@ -14,7 +13,7 @@ At first this might sound counterintuitive, but it actually brings multiple key 
 ### Coding style is User preference
 Code does not specify how your code looks, your settings in the editor do, and they are your choice.
 _You will always be comfortable in any code, because it is always the coding standard you prefer_
-  
+
 ### Many code representations, one language
 Rift has the concept of _"Views"_ which are different visualizations of code (E.g: Visual Nodes and Text).
 
@@ -55,8 +54,7 @@ Some examples of what future modularity would look like:
 
 
 ## Software Quality
-
-[![Windows](https://img.shields.io/github/workflow/status/piperift/rift/windows-cicd?label=Windows)](https://github.com/PipeRift/rift/actions/workflows/windows-cicd.yml) [![Linux](https://img.shields.io/github/workflow/status/piperift/rift/linux-cicd?label=Linux)](https://github.com/PipeRift/rift/actions/workflows/linux-cicd.yml) [![MacOS](https://img.shields.io/github/workflow/status/piperift/rift/macos-cicd?label=MacOS)](https://github.com/PipeRift/rift/actions/workflows/macos-cicd.yml)
+[![build](https://github.com/PipeRift/rift/actions/workflows/build.yml/badge.svg)](https://github.com/PipeRift/rift/actions/workflows/build.yml) [![static-analysis](https://github.com/PipeRift/rift/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/PipeRift/rift/actions/workflows/static-analysis.yml)
 
 The code is validated on the following platforms/compilers:
 
