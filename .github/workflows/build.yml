@@ -66,7 +66,7 @@ jobs:
           key: llvm-13.0-${{ matrix.os }}
 
       - name: Install LLVM
-        if: ${{ steps.cache-llvm.outputs.cache-hit == 0 }}
+        if: ${{ steps.cache-llvm.outputs.cache-hit != 'true' }}
         run: |
           cd ${{ runner.temp }}
           git clone https://github.com/llvm/llvm-project.git llvm --branch release/13.x --depth 1
