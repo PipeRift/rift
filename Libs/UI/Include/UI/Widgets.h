@@ -3,7 +3,7 @@
 #pragma once
 
 #include "UI/Style.h"
-#include "UI/UIImGui.h"
+#include "UI/UIImgui.h"
 
 
 namespace Rift::UI

@@ -1,8 +1,0 @@
-{
-    "name": "rift",
-    "version-string": "0.0.1",
-    "description": "Rift is a **compiled**, **typed** and **visual** programming language",
-    "dependencies": [
-        "llvm"
-    ]
-}

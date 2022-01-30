@@ -6,9 +6,7 @@ sudo apt -y upgrade
 
 
 sudo apt -y install build-essential xz-utils curl
-sudo apt -y install xorg-dev
 sudo apt -y install libx11-dev xorg-dev xlibmesa-glu-dev #libglu1-mesa-devz
-sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
 
 sudo apt -y install gdb
 

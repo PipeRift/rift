@@ -9,10 +9,13 @@ rift_target_enable_CPP20(RiftBackendLLVM)
 set_target_properties (RiftBackendLLVM PROPERTIES FOLDER Rift)
 rift_target_define_platform(RiftBackendLLVM)
 rift_target_shared_output_directory(RiftBackendLLVM)
+
 target_link_libraries(RiftBackendLLVM PUBLIC
     Rift::Rift
     ${llvm_libs}
 )
+target_include_directories(RiftBackendLLVM PUBLIC ${LLVM_INCLUDE_DIRS})
+target_compile_definitions(RiftBackendLLVM PUBLIC ${LLVM_DEFINITIONS})
 
 install(TARGETS RiftBackendLLVM
     EXPORT RiftTargets

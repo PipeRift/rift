@@ -1,0 +1,126 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  Build:
+    name: ${{ matrix.os-name }} (${{ matrix.compiler }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang]
+        include:
+          - name: windows-msvc
+            os: windows-latest
+            os-name: windows
+            compiler: msvc
+            cxx: cl
+            cc: cl
+          - name: windows-clang
+            os: windows-latest
+            os-name: windows
+            compiler: clang
+            cxx: clang-cl
+            cc: clang-cl
+          - name: linux-clang
+            os: ubuntu-latest
+            os-name: linux
+            compiler: clang
+            cxx: clang++
+            cc: clang
+          - name: linux-gcc
+            os: ubuntu-latest
+            os-name: linux
+            compiler: gcc
+            cxx: g++-10
+            cc: gcc-10
+          - name: macos-clang
+            os: macos-latest
+            os-name: macos
+            compiler: clang
+            cxx: clang++
+            cc: clang
+
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Init Submodules
+        uses: snickerbockers/submodules-init@v4
+
+      - name: Install dependencies
+        if: ${{ matrix.os-name == 'linux'}}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential xz-utils curl libx11-dev xorg-dev libglu1-mesa-dev
+
+      - name: Cache LLVM
+        id: cache-llvm
+        uses: actions/cache@v2
+        with:
+          path: ${{ runner.temp }}/llvm
+          key: llvm-13.0-${{ matrix.os }}
+
+
+      - name: Install LLVM (pre-built)
+        if: ${{ matrix.os-name != 'windows' }}
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "13.0"
+          directory: ${{ runner.temp }}/llvm
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+
+      - name: Install LLVM (source)
+        if: ${{ matrix.os-name == 'windows' && steps.cache-llvm.outputs.cache-hit != 'true' }}
+        run: |
+          cd ${{ runner.temp }}
+          git clone https://github.com/llvm/llvm-project.git llvm --branch release/13.x --depth 1
+          cd llvm
+          cmake -S llvm -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
+          cd ${{ github.workspace }}
+
+      - name: Get CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Set Compiler Environment
+        uses: lukka/set-shell-env@v1
+        with:
+          CXX: ${{ matrix.cxx }}
+          CC: ${{ matrix.cc }}
+
+      - name: Build Release
+        uses: lukka/run-cmake@v3.3
+        with:
+          cmakeGenerator: 'Ninja'
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          cmakeBuildType: Release
+          cmakeAppendedArgs: "-DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'"
+          buildWithCMakeArgs: --config Release
+          buildDirectory: 'Build'
+
+      - name: Upload binaries as artifacts
+        uses: actions/upload-artifact@v2
+        if: ${{ matrix.compiler == 'clang'}} # Only clang artifacts are stored
+        with:
+          name: rift-${{ matrix.name }}
+          path: Build/Bin
+
+      - name: Build Debug
+        uses: lukka/run-cmake@v3.3
+        id: runcmake
+        with:
+          cmakeGenerator: 'Ninja'
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          cmakeBuildType: Debug
+          cmakeAppendedArgs: "-DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'"
+          buildWithCMakeArgs: --config Debug
+          buildDirectory: 'Build'
+
+      - name: Run Tests
+        working-directory: ./Build
+        run: ctest --output-on-failure -j2 -C Debug

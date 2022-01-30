@@ -66,7 +66,7 @@ namespace Rift::Compiler
 		{
 			if (!context.ast.Has<CModule>(moduleId))
 			{
-				Log::Info("Cant find module");
+				Log::Info("Can't find module");
 				return;
 			}
 
