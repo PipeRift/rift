@@ -39,7 +39,7 @@ namespace Rift::UI
 		// Decide GL+GLSL versions
 #ifdef __APPLE__
 		// GL 3.2 + GLSL 150
-		const char* glsl_version = "#version 150";
+		const char* glslVersion = "#version 150";
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);    // 3.2+ only
