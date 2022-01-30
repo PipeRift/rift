@@ -38,17 +38,15 @@ jobs:
           vcpkgDirectory: '${{ github.workspace }}/Extern/vcpkg'
 
       - name: Cache LLVM and Clang
-        if: matrix.compiler == 'clang'
         id: cache-llvm
         uses: actions/cache@v2
         with:
           path: ${{ runner.temp }}/llvm
-          key: llvm-11.0
+          key: llvm-13.0
       - name: Install LLVM and Clang
-        if: matrix.compiler == 'clang'
         uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "11.0"
+          version: "13.0"
           directory: ${{ runner.temp }}/llvm
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 

@@ -11,7 +11,6 @@ rift_target_define_platform(RiftBackendCpp)
 rift_target_shared_output_directory(RiftBackendCpp)
 target_link_libraries(RiftBackendCpp PUBLIC
     Rift::Rift
-    ${llvm_libs}
 )
 
 install(TARGETS RiftBackendCpp

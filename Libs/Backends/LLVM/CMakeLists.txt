@@ -14,6 +14,20 @@ target_link_libraries(RiftBackendLLVM PUBLIC
     ${llvm_libs}
 )
 
+llvm_map_components_to_libnames(backend_llvm_libs Support Core IRReader)
+add_library(LLVM_LIB STATIC)
+target_include_directories(LLVM_LIB PUBLIC ${LLVM_INCLUDE_DIRS})
+target_compile_definitions(LLVM_LIB PUBLIC ${LLVM_DEFINITIONS})
+target_link_libraries(LLVM_LIB PUBLIC
+    Rift::Rift
+    ${backend_llvm_libs}
+)
+
+target_link_libraries(RiftBackendLLVM PUBLIC
+    Rift::Rift
+    LLVM
+)
+
 install(TARGETS RiftBackendLLVM
     EXPORT RiftTargets
     LIBRARY DESTINATION Lib

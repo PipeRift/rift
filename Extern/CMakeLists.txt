@@ -40,7 +40,16 @@ add_library(IconFontCppHeaders INTERFACE)
 target_include_directories(IconFontCppHeaders INTERFACE IconFontCppHeaders)
 
 
+# LLVM
+set(RIFT_LLVM_PATH "" CACHE STRING "Location of an external LLVM installation to use. CMake will try to find if this path is not set")
+if (NOT RIFT_LLVM_PATH STREQUAL "")
+    message(STATUS "Provided LLVM installation: ${RIFT_LLVM_PATH}")
+    set(LLVM_DIR "${RIFT_LLVM_PATH}/llvm/cmake/modules")
+    set(LLVM_INCLUDE_DIRS "${RIFT_LLVM_PATH}/llvm/include")
+endif()
 find_package(LLVM CONFIG REQUIRED)
-message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
-llvm_map_components_to_libnames(llvm_libs core)
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+
+message(STATUS "LLVM Includes: ${LLVM_INCLUDE_DIRS}")
+llvm_map_components_to_libnames(llvm_libs Support Core IRReader)

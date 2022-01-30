@@ -17,9 +17,6 @@ namespace Rift::Compiler
 			return "LLVM";
 		}
 
-		void Build(Context& context) override
-		{
-			context.AddError("LLVM backend is not yet supported.");
-		}
+		void Build(Context& context) override;
 	};
 }    // namespace Rift::Compiler
