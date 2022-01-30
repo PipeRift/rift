@@ -15,28 +15,34 @@ Some tested steps are:
 - Build with `cmake --build build`
 
 ### 2. Clone Rift locally
-
 Clone Rift from [`https://github.com/PipeRift/rift`](https://github.com/PipeRift/rift) into a folder of your choice.
 
-Make sure all submodules have been initialized. You can run `Programs/InitSubmodules.bat` to do it.
+Make sure all submodules have been initialized. You can run `Programs/InitSubmodules.bat` to do it (or `git submodule update --init --recursive`).
 
 ### 2. Use an IDE
-
 Any IDE supporting CMake is suitable.
 
-Before we start building the project, we need to tell the project where our LLVM installation is located.
+Before we start building the project, we need to tell it where our LLVM installation is located.
+We do this by setting `RIFT_LLVM_PATH` variable in cmake cache to our llvm path.
 
 
 ## Linux
 
-### Install dependencies
-TO BE TESTED
-
-Make sure your system is updated with `sudo apt update` and `sudo apt upgrade`
+### 1. Install dependencies
+Make sure your system is updated with `sudo apt update` and `sudo apt upgrade` first.
 
 Install LLVM and Clang 13
 `sudo apt install clang-13`
 
-Install Rift dependencies
+Install dependencies
 `sudo apt install build-essential xz-utils curl xorg-dev libx11-dev xlibmesa-glu-dev`
 
+### 2. Clone Rift locally
+Clone Rift from [`https://github.com/PipeRift/rift`](https://github.com/PipeRift/rift) into a folder of your choice.
+
+Make sure all submodules have been initialized (with `git submodule update --init --recursive`).
+
+### 2. Use an IDE
+Any IDE supporting CMake is suitable.
+
+NOTE: In Linux we don't need to specify the path to LLVM since it will be detected, but if we have multiple installations, we can choose which one by setting cmake variable `RIFT_LLVM_PATH` to the path we want.
