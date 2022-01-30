@@ -86,6 +86,7 @@ jobs:
           cmakeGenerator: 'Ninja'
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeBuildType: Release
+          cmakeAppendedArgs: "-DRIFT_LLVM_PATH='${{ env.LLVM_PATH }}'"
           buildWithCMakeArgs: --config Release
           buildDirectory: 'Build'
 
