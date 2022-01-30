@@ -15,35 +15,30 @@ jobs:
           - name: windows-msvc
             os: windows-latest
             os-name: windows
-            triplet: x64-windows
             compiler: msvc
             cxx: cl
             cc: cl
           - name: windows-clang
             os: windows-latest
             os-name: windows
-            triplet: x64-windows
             compiler: clang
             cxx: clang-cl
             cc: clang-cl
           - name: linux-clang
             os: ubuntu-latest
             os-name: linux
-            triplet: x64-linux
             compiler: clang
             cxx: clang++
             cc: clang
           - name: linux-gcc
             os: ubuntu-latest
             os-name: linux
-            triplet: x64-linux
             compiler: gcc
             cxx: g++-10
             cc: gcc-10
           - name: macos-clang
             os: macos-latest
             os-name: macos
-            triplet: x64-osx
             compiler: clang
             cxx: clang++
             cc: clang
@@ -85,14 +80,6 @@ jobs:
           CXX: ${{ matrix.cxx }}
           CC: ${{ matrix.cc }}
 
-      - name: Get vcpkg
-        uses: lukka/run-vcpkg@v7
-        id: runvcpkg
-        with:
-          setupOnly: true
-          vcpkgDirectory: '${{ github.workspace }}/Extern/vcpkg'
-          vcpkgTriplet: '${{ matrix.triplet }}'
-
       - name: Build Release
         uses: lukka/run-cmake@v3.3
         with:
@@ -101,8 +88,6 @@ jobs:
           cmakeBuildType: Release
           buildWithCMakeArgs: --config Release
           buildDirectory: 'Build'
-          useVcpkgToolchainFile: true
-          vcpkgTriplet: ${{ matrix.triplet }}
 
       - name: Upload binaries as artifacts
         uses: actions/upload-artifact@v2
