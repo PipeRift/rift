@@ -67,7 +67,7 @@ jobs:
 
 
       - name: Install LLVM (pre-built)
-        if: ${{ matrix.or-name != 'windows' }}
+        if: ${{ matrix.os-name != 'windows' }}
         uses: KyleMayes/install-llvm-action@v1
         with:
           version: "13.0"
@@ -75,7 +75,7 @@ jobs:
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
       - name: Install LLVM (source)
-        if: ${{ matrix.or-name == 'windows' && steps.cache-llvm.outputs.cache-hit != 'true' }}
+        if: ${{ matrix.os-name == 'windows' && steps.cache-llvm.outputs.cache-hit != 'true' }}
         run: |
           cd ${{ runner.temp }}
           git clone https://github.com/llvm/llvm-project.git llvm --branch release/13.x --depth 1
