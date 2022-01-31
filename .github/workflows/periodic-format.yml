@@ -10,8 +10,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ubuntu-latest
-        build-type: Debug
+        os: [ubuntu-latest]
+        build-type: [Debug]
 
     steps:
     - name: Checkout repository
