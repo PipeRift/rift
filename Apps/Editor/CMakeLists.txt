@@ -1,24 +1,20 @@
 
-add_executable(RiftEditor Src/main.cpp)
-add_executable(Rift::Editor ALIAS RiftEditor)
-target_include_directories(RiftEditor PUBLIC Include)
+add_executable(RiftEditorExe Src/main.cpp)
+add_executable(Rift::EditorExe ALIAS RiftEditorExe)
+set_target_properties(RiftEditorExe PROPERTIES OUTPUT_NAME "RiftEditor")
+
+target_include_directories(RiftEditorExe PUBLIC Include)
 file(GLOB_RECURSE RiftEditor_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
-target_sources(RiftEditor PRIVATE ${RiftEditor_SOURCE_FILES})
-rift_target_enable_CPP20(RiftEditor)
-set_target_properties (RiftEditor PROPERTIES FOLDER Rift)
-target_link_libraries(RiftEditor PUBLIC
-    Rift::Rift
-    Rift::Backend::LLVM
-    Rift::Backend::Cpp
-    Rift::UI
-    CLI11
-)
-rift_target_define_platform(RiftEditor)
-rift_target_shared_output_directory(RiftEditor)
+target_sources(RiftEditorExe PRIVATE ${RiftEditor_SOURCE_FILES})
+rift_target_enable_CPP20(RiftEditorExe)
+set_target_properties (RiftEditorExe PROPERTIES FOLDER Rift/Executables)
+target_link_libraries(RiftEditorExe PUBLIC Rift::Editor)
+rift_target_define_platform(RiftEditorExe)
+rift_target_shared_output_directory(RiftEditorExe)
 
-set_icon(RiftEditor ../../Resources/Icon.ico)
+set_icon(RiftEditorExe ../../Resources/Icon.ico)
 
-install(TARGETS RiftEditor
+install(TARGETS RiftEditorExe
     EXPORT RiftTargets
     LIBRARY DESTINATION Lib
     ARCHIVE DESTINATION Lib
