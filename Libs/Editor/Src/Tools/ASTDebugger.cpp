@@ -6,15 +6,29 @@
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CParent.h>
+#include <AST/Components/CStatementOutputs.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Tree.h>
 #include <Framework/Paths.h>
+#include <UI/ReflectionWidgets.h>
 #include <UI/UI.h>
 
 
 namespace Rift
 {
 	using namespace Memory;
+
+	void DrawEntityInspector(AST::Tree& ast, AST::Id entityId, bool* open = nullptr)
+	{
+		UI::Begin("Entity Inspector", open);
+		if (UI::BeginInspector("EntityInspector"))
+		{
+			static CStatementOutputs variable;
+			UI::InspectProperties(&variable, variable.GetStaticType());
+			UI::EndInspector();
+		}
+		UI::End();
+	}
 
 	void DrawTypesDebug(AST::Tree& ast)
 	{
@@ -23,8 +37,9 @@ namespace Rift
 			return;
 		}
 
-		static ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable
-		                             | ImGuiTableFlags_Hideable | ImGuiTableFlags_SizingStretchProp;
+		static const ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable
+		                                   | ImGuiTableFlags_Hideable
+		                                   | ImGuiTableFlags_SizingStretchProp;
 		if (auto* types = ast.TryGetStatic<STypes>())
 		{
 			UI::BeginChild("typesTableChild",
@@ -124,6 +139,8 @@ namespace Rift
 			UI::Separator();
 		}
 		UI::End();
+
+		DrawEntityInspector(ast, AST::NoId, &open);
 	}
 
 	void ASTDebugger::DrawNode(AST::Tree& ast, AST::Id nodeId, bool showChildren)

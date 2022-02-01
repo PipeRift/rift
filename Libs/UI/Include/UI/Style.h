@@ -3,7 +3,6 @@
 
 #include <Math/Color.h>
 #include <Platform/Platform.h>
-#include <Reflection/Static/EnumType.h>
 
 
 namespace Rift::Style
