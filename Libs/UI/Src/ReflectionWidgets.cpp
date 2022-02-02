@@ -122,7 +122,7 @@ namespace Rift::UI
 		if (!EnsureMsg(!currentInspector,
 		        "Called BeginInspector() twice without calling EndInspector() first."))
 		{
-			return;
+			return false;
 		}
 
 		static const ImGuiTableFlags flags = ImGuiTableFlags_Resizable
