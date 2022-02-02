@@ -98,4 +98,7 @@ namespace Rift::UI
 	ImRect GetWorkRect(v2 desiredSize, bool addhalfItemSpacing = true, v2 extent = v2::Zero());
 
 	bool MutableText(StringView label, String& text, ImGuiInputTextFlags flags = 0);
+
+	void HelpTooltip(StringView text, float delay = 1.f);
+	void HelpMarker(StringView text);
 }    // namespace Rift::UI

@@ -67,28 +67,24 @@ namespace Rift::UI
 	void InspectProperty(void* container, Refl::Property* property)
 	{
 		UI::TableNextRow();
-		UI::TableNextColumn();
 
 		void* data = property->GetDataPtr(container);
 		if (auto* structType = property->GetType()->AsStruct())
 		{
-			static String label;
-			label.clear();
-			Strings::FormatTo(label, "{}##{}", property->GetName(), container);
-			UI::Selectable(label.c_str(), true,
-			    ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap);
-
-			UI::TableNextColumn();
-
-			UI::Indent(20.f);
-			InspectProperties(data, structType);
-			UI::Unindent(20.f);
+			UI::TableSetColumnIndex(0);
+			if (BeginInspectHeader(property->GetName().ToString().c_str()))
+			{
+				InspectProperties(data, structType);
+				EndInspectHeader();
+			}
 		}
 		else
 		{
+			UI::TableSetColumnIndex(0);
+			UI::AlignTextToFramePadding();
 			UI::Text(property->GetName().ToString());
 
-			UI::TableNextColumn();
+			UI::TableSetColumnIndex(1);
 			if (auto* nativeType = property->GetType()->AsNative())
 			{
 				DrawNativeValue(data, nativeType);
@@ -104,20 +100,42 @@ namespace Rift::UI
 			return;
 		}
 
+		UI::PushID(container);
+
 		TArray<Refl::Property*> properties;
 		type->GetProperties(properties);
 		for (auto* prop : properties)
 		{
 			InspectProperty(container, prop);
 		}
+
+		UI::PopID();
 	}
 	void InspectStruct(Struct* data, Refl::StructType* type) {}
 	void InspectClass(Class* data, Refl::ClassType* type) {}
 
-	void BeginInspectorHeader(const char* name, void* data, Refl::DataType* type, v2 size) {}
-	void EndInspectorHeader(const char* name, void* data, Refl::DataType* type, v2 size) {}
+	bool BeginInspectHeader(const char* label)
+	{
+		Style::PushHeaderColor(Style::GetNeutralColor(1));
 
-	bool BeginInspector(const char* name, v2 size)
+		UI::AlignTextToFramePadding();
+		bool isOpen = UI::CollapsingHeader(
+		    label, ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_AllowItemOverlap);
+		Style::PopHeaderColor();
+
+		if (isOpen)
+		{
+			UI::Indent(20.f);
+		}
+		return isOpen;
+	}
+
+	void EndInspectHeader()
+	{
+		UI::Unindent(20.f);
+	}
+
+	bool BeginInspector(const char* label, v2 size)
 	{
 		if (!EnsureMsg(!currentInspector,
 		        "Called BeginInspector() twice without calling EndInspector() first."))
@@ -127,18 +145,17 @@ namespace Rift::UI
 
 		static const ImGuiTableFlags flags = ImGuiTableFlags_Resizable
 		                                   | ImGuiTableFlags_SizingStretchProp
-		                                   | ImGuiTableFlags_BordersInnerV;
-		if (UI::BeginTable(name, 2, flags, size))
+		                                   | ImGuiTableFlags_PadOuterX;
+		if (UI::BeginTable(label, 2, flags, size))
 		{
-			currentInspector = name;
+			currentInspector = label;
 			UI::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthStretch, 0.5f);
 			UI::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.5f);
 
 			UI::TableHeadersRow();
-
-			return true;
 		}
-		return false;
+
+		return true;
 	}
 
 	void EndInspector()
