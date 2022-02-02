@@ -16,6 +16,38 @@
 
 namespace Rift
 {
+	struct CTestInspectionSubType : public Struct
+	{
+		STRUCT(CTestInspectionSubType, Struct)
+
+		PROP(valid);
+		bool valid = 120;
+
+		PROP(value);
+		String value = "Cheese";
+	};
+
+	struct CTestInspectionType : public Struct
+	{
+		STRUCT(CTestInspectionType, Struct)
+
+		PROP(smallInt);
+		u8 smallInt = 120;
+
+		PROP(value);
+		float value = 0.f;
+
+		PROP(longValue);
+		double longValue = 10.f;
+
+		PROP(name)
+		Name name{"Louis"};
+
+		PROP(someStruct);
+		CTestInspectionSubType someStruct;
+	};
+
+
 	using namespace Memory;
 
 	void DrawEntityInspector(AST::Tree& ast, AST::Id entityId, bool* open = nullptr)
@@ -23,7 +55,7 @@ namespace Rift
 		UI::Begin("Entity Inspector", open);
 		if (UI::BeginInspector("EntityInspector"))
 		{
-			static CStatementOutputs variable;
+			static CTestInspectionType variable;
 			UI::InspectProperties(&variable, variable.GetStaticType());
 			UI::EndInspector();
 		}

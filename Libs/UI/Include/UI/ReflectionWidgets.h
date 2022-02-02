@@ -4,6 +4,7 @@
 
 #include "UI/Style.h"
 #include "UI/UIImgui.h"
+#include "UI/Widgets.h"
 
 #include <Reflection/Static/DataType.h>
 
