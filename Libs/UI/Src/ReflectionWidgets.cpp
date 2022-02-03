@@ -3,7 +3,7 @@
 #include "UI/ReflectionWidgets.h"
 
 #include <Reflection/GetType.h>
-#include <Reflection/Static/StructType.h>
+#include <Reflection/StructType.h>
 
 
 namespace Rift::UI
@@ -64,17 +64,18 @@ namespace Rift::UI
 			}
 		}
 	}
-	void InspectProperty(void* container, Refl::Property* property)
+	void InspectProperty(const Refl::PropertyHandle& handle)
 	{
 		UI::TableNextRow();
 
-		void* data = property->GetDataPtr(container);
-		if (auto* structType = property->GetType()->AsStruct())
+		StringView name = handle.GetDisplayName();
+
+		if (auto* structType = handle.GetType()->AsStruct())
 		{
 			UI::TableSetColumnIndex(0);
-			if (BeginInspectHeader(property->GetName().ToString().c_str()))
+			if (BeginInspectHeader(name.data()))
 			{
-				InspectProperties(data, structType);
+				InspectProperties(handle.GetPtr(), structType);
 				EndInspectHeader();
 			}
 		}
@@ -82,12 +83,12 @@ namespace Rift::UI
 		{
 			UI::TableSetColumnIndex(0);
 			UI::AlignTextToFramePadding();
-			UI::Text(property->GetName().ToString());
+			UI::Text(name);
 
 			UI::TableSetColumnIndex(1);
-			if (auto* nativeType = property->GetType()->AsNative())
+			if (auto* nativeType = handle.GetType()->AsNative())
 			{
-				DrawNativeValue(data, nativeType);
+				DrawNativeValue(handle.GetPtr(), nativeType);
 			}
 		}
 	}
@@ -106,7 +107,7 @@ namespace Rift::UI
 		type->GetProperties(properties);
 		for (auto* prop : properties)
 		{
-			InspectProperty(container, prop);
+			InspectProperty(Refl::PropertyHandle{*prop, container});
 		}
 
 		UI::PopID();

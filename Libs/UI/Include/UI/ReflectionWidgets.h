@@ -6,7 +6,8 @@
 #include "UI/UIImgui.h"
 #include "UI/Widgets.h"
 
-#include <Reflection/Static/DataType.h>
+#include <Reflection/DataType.h>
+#include <Reflection/Handles/PropertyHandle.h>
 
 
 namespace Rift::UI
@@ -14,7 +15,7 @@ namespace Rift::UI
 	void DrawEnum(void* data, Refl::EnumType* type);
 	void DrawNative(void* data, Refl::NativeType* type);
 
-	void InspectProperty(void* container, Refl::Property* type);
+	void InspectProperty(const Refl::PropertyHandle& property);
 	void InspectProperties(void* container, Refl::DataType* type);
 
 	void InspectStruct(Struct* data, Refl::StructType* type);

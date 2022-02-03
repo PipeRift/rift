@@ -196,7 +196,11 @@ namespace Rift::UI
 				UI::PushStyleVar(ImGuiStyleVar_WindowPadding, v2{4.f, 3.f});
 				ImGui::BeginTooltip();
 				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-				ImGui::TextUnformatted(text.data());
+				static String finalText;
+				finalText.clear();
+				Strings::FormatTo(finalText, "{} {}", ICON_FA_QUESTION_CIRCLE, text);
+				UI::AlignTextToFramePadding();
+				ImGui::TextUnformatted(finalText.c_str());
 				ImGui::PopTextWrapPos();
 				ImGui::EndTooltip();
 				UI::PopStyleVar();
@@ -209,7 +213,7 @@ namespace Rift::UI
 	}
 	void HelpMarker(StringView text)
 	{
-		ImGui::TextDisabled(ICON_FA_QUESTION);
+		ImGui::TextDisabled(ICON_FA_QUESTION_CIRCLE);
 		HelpTooltip(text, 0.f);
 	}
 }    // namespace Rift::UI
