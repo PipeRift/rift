@@ -63,6 +63,14 @@ namespace Rift::UI
 				name = Name{text};
 			}
 		}
+		else if (type == GetType<v2>())
+		{
+			UI::InputFloat2(label.c_str(), static_cast<float*>(data));
+		}
+		else if (type == GetType<v3>())
+		{
+			UI::InputFloat3(label.c_str(), static_cast<float*>(data));
+		}
 	}
 	void InspectProperty(const Refl::PropertyHandle& handle)
 	{

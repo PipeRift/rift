@@ -22,8 +22,10 @@ namespace Rift
 
 	void DrawEntityInspector(AST::Tree& ast, AST::Id entityId, bool* open = nullptr)
 	{
-		const String name =
-		    Strings::Format("Entity Inspector (id:{})###Entity Inspector", entityId);
+		String name = "Entity Inspector";
+		if (!IsNone(entityId))
+			Strings::FormatTo(name, " (id:{})", entityId);
+		Strings::FormatTo(name, "###Entity Inspector");
 		UI::Begin(name.c_str(), open);
 		if (IsNone(entityId))
 		{
@@ -142,12 +144,14 @@ namespace Rift
 			    ImVec2(0.f, Math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
 			if (UI::BeginTable("nodesTable", 4, flags))
 			{
-				UI::TableSetupColumn("Id", ImGuiTableColumnFlags_NoHide);
+				UI::TableSetupColumn("", ImGuiTableColumnFlags_IndentDisable
+				                             | ImGuiTableColumnFlags_WidthFixed
+				                             | ImGuiTableColumnFlags_NoResize);    // Inspect
+				UI::TableSetupColumn(
+				    "Id", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_IndentEnable);
 				UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 1.f);
 				UI::TableSetupColumn("Path",
 				    ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultHide, 1.2f);
-				UI::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed
-				                             | ImGuiTableColumnFlags_NoResize);    // Inspect
 				UI::TableHeadersRow();
 
 				if (showHierarchy && !filter.IsActive())
@@ -198,14 +202,9 @@ namespace Rift
 		if (CFileRef* file = ast.TryGet<CFileRef>(nodeId))
 		{
 			path = Paths::ToString(file->path);
-			if (name.empty())
-			{
-				StringView filename = Paths::GetFilename(path);
 
-				filename = Strings::RemoveFromEnd(filename, Paths::typeExtension);
-				filename = Strings::RemoveFromEnd(filename, Paths::moduleExtension);
-				Strings::FormatTo(name, "'{}'", filename);
-			}
+			StringView filename = Paths::GetFilename(path);
+			Strings::FormatTo(name, name.empty() ? "file: {}" : " (file: {})", filename);
 		}
 
 		if (!filter.PassFilter(idText.c_str(), idText.c_str() + idText.size())
@@ -216,7 +215,21 @@ namespace Rift
 
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
+		static String inspectLabel;
+		inspectLabel.clear();
+		Strings::FormatTo(inspectLabel, ICON_FA_SEARCH "##{}", nodeId);
+		Style::PushButtonColor(Style::GetNeutralColor(1));
+		Style::PushTextColor(selectedNode == nodeId ? Style::whiteTextColor
+		                                            : Style::whiteTextColor.Translucency(0.3f));
+		if (UI::Button(inspectLabel.c_str()))
+		{
+			selectedNode = nodeId;
+		}
+		Style::PopTextColor();
+		Style::PopButtonColor();
 
+
+		ImGui::TableNextColumn();
 		bool hasChildren;
 		const CParent* children = nullptr;
 		if (showChildren)
@@ -243,22 +256,17 @@ namespace Rift
 			UI::Unindent(10.f);
 		}
 		Style::PopFont();
+
+
 		ImGui::TableNextColumn();
 		UI::Text(name);
+
 
 		ImGui::TableNextColumn();
 		Style::PushFont("WorkSans", Style::FontMode::Italic);
 		UI::Text(path);
 		Style::PopFont();
 
-		ImGui::TableNextColumn();
-		static String inspectLabel;
-		inspectLabel.clear();
-		Strings::FormatTo(inspectLabel, ICON_FA_SEARCH "##{}", nodeId);
-		if (UI::Button(inspectLabel.c_str()))
-		{
-			selectedNode = nodeId;
-		}
 
 		if (hasChildren && open)
 		{
