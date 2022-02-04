@@ -24,6 +24,6 @@ namespace Rift::UI
 	bool BeginInspectHeader(const char* label);
 	void EndInspectHeader();
 
-	bool BeginInspector(const char* name, v2 size = v2{0.f, UI::GetContentRegionAvail().y});
+	bool BeginInspector(const char* name, v2 size = v2{0.f, 0.f});
 	void EndInspector();
 }    // namespace Rift::UI

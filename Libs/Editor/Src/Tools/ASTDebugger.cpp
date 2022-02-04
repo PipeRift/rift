@@ -10,55 +10,58 @@
 #include <AST/Statics/STypes.h>
 #include <AST/Tree.h>
 #include <Framework/Paths.h>
+#include <IconsFontAwesome5.h>
+#include <Reflection/Registry/Registry.h>
 #include <UI/ReflectionWidgets.h>
 #include <UI/UI.h>
 
 
 namespace Rift
 {
-	struct CTestInspectionSubType : public Struct
-	{
-		STRUCT(CTestInspectionSubType, Struct)
-
-		PROP(valid);
-		bool valid = 120;
-
-		PROP(value);
-		String value = "Cheese";
-	};
-
-	struct CTestInspectionType : public Struct
-	{
-		STRUCT(CTestInspectionType, Struct)
-
-		PROP(smallInt);
-		u8 smallInt = 120;
-
-		PROP(value);
-		float value = 0.f;
-
-		PROP(longValue);
-		double longValue = 10.f;
-
-		PROP(name)
-		Name name{"Louis"};
-
-		PROP(someStruct);
-		CTestInspectionSubType someStruct;
-	};
-
-
 	using namespace Memory;
 
 	void DrawEntityInspector(AST::Tree& ast, AST::Id entityId, bool* open = nullptr)
 	{
-		UI::Begin("Entity Inspector", open);
-		if (UI::BeginInspector("EntityInspector"))
+		const String name =
+		    Strings::Format("Entity Inspector (id:{})###Entity Inspector", entityId);
+		UI::Begin(name.c_str(), open);
+		if (IsNone(entityId))
 		{
-			static CTestInspectionType variable;
-			UI::InspectProperties(&variable, variable.GetStaticType());
-			UI::EndInspector();
+			UI::End();
+			return;
 		}
+
+		const auto& registry = Refl::ReflectionRegistry::Get();
+		for (const auto& poolInstance : ast.GetPools())
+		{
+			Refl::Type* type = registry.FindType(poolInstance.componentId);
+			if (!type || !poolInstance.GetPool()->Has(entityId))
+			{
+				continue;
+			}
+
+			void* data = poolInstance.GetPool()->TryGetVoid(entityId);
+			static String typeName;
+			typeName = type->GetName();
+
+			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
+			if (!data)
+			{
+				flags |= ImGuiTreeNodeFlags_Leaf;
+			}
+			if (UI::CollapsingHeader(typeName.c_str(), flags))
+			{
+				UI::Indent();
+				Refl::DataType* dataType = type->AsData();
+				if (data && dataType && UI::BeginInspector("EntityInspector"))
+				{
+					UI::InspectProperties(data, dataType);
+					UI::EndInspector();
+				}
+				UI::Unindent();
+			}
+		}
+
 		UI::End();
 	}
 
@@ -137,12 +140,14 @@ namespace Rift
 			                             | ImGuiTableFlags_SizingStretchProp;
 			ImGui::BeginChild("nodesTableChild",
 			    ImVec2(0.f, Math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
-			if (UI::BeginTable("nodesTable", 3, flags))
+			if (UI::BeginTable("nodesTable", 4, flags))
 			{
 				UI::TableSetupColumn("Id", ImGuiTableColumnFlags_NoHide);
 				UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 1.f);
 				UI::TableSetupColumn("Path",
 				    ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultHide, 1.2f);
+				UI::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed
+				                             | ImGuiTableColumnFlags_NoResize);    // Inspect
 				UI::TableHeadersRow();
 
 				if (showHierarchy && !filter.IsActive())
@@ -172,7 +177,7 @@ namespace Rift
 		}
 		UI::End();
 
-		DrawEntityInspector(ast, AST::NoId, &open);
+		DrawEntityInspector(ast, selectedNode, &open);
 	}
 
 	void ASTDebugger::DrawNode(AST::Tree& ast, AST::Id nodeId, bool showChildren)
@@ -245,6 +250,15 @@ namespace Rift
 		Style::PushFont("WorkSans", Style::FontMode::Italic);
 		UI::Text(path);
 		Style::PopFont();
+
+		ImGui::TableNextColumn();
+		static String inspectLabel;
+		inspectLabel.clear();
+		Strings::FormatTo(inspectLabel, ICON_FA_SEARCH "##{}", nodeId);
+		if (UI::Button(inspectLabel.c_str()))
+		{
+			selectedNode = nodeId;
+		}
 
 		if (hasChildren && open)
 		{

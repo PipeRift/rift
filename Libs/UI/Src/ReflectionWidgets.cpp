@@ -70,7 +70,7 @@ namespace Rift::UI
 
 		StringView name = handle.GetDisplayName();
 
-		if (auto* structType = handle.GetType()->AsStruct())
+		if (auto* structType = handle.GetType() ? handle.GetType()->AsStruct() : nullptr)
 		{
 			UI::TableSetColumnIndex(0);
 			if (BeginInspectHeader(name.data()))
@@ -86,7 +86,7 @@ namespace Rift::UI
 			UI::Text(name);
 
 			UI::TableSetColumnIndex(1);
-			if (auto* nativeType = handle.GetType()->AsNative())
+			if (auto* nativeType = handle.GetType() ? handle.GetType()->AsNative() : nullptr)
 			{
 				DrawNativeValue(handle.GetPtr(), nativeType);
 			}
@@ -152,8 +152,6 @@ namespace Rift::UI
 			currentInspector = label;
 			UI::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthStretch, 0.5f);
 			UI::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.5f);
-
-			UI::TableHeadersRow();
 		}
 
 		return true;

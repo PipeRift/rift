@@ -395,6 +395,9 @@ namespace Rift::AST
 			return set.Contains(id);
 		}
 
+		// Returns the data pointer of a component if contianed
+		virtual void* TryGetVoid(Id id) = 0;
+
 		virtual bool Remove(Id id)                     = 0;
 		virtual void RemoveUnsafe(Id id)               = 0;
 		virtual i32 Remove(TSpan<const Id> ids)        = 0;
@@ -689,6 +692,11 @@ namespace Rift::AST
 		const T* TryGet(Id id) const
 		{
 			return Has(id) ? data.Get(set.Index(id)) : nullptr;
+		}
+
+		void* TryGetVoid(Id id) override
+		{
+			return TryGet(id);
 		}
 
 		TOwnPtr<Pool> Clone() override
