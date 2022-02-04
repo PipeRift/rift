@@ -279,6 +279,7 @@ namespace Rift
 					ScopedChange(ast, functionId);
 					AST::Functions::AddInputArgument(ast, functionId);
 				}
+				UI::HelpTooltip("Adds a new input parameter to a function");
 				Style::PopStyleCompact();
 
 				UI::TableNextColumn();
@@ -299,6 +300,7 @@ namespace Rift
 					ScopedChange(ast, functionId);
 					AST::Functions::AddOutputArgument(ast, functionId);
 				}
+				UI::HelpTooltip("Adds a new output parameter to a function");
 				Style::PopStyleCompact();
 				UI::EndTable();
 			}

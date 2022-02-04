@@ -449,6 +449,13 @@ namespace Rift::AST
 		}
 
 #pragma endregion ECS API
+
+		const TArray<PoolInstance>& GetPools() const
+		{
+			return pools;
+		}
+
+
 	private:
 		void CopyFrom(const Tree& other);
 		void MoveFrom(Tree&& other);

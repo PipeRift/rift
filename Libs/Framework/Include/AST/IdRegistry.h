@@ -38,7 +38,7 @@ namespace Rift::AST
 		{
 			if (available.IsEmpty())
 			{
-				for (i32 i = entities.Size(); i; ++i)
+				for (i32 i = 0; i < entities.Size(); ++i)
 				{
 					cb(entities[i]);
 				}

@@ -2,6 +2,10 @@
 
 #include "UI/Widgets.h"
 
+#include <IconsFontAwesome5.h>
+#include <Misc/DateTime.h>
+#include <Misc/Timespan.h>
+
 
 namespace Rift::UI
 {
@@ -164,5 +168,52 @@ namespace Rift::UI
 			UI::PopStyleColor();
 		}
 		return valueChanged;
+	}
+
+	void HelpTooltip(StringView text, float delay)
+	{
+		static ImGuiID currentHelpItemId = 0;
+
+		ImGuiID itemId = ImGui::GetCurrentContext()->LastItemData.ID;
+		if (ImGui::IsItemHovered())
+		{
+			bool show = true;
+			if (delay > 0.f)
+			{
+				static DateTime hoverStartTime;
+				const DateTime now = DateTime::Now();
+				if (itemId != currentHelpItemId)
+				{
+					// Reset help tooltip countdown
+					currentHelpItemId = itemId;
+					hoverStartTime    = now;
+				}
+				show = (now - hoverStartTime).GetTotalSeconds() > delay;
+			}
+
+			if (show)
+			{
+				UI::PushStyleVar(ImGuiStyleVar_WindowPadding, v2{4.f, 3.f});
+				ImGui::BeginTooltip();
+				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+				static String finalText;
+				finalText.clear();
+				Strings::FormatTo(finalText, "{} {}", ICON_FA_QUESTION_CIRCLE, text);
+				UI::AlignTextToFramePadding();
+				ImGui::TextUnformatted(finalText.c_str());
+				ImGui::PopTextWrapPos();
+				ImGui::EndTooltip();
+				UI::PopStyleVar();
+			}
+		}
+		else if (itemId == currentHelpItemId)
+		{
+			currentHelpItemId = 0;
+		}
+	}
+	void HelpMarker(StringView text)
+	{
+		ImGui::TextDisabled(ICON_FA_QUESTION_CIRCLE);
+		HelpTooltip(text, 0.f);
 	}
 }    // namespace Rift::UI
