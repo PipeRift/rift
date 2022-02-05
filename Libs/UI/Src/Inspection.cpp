@@ -1,6 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "UI/ReflectionWidgets.h"
+#include "UI/Inspection.h"
 
 #include <Reflection/GetType.h>
 #include <Reflection/StructType.h>
@@ -11,7 +11,34 @@ namespace Rift::UI
 	static const char* currentInspector = nullptr;
 
 
-	void DrawEnum(void* data, Refl::EnumType* type) {}
+	void DrawEnumValue(void* data, Refl::EnumType* type)
+	{
+		static String label;
+		label.clear();
+		Strings::FormatTo(label, "##{}", sizet(data));
+
+		const i32 currentIndex = type->GetIndexFromValue(data);
+		if (UI::BeginCombo(label.c_str(), type->GetNameByIndex(currentIndex).ToString().c_str()))
+		{
+			for (i32 i = 0; i < type->Size(); ++i)
+			{
+				const bool isSelected = currentIndex == i;
+
+				if (UI::Selectable(type->GetNameByIndex(i).ToString().c_str(), isSelected))
+				{
+					type->SetValueFromIndex(data, i);
+				}
+
+				// Set the initial focus when opening the combo
+				if (isSelected)
+				{
+					UI::SetItemDefaultFocus();
+				}
+			}
+			UI::EndCombo();
+		}
+	}
+
 	void DrawNativeValue(void* data, Refl::NativeType* type)
 	{
 		static String label;
@@ -98,6 +125,10 @@ namespace Rift::UI
 			{
 				DrawNativeValue(handle.GetPtr(), nativeType);
 			}
+			else if (auto* enumType = handle.GetType() ? handle.GetType()->AsEnum() : nullptr)
+			{
+				DrawEnumValue(handle.GetPtr(), enumType);
+			}
 		}
 	}
 
@@ -120,8 +151,6 @@ namespace Rift::UI
 
 		UI::PopID();
 	}
-	void InspectStruct(Struct* data, Refl::StructType* type) {}
-	void InspectClass(Class* data, Refl::ClassType* type) {}
 
 	bool BeginInspectHeader(const char* label)
 	{

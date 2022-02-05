@@ -12,7 +12,7 @@
 #include <Framework/Paths.h>
 #include <IconsFontAwesome5.h>
 #include <Reflection/Registry/Registry.h>
-#include <UI/ReflectionWidgets.h>
+#include <UI/Inspection.h>
 #include <UI/UI.h>
 
 
