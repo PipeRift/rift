@@ -1,10 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Access.h"
 #include "AST/Components/CChild.h"
 #include "AST/Components/CParent.h"
 #include "AST/Filter.h"
+#include "AST/FilterAccess.h"
 #include "AST/IdRegistry.h"
 #include "AST/Pool.h"
 #include "AST/Types.h"
@@ -13,6 +13,7 @@
 #include <Strings/Name.h>
 
 #include <any>
+
 
 
 namespace Rift::AST
@@ -335,7 +336,7 @@ namespace Rift::AST
 		}
 
 		template<typename... Component, typename... Exclude>
-		TAccess<TInclude<Component...>, TExclude<Exclude...>> MakeAccess(
+		TFilterAccess<TInclude<Component...>, TExclude<Exclude...>> MakeAccess(
 		    TExclude<Exclude...> = {}) const
 		{
 			return {{&AssurePool<Component>()...}, {&AssurePool<Exclude>()...}};
@@ -343,7 +344,7 @@ namespace Rift::AST
 
 
 		template<typename... Component, typename... Exclude>
-		TFilter<TAccess<TInclude<Const<Component>...>, TExclude<Exclude...>>> Filter(
+		TFilter<TFilterAccess<TInclude<Const<Component>...>, TExclude<Exclude...>>> Filter(
 		    TExclude<Exclude...> = {}) const
 		{
 			static_assert(sizeof...(Component) > 0, "Exclusion-only filters are not supported");
@@ -351,7 +352,7 @@ namespace Rift::AST
 		}
 
 		template<typename... Component, typename... Exclude>
-		TFilter<TAccess<TInclude<Component...>, TExclude<Exclude...>>> Filter(
+		TFilter<TFilterAccess<TInclude<Component...>, TExclude<Exclude...>>> Filter(
 		    TExclude<Exclude...> = {})
 		{
 			static_assert(sizeof...(Component) > 0, "Exclusion-only filters are not supported");

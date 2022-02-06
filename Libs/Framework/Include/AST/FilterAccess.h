@@ -13,7 +13,7 @@
 namespace Rift::AST
 {
 	template<typename PoolIt>
-	class TAccessIterator
+	class TFilterAccessIterator
 	{
 		static constexpr sizet i = sizeof(PoolIt);
 
@@ -32,9 +32,9 @@ namespace Rift::AST
 		using reference         = typename std::iterator_traits<PoolIt>::reference;
 		using iterator_category = std::bidirectional_iterator_tag;
 
-		TAccessIterator() : first{}, last{}, it{}, pools{}, excluded{} {}
+		TFilterAccessIterator() : first{}, last{}, it{}, pools{}, excluded{} {}
 
-		TAccessIterator(PoolIt from, PoolIt to, PoolIt curr, TArray<Pool*>&& pools,
+		TFilterAccessIterator(PoolIt from, PoolIt to, PoolIt curr, TArray<Pool*>&& pools,
 		    TArray<const Pool*>&& excluded)
 		    : first{from}, last{to}, it{curr}, pools{Move(pools)}, excluded{Move(excluded)}
 		{
@@ -44,36 +44,36 @@ namespace Rift::AST
 			}
 		}
 
-		TAccessIterator& operator++()
+		TFilterAccessIterator& operator++()
 		{
 			while (++it != last && !IsValid()) {}
 			return *this;
 		}
 
-		TAccessIterator operator++(int)
+		TFilterAccessIterator operator++(int)
 		{
-			TAccessIterator orig = *this;
+			TFilterAccessIterator orig = *this;
 			return ++(*this), orig;
 		}
 
-		TAccessIterator& operator--()
+		TFilterAccessIterator& operator--()
 		{
 			while (--it != first && !IsValid()) {}
 			return *this;
 		}
 
-		TAccessIterator operator--(int)
+		TFilterAccessIterator operator--(int)
 		{
-			TAccessIterator orig = *this;
+			TFilterAccessIterator orig = *this;
 			return operator--(), orig;
 		}
 
-		[[nodiscard]] bool operator==(const TAccessIterator& other) const
+		[[nodiscard]] bool operator==(const TFilterAccessIterator& other) const
 		{
 			return other.it == it;
 		}
 
-		[[nodiscard]] bool operator!=(const TAccessIterator& other) const
+		[[nodiscard]] bool operator!=(const TFilterAccessIterator& other) const
 		{
 			return !(*this == other);
 		}
@@ -116,18 +116,18 @@ namespace Rift::AST
 
 
 	template<typename... T>
-	struct TAccess;
+	struct TFilterAccess;
 
 	template<typename... IncludeComp, typename... ExcludeComp>
-	struct TAccess<TInclude<IncludeComp...>, TExclude<ExcludeComp...>>
+	struct TFilterAccess<TInclude<IncludeComp...>, TExclude<ExcludeComp...>>
 	{
 		template<typename... K>
-		friend struct TAccess;
+		friend struct TFilterAccess;
 
 		static_assert(sizeof...(IncludeComp) > 0, "Exclusion-only access are not supported");
 
-		using Iterator        = TAccessIterator<Pool::Iterator>;
-		using ReverseIterator = TAccessIterator<Pool::ReverseIterator>;
+		using Iterator        = TFilterAccessIterator<Pool::Iterator>;
+		using ReverseIterator = TFilterAccessIterator<Pool::ReverseIterator>;
 
 		using Included = TTypeList<IncludeComp...>;
 		using Excluded = TTypeList<ExcludeComp...>;
@@ -137,9 +137,9 @@ namespace Rift::AST
 
 
 		template<typename... T>
-		using In = TAccess<TInclude<IncludeComp..., T...>, TExclude<ExcludeComp...>>;
+		using In = TFilterAccess<TInclude<IncludeComp..., T...>, TExclude<ExcludeComp...>>;
 		template<typename... T>
-		using Ex = TAccess<TInclude<ExcludeComp...>, TExclude<ExcludeComp..., T...>>;
+		using Ex = TFilterAccess<TInclude<ExcludeComp...>, TExclude<ExcludeComp..., T...>>;
 
 
 	protected:
@@ -148,7 +148,7 @@ namespace Rift::AST
 
 
 	public:
-		TAccess(IncludedTuple included, ExcludedTuple excluded)
+		TFilterAccess(IncludedTuple included, ExcludedTuple excluded)
 		    : included{included}, excluded{excluded}
 		{}
 
@@ -157,7 +157,9 @@ namespace Rift::AST
 		 * Access A can be created from access A|B
 		 */
 		template<typename... OtherIncludeComp, typename... OtherExcludeComp>
-		TAccess(const TAccess<TInclude<OtherIncludeComp...>, TExclude<OtherExcludeComp...>>& other)
+		TFilterAccess(
+		    const TFilterAccess<TInclude<OtherIncludeComp...>, TExclude<OtherExcludeComp...>>&
+		        other)
 		    : included{std::get<TPool<Mut<IncludeComp>>*>(other.included)...}
 		    , excluded{std::get<const TPool<Mut<ExcludeComp>>*>(other.excluded)...}
 		{}
@@ -194,7 +196,7 @@ namespace Rift::AST
 		template<typename T>
 		TPool<Mut<T>>* GetPool() const
 		{
-			if constexpr (Contains<TPool<Mut<T>>*, decltype(included)>())
+			if constexpr (TupleContains<decltype(included), TPool<Mut<T>>*>())
 			{
 				return std::get<TPool<Mut<T>>*>(included);
 			}
@@ -204,7 +206,7 @@ namespace Rift::AST
 		template<typename T>
 		const TPool<T>* GetExcludedPool() const
 		{
-			if constexpr (Contains<const TPool<Mut<T>>*, decltype(excluded)>())
+			if constexpr (TupleContains<decltype(excluded), const TPool<Mut<T>>*>())
 			{
 				return std::get<const TPool<Mut<T>>*>(excluded);
 			}
@@ -235,7 +237,7 @@ namespace Rift::AST
 	struct Access
 	{
 		template<typename... T>
-		using In = TAccess<TInclude<T...>, TExclude<>>;
+		using In = TFilterAccess<TInclude<T...>, TExclude<>>;
 	};
 
 	/*struct RuntimeAccess
