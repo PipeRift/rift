@@ -805,4 +805,7 @@ namespace Rift::AST
 			return componentId.GetId() < other.componentId.GetId();
 		}
 	};
+
+
+	i32 GetSmallestPool(const TArray<const Pool*>& pools);
 }    // namespace Rift::AST

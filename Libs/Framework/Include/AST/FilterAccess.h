@@ -234,7 +234,7 @@ namespace Rift::AST
 		}
 	};
 
-	struct Access
+	struct FilterAccess
 	{
 		template<typename... T>
 		using In = TFilterAccess<TInclude<T...>, TExclude<>>;

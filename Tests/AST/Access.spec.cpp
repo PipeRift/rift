@@ -2,6 +2,7 @@
 
 #define RIFT_ENABLE_PROFILER 0
 
+#include <AST/Access.h>
 #include <AST/FilterAccess.h>
 #include <AST/Tree.h>
 #include <bandit/bandit.h>
@@ -10,6 +11,7 @@
 using namespace snowhouse;
 using namespace bandit;
 using namespace Rift;
+using namespace Rift::AST;
 
 
 struct Type
@@ -24,21 +26,20 @@ go_bandit([]() {
 	describe("AST.Access", []() {
 		describe("Templated", []() {
 			it("Can cache pools", [&]() {
-				AST::Tree tree;
-				auto access = tree.MakeAccess<Type>(AST::TExclude<TypeTwo>{});
+				Tree tree;
+				TAccess<Type, const TypeTwo> access{tree};
 
 				AssertThat(access.GetPool<Type>(), Equals(tree.FindPool<Type>()));
-				AssertThat(access.GetPool<TypeTwo>(), Equals(nullptr));
-				AssertThat(access.GetExcludedPool<Type>(), Equals(nullptr));
-				AssertThat(access.GetExcludedPool<TypeTwo>(), Equals(tree.FindPool<TypeTwo>()));
+				AssertThat(access.GetPool<const Type>(), Equals(tree.FindPool<Type>()));
+				AssertThat(access.GetPool<const TypeTwo>(), Equals(tree.FindPool<TypeTwo>()));
 			});
 
 			it("Can check if contained", [&]() {
-				AST::Tree tree;
-				AST::TPool<Type>& pool = tree.AssurePool<Type>();
-				auto access            = tree.MakeAccess<Type>();
-				auto accessExcluded    = tree.MakeAccess<Type>(AST::TExclude<TypeTwo>{});
-				AST::Id id             = AST::NoId;
+				Tree tree;
+				TPool<Type>& pool   = tree.AssurePool<Type>();
+				auto access         = tree.MakeAccess<Type>();
+				auto accessExcluded = tree.MakeAccess<Type>(TExclude<TypeTwo>{});
+				Id id               = NoId;
 				AssertThat(access.Has(id), Is().False());
 				AssertThat(accessExcluded.Has(id), Is().False());
 
@@ -56,14 +57,20 @@ go_bandit([]() {
 			});
 
 			it("Can initialize superset", [&]() {
-				AST::Tree tree;
-				AST::TPool<Type>& typePool = tree.AssurePool<Type>();
+				Tree tree;
+				TPool<Type>& typePool = tree.AssurePool<Type>();
 
-				AST::Access::In<Type, TypeTwo> access = tree.MakeAccess<Type, TypeTwo>();
-				AST::Access::In<Type> superset{access};
+				TAccess<Type, TypeTwo> access1{tree};
+				TAccess<Type> superset1{access1};
+				AssertThat(superset1.GetPool<Type>(), Equals(&typePool));
 
-				AssertThat(access.GetPool<Type>(), Equals(&typePool));
-				AssertThat(superset.GetPool<Type>(), Equals(&typePool));
+				TAccess<Type, TypeTwo> access2{tree};
+				TAccess<const Type> superset2{access2};
+				AssertThat(superset2.GetPool<const Type>(), Equals(&typePool));
+
+				TAccess<const Type, TypeTwo> access3{tree};
+				TAccess<const Type> superset3{access3};
+				AssertThat(superset1.GetPool<Type>(), Equals(&typePool));
 			});
 		});
 

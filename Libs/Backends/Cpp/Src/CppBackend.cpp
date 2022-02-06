@@ -9,10 +9,12 @@
 #include <AST/Components/CClassDecl.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CModule.h>
+#include <AST/Filtering.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Context.h>
 #include <Files/Files.h>
 #include <Misc/DateTime.h>
+
 
 
 namespace Rift::Compiler
@@ -126,8 +128,9 @@ namespace Rift::Compiler
 			context.AddError("Failed to copy code");
 			return;
 		}
-		auto modules = context.ast.Filter<CModule>();
-		for (AST::Id moduleId : modules)
+
+		AST::TAccess<const CModule> modules{context.ast};
+		for (AST::Id moduleId : AST::ListAll<CModule>(modules))
 		{
 			Name name = Modules::GetModuleName(context.ast, moduleId);
 			if (!Files::Copy(cmakePath / name.ToString() / context.config.buildMode,

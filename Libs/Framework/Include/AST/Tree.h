@@ -15,7 +15,6 @@
 #include <any>
 
 
-
 namespace Rift::AST
 {
 	struct SortLessStatics
@@ -61,8 +60,8 @@ namespace Rift::AST
 		TArray<OwnPtr> statics;
 
 		NativeTypeIds nativeTypes;
-		TOwnPtr<TFilter<Access::In<CParent>>> parentView;
-		TOwnPtr<TFilter<Access::In<CChild>>> childView;
+		TOwnPtr<TFilter<FilterAccess::In<CParent>>> parentView;
+		TOwnPtr<TFilter<FilterAccess::In<CChild>>> childView;
 
 
 	public:
@@ -389,22 +388,22 @@ namespace Rift::AST
 			CachePools();
 		}
 
-		TFilter<Access::In<CParent>>& GetParentView()
+		TFilter<FilterAccess::In<CParent>>& GetParentView()
 		{
 			return *parentView;
 		}
 
-		TFilter<Access::In<CChild>>& GetChildView()
+		TFilter<FilterAccess::In<CChild>>& GetChildView()
 		{
 			return *childView;
 		}
 
-		const TFilter<Access::In<CParent>>& GetParentView() const
+		const TFilter<FilterAccess::In<CParent>>& GetParentView() const
 		{
 			return *parentView;
 		}
 
-		const TFilter<Access::In<CChild>>& GetChildView() const
+		const TFilter<FilterAccess::In<CChild>>& GetChildView() const
 		{
 			return *childView;
 		}

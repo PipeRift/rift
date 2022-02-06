@@ -5,8 +5,10 @@
 #include "CppBackend.h"
 
 #include <AST/Components/CModule.h>
+#include <AST/Filtering.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Files/Files.h>
+
 
 
 namespace Rift::Compiler::Cpp
@@ -84,8 +86,8 @@ namespace Rift::Compiler::Cpp
 		Name projectName = Modules::GetProjectName(context.ast);
 		SetProject(code, context, projectName.ToString(), "0.1");
 
-		auto modules = context.ast.Filter<CModule>();
-		for (AST::Id moduleId : modules)
+		AST::TAccess<CModule> modules{context.ast};
+		for (AST::Id moduleId : ListAll<CModule>(modules))
 		{
 			Name name = Modules::GetModuleName(context.ast, moduleId);
 			GenerateCMakeModule(context, moduleId, modules.Get<CModule>(moduleId), codePath, name);

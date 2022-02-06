@@ -15,6 +15,7 @@
 #include <AST/Components/CStructDecl.h>
 #include <AST/Components/CType.h>
 #include <AST/Components/CVariableDecl.h>
+#include <AST/Filtering.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
@@ -126,10 +127,9 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void ForwardDeclareTypes(String& code, const AST::Tree& ast, AST::Id moduleId,
+	void ForwardDeclareTypes(String& code, const AST::TAccess<const CType>& types, AST::Id moduleId,
 	    const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
-		auto types = ast.Filter<const CType>();
 		for (AST::Id entity : structs)
 		{
 			const auto& type = types.Get<const CType>(entity);
@@ -143,15 +143,14 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void AddTypeVariables(String& code, const AST::Tree& ast, AST::Id owner)
+	void AddTypeVariables(String& code,
+	    const AST::TAccess<const CIdentifier, const CVariableDecl>& variables, AST::Id owner)
 	{
-		auto variables = ast.Filter<const CIdentifier, const CVariableDecl>();
-
-		if (const CParent* parent = AST::Hierarchy::GetCParent(ast, owner))
+		if (const CParent* parent = AST::Hierarchy::GetCParent(variables.GetAST(), owner))
 		{
 			for (AST::Id entity : parent->children)
 			{
-				if (variables.Has(entity))
+				if (variables.Has<const CIdentifier, const CVariableDecl>(entity))
 				{
 					auto& identifier = variables.Get<const CIdentifier>(entity);
 					AddVariable(code, "bool", identifier.name.ToString(), "false");
@@ -160,23 +159,23 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void DeclareTypes(String& code, const AST::Tree& ast, AST::Id moduleId,
-	    const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
+	void DeclareTypes(String& code,
+	    const AST::TAccess<const CType, const CIdentifier, const CVariableDecl>& access,
+	    AST::Id moduleId, const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
-		auto types = ast.Filter<const CType>();
 		for (AST::Id entity : structs)
 		{
-			const auto& type = types.Get<const CType>(entity);
-			DeclareStruct(code, type.name.ToString(), {}, [&ast, entity](String& innerCode) {
-				AddTypeVariables(innerCode, ast, entity);
+			const auto& type = access.Get<const CType>(entity);
+			DeclareStruct(code, type.name.ToString(), {}, [&access, entity](String& innerCode) {
+				AddTypeVariables(innerCode, access, entity);
 			});
 		}
 
 		for (AST::Id entity : classes)
 		{
-			const auto& type = types.Get<const CType>(entity);
-			DeclareStruct(code, type.name.ToString(), {}, [&ast, entity](String& innerCode) {
-				AddTypeVariables(innerCode, ast, entity);
+			const auto& type = access.Get<const CType>(entity);
+			DeclareStruct(code, type.name.ToString(), {}, [&access, entity](String& innerCode) {
+				AddTypeVariables(innerCode, access, entity);
 			});
 		}
 	}
