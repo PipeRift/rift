@@ -65,7 +65,7 @@ namespace Rift::AST
 		}
 	}
 
-	Pool* Tree::FindPool(Refl::TypeId componentId) const
+	Pool* Tree::GetPool(Refl::TypeId componentId) const
 	{
 		const i32 index = pools.FindSortedEqual(PoolInstance{componentId});
 		return index != NO_INDEX ? pools[index].GetPool() : nullptr;

@@ -97,5 +97,17 @@ go_bandit([]() {
 			AssertThat(typeIds.Contains(id2), Is().True());
 			AssertThat(typeIds.Contains(id3), Is().False());
 		});
+
+		it("Can filter directly from AST", [&]() {
+			TArray<AST::Id> ids1 = AST::ListAll<Type>(ast);
+			AssertThat(ids1.Contains(id1), Is().True());
+
+			TArray<AST::Id> ids2 = AST::ListAny<Type>(ast);
+			AssertThat(ids2.Contains(id1), Is().True());
+
+			TArray<AST::Id> ids4 = AST::ListAny<Type>(ast);
+			AST::RemoveIfNot<TypeThree>(ast, ids4);
+			AssertThat(ids4.Contains(id1), Is().False());
+		});
 	});
 });

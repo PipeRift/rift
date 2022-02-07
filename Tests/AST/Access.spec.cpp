@@ -29,9 +29,9 @@ go_bandit([]() {
 				Tree tree;
 				TAccess<Type, const TypeTwo> access{tree};
 
-				AssertThat(access.GetPool<Type>(), Equals(tree.FindPool<Type>()));
-				AssertThat(access.GetPool<const Type>(), Equals(tree.FindPool<Type>()));
-				AssertThat(access.GetPool<const TypeTwo>(), Equals(tree.FindPool<TypeTwo>()));
+				AssertThat(access.GetPool<Type>(), Equals(tree.GetPool<Type>()));
+				AssertThat(access.GetPool<const Type>(), Equals(tree.GetPool<Type>()));
+				AssertThat(access.GetPool<const TypeTwo>(), Equals(tree.GetPool<TypeTwo>()));
 			});
 
 			it("Can check if contained", [&]() {

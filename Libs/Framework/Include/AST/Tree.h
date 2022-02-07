@@ -124,12 +124,12 @@ namespace Rift::AST
 		template<typename Component>
 		void Remove(const Id id)
 		{
-			FindPool<Component>()->Remove(id);
+			GetPool<Component>()->Remove(id);
 		}
 		template<typename... Component>
 		void Remove(const Id id) requires(sizeof...(Component) > 1)
 		{
-			(FindPool<Component>()->Remove(id), ...);
+			(GetPool<Component>()->Remove(id), ...);
 		}
 		template<typename... Component>
 		void Remove(TSpan<const Id> ids) requires(sizeof...(Component) > 0)
@@ -138,14 +138,14 @@ namespace Rift::AST
 			{
 				Check(IsValid(id));
 			}
-			(FindPool<Component>()->Remove(ids), ...);
+			(GetPool<Component>()->Remove(ids), ...);
 		}
 
 		template<typename Component>
 		Component& Get(const Id id) const
 		{
 			Check(IsValid(id));
-			auto* const pool = FindPool<Component>();
+			auto* const pool = GetPool<Component>();
 			Check(pool);
 			return pool->Get(id);
 		}
@@ -158,7 +158,7 @@ namespace Rift::AST
 		template<typename Component>
 		Component* TryGet(const Id id) const
 		{
-			auto* const pool = FindPool<Component>();
+			auto* const pool = GetPool<Component>();
 			return pool ? pool->TryGet(id) : nullptr;
 		}
 		template<typename... Component>
@@ -174,7 +174,7 @@ namespace Rift::AST
 		{
 			return [id](const auto*... cpool) {
 				return ((cpool && cpool->Has(id)) || ...);
-			}(FindPool<Component>()...);
+			}(GetPool<Component>()...);
 		}
 
 		template<typename... Component>
@@ -182,7 +182,7 @@ namespace Rift::AST
 		{
 			return [id](const auto*... cpool) {
 				return ((cpool && cpool->Has(id)) && ...);
-			}(FindPool<Component>()...);
+			}(GetPool<Component>()...);
 		}
 
 		template<typename Component>
@@ -440,12 +440,12 @@ namespace Rift::AST
 		template<typename T>
 		TPool<Mut<T>>& AssurePool() const;
 
-		Pool* FindPool(Refl::TypeId componentId) const;
+		Pool* GetPool(Refl::TypeId componentId) const;
 
 		template<typename T>
-		CopyConst<TPool<Mut<T>>, T>* FindPool() const
+		CopyConst<TPool<Mut<T>>, T>* GetPool() const
 		{
-			return static_cast<CopyConst<TPool<Mut<T>>, T>*>(FindPool(Refl::TypeId::Get<Mut<T>>()));
+			return static_cast<CopyConst<TPool<Mut<T>>, T>*>(GetPool(Refl::TypeId::Get<Mut<T>>()));
 		}
 
 #pragma endregion ECS API
@@ -466,7 +466,7 @@ namespace Rift::AST
 		template<typename Component>
 		void ClearPool()
 		{
-			if (auto* pool = FindPool<Component>())
+			if (auto* pool = GetPool<Component>())
 			{
 				pool->Reset();
 			}
