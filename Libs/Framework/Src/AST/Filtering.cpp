@@ -7,11 +7,13 @@ namespace Rift::AST
 {
 	void RemoveIf(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
-		ids.RemoveIfSwap(
-		    [pool](Id id) {
-			return pool->Has(id);
-		    },
-		    shouldShrink);
+		for (i32 i = ids.Size() - 1; i >= 0; --i)
+		{
+			if (pool->Has(ids[i]))
+			{
+				ids.RemoveAtSwapUnsafe(i);
+			}
+		}
 	}
 
 	void RemoveIfStable(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
@@ -25,11 +27,13 @@ namespace Rift::AST
 
 	void RemoveIfNot(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
-		ids.RemoveIfSwap(
-		    [pool](Id id) {
-			return !pool->Has(id);
-		    },
-		    shouldShrink);
+		for (i32 i = ids.Size() - 1; i >= 0; --i)
+		{
+			if (!pool->Has(ids[i]))
+			{
+				ids.RemoveAtSwapUnsafe(i);
+			}
+		}
 	}
 
 	void RemoveIfNotStable(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)

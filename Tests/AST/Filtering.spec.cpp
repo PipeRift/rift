@@ -105,6 +105,10 @@ go_bandit([]() {
 			TArray<AST::Id> ids2 = AST::ListAny<Type>(ast);
 			AssertThat(ids2.Contains(id1), Is().True());
 
+			TArray<AST::Id> ids3 = AST::ListAny<Type>(ast);
+			AST::RemoveIf<TypeThree>(ast, ids3);
+			AssertThat(ids3.Contains(id1), Is().True());
+
 			TArray<AST::Id> ids4 = AST::ListAny<Type>(ast);
 			AST::RemoveIfNot<TypeThree>(ast, ids4);
 			AssertThat(ids4.Contains(id1), Is().False());

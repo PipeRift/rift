@@ -45,6 +45,7 @@ file(COPY Resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Bin)
 if(BUILD_TESTING AND RIFT_BUILD_TESTS)
     include(CTest)
     add_subdirectory(Tests)
+    add_subdirectory(Benchmarks)
 endif()
 
 # clang-format

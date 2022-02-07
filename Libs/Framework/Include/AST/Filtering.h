@@ -79,6 +79,7 @@ namespace Rift::AST
 	template<typename AccessType, typename... T>
 	void ListAll(const AccessType& access, TArray<Id>& ids)
 	{
+		ZoneScoped;
 		TArray<const Pool*> pools{access.template GetPool<const T>()...};
 		for (const Pool* pool : pools)
 		{
@@ -94,17 +95,13 @@ namespace Rift::AST
 		const Pool* iterablePool = pools[smallestIdx];
 		pools.RemoveAtSwap(smallestIdx);
 
-		ids.Reserve(ids.Size() + iterablePool->Size());
-		for (Id id : *iterablePool)
-		{
-			ids.Add(id);
-		}
+		ids.Empty();
+		ids.Append(iterablePool->begin(), iterablePool->end());
 
 		for (const Pool* pool : pools)
 		{
 			RemoveIfNot(pool, ids, false);
 		}
-		ids.Shrink();
 	}
 
 	/**
@@ -119,7 +116,7 @@ namespace Rift::AST
 	{
 		TArray<Id> ids;
 		ListAll<AccessType, T...>(access, ids);
-		return ids;
+		return Move(ids);
 	}
 
 	/**
@@ -132,6 +129,7 @@ namespace Rift::AST
 	template<typename AccessType, typename... T>
 	void ListAny(const AccessType& access, TArray<Id>& ids)
 	{
+		ZoneScoped;
 		TArray<const Pool*> pools{access.template GetPool<const T>()...};
 
 		i32 maxPossibleSize = 0;
@@ -156,6 +154,8 @@ namespace Rift::AST
 				idsSet.Insert(id);
 			}
 		}
+
+		ids.Empty();
 		ids.Append(idsSet.begin(), idsSet.end());
 	}
 
@@ -171,6 +171,6 @@ namespace Rift::AST
 	{
 		TArray<Id> ids;
 		ListAny<AccessType, T...>(access, ids);
-		return ids;
+		return Move(ids);
 	}
 }    // namespace Rift::AST
