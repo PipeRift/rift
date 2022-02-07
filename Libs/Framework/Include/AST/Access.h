@@ -44,9 +44,29 @@ namespace Rift::AST
 		}
 
 
+		template<typename C>
+		TPool<Mut<C>>* GetPool() const requires(IsSame<C, Mut<C>>)
+		{
+			constexpr bool canModify = ListContains<Components, Mut<C>>();
+			static_assert(canModify, "Can't modify components of this type");
+
+			return std::get<TPool<Mut<C>>*>(pools);
+		}
+
+		template<typename C>
+		const TPool<Mut<C>>* GetPool() const requires(IsSame<C, const C>)
+		{
+			constexpr bool canRead =
+			    ListContains<Components, Mut<C>>() || ListContains<Components, const C>();
+			static_assert(canRead, "Can't read components of this type");
+
+			return std::get<TPool<Mut<C>>*>(pools);
+		}
+
+
 		bool Has(Id id) const
 		{
-			return (Has<T>(id) && ...);
+			return !IsNone(id) && (Has<T>(id) && ...);
 		}
 
 		template<typename... C>
@@ -56,33 +76,14 @@ namespace Rift::AST
 		}
 
 		template<typename C>
-		decltype(auto) Add(Id id, C&& value = {})
+		decltype(auto) Add(Id id, C&& value = {}) const
 		{
 			return GetPool<C>()->Add(id, Forward<C>(value));
 		}
 		template<typename C>
-		decltype(auto) Add(Id id, const C& value)
+		decltype(auto) Add(Id id, const C& value) const
 		{
 			return GetPool<C>()->Add(id, value);
-		}
-
-		template<typename T>
-		TPool<Mut<T>>* GetPool() const requires(IsSame<T, Mut<T>>)
-		{
-			constexpr bool canModify = ListContains<Components, Mut<T>>();
-			static_assert(canModify, "Can't modify components of this type");
-
-			return std::get<TPool<Mut<T>>*>(pools);
-		}
-
-		template<typename T>
-		const TPool<Mut<T>>* GetPool() const requires(IsSame<T, const T>)
-		{
-			constexpr bool canRead =
-			    ListContains<Components, Mut<T>>() || ListContains<Components, const T>();
-			static_assert(canRead, "Can't read components of this type");
-
-			return std::get<TPool<Mut<T>>*>(pools);
 		}
 
 		template<typename C>
@@ -92,7 +93,7 @@ namespace Rift::AST
 		}
 
 		template<typename C>
-		C* TryGet(Id id)
+		C* TryGet(Id id) const
 		{
 			return GetPool<C>()->TryGet(id);
 		}

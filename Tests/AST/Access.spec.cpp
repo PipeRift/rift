@@ -36,24 +36,25 @@ go_bandit([]() {
 
 			it("Can check if contained", [&]() {
 				Tree tree;
-				TPool<Type>& pool   = tree.AssurePool<Type>();
-				auto access         = tree.MakeAccess<Type>();
-				auto accessExcluded = tree.MakeAccess<Type>(TExclude<TypeTwo>{});
-				Id id               = NoId;
+				TPool<Type>& pool = tree.AssurePool<Type>();
+				TAccess<Type> access{tree};
+				TAccess<const Type> accessConst{tree};
+				Id id = NoId;
 				AssertThat(access.Has(id), Is().False());
-				AssertThat(accessExcluded.Has(id), Is().False());
+				AssertThat(accessConst.Has(id), Is().False());
 
 				id = tree.Create();
 				AssertThat(access.Has(id), Is().False());
-				AssertThat(accessExcluded.Has(id), Is().False());
+				AssertThat(accessConst.Has(id), Is().False());
 
 				tree.Add<Type>(id);
 				AssertThat(access.Has(id), Is().True());
-				AssertThat(accessExcluded.Has(id), Is().True());
+				AssertThat(accessConst.Has(id), Is().True());
 
+				TAccess<Type, TypeTwo> access2{tree};
 				tree.Add<TypeTwo>(id);
 				AssertThat(access.Has(id), Is().True());
-				AssertThat(accessExcluded.Has(id), Is().False());
+				AssertThat(access2.Has(id), Is().True());
 			});
 
 			it("Can initialize superset", [&]() {
