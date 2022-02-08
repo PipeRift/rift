@@ -20,10 +20,16 @@ namespace Rift::AST
 	 * @param shouldShrink if true, the ids array will be shrink at the end
 	 * @see RemoveIfStable(), RemoveIfNot()
 	 */
-	template<typename T, typename AccessType>
+	template<typename C, typename AccessType>
 	void RemoveIf(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		RemoveIf(access.template GetPool<const T>(), ids, shouldShrink);
+		RemoveIf(access.template GetPool<const C>(), ids, shouldShrink);
+	}
+	template<typename... C, typename AccessType>
+	void RemoveIf(const AccessType& access, TArray<Id>& ids,
+	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
+	{
+		(RemoveIf<C>(access, ids, shouldShrink), ...);
 	}
 
 	/**
@@ -34,10 +40,16 @@ namespace Rift::AST
 	 * @param shouldShrink if true, the ids array will be shrink at the end
 	 * @see RemoveIf(), RemoveIfNotStable()
 	 */
-	template<typename T, typename AccessType>
+	template<typename C, typename AccessType>
 	void RemoveIfStable(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		RemoveIfStable(access.template GetPool<const T>(), ids, shouldShrink);
+		RemoveIfStable(access.template GetPool<const C>(), ids, shouldShrink);
+	}
+	template<typename... C, typename AccessType>
+	void RemoveIfStable(const AccessType& access, TArray<Id>& ids,
+	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
+	{
+		(RemoveIfStable<C>(access, ids, shouldShrink), ...);
 	}
 
 	/**
@@ -48,10 +60,17 @@ namespace Rift::AST
 	 * @param shouldShrink if true, the ids array will be shrink at the end
 	 * @see RemoveIfNotStable(), RemoveIf()
 	 */
-	template<typename T, typename AccessType>
+	template<typename C, typename AccessType>
 	void RemoveIfNot(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		RemoveIfNot(access.template GetPool<const T>(), ids, shouldShrink);
+		RemoveIfNot(access.template GetPool<const C>(), ids, shouldShrink);
+	}
+
+	template<typename... C, typename AccessType>
+	void RemoveIfNot(const AccessType& access, TArray<Id>& ids,
+	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
+	{
+		(RemoveIfNot<C>(access, ids, shouldShrink), ...);
 	}
 
 	/**
@@ -62,11 +81,17 @@ namespace Rift::AST
 	 * @param shouldShrink if true, the ids array will be shrink at the end
 	 * @see RemoveIfNot(), RemoveIfStable()
 	 */
-	template<typename T, typename AccessType>
+	template<typename C, typename AccessType>
 	void RemoveIfNotStable(
 	    const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		RemoveIfNotStable(access.template GetPool<const T>(), ids, shouldShrink);
+		RemoveIfNotStable(access.template GetPool<const C>(), ids, shouldShrink);
+	}
+	template<typename... C, typename AccessType>
+	void RemoveIfNotStable(const AccessType& access, TArray<Id>& ids,
+	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
+	{
+		(RemoveIfNotStable<C>(access, ids, shouldShrink), ...);
 	}
 
 	/**
@@ -76,11 +101,11 @@ namespace Rift::AST
 	 * @param ids array where matching ids will be added
 	 * @see ListAny()
 	 */
-	template<typename AccessType, typename... T>
+	template<typename AccessType, typename... C>
 	void ListAll(const AccessType& access, TArray<Id>& ids)
 	{
 		ZoneScoped;
-		TArray<const Pool*> pools{access.template GetPool<const T>()...};
+		TArray<const Pool*> pools{access.template GetPool<const C>()...};
 		for (const Pool* pool : pools)
 		{
 			if (!EnsureMsg(pool,
@@ -111,11 +136,11 @@ namespace Rift::AST
 	 * @return ids array with matching ids
 	 * @see ListAny()
 	 */
-	template<typename... T, typename AccessType>
+	template<typename... C, typename AccessType>
 	TArray<Id> ListAll(const AccessType& access)
 	{
 		TArray<Id> ids;
-		ListAll<AccessType, T...>(access, ids);
+		ListAll<AccessType, C...>(access, ids);
 		return Move(ids);
 	}
 
@@ -126,11 +151,11 @@ namespace Rift::AST
 	 * @param ids array where matching ids will be added
 	 * @see ListAll()
 	 */
-	template<typename AccessType, typename... T>
+	template<typename AccessType, typename... C>
 	void ListAny(const AccessType& access, TArray<Id>& ids)
 	{
 		ZoneScoped;
-		TArray<const Pool*> pools{access.template GetPool<const T>()...};
+		TArray<const Pool*> pools{access.template GetPool<const C>()...};
 
 		i32 maxPossibleSize = 0;
 		for (const Pool* pool : pools)
@@ -166,11 +191,11 @@ namespace Rift::AST
 	 * @return ids array with matching ids
 	 * @see ListAll()
 	 */
-	template<typename... T, typename AccessType>
+	template<typename... C, typename AccessType>
 	TArray<Id> ListAny(const AccessType& access)
 	{
 		TArray<Id> ids;
-		ListAny<AccessType, T...>(access, ids);
+		ListAny<AccessType, C...>(access, ids);
 		return Move(ids);
 	}
 }    // namespace Rift::AST

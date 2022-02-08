@@ -18,12 +18,12 @@ namespace Rift::AST
 		using MutComponents = TTypeList<Mut<T>...>;
 
 	private:
-		const Tree& ast;
+		Tree& ast;
 		TTuple<TPool<Mut<T>>*...> pools;
 
 
 	public:
-		TAccess(const Tree& ast) : ast{ast}, pools{&ast.AssurePool<T>()...} {}
+		TAccess(Tree& ast) : ast{ast}, pools{&ast.AssurePool<T>()...} {}
 		TAccess(const TAccess& other) : ast{other.ast}, pools{other.pools} {}
 
 		// Construct a child access (super-set) from another access
@@ -45,7 +45,7 @@ namespace Rift::AST
 
 
 		template<typename C>
-		TPool<Mut<C>>* GetPool() const requires(IsSame<C, Mut<C>>)
+		TPool<Mut<C>>* GetPool() const requires(IsMutable<C>)
 		{
 			constexpr bool canModify = ListContains<Components, Mut<C>>();
 			static_assert(canModify, "Can't modify components of this type");
@@ -72,18 +72,29 @@ namespace Rift::AST
 		template<typename... C>
 		bool Has(Id id) const
 		{
-			return (GetPool<C>()->Has(id) && ...);
+			return (GetPool<const C>()->Has(id) && ...);
 		}
 
 		template<typename C>
-		decltype(auto) Add(Id id, C&& value = {}) const
+		decltype(auto) Add(Id id, C&& value = {}) const requires(IsSame<C, Mut<C>>)
 		{
 			return GetPool<C>()->Add(id, Forward<C>(value));
 		}
 		template<typename C>
-		decltype(auto) Add(Id id, const C& value) const
+		decltype(auto) Add(Id id, const C& value) const requires(IsSame<C, Mut<C>>)
 		{
 			return GetPool<C>()->Add(id, value);
+		}
+
+		template<typename C>
+		void Remove(const Id id) const requires(IsSame<C, Mut<C>>)
+		{
+			GetPool<C>()->Remove(id);
+		}
+		template<typename... C>
+		void Remove(TSpan<const Id> ids) const requires(IsSame<C, Mut<C>>&&...)
+		{
+			(GetPool<C>()->Remove(ids), ...);
 		}
 
 		template<typename C>
@@ -98,13 +109,19 @@ namespace Rift::AST
 			return GetPool<C>()->TryGet(id);
 		}
 
+		template<typename C>
+		C& GetOrAdd(Id id) const requires(IsMutable<C>)
+		{
+			return GetPool<C>()->GetOrAdd(id);
+		}
+
 		i32 Size() const
 		{
 			static_assert(sizeof...(T) == 1, "Can only get the size of single component accesses");
 			return GetPool<T...>()->Size();
 		}
 
-		const AST::Tree& GetAST() const
+		AST::Tree& GetAST() const
 		{
 			return ast;
 		}
@@ -122,4 +139,7 @@ namespace Rift::AST
 	public:
 		Access(Tree& ast) : ast{ast} {}
 	};
+
+	template<typename... T>
+	using TAccessRef = const TAccess<T...>&;
 }    // namespace Rift::AST

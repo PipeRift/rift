@@ -122,7 +122,7 @@ namespace Rift::AST::Functions
 		return id;
 	}
 
-	Id FindFunctionByName(const Tree& ast, Name ownerName, Name functionName)
+	Id FindFunctionByName(Tree& ast, Name ownerName, Name functionName)
 	{
 		auto& types = ast.GetStatic<STypes>();
 		if (const Id* typeId = types.typesByName.Find(ownerName))
@@ -143,7 +143,7 @@ namespace Rift::AST::Functions
 		return NoId;
 	}
 
-	void GetCallArgs(const Tree& ast, TSpan<Id> callIds, TArray<Id>& inputArgIds,
+	void GetCallArgs(Tree& ast, TSpan<Id> callIds, TArray<Id>& inputArgIds,
 	    TArray<Id>& outputArgIds, TArray<Id>& otherIds)
 	{
 		auto exprInputs  = ast.Filter<CExpressionInput>();

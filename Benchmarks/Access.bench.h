@@ -25,7 +25,8 @@ void RunAccessBenchmarks()
 		ankerl::nanobench::Bench bench;
 		bench.title("Iteration - Two included")
 		    .performanceCounters(true)
-		    .maxEpochTime(Rift::Seconds{1});
+		    .minEpochIterations(20)
+		    .maxEpochTime(Rift::Seconds{3});
 
 		AST::Tree ast2;
 		TArray<AST::Id> ids2;
@@ -35,7 +36,10 @@ void RunAccessBenchmarks()
 		ast2.Add<Test3>(TSpan<AST::Id>(ids2, 50000));
 		bench.relative(true).run("Filter/View", [&ast2] {
 			auto filter = ast2.Filter<Test1, Test2>();
-			for (AST::Id id : filter) {}
+			for (AST::Id id : filter)
+			{
+				ankerl::nanobench::doNotOptimizeAway(id);
+			}
 		});
 
 		AST::Tree ast;
@@ -47,7 +51,10 @@ void RunAccessBenchmarks()
 
 		bench.run("Access", [&ast] {
 			AST::TAccess<Test1, Test2> access{ast};
-			for (AST::Id id : AST::ListAll<Test1, Test2>(access)) {}
+			for (AST::Id id : AST::ListAll<Test1, Test2>(access))
+			{
+				ankerl::nanobench::doNotOptimizeAway(id);
+			}
 		});
 	}
 
@@ -55,7 +62,8 @@ void RunAccessBenchmarks()
 		ankerl::nanobench::Bench bench;
 		bench.title("Iteration - Two included, one excluded")
 		    .performanceCounters(true)
-		    .maxEpochTime(Rift::Seconds{1});
+		    .minEpochIterations(20)
+		    .maxEpochTime(Rift::Seconds{3});
 
 		AST::Tree ast2;
 		TArray<AST::Id> ids2;
@@ -65,7 +73,10 @@ void RunAccessBenchmarks()
 		ast2.Add<Test3>(TSpan<AST::Id>(ids2, 50000));
 		bench.relative(true).run("Filter/View", [&ast2] {
 			auto filter = ast2.Filter<Test1, Test2>(AST::TExclude<Test3>{});
-			for (AST::Id id : filter) {}
+			for (AST::Id id : filter)
+			{
+				ankerl::nanobench::doNotOptimizeAway(id);
+			}
 		});
 
 		AST::Tree ast;
@@ -78,7 +89,10 @@ void RunAccessBenchmarks()
 			AST::TAccess<Test1, Test2, Test3> access{ast};
 			auto ids = AST::ListAll<Test1, Test2>(access);
 			AST::RemoveIf<Test3>(access, ids);
-			for (AST::Id id : ids) {}
+			for (AST::Id id : ids)
+			{
+				ankerl::nanobench::doNotOptimizeAway(id);
+			}
 		});
 	}
 }

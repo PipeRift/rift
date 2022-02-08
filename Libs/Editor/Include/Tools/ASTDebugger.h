@@ -3,6 +3,11 @@
 
 #include "AST/Tree.h"
 
+#include <AST/Components/CChild.h>
+#include <AST/Components/CFileRef.h>
+#include <AST/Components/CIdentifier.h>
+#include <AST/Components/CParent.h>
+#include <AST/Filtering.h>
 #include <Math/Vector.h>
 #include <Memory/Arenas/BigBestFitArena.h>
 #include <Memory/Blocks/Block.h>
@@ -27,6 +32,7 @@ namespace Rift
 		void Draw(AST::Tree& ast);
 
 	private:
-		void DrawNode(AST::Tree& ast, AST::Id nodeId, bool showChildren);
+		using DrawNodeAccess = AST::TAccessRef<const CIdentifier, const CFileRef, const CParent>;
+		void DrawNode(DrawNodeAccess access, AST::Id nodeId, bool showChildren);
 	};
 }    // namespace Rift

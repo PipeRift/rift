@@ -113,5 +113,15 @@ go_bandit([]() {
 			AST::RemoveIfNot<TypeThree>(ast, ids4);
 			AssertThat(ids4.Contains(id1), Is().False());
 		});
+
+		it("Removes ids containing multiple component", [&]() {
+			AST::TAccess<const Type, const TypeTwo, const TypeThree> access{ast};
+			TArray<AST::Id> typeIds = AST::ListAny<Type, TypeTwo, TypeThree>(access);
+
+			AST::RemoveIf<TypeTwo, TypeThree>(access, typeIds);
+			AssertThat(typeIds.Contains(id1), Is().True());
+			AssertThat(typeIds.Contains(id2), Is().False());
+			AssertThat(typeIds.Contains(id3), Is().False());
+		});
 	});
 });

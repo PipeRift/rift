@@ -114,30 +114,13 @@ namespace Rift::AST
 		}
 
 		template<typename Component>
-		Component& GetOrAdd(Id id)
-		{
-			Check(IsValid(id));
-			return AssurePool<Component>().GetOrAdd(id);
-		}
-
-
-		template<typename Component>
 		void Remove(const Id id)
 		{
 			GetPool<Component>()->Remove(id);
 		}
 		template<typename... Component>
-		void Remove(const Id id) requires(sizeof...(Component) > 1)
+		void Remove(TSpan<const Id> ids)
 		{
-			(GetPool<Component>()->Remove(id), ...);
-		}
-		template<typename... Component>
-		void Remove(TSpan<const Id> ids) requires(sizeof...(Component) > 0)
-		{
-			for (Id id : ids)
-			{
-				Check(IsValid(id));
-			}
 			(GetPool<Component>()->Remove(ids), ...);
 		}
 
@@ -166,6 +149,13 @@ namespace Rift::AST
 		{
 			Check(IsValid(id));
 			return std::forward_as_tuple(TryGet<Component>(id)...);
+		}
+
+		template<typename Component>
+		Component& GetOrAdd(Id id)
+		{
+			Check(IsValid(id));
+			return AssurePool<Component>().GetOrAdd(id);
 		}
 
 

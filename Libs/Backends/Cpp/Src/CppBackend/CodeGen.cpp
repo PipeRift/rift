@@ -127,7 +127,7 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void ForwardDeclareTypes(String& code, const AST::TAccess<const CType>& types, AST::Id moduleId,
+	void ForwardDeclareTypes(String& code, AST::TAccessRef<const CType> types, AST::Id moduleId,
 	    const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
 		for (AST::Id entity : structs)
@@ -144,15 +144,16 @@ namespace Rift::Compiler::Cpp
 	}
 
 	void AddTypeVariables(String& code,
-	    const AST::TAccess<const CIdentifier, const CVariableDecl>& variables, AST::Id owner)
+	    AST::TAccessRef<const CIdentifier, const CVariableDecl, const CParent> access,
+	    AST::Id owner)
 	{
-		if (const CParent* parent = AST::Hierarchy::GetCParent(variables.GetAST(), owner))
+		if (const auto* parent = access.TryGet<const CParent>(owner))
 		{
 			for (AST::Id entity : parent->children)
 			{
-				if (variables.Has<const CIdentifier, const CVariableDecl>(entity))
+				if (access.Has<const CIdentifier, const CVariableDecl>(entity))
 				{
-					auto& identifier = variables.Get<const CIdentifier>(entity);
+					auto& identifier = access.Get<const CIdentifier>(entity);
 					AddVariable(code, "bool", identifier.name.ToString(), "false");
 				}
 			}
@@ -160,7 +161,7 @@ namespace Rift::Compiler::Cpp
 	}
 
 	void DeclareTypes(String& code,
-	    const AST::TAccess<const CType, const CIdentifier, const CVariableDecl>& access,
+	    AST::TAccessRef<const CType, const CIdentifier, const CVariableDecl, const CParent> access,
 	    AST::Id moduleId, const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
 		for (AST::Id entity : structs)
@@ -181,47 +182,45 @@ namespace Rift::Compiler::Cpp
 	}
 
 
-	void DeclareFunctions(
-	    String& code, const AST::Tree& ast, AST::Id moduleId, const TArray<AST::Id>& functions)
+	void DeclareFunctions(String& code,
+	    AST::TAccessRef<const CIdentifier, const CType, const CClassDecl, const CChild> access,
+	    AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
-		auto identifiers = ast.Filter<const CIdentifier>();
-		auto classesView = ast.Filter<const CType, const CClassDecl>();
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
-			AST::Id parentId = AST::Hierarchy::GetParent(ast, entity);
-			if (!IsNone(parentId) && classesView.Has(parentId))
+			AST::Id parentId = AST::Hierarchy::GetParent(access, entity);
+			if (!IsNone(parentId) && access.Has(parentId))
 			{
-				if (auto* type = classesView.TryGet<const CType>(parentId))
+				if (auto* type = access.TryGet<const CType>(parentId))
 				{
 					ownerName = type->name.ToString();
 				}
 			}
 
-			const auto& identifier = identifiers.Get<const CIdentifier>(entity);
+			const auto& identifier = access.Get<const CIdentifier>(entity);
 			DeclareFunction(code, identifier.name.ToString(), ownerName);
 		}
 	}
 
 
-	void DefineFunctions(
-	    String& code, const AST::Tree& ast, AST::Id moduleId, const TArray<AST::Id>& functions)
+	void DefineFunctions(String& code,
+	    AST::TAccessRef<const CIdentifier, const CType, const CClassDecl, const CChild> access,
+	    AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
-		auto identifiers = ast.Filter<const CIdentifier>();
-		auto classesView = ast.Filter<const CType, const CClassDecl>();
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
-			AST::Id parentId = AST::Hierarchy::GetParent(ast, entity);
-			if (!IsNone(parentId) && classesView.Has(parentId))
+			AST::Id parentId = AST::Hierarchy::GetParent(access, entity);
+			if (!IsNone(parentId) && access.Has(parentId))
 			{
-				if (auto* type = classesView.TryGet<const CType>(parentId))
+				if (const auto* type = access.TryGet<const CType>(parentId))
 				{
 					ownerName = type->name.ToString();
 				}
 			}
 
-			auto& identifier = identifiers.Get<const CIdentifier>(entity);
+			const auto& identifier = access.Get<const CIdentifier>(entity);
 			DefineFunction(code, identifier.name.ToString(), ownerName);
 		}
 	}
@@ -246,7 +245,7 @@ namespace Rift::Compiler::Cpp
 		ZoneScopedC(0x459bd1);
 
 		const auto& config = context.config;
-		const auto& ast    = context.ast;
+		auto& ast          = context.ast;
 
 		const Name name        = Modules::GetModuleName(ast, moduleId);
 		const Path modulePath  = codePath / name.ToString();
