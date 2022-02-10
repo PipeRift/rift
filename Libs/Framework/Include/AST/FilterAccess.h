@@ -296,14 +296,14 @@ namespace Rift::AST
 	    template<typename T>
 	    TPool<Mut<T>>* GetPool() const
 	    {
-	        const u32 index = included.FindSortedEqual(TypeId::Get<T>(), PoolPtr::Sort{});
+	        const u32 index = included.FindSortedEqual(GetTypeId<T>(), PoolPtr::Sort{});
 	        return index != NO_INDEX ? static_cast<TPool<Mut<T>>*>(included[index].pool) : nullptr;
 	    }
 
 	    template<typename T>
 	    TPool<Mut<T>>* GetExcludedPool() const
 	    {
-	        const u32 index = excluded.FindSortedEqual(TypeId::Get<T>(), PoolPtr::Sort{});
+	        const u32 index = excluded.FindSortedEqual(GetTypeId<T>(), PoolPtr::Sort{});
 	        return index != NO_INDEX ? static_cast<TPool<Mut<T>>*>(excluded[index].pool) : nullptr;
 	    }
 

@@ -198,4 +198,11 @@ namespace Rift::AST
 		ListAny<AccessType, C...>(access, ids);
 		return Move(ids);
 	}
+
+	template<typename C, typename AccessType>
+	Id GetFirst(const AccessType& access)
+	{
+		const Pool* pool = access.template GetPool<const C>();
+		return (pool && pool->Size() > 0) ? *pool->begin() : AST::NoId;
+	}
 }    // namespace Rift::AST

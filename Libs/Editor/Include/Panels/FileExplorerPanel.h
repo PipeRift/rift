@@ -1,7 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "AST/Components/CProject.h"
+
+#include <AST/Components/CFileRef.h>
+#include <AST/Components/CIdentifier.h>
+#include <AST/Components/CModule.h>
 #include <AST/Components/CType.h>
+#include <AST/Filtering.h>
 #include <AST/Tree.h>
 #include <Containers/Array.h>
 #include <Strings/String.h>
@@ -59,7 +65,8 @@ namespace Rift
 
 		void DrawContextMenu(AST::Tree& ast, StringView path, AST::Id itemId);
 
-		void CacheProjectFiles(AST::Tree& ast);
+		void CacheProjectFiles(
+		    AST::TAccessRef<const CProject, const CModule, const CFileRef, const CType> access);
 
 		void SortFolder(Folder& folder);
 

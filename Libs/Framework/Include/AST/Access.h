@@ -63,6 +63,11 @@ namespace Rift::AST
 			return std::get<TPool<Mut<C>>*>(pools);
 		}
 
+		bool IsValid(Id id) const
+		{
+			return ast.IsValid(id);
+		}
+
 
 		bool Has(Id id) const
 		{

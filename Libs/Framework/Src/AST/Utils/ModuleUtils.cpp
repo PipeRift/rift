@@ -2,10 +2,6 @@
 
 #include "AST/Utils/ModuleUtils.h"
 
-#include "AST/Components/CFileRef.h"
-#include "AST/Components/CIdentifier.h"
-#include "AST/Components/CModule.h"
-#include "AST/Components/CProject.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Systems/FunctionsSystem.h"
@@ -71,41 +67,51 @@ namespace Rift::Modules
 		ast.Reset();
 	}
 
-	AST::Id GetProjectId(const AST::Tree& ast)
+	AST::Id GetProjectId(AST::TAccessRef<const CProject> access)
 	{
-		return ast.GetFirstId<CProject>();
+		return AST::GetFirst<CProject>(access);
 	}
 
-	Name GetProjectName(const AST::Tree& ast)
+	Name GetProjectName(GetProjectNameAccess access)
 	{
-		AST::Id moduleId = GetProjectId(ast);
-		return GetModuleName(ast, moduleId);
+		AST::Id moduleId = GetProjectId(access);
+		return GetModuleName(access, moduleId);
 	}
 
-	Path GetProjectPath(const AST::Tree& ast)
+	Path GetProjectPath(AST::TAccessRef<const CFileRef, const CProject> access)
 	{
-		return GetModulePath(ast, GetProjectId(ast));
+		return GetModulePath(access, GetProjectId(access));
 	}
 
-	bool HasProject(const AST::Tree& ast)
+	CModule* GetProjectModule(AST::TAccessRef<const CProject, CModule> access)
+	{
+		const AST::Id projectId = GetProjectId(access);
+		if (projectId != AST::NoId)
+		{
+			return access.TryGet<CModule>(projectId);
+		}
+		return nullptr;
+	}
+
+	bool HasProject(AST::Tree& ast)
 	{
 		return GetProjectId(ast) != AST::NoId;
 	}
 
-	Name GetModuleName(const AST::Tree& ast, AST::Id moduleId)
+	Name GetModuleName(GetModuleNameAccess access, AST::Id moduleId)
 	{
-		if (!ast.IsValid(moduleId))
+		if (!access.IsValid(moduleId))
 		{
 			return {};
 		}
 
-		const auto* identifier = ast.TryGet<CIdentifier>(moduleId);
+		const auto* identifier = access.TryGet<const CIdentifier>(moduleId);
 		if (identifier && !identifier->name.IsNone())
 		{
 			return identifier->name;
 		}
 
-		const auto* file = ast.TryGet<CFileRef>(moduleId);
+		const auto* file = access.TryGet<const CFileRef>(moduleId);
 		if (file && !file->path.empty())
 		{
 			// Obtain name from project file name
@@ -115,32 +121,12 @@ namespace Rift::Modules
 		return {};
 	}
 
-	Path GetModulePath(const AST::Tree& ast, AST::Id moduleId)
+	Path GetModulePath(AST::TAccessRef<const CFileRef> access, AST::Id moduleId)
 	{
-		if (const auto* file = ast.TryGet<CFileRef>(moduleId))
+		if (const auto* file = access.TryGet<const CFileRef>(moduleId))
 		{
 			return file->path.parent_path();
 		}
 		return Path{};
-	}
-
-	CModule* GetProjectModule(AST::Tree& ast)
-	{
-		const AST::Id projectId = GetProjectId(ast);
-		if (projectId != AST::NoId)
-		{
-			return ast.TryGet<CModule>(projectId);
-		}
-		return nullptr;
-	}
-
-	const CModule* GetProjectModule(const AST::Tree& ast)
-	{
-		const AST::Id projectId = GetProjectId(ast);
-		if (projectId != AST::NoId)
-		{
-			return ast.TryGet<CModule>(projectId);
-		}
-		return nullptr;
 	}
 }    // namespace Rift::Modules

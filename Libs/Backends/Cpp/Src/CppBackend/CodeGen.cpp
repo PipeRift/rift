@@ -225,15 +225,15 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void GenParameters(AST::Tree& ast)
+	void GenParameters(
+	    AST::TAccessRef<const CParameterDecl, const CIdentifier, CCppCodeGenFragment> access)
 	{
-		auto parameters = ast.Filter<const CParameterDecl, const CIdentifier>();
-		for (AST::Id entity : parameters)
+		for (AST::Id entity : AST::ListAll<CParameterDecl, CIdentifier>(access))
 		{
-			const auto& param = parameters.Get<const CParameterDecl>(entity);
-			const auto& name  = parameters.Get<const CIdentifier>(entity);
+			const auto& param = access.Get<const CParameterDecl>(entity);
+			const auto& name  = access.Get<const CIdentifier>(entity);
 
-			auto& fragment = ast.Add<CCppCodeGenFragment>(entity);
+			auto& fragment = access.Add<CCppCodeGenFragment>(entity);
 			fragment.code.clear();
 			Strings::FormatTo(fragment.code, "{} {}", param.type, name.name);
 		}
@@ -264,13 +264,11 @@ namespace Rift::Compiler::Cpp
 
 		TArray<AST::Id> classes, structs;
 		AST::Hierarchy::GetChildren(ast, moduleId, classes);
+		AST::RemoveIfNot<CType>(ast, classes);
 		structs = classes;
 
-		auto classesView = ast.Filter<const CClassDecl, const CType>();
-		classesView.FilterIds(classes);
-
-		auto structsView = ast.Filter<const CStructDecl, const CType>();
-		structsView.FilterIds(structs);
+		AST::RemoveIfNot<CClassDecl>(ast, classes);
+		AST::RemoveIfNot<CStructDecl>(ast, structs);
 
 		Spacing(code);
 		Comment(code, "Forward declarations");
@@ -282,13 +280,9 @@ namespace Rift::Compiler::Cpp
 
 
 		TArray<AST::Id> functions;
-		// Module->Types->Functions = depth 2
+		// Module -> Types -> Functions = depth 2
 		AST::Hierarchy::GetChildrenDeep(ast, moduleId, functions, 2);
-
-		auto functionsView = ast.Filter<const CIdentifier, const CFunctionDecl>();
-		functions.RemoveIfSwap([&functionsView](AST::Id entity) {
-			return !functionsView.Has(entity);
-		});
+		AST::RemoveIfNot<CIdentifier, CFunctionDecl>(ast, functions);
 
 		Spacing(code);
 		Comment(code, "Function Declarations");
@@ -324,8 +318,7 @@ namespace Rift::Compiler::Cpp
 
 		GenParameters(context.ast);
 
-		auto modules = context.ast.Filter<CModule>();
-		for (AST::Id moduleId : modules)
+		for (AST::Id moduleId : AST::ListAll<CModule>(context.ast))
 		{
 			GenerateModuleCode(context, moduleId, generatePath);
 		}

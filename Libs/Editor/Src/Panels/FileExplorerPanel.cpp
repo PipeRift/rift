@@ -11,9 +11,6 @@
 #include "UI/Widgets.h"
 #include "Utils/TypeUtils.h"
 
-#include <AST/Components/CFileRef.h>
-#include <AST/Components/CIdentifier.h>
-#include <AST/Components/CModule.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/TypeUtils.h>
@@ -153,7 +150,8 @@ namespace Rift
 		}
 	}
 
-	void FileExplorerPanel::CacheProjectFiles(AST::Tree& ast)
+	void FileExplorerPanel::CacheProjectFiles(
+	    AST::TAccessRef<const CProject, const CModule, const CFileRef, const CType> access)
 	{
 		ZoneScopedN("Cache Project Files");
 		dirty = false;
@@ -163,15 +161,15 @@ namespace Rift
 		// Set root folder (not displayed)
 		folders.InsertDefaulted(Name::None());
 
-		projectModuleId = Modules::GetProjectId(ast);
+		projectModuleId = Modules::GetProjectId(access);
 
 		// Create module folders
-		auto modules = ast.Filter<CModule>();
+		TArray<AST::Id> modules = AST::ListAll<CModule>(access);
 		TMap<AST::Id, Path> moduleFolders;
-		moduleFolders.Reserve(u32(modules.Size()));
+		moduleFolders.Reserve(modules.Size());
 		for (AST::Id moduleId : modules)
 		{
-			auto& file      = ast.Get<CFileRef>(moduleId);
+			auto& file      = access.Get<const CFileRef>(moduleId);
 			Path folderPath = file.path.parent_path();
 			const Name pathName{Paths::ToString(folderPath)};
 			folders.InsertDefaulted(pathName);
@@ -211,10 +209,9 @@ namespace Rift
 		}
 
 		// Create items
-		auto fileTypes = ast.Filter<CType, CFileRef>();
-		for (AST::Id typeId : fileTypes)
+		for (AST::Id typeId : AST::ListAll<CType, CFileRef>(access))
 		{
-			auto& file = fileTypes.Get<CFileRef>(typeId);
+			auto& file = access.Get<const CFileRef>(typeId);
 			if (!file.path.empty())
 			{
 				const String path = Paths::ToString(file.path);
