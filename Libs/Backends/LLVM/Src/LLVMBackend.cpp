@@ -2,16 +2,16 @@
 
 #include "LLVMBackend.h"
 
-//#include <llvm/IR/IRBuilder.h>
-//#include <llvm/IR/LLVMContext.h>
-//#include <llvm/IR/Module.h>
+#include "LLVMBackend/IRGeneration.h"
 
 
 namespace Rift::Compiler
 {
 	void LLVMBackend::Build(Context& context)
 	{
-		// llvm::IRBuilder<> builder(TheContext);
-		context.AddError("LLVM backend is not yet supported.");
+		ZoneScopedC(0x459bd1);
+
+		Log::Info("Generating LLVM IR");
+		LLVM::GenerateIR(context);
 	}
 }    // namespace Rift::Compiler

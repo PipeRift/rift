@@ -9,6 +9,8 @@
 #include "Compiler/Systems/OptimizationSystem.h"
 #include "RiftContext.h"
 
+#include <Files/Files.h>
+
 
 namespace Rift::Compiler
 {
@@ -37,6 +39,13 @@ namespace Rift::Compiler
 
 		OptimizationSystem::PruneDisconnectedExpressions(ast);
 		TypeSystem::RunChecks(ast);
+
+		Log::Info("Building project '{}'", Modules::GetProjectName(context.ast));
+
+		// Clean build folders
+		Log::Info("Cleaning previous build");
+		Files::Delete(context.config.binariesPath, true, false);
+		Files::CreateFolder(context.config.binariesPath, true);
 
 		backend->Build(context);
 	}

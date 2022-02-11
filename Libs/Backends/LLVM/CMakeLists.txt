@@ -10,12 +10,19 @@ set_target_properties (RiftBackendLLVM PROPERTIES FOLDER Rift)
 rift_target_define_platform(RiftBackendLLVM)
 rift_target_shared_output_directory(RiftBackendLLVM)
 
+target_link_libraries(RiftBackendLLVM PUBLIC Rift::Rift)
+
+
+# Link LLVM
+llvm_map_components_to_libnames(llvm_libs Support Core IRReader)
 target_link_libraries(RiftBackendLLVM PUBLIC
-    Rift::Rift
     ${llvm_libs}
 )
+message(STATUS "LLVM_INCLUDE_DIRS: ${LLVM_INCLUDE_DIRS}")
+message(STATUS "LLVM_DEFINITIONS: ${LLVM_DEFINITIONS}")
 target_include_directories(RiftBackendLLVM PUBLIC ${LLVM_INCLUDE_DIRS})
 target_compile_definitions(RiftBackendLLVM PUBLIC ${LLVM_DEFINITIONS})
+
 
 install(TARGETS RiftBackendLLVM
     EXPORT RiftTargets
