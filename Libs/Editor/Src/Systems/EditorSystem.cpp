@@ -2,6 +2,7 @@
 
 #include "Systems/EditorSystem.h"
 
+#include "AST/Filtering.h"
 #include "AST/Utils/TypeUtils.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
@@ -310,11 +311,10 @@ namespace Rift::EditorSystem
 				if (UI::MenuItem(ICON_FA_SAVE " Save All", "CTRL+SHFT+S"))
 				{
 					// TODO: Only save dirty types
-					auto typeEditors = ast.Filter<CType, CTypeEditor, CFileRef>();
 					TArray<TPair<Path, String>> fileDatas;
-					for (AST::Id typeId : typeEditors)
+					for (AST::Id typeId : AST::ListAll<CType, CTypeEditor, CFileRef>(ast))
 					{
-						auto& file     = typeEditors.Get<CFileRef>(typeId);
+						auto& file     = ast.Get<CFileRef>(typeId);
 						auto& fileData = fileDatas.AddRef({file.path, ""});
 						Types::Serialize(ast, typeId, fileData.second);
 					}
@@ -389,10 +389,9 @@ namespace Rift::EditorSystem
 				{
 					editorData.layout.Reset();
 
-					auto openTypes = ast.Filter<CTypeEditor>();
-					for (AST::Id typeId : openTypes)
+					for (AST::Id typeId : AST::ListAll<CTypeEditor>(ast))
 					{
-						auto& editor = openTypes.Get<CTypeEditor>(typeId);
+						auto& editor = ast.Get<CTypeEditor>(typeId);
 						editor.layout.Reset();
 					}
 				}

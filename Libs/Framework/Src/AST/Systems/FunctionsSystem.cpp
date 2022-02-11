@@ -101,7 +101,7 @@ namespace Rift::FunctionsSystem
 		// Resolve function parameters
 		for (auto& call : calls)
 		{
-			if (auto* functionChildren = AST::Hierarchy::GetChildren(ast, call.functionId))
+			if (const auto* functionChildren = AST::Hierarchy::GetChildren(ast, call.functionId))
 			{
 				// Find function inputs and outputs
 				call.functionInputs.Resize(functionChildren->Size());

@@ -249,7 +249,7 @@ namespace Rift::Graph
 			}
 			Nodes::EndNodeTitleBar();
 
-			if (TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, id))
+			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, id))
 			{
 				auto callArgsView = ast.Filter<CIdentifier, CExpressionInput, CExpressionOutputs>();
 

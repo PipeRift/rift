@@ -1,10 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Access.h"
 #include "AST/Components/CChild.h"
 #include "AST/Components/CParent.h"
 #include "AST/Filter.h"
+#include "AST/FilterAccess.h"
 #include "AST/IdRegistry.h"
 #include "AST/Pool.h"
 #include "AST/Types.h"
@@ -21,17 +21,17 @@ namespace Rift::AST
 	{
 		bool operator()(const OwnPtr& a, const OwnPtr& b) const
 		{
-			return a.GetTypeId() < b.GetTypeId();
+			return a.GetId() < b.GetId();
 		}
 
 		bool operator()(Refl::TypeId a, const OwnPtr& b) const
 		{
-			return a < b.GetTypeId();
+			return a < b.GetId();
 		}
 
 		bool operator()(const OwnPtr& a, Refl::TypeId b) const
 		{
-			return a.GetTypeId() < b;
+			return a.GetId() < b;
 		}
 	};
 
@@ -60,8 +60,8 @@ namespace Rift::AST
 		TArray<OwnPtr> statics;
 
 		NativeTypeIds nativeTypes;
-		TOwnPtr<TFilter<Access::In<CParent>>> parentView;
-		TOwnPtr<TFilter<Access::In<CChild>>> childView;
+		TOwnPtr<TFilter<FilterAccess::In<CParent>>> parentView;
+		TOwnPtr<TFilter<FilterAccess::In<CChild>>> childView;
 
 
 	public:
@@ -114,38 +114,21 @@ namespace Rift::AST
 		}
 
 		template<typename Component>
-		Component& GetOrAdd(Id id)
-		{
-			Check(IsValid(id));
-			return AssurePool<Component>().GetOrAdd(id);
-		}
-
-
-		template<typename Component>
 		void Remove(const Id id)
 		{
-			FindPool<Component>()->Remove(id);
+			GetPool<Component>()->Remove(id);
 		}
 		template<typename... Component>
-		void Remove(const Id id) requires(sizeof...(Component) > 1)
+		void Remove(TSpan<const Id> ids)
 		{
-			(FindPool<Component>()->Remove(id), ...);
-		}
-		template<typename... Component>
-		void Remove(TSpan<const Id> ids) requires(sizeof...(Component) > 0)
-		{
-			for (Id id : ids)
-			{
-				Check(IsValid(id));
-			}
-			(FindPool<Component>()->Remove(ids), ...);
+			(GetPool<Component>()->Remove(ids), ...);
 		}
 
 		template<typename Component>
 		Component& Get(const Id id) const
 		{
 			Check(IsValid(id));
-			auto* const pool = FindPool<Component>();
+			auto* const pool = GetPool<Component>();
 			Check(pool);
 			return pool->Get(id);
 		}
@@ -158,7 +141,7 @@ namespace Rift::AST
 		template<typename Component>
 		Component* TryGet(const Id id) const
 		{
-			auto* const pool = FindPool<Component>();
+			auto* const pool = GetPool<Component>();
 			return pool ? pool->TryGet(id) : nullptr;
 		}
 		template<typename... Component>
@@ -168,13 +151,20 @@ namespace Rift::AST
 			return std::forward_as_tuple(TryGet<Component>(id)...);
 		}
 
+		template<typename Component>
+		Component& GetOrAdd(Id id)
+		{
+			Check(IsValid(id));
+			return AssurePool<Component>().GetOrAdd(id);
+		}
+
 
 		template<typename... Component>
 		bool HasAny(Id id) const
 		{
 			return [id](const auto*... cpool) {
 				return ((cpool && cpool->Has(id)) || ...);
-			}(FindPool<Component>()...);
+			}(GetPool<Component>()...);
 		}
 
 		template<typename... Component>
@@ -182,7 +172,7 @@ namespace Rift::AST
 		{
 			return [id](const auto*... cpool) {
 				return ((cpool && cpool->Has(id)) && ...);
-			}(FindPool<Component>()...);
+			}(GetPool<Component>()...);
 		}
 
 		template<typename Component>
@@ -211,7 +201,7 @@ namespace Rift::AST
 		template<typename Static>
 		Static& SetStatic(Static&& value = {})
 		{
-			const Refl::TypeId typeId = Refl::TypeId::Get<Static>();
+			const Refl::TypeId typeId = GetTypeId<Static>();
 
 			// Find static first to replace it
 			i32 index = statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(typeId);
@@ -231,7 +221,7 @@ namespace Rift::AST
 		template<typename Static>
 		Static& SetStatic(const Static& value)
 		{
-			const Refl::TypeId typeId = Refl::TypeId::Get<Static>();
+			const Refl::TypeId typeId = GetTypeId<Static>();
 
 			// Find static first to replace it
 			i32 index = statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(typeId);
@@ -251,11 +241,11 @@ namespace Rift::AST
 		template<typename Static>
 		Static& GetOrSetStatic(Static&& newValue = {})
 		{
-			const Refl::TypeId typeId = Refl::TypeId::Get<Static>();
+			const Refl::TypeId typeId = GetTypeId<Static>();
 			i32 index                 = statics.LowerBound<Refl::TypeId, SortLessStatics>(typeId);
 			if (index != NO_INDEX)
 			{
-				if (typeId != statics[index].GetTypeId())
+				if (typeId != statics[index].GetId())
 				{
 					// Not found, insert sorted
 					statics.Insert(index, MakeOwned<Static>(Forward<Static>(newValue)));
@@ -271,11 +261,11 @@ namespace Rift::AST
 		template<typename Static>
 		Static& GetOrSetStatic(const Static& newValue)
 		{
-			const Refl::TypeId typeId = Refl::TypeId::Get<Static>();
+			const Refl::TypeId typeId = GetTypeId<Static>();
 			i32 index                 = statics.LowerBound<Refl::TypeId, SortLessStatics>(typeId);
 			if (index != NO_INDEX)
 			{
-				if (typeId != statics[index].GetTypeId())
+				if (typeId != statics[index].GetId())
 				{
 					// Not found, insert sorted
 					statics.Insert(index, MakeOwned<Static>(newValue));
@@ -290,7 +280,7 @@ namespace Rift::AST
 		template<typename Static>
 		bool RemoveStatic()
 		{
-			const Refl::TypeId typeId = Refl::TypeId::Get<Static>();
+			const Refl::TypeId typeId = GetTypeId<Static>();
 			const i32 index = statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(typeId);
 			if (index != NO_INDEX)
 			{
@@ -315,14 +305,14 @@ namespace Rift::AST
 		Static* TryGetStatic()
 		{
 			const i32 index =
-			    statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(Refl::TypeId::Get<Static>());
+			    statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(GetTypeId<Static>());
 			return index != NO_INDEX ? statics[index].GetUnsafe<Static>() : nullptr;
 		}
 		template<typename Static>
 		const Static* TryGetStatic() const
 		{
 			const i32 index =
-			    statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(Refl::TypeId::Get<Static>());
+			    statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(GetTypeId<Static>());
 			return index != NO_INDEX ? statics[index].GetUnsafe<Static>() : nullptr;
 		}
 
@@ -330,12 +320,12 @@ namespace Rift::AST
 		bool HasStatic() const
 		{
 			const i32 index =
-			    statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(Refl::TypeId::Get<Static>());
+			    statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(GetTypeId<Static>());
 			return index != NO_INDEX;
 		}
 
 		template<typename... Component, typename... Exclude>
-		TAccess<TInclude<Component...>, TExclude<Exclude...>> MakeAccess(
+		TFilterAccess<TInclude<Component...>, TExclude<Exclude...>> MakeAccess(
 		    TExclude<Exclude...> = {}) const
 		{
 			return {{&AssurePool<Component>()...}, {&AssurePool<Exclude>()...}};
@@ -343,7 +333,7 @@ namespace Rift::AST
 
 
 		template<typename... Component, typename... Exclude>
-		TFilter<TAccess<TInclude<Const<Component>...>, TExclude<Exclude...>>> Filter(
+		TFilter<TFilterAccess<TInclude<Const<Component>...>, TExclude<Exclude...>>> Filter(
 		    TExclude<Exclude...> = {}) const
 		{
 			static_assert(sizeof...(Component) > 0, "Exclusion-only filters are not supported");
@@ -351,7 +341,7 @@ namespace Rift::AST
 		}
 
 		template<typename... Component, typename... Exclude>
-		TFilter<TAccess<TInclude<Component...>, TExclude<Exclude...>>> Filter(
+		TFilter<TFilterAccess<TInclude<Component...>, TExclude<Exclude...>>> Filter(
 		    TExclude<Exclude...> = {})
 		{
 			static_assert(sizeof...(Component) > 0, "Exclusion-only filters are not supported");
@@ -388,22 +378,22 @@ namespace Rift::AST
 			CachePools();
 		}
 
-		TFilter<Access::In<CParent>>& GetParentView()
+		TFilter<FilterAccess::In<CParent>>& GetParentView()
 		{
 			return *parentView;
 		}
 
-		TFilter<Access::In<CChild>>& GetChildView()
+		TFilter<FilterAccess::In<CChild>>& GetChildView()
 		{
 			return *childView;
 		}
 
-		const TFilter<Access::In<CParent>>& GetParentView() const
+		const TFilter<FilterAccess::In<CParent>>& GetParentView() const
 		{
 			return *parentView;
 		}
 
-		const TFilter<Access::In<CChild>>& GetChildView() const
+		const TFilter<FilterAccess::In<CChild>>& GetChildView() const
 		{
 			return *childView;
 		}
@@ -425,27 +415,16 @@ namespace Rift::AST
 			return nativeTypes;
 		}
 
-		template<typename Component>
-		AST::Id GetFirstId() const
-		{
-			auto view = Filter<Component>();
-			if (view.Size() > 0)
-			{
-				return *view.begin();
-			}
-			return AST::NoId;
-		}
-
 		// Finds or creates a pool
 		template<typename T>
 		TPool<Mut<T>>& AssurePool() const;
 
-		Pool* FindPool(Refl::TypeId componentId) const;
+		Pool* GetPool(Refl::TypeId componentId) const;
 
 		template<typename T>
-		CopyConst<TPool<Mut<T>>, T>* FindPool() const
+		CopyConst<TPool<Mut<T>>, T>* GetPool() const
 		{
-			return static_cast<CopyConst<TPool<Mut<T>>, T>*>(FindPool(Refl::TypeId::Get<Mut<T>>()));
+			return static_cast<CopyConst<TPool<Mut<T>>, T>*>(GetPool(GetTypeId<Mut<T>>()));
 		}
 
 #pragma endregion ECS API
@@ -466,7 +445,7 @@ namespace Rift::AST
 		template<typename Component>
 		void ClearPool()
 		{
-			if (auto* pool = FindPool<Component>())
+			if (auto* pool = GetPool<Component>())
 			{
 				pool->Reset();
 			}
@@ -479,7 +458,7 @@ namespace Rift::AST
 	template<typename T>
 	inline TPool<Mut<T>>& Tree::AssurePool() const
 	{
-		constexpr Refl::TypeId componentId = Refl::TypeId::Get<Mut<T>>();
+		constexpr Refl::TypeId componentId = GetTypeId<Mut<T>>();
 
 		i32 index = pools.LowerBound(componentId);
 		if (index != NO_INDEX)
@@ -501,7 +480,7 @@ namespace Rift::AST
 	template<typename T>
 	inline PoolInstance Tree::CreatePoolInstance() const
 	{
-		constexpr Refl::TypeId componentId = Refl::TypeId::Get<Mut<T>>();
+		constexpr Refl::TypeId componentId = GetTypeId<Mut<T>>();
 
 		Tree& self = const_cast<Tree&>(*this);
 		PoolInstance instance{componentId};

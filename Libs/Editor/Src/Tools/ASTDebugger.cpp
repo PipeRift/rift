@@ -2,10 +2,6 @@
 
 #include "Tools/ASTDebugger.h"
 
-#include <AST/Components/CChild.h>
-#include <AST/Components/CFileRef.h>
-#include <AST/Components/CIdentifier.h>
-#include <AST/Components/CParent.h>
 #include <AST/Components/CStatementOutputs.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Tree.h>
@@ -154,24 +150,29 @@ namespace Rift
 				    ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultHide, 1.2f);
 				UI::TableHeadersRow();
 
+				AST::TAccess<const CIdentifier, const CFileRef, const CParent, const CChild> access{
+				    ast};
 				if (showHierarchy && !filter.IsActive())
 				{
-					auto roots = ast.Filter<CParent>(AST::TExclude<CChild>{});
+					TArray<AST::Id> roots = AST::ListAll<CParent>(access);
+					AST::RemoveIf<CChild>(access, roots);
 					for (auto root : roots)
 					{
-						DrawNode(ast, root, true);
+						DrawNode(access, root, true);
 					}
 
-					auto orphans = ast.Filter<CIdentifier>(AST::TExclude<CChild, CParent>{});
+					TArray<AST::Id> orphans = AST::ListAll<CIdentifier>(access);
+					AST::RemoveIf<CChild>(access, orphans);
+					AST::RemoveIf<CParent>(access, orphans);
 					for (auto orphan : orphans)
 					{
-						DrawNode(ast, orphan, true);
+						DrawNode(access, orphan, true);
 					}
 				}
 				else
 				{
-					ast.Each([this, &ast](AST::Id id) {
-						DrawNode(ast, id, false);
+					ast.Each([this, &access](AST::Id id) {
+						DrawNode(access, id, false);
 					});
 				}
 				UI::EndTable();
@@ -184,7 +185,7 @@ namespace Rift
 		DrawEntityInspector(ast, selectedNode, &open);
 	}
 
-	void ASTDebugger::DrawNode(AST::Tree& ast, AST::Id nodeId, bool showChildren)
+	void ASTDebugger::DrawNode(DrawNodeAccess access, AST::Id nodeId, bool showChildren)
 	{
 		static String idText;
 		idText.clear();
@@ -192,14 +193,14 @@ namespace Rift
 
 		static String name;
 		name.clear();
-		if (CIdentifier* id = ast.TryGet<CIdentifier>(nodeId))
+		if (const auto* id = access.TryGet<const CIdentifier>(nodeId))
 		{
 			name = id->name.ToString();
 		}
 
 		static String path;
 		path.clear();
-		if (CFileRef* file = ast.TryGet<CFileRef>(nodeId))
+		if (const auto* file = access.TryGet<const CFileRef>(nodeId))
 		{
 			path = Paths::ToString(file->path);
 
@@ -231,11 +232,11 @@ namespace Rift
 
 		ImGui::TableNextColumn();
 		bool hasChildren;
-		const CParent* children = nullptr;
+		const CParent* parent = nullptr;
 		if (showChildren)
 		{
-			children    = ast.TryGet<CParent>(nodeId);
-			hasChildren = children && !children->children.IsEmpty();
+			parent      = access.TryGet<const CParent>(nodeId);
+			hasChildren = parent && !parent->children.IsEmpty();
 		}
 		else
 		{
@@ -270,9 +271,9 @@ namespace Rift
 
 		if (hasChildren && open)
 		{
-			for (AST::Id child : children->children)
+			for (AST::Id child : parent->children)
 			{
-				DrawNode(ast, child, true);
+				DrawNode(access, child, true);
 			}
 
 			UI::TreePop();

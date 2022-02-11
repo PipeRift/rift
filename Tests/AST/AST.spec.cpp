@@ -2,7 +2,7 @@
 
 #define RIFT_ENABLE_PROFILER 0
 
-#include <AST/Access.h>
+#include <AST/FilterAccess.h>
 #include <AST/Tree.h>
 #include <bandit/bandit.h>
 

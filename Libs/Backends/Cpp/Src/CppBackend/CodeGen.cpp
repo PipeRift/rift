@@ -15,6 +15,7 @@
 #include <AST/Components/CStructDecl.h>
 #include <AST/Components/CType.h>
 #include <AST/Components/CVariableDecl.h>
+#include <AST/Filtering.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
@@ -126,10 +127,9 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void ForwardDeclareTypes(String& code, const AST::Tree& ast, AST::Id moduleId,
+	void ForwardDeclareTypes(String& code, AST::TAccessRef<const CType> types, AST::Id moduleId,
 	    const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
-		auto types = ast.Filter<const CType>();
 		for (AST::Id entity : structs)
 		{
 			const auto& type = types.Get<const CType>(entity);
@@ -143,99 +143,97 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void AddTypeVariables(String& code, const AST::Tree& ast, AST::Id owner)
+	void AddTypeVariables(String& code,
+	    AST::TAccessRef<const CIdentifier, const CVariableDecl, const CParent> access,
+	    AST::Id owner)
 	{
-		auto variables = ast.Filter<const CIdentifier, const CVariableDecl>();
-
-		if (const CParent* parent = AST::Hierarchy::GetCParent(ast, owner))
+		if (const auto* parent = access.TryGet<const CParent>(owner))
 		{
 			for (AST::Id entity : parent->children)
 			{
-				if (variables.Has(entity))
+				if (access.Has<const CIdentifier, const CVariableDecl>(entity))
 				{
-					auto& identifier = variables.Get<const CIdentifier>(entity);
+					auto& identifier = access.Get<const CIdentifier>(entity);
 					AddVariable(code, "bool", identifier.name.ToString(), "false");
 				}
 			}
 		}
 	}
 
-	void DeclareTypes(String& code, const AST::Tree& ast, AST::Id moduleId,
-	    const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
+	void DeclareTypes(String& code,
+	    AST::TAccessRef<const CType, const CIdentifier, const CVariableDecl, const CParent> access,
+	    AST::Id moduleId, const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
-		auto types = ast.Filter<const CType>();
 		for (AST::Id entity : structs)
 		{
-			const auto& type = types.Get<const CType>(entity);
-			DeclareStruct(code, type.name.ToString(), {}, [&ast, entity](String& innerCode) {
-				AddTypeVariables(innerCode, ast, entity);
+			const auto& type = access.Get<const CType>(entity);
+			DeclareStruct(code, type.name.ToString(), {}, [&access, entity](String& innerCode) {
+				AddTypeVariables(innerCode, access, entity);
 			});
 		}
 
 		for (AST::Id entity : classes)
 		{
-			const auto& type = types.Get<const CType>(entity);
-			DeclareStruct(code, type.name.ToString(), {}, [&ast, entity](String& innerCode) {
-				AddTypeVariables(innerCode, ast, entity);
+			const auto& type = access.Get<const CType>(entity);
+			DeclareStruct(code, type.name.ToString(), {}, [&access, entity](String& innerCode) {
+				AddTypeVariables(innerCode, access, entity);
 			});
 		}
 	}
 
 
-	void DeclareFunctions(
-	    String& code, const AST::Tree& ast, AST::Id moduleId, const TArray<AST::Id>& functions)
+	void DeclareFunctions(String& code,
+	    AST::TAccessRef<const CIdentifier, const CType, const CClassDecl, const CChild> access,
+	    AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
-		auto identifiers = ast.Filter<const CIdentifier>();
-		auto classesView = ast.Filter<const CType, const CClassDecl>();
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
-			AST::Id parentId = AST::Hierarchy::GetParent(ast, entity);
-			if (!IsNone(parentId) && classesView.Has(parentId))
+			AST::Id parentId = AST::Hierarchy::GetParent(access, entity);
+			if (!IsNone(parentId) && access.Has(parentId))
 			{
-				if (auto* type = classesView.TryGet<const CType>(parentId))
+				if (auto* type = access.TryGet<const CType>(parentId))
 				{
 					ownerName = type->name.ToString();
 				}
 			}
 
-			const auto& identifier = identifiers.Get<const CIdentifier>(entity);
+			const auto& identifier = access.Get<const CIdentifier>(entity);
 			DeclareFunction(code, identifier.name.ToString(), ownerName);
 		}
 	}
 
 
-	void DefineFunctions(
-	    String& code, const AST::Tree& ast, AST::Id moduleId, const TArray<AST::Id>& functions)
+	void DefineFunctions(String& code,
+	    AST::TAccessRef<const CIdentifier, const CType, const CClassDecl, const CChild> access,
+	    AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
-		auto identifiers = ast.Filter<const CIdentifier>();
-		auto classesView = ast.Filter<const CType, const CClassDecl>();
 		for (AST::Id entity : functions)
 		{
 			StringView ownerName;
-			AST::Id parentId = AST::Hierarchy::GetParent(ast, entity);
-			if (!IsNone(parentId) && classesView.Has(parentId))
+			AST::Id parentId = AST::Hierarchy::GetParent(access, entity);
+			if (!IsNone(parentId) && access.Has(parentId))
 			{
-				if (auto* type = classesView.TryGet<const CType>(parentId))
+				if (const auto* type = access.TryGet<const CType>(parentId))
 				{
 					ownerName = type->name.ToString();
 				}
 			}
 
-			auto& identifier = identifiers.Get<const CIdentifier>(entity);
+			const auto& identifier = access.Get<const CIdentifier>(entity);
 			DefineFunction(code, identifier.name.ToString(), ownerName);
 		}
 	}
 
-	void GenParameters(AST::Tree& ast)
+	void GenParameters(
+	    AST::TAccessRef<const CParameterDecl, const CIdentifier, CCppCodeGenFragment> access)
 	{
-		auto parameters = ast.Filter<const CParameterDecl, const CIdentifier>();
-		for (AST::Id entity : parameters)
+		for (AST::Id entity : AST::ListAll<CParameterDecl, CIdentifier>(access))
 		{
-			const auto& param = parameters.Get<const CParameterDecl>(entity);
-			const auto& name  = parameters.Get<const CIdentifier>(entity);
+			const auto& param = access.Get<const CParameterDecl>(entity);
+			const auto& name  = access.Get<const CIdentifier>(entity);
 
-			auto& fragment = ast.Add<CCppCodeGenFragment>(entity);
+			auto& fragment = access.Add<CCppCodeGenFragment>(entity);
 			fragment.code.clear();
 			Strings::FormatTo(fragment.code, "{} {}", param.type, name.name);
 		}
@@ -247,7 +245,7 @@ namespace Rift::Compiler::Cpp
 		ZoneScopedC(0x459bd1);
 
 		const auto& config = context.config;
-		const auto& ast    = context.ast;
+		auto& ast          = context.ast;
 
 		const Name name        = Modules::GetModuleName(ast, moduleId);
 		const Path modulePath  = codePath / name.ToString();
@@ -266,13 +264,11 @@ namespace Rift::Compiler::Cpp
 
 		TArray<AST::Id> classes, structs;
 		AST::Hierarchy::GetChildren(ast, moduleId, classes);
+		AST::RemoveIfNot<CType>(ast, classes);
 		structs = classes;
 
-		auto classesView = ast.Filter<const CClassDecl, const CType>();
-		classesView.FilterIds(classes);
-
-		auto structsView = ast.Filter<const CStructDecl, const CType>();
-		structsView.FilterIds(structs);
+		AST::RemoveIfNot<CClassDecl>(ast, classes);
+		AST::RemoveIfNot<CStructDecl>(ast, structs);
 
 		Spacing(code);
 		Comment(code, "Forward declarations");
@@ -284,13 +280,9 @@ namespace Rift::Compiler::Cpp
 
 
 		TArray<AST::Id> functions;
-		// Module->Types->Functions = depth 2
+		// Module -> Types -> Functions = depth 2
 		AST::Hierarchy::GetChildrenDeep(ast, moduleId, functions, 2);
-
-		auto functionsView = ast.Filter<const CIdentifier, const CFunctionDecl>();
-		functions.RemoveIfSwap([&functionsView](AST::Id entity) {
-			return !functionsView.Has(entity);
-		});
+		AST::RemoveIfNot<CIdentifier, CFunctionDecl>(ast, functions);
 
 		Spacing(code);
 		Comment(code, "Function Declarations");
@@ -326,8 +318,7 @@ namespace Rift::Compiler::Cpp
 
 		GenParameters(context.ast);
 
-		auto modules = context.ast.Filter<CModule>();
-		for (AST::Id moduleId : modules)
+		for (AST::Id moduleId : AST::ListAll<CModule>(context.ast))
 		{
 			GenerateModuleCode(context, moduleId, generatePath);
 		}

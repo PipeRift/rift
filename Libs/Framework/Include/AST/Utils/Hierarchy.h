@@ -1,7 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Tree.h"
+#include "AST/Access.h"
 
 #include <Containers/Span.h>
 
@@ -16,51 +16,43 @@ namespace Rift
 namespace Rift::AST::Hierarchy
 {
 	// Link a list of nodes at the end of the parent children list
-	void AddChildren(Tree& ast, Id node, TSpan<const Id> children);
+	void AddChildren(TAccessRef<CChild, CParent> access, Id node, TSpan<const Id> children);
 	// Link a list of nodes after prevChild in the list of children nodes
-	void AddChildrenAfter(Tree& ast, Id node, TSpan<Id> children, Id prevChild);
-	void TransferChildren(Tree& ast, TSpan<Id> children, Id destination);
-	void TransferAllChildren(Tree& ast, Id origin, Id destination);
-	void RemoveChildren(Tree& ast, TSpan<Id> children, bool keepComponents);
-	void RemoveAllChildren(Tree& ast, TSpan<Id> parents, bool keepComponents = false);
+	void AddChildrenAfter(
+	    TAccessRef<CChild, CParent> access, Id node, TSpan<Id> children, Id prevChild);
+	void TransferChildren(TAccessRef<CChild, CParent> access, TSpan<Id> children, Id destination);
+	// TODO: void TransferAllChildren(Tree& ast, Id origin, Id destination);
+	void RemoveChildren(
+	    TAccessRef<CParent, CChild> access, TSpan<Id> children, bool keepComponents);
+	void RemoveAllChildren(
+	    TAccessRef<CParent, CChild> access, TSpan<Id> parents, bool keepComponents = false);
 
-	TArray<Id>* GetChildren(Tree& ast, Id node);
-	const TArray<Id>* GetChildren(const Tree& ast, Id node);
-	void GetChildren(const Tree& ast, TSpan<const Id> nodes, TArray<Id>& outLinkedNodes);
+	TArray<Id>* GetMutChildren(TAccessRef<CParent> access, Id node);
+	const TArray<Id>* GetChildren(TAccessRef<const CParent> access, Id node);
+	void GetChildren(
+	    TAccessRef<const CParent> access, TSpan<const Id> nodes, TArray<Id>& outLinkedNodes);
 	/**
 	 * Finds all nodes connected recursively.
 	 */
-	void GetChildrenDeep(
-	    const Tree& ast, TSpan<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth = 0);
-	Id GetParent(const Tree& ast, Id node);
-	void GetParents(const Tree& ast, TSpan<Id> children, TArray<Id>& outParents);
+	void GetChildrenDeep(TAccessRef<const CParent> access, TSpan<const Id> roots,
+	    TArray<Id>& outLinkedNodes, u32 depth = 0);
+	Id GetParent(TAccessRef<const CChild> access, Id node);
+	void GetParents(TAccessRef<const CChild> access, TSpan<Id> children, TArray<Id>& outParents);
 
 	/**
 	 * Find a parent id matching a delegate
 	 */
-	AST::Id FindParent(AST::Tree& ast, AST::Id child, const TFunction<bool(AST::Id)>& callback);
-	void FindParents(AST::Tree& ast, TSpan<Id> children, TArray<Id>& outParents,
+	AST::Id FindParent(
+	    TAccessRef<const CChild> access, AST::Id child, const TFunction<bool(AST::Id)>& callback);
+	void FindParents(TAccessRef<const CChild> access, TSpan<Id> children, TArray<Id>& outParents,
 	    const TFunction<bool(AST::Id)>& callback);
 
 	// void Copy(Tree& ast, const TArray<Id>& nodes, TArray<Id>& outNewNodes);
 	// void CopyDeep(Tree& ast, const TArray<Id>& rootNodes, TArray<Id>& outNewRootNodes);
 	// void CopyAndTransferAllChildrenDeep(Tree& ast, Id root, Id otherRoot);
 
-	void Remove(Tree& ast, TSpan<Id> nodes);
-	void RemoveDeep(Tree& ast, TSpan<Id> nodes);
-
-	/**
-	 * @returns the CChild of a valid node. If the node doesnt have this component, nullptr is
-	 * returned
-	 */
-	CChild* GetCChild(Tree& ast, Id node);
-	const CChild* GetCChild(const Tree& ast, Id node);
-	/**
-	 * @returns the CParent of a valid node. If the node doesnt have this component, nullptr is
-	 * returned
-	 */
-	CParent* GetCParent(Tree& ast, Id node);
-	const CParent* GetCParent(const Tree& ast, Id node);
+	void Remove(TAccessRef<CChild, CParent> access, TSpan<Id> nodes);
+	void RemoveDeep(TAccessRef<CChild, CParent> access, TSpan<Id> nodes);
 
 	/**
 	 * Iterates children nodes making sure child->parent links are correct or fixed
@@ -69,7 +61,7 @@ namespace Rift::AST::Hierarchy
 	 * @parents: where to look for children to fix up
 	 * @return true if an incorrect link was found and fixed
 	 */
-	bool FixParentLinks(Tree& ast, TSpan<Id> parents);
+	bool FixParentLinks(TAccessRef<CChild, const CParent> access, TSpan<Id> parents);
 
 	/**
 	 * Iterates children nodes looking for invalid child->parent links
@@ -78,5 +70,5 @@ namespace Rift::AST::Hierarchy
 	 * @parents: where to look for children
 	 * @return true if an incorrect link was found
 	 */
-	bool ValidateParentLinks(const Tree& ast, TSpan<Id> parents);
+	bool ValidateParentLinks(TAccessRef<const CChild, const CParent> access, TSpan<Id> parents);
 }    // namespace Rift::AST::Hierarchy

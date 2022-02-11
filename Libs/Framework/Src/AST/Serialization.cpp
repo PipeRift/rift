@@ -217,5 +217,6 @@ namespace Rift::AST
 				--i;
 			}
 		}
+		entities.Shrink();
 	}
 }    // namespace Rift::AST

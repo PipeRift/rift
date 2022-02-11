@@ -10,22 +10,22 @@
 
 namespace Rift::AST::Hierarchy
 {
-	void RemoveChildFromCParent(Tree& ast, Id parent, Id child)
+	void RemoveChildFromCParent(TAccessRef<CParent> access, Id parent, Id child)
 	{
-		if (CParent* cParent = GetCParent(ast, parent))
+		if (auto* cParent = access.TryGet<CParent>(parent))
 		{
 			cParent->children.Remove(child);
 			if (cParent->children.IsEmpty())
 			{
-				ast.Remove<CParent>(parent);
+				access.Remove<CParent>(parent);
 			}
 		}
 	}
 
-	void AddChildren(Tree& ast, Id node, TSpan<const Id> children)
+	void AddChildren(TAccessRef<CChild, CParent> access, Id node, TSpan<const Id> children)
 	{
-		children.Each([&ast, node](Id child) {
-			if (CChild* cChild = GetCChild(ast, child))
+		children.Each([&access, node](Id child) {
+			if (CChild* cChild = access.TryGet<CChild>(child))
 			{
 				if (EnsureMsg(IsNone(cChild->parent),
 				        "A node trying to be linked already has a parent. Consider using "
@@ -36,16 +36,17 @@ namespace Rift::AST::Hierarchy
 			}
 			else
 			{
-				ast.Add<CChild>(child).parent = node;
+				access.Add<CChild>(child).parent = node;
 			}
 		});
-		ast.GetOrAdd<CParent>(node).children.Append(children);
+		access.GetOrAdd<CParent>(node).children.Append(children);
 	}
 
-	void AddChildrenAfter(Tree& ast, Id node, TSpan<Id> children, Id prevChild)
+	void AddChildrenAfter(
+	    TAccessRef<CChild, CParent> access, Id node, TSpan<Id> children, Id prevChild)
 	{
-		children.Each([&ast, node](Id child) {
-			if (CChild* cChild = GetCChild(ast, child))
+		children.Each([&access, node](Id child) {
+			if (CChild* cChild = access.TryGet<CChild>(child))
 			{
 				if (EnsureMsg(IsNone(cChild->parent),
 				        "A node trying to be linked already has a parent. Consider using "
@@ -56,33 +57,28 @@ namespace Rift::AST::Hierarchy
 			}
 			else
 			{
-				ast.Add<CChild>(child).parent = node;
+				access.Add<CChild>(child).parent = node;
 			}
 		});
 
-		auto& childrenList  = ast.GetOrAdd<CParent>(node).children;
+		auto& childrenList  = access.GetOrAdd<CParent>(node).children;
 		const i32 prevIndex = childrenList.FindIndex(prevChild);
 		childrenList.InsertRange(prevIndex, children);
 	}
 
-	void TransferChildren(Tree& ast, TSpan<Id> children, Id destination)
+	void TransferChildren(TAccessRef<CChild, CParent> access, TSpan<Id> children, Id destination)
 	{
-		RemoveChildren(ast, children, true);
-		AddChildren(ast, destination, children);
+		RemoveChildren(access, children, true);
+		AddChildren(access, destination, children);
 	}
 
-	void TransferAllChildren(Tree& ast, Id origin, Id destination) {}
-
-	void TransferChildren(Tree& ast, Id node, Id child) {}
-
-	void RemoveChildren(Tree& ast, TSpan<Id> children, bool keepComponents)
+	void RemoveChildren(TAccessRef<CParent, CChild> access, TSpan<Id> children, bool keepComponents)
 	{
 		TArray<Id> parents;
 		parents.Reserve(children.Size());
 
-		children.Each([&ast, &parents](Id child) {
-			CChild* cChild = GetCChild(ast, child);
-			if (cChild)
+		children.Each([&access, &parents](Id child) {
+			if (auto* cChild = access.TryGet<CChild>(child))
 			{
 				parents.Add(cChild->parent);
 				cChild->parent = AST::NoId;
@@ -91,8 +87,8 @@ namespace Rift::AST::Hierarchy
 
 		if (!keepComponents)
 		{
-			children.Each([&ast](Id child) {
-				ast.Remove<CChild>(child);
+			children.Each([&access](Id child) {
+				access.Remove<CChild>(child);
 			});
 		}
 
@@ -110,7 +106,7 @@ namespace Rift::AST::Hierarchy
 				}
 				lastParent = parent;
 
-				if (CParent* cParent = GetCParent(ast, parent))
+				if (auto* cParent = access.TryGet<CParent>(parent))
 				{
 					cParent->children.RemoveMany(children);
 				}
@@ -126,30 +122,29 @@ namespace Rift::AST::Hierarchy
 				}
 				lastParent = parent;
 
-				if (CParent* cParent = GetCParent(ast, parent))
+				if (auto* cParent = access.TryGet<CParent>(parent))
 				{
 					cParent->children.RemoveMany(children);
 					if (cParent->children.IsEmpty())
 					{
-						ast.Remove<CParent>(parent);
+						access.Remove<CParent>(parent);
 					}
 				}
 			}
 		}
 	}
 
-	void RemoveAllChildren(Tree& ast, TSpan<Id> parents, bool keepComponents)
+	void RemoveAllChildren(
+	    TAccessRef<CParent, CChild> access, TSpan<Id> parents, bool keepComponents)
 	{
 		if (keepComponents)
 		{
-			parents.Each([&ast](Id parent) {
-				if (CParent* cParent = GetCParent(ast, parent))
+			parents.Each([&access](Id parent) {
+				if (auto* cParent = access.TryGet<CParent>(parent))
 				{
 					for (Id child : cParent->children)
 					{
-						CChild* cChild = GetCChild(ast, child);
-						Ensure(cChild);
-						cChild->parent = AST::NoId;
+						access.Get<CChild>(parent).parent = AST::NoId;
 					}
 					cParent->children.Empty();
 				}
@@ -157,43 +152,44 @@ namespace Rift::AST::Hierarchy
 		}
 		else
 		{
-			parents.Each([&ast](Id parent) {
-				if (CParent* cParent = GetCParent(ast, parent))
+			parents.Each([&access](Id parent) {
+				if (auto* cParent = access.TryGet<CParent>(parent))
 				{
 					for (Id child : cParent->children)
 					{
-						ast.Remove<CChild>(child);
+						access.Remove<CChild>(child);
 					}
-					ast.Remove<CParent>(parent);
+					access.Remove<CParent>(parent);
 				}
 			});
 		}
 	}
 
-	TArray<Id>* GetChildren(Tree& ast, Id node)
+	TArray<Id>* GetMutChildren(TAccessRef<CParent> access, Id node)
 	{
-		CParent* const parent = GetCParent(ast, node);
-		return parent ? &parent->children : nullptr;
+		auto* cParent = access.TryGet<CParent>(node);
+		return cParent ? &cParent->children : nullptr;
 	}
 
-	const TArray<Id>* GetChildren(const Tree& ast, Id node)
+	const TArray<Id>* GetChildren(TAccessRef<const CParent> access, Id node)
 	{
-		const CParent* const parent = GetCParent(ast, node);
-		return parent ? &parent->children : nullptr;
+		auto* cParent = access.TryGet<const CParent>(node);
+		return cParent ? &cParent->children : nullptr;
 	}
 
-	void GetChildren(const Tree& ast, TSpan<const Id> nodes, TArray<Id>& outLinkedNodes)
+	void GetChildren(
+	    TAccessRef<const CParent> access, TSpan<const Id> nodes, TArray<Id>& outLinkedNodes)
 	{
-		nodes.Each([&ast, &outLinkedNodes](Id node) {
-			if (const CParent* const parent = GetCParent(ast, node))
+		nodes.Each([&access, &outLinkedNodes](Id node) {
+			if (const auto* cParent = access.TryGet<const CParent>(node))
 			{
-				outLinkedNodes.Append(parent->children);
+				outLinkedNodes.Append(cParent->children);
 			}
 		});
 	}
 
-	void GetChildrenDeep(
-	    const Tree& ast, TSpan<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth)
+	void GetChildrenDeep(TAccessRef<const CParent> access, TSpan<const Id> roots,
+	    TArray<Id>& outLinkedNodes, u32 depth)
 	{
 		if (depth == 0)
 		{
@@ -202,7 +198,7 @@ namespace Rift::AST::Hierarchy
 			pendingInspection.Append(roots);
 			while (pendingInspection.Size() > 0)
 			{
-				GetChildren(ast, pendingInspection, currentLinked);
+				GetChildren(access, pendingInspection, currentLinked);
 				outLinkedNodes.Append(currentLinked);
 				pendingInspection = Move(currentLinked);
 			}
@@ -214,7 +210,7 @@ namespace Rift::AST::Hierarchy
 			pendingInspection.Append(roots);
 			while (pendingInspection.Size() > 0 && depth > 0)
 			{
-				GetChildren(ast, pendingInspection, currentLinked);
+				GetChildren(access, pendingInspection, currentLinked);
 				outLinkedNodes.Append(currentLinked);
 				pendingInspection = Move(currentLinked);
 				--depth;
@@ -222,33 +218,34 @@ namespace Rift::AST::Hierarchy
 		}
 	}
 
-	Id GetParent(const Tree& ast, Id node)
+	Id GetParent(TAccessRef<const CChild> access, Id node)
 	{
-		if (auto* child = GetCChild(ast, node))
+		if (const auto* cChild = access.TryGet<const CChild>(node))
 		{
-			return child->parent;
+			return cChild->parent;
 		}
 		return AST::NoId;
 	}
 
-	void GetParents(const Tree& ast, TSpan<Id> children, TArray<Id>& outParents)
+	void GetParents(TAccessRef<const CChild> access, TSpan<Id> children, TArray<Id>& outParents)
 	{
 		outParents.Empty(false);
 		for (Id childId : children)
 		{
-			const auto* child = GetCChild(ast, childId);
-			if (child && child->parent != AST::NoId)
+			const auto* child = access.TryGet<const CChild>(childId);
+			if (child && !IsNone(child->parent))
 			{
 				outParents.AddUnique(child->parent);
 			}
 		}
 	}
 
-	AST::Id FindParent(AST::Tree& ast, AST::Id childId, const TFunction<bool(AST::Id)>& callback)
+	AST::Id FindParent(
+	    TAccessRef<const CChild> access, AST::Id childId, const TFunction<bool(AST::Id)>& callback)
 	{
 		while (!IsNone(childId))
 		{
-			childId = GetParent(ast, childId);
+			childId = GetParent(access, childId);
 			if (callback(childId))
 			{
 				return childId;
@@ -256,7 +253,7 @@ namespace Rift::AST::Hierarchy
 		}
 		return AST::NoId;
 	}
-	void FindParents(AST::Tree& ast, TSpan<Id> childrenIds, TArray<Id>& outParents,
+	void FindParents(TAccessRef<const CChild> access, TSpan<Id> childrenIds, TArray<Id>& outParents,
 	    const TFunction<bool(AST::Id)>& callback)
 	{
 		outParents.Empty(false);
@@ -266,7 +263,7 @@ namespace Rift::AST::Hierarchy
 
 		while (children.Size() > 0)
 		{
-			GetParents(ast, children, parents);
+			GetParents(access, children, parents);
 			for (i32 i = 0; i < parents.Size(); ++i)
 			{
 				const Id parentId = parents[i];
@@ -281,55 +278,35 @@ namespace Rift::AST::Hierarchy
 		}
 	}
 
-	void Remove(Tree& ast, TSpan<Id> nodes)
+	void Remove(TAccessRef<CChild, CParent> access, TSpan<Id> nodes)
 	{
-		RemoveChildren(ast, nodes, true);
+		RemoveChildren(access, nodes, true);
 
-		RemoveAllChildren(ast, nodes);
-		ast.Destroy(nodes);
+		RemoveAllChildren(access, nodes);
+		access.GetAST().Destroy(nodes);
 	}
 
-	void RemoveDeep(Tree& ast, TSpan<Id> nodes)
+	void RemoveDeep(TAccessRef<CChild, CParent> access, TSpan<Id> nodes)
 	{
-		RemoveChildren(ast, nodes, true);
+		RemoveChildren(access, nodes, true);
 
 		TArray<Id> allNodes;
 		allNodes.Append(nodes);
-		GetChildrenDeep(ast, nodes, allNodes);
-		ast.Destroy(allNodes);
+		GetChildrenDeep(access, nodes, allNodes);
+		access.GetAST().Destroy(allNodes);
 	}
 
 
-	CChild* GetCChild(Tree& ast, Id node)
-	{
-		return reinterpret_cast<CChild*>(ast.GetChildView().TryGet<CChild>(node));
-	}
-
-	const CChild* GetCChild(const Tree& ast, Id node)
-	{
-		return reinterpret_cast<const CChild*>(ast.GetChildView().TryGet<CChild>(node));
-	}
-
-	CParent* GetCParent(Tree& ast, Id node)
-	{
-		return reinterpret_cast<CParent*>(ast.GetParentView().TryGet<CParent>(node));
-	}
-
-	const CParent* GetCParent(const Tree& ast, Id node)
-	{
-		return reinterpret_cast<const CParent*>(ast.GetParentView().TryGet<CParent>(node));
-	}
-
-	bool FixParentLinks(Tree& ast, TSpan<Id> parents)
+	bool FixParentLinks(TAccessRef<CChild, const CParent> access, TSpan<Id> parents)
 	{
 		bool fixed = false;
 		for (Id parentId : parents)
 		{
-			if (const CParent* parent = GetCParent(ast, parentId))
+			if (const CParent* parent = access.TryGet<const CParent>(parentId))
 			{
 				for (Id childId : parent->children)
 				{
-					if (CChild* child = GetCChild(ast, childId))
+					if (CChild* child = access.TryGet<CChild>(childId))
 					{
 						if (child->parent != parentId)
 						{
@@ -339,7 +316,7 @@ namespace Rift::AST::Hierarchy
 					}
 					else
 					{
-						ast.Add<CChild>(childId, parentId);
+						access.Add<CChild>(childId, parentId);
 						fixed = true;
 					}
 				}
@@ -348,15 +325,15 @@ namespace Rift::AST::Hierarchy
 		return fixed;
 	}
 
-	bool ValidateParentLinks(const Tree& ast, TSpan<Id> parents)
+	bool ValidateParentLinks(TAccessRef<const CChild, const CParent> access, TSpan<Id> parents)
 	{
 		for (Id parentId : parents)
 		{
-			if (const CParent* parent = GetCParent(ast, parentId))
+			if (const auto* parent = access.TryGet<const CParent>(parentId))
 			{
 				for (Id childId : parent->children)
 				{
-					const CChild* child = GetCChild(ast, childId);
+					const auto* child = access.TryGet<const CChild>(childId);
 					if (!child || child->parent != parentId)
 					{
 						return false;

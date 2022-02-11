@@ -65,7 +65,7 @@ namespace Rift::AST
 		}
 	}
 
-	Pool* Tree::FindPool(Refl::TypeId componentId) const
+	Pool* Tree::GetPool(Refl::TypeId componentId) const
 	{
 		const i32 index = pools.FindSortedEqual(PoolInstance{componentId});
 		return index != NO_INDEX ? pools[index].GetPool() : nullptr;
@@ -130,8 +130,8 @@ namespace Rift::AST
 		AssurePool<CParent>();
 		AssurePool<CChild>();
 
-		parentView = MakeOwned<TFilter<Access::In<CParent>>>(Filter<CParent>());
-		childView  = MakeOwned<TFilter<Access::In<CChild>>>(Filter<CChild>());
+		parentView = MakeOwned<TFilter<FilterAccess::In<CParent>>>(Filter<CParent>());
+		childView  = MakeOwned<TFilter<FilterAccess::In<CChild>>>(Filter<CChild>());
 	}
 
 	void Tree::CopyFrom(const Tree& other)
