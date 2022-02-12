@@ -14,7 +14,7 @@ target_link_libraries(RiftBackendLLVM PUBLIC Rift::Rift)
 
 
 # Link LLVM
-llvm_map_components_to_libnames(llvm_libs Support Core IRReader)
+llvm_map_components_to_libnames(llvm_libs core bitwriter)
 target_link_libraries(RiftBackendLLVM PUBLIC
     ${llvm_libs}
 )
