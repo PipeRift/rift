@@ -2,18 +2,18 @@
 
 #include "AST/Utils/FunctionUtils.h"
 
-#include "AST/Components/CBoolLiteral.h"
-#include "AST/Components/CCallExpr.h"
-#include "AST/Components/CDeclRefExpr.h"
+#include "AST/Components/CExprCall.h"
+#include "AST/Components/CExprDeclRef.h"
 #include "AST/Components/CExpressionInput.h"
 #include "AST/Components/CExpressionOutputs.h"
-#include "AST/Components/CFloatLiteral.h"
 #include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CIdentifier.h"
+#include "AST/Components/CLiteralBool.h"
+#include "AST/Components/CLiteralFloat.h"
+#include "AST/Components/CLiteralString.h"
 #include "AST/Components/CParameterDecl.h"
 #include "AST/Components/CStatementInput.h"
 #include "AST/Components/CStatementOutputs.h"
-#include "AST/Components/CStringLiteral.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Utils/Hierarchy.h"
 
@@ -51,17 +51,17 @@ namespace Rift::AST::Functions
 		const auto& natives = ast.GetNativeTypes();
 		if (literalTypeId == natives.boolId)
 		{
-			ast.Add<CBoolLiteral>(literalId);
+			ast.Add<CLiteralBool>(literalId);
 			created = true;
 		}
 		else if (literalTypeId == natives.floatId)
 		{
-			ast.Add<CFloatLiteral>(literalId);
+			ast.Add<CLiteralFloat>(literalId);
 			created = true;
 		}
 		else if (literalTypeId == natives.stringId)
 		{
-			ast.Add<CStringLiteral>(literalId);
+			ast.Add<CLiteralString>(literalId);
 			created = true;
 		}
 
@@ -87,10 +87,10 @@ namespace Rift::AST::Functions
 
 		const Id typeId = Hierarchy::GetParent(ast, functionId);
 		Check(!IsNone(typeId));
-		auto& callExpr        = ast.Add<CCallExpr>(callId);
+		auto& callExpr        = ast.Add<CExprCall>(callId);
 		callExpr.ownerName    = ast.Get<CType>(typeId).name;
 		callExpr.functionName = ast.Get<CIdentifier>(functionId).name;
-		auto& callExprId      = ast.Add<CCallExprId>(callId);
+		auto& callExprId      = ast.Add<CExprCallId>(callId);
 		callExprId.functionId = functionId;
 
 		if (type)
@@ -105,14 +105,14 @@ namespace Rift::AST::Functions
 		Tree& ast   = type.GetAST();
 		const Id id = ast.Create();
 
-		ast.Add<CDeclRefExpr, CExpressionOutputs>(id);
+		ast.Add<CExprDeclRef, CExpressionOutputs>(id);
 
 		const Id typeId = Hierarchy::GetParent(ast, declId);
 		Check(!IsNone(typeId));
-		auto& declRefExpr           = ast.Add<CDeclRefExpr>(id);
+		auto& declRefExpr           = ast.Add<CExprDeclRef>(id);
 		declRefExpr.ownerName       = ast.Get<CType>(typeId).name;
 		declRefExpr.name            = ast.Get<CIdentifier>(declId).name;
-		auto& declRefExprId         = ast.Add<CDeclRefExprId>(id);
+		auto& declRefExprId         = ast.Add<CExprDeclRefId>(id);
 		declRefExprId.declarationId = declId;
 
 		if (type)

@@ -25,8 +25,10 @@
 #include <Containers/Array.h>
 #include <CppBackend.h>
 #include <IconsFontAwesome5.h>
+#include <LLVMBackend.h>
 #include <RiftContext.h>
 #include <UI/UI.h>
+
 
 
 namespace Rift::EditorSystem
@@ -338,13 +340,13 @@ namespace Rift::EditorSystem
 				{
 					AST::Tree compileAST{ast};    // Intentional copy
 					Compiler::Config config;
-					Compiler::Build(compileAST, config, Compiler::CppBackend::GetStaticType());
+					Compiler::Build<Compiler::LLVMBackend>(compileAST, config);
 				}
 				if (UI::MenuItem("Build all"))
 				{
 					AST::Tree compileAST{ast};    // Intentional copy
 					Compiler::Config config;
-					Compiler::Build(compileAST, config, Compiler::CppBackend::GetStaticType());
+					Compiler::Build<Compiler::LLVMBackend>(compileAST, config);
 				}
 				UI::EndMenu();
 			}

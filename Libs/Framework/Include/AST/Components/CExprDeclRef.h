@@ -6,9 +6,9 @@
 
 namespace Rift
 {
-	struct CDeclRefExpr : public CExpression
+	struct CExprDeclRef : public CExpression
 	{
-		STRUCT(CDeclRefExpr, CExpression)
+		STRUCT(CExprDeclRef, CExpression)
 
 		PROP(ownerName)
 		Name ownerName;
@@ -17,9 +17,9 @@ namespace Rift
 		Name name;
 	};
 
-	struct CDeclRefExprId : public CExpression
+	struct CExprDeclRefId : public CExpression
 	{
-		STRUCT(CDeclRefExprId, CExpression)
+		STRUCT(CExprDeclRefId, CExpression)
 
 		PROP(declarationId)
 		AST::Id declarationId;

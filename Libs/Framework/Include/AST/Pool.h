@@ -550,7 +550,12 @@ namespace Rift::AST
 			{
 				if (Has(id))
 				{
-					if constexpr (!IsEmpty<T>())
+					if constexpr (!IsCopyConstructible<T>)
+					{
+						// Ignore reference value since we can only move
+						Get(id) = Move(T{});
+					}
+					else if constexpr (!IsEmpty<T>())
 					{
 						Get(id) = value;
 					}
@@ -584,14 +589,27 @@ namespace Rift::AST
 			{
 				if (Has(id))
 				{
-					if constexpr (!IsEmpty<T>())
+					if constexpr (!IsCopyConstructible<T>)
+					{
+						// Ignore reference value since we can only move
+						Get(id) = Move(T{});
+					}
+					else if constexpr (!IsEmpty<T>())
 					{
 						Get(id) = *from;
 					}
 				}
 				else
 				{
-					data.Push(set.Size(), *from);
+					if constexpr (!IsCopyConstructible<T>)
+					{
+						// Ignore reference value since we can only move
+						data.Push(set.Size(), {});
+					}
+					else
+					{
+						data.Push(set.Size(), *from);
+					}
 					set.EmplaceBack(id);
 				}
 				++from;

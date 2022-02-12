@@ -10,16 +10,16 @@
 #include "Utils/EditorStyle.h"
 #include "Utils/TypeUtils.h"
 
-#include <AST/Components/CBoolLiteral.h>
-#include <AST/Components/CCallExpr.h>
+#include <AST/Components/CExprCall.h>
 #include <AST/Components/CExpressionInput.h>
 #include <AST/Components/CExpressionOutputs.h>
 #include <AST/Components/CFunctionDecl.h>
 #include <AST/Components/CIdentifier.h>
+#include <AST/Components/CLiteralBool.h>
+#include <AST/Components/CLiteralString.h>
 #include <AST/Components/CParameterDecl.h>
 #include <AST/Components/CStatementInput.h>
 #include <AST/Components/CStatementOutputs.h>
-#include <AST/Components/CStringLiteral.h>
 #include <AST/Components/CVariableDecl.h>
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Statics/STypes.h>
@@ -463,12 +463,12 @@ namespace Rift::Graph
 
 	void DrawCalls(AST::Tree& ast, AST::Id typeId, const TArray<AST::Id>& children)
 	{
-		auto calls         = ast.Filter<CCallExpr>();
+		auto calls         = ast.Filter<CExprCall>();
 		auto functionDecls = ast.Filter<CFunctionDecl, CIdentifier>();
 
 		for (AST::Id child : children)
 		{
-			auto* call = calls.TryGet<CCallExpr>(child);
+			auto* call = calls.TryGet<CExprCall>(child);
 			if (call)
 			{
 				StringView functionName = call->functionName.ToString().c_str();
@@ -484,19 +484,19 @@ namespace Rift::Graph
 
 	void DrawLiterals(AST::Tree& ast, const TArray<AST::Id>& children)
 	{
-		auto boolLiterals = ast.Filter<CBoolLiteral>();
+		auto boolLiterals = ast.Filter<CLiteralBool>();
 		for (AST::Id child : children)
 		{
-			if (auto* literal = boolLiterals.TryGet<CBoolLiteral>(child))
+			if (auto* literal = boolLiterals.TryGet<CLiteralBool>(child))
 			{
 				Literals::DrawBoolNode(child, literal->value);
 			}
 		}
 
-		auto stringLiterals = ast.Filter<CStringLiteral>();
+		auto stringLiterals = ast.Filter<CLiteralString>();
 		for (AST::Id child : children)
 		{
-			if (auto* literal = stringLiterals.TryGet<CStringLiteral>(child))
+			if (auto* literal = stringLiterals.TryGet<CLiteralString>(child))
 			{
 				Literals::DrawStringNode(child, literal->value);
 			}

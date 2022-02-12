@@ -2,7 +2,7 @@
 
 #include "AST/Systems/FunctionsSystem.h"
 
-#include "AST/Components/CCallExpr.h"
+#include "AST/Components/CExprCall.h"
 #include "AST/Components/CExpressionInput.h"
 #include "AST/Components/CExpressionOutputs.h"
 #include "AST/Components/CFunctionDecl.h"
@@ -34,23 +34,23 @@ namespace Rift::FunctionsSystem
 
 	void Init(AST::Tree& ast)
 	{
-		ast.OnAdd<CCallExprId>().Bind([](auto& ast, auto ids) {
+		ast.OnAdd<CExprCallId>().Bind([](auto& ast, auto ids) {
 			ast.template Add<CCallDirty>(ids);
 		});
 	}
 
 	void ResolveCallFunctionIds(AST::Tree& ast)
 	{
-		auto callExprs   = ast.Filter<CCallExpr>(AST::TExclude<CCallExprId>());
-		auto callExprIds = ast.Filter<CCallExprId>();
+		auto callExprs   = ast.Filter<CExprCall>(AST::TExclude<CExprCallId>());
+		auto callExprIds = ast.Filter<CExprCallId>();
 		for (AST::Id id : callExprs)
 		{
-			auto& call = callExprs.Get<CCallExpr>(id);
+			auto& call = callExprs.Get<CExprCall>(id);
 			AST::Id functionId =
 			    AST::Functions::FindFunctionByName(ast, call.ownerName, call.functionName);
 			if (!IsNone(functionId))
 			{
-				callExprIds.Add(id, CCallExprId{functionId});
+				callExprIds.Add(id, CExprCallId{functionId});
 			}
 		}
 	}
@@ -63,11 +63,11 @@ namespace Rift::FunctionsSystem
 			return;
 		}
 
-		auto callExprIds = ast.Filter<CCallExprId>(AST::TExclude<CCallDirty>{});
+		auto callExprIds = ast.Filter<CExprCallId>(AST::TExclude<CCallDirty>{});
 		auto dirtyCalls  = ast.Filter<CCallDirty>();
 		for (AST::Id id : callExprIds)
 		{
-			const AST::Id functionId = callExprIds.Get<CCallExprId>(id).functionId;
+			const AST::Id functionId = callExprIds.Get<CExprCallId>(id).functionId;
 			if (!IsNone(functionId) && changed.Has(functionId))
 			{
 				dirtyCalls.Add<CCallDirty>(id);
@@ -83,10 +83,10 @@ namespace Rift::FunctionsSystem
 		auto exprOutputs    = ast.Filter<CExpressionOutputs>();
 
 		TArray<CallToSync> calls;
-		auto dirtyCallExprs = ast.Filter<CCallDirty, CCallExprId>();
+		auto dirtyCallExprs = ast.Filter<CCallDirty, CExprCallId>();
 		for (AST::Id id : dirtyCallExprs)
 		{
-			auto& call = dirtyCallExprs.Get<CCallExprId>(id);
+			auto& call = dirtyCallExprs.Get<CExprCallId>(id);
 			if (IsNone(call.functionId))
 			{
 				continue;

@@ -2,20 +2,20 @@
 
 #include "AST/Serialization.h"
 
-#include "AST/Components/CBoolLiteral.h"
-#include "AST/Components/CCallExpr.h"
 #include "AST/Components/CChild.h"
 #include "AST/Components/CClassDecl.h"
+#include "AST/Components/CExprCall.h"
 #include "AST/Components/CExpressionInput.h"
 #include "AST/Components/CExpressionOutputs.h"
-#include "AST/Components/CFloatLiteral.h"
 #include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CIdentifier.h"
+#include "AST/Components/CLiteralBool.h"
+#include "AST/Components/CLiteralFloat.h"
+#include "AST/Components/CLiteralString.h"
 #include "AST/Components/CParameterDecl.h"
 #include "AST/Components/CParent.h"
 #include "AST/Components/CStatementInput.h"
 #include "AST/Components/CStatementOutputs.h"
-#include "AST/Components/CStringLiteral.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CVariableDecl.h"
 #include "AST/Components/Tags/CNotSerialized.h"
@@ -134,14 +134,14 @@ namespace Rift::AST
 			ReadPool<CVariableDecl>(*this, ast);
 			ReadPool<CFunctionDecl>(*this, ast);
 			ReadPool<CParameterDecl>(*this, ast);
-			ReadPool<CCallExpr>(*this, ast);
+			ReadPool<CExprCall>(*this, ast);
 			ReadPool<CStatementOutputs>(*this, ast);
 			ReadPool<CStatementInput>(*this, ast);
 			ReadPool<CExpressionOutputs>(*this, ast);
 			ReadPool<CExpressionInput>(*this, ast);
-			ReadPool<CBoolLiteral>(*this, ast);
-			ReadPool<CFloatLiteral>(*this, ast);
-			ReadPool<CStringLiteral>(*this, ast);
+			ReadPool<CLiteralBool>(*this, ast);
+			ReadPool<CLiteralFloat>(*this, ast);
+			ReadPool<CLiteralString>(*this, ast);
 			ReadPool<CGraphTransform>(*this, ast);
 			Leave();
 		}
@@ -175,14 +175,14 @@ namespace Rift::AST
 			WritePool<CVariableDecl>(*this, ast, treeEntities);
 			WritePool<CFunctionDecl>(*this, ast, treeEntities);
 			WritePool<CParameterDecl>(*this, ast, treeEntities);
-			WritePool<CCallExpr>(*this, ast, treeEntities);
+			WritePool<CExprCall>(*this, ast, treeEntities);
 			WritePool<CStatementOutputs>(*this, ast, treeEntities);
 			WritePool<CStatementInput>(*this, ast, treeEntities);
 			WritePool<CExpressionOutputs>(*this, ast, treeEntities);
 			WritePool<CExpressionInput>(*this, ast, treeEntities);
-			WritePool<CBoolLiteral>(*this, ast, treeEntities);
-			WritePool<CFloatLiteral>(*this, ast, treeEntities);
-			WritePool<CStringLiteral>(*this, ast, treeEntities);
+			WritePool<CLiteralBool>(*this, ast, treeEntities);
+			WritePool<CLiteralFloat>(*this, ast, treeEntities);
+			WritePool<CLiteralString>(*this, ast, treeEntities);
 			WritePool<CGraphTransform>(*this, ast, treeEntities);
 			Leave();
 		}
