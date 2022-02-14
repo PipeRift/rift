@@ -14,14 +14,13 @@ target_link_libraries(RiftBackendLLVM PUBLIC Rift::Rift)
 
 
 # Link LLVM
-llvm_map_components_to_libnames(llvm_libs core bitwriter)
-target_link_libraries(RiftBackendLLVM PUBLIC
-    ${llvm_libs}
-)
+message(STATUS "LLVM_LIBS: ${LLVM_AVAILABLE_LIBS}")
 message(STATUS "LLVM_INCLUDE_DIRS: ${LLVM_INCLUDE_DIRS}")
-message(STATUS "LLVM_DEFINITIONS: ${LLVM_DEFINITIONS}")
+message(STATUS "LLVM_DEFINITIONS: ${LLVM_DEFINITIONS_LIST}")
 target_include_directories(RiftBackendLLVM PUBLIC ${LLVM_INCLUDE_DIRS})
-target_compile_definitions(RiftBackendLLVM PUBLIC ${LLVM_DEFINITIONS})
+target_compile_definitions(RiftBackendLLVM PUBLIC ${LLVM_DEFINITIONS_LIST})
+llvm_map_components_to_libnames(llvm_libs core x86asmparser x86codegen)
+target_link_libraries(RiftBackendLLVM PRIVATE ${llvm_libs})
 
 
 install(TARGETS RiftBackendLLVM

@@ -4,6 +4,7 @@
 
 #include "LLVMBackend/Components/CIRModule.h"
 #include "LLVMBackend/Components/CIRStruct.h"
+#include "LLVMBackend/LLVMHelpers.h"
 
 #include <AST/Components/CClassDecl.h>
 #include <AST/Components/CLiteralFloat.h>
@@ -20,21 +21,6 @@
 
 namespace Rift::Compiler::LLVM
 {
-	llvm::StringRef ToLLVM(StringView string)
-	{
-		return {string.data(), string.size()};
-	}
-	llvm::StringRef ToLLVM(Name name)
-	{
-		return ToLLVM(StringView{name.ToString()});
-	}
-
-	template<typename T>
-	llvm::ArrayRef<T> ToLLVM(const TArray<T>& array)
-	{
-		return {array.Data(), array.Size()};
-	}
-
 	llvm::Value* GetLiteralFloat(
 	    llvm::LLVMContext& llvm, AST::TAccessRef<const CLiteralFloat> access, AST::Id id)
 	{
