@@ -9,7 +9,9 @@
 #include <AST/Filtering.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
+#include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LegacyPassManager.h>
+#include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Host.h>
@@ -27,14 +29,14 @@ namespace Rift::Compiler
 		    llvm::TargetMachine* targetMachine, StringView targetTriple)
 		{
 			const String filePath =
-			    Strings::Format("{}/LLVM/{}.o", Paths::ToString(context.config.intermediatesPath),
+			    Strings::Format("{}/{}.o", Paths::ToString(context.config.intermediatesPath),
 			        Modules::GetModuleName(context.ast, moduleId));
 			Log::Info("Creating object '{}'", filePath);
 
 			const auto& irModule = context.ast.Get<const CIRModule>(moduleId).instance;
 
-			irModule->setDataLayout(targetMachine->createDataLayout());
 			irModule->setTargetTriple(targetTriple);
+			irModule->setDataLayout(targetMachine->createDataLayout());
 
 			std::error_code ec;
 			llvm::raw_fd_ostream file(ToLLVM(filePath), ec, llvm::sys::fs::OF_None);
@@ -46,9 +48,9 @@ namespace Rift::Compiler
 			}
 
 			llvm::legacy::PassManager pm;
-			if (!targetMachine->addPassesToEmitFile(pm, file, nullptr, llvm::CGFT_ObjectFile))
+			if (targetMachine->addPassesToEmitFile(pm, file, nullptr, llvm::CGFT_ObjectFile))
 			{
-				context.AddError("TargetMachine can't emit a file of this type");
+				context.AddError("Target machine can't emit a file of this type");
 				return;
 			}
 
@@ -61,8 +63,11 @@ namespace Rift::Compiler
 	{
 		ZoneScopedC(0x459bd1);
 
+		llvm::LLVMContext llvm;
+		llvm::IRBuilder<> builder(llvm);
+
 		Log::Info("Generating LLVM IR");
-		LLVM::GenerateIR(context);
+		LLVM::GenerateIR(context, llvm, builder);
 
 		Log::Info("Build IR");
 		llvm::InitializeNativeTarget();

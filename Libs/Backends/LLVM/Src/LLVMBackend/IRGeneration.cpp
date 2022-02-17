@@ -14,8 +14,6 @@
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
-#include <llvm/IR/IRBuilder.h>
-#include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 
 
@@ -44,7 +42,8 @@ namespace Rift::Compiler::LLVM
 		irStruct->setBody(ToLLVM(memberTypes));
 	}
 
-	void GenerateIRModule(llvm::LLVMContext& llvm, Context& context, AST::Id moduleId)
+	void GenerateIRModule(
+	    Context& context, AST::Id moduleId, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
 	{
 		const auto& config = context.config;
 		auto& ast          = context.ast;
@@ -91,14 +90,11 @@ namespace Rift::Compiler::LLVM
 		// Define functions
 	}
 
-	void GenerateIR(Context& context)
+	void GenerateIR(Context& context, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
 	{
-		llvm::LLVMContext llvm;
-		llvm::IRBuilder<> builder(llvm);
-
 		for (AST::Id moduleId : AST::ListAll<CModule>(context.ast))
 		{
-			GenerateIRModule(llvm, context, moduleId);
+			GenerateIRModule(context, moduleId, llvm, builder);
 		}
 	}
 }    // namespace Rift::Compiler::LLVM
