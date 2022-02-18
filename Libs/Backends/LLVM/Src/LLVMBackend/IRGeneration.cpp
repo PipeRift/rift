@@ -8,17 +8,27 @@
 
 #include <AST/Components/CClassDecl.h>
 #include <AST/Components/CLiteralFloat.h>
+#include <AST/Components/CLiteralI32.h>
 #include <AST/Components/CStructDecl.h>
 #include <AST/Components/CType.h>
 #include <AST/Filtering.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
+#include <llvm/ADT/APInt.h>
+#include <llvm/IR/Function.h>
 #include <llvm/IR/Module.h>
 
 
 namespace Rift::Compiler::LLVM
 {
+	llvm::Value* GetLiteralI32(
+	    llvm::LLVMContext& llvm, AST::TAccessRef<const CLiteralI32> access, AST::Id id)
+	{
+		return llvm::ConstantInt::get(
+		    llvm, llvm::APInt(32, access.Get<const CLiteralI32>(id).value));
+	}
+
 	llvm::Value* GetLiteralFloat(
 	    llvm::LLVMContext& llvm, AST::TAccessRef<const CLiteralFloat> access, AST::Id id)
 	{
@@ -29,6 +39,7 @@ namespace Rift::Compiler::LLVM
 	void DeclareStruct(
 	    llvm::LLVMContext& llvm, AST::TAccessRef<const CType, CIRStruct> access, AST::Id structId)
 	{
+		ZoneScoped;
 		const Name name = access.Get<const CType>(structId).name;
 		access.Add(structId, CIRStruct{llvm::StructType::create(llvm, ToLLVM(name))});
 	}
@@ -36,6 +47,7 @@ namespace Rift::Compiler::LLVM
 	void DefineStruct(
 	    llvm::LLVMContext& llvm, AST::TAccessRef<const CIRStruct> access, AST::Id structId)
 	{
+		ZoneScoped;
 		llvm::StructType* irStruct = access.Get<const CIRStruct>(structId).instance;
 
 		TArray<llvm::Type*> memberTypes;
@@ -45,6 +57,7 @@ namespace Rift::Compiler::LLVM
 	void GenerateIRModule(
 	    Context& context, AST::Id moduleId, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
 	{
+		ZoneScoped;
 		const auto& config = context.config;
 		auto& ast          = context.ast;
 
@@ -61,7 +74,6 @@ namespace Rift::Compiler::LLVM
 
 		AST::RemoveIfNot<CClassDecl>(ast, classes);
 		AST::RemoveIfNot<CStructDecl>(ast, structs);
-
 
 		// Declare types
 		AST::TAccess<const CType, CIRStruct> declareAccess{ast};
@@ -90,11 +102,33 @@ namespace Rift::Compiler::LLVM
 		// Define functions
 	}
 
+	void CreateEntry(Context& context, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder,
+	    const CIRModule& irModule)
+	{
+		llvm::FunctionType* mainType = llvm::FunctionType::get(builder.getInt32Ty(), false);
+		llvm::Function* main         = llvm::Function::Create(
+		            mainType, llvm::Function::ExternalLinkage, "main", irModule.instance.Get());
+		llvm::BasicBlock* entry = llvm::BasicBlock::Create(llvm, "entry", main);
+		builder.SetInsertPoint(entry);
+
+		builder.CreateRet(llvm::ConstantInt::get(llvm, llvm::APInt(32, 0)));
+	}
+
 	void GenerateIR(Context& context, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
 	{
 		for (AST::Id moduleId : AST::ListAll<CModule>(context.ast))
 		{
 			GenerateIRModule(context, moduleId, llvm, builder);
+		}
+
+		for (AST::Id moduleId : AST::ListAll<CModule, CIRModule>(context.ast))
+		{
+			const auto& mod = context.ast.Get<const CModule>(moduleId);
+			if (mod.target == ModuleTarget::Executable)
+			{
+				const auto& irModule = context.ast.Get<const CIRModule>(moduleId);
+				LLVM::CreateEntry(context, llvm, builder, irModule);
+			}
 		}
 	}
 }    // namespace Rift::Compiler::LLVM

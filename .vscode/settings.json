@@ -227,7 +227,8 @@
         "cwd": "${workspaceRoot}",
         "args": [
             "--project",
-            "Project"
+            "Project",
+            "--backend LLVM"
         ]
     }
 }

@@ -59,6 +59,40 @@ namespace Rift::Compiler
 			pm.run(*irModule.Get());
 			file.flush();
 		}
+
+		void CompileIR(Context& context, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
+		{
+			ZoneScoped;
+			llvm::InitializeNativeTarget();
+			llvm::InitializeNativeTargetAsmParser();
+			llvm::InitializeNativeTargetAsmPrinter();
+			std::string targetTriple = llvm::sys::getDefaultTargetTriple();
+
+			std::string error;
+			const llvm::Target* target = llvm::TargetRegistry::lookupTarget(targetTriple, error);
+			if (!target)
+			{
+				context.AddError(error);
+				return;
+			}
+
+			llvm::TargetOptions options;
+			auto* targetMachine = target->createTargetMachine(
+			    targetTriple, "generic", "", options, llvm::Optional<llvm::Reloc::Model>());
+
+			// Emit LLVM IR to console
+			for (AST::Id moduleId : AST::ListAll<CIRModule>(context.ast))
+			{
+				const auto& irModule = context.ast.Get<const CIRModule>(moduleId).instance;
+				irModule->print(llvm::outs(), nullptr);
+			}
+
+			const Path bitCodePath = context.config.intermediatesPath / "LLVM";
+			for (AST::Id moduleId : AST::ListAll<CIRModule>(context.ast))
+			{
+				LLVM::SaveModuleObject(context, moduleId, targetMachine, targetTriple);
+			}
+		}
 	}    // namespace LLVM
 
 	void LLVMBackend::Build(Context& context)
@@ -72,29 +106,6 @@ namespace Rift::Compiler
 		LLVM::GenerateIR(context, llvm, builder);
 
 		Log::Info("Build IR");
-		llvm::InitializeNativeTarget();
-		llvm::InitializeNativeTargetAsmParser();
-		llvm::InitializeNativeTargetAsmPrinter();
-		std::string targetTriple = llvm::sys::getDefaultTargetTriple();
-
-		std::string error;
-		const llvm::Target* target = llvm::TargetRegistry::lookupTarget(targetTriple, error);
-		if (!target)
-		{
-			context.AddError(error);
-			return;
-		}
-
-		llvm::TargetOptions options;
-		auto* targetMachine = target->createTargetMachine(
-		    targetTriple, "generic", "", options, llvm::Optional<llvm::Reloc::Model>());
-
-
-		const Path bitCodePath = context.config.intermediatesPath / "LLVM";
-		for (AST::Id moduleId : AST::ListAll<CIRModule>(context.ast))
-		{
-			LLVM::SaveModuleObject(context, moduleId, targetMachine, targetTriple);
-			// llvm::WriteBitcodeToFile(*irModule.Get(), llvm::outs());
-		}
+		LLVM::CompileIR(context, llvm, builder);
 	}
 }    // namespace Rift::Compiler
