@@ -16,6 +16,8 @@ namespace Rift::Compiler
 {
 	void Build(AST::Tree& ast, const Config& config, TPtr<Backend> backend)
 	{
+		ZoneScoped;
+
 		Context context{ast, config};
 
 		if (!backend)
@@ -24,24 +26,26 @@ namespace Rift::Compiler
 			return;
 		}
 
-		LoadSystem::Init(ast);
-		TypeSystem::Init(ast);
-
-		if (!Modules::HasProject(ast))
 		{
-			Log::Error("No existing project to build.");
-			return;
+			ZoneScopedN("Frontend");
+			LoadSystem::Init(ast);
+			TypeSystem::Init(ast);
+
+			if (!Modules::HasProject(ast))
+			{
+				Log::Error("No existing project to build.");
+				return;
+			}
+			context.config.Init(ast);
+
+			Log::Info("Loading files");
+			LoadSystem::Run(ast);
+
+			OptimizationSystem::PruneDisconnectedExpressions(ast);
+			TypeSystem::RunChecks(ast);
 		}
-		context.config.Init(ast);
-
-		Log::Info("Loading files");
-		LoadSystem::Run(ast);
-
-		OptimizationSystem::PruneDisconnectedExpressions(ast);
-		TypeSystem::RunChecks(ast);
 
 		Log::Info("Building project '{}'", Modules::GetProjectName(context.ast));
-
 		// Clean build folders
 		Log::Info("Cleaning previous build");
 		Files::Delete(context.config.binariesPath, true, false);

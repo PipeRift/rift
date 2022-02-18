@@ -30,7 +30,6 @@
 #include <UI/UI.h>
 
 
-
 namespace Rift::EditorSystem
 {
 	void OnProjectEditorOpen(AST::Tree& ast)
@@ -110,7 +109,7 @@ namespace Rift::EditorSystem
 
 	void Draw(AST::Tree& ast)
 	{
-		ZoneScopedN("EditorSystem::Draw");
+		ZoneScoped;
 
 		if (Modules::HasProject(ast))
 		{
@@ -257,7 +256,7 @@ namespace Rift::EditorSystem
 
 	void DrawProject(AST::Tree& ast)
 	{
-		ZoneScopedN("EditorSystem::DrawProject");
+		ZoneScoped;
 
 		if (!Ensure(ast.HasStatic<SEditor>()))
 		{
@@ -431,6 +430,8 @@ namespace Rift::EditorSystem
 
 	void DrawTypes(AST::Tree& ast, SEditor& editor)
 	{
+		ZoneScoped;
+
 		auto typeEditors = ast.Filter<CType, CTypeEditor, CFileRef>();
 		for (AST::Id typeId : typeEditors)
 		{

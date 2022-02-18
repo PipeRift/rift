@@ -28,6 +28,8 @@ namespace Rift::Compiler
 		void SaveModuleObject(Context& context, AST::Id moduleId,
 		    llvm::TargetMachine* targetMachine, StringView targetTriple)
 		{
+			ZoneScoped;
+
 			const String filePath =
 			    Strings::Format("{}/{}.o", Paths::ToString(context.config.intermediatesPath),
 			        Modules::GetModuleName(context.ast, moduleId));
@@ -61,7 +63,7 @@ namespace Rift::Compiler
 
 	void LLVMBackend::Build(Context& context)
 	{
-		ZoneScopedC(0x459bd1);
+		ZoneScopedN("Backend: LLVM");
 
 		llvm::LLVMContext llvm;
 		llvm::IRBuilder<> builder(llvm);

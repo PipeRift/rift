@@ -44,13 +44,13 @@ namespace Rift::Style
 
 	enum class FontMode : u8
 	{
+		None = 0,
 		Regular,
 		Bold,
 		Light,
 		Italic,
 		BoldItalic,
 		LightItalic,
-		None
 	};
 
 	// Sets the default font

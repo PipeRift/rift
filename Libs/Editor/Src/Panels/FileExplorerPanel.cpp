@@ -68,7 +68,7 @@ namespace Rift
 		}
 
 		{
-			ZoneScopedN("Draw File Explorer");
+			ZoneScopedN("Draw Files");
 			for (auto& item : folders[Name::None()].items)
 			{
 				DrawItem(ast, item);
@@ -153,7 +153,7 @@ namespace Rift
 	void FileExplorerPanel::CacheProjectFiles(
 	    AST::TAccessRef<const CProject, const CModule, const CFileRef, const CType> access)
 	{
-		ZoneScopedN("Cache Project Files");
+		ZoneScoped;
 		dirty = false;
 
 		folders.Empty();

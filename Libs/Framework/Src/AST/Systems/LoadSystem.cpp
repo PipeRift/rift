@@ -66,7 +66,7 @@ namespace Rift::LoadSystem
 
 	void ScanSubmodules(AST::Tree& ast, TArray<Path>& paths)
 	{
-		ZoneScopedNC("ScanSubmodules", 0x459bd1);
+		ZoneScoped;
 
 		paths.Empty();
 
@@ -80,27 +80,31 @@ namespace Rift::LoadSystem
 
 	void ScanTypes(AST::Tree& ast, TArray<ModuleTypePaths>& pathsByModule)
 	{
-		ZoneScopedNC("ScanTypes", 0x459bd1);
+		ZoneScoped;
 
 		pathsByModule.Empty(false);
-		auto modulesView = ast.Filter<CModule>();
 
 		// Cache module paths in a Set
 		TSet<Path> modulePaths;
-		modulePaths.Reserve(u32(modulesView.Size()));
-		for (AST::Id moduleId : modulesView)
+
+		AST::TAccess<CModule, CFileRef> access{ast};
+		auto modules = AST::ListAll<CModule>(access);
+
+		modulePaths.Reserve(modules.Size());
+		for (AST::Id moduleId : modules)
 		{
-			const CFileRef& moduleFile = ast.Get<CFileRef>(moduleId);
+			const auto& moduleFile = access.Get<CFileRef>(moduleId);
 			modulePaths.Insert(moduleFile.path.parent_path());
 		}
 
 		// Find all type files by module
-		pathsByModule.Reserve(u32(modulesView.Size()));
-		for (AST::Id moduleId : modulesView)
+		pathsByModule.Reserve(modules.Size());
+		for (AST::Id moduleId : modules)
 		{
-			const CFileRef& moduleFile = ast.Get<CFileRef>(moduleId);
+			const auto& moduleFile = access.Get<const CFileRef>(moduleId);
 
 			auto& paths = pathsByModule.AddRef({moduleId}).paths;
+			ZoneScopedN("Iterate module files");
 			// Iterate all types ignoring other module paths
 			for (const auto& typePath : TypeIterator(moduleFile.path.parent_path(), &modulePaths))
 			{
@@ -111,7 +115,7 @@ namespace Rift::LoadSystem
 
 	void CreateModulesFromPaths(AST::Tree& ast, TArray<Path>& paths, TArray<AST::Id>& ids)
 	{
-		ZoneScopedNC("CreateModulesFromPaths", 0x459bd1);
+		ZoneScoped;
 
 		// Remove existing Modules
 		auto modulesView = ast.Filter<CModule, CFileRef>();
@@ -148,7 +152,7 @@ namespace Rift::LoadSystem
 	void CreateTypesFromPaths(
 	    AST::Tree& ast, TSpan<ModuleTypePaths> pathsByModule, TArray<AST::Id>& ids)
 	{
-		ZoneScopedNC("CreateTypesFromPaths", 0x459bd1);
+		ZoneScoped;
 
 		auto* types = ast.TryGetStatic<STypes>();
 		if (!types)
@@ -198,7 +202,7 @@ namespace Rift::LoadSystem
 
 	void LoadFileStrings(AST::Tree& ast, TSpan<AST::Id> nodes, TArray<String>& strings)
 	{
-		ZoneScopedNC("LoadFileStrings", 0x459bd1);
+		ZoneScoped;
 
 		strings.Resize(nodes.Size());
 
@@ -219,7 +223,7 @@ namespace Rift::LoadSystem
 
 	void DeserializeModules(AST::Tree& ast, TSpan<AST::Id> moduleIds, TSpan<String> strings)
 	{
-		ZoneScopedNC("DeserializeModules", 0x459bd1);
+		ZoneScoped;
 		Check(moduleIds.Size() == strings.Size());
 
 		for (i32 i = 0; i < moduleIds.Size(); ++i)
@@ -244,7 +248,7 @@ namespace Rift::LoadSystem
 
 	void DeserializeTypes(AST::Tree& ast, TSpan<AST::Id> typeIds, TSpan<String> strings)
 	{
-		ZoneScopedNC("DeserializeTypes", 0x459bd1);
+		ZoneScoped;
 		Check(typeIds.Size() == strings.Size());
 
 		for (i32 i = 0; i < typeIds.Size(); ++i)

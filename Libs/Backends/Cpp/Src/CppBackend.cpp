@@ -39,7 +39,7 @@ namespace Rift::Compiler
 
 		void BuildCode(Context& context, const Path& codePath, const Path& cmakePath)
 		{
-			ZoneScopedC(0x459bd1);
+			ZoneScoped;
 			Files::CreateFolder(cmakePath, true);
 
 
@@ -66,7 +66,7 @@ namespace Rift::Compiler
 
 	void CppBackend::Build(Context& context)
 	{
-		ZoneScopedC(0x459bd1);
+		ZoneScopedN("Backend: Cpp");
 
 		DateTime startTime = DateTime::Now();
 
