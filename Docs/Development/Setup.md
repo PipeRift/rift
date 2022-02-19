@@ -23,7 +23,7 @@ Make sure all submodules have been initialized. You can run `Programs/InitSubmod
 Any IDE supporting CMake is suitable.
 
 Before we start building the project, we need to tell it where our LLVM installation is located.
-We do this by setting `RIFT_LLVM_PATH` variable in cmake cache to our llvm path.
+We do this by setting `RIFT_LLVM_BUILD_PATH` variable in cmake cache to our llvm path.
 
 
 ## Linux
@@ -45,4 +45,4 @@ Make sure all submodules have been initialized (with `git submodule update --ini
 ### 2. Use an IDE
 Any IDE supporting CMake is suitable.
 
-NOTE: In Linux we don't need to specify the path to LLVM since it will be detected, but if we have multiple installations, we can choose which one by setting cmake variable `RIFT_LLVM_PATH` to the path we want.
+NOTE: In Linux we don't need to specify the path to LLVM since it will be detected, but if we have multiple installations, we can choose which one by setting cmake variable `RIFT_LLVM_BUILD_PATH` to the path we want.

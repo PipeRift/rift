@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+env:
+  cache-version: 0
+
 jobs:
   Build:
     name: ${{ matrix.os-name }} (${{ matrix.compiler }})
@@ -63,7 +66,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ runner.temp }}/llvm
-          key: llvm-13.0-${{ matrix.os }}
+          key: llvm-13.0-${{ matrix.os }}-${{ env.cache-version }}
 
 
       - name: Install LLVM (pre-built)
@@ -78,10 +81,9 @@ jobs:
         if: ${{ matrix.os-name == 'windows' && steps.cache-llvm.outputs.cache-hit != 'true' }}
         run: |
           cd ${{ runner.temp }}
-          git clone https://github.com/llvm/llvm-project.git llvm --branch release/13.x --depth 1
-          cd llvm
-          cmake -S llvm -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --config Release
+          git clone https://github.com/llvm/llvm-project.git llvm-source --branch release/13.x --depth 1
+          cmake -S llvm-source/llvm -B llvm -DCMAKE_BUILD_TYPE=Release
+          cmake --build llvm --config Release
           cd ${{ github.workspace }}
 
       - name: Get CMake
@@ -93,7 +95,7 @@ jobs:
           cmakeGenerator: 'Ninja'
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeBuildType: Release
-          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'
+          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_BUILD_PATH='${{ runner.temp }}/llvm'
           buildWithCMakeArgs: --config Release
           buildDirectory: 'Build'
 
@@ -111,7 +113,7 @@ jobs:
           cmakeGenerator: 'Ninja'
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeBuildType: Debug
-          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'
+          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_BUILD_PATH='${{ runner.temp }}/llvm'
           buildWithCMakeArgs: --config Debug
           buildDirectory: 'Build'
 
