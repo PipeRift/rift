@@ -18,14 +18,18 @@ namespace Rift
 	{
 		Refl::TypeId typeId = Refl::TypeId::None();
 		AccessMode mode     = AccessMode::Read;
+
+
+		constexpr TypeAccess() = default;
+		constexpr TypeAccess(Refl::TypeId typeId, AccessMode mode) : typeId{typeId}, mode{mode} {}
 	};
 
-	template<typename T, AccessMode mode>
+	template<typename T, AccessMode inMode>
 	struct TTypeAccess : TypeAccess
 	{
-		using Type                       = Mut<T>;
-		static constexpr AccessMode mode = AccessMode::Read;
-		TTypeAccess() : TypeAccess(Refl::GetTypeId<T>(), mode) {}
+		using Type = Mut<T>;
+
+		constexpr TTypeAccess() : TypeAccess(GetTypeId<T>(), inMode) {}
 	};
 
 	template<typename T>
@@ -47,7 +51,7 @@ namespace Rift
 	struct TTypeAccessInfo<T>
 	{
 		using Type                       = typename T::Type;
-		static constexpr AccessMode mode = T::mode;
+		static constexpr AccessMode mode = T().mode;
 	};
 	template<typename T>
 	using AsComponent = typename TTypeAccessInfo<T>::Type;
@@ -76,12 +80,13 @@ namespace Rift
 		TAccess(const TAccess<T2...>& other)
 		    : ast{other.ast}, pools{std::get<AST::TPool<AsComponent<T>>*>(other.pools)...}
 		{
-			using Other = typename TAccess<T2...>;
-			static_assert((Other::HasType<T>() && ...),
+			using Other = TAccess<T2...>;
+			static_assert((Other::template HasType<T>() && ...),
 			    "Parent TAccess lacks one or more dependencies from a child TAccess.");
 
 			static_assert(
-			    ((Other::IsWritable<T>() || TTypeAccessInfo<T>::mode != AccessMode::Write) && ...),
+			    ((Other::template IsWritable<T>() || TTypeAccessInfo<T>::mode != AccessMode::Write)
+			        && ...),
 			    "Parent TAccess lacks one or more *mutable* dependencies from a child TAccess.");
 		}
 
