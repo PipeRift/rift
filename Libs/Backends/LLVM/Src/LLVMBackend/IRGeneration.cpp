@@ -2,11 +2,13 @@
 
 #include "LLVMBackend/IRGeneration.h"
 
+#include "LLVMBackend/Components/CIRFunction.h"
 #include "LLVMBackend/Components/CIRModule.h"
 #include "LLVMBackend/Components/CIRStruct.h"
 #include "LLVMBackend/LLVMHelpers.h"
 
 #include <AST/Components/CClassDecl.h>
+#include <AST/Components/CFunctionDecl.h>
 #include <AST/Components/CLiteralFloat.h>
 #include <AST/Components/CLiteralI32.h>
 #include <AST/Components/CStructDecl.h>
@@ -22,40 +24,63 @@
 
 namespace Rift::Compiler::LLVM
 {
-	llvm::Value* GetLiteralI32(
-	    llvm::LLVMContext& llvm, AST::TAccessRef<const CLiteralI32> access, AST::Id id)
+	using namespace llvm;
+
+	Value* GetLiteralI32(LLVMContext& llvm, AST::TAccessRef<const CLiteralI32> access, AST::Id id)
 	{
-		return llvm::ConstantInt::get(
-		    llvm, llvm::APInt(32, access.Get<const CLiteralI32>(id).value));
+		return ConstantInt::get(llvm, APInt(32, access.Get<const CLiteralI32>(id).value));
 	}
 
-	llvm::Value* GetLiteralFloat(
-	    llvm::LLVMContext& llvm, AST::TAccessRef<const CLiteralFloat> access, AST::Id id)
+	Value* GetLiteralFloat(
+	    LLVMContext& llvm, AST::TAccessRef<const CLiteralFloat> access, AST::Id id)
 	{
-		return llvm::ConstantFP::get(
-		    llvm, llvm::APFloat(access.Get<const CLiteralFloat>(id).value));
+		return ConstantFP::get(llvm, APFloat(access.Get<const CLiteralFloat>(id).value));
 	}
 
 	void DeclareStruct(
-	    llvm::LLVMContext& llvm, AST::TAccessRef<const CType, CIRStruct> access, AST::Id structId)
+	    LLVMContext& llvm, AST::TAccessRef<const CType, CIRStruct> access, AST::Id id)
 	{
 		ZoneScoped;
-		const Name name = access.Get<const CType>(structId).name;
-		access.Add(structId, CIRStruct{llvm::StructType::create(llvm, ToLLVM(name))});
+		const Name name = access.Get<const CType>(id).name;
+		access.Add(id, CIRStruct{StructType::create(llvm, ToLLVM(name))});
 	}
 
-	void DefineStruct(
-	    llvm::LLVMContext& llvm, AST::TAccessRef<const CIRStruct> access, AST::Id structId)
+	void DefineStruct(LLVMContext& llvm, AST::TAccessRef<const CIRStruct> access, AST::Id id)
 	{
 		ZoneScoped;
-		llvm::StructType* irStruct = access.Get<const CIRStruct>(structId).instance;
+		StructType* irStruct = access.Get<const CIRStruct>(id).instance;
 
-		TArray<llvm::Type*> memberTypes;
+		TArray<Type*> memberTypes;
 		irStruct->setBody(ToLLVM(memberTypes));
 	}
 
+	void DeclareFunction(LLVMContext& llvm, IRBuilder<>& builder,
+	    AST::TAccessRef<CIRFunction, const CIdentifier> access, AST::Id id, Module& irModule)
+	{
+		ZoneScoped;
+
+		const CIdentifier& ident = access.Get<const CIdentifier>(id);
+
+		FunctionType* type = FunctionType::get(builder.getVoidTy(), false);
+
+		access.Add(id, CIRFunction{Function::Create(
+		                   type, Function::ExternalLinkage, ToLLVM(ident.name), &irModule)});
+	}
+
+	void CreateEntry(
+	    Context& context, LLVMContext& llvm, IRBuilder<>& builder, const CIRModule& irModule)
+	{
+		FunctionType* mainType = FunctionType::get(builder.getInt32Ty(), false);
+		Function* main =
+		    Function::Create(mainType, Function::ExternalLinkage, "main", irModule.instance.Get());
+		BasicBlock* entry = BasicBlock::Create(llvm, "entry", main);
+		builder.SetInsertPoint(entry);
+
+		builder.CreateRet(ConstantInt::get(llvm, APInt(32, 0)));
+	}
+
 	void GenerateIRModule(
-	    Context& context, AST::Id moduleId, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
+	    Context& context, AST::Id moduleId, LLVMContext& llvm, IRBuilder<>& builder)
 	{
 		ZoneScoped;
 		const auto& config = context.config;
@@ -63,58 +88,52 @@ namespace Rift::Compiler::LLVM
 
 		const Name name = Modules::GetModuleName(context.ast, moduleId);
 
-		CIRModule& mod         = context.ast.Add<CIRModule>(moduleId);
-		mod.instance           = Move(MakeOwned<llvm::Module>(ToLLVM(name), llvm));
-		llvm::Module& irModule = *mod.instance.Get();
+		CIRModule& module = context.ast.Add<CIRModule>(moduleId);
+		module.instance   = Move(MakeOwned<Module>(ToLLVM(name), llvm));
+		Module& irModule  = *module.instance.Get();
 
-		TArray<AST::Id> classes, structs;
-		AST::Hierarchy::GetChildren(ast, moduleId, classes);
-		AST::RemoveIfNot<CType>(ast, classes);
-		structs = classes;
+		TArray<AST::Id> types;
+		AST::Hierarchy::GetChildren(ast, moduleId, types);
+		AST::RemoveIfNot<CType>(ast, types);
+		TArray<AST::Id> classes = types, structs = types;
 
 		AST::RemoveIfNot<CClassDecl>(ast, classes);
 		AST::RemoveIfNot<CStructDecl>(ast, structs);
 
 		// Declare types
-		AST::TAccess<const CType, CIRStruct> declareAccess{ast};
-		for (AST::Id structId : structs)
+		AST::TAccess<const CType, CIRStruct> declareStructAccess{ast};
+		for (AST::Id id : structs)
 		{
-			DeclareStruct(llvm, declareAccess, structId);
+			DeclareStruct(llvm, declareStructAccess, id);
 		}
-		for (AST::Id classId : classes)
+		for (AST::Id id : classes)
 		{
-			DeclareStruct(llvm, declareAccess, classId);
+			DeclareStruct(llvm, declareStructAccess, id);
 		}
 
 		// Declare functions
+		TArray<AST::Id> functions;
+		AST::Hierarchy::GetChildren(ast, types, functions);
+		AST::RemoveIfNot<CFunctionDecl>(ast, functions);
+		AST::TAccess<CIRFunction, const CIdentifier> declareFunctionAccess{ast};
+		for (AST::Id id : functions)
+		{
+			DeclareFunction(llvm, builder, declareFunctionAccess, id, irModule);
+		}
 
 		// Define types
-		AST::TAccess<const CIRStruct> defineAccess{ast};
-		for (AST::Id structId : structs)
+		AST::TAccess<const CIRStruct> defineStructAccess{ast};
+		for (AST::Id id : structs)
 		{
-			DefineStruct(llvm, defineAccess, structId);
+			DefineStruct(llvm, defineStructAccess, id);
 		}
-		for (AST::Id classId : classes)
+		for (AST::Id id : classes)
 		{
-			DefineStruct(llvm, defineAccess, classId);
+			DefineStruct(llvm, defineStructAccess, id);
 		}
-
-		// Define functions
 	}
 
-	void CreateEntry(Context& context, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder,
-	    const CIRModule& irModule)
-	{
-		llvm::FunctionType* mainType = llvm::FunctionType::get(builder.getInt32Ty(), false);
-		llvm::Function* main         = llvm::Function::Create(
-		            mainType, llvm::Function::ExternalLinkage, "main", irModule.instance.Get());
-		llvm::BasicBlock* entry = llvm::BasicBlock::Create(llvm, "entry", main);
-		builder.SetInsertPoint(entry);
-
-		builder.CreateRet(llvm::ConstantInt::get(llvm, llvm::APInt(32, 0)));
-	}
-
-	void GenerateIR(Context& context, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
+	void GenerateIR(Context& context, LLVMContext& llvm, IRBuilder<>& builder)
 	{
 		for (AST::Id moduleId : AST::ListAll<CModule>(context.ast))
 		{
