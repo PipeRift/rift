@@ -37,7 +37,7 @@ namespace Rift::Compiler
 
 			const auto& irModule = context.ast.Get<const CIRModule>(moduleId).instance;
 
-			irModule->setTargetTriple(targetTriple);
+			irModule->setTargetTriple(ToLLVM(targetTriple));
 			irModule->setDataLayout(targetMachine->createDataLayout());
 
 			std::error_code ec;
@@ -87,7 +87,6 @@ namespace Rift::Compiler
 				irModule->print(llvm::outs(), nullptr);
 			}
 
-			const Path bitCodePath = context.config.intermediatesPath / "LLVM";
 			for (AST::Id moduleId : AST::ListAll<CIRModule>(context.ast))
 			{
 				LLVM::SaveModuleObject(context, moduleId, targetMachine, targetTriple);

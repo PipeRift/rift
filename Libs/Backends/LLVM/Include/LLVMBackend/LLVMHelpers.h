@@ -26,6 +26,6 @@ namespace Rift::Compiler::LLVM
 	template<typename T>
 	inline llvm::ArrayRef<T> ToLLVM(const TArray<T>& array)
 	{
-		return {array.Data(), array.Size()};
+		return {array.Data(), sizet(array.Size())};
 	}
 }    // namespace Rift::Compiler::LLVM
