@@ -50,7 +50,7 @@ void RunAccessBenchmarks()
 		ast.Add<Test3>(TSpan<AST::Id>(ids, 50000));
 
 		bench.run("Access", [&ast] {
-			AST::TAccess<Test1, Test2> access{ast};
+			TAccess<Test1, Test2> access{ast};
 			for (AST::Id id : AST::ListAll<Test1, Test2>(access))
 			{
 				ankerl::nanobench::doNotOptimizeAway(id);
@@ -86,7 +86,7 @@ void RunAccessBenchmarks()
 		ast.Add<Test1, Test2>(ids);
 		ast.Add<Test3>(TSpan<AST::Id>(ids, 50000));
 		bench.run("Access", [&ast] {
-			AST::TAccess<Test1, Test2, Test3> access{ast};
+			TAccess<Test1, Test2, Test3> access{ast};
 			auto ids = AST::ListAll<Test1, Test2>(access);
 			AST::RemoveIf<Test3>(access, ids);
 			for (AST::Id id : ids)

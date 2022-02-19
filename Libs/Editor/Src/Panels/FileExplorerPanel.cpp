@@ -150,8 +150,7 @@ namespace Rift
 		}
 	}
 
-	void FileExplorerPanel::CacheProjectFiles(
-	    AST::TAccessRef<const CProject, const CModule, const CFileRef, const CType> access)
+	void FileExplorerPanel::CacheProjectFiles(TAccessRef<CProject, CModule, CFileRef, CType> access)
 	{
 		ZoneScopedN("Cache Project Files");
 		dirty = false;

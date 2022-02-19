@@ -10,7 +10,6 @@
 #include <Files/Files.h>
 
 
-
 namespace Rift::Compiler::Cpp
 {
 	void SetProject(String& code, Context& context, Name name, StringView version)
@@ -86,8 +85,8 @@ namespace Rift::Compiler::Cpp
 		Name projectName = Modules::GetProjectName(context.ast);
 		SetProject(code, context, projectName.ToString(), "0.1");
 
-		AST::TAccess<CModule> modules{context.ast};
-		for (AST::Id moduleId : ListAll<CModule>(modules))
+		TAccess<TWrite<CModule>> modules{context.ast};
+		for (AST::Id moduleId : AST::ListAll<CModule>(modules))
 		{
 			Name name = Modules::GetModuleName(context.ast, moduleId);
 			GenerateCMakeModule(context, moduleId, modules.Get<CModule>(moduleId), codePath, name);

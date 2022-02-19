@@ -53,7 +53,7 @@ go_bandit([]() {
 		});
 
 		it("Can get list matching all", [&]() {
-			AST::TAccess<const Type, const TypeTwo, const TypeThree> access{ast};
+			TAccess<const Type, const TypeTwo, const TypeThree> access{ast};
 			TArray<AST::Id> typeIds = AST::ListAll<Type>(access);
 			AssertThat(typeIds.Contains(id1), Is().True());
 			AssertThat(typeIds.Contains(id2), Is().True());
@@ -66,7 +66,7 @@ go_bandit([]() {
 		});
 
 		it("Can get list matching any", [&]() {
-			AST::TAccess<const Type, const TypeTwo, const TypeThree> access{ast};
+			TAccess<const Type, const TypeTwo, const TypeThree> access{ast};
 			TArray<AST::Id> typeIds = AST::ListAny<Type>(access);
 			AssertThat(typeIds.Contains(id1), Is().True());
 			AssertThat(typeIds.Contains(id2), Is().True());
@@ -79,7 +79,7 @@ go_bandit([]() {
 		});
 
 		it("Removes ids containing component", [&]() {
-			AST::TAccess<const Type, const TypeTwo, const TypeThree> access{ast};
+			TAccess<const Type, const TypeTwo, const TypeThree> access{ast};
 			TArray<AST::Id> typeIds = AST::ListAny<Type>(access);
 
 			AST::RemoveIf<TypeThree>(access, typeIds);
@@ -89,7 +89,7 @@ go_bandit([]() {
 		});
 
 		it("Removes ids not containing component", [&]() {
-			AST::TAccess<const Type, const TypeTwo, const TypeThree> access{ast};
+			TAccess<const Type, const TypeTwo, const TypeThree> access{ast};
 			TArray<AST::Id> typeIds = AST::ListAny<Type>(access);
 
 			AST::RemoveIfNot<TypeThree>(access, typeIds);
@@ -115,7 +115,7 @@ go_bandit([]() {
 		});
 
 		it("Removes ids containing multiple component", [&]() {
-			AST::TAccess<const Type, const TypeTwo, const TypeThree> access{ast};
+			TAccess<const Type, const TypeTwo, const TypeThree> access{ast};
 			TArray<AST::Id> typeIds = AST::ListAny<Type, TypeTwo, TypeThree>(access);
 
 			AST::RemoveIf<TypeTwo, TypeThree>(access, typeIds);

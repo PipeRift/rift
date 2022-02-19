@@ -127,7 +127,7 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void ForwardDeclareTypes(String& code, AST::TAccessRef<const CType> types, AST::Id moduleId,
+	void ForwardDeclareTypes(String& code, TAccessRef<CType> types, AST::Id moduleId,
 	    const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
 		for (AST::Id entity : structs)
@@ -143,9 +143,8 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void AddTypeVariables(String& code,
-	    AST::TAccessRef<const CIdentifier, const CVariableDecl, const CParent> access,
-	    AST::Id owner)
+	void AddTypeVariables(
+	    String& code, TAccessRef<CIdentifier, CVariableDecl, CParent> access, AST::Id owner)
 	{
 		if (const auto* parent = access.TryGet<const CParent>(owner))
 		{
@@ -160,8 +159,7 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void DeclareTypes(String& code,
-	    AST::TAccessRef<const CType, const CIdentifier, const CVariableDecl, const CParent> access,
+	void DeclareTypes(String& code, TAccessRef<CType, CIdentifier, CVariableDecl, CParent> access,
 	    AST::Id moduleId, const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
 		for (AST::Id entity : structs)
@@ -182,8 +180,7 @@ namespace Rift::Compiler::Cpp
 	}
 
 
-	void DeclareFunctions(String& code,
-	    AST::TAccessRef<const CIdentifier, const CType, const CClassDecl, const CChild> access,
+	void DeclareFunctions(String& code, TAccessRef<CIdentifier, CType, CClassDecl, CChild> access,
 	    AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
 		for (AST::Id entity : functions)
@@ -204,8 +201,7 @@ namespace Rift::Compiler::Cpp
 	}
 
 
-	void DefineFunctions(String& code,
-	    AST::TAccessRef<const CIdentifier, const CType, const CClassDecl, const CChild> access,
+	void DefineFunctions(String& code, TAccessRef<CIdentifier, CType, CClassDecl, CChild> access,
 	    AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
 		for (AST::Id entity : functions)
@@ -225,8 +221,7 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void GenParameters(
-	    AST::TAccessRef<const CParameterDecl, const CIdentifier, CCppCodeGenFragment> access)
+	void GenParameters(TAccessRef<CParameterDecl, CIdentifier, TWrite<CCppCodeGenFragment>> access)
 	{
 		for (AST::Id entity : AST::ListAll<CParameterDecl, CIdentifier>(access))
 		{
