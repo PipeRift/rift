@@ -79,8 +79,9 @@ jobs:
         run: |
           cd ${{ runner.temp }}
           git clone https://github.com/llvm/llvm-project.git llvm-source --branch release/13.x --depth 1
-          cmake -S llvm-source/llvm -B llvm -DCMAKE_BUILD_TYPE=Release
-          cmake --build llvm --config Release
+          cmake -S llvm-source/llvm -B llvm-source/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build llvm-source/build --config Release
+          cmake -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}/llvm -P llvm-source/build/cmake_install.cmake
 
       - name: Get CMake
         uses: lukka/get-cmake@latest
@@ -91,7 +92,7 @@ jobs:
           cmakeGenerator: 'Ninja'
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeBuildType: Release
-          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_BUILD_PATH='${{ runner.temp }}/llvm'
+          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'
           buildWithCMakeArgs: --config Release
           buildDirectory: 'Build'
 
