@@ -44,7 +44,6 @@ jobs:
             cxx: clang++
             cc: clang
 
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -61,7 +60,7 @@ jobs:
       - name: Download pre-built LLVM
         run: |
           cd ${{ runner.temp }}
-          curl -L -o llvm.zip https://github.com/piperift/rift-llvm/releases/download/v13.0.1/llvm-${{ runner.os-name }}.zip
+          curl -L -o llvm.zip https://github.com/piperift/rift-llvm/releases/download/v13.0.1/llvm-${{ matrix.os-name }}.zip
           7z x llvm.zip
 
       - name: Get CMake
