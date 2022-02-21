@@ -58,31 +58,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential xz-utils curl libx11-dev xorg-dev libglu1-mesa-dev
 
-      - name: Cache LLVM
-        id: cache-llvm
-        uses: actions/cache@v2
-        with:
-          path: ${{ runner.temp }}/llvm
-          key: llvm-13.0-${{ matrix.os }}
-
-
-      - name: Install LLVM (pre-built)
-        if: ${{ matrix.os-name != 'windows' }}
-        uses: KyleMayes/install-llvm-action@v1
-        with:
-          version: "13.0"
-          directory: ${{ runner.temp }}/llvm
-          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
-
-      - name: Install LLVM (source)
-        if: ${{ matrix.os-name == 'windows' && steps.cache-llvm.outputs.cache-hit != 'true' }}
+      - name: Download pre-built LLVM
         run: |
           cd ${{ runner.temp }}
-          git clone https://github.com/llvm/llvm-project.git llvm --branch release/13.x --depth 1
-          cd llvm
-          cmake -S llvm -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --config Release
-          cd ${{ github.workspace }}
+          curl -L -o llvm.zip https://github.com/piperift/rift-llvm/releases/download/v13.0.1/llvm-${{ runner.os-name }}.zip
+          7z x llvm.zip
 
       - name: Get CMake
         uses: lukka/get-cmake@latest
@@ -93,7 +73,7 @@ jobs:
           cmakeGenerator: 'Ninja'
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeBuildType: Release
-          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'
+          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/install'
           buildWithCMakeArgs: --config Release
           buildDirectory: 'Build'
 
@@ -111,7 +91,7 @@ jobs:
           cmakeGenerator: 'Ninja'
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeBuildType: Debug
-          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'
+          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/install'
           buildWithCMakeArgs: --config Debug
           buildDirectory: 'Build'
 
