@@ -31,10 +31,10 @@ include(CMake/CheckClangTools.cmake)
 
 
 # Add LLVM
-set(RIFT_LLVM_BUILD_PATH "" CACHE STRING "Location of an external LLVM installation to use. CMake will try to find if this path is not set")
-if (NOT RIFT_LLVM_BUILD_PATH STREQUAL "")
-    message(STATUS "Provided LLVM installation: ${RIFT_LLVM_BUILD_PATH}")
-    set(LLVM_DIR "${RIFT_LLVM_BUILD_PATH}/lib/cmake/llvm")
+set(RIFT_LLVM_PATH "" CACHE STRING "Location of an external LLVM installation to use. CMake will try to find if this path is not set")
+if (NOT RIFT_LLVM_PATH STREQUAL "")
+    message(STATUS "Provided LLVM installation: ${RIFT_LLVM_PATH}")
+    set(LLVM_DIR "${RIFT_LLVM_PATH}/lib/cmake/llvm")
 endif()
 find_package(LLVM CONFIG REQUIRED)
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
