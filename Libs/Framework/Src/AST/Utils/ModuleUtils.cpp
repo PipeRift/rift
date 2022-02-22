@@ -15,7 +15,7 @@
 
 namespace Rift::Modules
 {
-	bool OpenProject(AST::Tree& ast, const Path& path)
+	bool OpenProject(Tree& ast, const Path& path)
 	{
 		if (path.empty())
 		{
@@ -43,7 +43,7 @@ namespace Rift::Modules
 			return false;
 		}
 
-		ast = AST::Tree{};
+		ast = Tree{};
 		ast.SetStatic<SModules>();
 		ast.SetStatic<STypes>();
 		LoadSystem::Init(ast);
@@ -51,7 +51,7 @@ namespace Rift::Modules
 		FunctionsSystem::Init(ast);
 
 		// Create project node (root module)
-		AST::Id projectId = ast.Create();
+		Id projectId = ast.Create();
 		ast.Add<CProject, CModule>(projectId);
 		ast.Add<CFileRef>(projectId, filePath);
 
@@ -62,43 +62,43 @@ namespace Rift::Modules
 		return true;
 	}
 
-	void CloseProject(AST::Tree& ast)
+	void CloseProject(Tree& ast)
 	{
 		ast.Reset();
 	}
 
-	AST::Id GetProjectId(AST::TAccessRef<const CProject> access)
+	Id GetProjectId(TAccessRef<CProject> access)
 	{
-		return AST::GetFirst<CProject>(access);
+		return GetFirst<CProject>(access);
 	}
 
-	Name GetProjectName(GetProjectNameAccess access)
+	Name GetProjectName(TAccessRef<CProject, CIdentifier, CFileRef> access)
 	{
-		AST::Id moduleId = GetProjectId(access);
+		Id moduleId = GetProjectId(access);
 		return GetModuleName(access, moduleId);
 	}
 
-	Path GetProjectPath(AST::TAccessRef<const CFileRef, const CProject> access)
+	Path GetProjectPath(TAccessRef<CFileRef, CProject> access)
 	{
 		return GetModulePath(access, GetProjectId(access));
 	}
 
-	CModule* GetProjectModule(AST::TAccessRef<const CProject, CModule> access)
+	CModule* GetProjectModule(TAccessRef<CProject, TWrite<CModule>> access)
 	{
-		const AST::Id projectId = GetProjectId(access);
-		if (projectId != AST::NoId)
+		const Id projectId = GetProjectId(access);
+		if (projectId != NoId)
 		{
 			return access.TryGet<CModule>(projectId);
 		}
 		return nullptr;
 	}
 
-	bool HasProject(AST::Tree& ast)
+	bool HasProject(Tree& ast)
 	{
-		return GetProjectId(ast) != AST::NoId;
+		return GetProjectId(ast) != NoId;
 	}
 
-	Name GetModuleName(GetModuleNameAccess access, AST::Id moduleId)
+	Name GetModuleName(TAccessRef<CIdentifier, CFileRef> access, Id moduleId)
 	{
 		if (!access.IsValid(moduleId))
 		{
@@ -121,7 +121,7 @@ namespace Rift::Modules
 		return {};
 	}
 
-	Path GetModulePath(AST::TAccessRef<const CFileRef> access, AST::Id moduleId)
+	Path GetModulePath(TAccessRef<CFileRef> access, Id moduleId)
 	{
 		if (const auto* file = access.TryGet<const CFileRef>(moduleId))
 		{

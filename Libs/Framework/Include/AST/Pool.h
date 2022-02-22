@@ -676,11 +676,13 @@ namespace Rift::AST
 
 		T& Get(Id id) requires(!IsEmpty<T>())
 		{
+			Check(Has(id));
 			return *data.Get(set.Index(id));
 		}
 
 		const T& Get(Id id) const requires(!IsEmpty<T>())
 		{
+			Check(Has(id));
 			return *data.Get(set.Index(id));
 		}
 

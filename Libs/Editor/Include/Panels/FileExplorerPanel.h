@@ -65,8 +65,7 @@ namespace Rift
 
 		void DrawContextMenu(AST::Tree& ast, StringView path, AST::Id itemId);
 
-		void CacheProjectFiles(
-		    AST::TAccessRef<const CProject, const CModule, const CFileRef, const CType> access);
+		void CacheProjectFiles(TAccessRef<CProject, CModule, CFileRef, CType> access);
 
 		void SortFolder(Folder& folder);
 

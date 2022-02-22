@@ -150,8 +150,7 @@ namespace Rift
 				    ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultHide, 1.2f);
 				UI::TableHeadersRow();
 
-				AST::TAccess<const CIdentifier, const CFileRef, const CParent, const CChild> access{
-				    ast};
+				TAccess<const CIdentifier, const CFileRef, const CParent, const CChild> access{ast};
 				if (showHierarchy && !filter.IsActive())
 				{
 					TArray<AST::Id> roots = AST::ListAll<CParent>(access);
