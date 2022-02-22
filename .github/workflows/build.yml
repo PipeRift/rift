@@ -71,7 +71,7 @@ jobs:
           cmakeGenerator: 'Ninja'
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeBuildType: Release
-          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/install'
+          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'
           buildWithCMakeArgs: --config Release
           buildDirectory: 'Build'
 
