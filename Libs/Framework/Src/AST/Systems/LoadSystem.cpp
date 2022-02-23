@@ -224,21 +224,7 @@ namespace Rift::LoadSystem
 
 		for (i32 i = 0; i < moduleIds.Size(); ++i)
 		{
-			Serl::JsonFormatReader reader{strings[i]};
-			if (!reader.IsValid())
-			{
-				continue;
-			}
-
-			auto& ct = reader.GetContext();
-
-			ct.BeginObject();
-			StringView name;
-			ct.Next("name", name);
-			if (!name.empty())
-			{
-				ast.Add<CIdentifier>(moduleIds[i], {name});
-			}
+			Modules::Deserialize(ast, moduleIds[i], strings[i]);
 		}
 	}
 

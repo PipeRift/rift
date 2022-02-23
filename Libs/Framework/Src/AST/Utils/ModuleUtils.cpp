@@ -2,6 +2,7 @@
 
 #include "AST/Utils/ModuleUtils.h"
 
+#include "AST/Serialization.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Systems/FunctionsSystem.h"
@@ -11,6 +12,7 @@
 
 #include <Files/Files.h>
 #include <Files/Paths.h>
+#include <Serialization/Formats/JsonFormat.h>
 
 
 namespace Rift::Modules
@@ -128,5 +130,41 @@ namespace Rift::Modules
 			return file->path.parent_path();
 		}
 		return Path{};
+	}
+
+	void Serialize(AST::Tree& ast, AST::Id id, String& data)
+	{
+		ZoneScoped;
+
+		Serl::JsonFormatWriter writer{};
+		AST::WriteContext ct{writer.GetContext(), ast, true};
+		ct.BeginObject();
+		Serl::CommonContext common{ct};
+		if (CIdentifier* ident = ast.TryGet<CIdentifier>(id))
+		{
+			ident->SerializeReflection(common);
+		}
+		if (CModule* module = ast.TryGet<CModule>(id))
+		{
+			module->SerializeReflection(common);
+		}
+		data = writer.ToString();
+	}
+
+	void Deserialize(AST::Tree& ast, AST::Id id, const String& data)
+	{
+		ZoneScoped;
+
+		Serl::JsonFormatReader reader{data};
+		if (!reader.IsValid())
+		{
+			return;
+		}
+
+		AST::ReadContext ct{reader, ast};
+		ct.BeginObject();
+		Serl::CommonContext common{ct};
+		ast.GetOrAdd<CIdentifier>(id).SerializeReflection(common);
+		ast.GetOrAdd<CModule>(id).SerializeReflection(common);
 	}
 }    // namespace Rift::Modules

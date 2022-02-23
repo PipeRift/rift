@@ -3,39 +3,33 @@
 #include "Utils/TypeUtils.h"
 
 #include "AST/Serialization.h"
-#include "Components/CTypeEditor.h"
 
-#include <AST/Components/CType.h>
 #include <Misc/Checks.h>
 
 
 namespace Rift::Types
 {
-	void OpenType(AST::Tree& ast, AST::Id typeId)
+	void OpenEditor(TAccessRef<TWrite<CTypeEditor>, CType> access, AST::Id id)
 	{
-		Check(ast.Has<CType>(typeId));
-
-		if (auto* editor = ast.TryGet<CTypeEditor>(typeId))
+		Check(access.Has<CType>(id));
+		if (auto* editor = access.TryGet<CTypeEditor>(id))
 		{
 			editor->pendingFocus = true;
 		}
 		else
 		{
-			ast.Add<CTypeEditor>(typeId);
+			access.Add<CTypeEditor>(id);
 		}
 	}
 
-	void CloseType(AST::Tree& ast, AST::Id typeId)
+	void CloseEditor(TAccessRef<TWrite<CTypeEditor>, CType> access, AST::Id id)
 	{
-		Check(ast.Has<CType>(typeId));
-
-		ast.Remove<CTypeEditor>(typeId);
+		Check(access.Has<CType>(id));
+		access.Remove<CTypeEditor>(id);
 	}
 
-	bool IsTypeOpen(AST::Tree& ast, AST::Id typeId)
+	bool IsEditorOpen(TAccessRef<CTypeEditor> access, AST::Id id)
 	{
-		return ast.Has<CTypeEditor>(typeId);
+		return access.Has<CTypeEditor>(id);
 	}
-
-	void Changed(AST::Id typeId, StringView name) {}
 }    // namespace Rift::Types
