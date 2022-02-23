@@ -25,7 +25,7 @@
 #include <AST/Statics/STypes.h>
 #include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/Hierarchy.h>
-#include <AST/utils/TransactionUtils.h>
+#include <AST/Utils/TransactionUtils.h>
 #include <UI/Nodes.h>
 #include <UI/NodesInternal.h>
 #include <UI/NodesMiniMap.h>
