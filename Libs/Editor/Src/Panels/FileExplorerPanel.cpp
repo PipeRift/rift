@@ -9,6 +9,7 @@
 #include "Statics/SEditor.h"
 #include "Strings/StringView.h"
 #include "UI/Widgets.h"
+#include "Utils/ModuleUtils.h"
 #include "Utils/TypeUtils.h"
 
 #include <AST/Utils/Hierarchy.h>
@@ -83,9 +84,16 @@ namespace Rift
 		{
 			if (ast.Has<CType>(itemId))
 			{
-				if (UI::MenuItem("Open"))
+				if (UI::MenuItem("Edit"))
 				{
-					Types::OpenType(ast, itemId);
+					Types::OpenEditor(ast, itemId);
+				}
+			}
+			else if (ast.Has<CModule>(itemId))
+			{
+				if (UI::MenuItem("Edit Module"))
+				{
+					Modules::OpenEditor(ast, itemId);
 				}
 			}
 
@@ -365,11 +373,11 @@ namespace Rift
 			{
 				if (UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 				{
-					Types::OpenType(ast, item.id);
+					Types::OpenEditor(ast, item.id);
 				}
 			}
 
-			if (Types::IsTypeOpen(ast, item.id))
+			if (Types::IsEditorOpen(ast, item.id))
 			{
 				UI::SameLine(ImGui::GetContentRegionAvailWidth(), 0);
 				UI::Bullet();

@@ -39,4 +39,7 @@ namespace Rift::Modules
 
 	// Resolve a module's name
 	Path GetModulePath(TAccessRef<CFileRef> access, Id moduleId);
+
+	void Serialize(AST::Tree& ast, AST::Id id, String& data);
+	void Deserialize(AST::Tree& ast, AST::Id id, const String& data);
 }    // namespace Rift::Modules

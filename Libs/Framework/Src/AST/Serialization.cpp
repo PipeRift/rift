@@ -96,21 +96,21 @@ namespace Rift::AST
 		ct.PopFlags();
 	}
 
-	void ReadContext::SerializeRoots(TArray<Id>& roots)
+	void ReadContext::SerializeEntities(TArray<Id>& entities)
 	{
 		TArray<Id> parents;
-		Hierarchy::GetParents(ast, roots, parents);
+		Hierarchy::GetParents(ast, entities, parents);
 
 		Next("count", nodeCount);
 		ids.Resize(i32(nodeCount));
 		// Create or assign root ids
-		const i32 maxSize = Math::Min(roots.Size(), ids.Size());
+		const i32 maxSize = Math::Min(entities.Size(), ids.Size());
 		for (i32 i = 0; i < maxSize; ++i)
 		{
-			const Id root = roots[i];
-			if (root != NoId)
+			const Id entity = entities[i];
+			if (entity != NoId)
 			{
-				ids[i] = root;
+				ids[i] = entity;
 			}
 			else
 			{
@@ -149,10 +149,17 @@ namespace Rift::AST
 		Hierarchy::FixParentLinks(ast, parents);
 	}
 
-	void WriteContext::SerializeRoots(const TArray<Id>& roots)
+	void WriteContext::SerializeEntities(const TArray<Id>& entities, bool includeChildren)
 	{
 		TArray<Id> treeEntities;
-		RetrieveHierarchy(roots, treeEntities);
+		if (includeChildren)
+		{
+			RetrieveHierarchy(entities, treeEntities);
+		}
+		else
+		{
+			treeEntities = entities;
+		}
 		nodeCount = treeEntities.Size();
 		Next("count", nodeCount);
 
@@ -162,7 +169,7 @@ namespace Rift::AST
 			idToIndexes.Insert(treeEntities[i], i);
 		}
 
-		Next("roots", roots);
+		Next("roots", entities);
 		if (EnterNext("components"))
 		{
 			BeginObject();
