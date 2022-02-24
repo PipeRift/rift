@@ -31,24 +31,12 @@ include(CMake/CheckClangTools.cmake)
 
 
 # Add LLVM
-set(RIFT_LLVM_PATH "" CACHE STRING "Location of an external LLVM installation to use. CMake will try to find if this path is not set")
-if (NOT RIFT_LLVM_PATH STREQUAL "")
-    message(STATUS "Provided LLVM installation: ${RIFT_LLVM_PATH}")
-    set(LLVM_DIR "${RIFT_LLVM_PATH}/lib/cmake/llvm")
-endif()
-find_package(LLVM CONFIG REQUIRED)
-message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
-message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
-add_library(LLVM INTERFACE)
-message(STATUS "LLVM_LIBS: ${LLVM_AVAILABLE_LIBS}")
-message(STATUS "LLVM_INCLUDE_DIRS: ${LLVM_INCLUDE_DIRS}")
-message(STATUS "LLVM_DEFINITIONS: ${LLVM_DEFINITIONS_LIST}")
-target_include_directories(LLVM INTERFACE ${LLVM_INCLUDE_DIRS})
-target_compile_definitions(LLVM INTERFACE ${LLVM_DEFINITIONS_LIST})
-llvm_map_components_to_libnames(llvm_libs core x86asmparser x86codegen)
-target_link_libraries(LLVM INTERFACE ${llvm_libs})
+include(CMake/LLVM.cmake)
 
+
+message(STATUS "LLVM_USE_CRT_RELEASE ${LLVM_USE_CRT_RELEASE}")
+message(STATUS "LLVM_USE_CRT_DEBUG ${LLVM_USE_CRT_DEBUG}")
+include(ChooseMSVCCRT)
 
 add_subdirectory(Extern)
 

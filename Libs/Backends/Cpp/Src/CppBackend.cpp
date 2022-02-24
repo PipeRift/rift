@@ -111,7 +111,7 @@ namespace Rift::Compiler
 			return;
 		}
 
-		AST::TAccess<const CModule> modules{context.ast};
+		TAccess<CModule> modules{context.ast};
 		for (AST::Id moduleId : AST::ListAll<CModule>(modules))
 		{
 			Name name = Modules::GetModuleName(context.ast, moduleId);

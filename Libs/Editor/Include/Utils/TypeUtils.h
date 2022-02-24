@@ -2,24 +2,16 @@
 
 #pragma once
 
-#include "AST/Tree.h"
+#include "AST/Access.h"
+#include "Components/CTypeEditor.h"
 
+#include <AST/Components/CType.h>
 #include <AST/Utils/TypeUtils.h>
 
 
 namespace Rift::Types
 {
-	void OpenType(AST::Tree& ast, AST::Id typeId);
-	void CloseType(AST::Tree& ast, AST::Id typeId);
-	bool IsTypeOpen(AST::Tree& ast, AST::Id typeId);
-
-	/**
-	 * Called after a change has been done to a type.
-	 * Stores an image of the current state of the type for Undos and Redos.
-	 * TODO: Not implemented
-	 */
-	void Changed(AST::Id typeId, StringView name);
-
-	void OpenFunction(AST::Tree& ast, AST::Id functionId);
-	void CloseFunction(AST::Tree& ast, AST::Id functionId);
+	void OpenEditor(TAccessRef<TWrite<CTypeEditor>, CType> access, AST::Id id);
+	void CloseEditor(TAccessRef<TWrite<CTypeEditor>, CType> access, AST::Id id);
+	bool IsEditorOpen(TAccessRef<CTypeEditor> access, AST::Id id);
 }    // namespace Rift::Types

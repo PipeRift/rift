@@ -26,26 +26,24 @@ namespace Rift::Compiler::LLVM
 {
 	using namespace llvm;
 
-	Value* GetLiteralI32(LLVMContext& llvm, AST::TAccessRef<const CLiteralI32> access, AST::Id id)
+	Value* GetLiteralI32(LLVMContext& llvm, TAccessRef<CLiteralI32> access, AST::Id id)
 	{
 		return ConstantInt::get(llvm, APInt(32, access.Get<const CLiteralI32>(id).value));
 	}
 
-	Value* GetLiteralFloat(
-	    LLVMContext& llvm, AST::TAccessRef<const CLiteralFloat> access, AST::Id id)
+	Value* GetLiteralFloat(LLVMContext& llvm, TAccessRef<CLiteralFloat> access, AST::Id id)
 	{
 		return ConstantFP::get(llvm, APFloat(access.Get<const CLiteralFloat>(id).value));
 	}
 
-	void DeclareStruct(
-	    LLVMContext& llvm, AST::TAccessRef<const CType, CIRStruct> access, AST::Id id)
+	void DeclareStruct(LLVMContext& llvm, TAccessRef<CType, TWrite<CIRStruct>> access, AST::Id id)
 	{
 		ZoneScoped;
 		const Name name = access.Get<const CType>(id).name;
 		access.Add(id, CIRStruct{StructType::create(llvm, ToLLVM(name))});
 	}
 
-	void DefineStruct(LLVMContext& llvm, AST::TAccessRef<const CIRStruct> access, AST::Id id)
+	void DefineStruct(LLVMContext& llvm, TAccessRef<CIRStruct> access, AST::Id id)
 	{
 		ZoneScoped;
 		StructType* irStruct = access.Get<const CIRStruct>(id).instance;
@@ -55,7 +53,7 @@ namespace Rift::Compiler::LLVM
 	}
 
 	void DeclareFunction(LLVMContext& llvm, IRBuilder<>& builder,
-	    AST::TAccessRef<CIRFunction, const CIdentifier> access, AST::Id id, Module& irModule)
+	    TAccessRef<TWrite<CIRFunction>, CIdentifier> access, AST::Id id, Module& irModule)
 	{
 		ZoneScoped;
 
@@ -83,8 +81,7 @@ namespace Rift::Compiler::LLVM
 	    Context& context, AST::Id moduleId, LLVMContext& llvm, IRBuilder<>& builder)
 	{
 		ZoneScoped;
-		const auto& config = context.config;
-		auto& ast          = context.ast;
+		auto& ast = context.ast;
 
 		const Name name = Modules::GetModuleName(context.ast, moduleId);
 
@@ -101,7 +98,7 @@ namespace Rift::Compiler::LLVM
 		AST::RemoveIfNot<CStructDecl>(ast, structs);
 
 		// Declare types
-		AST::TAccess<const CType, CIRStruct> declareStructAccess{ast};
+		TAccess<CType, TWrite<CIRStruct>> declareStructAccess{ast};
 		for (AST::Id id : structs)
 		{
 			DeclareStruct(llvm, declareStructAccess, id);
@@ -115,14 +112,14 @@ namespace Rift::Compiler::LLVM
 		TArray<AST::Id> functions;
 		AST::Hierarchy::GetChildren(ast, types, functions);
 		AST::RemoveIfNot<CFunctionDecl>(ast, functions);
-		AST::TAccess<CIRFunction, const CIdentifier> declareFunctionAccess{ast};
+		TAccess<TWrite<CIRFunction>, CIdentifier> declareFunctionAccess{ast};
 		for (AST::Id id : functions)
 		{
 			DeclareFunction(llvm, builder, declareFunctionAccess, id, irModule);
 		}
 
 		// Define types
-		AST::TAccess<const CIRStruct> defineStructAccess{ast};
+		TAccess<CIRStruct> defineStructAccess{ast};
 		for (AST::Id id : structs)
 		{
 			DefineStruct(llvm, defineStructAccess, id);

@@ -25,6 +25,7 @@
 #include <AST/Statics/STypes.h>
 #include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/Hierarchy.h>
+#include <AST/Utils/TransactionUtils.h>
 #include <UI/Nodes.h>
 #include <UI/NodesInternal.h>
 #include <UI/NodesMiniMap.h>
@@ -205,8 +206,8 @@ namespace Rift::Graph
 
 		if (nodes->leftMouseDragging || nodes->leftMouseReleased)
 		{
+			ScopedChange(ast, functionId);
 			transform.position = GetNodePosition(functionId);
-			Types::Changed(AST::Hierarchy::GetParent(ast, functionId), "Moved nodes");
 		}
 	}
 

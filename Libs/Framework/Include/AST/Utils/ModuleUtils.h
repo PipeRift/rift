@@ -19,26 +19,27 @@ namespace Rift
 
 namespace Rift::Modules
 {
+	using namespace AST;
+
 	static constexpr StringView moduleFile{"Module.rift"};
 
-	bool OpenProject(AST::Tree& ast, const Path& path);
-	void CloseProject(AST::Tree& ast);
+	bool OpenProject(Tree& ast, const Path& path);
+	void CloseProject(Tree& ast);
 
-	AST::Id GetProjectId(AST::TAccessRef<const CProject> access);
+	Id GetProjectId(TAccessRef<CProject> access);
 
-	using GetProjectNameAccess = AST::TAccessRef<const CProject, const CIdentifier, const CFileRef>;
-	Name GetProjectName(GetProjectNameAccess access);
-	Path GetProjectPath(AST::TAccessRef<const CFileRef, const CProject> access);
-	CModule* GetProjectModule(AST::TAccessRef<const CProject, CModule> access);
+	Name GetProjectName(TAccessRef<CProject, CIdentifier, CFileRef> access);
+	Path GetProjectPath(TAccessRef<CFileRef, CProject> access);
+	CModule* GetProjectModule(TAccessRef<CProject, TWrite<CModule>> access);
 
-	bool HasProject(AST::Tree& ast);
-
-	// Resolve a module's name
-	// Reads: CIdentifier, CFileRef
-	using GetModuleNameAccess = AST::TAccessRef<const CIdentifier, const CFileRef>;
-	Name GetModuleName(GetModuleNameAccess access, AST::Id moduleId);
+	bool HasProject(Tree& ast);
 
 	// Resolve a module's name
-	// Reads: CFileRef
-	Path GetModulePath(AST::TAccessRef<const CFileRef> access, AST::Id moduleId);
+	Name GetModuleName(TAccessRef<CIdentifier, CFileRef> access, Id moduleId);
+
+	// Resolve a module's name
+	Path GetModulePath(TAccessRef<CFileRef> access, Id moduleId);
+
+	void Serialize(AST::Tree& ast, AST::Id id, String& data);
+	void Deserialize(AST::Tree& ast, AST::Id id, const String& data);
 }    // namespace Rift::Modules

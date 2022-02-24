@@ -1,3 +1,4 @@
 {
-    "name": "TestProject"
+    "name": "TestProject",
+    "target": "Executable"
 }

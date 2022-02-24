@@ -5,6 +5,7 @@
 #include "AST/Components/CType.h"
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
+#include "AST/Filtering.h"
 #include "AST/Utils/Hierarchy.h"
 
 
@@ -56,19 +57,19 @@ namespace Rift::AST::Transactions
 
 		ast.Add<CChanged>(activeTransaction.entityIds);
 
-		// Mark types dirty
-		auto types = ast.Filter<CType>();
-		TArray<Id> typeIds;
-		Hierarchy::FindParents(ast, activeTransaction.entityIds, typeIds, [&types](Id parentId) {
-			return types.Has(parentId);
+		// Mark files dirty
+		TAccess<CFileRef> files{ast};
+		TArray<Id> fileIds;
+		Hierarchy::FindParents(ast, activeTransaction.entityIds, fileIds, [&files](Id parentId) {
+			return files.Has<CFileRef>(parentId);
 		});
 
-		// Transition ids can also be types. FindParents doesnt consider them
-		typeIds.Append(activeTransaction.entityIds);
-		types.FilterIds(typeIds);
-		if (!typeIds.IsEmpty())
+		// Transaction ids can also be files. FindParents doesn't consider them, so we merge it
+		fileIds.Append(activeTransaction.entityIds);
+		AST::RemoveIfNot<CFileRef>(files, fileIds);
+		if (!fileIds.IsEmpty())
 		{
-			ast.Add<CTypeDirty>(typeIds);
+			ast.Add<CFileDirty>(fileIds);
 		}
 
 		activeTransaction = {};

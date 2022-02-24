@@ -23,10 +23,7 @@ namespace Rift::AST
 
 	public:
 
-		IdRegistry()
-		{
-			bool a;
-		}
+		IdRegistry() {}
 		IdRegistry(IdRegistry&& other)      = default;
 		IdRegistry(const IdRegistry& other) = default;
 		IdRegistry& operator=(IdRegistry&& other) = default;

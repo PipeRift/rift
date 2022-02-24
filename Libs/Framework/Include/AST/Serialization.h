@@ -21,13 +21,13 @@ namespace Rift::AST
 		    : Serl::ReadContext(parent), ast(ast)
 		{}
 
-		void SerializeRoots(TArray<Id>& roots);
+		void SerializeEntities(TArray<Id>& entities);
 
-		void SerializeRoot(Id& root)
+		void SerializeEntity(Id& entity)
 		{
-			TArray<Id> roots{root};
-			SerializeRoots(roots);
-			root = roots.IsEmpty() ? NoId : roots[0];
+			TArray<Id> entities{entity};
+			SerializeEntities(entities);
+			entity = entities.IsEmpty() ? NoId : entities[0];
 		}
 
 		const TArray<Id>& GetIds() const
@@ -52,12 +52,11 @@ namespace Rift::AST
 		    : Serl::WriteContext(parent), ast(ast), includeChildren{includeChildren}
 		{}
 
-		void SerializeRoots(const TArray<Id>& roots);
+		void SerializeEntities(const TArray<Id>& entities, bool includeChildren = true);
 
-		void SerializeRoot(const Id& root)
+		void SerializeEntity(Id entity, bool includeChildren = true)
 		{
-			TArray<Id> roots{root};
-			SerializeRoots(roots);
+			SerializeEntities({entity}, includeChildren);
 		}
 
 		const TMap<Id, i32>& GetIdToIndexes() const

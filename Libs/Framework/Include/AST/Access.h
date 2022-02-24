@@ -6,8 +6,57 @@
 #include <Templates/TypeList.h>
 
 
-namespace Rift::AST
+namespace Rift
 {
+	enum class AccessMode : u8
+	{
+		Read,
+		Write
+	};
+
+	struct TypeAccess
+	{
+		Refl::TypeId typeId = Refl::TypeId::None();
+		AccessMode mode     = AccessMode::Read;
+
+
+		constexpr TypeAccess() = default;
+		constexpr TypeAccess(Refl::TypeId typeId, AccessMode mode) : typeId{typeId}, mode{mode} {}
+	};
+
+	template<typename T, AccessMode inMode>
+	struct TTypeAccess : TypeAccess
+	{
+		using Type = Mut<T>;
+
+		constexpr TTypeAccess() : TypeAccess(GetTypeId<T>(), inMode) {}
+	};
+
+	template<typename T>
+	struct TRead : public TTypeAccess<T, AccessMode::Read>
+	{};
+
+	template<typename T>
+	struct TWrite : public TTypeAccess<T, AccessMode::Write>
+	{};
+
+	template<typename T>
+	struct TTypeAccessInfo
+	{
+		using Type                       = Mut<T>;
+		static constexpr AccessMode mode = AccessMode::Read;
+	};
+	template<typename T>
+		requires Derived<T, TypeAccess>
+	struct TTypeAccessInfo<T>
+	{
+		using Type                       = typename T::Type;
+		static constexpr AccessMode mode = T().mode;
+	};
+	template<typename T>
+	using AsComponent = typename TTypeAccessInfo<T>::Type;
+
+
 	template<typename... T>
 	struct TAccess
 	{
@@ -15,107 +64,101 @@ namespace Rift::AST
 		friend struct TAccess;
 
 		using Components    = TTypeList<T...>;
-		using MutComponents = TTypeList<Mut<T>...>;
+		using RawComponents = TTypeList<AsComponent<T>...>;
 
 	private:
-		Tree& ast;
-		TTuple<TPool<Mut<T>>*...> pools;
+		AST::Tree& ast;
+		TTuple<AST::TPool<AsComponent<T>>*...> pools;
 
 
 	public:
-		TAccess(Tree& ast) : ast{ast}, pools{&ast.AssurePool<T>()...} {}
+		TAccess(AST::Tree& ast) : ast{ast}, pools{&ast.AssurePool<AsComponent<T>>()...} {}
 		TAccess(const TAccess& other) : ast{other.ast}, pools{other.pools} {}
 
 		// Construct a child access (super-set) from another access
 		template<typename... T2>
 		TAccess(const TAccess<T2...>& other)
-		    : ast{other.ast}, pools{std::get<TPool<Mut<T>>*>(other.pools)...}
+		    : ast{other.ast}, pools{std::get<AST::TPool<AsComponent<T>>*>(other.pools)...}
 		{
-			constexpr bool noDependenciesMissing =
-			    (ListContains<typename TAccess<T2...>::MutComponents, Mut<T>>() && ...);
-			static_assert(noDependenciesMissing,
+			using Other = TAccess<T2...>;
+			static_assert((Other::template HasType<T>() && ...),
 			    "Parent TAccess lacks one or more dependencies from a child TAccess.");
 
-			using Components2 = typename TAccess<T2...>::Components;
-			constexpr bool noInvalidMutableDependencies =
-			    ((ListContains<Components2, Mut<T>>() || ListContains<Components2, T>()) && ...);
-			static_assert(noInvalidMutableDependencies,
+			static_assert(
+			    ((Other::template IsWritable<T>() || TTypeAccessInfo<T>::mode != AccessMode::Write)
+			        && ...),
 			    "Parent TAccess lacks one or more *mutable* dependencies from a child TAccess.");
 		}
 
-
 		template<typename C>
-		TPool<Mut<C>>* GetPool() const requires(IsMutable<C>)
+		AST::TPool<Mut<C>>* GetPool() const requires(IsMutable<C>)
 		{
-			constexpr bool canModify = ListContains<Components, Mut<C>>();
-			static_assert(canModify, "Can't modify components of this type");
-
-			return std::get<TPool<Mut<C>>*>(pools);
+			static_assert(IsWritable<C>(), "Can't modify components of this type");
+			if constexpr (IsWritable<C>())    // Prevent missleading errors if condition fails
+			{
+				return std::get<AST::TPool<Mut<C>>*>(pools);
+			}
+			return nullptr;
 		}
 
 		template<typename C>
-		const TPool<Mut<C>>* GetPool() const requires(IsSame<C, const C>)
+		const AST::TPool<Mut<C>>* GetPool() const requires(IsConst<C>)
 		{
-			constexpr bool canRead =
-			    ListContains<Components, Mut<C>>() || ListContains<Components, const C>();
-			static_assert(canRead, "Can't read components of this type");
-
-			return std::get<TPool<Mut<C>>*>(pools);
+			static_assert(IsReadable<C>(), "Can't read components of this type");
+			if constexpr (IsReadable<C>())    // Prevent missleading errors if condition fails
+			{
+				return std::get<AST::TPool<Mut<C>>*>(pools);
+			}
+			return nullptr;
 		}
 
-		bool IsValid(Id id) const
+		bool IsValid(AST::Id id) const
 		{
 			return ast.IsValid(id);
 		}
 
-
-		bool Has(Id id) const
-		{
-			return !IsNone(id) && (Has<T>(id) && ...);
-		}
-
 		template<typename... C>
-		bool Has(Id id) const
+		bool Has(AST::Id id) const
 		{
 			return (GetPool<const C>()->Has(id) && ...);
 		}
 
 		template<typename C>
-		decltype(auto) Add(Id id, C&& value = {}) const requires(IsSame<C, Mut<C>>)
+		decltype(auto) Add(AST::Id id, C&& value = {}) const requires(IsSame<C, Mut<C>>)
 		{
 			return GetPool<C>()->Add(id, Forward<C>(value));
 		}
 		template<typename C>
-		decltype(auto) Add(Id id, const C& value) const requires(IsSame<C, Mut<C>>)
+		decltype(auto) Add(AST::Id id, const C& value) const requires(IsSame<C, Mut<C>>)
 		{
 			return GetPool<C>()->Add(id, value);
 		}
 
 		template<typename C>
-		void Remove(const Id id) const requires(IsSame<C, Mut<C>>)
+		void Remove(const AST::Id id) const requires(IsSame<C, Mut<C>>)
 		{
 			GetPool<C>()->Remove(id);
 		}
 		template<typename... C>
-		void Remove(TSpan<const Id> ids) const requires(IsSame<C, Mut<C>>&&...)
+		void Remove(TSpan<const AST::Id> ids) const requires(IsSame<C, Mut<C>>&&...)
 		{
 			(GetPool<C>()->Remove(ids), ...);
 		}
 
 		template<typename C>
-		C& Get(Id id) const
+		C& Get(AST::Id id) const
 		{
 			return GetPool<C>()->Get(id);
 		}
 
 		template<typename C>
-		C* TryGet(Id id) const
+		C* TryGet(AST::Id id) const
 		{
 			return GetPool<C>()->TryGet(id);
 		}
 
 		template<typename C>
-		C& GetOrAdd(Id id) const requires(IsMutable<C>)
+		C& GetOrAdd(AST::Id id) const requires(IsMutable<C>)
 		{
 			return GetPool<C>()->GetOrAdd(id);
 		}
@@ -130,21 +173,65 @@ namespace Rift::AST
 		{
 			return ast;
 		}
+
+
+		template<typename C>
+		static constexpr bool HasType()
+		{
+			return ListContains<RawComponents, AsComponent<C>>();
+		}
+
+		template<typename C>
+		static constexpr bool IsReadable()
+		{
+			return HasType<C>();
+		}
+
+		template<typename C>
+		static constexpr bool IsWritable()
+		{
+			return IsMutable<C> && ListContains<Components, TWrite<AsComponent<C>>>();
+		}
 	};
+
+	template<typename... T>
+	using TAccessRef = const TAccess<T...>&;
 
 
 	struct Access
 	{
 	protected:
 
-		TArray<TPair<Refl::TypeId, Pool*>> pools;
-		Tree& ast;
+		AST::Tree& ast;
+		TArray<TypeAccess> types;
+		TArray<AST::Pool*> pools;
 
 
 	public:
-		Access(Tree& ast) : ast{ast} {}
-	};
+		Access(AST::Tree& ast, const TArray<Refl::TypeId>& types) : ast{ast} {}
 
-	template<typename... T>
-	using TAccessRef = const TAccess<T...>&;
-}    // namespace Rift::AST
+		template<typename... T>
+		Access(TAccessRef<T...> access) : ast{access.ast}
+		{}
+
+		template<typename C>
+		AST::TPool<Mut<C>>* GetPool() const requires(IsMutable<C>)
+		{
+			return nullptr;
+		}
+
+		template<typename C>
+		const AST::TPool<Mut<C>>* GetPool() const requires(IsConst<C>)
+		{
+			return nullptr;
+		}
+
+	private :
+
+		i32
+		GetPoolIndex() const
+		{
+			return 0;
+		}
+	};
+}    // namespace Rift

@@ -25,7 +25,7 @@ go_bandit([]() {
 		describe("Templated", []() {
 			it("Can cache pools", [&]() {
 				Tree tree;
-				TAccess<Type, const TypeTwo> access{tree};
+				TAccess<TWrite<Type>, TypeTwo> access{tree};
 
 				AssertThat(access.GetPool<Type>(), Equals(tree.GetPool<Type>()));
 				AssertThat(access.GetPool<const Type>(), Equals(tree.GetPool<Type>()));
@@ -35,40 +35,39 @@ go_bandit([]() {
 			it("Can check if contained", [&]() {
 				Tree tree;
 				TPool<Type>& pool = tree.AssurePool<Type>();
-				TAccess<Type> access{tree};
-				TAccess<const Type> accessConst{tree};
+				TAccess<TWrite<Type>> access{tree};
+				TAccess<Type> accessConst{tree};
 				Id id = NoId;
-				AssertThat(access.Has(id), Is().False());
-				AssertThat(accessConst.Has(id), Is().False());
+				AssertThat(access.Has<Type>(id), Is().False());
+				AssertThat(accessConst.Has<Type>(id), Is().False());
 
 				id = tree.Create();
-				AssertThat(access.Has(id), Is().False());
-				AssertThat(accessConst.Has(id), Is().False());
+				AssertThat(access.Has<Type>(id), Is().False());
+				AssertThat(accessConst.Has<Type>(id), Is().False());
 
 				tree.Add<Type>(id);
-				AssertThat(access.Has(id), Is().True());
-				AssertThat(accessConst.Has(id), Is().True());
+				AssertThat(access.Has<Type>(id), Is().True());
+				AssertThat(accessConst.Has<Type>(id), Is().True());
 
 				TAccess<Type, TypeTwo> access2{tree};
 				tree.Add<TypeTwo>(id);
-				AssertThat(access.Has(id), Is().True());
-				AssertThat(access2.Has(id), Is().True());
+				AssertThat(access2.Has<TypeTwo>(id), Is().True());
 			});
 
 			it("Can initialize superset", [&]() {
 				Tree tree;
 				TPool<Type>& typePool = tree.AssurePool<Type>();
 
-				TAccess<Type, TypeTwo> access1{tree};
-				TAccess<Type> superset1{access1};
+				TAccess<TWrite<Type>, TWrite<TypeTwo>> access1{tree};
+				TAccess<TWrite<Type>> superset1{access1};
 				AssertThat(superset1.GetPool<Type>(), Equals(&typePool));
 
-				TAccess<Type, TypeTwo> access2{tree};
-				TAccess<const Type> superset2{access2};
+				TAccess<TWrite<Type>, TWrite<TypeTwo>> access2{tree};
+				TAccess<Type> superset2{access2};
 				AssertThat(superset2.GetPool<const Type>(), Equals(&typePool));
 
-				TAccess<const Type, TypeTwo> access3{tree};
-				TAccess<const Type> superset3{access3};
+				TAccess<TWrite<Type>, TWrite<TypeTwo>> access3{tree};
+				TAccess<Type> superset3{access3};
 				AssertThat(superset1.GetPool<Type>(), Equals(&typePool));
 			});
 		});

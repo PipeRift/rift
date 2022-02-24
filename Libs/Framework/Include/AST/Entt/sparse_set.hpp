@@ -76,7 +76,7 @@ namespace Rift::AST
 
 		struct SparseSetIterator final
 		{
-			using difference_type        = typename traits_type::Difference;
+			using difference_type   = typename traits_type::Difference;
 			using value_type        = AST::Id;
 			using pointer           = const value_type*;
 			using reference         = const value_type&;
@@ -578,11 +578,10 @@ namespace Rift::AST
 		 */
 		[[nodiscard]] bool Contains(const entity_type entt) const
 		{
-			CheckMsg(AST::GetVersion(entt) != AST::GetVersion(AST::NoId) && entt != AST::NoId,
-			    "Invalid entity");
+			//  Testing versions permits to avoid accessing the packed array
 			const auto curr = Page(entt);
-			// testing versions permits to avoid accessing the packed array
-			return (curr < bucket && sparse[curr] && sparse[curr][Offset(entt)] != AST::NoId);
+			return AST::GetVersion(entt) != AST::GetVersion(AST::NoId)
+			    && (curr < bucket && sparse[curr] && sparse[curr][Offset(entt)] != AST::NoId);
 		}
 
 		/**

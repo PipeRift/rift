@@ -35,6 +35,7 @@ namespace Rift::Types
 			case TypeCategory::Class: ast.Add<CClassDecl>(id); break;
 			case TypeCategory::Struct: ast.Add<CStructDecl>(id); break;
 			case TypeCategory::FunctionLibrary: ast.Add<CFunctionLibraryDecl>(id); break;
+			default: break;
 		}
 	}
 
@@ -105,12 +106,14 @@ namespace Rift::Types
 		AST::WriteContext ct{writer.GetContext(), ast, true};
 		ct.BeginObject();
 		ct.Next("type", GetCategory(ast, id));
-		ct.SerializeRoot(id);
+		ct.SerializeEntity(id);
 		data = writer.ToString();
 	}
 
 	void Deserialize(AST::Tree& ast, AST::Id id, const String& data)
 	{
+		ZoneScoped;
+
 		Serl::JsonFormatReader reader{data};
 		if (!reader.IsValid())
 		{
@@ -124,7 +127,7 @@ namespace Rift::Types
 		ct.Next("type", category);
 		Types::InitTypeFromCategory(ast, id, category);
 
-		ct.SerializeRoot(id);
+		ct.SerializeEntity(id);
 	}
 
 	bool IsClass(const AST::Tree& ast, AST::Id typeId)

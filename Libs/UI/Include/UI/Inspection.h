@@ -25,6 +25,11 @@ namespace Rift::UI
 	{
 		InspectProperties(data, type);
 	}
+	template<typename T>
+	inline void InspectStruct(T* data) requires(Derived<T, Struct>)
+	{
+		InspectStruct(data, T::GetStaticType());
+	}
 	inline void InspectClass(Class* data, Refl::ClassType* type)
 	{
 		InspectProperties(data, type);

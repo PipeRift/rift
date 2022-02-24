@@ -2,7 +2,7 @@
 #pragma once
 
 #include "AST/Components/CExprCall.h"
-#include "AST/Components/CType.h"
+#include "AST/Components/CFileRef.h"
 
 #include <Types/Struct.h>
 
@@ -20,7 +20,7 @@ namespace Rift
 	using CDirty = TDirty<void>;
 
 	// Marks a type as dirty, meaning is has been modified
-	using CTypeDirty = TDirty<CType>;
+	using CFileDirty = TDirty<CFileRef>;
 
 	// Marks a type as dirty, meaning is has been modified
 	using CCallDirty = TDirty<CExprCallId>;
