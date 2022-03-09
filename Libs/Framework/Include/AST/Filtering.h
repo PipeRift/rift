@@ -7,13 +7,66 @@
 
 namespace Rift::AST
 {
+	/** Remove ids containing a component from 'ids'. Does not guarantee order. */
 	void RemoveIf(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+
+	/** Remove ids containing a component from 'ids'. Guarantees order. */
 	void RemoveIfStable(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+
+	/** Remove ids NOT containing a component from 'ids'. Does not guarantee order. */
 	void RemoveIfNot(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+
+	/** Remove ids NOT containing a component from 'ids'. Guarantees order. */
 	void RemoveIfNotStable(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
+
+	/** Find ids containing a component from a list 'source' into 'results'. */
+	void GetIf(const Pool* pool, const TArray<Id>& source, TArray<Id>& results);
+
+	/** Find ids NOT containing a component from a list 'source' into 'results'. */
+	void GetIfNot(const Pool* pool, const TArray<Id>& source, TArray<Id>& results);
+
+
 	/**
-	 * Removes ids if they have a component. Does not guarantee order.
+	 * Find and remove ids containing a component from list 'source' into 'results'.
+	 * Does not guarantee order.
+	 */
+	void ExtractIf(
+	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
+
+	/**
+	 * Find and remove ids containing a component from list 'source' into 'results'.
+	 * Guarantees order.
+	 */
+	void ExtractIfStable(
+	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
+
+	/**
+	 * Find and remove ids containing a component from list 'source' into 'results'.
+	 * Does not guarantee order.
+	 */
+	void ExtractIfNot(
+	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
+
+	/**
+	 * Find and remove ids not containing a component from list 'source' into 'results'.
+	 * Guarantees order.
+	 */
+	void ExtractIfNotStable(
+	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
+
+
+	/** Find all ids containing all of the components */
+	void ListAll(TArray<const Pool*> pools, TArray<Id>& ids);
+
+	/** Find all ids containing any of the components */
+	void ListAny(const TArray<const Pool*>& pools, TArray<Id>& ids);
+
+
+	// Templated API
+
+	/**
+	 * Remove ids containing a component from 'ids'. Does not guarantee order.
 	 *
 	 * @param access from where to access pools
 	 * @param ids array that will be modified
@@ -33,7 +86,7 @@ namespace Rift::AST
 	}
 
 	/**
-	 * Removes ids if they have a component. Guarantees order.
+	 * Remove ids containing a component from 'ids'. Guarantees order.
 	 *
 	 * @param access from where to access pools
 	 * @param ids array that will be modified
@@ -53,7 +106,7 @@ namespace Rift::AST
 	}
 
 	/**
-	 * Removes ids if they don't have a component. Does not guarantee order.
+	 * Remove ids NOT containing a component from 'ids'. Does not guarantee order.
 	 *
 	 * @param access from where to access pools
 	 * @param ids array that will be modified
@@ -74,7 +127,7 @@ namespace Rift::AST
 	}
 
 	/**
-	 * Removes ids if they don't have a component. Guarantees order.
+	 * Remove ids NOT containing a component from 'ids'. Guarantees order.
 	 *
 	 * @param access from where to access pools
 	 * @param ids array that will be modified
@@ -94,43 +147,129 @@ namespace Rift::AST
 		(RemoveIfNotStable<C>(access, ids, shouldShrink), ...);
 	}
 
+
+	/** Find ids containing a component from a list 'source' into 'results'. */
+	template<typename C, typename AccessType>
+	void GetIf(const AccessType& access, const TArray<Id>& source, TArray<Id>& results)
+	{
+		GetIf(access.template GetPool<const C>(), source, results);
+	}
+	template<typename C, typename AccessType>
+	TArray<Id> GetIf(const AccessType& access, const TArray<Id>& source)
+	{
+		TArray<Id> results;
+		GetIf<C>(access, source, results);
+		return Move(results);
+	}
+
+	/** Find ids NOT containing a component from a list 'source' into 'results'. */
+	template<typename C, typename AccessType>
+	void GetIfNot(const AccessType& access, const TArray<Id>& source, TArray<Id>& results)
+	{
+		GetIfNot(access.template GetPool<const C>(), source, results);
+	}
+	template<typename C, typename AccessType>
+	TArray<Id> GetIfNot(const AccessType& access, const TArray<Id>& source)
+	{
+		TArray<Id> results;
+		GetIfNot<C>(access, source, results);
+		return Move(results);
+	}
+
+
 	/**
-	 * Finds all ids containing all of the specified components
+	 * Find and remove ids containing a component from list 'source' into 'results'.
+	 * Does not guarantee order.
+	 */
+	template<typename C, typename AccessType>
+	void ExtractIf(const AccessType& access, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = true)
+	{
+		ExtractIf(access.template GetPool<const C>(), source, results);
+	}
+	template<typename C, typename AccessType>
+	TArray<Id> ExtractIf(
+	    const AccessType& access, TArray<Id>& source, const bool shouldShrink = true)
+	{
+		TArray<Id> results;
+		ExtractIf<C>(access, source, results);
+		return Move(results);
+	}
+
+	/**
+	 * Find and remove ids containing a component from list 'source' into 'results'.
+	 * Guarantees order.
+	 */
+	template<typename C, typename AccessType>
+	void ExtractIfStable(const AccessType& access, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = true)
+	{
+		ExtractIfStable(access.template GetPool<const C>(), source, results);
+	}
+	template<typename C, typename AccessType>
+	TArray<Id> ExtractIfStable(
+	    const AccessType& access, TArray<Id>& source, const bool shouldShrink = true)
+	{
+		TArray<Id> results;
+		ExtractIfStable<C>(access, source, results);
+		return Move(results);
+	}
+
+	/**
+	 * Find and remove ids containing a component from list 'source' into 'results'.
+	 * Does not guarantee order.
+	 */
+	template<typename C, typename AccessType>
+	void ExtractIfNot(const AccessType& access, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = true)
+	{
+		ExtractIfNot(access.template GetPool<const C>(), source, results);
+	}
+	template<typename C, typename AccessType>
+	TArray<Id> ExtractIfNot(
+	    const AccessType& access, TArray<Id>& source, const bool shouldShrink = true)
+	{
+		TArray<Id> results;
+		ExtractIfNot<C>(access, source, results);
+		return Move(results);
+	}
+
+	/**
+	 * Find and remove ids not containing a component from list 'source' into 'results'.
+	 * Guarantees order.
+	 */
+	template<typename C, typename AccessType>
+	void ExtractIfNotStable(
+	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true)
+	{
+		ExtractIfNotStable(access.template GetPool<const C>(), source, results);
+	}
+	template<typename C, typename AccessType>
+	TArray<Id> ExtractIfNotStable(
+	    const Pool* pool, TArray<Id>& source, const bool shouldShrink = true)
+	{
+		TArray<Id> results;
+		ExtractIfNotStable<C>(access, source, results);
+		return Move(results);
+	}
+
+
+	/**
+	 * Find all ids containing all of the components
 	 *
 	 * @param access from where to access pools
 	 * @param ids array where matching ids will be added
 	 * @see ListAny()
 	 */
-	template<typename AccessType, typename... C>
+	template<typename... C, typename AccessType>
 	void ListAll(const AccessType& access, TArray<Id>& ids)
 	{
-		ZoneScoped;
-		TArray<const Pool*> pools{access.template GetPool<const C>()...};
-		for (const Pool* pool : pools)
-		{
-			if (!EnsureMsg(pool,
-			        "One of the pools is null. Is the access missing one or more of the specified "
-			        "components?"))
-			{
-				return;
-			}
-		}
-
-		const i32 smallestIdx    = GetSmallestPool(pools);
-		const Pool* iterablePool = pools[smallestIdx];
-		pools.RemoveAtSwap(smallestIdx);
-
-		ids.Empty();
-		ids.Append(iterablePool->begin(), iterablePool->end());
-
-		for (const Pool* pool : pools)
-		{
-			RemoveIfNot(pool, ids, false);
-		}
+		ListAll({access.template GetPool<const C>()...}, ids);
 	}
 
+
 	/**
-	 * Finds all ids containing all of the specified components
+	 * Find all ids containing all of the components
 	 *
 	 * @param access from where to access pools
 	 * @return ids array with matching ids
@@ -140,52 +279,25 @@ namespace Rift::AST
 	TArray<Id> ListAll(const AccessType& access)
 	{
 		TArray<Id> ids;
-		ListAll<AccessType, C...>(access, ids);
+		ListAll<C...>(access, ids);
 		return Move(ids);
 	}
 
 	/**
-	 * Finds all ids containing any of the specified components
+	 * Find all ids containing any of the components
 	 *
 	 * @param access from where to access pools
 	 * @param ids array where matching ids will be added
 	 * @see ListAll()
 	 */
-	template<typename AccessType, typename... C>
+	template<typename... C, typename AccessType>
 	void ListAny(const AccessType& access, TArray<Id>& ids)
 	{
-		ZoneScoped;
-		TArray<const Pool*> pools{access.template GetPool<const C>()...};
-
-		i32 maxPossibleSize = 0;
-		for (const Pool* pool : pools)
-		{
-			if (!EnsureMsg(pool,
-			        "One of the pools is null. Is the access missing one or more of the specified "
-			        "components?"))
-			{
-				return;
-			}
-
-			maxPossibleSize += pool->Size();
-		}
-
-		TSet<Id> idsSet;
-		idsSet.Reserve(maxPossibleSize);
-		for (const Pool* pool : pools)
-		{
-			for (Id id : *pool)
-			{
-				idsSet.Insert(id);
-			}
-		}
-
-		ids.Empty();
-		ids.Append(idsSet.begin(), idsSet.end());
+		ListAny({access.template GetPool<const C>()...}, ids);
 	}
 
 	/**
-	 * Finds all ids containing any of the specified components
+	 * Find all ids containing any of the components
 	 *
 	 * @param access from where to access pools
 	 * @return ids array with matching ids
@@ -195,7 +307,7 @@ namespace Rift::AST
 	TArray<Id> ListAny(const AccessType& access)
 	{
 		TArray<Id> ids;
-		ListAny<AccessType, C...>(access, ids);
+		ListAny<C...>(access, ids);
 		return Move(ids);
 	}
 
