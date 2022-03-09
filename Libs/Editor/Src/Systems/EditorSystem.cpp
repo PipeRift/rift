@@ -317,31 +317,36 @@ namespace Rift::EditorSystem
 				if (UI::MenuItem("Open File")) {}
 				if (UI::MenuItem(ICON_FA_SAVE " Save All", "CTRL+SHFT+S"))
 				{
-					// TODO: Only save dirty types & modules
 					TArray<TPair<Path, String>> fileDatas;
-					for (AST::Id typeId : AST::ListAll<CType, CTypeEditor, CFileRef>(ast))
+
+					auto dirtyTypeIds = AST::ListAll<CType, CTypeEditor, CFileRef, CFileDirty>(ast);
+					for (AST::Id typeId : dirtyTypeIds)
 					{
 						auto& file     = ast.Get<CFileRef>(typeId);
 						auto& fileData = fileDatas.AddRef({file.path, ""});
 						Types::Serialize(ast, typeId, fileData.second);
 					}
 
-					for (AST::Id moduleId : AST::ListAll<CModule, CModuleEditor, CFileRef>(ast))
+					auto dirtyModuleIds =
+					    AST::ListAll<CModule, CModuleEditor, CFileRef, CFileDirty>(ast);
+					for (AST::Id moduleId : dirtyModuleIds)
 					{
 						auto& file     = ast.Get<CFileRef>(moduleId);
 						auto& fileData = fileDatas.AddRef({file.path, ""});
 						Modules::Serialize(ast, moduleId, fileData.second);
 					}
 
+					for (auto& fileData : fileDatas)
+					{
+						Files::SaveStringFile(fileData.first, fileData.second);
+					}
+
+					ast.Remove<CFileDirty>(dirtyTypeIds);
+					ast.Remove<CFileDirty>(dirtyModuleIds);
+
 					UI::AddNotification({UI::ToastType::Success, 1.f,
 					    !fileDatas.IsEmpty() ? Strings::Format("Saved {} files", fileDatas.Size())
 					                         : "Nothing to save"});
-					TaskSystem::Get().GetPool(TaskPool::Workers).silent_async([fileDatas]() {
-						for (auto& fileData : fileDatas)
-						{
-							Files::SaveStringFile(fileData.first, fileData.second);
-						}
-					});
 				}
 				UI::EndMenu();
 			}
@@ -425,11 +430,11 @@ namespace Rift::EditorSystem
 				TPair<Path, String> fileData{file.path, ""};
 				Modules::Serialize(ast, moduleId, fileData.second);
 
+				Files::SaveStringFile(fileData.first, fileData.second);
+				ast.Remove<CFileDirty>(moduleId);
+
 				UI::AddNotification({UI::ToastType::Success, 1.f,
 				    Strings::Format("Saved file {}", Paths::GetFilename(file.path))});
-				TaskSystem::Get().GetPool(TaskPool::Workers).silent_async([fileData]() {
-					Files::SaveStringFile(fileData.first, fileData.second);
-				});
 			}
 			UI::EndMenuBar();
 		}
@@ -503,9 +508,9 @@ namespace Rift::EditorSystem
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
 				    Strings::Format("Saved file {}", Paths::GetFilename(file.path))});
-				TaskSystem::Get().GetPool(TaskPool::Workers).silent_async([fileData]() {
-					Files::SaveStringFile(fileData.first, fileData.second);
-				});
+
+				Files::SaveStringFile(fileData.first, fileData.second);
+				ast.Remove<CFileDirty>(typeId);
 			}
 			if (UI::BeginMenu("View"))
 			{

@@ -92,6 +92,13 @@ namespace Rift::AST
 			return AssurePool<Component>().Add(id, value);
 		}
 
+		// Add Component to many entities (if they dont have it already)
+		template<typename Component>
+		decltype(auto) Add(TSpan<const Id> ids, const Component& value = {})
+		{
+			return AssurePool<Component>().Add(ids.begin(), ids.end(), value);
+		}
+
 		// Adds Component to an entity (if the entity doesnt have it already)
 		template<typename... Component>
 		void Add(Id id) requires(sizeof...(Component) > 1)
@@ -100,13 +107,7 @@ namespace Rift::AST
 			(Add<Component>(id), ...);
 		}
 
-		template<typename Component>
-		decltype(auto) Add(TSpan<const Id> ids, const Component& value = {})
-		{
-			return AssurePool<Component>().Add(ids.begin(), ids.end(), value);
-		}
-
-		// Adds Component to an entity (if the entity doesnt have it already)
+		// Add Components to many entities (if they dont have it already)
 		template<typename... Component>
 		void Add(TSpan<const Id> ids) requires(sizeof...(Component) > 1)
 		{

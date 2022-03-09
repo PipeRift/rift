@@ -76,7 +76,7 @@ namespace Rift::AST
 	template<typename C, typename AccessType>
 	void RemoveIf(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		RemoveIf(access.template GetPool<const C>(), ids, shouldShrink);
+		RemoveIf(&access.template AssurePool<const C>(), ids, shouldShrink);
 	}
 	template<typename... C, typename AccessType>
 	void RemoveIf(const AccessType& access, TArray<Id>& ids,
@@ -96,7 +96,7 @@ namespace Rift::AST
 	template<typename C, typename AccessType>
 	void RemoveIfStable(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		RemoveIfStable(access.template GetPool<const C>(), ids, shouldShrink);
+		RemoveIfStable(&access.template AssurePool<const C>(), ids, shouldShrink);
 	}
 	template<typename... C, typename AccessType>
 	void RemoveIfStable(const AccessType& access, TArray<Id>& ids,
@@ -116,7 +116,7 @@ namespace Rift::AST
 	template<typename C, typename AccessType>
 	void RemoveIfNot(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		RemoveIfNot(access.template GetPool<const C>(), ids, shouldShrink);
+		RemoveIfNot(&access.template AssurePool<const C>(), ids, shouldShrink);
 	}
 
 	template<typename... C, typename AccessType>
@@ -138,7 +138,7 @@ namespace Rift::AST
 	void RemoveIfNotStable(
 	    const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		RemoveIfNotStable(access.template GetPool<const C>(), ids, shouldShrink);
+		RemoveIfNotStable(&access.template AssurePool<const C>(), ids, shouldShrink);
 	}
 	template<typename... C, typename AccessType>
 	void RemoveIfNotStable(const AccessType& access, TArray<Id>& ids,
@@ -152,7 +152,7 @@ namespace Rift::AST
 	template<typename C, typename AccessType>
 	void GetIf(const AccessType& access, const TArray<Id>& source, TArray<Id>& results)
 	{
-		GetIf(access.template GetPool<const C>(), source, results);
+		GetIf(&access.template AssurePool<const C>(), source, results);
 	}
 	template<typename C, typename AccessType>
 	TArray<Id> GetIf(const AccessType& access, const TArray<Id>& source)
@@ -166,7 +166,7 @@ namespace Rift::AST
 	template<typename C, typename AccessType>
 	void GetIfNot(const AccessType& access, const TArray<Id>& source, TArray<Id>& results)
 	{
-		GetIfNot(access.template GetPool<const C>(), source, results);
+		GetIfNot(&access.template AssurePool<const C>(), source, results);
 	}
 	template<typename C, typename AccessType>
 	TArray<Id> GetIfNot(const AccessType& access, const TArray<Id>& source)
@@ -185,7 +185,7 @@ namespace Rift::AST
 	void ExtractIf(const AccessType& access, TArray<Id>& source, TArray<Id>& results,
 	    const bool shouldShrink = true)
 	{
-		ExtractIf(access.template GetPool<const C>(), source, results);
+		ExtractIf(&access.template AssurePool<const C>(), source, results);
 	}
 	template<typename C, typename AccessType>
 	TArray<Id> ExtractIf(
@@ -204,7 +204,7 @@ namespace Rift::AST
 	void ExtractIfStable(const AccessType& access, TArray<Id>& source, TArray<Id>& results,
 	    const bool shouldShrink = true)
 	{
-		ExtractIfStable(access.template GetPool<const C>(), source, results);
+		ExtractIfStable(&access.template AssurePool<const C>(), source, results);
 	}
 	template<typename C, typename AccessType>
 	TArray<Id> ExtractIfStable(
@@ -223,7 +223,7 @@ namespace Rift::AST
 	void ExtractIfNot(const AccessType& access, TArray<Id>& source, TArray<Id>& results,
 	    const bool shouldShrink = true)
 	{
-		ExtractIfNot(access.template GetPool<const C>(), source, results);
+		ExtractIfNot(&access.template AssurePool<const C>(), source, results);
 	}
 	template<typename C, typename AccessType>
 	TArray<Id> ExtractIfNot(
@@ -242,7 +242,7 @@ namespace Rift::AST
 	void ExtractIfNotStable(
 	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true)
 	{
-		ExtractIfNotStable(access.template GetPool<const C>(), source, results);
+		ExtractIfNotStable(&access.template AssurePool<const C>(), source, results);
 	}
 	template<typename C, typename AccessType>
 	TArray<Id> ExtractIfNotStable(
@@ -264,7 +264,7 @@ namespace Rift::AST
 	template<typename... C, typename AccessType>
 	void ListAll(const AccessType& access, TArray<Id>& ids)
 	{
-		ListAll({access.template GetPool<const C>()...}, ids);
+		ListAll({&access.template AssurePool<const C>()...}, ids);
 	}
 
 
@@ -293,7 +293,7 @@ namespace Rift::AST
 	template<typename... C, typename AccessType>
 	void ListAny(const AccessType& access, TArray<Id>& ids)
 	{
-		ListAny({access.template GetPool<const C>()...}, ids);
+		ListAny({&access.template AssurePool<const C>()...}, ids);
 	}
 
 	/**

@@ -60,12 +60,15 @@ namespace Rift::AST
 	void GetIf(const Pool* pool, const TArray<Id>& source, TArray<Id>& results)
 	{
 		ZoneScoped;
-		results.ReserveMore(Math::Min(i32(pool->Size()), source.Size()));
-		for (AST::Id id : source)
+		if (pool)
 		{
-			if (pool->Has(id))
+			results.ReserveMore(Math::Min(i32(pool->Size()), source.Size()));
+			for (AST::Id id : source)
 			{
-				results.Add(id);
+				if (pool->Has(id))
+				{
+					results.Add(id);
+				}
 			}
 		}
 	}
@@ -73,13 +76,21 @@ namespace Rift::AST
 	void GetIfNot(const Pool* pool, const TArray<Id>& source, TArray<Id>& results)
 	{
 		ZoneScoped;
-		results.ReserveMore(source.Size());
-		for (AST::Id id : source)
+		if (pool)
 		{
-			if (!pool->Has(id))
+			results.ReserveMore(source.Size());
+			for (AST::Id id : source)
 			{
-				results.Add(id);
+				if (!pool->Has(id))
+				{
+					results.Add(id);
+				}
 			}
+		}
+		else
+		{
+			// No pool means no id has the component
+			results = source;
 		}
 	}
 

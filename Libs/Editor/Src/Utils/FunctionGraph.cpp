@@ -22,6 +22,7 @@
 #include <AST/Components/CStringLiteral.h>
 #include <AST/Components/CVariableDecl.h>
 #include <AST/Components/Views/CGraphTransform.h>
+#include <AST/Filtering.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/Hierarchy.h>
@@ -34,6 +35,8 @@
 
 namespace Rift::Graph
 {
+	static CGraphTransform* currentNodeTransform = nullptr;
+
 	void Settings::SetGridSize(float size)
 	{
 		gridSize                      = size;
@@ -61,13 +64,16 @@ namespace Rift::Graph
 		return {0.f, settings.verticalMargin + settings.verticalPadding};
 	}
 
-	void BeginNode(AST::Id id)
+	void BeginNode(TAccessRef<TWrite<CGraphTransform>> access, AST::Id id)
 	{
+		currentNodeTransform = &access.GetOrAdd<CGraphTransform>(id);
+		SetNodePosition(id, currentNodeTransform->position);
+
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
 		Nodes::BeginNode(i32(id));
 	}
 
-	void EndNode()
+	void EndNode(const TransactionAccess& access)
 	{
 		// Selection outline
 		const auto* context = Nodes::GetCurrentContext();
@@ -77,67 +83,84 @@ namespace Rift::Graph
 			    .nodes.Pool[context->CurrentNodeIdx]
 			    .LayoutStyle.BorderThickness = 2.f;
 		}
-
 		Nodes::EndNode();
 		Nodes::PopStyleColor(1);
+
+		if (context->leftMouseDragging || context->leftMouseReleased)
+		{
+			const AST::Id id{i32(Nodes::GetEditorContext().nodes.Pool[context->CurrentNodeIdx].id)};
+			v2 newPosition = GetNodePosition(id);
+			if (!newPosition.Equals(currentNodeTransform->position, 0.1f))
+			{
+				ScopedChange(access, id);
+				currentNodeTransform->position = newPosition;
+			}
+		}
+		currentNodeTransform = nullptr;
 	}
 
-
-	namespace Literals
+	void PushExecutionPinStyle()
 	{
-		void DrawBoolNode(AST::Id id, bool& value)
+		static constexpr Color color = Style::executionColor;
+		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+	}
+
+	void PopExecutionPinStyle()
+	{
+		Nodes::PopStyleColor(2);
+	}
+
+	void DrawLiteralBool(AST::Tree& ast, AST::Id id, bool& value)
+	{
+		static constexpr Color color = Style::GetTypeColor<bool>();
+
+		Style::PushNodeBackgroundColor(color);
+		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+
+		BeginNode(ast, id);
 		{
-			static constexpr Color color = Style::GetTypeColor<bool>();
-
-			Style::PushNodeBackgroundColor(color);
-			Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
-
-			BeginNode(id);
-			{
-				Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
-				PushInnerNodeStyle();
-				UI::Checkbox("##value", &value);
-				PopInnerNodeStyle();
-				Nodes::EndOutput();
-			}
-			EndNode();
-			Nodes::PopStyleColor(2);
-			Style::PopNodeBackgroundColor();
+			Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+			PushInnerNodeStyle();
+			UI::Checkbox("##value", &value);
+			PopInnerNodeStyle();
+			Nodes::EndOutput();
 		}
+		EndNode(ast);
+		Nodes::PopStyleColor(2);
+		Style::PopNodeBackgroundColor();
+	}
 
-		void DrawStringNode(AST::Id id, String& value)
+	void DrawLiteralString(AST::Tree& ast, AST::Id id, String& value)
+	{
+		static constexpr Color color = Style::GetTypeColor<String>();
+
+		Style::PushNodeBackgroundColor(color);
+		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+
+		BeginNode(ast, id);
 		{
-			static constexpr Color color = Style::GetTypeColor<String>();
-
-			Style::PushNodeBackgroundColor(color);
-			Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
-
-			BeginNode(id);
-			{
-				Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
-				PushInnerNodeStyle();
-				ImGuiStyle& style = ImGui::GetStyle();
-				const ImVec2 textSize =
-				    ImGui::CalcTextSize(value.data(), value.data() + value.size());
-				const v2 minSize{settings.GetGridSize() * 4.f, settings.GetGridSize()};
-				const v2 size{Math::Max(minSize.x, textSize.x), Math::Max(minSize.y, textSize.y)};
-				UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
-				PopInnerNodeStyle();
-				Nodes::EndOutput();
-			}
-			EndNode();
-
-			Nodes::PopStyleColor(2);
-			Style::PopNodeBackgroundColor();
+			Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+			PushInnerNodeStyle();
+			ImGuiStyle& style     = ImGui::GetStyle();
+			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
+			const v2 minSize{settings.GetGridSize() * 4.f, settings.GetGridSize()};
+			const v2 size{Math::Max(minSize.x, textSize.x), Math::Max(minSize.y, textSize.y)};
+			UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
+			PopInnerNodeStyle();
+			Nodes::EndOutput();
 		}
-	}    // namespace Literals
+		EndNode(ast);
+
+		Nodes::PopStyleColor(2);
+		Style::PopNodeBackgroundColor();
+	}
 
 
 	void DrawFunctionDecl(AST::Tree& ast, AST::Id functionId)
 	{
-		auto* nodes      = Nodes::GetCurrentContext();
 		auto identifiers = ast.Filter<CIdentifier>();
 
 		Name name;
@@ -146,32 +169,20 @@ namespace Rift::Graph
 			name = identifier->name;
 		}
 
-		auto& transform = ast.GetOrAdd<CGraphTransform>(functionId);
-		if (UI::IsWindowAppearing()
-		    && !(nodes->leftMouseDragging && Nodes::IsNodeSelected(i32(functionId))))
-		{
-			SetNodePosition(functionId, transform.position);
-		}
-
-		static constexpr Color headerColor = Style::functionColor;
-		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
-
-		Style::PushNodeBackgroundColor(bodyColor);
-		Style::PushNodeTitleColor(headerColor);
-		BeginNode(functionId);
+		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
+		Style::PushNodeTitleColor(Style::functionColor);
+		BeginNode(ast, functionId);
 		{
 			Nodes::BeginNodeTitleBar();
 			{
 				UI::Text(name.ToString());
 				UI::SameLine();
 
-				static constexpr Color color = Style::executionColor;
-				Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-				Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+				PushExecutionPinStyle();
 				Nodes::BeginOutput(i32(functionId), Nodes::PinShape_QuadFilled);
 				UI::Text("");
 				Nodes::EndOutput();
-				Nodes::PopStyleColor(2);
+				PopExecutionPinStyle();
 			}
 			Nodes::EndNodeTitleBar();
 
@@ -200,31 +211,20 @@ namespace Rift::Graph
 				}
 			}
 		}
-		EndNode();
+		EndNode(ast);
 		Style::PopNodeTitleColor();
 		Style::PopNodeBackgroundColor();
-
-		if (nodes->leftMouseDragging || nodes->leftMouseReleased)
-		{
-			ScopedChange(ast, functionId);
-			transform.position = GetNodePosition(functionId);
-		}
 	}
 
 	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView ownerName)
 	{
-		static constexpr Color headerColor = Style::callColor;
-		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
-
-		Style::PushNodeBackgroundColor(bodyColor);
-		Style::PushNodeTitleColor(headerColor);
-		BeginNode(id);
+		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
+		Style::PushNodeTitleColor(Style::callColor);
+		BeginNode(ast, id);
 		{
 			Nodes::BeginNodeTitleBar();
 			{
-				static constexpr Color color = Style::executionColor;
-				Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-				Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+				PushExecutionPinStyle();
 
 				Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
 				UI::TextUnformatted("");
@@ -246,7 +246,7 @@ namespace Rift::Graph
 				UI::TextUnformatted("");
 				Nodes::EndOutput();
 
-				Nodes::PopStyleColor(2);
+				PopExecutionPinStyle();
 			}
 			Nodes::EndNodeTitleBar();
 
@@ -291,7 +291,7 @@ namespace Rift::Graph
 				UI::EndGroup();
 			}
 		}
-		EndNode();
+		EndNode(ast);
 		Style::PopNodeTitleColor();
 		Style::PopNodeBackgroundColor();
 	}
@@ -485,22 +485,14 @@ namespace Rift::Graph
 
 	void DrawLiterals(AST::Tree& ast, const TArray<AST::Id>& children)
 	{
-		auto boolLiterals = ast.Filter<CBoolLiteral>();
-		for (AST::Id child : children)
+		for (AST::Id id : AST::GetIf<CBoolLiteral>(ast, children))
 		{
-			if (auto* literal = boolLiterals.TryGet<CBoolLiteral>(child))
-			{
-				Literals::DrawBoolNode(child, literal->value);
-			}
+			DrawLiteralBool(ast, id, ast.Get<CBoolLiteral>(id).value);
 		}
 
-		auto stringLiterals = ast.Filter<CStringLiteral>();
-		for (AST::Id child : children)
+		for (AST::Id id : AST::GetIf<CStringLiteral>(ast, children))
 		{
-			if (auto* literal = stringLiterals.TryGet<CStringLiteral>(child))
-			{
-				Literals::DrawStringNode(child, literal->value);
-			}
+			DrawLiteralString(ast, id, ast.Get<CStringLiteral>(id).value);
 		}
 	}
 
@@ -637,8 +629,13 @@ namespace Rift::Graph
 
 	void SetNodePosition(AST::Id id, v2 position)
 	{
-		position *= settings.GetGridSize();
-		Nodes::SetNodeGridSpacePos(i32(id), position);
+		auto* nodes = Nodes::GetCurrentContext();
+		if (UI::IsWindowAppearing()
+		    && !(nodes->leftMouseDragging && Nodes::IsNodeSelected(i32(id))))
+		{
+			position *= settings.GetGridSize();
+			Nodes::SetNodeGridSpacePos(i32(id), position);
+		}
 	}
 
 	v2 GetNodePosition(AST::Id id)

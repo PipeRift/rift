@@ -36,11 +36,10 @@ namespace Rift::Graph
 	inline Settings settings{};
 
 
-	namespace Literals
-	{
-		void DrawBoolNode(AST::Id id, bool& value);
-		void DrawStringNode(AST::Id id, String& value);
-	}    // namespace Literals
+	void DrawLiteralBool(AST::Tree& ast, AST::Id id, bool& value);
+	void DrawLiteralInt(AST::Tree& ast, AST::Id id, String& value);
+	void DrawLiteralString(AST::Tree& ast, AST::Id id, String& value);
+
 	void DrawFunctionDecl(AST::Tree& ast, AST::Id functionId);
 	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView ownerName);
 
