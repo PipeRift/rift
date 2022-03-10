@@ -8,12 +8,12 @@
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "Editor.h"
-#include "Files/FileDialog.h"
 #include "Files/Paths.h"
 #include "imgui_internal.h"
 #include "Statics/SEditor.h"
 #include "Utils/FunctionGraph.h"
 #include "Utils/ModuleUtils.h"
+#include "Utils/ProjectManager.h"
 #include "Utils/Properties.h"
 #include "Utils/TypeUtils.h"
 
@@ -24,6 +24,7 @@
 #include <Compiler/Compiler.h>
 #include <Containers/Array.h>
 #include <CppBackend.h>
+#include <Files/FileDialog.h>
 #include <IconsFontAwesome5.h>
 #include <RiftContext.h>
 #include <UI/Inspection.h>
@@ -98,7 +99,6 @@ namespace Rift::EditorSystem
 	void CreateTypeDockspace(CTypeEditor& editor, const char* id);
 	void CreateModuleDockspace(CModuleEditor& editor, const char* id);
 	void DrawMenuBar(AST::Tree& ast);
-	void DrawProjectPickerPopup(AST::Tree& ast);
 
 	// Project Editor
 	void DrawProject(AST::Tree& ast);
@@ -122,11 +122,11 @@ namespace Rift::EditorSystem
 		}
 		else
 		{
-			UI::OpenPopup("Project Picker");
+			OpenProjectManager();
 		}
 
 		DrawMenuBar(ast);
-		DrawProjectPickerPopup(ast);
+		DrawProjectManager(ast);
 
 #if BUILD_DEBUG
 		if (bool& showDemo = Editor::Get().showDemo)
@@ -212,52 +212,6 @@ namespace Rift::EditorSystem
 			UI::EndMainMenuBar();
 		}
 	}
-
-	void DrawProjectPickerPopup(AST::Tree& ast)
-	{
-		// Center modal when appearing
-		UI::SetNextWindowPos(UI::GetMainViewport()->GetCenter(), ImGuiCond_Always, {0.5f, 0.5f});
-
-		if (UI::BeginPopupModal("Project Picker", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-		{
-			if (UI::Button("Open Project..."))
-			{
-				Path folder = Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
-				if (Editor::Get().OpenProject(folder))
-				{
-					UI::CloseCurrentPopup();
-				}
-			}
-			UI::SetItemDefaultFocus();
-			UI::Separator();
-			{
-				UI::Text("Recent Projects");
-				static const char* recentProjects[]{"One recent project"};
-				static int selectedN = 0;
-				if (UI::BeginListBox("##RecentProjects"))
-				{
-					for (int n = 0; n < IM_ARRAYSIZE(recentProjects); ++n)
-					{
-						const bool isSelected = (selectedN == n);
-						if (UI::Selectable(recentProjects[n], isSelected))
-						{
-							selectedN = n;
-						}
-
-						// Set the initial focus when opening the combo (scrolling + keyboard
-						// navigation focus)
-						if (isSelected)
-						{
-							UI::SetItemDefaultFocus();
-						}
-					}
-					UI::EndListBox();
-				}
-			}
-			UI::EndPopup();
-		}
-	}
-
 
 	void DrawProject(AST::Tree& ast)
 	{

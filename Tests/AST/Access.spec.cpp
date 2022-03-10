@@ -1,7 +1,5 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#define RIFT_ENABLE_PROFILER 0
-
 #include <AST/Access.h>
 #include <AST/FilterAccess.h>
 #include <AST/Tree.h>

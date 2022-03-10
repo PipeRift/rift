@@ -116,6 +116,7 @@ namespace Rift::Style
 		AddTextFont(
 		    "WorkSans", FontMode::LightItalic, 14.f, resources / "Fonts/WorkSans-LightItalic.ttf");
 		AddTextFont("WorkSans", FontMode::Regular, 14.f, resources / "Fonts/WorkSans-Regular.ttf");
+		AddTextFont("WorkSans", FontMode::Regular, 18.f, resources / "Fonts/WorkSans-Regular.ttf");
 
 		// Karla
 		AddTextFont("Karla", FontMode::Bold, 14.f, resources / "Fonts/Karla-Bold.ttf");

@@ -1,7 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include "bandit/grammar.h"
-#define RIFT_ENABLE_PROFILER 0
 
 #include <AST/Filtering.h>
 #include <AST/Tree.h>

@@ -88,7 +88,8 @@ namespace Rift::Graph
 
 		if (context->leftMouseReleased)
 		{
-			const AST::Id id{i32(Nodes::GetEditorContext().nodes.Pool[context->CurrentNodeIdx].id)};
+			const AST::Id id =
+			    AST::Id(u32(Nodes::GetEditorContext().nodes.Pool[context->CurrentNodeIdx].id));
 			v2 newPosition = GetNodePosition(id);
 			if (!newPosition.Equals(currentNodeTransform->position, 0.1f))
 			{
