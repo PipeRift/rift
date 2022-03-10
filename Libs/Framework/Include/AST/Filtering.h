@@ -239,14 +239,14 @@ namespace Rift::AST
 	 * Guarantees order.
 	 */
 	template<typename C, typename AccessType>
-	void ExtractIfNotStable(
-	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true)
+	void ExtractIfNotStable(const AccessType& access, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = true)
 	{
 		ExtractIfNotStable(&access.template AssurePool<const C>(), source, results);
 	}
 	template<typename C, typename AccessType>
 	TArray<Id> ExtractIfNotStable(
-	    const Pool* pool, TArray<Id>& source, const bool shouldShrink = true)
+	    const AccessType& access, TArray<Id>& source, const bool shouldShrink = true)
 	{
 		TArray<Id> results;
 		ExtractIfNotStable<C>(access, source, results);
