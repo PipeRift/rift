@@ -86,7 +86,7 @@ namespace Rift::Graph
 		Nodes::EndNode();
 		Nodes::PopStyleColor(1);
 
-		if (context->leftMouseDragging || context->leftMouseReleased)
+		if (context->leftMouseReleased)
 		{
 			const AST::Id id{i32(Nodes::GetEditorContext().nodes.Pool[context->CurrentNodeIdx].id)};
 			v2 newPosition = GetNodePosition(id);

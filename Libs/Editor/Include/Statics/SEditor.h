@@ -6,11 +6,13 @@
 #include "Panels/FileExplorerPanel.h"
 #include "Tools/ASTDebugger.h"
 #include "Tools/GraphPlayground.h"
+#include "Tools/ReflectionDebugger.h"
 
 #include <Files/FileWatcher.h>
 #include <Memory/OwnPtr.h>
 #include <Types/Struct.h>
 #include <UI/UI.h>
+
 
 
 namespace Rift
@@ -30,6 +32,7 @@ namespace Rift
 		FileWatcher fileWatcher;
 		FileExplorerPanel fileExplorer{};
 
+		ReflectionDebugger reflectionDebugger;
 		ASTDebugger astDebugger;
 		GraphPlayground graphPlayground;
 

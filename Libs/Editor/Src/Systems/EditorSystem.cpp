@@ -286,6 +286,7 @@ namespace Rift::EditorSystem
 		DrawModules(ast, editor);
 		DrawTypes(ast, editor);
 
+		editor.reflectionDebugger.Draw();
 		editor.astDebugger.Draw(ast);
 		editor.fileExplorer.Draw(ast);
 		editor.graphPlayground.Draw(ast, editor.layout);
@@ -395,7 +396,8 @@ namespace Rift::EditorSystem
 			{
 				if (UI::BeginMenu("Debug"))
 				{
-					UI::MenuItem("Syntax Tree", nullptr, &editorData.astDebugger.open);
+					UI::MenuItem("Reflection", nullptr, &editorData.reflectionDebugger.open);
+					UI::MenuItem("Abstract Syntax Tree", nullptr, &editorData.astDebugger.open);
 					UI::MenuItem("Graph Playground", nullptr, &editorData.graphPlayground.open);
 					UI::EndMenu();
 				}
