@@ -5,7 +5,7 @@
 
 namespace Rift::AST
 {
-	i32 GetSmallestPool(const TArray<const Pool*>& pools)
+	i32 GetSmallestPool(TSpan<const Pool*> pools)
 	{
 		sizet minSize = std::numeric_limits<sizet>::max();
 		i32 minIndex  = NO_INDEX;

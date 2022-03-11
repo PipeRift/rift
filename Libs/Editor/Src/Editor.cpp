@@ -94,6 +94,23 @@ namespace Rift
 		}
 	}
 
+	bool Editor::CreateProject(const Path& path, bool closeFirst)
+	{
+		if (!closeFirst && Modules::HasProject(ast))
+		{
+			return false;
+		}
+
+		if (Modules::CreateProject(ast, path))
+		{
+			ast.SetStatic<SEditor>();
+			EditorSystem::Init(ast);
+			SetUIConfigFile(Modules::GetProjectPath(ast) / "Saved/UI.ini");
+			return true;
+		}
+		return false;
+	}
+
 	bool Editor::OpenProject(const Path& path, bool closeFirst)
 	{
 		if (!closeFirst && Modules::HasProject(ast))
@@ -104,7 +121,6 @@ namespace Rift
 		if (Modules::OpenProject(ast, path))
 		{
 			ast.SetStatic<SEditor>();
-
 			EditorSystem::Init(ast);
 			SetUIConfigFile(Modules::GetProjectPath(ast) / "Saved/UI.ini");
 			return true;

@@ -112,6 +112,18 @@ namespace Rift
 			return nullptr;
 		}
 
+		template<typename C>
+		AST::TPool<Mut<C>>& AssurePool() const requires(IsMutable<C>)
+		{
+			return *GetPool<C>();
+		}
+
+		template<typename C>
+		const AST::TPool<Mut<C>>& AssurePool() const requires(IsConst<C>)
+		{
+			return *GetPool<C>();
+		}
+
 		bool IsValid(AST::Id id) const
 		{
 			return ast.IsValid(id);
@@ -133,6 +145,29 @@ namespace Rift
 		{
 			return GetPool<C>()->Add(id, value);
 		}
+
+		// Add component to many entities (if they dont have it already)
+		template<typename C>
+		decltype(auto) Add(TSpan<const AST::Id> ids, const C& value = {}) const
+		{
+			return GetPool<C>()->Add(ids.begin(), ids.end(), value);
+		}
+
+		// Add component to an entities (if they dont have it already)
+		template<typename... C>
+		void Add(AST::Id id) const requires((IsSame<C, Mut<C>> && ...) && sizeof...(C) > 1)
+		{
+			(Add<C>(id), ...);
+		}
+
+		// Add components to many entities (if they dont have it already)
+		template<typename... C>
+		void Add(TSpan<const AST::Id> ids) const
+		    requires((IsSame<C, Mut<C>> && ...) && sizeof...(C) > 1)
+		{
+			(Add<C>(ids), ...);
+		}
+
 
 		template<typename C>
 		void Remove(const AST::Id id) const requires(IsSame<C, Mut<C>>)

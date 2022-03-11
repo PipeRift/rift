@@ -23,7 +23,8 @@ namespace Rift::Modules
 
 	static constexpr StringView moduleFile{"Module.rift"};
 
-	bool OpenProject(Tree& ast, const Path& path);
+	bool CreateProject(Tree& ast, Path path);
+	bool OpenProject(Tree& ast, Path path);
 	void CloseProject(Tree& ast);
 
 	Id GetProjectId(TAccessRef<CProject> access);

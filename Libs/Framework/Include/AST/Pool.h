@@ -809,5 +809,5 @@ namespace Rift::AST
 	};
 
 
-	i32 GetSmallestPool(const TArray<const Pool*>& pools);
+	i32 GetSmallestPool(TSpan<const Pool*> pools);
 }    // namespace Rift::AST

@@ -8,12 +8,12 @@
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "Editor.h"
-#include "Files/FileDialog.h"
 #include "Files/Paths.h"
 #include "imgui_internal.h"
 #include "Statics/SEditor.h"
 #include "Utils/FunctionGraph.h"
 #include "Utils/ModuleUtils.h"
+#include "Utils/ProjectManager.h"
 #include "Utils/Properties.h"
 #include "Utils/TypeUtils.h"
 
@@ -24,6 +24,7 @@
 #include <Compiler/Compiler.h>
 #include <Containers/Array.h>
 #include <CppBackend.h>
+#include <Files/FileDialog.h>
 #include <IconsFontAwesome5.h>
 #include <RiftContext.h>
 #include <UI/Inspection.h>
@@ -98,7 +99,6 @@ namespace Rift::EditorSystem
 	void CreateTypeDockspace(CTypeEditor& editor, const char* id);
 	void CreateModuleDockspace(CModuleEditor& editor, const char* id);
 	void DrawMenuBar(AST::Tree& ast);
-	void DrawProjectPickerPopup(AST::Tree& ast);
 
 	// Project Editor
 	void DrawProject(AST::Tree& ast);
@@ -122,11 +122,11 @@ namespace Rift::EditorSystem
 		}
 		else
 		{
-			UI::OpenPopup("Project Picker");
+			OpenProjectManager();
 		}
 
 		DrawMenuBar(ast);
-		DrawProjectPickerPopup(ast);
+		DrawProjectManager(ast);
 
 #if BUILD_DEBUG
 		if (bool& showDemo = Editor::Get().showDemo)
@@ -213,52 +213,6 @@ namespace Rift::EditorSystem
 		}
 	}
 
-	void DrawProjectPickerPopup(AST::Tree& ast)
-	{
-		// Center modal when appearing
-		UI::SetNextWindowPos(UI::GetMainViewport()->GetCenter(), ImGuiCond_Always, {0.5f, 0.5f});
-
-		if (UI::BeginPopupModal("Project Picker", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-		{
-			if (UI::Button("Open Project..."))
-			{
-				Path folder = Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
-				if (Editor::Get().OpenProject(folder))
-				{
-					UI::CloseCurrentPopup();
-				}
-			}
-			UI::SetItemDefaultFocus();
-			UI::Separator();
-			{
-				UI::Text("Recent Projects");
-				static const char* recentProjects[]{"One recent project"};
-				static int selectedN = 0;
-				if (UI::BeginListBox("##RecentProjects"))
-				{
-					for (int n = 0; n < IM_ARRAYSIZE(recentProjects); ++n)
-					{
-						const bool isSelected = (selectedN == n);
-						if (UI::Selectable(recentProjects[n], isSelected))
-						{
-							selectedN = n;
-						}
-
-						// Set the initial focus when opening the combo (scrolling + keyboard
-						// navigation focus)
-						if (isSelected)
-						{
-							UI::SetItemDefaultFocus();
-						}
-					}
-					UI::EndListBox();
-				}
-			}
-			UI::EndPopup();
-		}
-	}
-
-
 	void DrawProject(AST::Tree& ast)
 	{
 		ZoneScopedN("EditorSystem::DrawProject");
@@ -286,6 +240,7 @@ namespace Rift::EditorSystem
 		DrawModules(ast, editor);
 		DrawTypes(ast, editor);
 
+		editor.reflectionDebugger.Draw();
 		editor.astDebugger.Draw(ast);
 		editor.fileExplorer.Draw(ast);
 		editor.graphPlayground.Draw(ast, editor.layout);
@@ -317,31 +272,36 @@ namespace Rift::EditorSystem
 				if (UI::MenuItem("Open File")) {}
 				if (UI::MenuItem(ICON_FA_SAVE " Save All", "CTRL+SHFT+S"))
 				{
-					// TODO: Only save dirty types & modules
 					TArray<TPair<Path, String>> fileDatas;
-					for (AST::Id typeId : AST::ListAll<CType, CTypeEditor, CFileRef>(ast))
+
+					auto dirtyTypeIds = AST::ListAll<CType, CTypeEditor, CFileRef, CFileDirty>(ast);
+					for (AST::Id typeId : dirtyTypeIds)
 					{
 						auto& file     = ast.Get<CFileRef>(typeId);
 						auto& fileData = fileDatas.AddRef({file.path, ""});
 						Types::Serialize(ast, typeId, fileData.second);
 					}
 
-					for (AST::Id moduleId : AST::ListAll<CModule, CModuleEditor, CFileRef>(ast))
+					auto dirtyModuleIds =
+					    AST::ListAll<CModule, CModuleEditor, CFileRef, CFileDirty>(ast);
+					for (AST::Id moduleId : dirtyModuleIds)
 					{
 						auto& file     = ast.Get<CFileRef>(moduleId);
 						auto& fileData = fileDatas.AddRef({file.path, ""});
 						Modules::Serialize(ast, moduleId, fileData.second);
 					}
 
+					for (auto& fileData : fileDatas)
+					{
+						Files::SaveStringFile(fileData.first, fileData.second);
+					}
+
+					ast.Remove<CFileDirty>(dirtyTypeIds);
+					ast.Remove<CFileDirty>(dirtyModuleIds);
+
 					UI::AddNotification({UI::ToastType::Success, 1.f,
 					    !fileDatas.IsEmpty() ? Strings::Format("Saved {} files", fileDatas.Size())
 					                         : "Nothing to save"});
-					TaskSystem::Get().GetPool(TaskPool::Workers).silent_async([fileDatas]() {
-						for (auto& fileData : fileDatas)
-						{
-							Files::SaveStringFile(fileData.first, fileData.second);
-						}
-					});
 				}
 				UI::EndMenu();
 			}
@@ -390,7 +350,8 @@ namespace Rift::EditorSystem
 			{
 				if (UI::BeginMenu("Debug"))
 				{
-					UI::MenuItem("Syntax Tree", nullptr, &editorData.astDebugger.open);
+					UI::MenuItem("Reflection", nullptr, &editorData.reflectionDebugger.open);
+					UI::MenuItem("Abstract Syntax Tree", nullptr, &editorData.astDebugger.open);
 					UI::MenuItem("Graph Playground", nullptr, &editorData.graphPlayground.open);
 					UI::EndMenu();
 				}
@@ -425,11 +386,11 @@ namespace Rift::EditorSystem
 				TPair<Path, String> fileData{file.path, ""};
 				Modules::Serialize(ast, moduleId, fileData.second);
 
+				Files::SaveStringFile(fileData.first, fileData.second);
+				ast.Remove<CFileDirty>(moduleId);
+
 				UI::AddNotification({UI::ToastType::Success, 1.f,
 				    Strings::Format("Saved file {}", Paths::GetFilename(file.path))});
-				TaskSystem::Get().GetPool(TaskPool::Workers).silent_async([fileData]() {
-					Files::SaveStringFile(fileData.first, fileData.second);
-				});
 			}
 			UI::EndMenuBar();
 		}
@@ -503,9 +464,9 @@ namespace Rift::EditorSystem
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
 				    Strings::Format("Saved file {}", Paths::GetFilename(file.path))});
-				TaskSystem::Get().GetPool(TaskPool::Workers).silent_async([fileData]() {
-					Files::SaveStringFile(fileData.first, fileData.second);
-				});
+
+				Files::SaveStringFile(fileData.first, fileData.second);
+				ast.Remove<CFileDirty>(typeId);
 			}
 			if (UI::BeginMenu("View"))
 			{
