@@ -8,10 +8,10 @@
 // [SECTION] render helpers
 // [SECTION] API implementation
 
-#include "UI/Nodes.h"
+#include "Utils/Nodes.h"
 
-#include "UI/NodesInternal.h"
-#include "UI/NodesMiniMap.h"
+#include "Utils/NodesInternal.h"
+#include "Utils/NodesMiniMap.h"
 
 #include <Log.h>
 #include <Math/Bezier.h>

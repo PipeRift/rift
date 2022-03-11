@@ -1,9 +1,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "UI/NodesMiniMap.h"
+#include "Utils/NodesMiniMap.h"
 
-#include "UI/Nodes.h"
-#include "UI/NodesInternal.h"
+#include "Utils/Nodes.h"
+#include "Utils/NodesInternal.h"
 
 #include <Math/Math.h>
 #include <Math/Vector.h>

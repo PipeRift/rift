@@ -1,15 +1,16 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "UI/Nodes.h"
-#include "UI/NodesMiniMap.h"
 #include "UI/UIImgui.h"
+#include "Utils/Nodes.h"
+#include "Utils/NodesMiniMap.h"
 
 #include <assert.h>
 #include <Containers/Array.h>
 #include <Containers/BitArray.h>
 #include <limits.h>
 #include <Math/Vector.h>
+
 
 
 // the structure of this file:
