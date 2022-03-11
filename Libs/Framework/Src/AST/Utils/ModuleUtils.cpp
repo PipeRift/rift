@@ -17,31 +17,77 @@
 
 namespace Rift::Modules
 {
-	bool OpenProject(Tree& ast, const Path& path)
+	bool ValidateProjectPath(Path& path, String& error)
 	{
 		if (path.empty())
 		{
-			Log::Error("Can't open project: Invalid path");
+			error = "Path is empty";
 			return false;
 		}
 
-		Path folderPath;
-		Path filePath;
 		if (Files::IsFile(path))
 		{
-			filePath   = Paths::ToAbsolute(path);
-			folderPath = filePath.parent_path();
+			if (path.filename() != moduleFile)
+			{
+				error = "Path is not a rift module file or a folder";
+				return false;
+			}
+			path = Paths::ToAbsolute(path).parent_path();
 		}
 		else
 		{
-			folderPath = Paths::ToAbsolute(path);
-			filePath   = folderPath / moduleFile;
+			path = Paths::ToAbsolute(path);
+		}
+		return true;
+	}
+
+	bool CreateProject(Tree& ast, Path path)
+	{
+		String error;
+		if (!ValidateProjectPath(path, error))
+		{
+			Log::Error("Can't create project: {}", error);
+			return false;
 		}
 
+		if (!Files::ExistsAsFolder(path))
+		{
+			Files::CreateFolder(path, true);
+		}
+
+		const Path filePath = path / moduleFile;
+		if (Files::ExistsAsFile(filePath))
+		{
+			Log::Error("Can't create project: Folder already contains a '{}' file", moduleFile);
+			return false;
+		}
+
+		Serl::JsonFormatWriter writer{};
+		writer.GetContext().BeginObject();
+		Files::SaveStringFile(filePath, writer.ToString());
+
+		return OpenProject(ast, path);
+	}
+
+	bool OpenProject(Tree& ast, Path path)
+	{
+		String error;
+		if (!ValidateProjectPath(path, error))
+		{
+			Log::Error("Can't open project: {}", error);
+			return false;
+		}
+
+		if (!Files::ExistsAsFolder(path))
+		{
+			Log::Error("Can't open project: Folder doesn't exist");
+			return false;
+		}
+
+		const Path filePath = path / moduleFile;
 		if (!Files::ExistsAsFile(filePath))
 		{
-			Log::Error(
-			    "Can't open project: Project file failed to load. Does it exist? Is it corrupted?");
+			Log::Error("Can't open project: Folder doesn't contain a '{}' file", moduleFile);
 			return false;
 		}
 

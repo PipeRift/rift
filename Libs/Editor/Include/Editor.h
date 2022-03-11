@@ -47,6 +47,7 @@ namespace Rift
 			return Get().ast;
 		}
 
+		bool CreateProject(const Path& path, bool closeFirst = true);
 		bool OpenProject(const Path& path, bool closeFirst = true);
 
 		void Close();

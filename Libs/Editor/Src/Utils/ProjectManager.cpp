@@ -4,6 +4,7 @@
 #include "Utils/Properties.h"
 
 #include <Files/FileDialog.h>
+#include <UI/Notify.h>
 #include <UI/UI.h>
 
 
@@ -36,6 +37,12 @@ namespace Rift
 				if (Editor::Get().OpenProject(folder))
 				{
 					UI::CloseCurrentPopup();
+				}
+				else
+				{
+					UI::AddNotification({UI::ToastType::Error, 1.f,
+					    Strings::Format(
+					        "Failed to open project at '{}'", Paths::ToString(folder))});
 				}
 			}
 			UI::SetItemDefaultFocus();
@@ -80,20 +87,30 @@ namespace Rift
 			UI::AlignTextToFramePadding();
 			UI::Text("Destination");
 			UI::SameLine();
-			static String path;
+			static String folder;
 			UI::PushItemWidth(-32.f);
-			UI::InputText("##path", path);
+			UI::InputText("##path", folder);
 			UI::PopItemWidth();
 			UI::SameLine();
 			if (UI::Button("...", v2{24.f, 0.f}))
 			{
-				Path folder = Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
-				path        = Paths::ToString(folder);
+				Path selectedFolder =
+				    Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
+				folder = Paths::ToString(selectedFolder);
 			}
 
 			if (UI::Button("Create", v2{-FLT_MIN, 0.0f}))
 			{
-				UI::CloseCurrentPopup();
+				if (Editor::Get().CreateProject(Paths::FromString(folder)))
+				{
+					folder = "";
+					UI::CloseCurrentPopup();
+				}
+				else
+				{
+					UI::AddNotification({UI::ToastType::Error, 1.f,
+					    Strings::Format("Failed to create project at '{}'", folder)});
+				}
 			}
 
 			UI::EndPopup();
