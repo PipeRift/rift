@@ -150,7 +150,7 @@ namespace Rift::Nodes
 
 		const Color linkColor =
 		    gNodes->style
-		        .colors[editor.SelectedLinkIndices.contains(linkIdx) ? ColorVar_MiniMapLinkSelected
+		        .colors[editor.selectedLinkIndices.contains(linkIdx) ? ColorVar_MiniMapLinkSelected
 		                                                             : ColorVar_MiniMapLink];
 
 		gNodes->CanvasDrawList->AddBezierCubic(cubicBezier.p0, cubicBezier.p1, cubicBezier.p2,

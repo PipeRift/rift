@@ -1,10 +1,12 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include <AST/Types.h>
 #include <Math/Color.h>
 #include <Math/Vector.h>
 #include <Misc/EnumFlags.h>
 #include <UI/UIImgui.h>
+
 
 
 #ifdef IMNODES_USER_CONFIG
@@ -291,7 +293,7 @@ namespace Rift::Nodes
 	void SetEditorContext(EditorContext*);
 	v2 GetEditorContextPanning();
 	void EditorContextResetPanning(const v2& pos);
-	void EditorContextMoveToNode(const Id nodeId);
+	void EditorContextMoveToNode(AST::Id nodeId);
 
 	IO& GetIO();
 
@@ -383,13 +385,13 @@ namespace Rift::Nodes
 	// Use the following functions to get and set the node's coordinates in these coordinate
 	// systems.
 
-	void SetNodeScreenSpacePos(Id nodeId, const v2& screen_space_pos);
-	void SetNodeEditorSpacePos(Id nodeId, const v2& editor_space_pos);
-	void SetNodeGridSpacePos(Id nodeId, const v2& grid_pos);
+	void SetNodeScreenSpacePos(AST::Id nodeId, const v2& screen_space_pos);
+	void SetNodeEditorSpacePos(AST::Id nodeId, const v2& editor_space_pos);
+	void SetNodeGridSpacePos(AST::Id nodeId, const v2& grid_pos);
 
-	v2 GetNodeScreenSpacePos(const Id nodeId);
-	v2 GetNodeEditorSpacePos(const Id nodeId);
-	v2 GetNodeGridSpacePos(const Id nodeId);
+	v2 GetNodeScreenSpacePos(AST::Id nodeId);
+	v2 GetNodeEditorSpacePos(AST::Id nodeId);
+	v2 GetNodeGridSpacePos(AST::Id nodeId);
 
 	// Returns true if the current node editor canvas is being hovered over by the mouse, and is
 	// not blocked by any other windows.
@@ -397,7 +399,7 @@ namespace Rift::Nodes
 	// The following functions return true if a UI element is being hovered over by the mouse
 	// cursor. Assigns the id of the UI element being hovered over to the function argument. Use
 	// these functions after EndNodeEditor() has been called.
-	bool IsNodeHovered(Id* nodeId);
+	bool IsNodeHovered(AST::Id* nodeId);
 	bool IsLinkHovered(Id* linkId);
 	bool IsPinHovered(Id* attributeId);
 
@@ -408,7 +410,7 @@ namespace Rift::Nodes
 	// Get the selected node/link ids. The pointer argument should point to an integer array
 	// with at least as many elements as the respective NumSelectedNodes/NumSelectedLinks
 	// function call returned.
-	void GetSelectedNodes(Id* nodeIds);
+	void GetSelectedNodes(AST::Id* nodeIds);
 	void GetSelectedLinks(Id* linkIds);
 	// Clears the list of selected nodes/links. Useful if you want to delete a selected node or
 	// link.
@@ -420,12 +422,11 @@ namespace Rift::Nodes
 	// considered unselected. Clear-functions has the precondition that the object is currently
 	// considered selected. Preconditions listed above can be checked via
 	// IsNodeSelected/IsLinkSelected if not already known.
-	void ClearNodeSelection(Id nodeId);
+	void ClearNodeSelection(AST::Id nodeId);
 	void ClearLinkSelection(Id linkId);
-	void SelectNode(Id nodeId);
+	void SelectNode(AST::Id nodeId);
 	void SelectLink(Id linkId);
-	bool IsNodeSelected(Id nodeId);
-	bool IsNodeSelectedByIdx(i32 nodeIdx);
+	bool IsNodeSelected(AST::Id nodeId);
 	bool IsLinkSelected(Id linkId);
 	bool IsLinkSelectedByIdx(i32 linkIdx);
 
@@ -450,7 +451,7 @@ namespace Rift::Nodes
 	bool IsLinkDropped(Id* outputPinId = nullptr, bool includingDetachedLinks = true);
 	// Did the user finish creating a new link?
 	bool IsLinkCreated(Id& outputPinId, Id& inputPinId, bool* createdFromSnap = nullptr);
-	bool IsLinkCreated(Id& outputNodeId, Id& outputPinId, Id& inputNodeId, Id& inputPinId,
+	bool IsLinkCreated(AST::Id& outputNodeId, Id& outputPinId, AST::Id& inputNodeId, Id& inputPinId,
 	    bool* createdFromSnap = nullptr);
 
 	// Was an existing link detached from a pin by the user? The detached link's id is assigned

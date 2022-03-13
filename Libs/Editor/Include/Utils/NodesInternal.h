@@ -6,11 +6,11 @@
 #include "Utils/NodesMiniMap.h"
 
 #include <assert.h>
+#include <AST/Pool.h>
 #include <Containers/Array.h>
 #include <Containers/BitArray.h>
 #include <limits.h>
 #include <Math/Vector.h>
-
 
 
 // the structure of this file:
@@ -82,6 +82,196 @@ namespace Rift::Nodes
 		BitArray InUse;
 		TArray<i32> availableIds;
 		ImGuiStorage idMap;
+	};
+
+	template<typename T>
+	struct IndexedArray
+	{
+		TArray<AST::Id> used;
+		TArray<T> data;
+
+		struct TIterator final
+		{
+			using difference_type   = typename IdTraits<Id>::Difference;
+			using value_type        = Value;
+			using pointer           = Value*;
+			using reference         = Value&;
+			using iterator_category = std::random_access_iterator_tag;
+
+		private:
+			difference_type index = NO_INDEX;
+			AST::Id* used         = nullptr;
+			u32 size              = 0;
+
+
+		public:
+			Iterator() = default;
+			Iterator(const difference_type index, TArray<AST::Id>& used)
+			    : index{index}, used{used.Data()}, size{used.Size()}
+			{}
+
+			Iterator& operator++()
+			{
+				while (++index < size && !IsValid()) {}
+				return *this;
+			}
+			Iterator& operator--()
+			{
+				while (--index >= 0 && !IsValid()) {}
+				return *this;
+			}
+			Iterator operator++(int)
+			{
+				Iterator orig = *this;
+				return ++(*this), orig;
+			}
+			Iterator operator--(int)
+			{
+				Iterator orig = *this;
+				return --(*this), orig;
+			}
+
+			bool operator==(const Iterator& other) const
+			{
+				return other.index == index;
+			}
+			bool operator!=(const Iterator& other) const
+			{
+				return !(*this == other);
+			}
+			auto operator<=>(const Iterator& other) const
+			{
+				return other.index <=> index;
+			}
+
+			pointer operator->() const
+			{
+				return used + index;
+			}
+
+			reference operator*() const
+			{
+				return used[index];
+			}
+
+		private:
+			bool IsValid() const
+			{
+				const AST::Id id = operator*();
+				return AST::GetVersion(id) != AST::GetVersion(AST::NoId);
+			}
+		};
+
+		T& GetOrAdd(AST::Id id, bool* outAdded = nullptr)
+		{
+			const u32 index = AST::GetIndex(id);
+			if (used.Size() <= index)
+			{
+				used.Resize(index + 1);
+				data.Resize(index + 1);
+
+				if (outAdded)
+				{
+					*outAdded = true;
+				}
+			}
+			T* const ptr = GetByIndex(index);
+			if (!used.IsSet(index))
+			{
+				used.FillBit(index);
+				*ptr = {};
+			}
+			return *ptr;
+		}
+
+		T& Get(AST::Id id)
+		{
+			const u32 index = AST::GetIndex(id);
+			Check(index < used.Size() && used.IsSet(index));
+			return *GetByIndex(index);
+		}
+
+		const T& Get(AST::Id id) const
+		{
+			return const_cast<IndexedArray<T>*>(this)->Get(id);
+		}
+
+		T* TryGet(AST::Id id)
+		{
+			const u32 index = AST::GetIndex(id);
+			if (index < used.Size() && used.IsSet(index))
+			{
+				return GetByIndex(index);
+			}
+			return nullptr;
+		}
+
+		bool Contains(AST::Id id) const
+		{
+			const u32 index = AST::GetIndex(id);
+			return index < used.Size() && used.IsSet(index);
+		}
+
+		T& operator[](AST::Id id)
+		{
+			return Get(id);
+		}
+
+		void Reset(u32 size)
+		{
+			used.Reset(size);
+		}
+
+		Iterator begin() const
+		{
+			return {0, iterablePool->begin(), access.GetPoolArray(iterablePool),
+			    access.GetExcludedPoolArray()};
+		}
+
+		Iterator end() const
+		{
+			return {iterablePool->begin(), iterablePool->end(), iterablePool->end(),
+			    access.GetPoolArray(iterablePool), access.GetExcludedPoolArray()};
+		}
+
+	private:
+		T* GetByIndex(u32 index)
+		{
+			return data[index];
+		}
+	};
+
+	struct DepthVertex
+	{
+		AST::Id front = AST::NoId;
+		AST::Id back  = AST::NoId;
+	};
+	template<typename T>
+	struct NodeArray : public IndexedArray<T>
+	{
+		TArray<AST::Id> depthOrder;
+
+
+		T& GetOrAdd(AST::Id id, bool* outAdded = nullptr)
+		{
+			bool added = false;
+			T& node    = IndexedArray<T>::GetOrAdd(id, &added);
+			if (added)
+			{
+				depthOrder.Add(id);
+				if (outAdded)
+				{
+					*outAdded = true;
+				}
+			}
+			return node;
+		}
+
+		void PushToTheFront(AST::Id id)
+		{
+			depthOrder.Remove(id, false);
+			depthOrder.Add(id);
+		}
 	};
 
 
@@ -170,7 +360,7 @@ namespace Rift::Nodes
 	struct PinData
 	{
 		Id id;
-		i32 parentNodeIdx = NO_INDEX;
+		AST::Id parentNodeId = AST::NoId;
 		Rect rect;
 		PinShape Shape = PinShape_CircleFilled;
 		v2 position;    // screen-space coordinates
@@ -247,12 +437,12 @@ namespace Rift::Nodes
 
 	struct EditorContext
 	{
-		ObjectPool<NodeData> nodes;
+		NodeArray<NodeData> nodes;
 		ObjectPool<PinData> outputs;
 		ObjectPool<PinData> inputs;
 		ObjectPool<LinkData> Links;
 
-		ImVector<i32> NodeDepthOrder;
+		ImVector<AST::Id> nodeDepthOrder;
 
 		// ui related fields
 		v2 Panning = v2::Zero();
@@ -261,8 +451,8 @@ namespace Rift::Nodes
 		// Nodes::EndNode() call.
 		Rect gridContentBounds;
 
-		ImVector<i32> SelectedNodeIndices;
-		ImVector<i32> SelectedLinkIndices;
+		ImVector<AST::Id> selectedNodeIds;
+		ImVector<i32> selectedLinkIndices;
 
 		// Relative origins of selected nodes for snapping of dragged nodes
 		ImVector<v2> SelectedNodeOrigins;
@@ -272,6 +462,7 @@ namespace Rift::Nodes
 		ClickInteractionState clickInteraction;
 
 		MiniMap miniMap;
+
 
 		ObjectPool<PinData>& GetPinPool(PinType type)
 		{
@@ -333,11 +524,11 @@ namespace Rift::Nodes
 		ImVector<i32> pinFlagStack;
 
 		// UI element state
-		i32 CurrentNodeIdx;
+		AST::Id currentNodeId;
 		PinIdx CurrentPinIdx;
 		i32 CurrentPinId;
 
-		OptionalIndex HoveredNodeIdx;
+		AST::Id hoveredNodeId;
 		OptionalIndex HoveredLinkIdx;
 		PinIdx HoveredPinIdx;
 
@@ -390,38 +581,6 @@ namespace Rift::Nodes
 		}
 	}
 
-	template<>
-	inline void ObjectPoolUpdate(ObjectPool<NodeData>& nodes)
-	{
-		for (i32 i = 0; i < nodes.InUse.Size(); ++i)
-		{
-			if (nodes.InUse.IsSet(i))
-			{
-				auto& node = nodes.Pool[i];
-				node.inputs.clear();
-				node.outputs.clear();
-			}
-			else
-			{
-				const Id id = nodes.Pool[i].id;
-
-				if (nodes.idMap.GetInt(i32(id), -1) == i)
-				{
-					// Remove node idx form depth stack the first time we detect that this idx slot
-					// is unused
-					ImVector<i32>& depthStack = GetEditorContext().NodeDepthOrder;
-					const i32* const elem     = depthStack.find(i);
-					assert(elem != depthStack.end());
-					depthStack.erase(elem);
-
-					nodes.idMap.SetInt(i32(id), -1);
-					nodes.availableIds.Add(i);
-					(nodes.Pool.Data() + i)->~NodeData();
-				}
-			}
-		}
-	}
-
 	template<typename T>
 	static inline void ObjectPoolReset(ObjectPool<T>& objects)
 	{
@@ -459,40 +618,6 @@ namespace Rift::Nodes
 		// Flag it as used
 		objects.InUse.FillBit(index);
 		return index;
-	}
-
-	template<>
-	inline i32 ObjectPoolFindOrCreateIndex(ObjectPool<NodeData>& nodes, const Id nodeId)
-	{
-		i32 nodeIdx = nodes.idMap.GetInt(static_cast<ImGuiID>(i32(nodeId)), -1);
-
-		// Construct new node
-		if (nodeIdx == -1)
-		{
-			if (nodes.availableIds.IsEmpty())
-			{
-				nodeIdx = nodes.Pool.Size();
-				IM_ASSERT(nodes.Pool.Size() == nodes.InUse.Size());
-				const i32 newSize = nodes.Pool.Size() + 1;
-				nodes.Pool.Resize(newSize);
-				nodes.InUse.Resize(newSize);
-			}
-			else
-			{
-				nodeIdx = nodes.availableIds.Last();
-				nodes.availableIds.RemoveLast();
-			}
-			IM_PLACEMENT_NEW(nodes.Pool.Data() + nodeIdx) NodeData(nodeId);
-			nodes.idMap.SetInt(static_cast<ImGuiID>(i32(nodeId)), nodeIdx);
-
-			EditorContext& editor = GetEditorContext();
-			editor.NodeDepthOrder.push_back(nodeIdx);
-		}
-
-		// Flag node as used
-		nodes.InUse.FillBit(nodeIdx);
-
-		return nodeIdx;
 	}
 
 	template<typename T>
