@@ -8,7 +8,6 @@
 #include <UI/UIImgui.h>
 
 
-
 #ifdef IMNODES_USER_CONFIG
 #	include IMNODES_USER_CONFIG
 #endif
@@ -334,10 +333,10 @@ namespace Rift::Nodes
 
 	// id can be any positive or negative integer, but INT_MIN is currently reserved for
 	// internal use.
-	void BeginNode(Id id);
+	void BeginNode(AST::Id id);
 	void EndNode();
 
-	v2 GetNodeDimensions(Id id);
+	v2 GetNodeDimensions(AST::Id id);
 
 	// Place your node title bar content (such as the node title, using ImGui::Text) between the
 	// following function calls. These functions have to be called before adding any attributes,

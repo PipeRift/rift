@@ -6,7 +6,7 @@
 #include "Utils/NodesMiniMap.h"
 
 #include <assert.h>
-#include <AST/Pool.h>
+#include <AST/Types.h>
 #include <Containers/Array.h>
 #include <Containers/BitArray.h>
 #include <limits.h>
@@ -85,73 +85,79 @@ namespace Rift::Nodes
 	};
 
 	template<typename T>
-	struct IndexedArray
+	struct TIndexedArray
 	{
 		TArray<AST::Id> used;
 		TArray<T> data;
 
+		template<bool isConst>
 		struct TIterator final
 		{
-			using difference_type   = typename IdTraits<Id>::Difference;
-			using value_type        = Value;
-			using pointer           = Value*;
-			using reference         = Value&;
+			using difference_type   = typename AST::IdTraits<AST::Id>::Difference;
+			using value_type        = Select<isConst, const AST::Id, AST::Id>;
+			using pointer           = value_type*;
+			using reference         = value_type&;
 			using iterator_category = std::random_access_iterator_tag;
 
 		private:
-			difference_type index = NO_INDEX;
-			AST::Id* used         = nullptr;
-			u32 size              = 0;
+			pointer current = nullptr;
+			pointer begin   = nullptr;
+			pointer end     = nullptr;
 
 
 		public:
-			Iterator() = default;
-			Iterator(const difference_type index, TArray<AST::Id>& used)
-			    : index{index}, used{used.Data()}, size{used.Size()}
-			{}
+			TIterator() = default;
+			TIterator(pointer current, pointer begin, pointer end)
+			    : current{current}, begin{begin}, end{end}
+			{
+				if (current != end && !IsValid())
+				{
+					operator++();
+				}
+			}
 
-			Iterator& operator++()
+			TIterator& operator++()
 			{
-				while (++index < size && !IsValid()) {}
+				while (++current < end && !IsValid()) {}
 				return *this;
 			}
-			Iterator& operator--()
+			TIterator& operator--()
 			{
-				while (--index >= 0 && !IsValid()) {}
+				while (--current >= begin && !IsValid()) {}
 				return *this;
 			}
-			Iterator operator++(int)
+			TIterator operator++(int)
 			{
 				Iterator orig = *this;
 				return ++(*this), orig;
 			}
-			Iterator operator--(int)
+			TIterator operator--(int)
 			{
 				Iterator orig = *this;
 				return --(*this), orig;
 			}
 
-			bool operator==(const Iterator& other) const
+			bool operator==(const TIterator& other) const
 			{
-				return other.index == index;
+				return current == other.current;
 			}
-			bool operator!=(const Iterator& other) const
+			bool operator!=(const TIterator& other) const
 			{
-				return !(*this == other);
+				return current != other.current;
 			}
-			auto operator<=>(const Iterator& other) const
+			auto operator<=>(const TIterator& other) const
 			{
-				return other.index <=> index;
+				return other.current <=> current;
 			}
 
 			pointer operator->() const
 			{
-				return used + index;
+				return current;
 			}
 
 			reference operator*() const
 			{
-				return used[index];
+				return current ? *current : AST::NoId;
 			}
 
 		private:
@@ -162,24 +168,27 @@ namespace Rift::Nodes
 			}
 		};
 
+		using Iterator      = TIterator<false>;
+		using ConstIterator = TIterator<true>;
+
 		T& GetOrAdd(AST::Id id, bool* outAdded = nullptr)
 		{
 			const u32 index = AST::GetIndex(id);
-			if (used.Size() <= index)
+			if (index >= used.Size())
 			{
-				used.Resize(index + 1);
+				used.Resize(index + 1, AST::NoId);
 				data.Resize(index + 1);
+			}
 
+			T* const ptr = GetByIndex(index);
+			if (used[index] == AST::NoId)
+			{
+				used[index] = id;
+				*ptr        = {};
 				if (outAdded)
 				{
 					*outAdded = true;
 				}
-			}
-			T* const ptr = GetByIndex(index);
-			if (!used.IsSet(index))
-			{
-				used.FillBit(index);
-				*ptr = {};
 			}
 			return *ptr;
 		}
@@ -187,19 +196,19 @@ namespace Rift::Nodes
 		T& Get(AST::Id id)
 		{
 			const u32 index = AST::GetIndex(id);
-			Check(index < used.Size() && used.IsSet(index));
+			Check(ContainsIndex(index));
 			return *GetByIndex(index);
 		}
 
 		const T& Get(AST::Id id) const
 		{
-			return const_cast<IndexedArray<T>*>(this)->Get(id);
+			return const_cast<TIndexedArray<T>*>(this)->Get(id);
 		}
 
 		T* TryGet(AST::Id id)
 		{
 			const u32 index = AST::GetIndex(id);
-			if (index < used.Size() && used.IsSet(index))
+			if (ContainsIndex(index))
 			{
 				return GetByIndex(index);
 			}
@@ -208,46 +217,48 @@ namespace Rift::Nodes
 
 		bool Contains(AST::Id id) const
 		{
-			const u32 index = AST::GetIndex(id);
-			return index < used.Size() && used.IsSet(index);
+			return ContainsIndex(AST::GetIndex(id));
+		}
+
+		bool ContainsIndex(const u32 index) const
+		{
+			return index < used.Size() && used[index] != AST::NoId;
 		}
 
 		T& operator[](AST::Id id)
 		{
 			return Get(id);
 		}
-
-		void Reset(u32 size)
+		const T& operator[](AST::Id id) const
 		{
-			used.Reset(size);
+			return Get(id);
 		}
 
-		Iterator begin() const
+		void Reset()
 		{
-			return {0, iterablePool->begin(), access.GetPoolArray(iterablePool),
-			    access.GetExcludedPoolArray()};
+			used.Empty(false);
+			data.Empty(false);
 		}
 
-		Iterator end() const
+		ConstIterator begin() const
 		{
-			return {iterablePool->begin(), iterablePool->end(), iterablePool->end(),
-			    access.GetPoolArray(iterablePool), access.GetExcludedPoolArray()};
+			return {used.Data(), used.Data(), used.Data() + used.Size()};
+		}
+
+		ConstIterator end() const
+		{
+			return {used.Data() + used.Size(), used.Data(), used.Data() + used.Size()};
 		}
 
 	private:
 		T* GetByIndex(u32 index)
 		{
-			return data[index];
+			return data.Data() + index;
 		}
 	};
 
-	struct DepthVertex
-	{
-		AST::Id front = AST::NoId;
-		AST::Id back  = AST::NoId;
-	};
 	template<typename T>
-	struct NodeArray : public IndexedArray<T>
+	struct NodeArray : public TIndexedArray<T>
 	{
 		TArray<AST::Id> depthOrder;
 
@@ -255,7 +266,7 @@ namespace Rift::Nodes
 		T& GetOrAdd(AST::Id id, bool* outAdded = nullptr)
 		{
 			bool added = false;
-			T& node    = IndexedArray<T>::GetOrAdd(id, &added);
+			T& node    = TIndexedArray<T>::GetOrAdd(id, &added);
 			if (added)
 			{
 				depthOrder.Add(id);
@@ -330,7 +341,6 @@ namespace Rift::Nodes
 
 	struct NodeData
 	{
-		Id id;
 		v2 Origin = v2::Zero();    // The node origin is in editor space
 		Rect TitleBarContentRect;
 		Rect rect{v2::Zero(), v2::Zero()};
@@ -353,7 +363,7 @@ namespace Rift::Nodes
 		bool Draggable = true;
 
 
-		NodeData(const Id id = NoId()) : id(id) {}
+		NodeData() {}
 	};
 
 
@@ -442,8 +452,6 @@ namespace Rift::Nodes
 		ObjectPool<PinData> inputs;
 		ObjectPool<LinkData> Links;
 
-		ImVector<AST::Id> nodeDepthOrder;
-
 		// ui related fields
 		v2 Panning = v2::Zero();
 		v2 AutoPanningDelta;
@@ -502,8 +510,8 @@ namespace Rift::Nodes
 		// Canvas draw list and helper state
 		ImDrawList* CanvasDrawList;
 		ImGuiStorage NodeIdxToSubmissionIdx;
-		ImVector<i32> NodeIdxSubmissionOrder;
-		ImVector<i32> NodeIndicesOverlappingWithMouse;
+		ImVector<AST::Id> nodeSubmissionOrder;
+		ImVector<AST::Id> nodeIdsOverlappingWithMouse;
 		ImVector<PinIdx> occludedPinIndices;
 
 		// Canvas extents

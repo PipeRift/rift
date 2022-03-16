@@ -33,7 +33,6 @@
 #include <Utils/NodesMiniMap.h>
 
 
-
 namespace Rift::Graph
 {
 	static CGraphTransform* currentNodeTransform = nullptr;
@@ -68,34 +67,32 @@ namespace Rift::Graph
 	void BeginNode(TAccessRef<TWrite<CGraphTransform>> access, AST::Id id)
 	{
 		if (UI::IsWindowAppearing()
-		    && !(Nodes::GetCurrentContext()->leftMouseDragging && Nodes::IsNodeSelected(i32(id))))
+		    && !(Nodes::GetCurrentContext()->leftMouseDragging && Nodes::IsNodeSelected(id)))
 		{
 			currentNodeTransform = &access.GetOrAdd<CGraphTransform>(id);
 			SetNodePosition(id, currentNodeTransform->position);
 		}
 
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
-		Nodes::BeginNode(i32(id));
+		Nodes::BeginNode(id);
 	}
 
 	void EndNode(const TransactionAccess& access)
 	{
 		// Selection outline
 		const auto* context = Nodes::GetCurrentContext();
-		if (Nodes::IsNodeSelectedByIdx(context->CurrentNodeIdx))
+		if (Nodes::IsNodeSelected(context->currentNodeId))
 		{
-			Nodes::GetEditorContext()
-			    .nodes.Pool[context->CurrentNodeIdx]
-			    .LayoutStyle.BorderThickness = 2.f;
+			Nodes::GetEditorContext().nodes[context->currentNodeId].LayoutStyle.BorderThickness =
+			    2.f;
 		}
 		Nodes::EndNode();
 		Nodes::PopStyleColor(1);
 
-		if (context->leftMouseReleased)
+		if (currentNodeTransform && context->leftMouseReleased)
 		{
-			const AST::Id id =
-			    AST::Id(u32(Nodes::GetEditorContext().nodes.Pool[context->CurrentNodeIdx].id));
-			v2 newPosition = GetNodePosition(id);
+			const AST::Id id = context->currentNodeId;
+			v2 newPosition   = GetNodePosition(id);
 			if (!newPosition.Equals(currentNodeTransform->position, 0.1f))
 			{
 				ScopedChange(access, id);
@@ -636,12 +633,12 @@ namespace Rift::Graph
 	void SetNodePosition(AST::Id id, v2 position)
 	{
 		position *= settings.GetGridSize();
-		Nodes::SetNodeGridSpacePos(i32(id), position);
+		Nodes::SetNodeGridSpacePos(id, position);
 	}
 
 	v2 GetNodePosition(AST::Id id)
 	{
-		const ImVec2 pos = Nodes::GetNodeGridSpacePos(i32(id));
+		const ImVec2 pos = Nodes::GetNodeGridSpacePos(id);
 		return {pos.x * settings.GetInvGridSize(), pos.y * settings.GetInvGridSize()};
 	}
 }    // namespace Rift::Graph

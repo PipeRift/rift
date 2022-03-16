@@ -87,9 +87,9 @@ namespace Rift::Nodes
 		scaling            = miniMapScaling;
 	}
 
-	void MiniMap::DrawNode(EditorContext& editor, const i32 nodeIdx)
+	void MiniMap::DrawNode(EditorContext& editor, const AST::Id nodeId)
 	{
-		const NodeData& node = editor.nodes.Pool[nodeIdx];
+		const NodeData& node = editor.nodes[nodeId];
 
 		const Rect nodeRect{ScreenToMiniMapPosition(editor, node.rect.min),
 		    ScreenToMiniMapPosition(editor, node.rect.max)};
@@ -106,10 +106,10 @@ namespace Rift::Nodes
 			// Run user callback when hovering a mini-map node
 			if (nodeHoveringCallback)
 			{
-				nodeHoveringCallback(node.id, nodeHoveringCallbackUserData);
+				nodeHoveringCallback(nodeId, nodeHoveringCallbackUserData);
 			}
 		}
-		else if (editor.SelectedNodeIndices.contains(nodeIdx))
+		else if (editor.selectedNodeIds.contains(nodeId))
 		{
 			miniMapNodeBackground = gNodes->style.colors[ColorVar_MiniMapNodeBackgroundSelected];
 		}
@@ -199,12 +199,9 @@ namespace Rift::Nodes
 			}
 		}
 
-		for (i32 nodeIdx = 0; nodeIdx < editor.nodes.Pool.Size(); ++nodeIdx)
+		for (AST::Id nodeId : editor.nodes)
 		{
-			if (editor.nodes.InUse.IsSet(nodeIdx))
-			{
-				DrawNode(editor, nodeIdx);
-			}
+			DrawNode(editor, nodeId);
 		}
 
 		// Draw editor canvas rect inside mini-map
@@ -227,7 +224,7 @@ namespace Rift::Nodes
 
 		const bool centerOnClick = miniMapIsHovered && ImGui::IsMouseDown(ImGuiMouseButton_Left)
 		                        && editor.clickInteraction.type == ClickInteractionType_None
-		                        && !gNodes->NodeIdxSubmissionOrder.empty();
+		                        && !gNodes->nodeSubmissionOrder.empty();
 		if (centerOnClick)
 		{
 			v2 target      = MiniMapToGridPosition(editor, ImGui::GetMousePos());
