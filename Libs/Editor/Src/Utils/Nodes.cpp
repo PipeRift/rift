@@ -2033,7 +2033,7 @@ namespace Rift::Nodes
 		// node pool to detect unused node slots and remove those indices from the depth stack
 		// before sorting the node draw commands by depth.
 		TArray<AST::Id> invalidNodes;
-		for (AST::Id nodeId : editor.nodes)
+		for (AST::Id nodeId : editor.nodes.used)
 		{
 			if (!IsNone(nodeId))
 			{

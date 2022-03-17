@@ -89,6 +89,7 @@ namespace Rift::Nodes
 	{
 		TArray<AST::Id> used;
 		TArray<T> data;
+		TArray<AST::Id> idsThisFrame;
 
 		template<bool isConst>
 		struct TIterator final
@@ -178,10 +179,11 @@ namespace Rift::Nodes
 			{
 				used.Resize(index + 1, AST::NoId);
 				data.Resize(index + 1);
+				idsThisFrame.Resize(index + 1, AST::NoId);
 			}
 
 			T* const ptr = GetByIndex(index);
-			if (used[index] == AST::NoId)
+			if (used[index] != id)
 			{
 				used[index] = id;
 				*ptr        = {};
@@ -234,10 +236,10 @@ namespace Rift::Nodes
 			return Get(id);
 		}
 
-		void Reset()
+		void ClearUnused()
 		{
-			used.Empty(false);
-			data.Empty(false);
+			// used.Empty(false);
+			//  data.Empty(false);
 		}
 
 		ConstIterator begin() const
@@ -282,6 +284,12 @@ namespace Rift::Nodes
 		{
 			depthOrder.Remove(id, false);
 			depthOrder.Add(id);
+		}
+
+		void ClearUnused()()
+		{
+			TIndexedArray<T>::ClearUnused();
+			// depthOrder.Empty(false);
 		}
 	};
 
