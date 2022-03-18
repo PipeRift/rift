@@ -899,7 +899,7 @@ namespace Rift::Nodes
 					for (AST::Id nodeId = depthStack[i]; selectedIds.contains(nodeId);
 					     nodeId         = depthStack[i])
 					{
-						depthStack.RemoveAt(i);
+						depthStack.RemoveAt(i, false);
 						depthStack.Add(nodeId);
 						++numMoved;
 					}
@@ -1835,7 +1835,8 @@ namespace Rift::Nodes
 		editor.AutoPanningDelta  = v2(0, 0);
 		editor.gridContentBounds = Rect(v2{FLT_MAX, FLT_MAX}, v2{FLT_MIN, FLT_MIN});
 		editor.miniMap.enabled   = false;
-		editor.nodes.Reset();
+
+		editor.nodes.SwapFrameIds();
 		ObjectPoolReset(editor.inputs);
 		ObjectPoolReset(editor.outputs);
 		ObjectPoolReset(editor.Links);
@@ -2032,26 +2033,14 @@ namespace Rift::Nodes
 		// At this point, draw commands have been issued for all nodes (and pins). Update the
 		// node pool to detect unused node slots and remove those indices from the depth stack
 		// before sorting the node draw commands by depth.
-		TArray<AST::Id> invalidNodes;
-		for (AST::Id nodeId : editor.nodes.used)
+		for (AST::Id nodeId : editor.nodes)
 		{
-			if (!IsNone(nodeId))
-			{
-				auto& node = editor.nodes[nodeId];
-				node.inputs.clear();
-				node.outputs.clear();
-			}
-			else
-			{
-				invalidNodes.Add(nodeId);
-			}
+			auto& node = editor.nodes[nodeId];
+			node.inputs.clear();
+			node.outputs.clear();
 		}
-		// TODO: Improve this
-		// nodes.RemoveUnsafe(invalidNodes);
-		for (AST::Id nodeId : invalidNodes)
-		{
-			GetEditorContext().nodes.depthOrder.Remove(nodeId);
-		}
+		editor.nodes.CacheInvalidIds();
+		editor.nodes.ClearDepthOrder();
 
 		ObjectPoolUpdate(editor.inputs);
 		ObjectPoolUpdate(editor.outputs);

@@ -87,119 +87,42 @@ namespace Rift::Nodes
 	template<typename T>
 	struct TIndexedArray
 	{
-		TArray<AST::Id> used;
+		using Iterator      = TArray<AST::Id>::Iterator;
+		using ConstIterator = TArray<AST::Id>::ConstIterator;
+
+
+		TArray<AST::Id> frameIds;
 		TArray<T> data;
-		TArray<AST::Id> idsThisFrame;
+		TArray<AST::Id> lastFrameIds;
+		TArray<AST::Id> invalidIds;
 
-		template<bool isConst>
-		struct TIterator final
-		{
-			using difference_type   = typename AST::IdTraits<AST::Id>::Difference;
-			using value_type        = Select<isConst, const AST::Id, AST::Id>;
-			using pointer           = value_type*;
-			using reference         = value_type&;
-			using iterator_category = std::random_access_iterator_tag;
-
-		private:
-			pointer current = nullptr;
-			pointer begin   = nullptr;
-			pointer end     = nullptr;
-
-
-		public:
-			TIterator() = default;
-			TIterator(pointer current, pointer begin, pointer end)
-			    : current{current}, begin{begin}, end{end}
-			{
-				if (current != end && !IsValid())
-				{
-					operator++();
-				}
-			}
-
-			TIterator& operator++()
-			{
-				while (++current < end && !IsValid()) {}
-				return *this;
-			}
-			TIterator& operator--()
-			{
-				while (--current >= begin && !IsValid()) {}
-				return *this;
-			}
-			TIterator operator++(int)
-			{
-				Iterator orig = *this;
-				return ++(*this), orig;
-			}
-			TIterator operator--(int)
-			{
-				Iterator orig = *this;
-				return --(*this), orig;
-			}
-
-			bool operator==(const TIterator& other) const
-			{
-				return current == other.current;
-			}
-			bool operator!=(const TIterator& other) const
-			{
-				return current != other.current;
-			}
-			auto operator<=>(const TIterator& other) const
-			{
-				return other.current <=> current;
-			}
-
-			pointer operator->() const
-			{
-				return current;
-			}
-
-			reference operator*() const
-			{
-				return current ? *current : AST::NoId;
-			}
-
-		private:
-			bool IsValid() const
-			{
-				const AST::Id id = operator*();
-				return AST::GetVersion(id) != AST::GetVersion(AST::NoId);
-			}
-		};
-
-		using Iterator      = TIterator<false>;
-		using ConstIterator = TIterator<true>;
 
 		T& GetOrAdd(AST::Id id, bool* outAdded = nullptr)
 		{
-			const u32 index = AST::GetIndex(id);
-			if (index >= used.Size())
+			const u32 index  = AST::GetIndex(id);
+			const bool added = frameIds.FindOrAddSorted(id).second;
+			if (added && !lastFrameIds.ContainsSorted(id))
 			{
-				used.Resize(index + 1, AST::NoId);
-				data.Resize(index + 1);
-				idsThisFrame.Resize(index + 1, AST::NoId);
-			}
-
-			T* const ptr = GetByIndex(index);
-			if (used[index] != id)
-			{
-				used[index] = id;
-				*ptr        = {};
+				// Id added
 				if (outAdded)
 				{
 					*outAdded = true;
 				}
+				if (index >= data.Size())
+				{
+					data.Resize(index + 1);
+				}
+				T* const ptr = GetByIndex(index);
+				*ptr         = {};
+				return *ptr;
 			}
-			return *ptr;
+			return *GetByIndex(index);
 		}
 
 		T& Get(AST::Id id)
 		{
-			const u32 index = AST::GetIndex(id);
-			Check(ContainsIndex(index));
-			return *GetByIndex(index);
+			Check(Contains(id));
+			return *GetByIndex(AST::GetIndex(id));
 		}
 
 		const T& Get(AST::Id id) const
@@ -209,22 +132,16 @@ namespace Rift::Nodes
 
 		T* TryGet(AST::Id id)
 		{
-			const u32 index = AST::GetIndex(id);
-			if (ContainsIndex(index))
+			if (Contains(id))
 			{
-				return GetByIndex(index);
+				return GetByIndex(AST::GetIndex(id));
 			}
 			return nullptr;
 		}
 
 		bool Contains(AST::Id id) const
 		{
-			return ContainsIndex(AST::GetIndex(id));
-		}
-
-		bool ContainsIndex(const u32 index) const
-		{
-			return index < used.Size() && used[index] != AST::NoId;
+			return frameIds.ContainsSorted(id);
 		}
 
 		T& operator[](AST::Id id)
@@ -236,20 +153,33 @@ namespace Rift::Nodes
 			return Get(id);
 		}
 
-		void ClearUnused()
+		void CacheInvalidIds()
 		{
-			// used.Empty(false);
-			//  data.Empty(false);
+			invalidIds.Empty(false);
+			for (AST::Id id : lastFrameIds)
+			{
+				if (!frameIds.ContainsSorted(id))
+				{
+					invalidIds.Add(id);
+				}
+			}
+		}
+
+		// Clears ids that have not been used for one frame from the container
+		// @returns the invalid ids
+		void SwapFrameIds()
+		{
+			lastFrameIds = Move(frameIds);
 		}
 
 		ConstIterator begin() const
 		{
-			return {used.Data(), used.Data(), used.Data() + used.Size()};
+			return frameIds.begin();
 		}
 
 		ConstIterator end() const
 		{
-			return {used.Data() + used.Size(), used.Data(), used.Data() + used.Size()};
+			return frameIds.end();
 		}
 
 	private:
@@ -269,6 +199,7 @@ namespace Rift::Nodes
 		{
 			bool added = false;
 			T& node    = TIndexedArray<T>::GetOrAdd(id, &added);
+			// If id has not been added before
 			if (added)
 			{
 				depthOrder.Add(id);
@@ -286,10 +217,11 @@ namespace Rift::Nodes
 			depthOrder.Add(id);
 		}
 
-		void ClearUnused()()
+		void ClearDepthOrder()
 		{
-			TIndexedArray<T>::ClearUnused();
-			// depthOrder.Empty(false);
+			depthOrder.RemoveIf([this](AST::Id id) {
+				return invalidIds.ContainsSorted(id);
+			});
 		}
 	};
 
