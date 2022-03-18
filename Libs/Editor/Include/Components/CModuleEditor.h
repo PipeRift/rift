@@ -5,8 +5,9 @@
 
 #include <AST/Types.h>
 #include <Types/Struct.h>
-#include <UI/NodesInternal.h>
 #include <UI/UI.h>
+#include <Utils/NodesInternal.h>
+
 
 
 namespace Rift

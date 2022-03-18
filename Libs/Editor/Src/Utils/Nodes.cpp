@@ -8,10 +8,10 @@
 // [SECTION] render helpers
 // [SECTION] API implementation
 
-#include "UI/Nodes.h"
+#include "Utils/Nodes.h"
 
-#include "UI/NodesInternal.h"
-#include "UI/NodesMiniMap.h"
+#include "Utils/NodesInternal.h"
+#include "Utils/NodesMiniMap.h"
 
 #include <Log.h>
 #include <Math/Bezier.h>
@@ -369,7 +369,7 @@ namespace Rift::Nodes
 	{
 		gNodes->CanvasDrawList = windowDrawList;
 		gNodes->NodeIdxToSubmissionIdx.Clear();
-		gNodes->NodeIdxSubmissionOrder.clear();
+		gNodes->nodeSubmissionOrder.clear();
 	}
 
 	// The draw list channels are structured as follows. First we have our base channel, the
@@ -391,11 +391,11 @@ namespace Rift::Nodes
 	//            |                     |
 	//            -----------------------
 
-	void DrawListAddNode(const i32 nodeIdx)
+	void DrawListAddNode(AST::Id nodeId)
 	{
 		gNodes->NodeIdxToSubmissionIdx.SetInt(
-		    static_cast<ImGuiID>(nodeIdx), gNodes->NodeIdxSubmissionOrder.Size);
-		gNodes->NodeIdxSubmissionOrder.push_back(nodeIdx);
+		    static_cast<ImGuiID>(AST::GetIndex(nodeId)), gNodes->nodeSubmissionOrder.Size);
+		gNodes->nodeSubmissionOrder.push_back(nodeId);
 		ImDrawListGrowChannels(gNodes->CanvasDrawList, 2);
 	}
 
@@ -426,15 +426,15 @@ namespace Rift::Nodes
 	void DrawListActivateCurrentNodeForeground()
 	{
 		const i32 foregroundChannelIdx =
-		    DrawListSubmissionIdxToForegroundChannelIdx(gNodes->NodeIdxSubmissionOrder.Size - 1);
+		    DrawListSubmissionIdxToForegroundChannelIdx(gNodes->nodeSubmissionOrder.Size - 1);
 		gNodes->CanvasDrawList->_Splitter.SetCurrentChannel(
 		    gNodes->CanvasDrawList, foregroundChannelIdx);
 	}
 
-	void DrawListActivateNodeBackground(const i32 nodeIdx)
+	void DrawListActivateNodeBackground(AST::Id nodeId)
 	{
 		const i32 submissionIdx =
-		    gNodes->NodeIdxToSubmissionIdx.GetInt(static_cast<ImGuiID>(nodeIdx), -1);
+		    gNodes->NodeIdxToSubmissionIdx.GetInt(static_cast<ImGuiID>(AST::GetIndex(nodeId)), -1);
 		// There is a discrepancy in the submitted node count and the rendered node count! Did
 		// you call one of the following functions
 		// * EditorContextMoveToNode
@@ -463,18 +463,17 @@ namespace Rift::Nodes
 		    gNodes->CanvasDrawList->_Splitter, lhsForegroundChannelIdx, rhsForegroundChannelIdx);
 	}
 
-	void DrawListSortChannelsByDepth(const ImVector<i32>& nodeIdxDepthOrder)
+	void DrawListSortChannelsByDepth(const TArray<AST::Id>& nodeDepthOrder)
 	{
 		if (gNodes->NodeIdxToSubmissionIdx.Data.Size < 2)
 		{
 			return;
 		}
 
-		assert(nodeIdxDepthOrder.Size == gNodes->NodeIdxSubmissionOrder.Size);
+		assert(nodeDepthOrder.Size() == gNodes->nodeSubmissionOrder.Size);
 
-		i32 startIdx = nodeIdxDepthOrder.Size - 1;
-
-		while (nodeIdxDepthOrder[startIdx] == gNodes->NodeIdxSubmissionOrder[startIdx])
+		i32 startIdx = nodeDepthOrder.Size() - 1;
+		while (nodeDepthOrder[startIdx] == gNodes->nodeSubmissionOrder[startIdx])
 		{
 			if (--startIdx == 0)
 			{
@@ -488,13 +487,13 @@ namespace Rift::Nodes
 
 		for (i32 depthIdx = startIdx; depthIdx > 0; --depthIdx)
 		{
-			const i32 nodeIdx = nodeIdxDepthOrder[depthIdx];
+			const AST::Id nodeId = nodeDepthOrder[depthIdx];
 
 			// Find the current index of the nodeIdx in the submission order array
 			i32 submissionIdx = -1;
-			for (i32 i = 0; i < gNodes->NodeIdxSubmissionOrder.Size; ++i)
+			for (i32 i = 0; i < gNodes->nodeSubmissionOrder.Size; ++i)
 			{
-				if (gNodes->NodeIdxSubmissionOrder[i] == nodeIdx)
+				if (gNodes->nodeSubmissionOrder[i] == nodeId)
 				{
 					submissionIdx = i;
 					break;
@@ -510,7 +509,7 @@ namespace Rift::Nodes
 			for (i32 j = submissionIdx; j < depthIdx; ++j)
 			{
 				DrawListSwapSubmissionIndices(j, j + 1);
-				ImSwap(gNodes->NodeIdxSubmissionOrder[j], gNodes->NodeIdxSubmissionOrder[j + 1]);
+				ImSwap(gNodes->nodeSubmissionOrder[j], gNodes->nodeSubmissionOrder[j + 1]);
 			}
 		}
 	}
@@ -526,7 +525,7 @@ namespace Rift::Nodes
 
 	v2 GetScreenSpacePinCoordinates(const EditorContext& editor, PinType type, const PinData& pin)
 	{
-		const Rect& parentNodeRect = editor.nodes.Pool[pin.parentNodeIdx].rect;
+		const Rect& parentNodeRect = editor.nodes.Get(pin.parentNodeId).rect;
 		return GetScreenSpacePinCoordinates(parentNodeRect, type, pin.rect);
 	}
 
@@ -539,7 +538,7 @@ namespace Rift::Nodes
 		    && gNodes->CanvasRectScreenSpace.Contains(ImGui::GetMousePos());
 	}
 
-	void BeginNodeSelection(EditorContext& editor, const i32 nodeIdx)
+	void BeginNodeSelection(EditorContext& editor, AST::Id nodeId)
 	{
 		// Don't start selecting a node if we are e.g. already creating and dragging
 		// a new link! New link creation can happen when the mouse is clicked over
@@ -558,25 +557,21 @@ namespace Rift::Nodes
 		//
 		// Otherwise, we want to allow for the possibility of multiple nodes to be
 		// moved at once.
-		if (!editor.SelectedNodeIndices.contains(nodeIdx))
+		if (!editor.selectedNodeIds.contains(nodeId))
 		{
-			editor.SelectedLinkIndices.clear();
+			editor.selectedLinkIndices.clear();
 			if (!gNodes->multipleSelectModifier)
-				editor.SelectedNodeIndices.clear();
-			editor.SelectedNodeIndices.push_back(nodeIdx);
+				editor.selectedNodeIds.clear();
+			editor.selectedNodeIds.push_back(nodeId);
 
 			// Ensure that individually selected nodes get rendered on top
-			ImVector<i32>& depthStack = editor.NodeDepthOrder;
-			const i32* const elem     = depthStack.find(nodeIdx);
-			assert(elem != depthStack.end());
-			depthStack.erase(elem);
-			depthStack.push_back(nodeIdx);
+			editor.nodes.PushToTheFront(nodeId);
 		}
 		// Deselect a previously-selected node
 		else if (gNodes->multipleSelectModifier)
 		{
-			const i32* const nodePtr = editor.SelectedNodeIndices.find(nodeIdx);
-			editor.SelectedNodeIndices.erase(nodePtr);
+			const AST::Id* const nodePtr = editor.selectedNodeIds.find(nodeId);
+			editor.selectedNodeIds.erase(nodePtr);
 
 			// Don't allow dragging after deselecting
 			editor.clickInteraction.type = ClickInteractionType_None;
@@ -584,15 +579,14 @@ namespace Rift::Nodes
 
 		// To support snapping of multiple nodes, we need to store the offset of
 		// each node in the selection to the origin of the dragged node.
-		const v2 refOrigin = editor.nodes.Pool[nodeIdx].Origin;
+		const v2 refOrigin = editor.nodes.Get(nodeId).Origin;
 		editor.PrimaryNodeOffset =
 		    refOrigin + gNodes->CanvasOriginScreenSpace + editor.Panning - gNodes->mousePosition;
 
 		editor.SelectedNodeOrigins.clear();
-		for (i32 idx = 0; idx < editor.SelectedNodeIndices.Size; idx++)
+		for (AST::Id id : editor.selectedNodeIds)
 		{
-			const i32 node      = editor.SelectedNodeIndices[idx];
-			const v2 nodeOrigin = editor.nodes.Pool[node].Origin - refOrigin;
+			const v2 nodeOrigin = editor.nodes.Get(id).Origin - refOrigin;
 			editor.SelectedNodeOrigins.push_back(nodeOrigin);
 		}
 	}
@@ -602,9 +596,9 @@ namespace Rift::Nodes
 		editor.clickInteraction.type = ClickInteractionType_Link;
 		// When a link is selected, clear all other selections, and insert the link
 		// as the sole selection.
-		editor.SelectedNodeIndices.clear();
-		editor.SelectedLinkIndices.clear();
-		editor.SelectedLinkIndices.push_back(linkIdx);
+		editor.selectedNodeIds.clear();
+		editor.selectedLinkIndices.clear();
+		editor.selectedLinkIndices.push_back(linkIdx);
 	}
 
 	void BeginLinkDetach(EditorContext& editor, i32 linkIdx, PinIdx detachPinIdx)
@@ -680,7 +674,7 @@ namespace Rift::Nodes
 
 	void BeginCanvasInteraction(EditorContext& editor)
 	{
-		const bool anyUIElementHovered = gNodes->HoveredNodeIdx.IsValid()
+		const bool anyUIElementHovered = !IsNone(gNodes->hoveredNodeId)
 		                              || gNodes->HoveredLinkIdx.IsValid() || gNodes->HoveredPinIdx
 		                              || ImGui::IsAnyItemHovered();
 
@@ -722,25 +716,22 @@ namespace Rift::Nodes
 
 		// Update node selection
 
-		editor.SelectedNodeIndices.clear();
+		editor.selectedNodeIds.clear();
 
 		// Test for overlap against node rectangles
 
-		for (i32 nodeIdx = 0; nodeIdx < editor.nodes.Pool.Size(); ++nodeIdx)
+		for (AST::Id nodeId : editor.nodes)
 		{
-			if (editor.nodes.InUse.IsSet(nodeIdx))
+			NodeData& node = editor.nodes.Get(nodeId);
+			if (boxRect.Overlaps(node.rect))
 			{
-				NodeData& node = editor.nodes.Pool[nodeIdx];
-				if (boxRect.Overlaps(node.rect))
-				{
-					editor.SelectedNodeIndices.push_back(nodeIdx);
-				}
+				editor.selectedNodeIds.push_back(nodeId);
 			}
 		}
 
 		// Update link selection
 
-		editor.SelectedLinkIndices.clear();
+		editor.selectedLinkIndices.clear();
 
 		// Test for overlap against links
 
@@ -752,8 +743,8 @@ namespace Rift::Nodes
 
 				const PinData& outputPin  = editor.outputs.Pool[link.outputIdx];
 				const PinData& inputPin   = editor.inputs.Pool[link.inputIdx];
-				const Rect& nodeStartRect = editor.nodes.Pool[outputPin.parentNodeIdx].rect;
-				const Rect& nodeEndRect   = editor.nodes.Pool[inputPin.parentNodeIdx].rect;
+				const Rect& nodeStartRect = editor.nodes[outputPin.parentNodeId].rect;
+				const Rect& nodeEndRect   = editor.nodes[inputPin.parentNodeId].rect;
 
 				const v2 start =
 				    GetScreenSpacePinCoordinates(nodeStartRect, PinType::Output, outputPin.rect);
@@ -763,7 +754,7 @@ namespace Rift::Nodes
 				// Test
 				if (RectangleOverlapsLink(boxRect, start, end, PinType::Output))
 				{
-					editor.SelectedLinkIndices.push_back(linkIdx);
+					editor.selectedLinkIndices.push_back(linkIdx);
 				}
 			}
 		}
@@ -830,7 +821,7 @@ namespace Rift::Nodes
 		const PinData& targetData = editor.GetPinData(targetPin);
 
 		// The end pin must be in a different node
-		if (originData.parentNodeIdx == targetData.parentNodeIdx)
+		if (originData.parentNodeId == targetData.parentNodeId)
 		{
 			return false;
 		}
@@ -854,11 +845,11 @@ namespace Rift::Nodes
 			const v2 origin =
 			    SnapOrigi32oGrid(gNodes->mousePosition - gNodes->CanvasOriginScreenSpace
 			                     - editor.Panning + editor.PrimaryNodeOffset);
-			for (i32 i = 0; i < editor.SelectedNodeIndices.size(); ++i)
+			for (i32 i = 0; i < editor.selectedNodeIds.size(); ++i)
 			{
-				const v2 nodeRel  = editor.SelectedNodeOrigins[i];
-				const i32 nodeIdx = editor.SelectedNodeIndices[i];
-				NodeData& node    = editor.nodes.Pool[nodeIdx];
+				const v2 nodeRel     = editor.SelectedNodeOrigins[i];
+				const AST::Id nodeId = editor.selectedNodeIds[i];
+				NodeData& node       = editor.nodes[nodeId];
 				if (node.Draggable)
 				{
 					// node.Origin += io.MouseDelta - editor.AutoPanningDelta;
@@ -892,28 +883,28 @@ namespace Rift::Nodes
 
 		if (gNodes->leftMouseReleased)
 		{
-			ImVector<i32>& depthStack         = editor.NodeDepthOrder;
-			const ImVector<i32>& selectedIdxs = editor.SelectedNodeIndices;
+			TArray<AST::Id>& depthStack          = editor.nodes.depthOrder;
+			const ImVector<AST::Id>& selectedIds = editor.selectedNodeIds;
 
 			// Bump the selected node indices, in order, to the top of the depth stack.
 			// NOTE: this algorithm has worst case time complexity of O(N^2), if the
-			// node selection is ~ N (due to selected_idxs.contains()).
+			// node selection is ~ N (due to selected_ids.contains()).
 
-			if ((selectedIdxs.Size > 0) && (selectedIdxs.Size < depthStack.Size))
+			if ((selectedIds.Size > 0) && (selectedIds.Size < depthStack.Size()))
 			{
-				// The number of indices moved. Stop after selected_idxs.Size
+				// The number of indices moved. Stop after selected_ids.Size
 				i32 numMoved = 0;
-				for (i32 i = 0; i < depthStack.Size - selectedIdxs.Size; ++i)
+				for (i32 i = 0; i < depthStack.Size() - selectedIds.Size; ++i)
 				{
-					for (i32 nodeIdx = depthStack[i]; selectedIdxs.contains(nodeIdx);
-					     nodeIdx     = depthStack[i])
+					for (AST::Id nodeId = depthStack[i]; selectedIds.contains(nodeId);
+					     nodeId         = depthStack[i])
 					{
-						depthStack.erase(depthStack.begin() + static_cast<size_t>(i));
-						depthStack.push_back(nodeIdx);
+						depthStack.RemoveAt(i, false);
+						depthStack.Add(nodeId);
 						++numMoved;
 					}
 
-					if (numMoved == selectedIdxs.Size)
+					if (numMoved == selectedIds.Size)
 					{
 						break;
 					}
@@ -1056,24 +1047,24 @@ namespace Rift::Nodes
 
 	void ResolveOccludedPins(const EditorContext& editor, ImVector<PinIdx>& occludedPinIndices)
 	{
-		const ImVector<i32>& depthStack = editor.NodeDepthOrder;
+		const TArray<AST::Id>& depthStack = editor.nodes.depthOrder;
 
 		occludedPinIndices.resize(0);
 
-		if (depthStack.Size < 2)
+		if (depthStack.Size() < 2)
 		{
 			return;
 		}
 
 		// For each node in the depth stack
-		for (i32 depthIdx = 0; depthIdx < (depthStack.Size - 1); ++depthIdx)
+		for (i32 i = 0; i < (depthStack.Size() - 1); ++i)
 		{
-			const NodeData& nodeBelow = editor.nodes.Pool[depthStack[depthIdx]];
+			const NodeData& nodeBelow = editor.nodes[depthStack[i]];
 
 			// Iterate over the rest of the depth stack to find nodes overlapping the pins
-			for (i32 nextDepthIdx = depthIdx + 1; nextDepthIdx < depthStack.Size; ++nextDepthIdx)
+			for (i32 e = i + 1; e < depthStack.Size(); ++e)
 			{
-				const Rect& rectAbove = editor.nodes.Pool[depthStack[nextDepthIdx]].rect;
+				const Rect& rectAbove = editor.nodes[depthStack[e]].rect;
 
 				// Iterate over each pin
 				for (i32 i = 0; i < nodeBelow.inputs.Size; ++i)
@@ -1137,35 +1128,35 @@ namespace Rift::Nodes
 		return {pinIdxWithSmallestDistance, type};
 	}
 
-	OptionalIndex ResolveHoveredNode(const ImVector<i32>& depthStack)
+	AST::Id ResolveHoveredNode(const TArray<AST::Id>& depthStack)
 	{
-		if (gNodes->NodeIndicesOverlappingWithMouse.size() == 0)
+		if (gNodes->nodeIdsOverlappingWithMouse.size() == 0)
 		{
-			return {};
+			return AST::NoId;
 		}
 
-		if (gNodes->NodeIndicesOverlappingWithMouse.size() == 1)
+		if (gNodes->nodeIdsOverlappingWithMouse.size() == 1)
 		{
-			return OptionalIndex(gNodes->NodeIndicesOverlappingWithMouse[0]);
+			return gNodes->nodeIdsOverlappingWithMouse[0];
 		}
 
 		i32 largestDepthIdx = -1;
-		i32 nodeIdxOnTop    = -1;
+		AST::Id nodeIdOnTop = AST::NoId;
 
-		for (int nodeIdx : gNodes->NodeIndicesOverlappingWithMouse)
+		for (AST::Id nodeId : gNodes->nodeIdsOverlappingWithMouse)
 		{
-			for (i32 depthIdx = 0; depthIdx < depthStack.size(); ++depthIdx)
+			for (i32 depthIdx = 0; depthIdx < depthStack.Size(); ++depthIdx)
 			{
-				if (depthStack[depthIdx] == nodeIdx && (depthIdx > largestDepthIdx))
+				if (depthStack[depthIdx] == nodeId && (depthIdx > largestDepthIdx))
 				{
 					largestDepthIdx = depthIdx;
-					nodeIdxOnTop    = nodeIdx;
+					nodeIdOnTop     = nodeId;
 				}
 			}
 		}
 
-		assert(nodeIdxOnTop != -1);
-		return OptionalIndex(nodeIdxOnTop);
+		assert(nodeIdOnTop != AST::NoId);
+		return nodeIdOnTop;
 	}
 
 	OptionalIndex ResolveHoveredLink(const ObjectPool<LinkData>& links,
@@ -1394,7 +1385,7 @@ namespace Rift::Nodes
 	void DrawPin(EditorContext& editor, const PinIdx pin)
 	{
 		PinData& pinData           = editor.GetPinData(pin);
-		const Rect& parentNodeRect = editor.nodes.Pool[pinData.parentNodeIdx].rect;
+		const Rect& parentNodeRect = editor.nodes[pinData.parentNodeId].rect;
 
 		pinData.position = GetScreenSpacePinCoordinates(parentNodeRect, pin.type, pinData.rect);
 
@@ -1407,17 +1398,17 @@ namespace Rift::Nodes
 		DrawPinShape(pinData.position, pinData, pinColor);
 	}
 
-	void DrawNode(EditorContext& editor, const i32 nodeIdx)
+	void DrawNode(EditorContext& editor, const AST::Id nodeId)
 	{
-		const NodeData& node = editor.nodes.Pool[nodeIdx];
+		const NodeData& node = editor.nodes[nodeId];
 		ImGui::SetCursorPos(node.Origin + editor.Panning);
 
-		const bool nodeHovered = gNodes->HoveredNodeIdx == nodeIdx
+		const bool nodeHovered = gNodes->hoveredNodeId == nodeId
 		                      && editor.clickInteraction.type != ClickInteractionType_BoxSelection;
 
 		Color nodeBackground     = node.colorStyle.Background;
 		Color titlebarBackground = node.colorStyle.Titlebar;
-		if (editor.SelectedNodeIndices.contains(nodeIdx))
+		if (editor.selectedNodeIds.contains(nodeId))
 		{
 			nodeBackground     = node.colorStyle.BackgroundSelected;
 			titlebarBackground = node.colorStyle.TitlebarSelected;
@@ -1470,7 +1461,7 @@ namespace Rift::Nodes
 
 		if (nodeHovered)
 		{
-			gNodes->HoveredNodeIdx = nodeIdx;
+			gNodes->hoveredNodeId = nodeId;
 		}
 	}
 
@@ -1502,7 +1493,7 @@ namespace Rift::Nodes
 		}
 
 		Color linkColor = link.colorStyle.Base;
-		if (editor.SelectedLinkIndices.contains(linkIdx))
+		if (editor.selectedLinkIndices.contains(linkIdx))
 		{
 			linkColor = link.colorStyle.Selected;
 		}
@@ -1516,7 +1507,7 @@ namespace Rift::Nodes
 		    cubicBezier.numSegments);
 	}
 
-	void BeginPin(const i32 id, const PinType type, const PinShape shape, const i32 nodeIdx)
+	void BeginPin(const i32 id, const PinType type, const PinShape shape, AST::Id nodeId)
 	{
 		// Make sure to call BeginNode() before calling
 		// BeginPin()
@@ -1535,7 +1526,7 @@ namespace Rift::Nodes
 		gNodes->CurrentPinIdx     = {pinIdx, type};
 		PinData& pin              = pool.Pool[pinIdx];
 		pin.id                    = id;
-		pin.parentNodeIdx         = nodeIdx;
+		pin.parentNodeId          = nodeId;
 		pin.Shape                 = shape;
 		pin.Flags                 = gNodes->CurrentPinFlags;
 		pin.colorStyle.Background = gNodes->style.colors[ColorVar_Pin];
@@ -1558,7 +1549,7 @@ namespace Rift::Nodes
 
 		EditorContext& editor = GetEditorContext();
 		PinData& pin          = editor.GetPinData(gNodes->CurrentPinIdx);
-		NodeData& node        = editor.nodes.Pool[gNodes->CurrentNodeIdx];
+		NodeData& node        = editor.nodes.Get(gNodes->currentNodeId);
 		pin.rect              = GetItemRect();
 
 		switch (gNodes->CurrentPinIdx.type)
@@ -1574,8 +1565,8 @@ namespace Rift::Nodes
 		context->CanvasRectScreenSpace   = Rect(v2(0.f, 0.f), v2(0.f, 0.f));
 		context->currentScope            = Scope::None;
 
-		context->CurrentPinIdx  = PinIdx::Invalid();
-		context->CurrentNodeIdx = INT_MAX;
+		context->CurrentPinIdx = PinIdx::Invalid();
+		context->currentNodeId = AST::NoId;
 
 		context->DefaultEditorCtx = EditorContextCreate();
 		SetEditorContext(gNodes->DefaultEditorCtx);
@@ -1593,25 +1584,6 @@ namespace Rift::Nodes
 
 
 	// [SECTION] selection helpers
-
-	template<typename T>
-	void SelectObject(const ObjectPool<T>& objects, ImVector<i32>& selectedIndices, const i32 id)
-	{
-		const i32 idx = ObjectPoolFind(objects, id);
-		assert(idx >= 0);
-		assert(selectedIndices.find(idx) == selectedIndices.end());
-		selectedIndices.push_back(idx);
-	}
-
-	template<typename T>
-	void ClearObjectSelection(
-	    const ObjectPool<T>& objects, ImVector<i32>& selectedIndices, const i32 id)
-	{
-		const i32 idx = ObjectPoolFind(objects, id);
-		assert(idx >= 0);
-		assert(selectedIndices.find(idx) != selectedIndices.end());
-		selectedIndices.find_erase_unsorted(idx);
-	}
 
 	template<typename T>
 	bool IsObjectSelectedByIdx(
@@ -1706,10 +1678,10 @@ namespace Rift::Nodes
 		editor.Panning        = pos;
 	}
 
-	void EditorContextMoveToNode(const i32 nodeId)
+	void EditorContextMoveToNode(AST::Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
-		NodeData& node        = ObjectPoolFindOrCreateObject(editor.nodes, nodeId);
+		NodeData& node        = editor.nodes.Get(nodeId);
 
 		editor.Panning.x = -node.Origin.x;
 		editor.Panning.y = -node.Origin.y;
@@ -1863,18 +1835,19 @@ namespace Rift::Nodes
 		editor.AutoPanningDelta  = v2(0, 0);
 		editor.gridContentBounds = Rect(v2{FLT_MAX, FLT_MAX}, v2{FLT_MIN, FLT_MIN});
 		editor.miniMap.enabled   = false;
-		ObjectPoolReset(editor.nodes);
+
+		editor.nodes.SwapFrameIds();
 		ObjectPoolReset(editor.inputs);
 		ObjectPoolReset(editor.outputs);
 		ObjectPoolReset(editor.Links);
 
-		gNodes->HoveredNodeIdx.Reset();
+		gNodes->hoveredNodeId = AST::NoId;
 		gNodes->HoveredLinkIdx.Reset();
 		gNodes->HoveredPinIdx = PinIdx::Invalid();
 		gNodes->DeletedLinkIdx.Reset();
 		gNodes->SnapLinkIdx.Reset();
 
-		gNodes->NodeIndicesOverlappingWithMouse.clear();
+		gNodes->nodeIdsOverlappingWithMouse.clear();
 
 		gNodes->UIState = UIState_None;
 
@@ -1974,25 +1947,22 @@ namespace Rift::Nodes
 			{
 				// Resolve which node is actually on top and being hovered using the depth
 				// stack.
-				gNodes->HoveredNodeIdx = ResolveHoveredNode(editor.NodeDepthOrder);
+				gNodes->hoveredNodeId = ResolveHoveredNode(editor.nodes.depthOrder);
 			}
 
 			// We don't check for hovered pins here, because if we want to detach a link by
 			// clicking and dragging, we need to have both a link and pin hovered.
-			if (!gNodes->HoveredNodeIdx.IsValid())
+			if (IsNone(gNodes->hoveredNodeId))
 			{
 				gNodes->HoveredLinkIdx =
 				    ResolveHoveredLink(editor.Links, editor.outputs, editor.inputs);
 			}
 		}
 
-		for (i32 nodeIdx = 0; nodeIdx < editor.nodes.Pool.Size(); ++nodeIdx)
+		for (AST::Id nodeId : editor.nodes)
 		{
-			if (editor.nodes.InUse.IsSet(nodeIdx))
-			{
-				DrawListActivateNodeBackground(nodeIdx);
-				DrawNode(editor, nodeIdx);
-			}
+			DrawListActivateNodeBackground(nodeId);
+			DrawNode(editor, nodeId);
 		}
 
 		// In order to render the links underneath the nodes, we want to first select the bottom
@@ -2032,9 +2002,9 @@ namespace Rift::Nodes
 				BeginLinkCreation(editor, gNodes->HoveredPinIdx);
 			}
 
-			else if (gNodes->leftMouseClicked && gNodes->HoveredNodeIdx.IsValid())
+			else if (gNodes->leftMouseClicked && !IsNone(gNodes->hoveredNodeId))
 			{
-				BeginNodeSelection(editor, gNodes->HoveredNodeIdx.Value());
+				BeginNodeSelection(editor, gNodes->hoveredNodeId);
 			}
 
 			else if (gNodes->leftMouseClicked || gNodes->leftMouseReleased
@@ -2063,11 +2033,19 @@ namespace Rift::Nodes
 		// At this point, draw commands have been issued for all nodes (and pins). Update the
 		// node pool to detect unused node slots and remove those indices from the depth stack
 		// before sorting the node draw commands by depth.
-		ObjectPoolUpdate(editor.nodes);
+		for (AST::Id nodeId : editor.nodes)
+		{
+			auto& node = editor.nodes[nodeId];
+			node.inputs.clear();
+			node.outputs.clear();
+		}
+		editor.nodes.CacheInvalidIds();
+		editor.nodes.ClearDepthOrder();
+
 		ObjectPoolUpdate(editor.inputs);
 		ObjectPoolUpdate(editor.outputs);
 
-		DrawListSortChannelsByDepth(editor.NodeDepthOrder);
+		DrawListSortChannelsByDepth(editor.nodes.depthOrder);
 
 		// After the links have been rendered, the link pool can be updated as well.
 		ObjectPoolUpdate(editor.Links);
@@ -2083,7 +2061,7 @@ namespace Rift::Nodes
 		ImGui::EndGroup();
 	}
 
-	void BeginNode(const i32 nodeId)
+	void BeginNode(const AST::Id nodeId)
 	{
 		// Remember to call BeginNodeEditor before calling BeginNode
 		assert(gNodes->currentScope == Scope::Editor);
@@ -2091,10 +2069,10 @@ namespace Rift::Nodes
 
 		EditorContext& editor = GetEditorContext();
 
-		const i32 nodeIdx      = ObjectPoolFindOrCreateIndex(editor.nodes, nodeId);
-		gNodes->CurrentNodeIdx = nodeIdx;
+		gNodes->currentNodeId = nodeId;
 
-		NodeData& node                     = editor.nodes.Pool[nodeIdx];
+		NodeData& node = editor.nodes.GetOrAdd(nodeId);
+
 		node.colorStyle.Background         = gNodes->style.colors[ColorVar_NodeBackground];
 		node.colorStyle.BackgroundHovered  = gNodes->style.colors[ColorVar_NodeBackgroundHovered];
 		node.colorStyle.BackgroundSelected = gNodes->style.colors[ColorVar_NodeBackgroundSelected];
@@ -2111,10 +2089,10 @@ namespace Rift::Nodes
 		// ImGui::SetCursorScreenPos to set the screen space coordinates directly.
 		ImGui::SetCursorPos(GridToEditorPosition(editor, GetNodeTitleBarOrigin(node)));
 
-		DrawListAddNode(nodeIdx);
+		DrawListAddNode(nodeId);
 		DrawListActivateCurrentNodeForeground();
 
-		ImGui::PushID(node.id);
+		ImGui::PushID(AST::GetIndex(nodeId));
 		ImGui::BeginGroup();
 	}
 
@@ -2129,7 +2107,7 @@ namespace Rift::Nodes
 		ImGui::EndGroup();
 		ImGui::PopID();
 
-		NodeData& node = editor.nodes.Pool[gNodes->CurrentNodeIdx];
+		NodeData& node = editor.nodes[gNodes->currentNodeId];
 		node.rect      = GetItemRect();
 		node.rect.Expand(node.LayoutStyle.Padding);
 
@@ -2138,16 +2116,15 @@ namespace Rift::Nodes
 
 		if (node.rect.Contains(gNodes->mousePosition))
 		{
-			gNodes->NodeIndicesOverlappingWithMouse.push_back(gNodes->CurrentNodeIdx);
+			gNodes->nodeIdsOverlappingWithMouse.push_back(gNodes->currentNodeId);
 		}
 	}
 
-	v2 GetNodeDimensions(i32 nodeId)
+	v2 GetNodeDimensions(AST::Id nodeId)
 	{
+		assert(!IsNone(nodeId));
 		EditorContext& editor = GetEditorContext();
-		const i32 nodeIdx     = ObjectPoolFind(editor.nodes, nodeId);
-		assert(nodeIdx != -1);    // invalid nodeId
-		const NodeData& node = editor.nodes.Pool[nodeIdx];
+		const NodeData& node  = editor.nodes[nodeId];
 		return node.rect.GetSize();
 	}
 
@@ -2163,7 +2140,7 @@ namespace Rift::Nodes
 		ImGui::EndGroup();
 
 		EditorContext& editor    = GetEditorContext();
-		NodeData& node           = editor.nodes.Pool[gNodes->CurrentNodeIdx];
+		NodeData& node           = editor.nodes[gNodes->currentNodeId];
 		node.TitleBarContentRect = GetItemRect();
 
 		Rect nodeTitleRect = GetNodeTitleRect(node);
@@ -2174,7 +2151,7 @@ namespace Rift::Nodes
 
 	void BeginInput(const i32 id, const PinShape shape)
 	{
-		BeginPin(id, PinType::Input, shape, gNodes->CurrentNodeIdx);
+		BeginPin(id, PinType::Input, shape, gNodes->currentNodeId);
 	}
 
 	void EndInput()
@@ -2184,7 +2161,7 @@ namespace Rift::Nodes
 
 	void BeginOutput(const i32 id, const PinShape shape)
 	{
-		BeginPin(id, PinType::Output, shape, gNodes->CurrentNodeIdx);
+		BeginPin(id, PinType::Output, shape, gNodes->currentNodeId);
 	}
 
 	void EndOutput()
@@ -2350,58 +2327,55 @@ namespace Rift::Nodes
 		}
 	}
 
-	void SetNodeScreenSpacePos(const Id nodeId, const v2& screenSpacePos)
+	void SetNodeScreenSpacePos(AST::Id nodeId, const v2& screenSpacePos)
 	{
 		EditorContext& editor = GetEditorContext();
-		NodeData& node        = ObjectPoolFindOrCreateObject(editor.nodes, nodeId);
+		NodeData& node        = editor.nodes.GetOrAdd(nodeId);
 		node.Origin           = ScreenToGridPosition(editor, screenSpacePos);
 	}
 
-	void SetNodeEditorSpacePos(const Id nodeId, const v2& editorSpacePos)
+	void SetNodeEditorSpacePos(AST::Id nodeId, const v2& editorSpacePos)
 	{
 		EditorContext& editor = GetEditorContext();
-		NodeData& node        = ObjectPoolFindOrCreateObject(editor.nodes, nodeId);
+		NodeData& node        = editor.nodes.GetOrAdd(nodeId);
 		node.Origin           = EditorToGridPosition(editor, editorSpacePos);
 	}
 
-	void SetNodeGridSpacePos(const Id nodeId, const v2& gridPos)
+	void SetNodeGridSpacePos(AST::Id nodeId, const v2& gridPos)
 	{
 		EditorContext& editor = GetEditorContext();
-		NodeData& node        = ObjectPoolFindOrCreateObject(editor.nodes, nodeId);
+		NodeData& node        = editor.nodes.GetOrAdd(nodeId);
 		node.Origin           = gridPos;
 	}
 
-	void SetNodeDraggable(const Id nodeId, const bool draggable)
+	void SetNodeDraggable(AST::Id nodeId, const bool draggable)
 	{
 		EditorContext& editor = GetEditorContext();
-		NodeData& node        = ObjectPoolFindOrCreateObject(editor.nodes, nodeId);
+		NodeData& node        = editor.nodes.GetOrAdd(nodeId);
 		node.Draggable        = draggable;
 	}
 
-	v2 GetNodeScreenSpacePos(const Id nodeId)
+	v2 GetNodeScreenSpacePos(AST::Id nodeId)
 	{
+		assert(!IsNone(nodeId));
 		EditorContext& editor = GetEditorContext();
-		const i32 nodeIdx     = ObjectPoolFind(editor.nodes, nodeId);
-		assert(nodeIdx != -1);
-		NodeData& node = editor.nodes.Pool[nodeIdx];
+		const NodeData& node  = editor.nodes[nodeId];
 		return GridToScreenPosition(editor, node.Origin);
 	}
 
-	v2 GetNodeEditorSpacePos(const Id nodeId)
+	v2 GetNodeEditorSpacePos(AST::Id nodeId)
 	{
+		assert(!IsNone(nodeId));
 		EditorContext& editor = GetEditorContext();
-		const i32 nodeIdx     = ObjectPoolFind(editor.nodes, nodeId);
-		assert(nodeIdx != -1);
-		NodeData& node = editor.nodes.Pool[nodeIdx];
+		const NodeData& node  = editor.nodes[nodeId];
 		return GridToEditorPosition(editor, node.Origin);
 	}
 
-	v2 GetNodeGridSpacePos(const Id nodeId)
+	v2 GetNodeGridSpacePos(AST::Id nodeId)
 	{
+		assert(!IsNone(nodeId));
 		EditorContext& editor = GetEditorContext();
-		const i32 nodeIdx     = ObjectPoolFind(editor.nodes, nodeId);
-		assert(nodeIdx != -1);
-		NodeData& node = editor.nodes.Pool[nodeIdx];
+		const NodeData& node  = editor.nodes[nodeId];
 		return node.Origin;
 	}
 
@@ -2410,16 +2384,16 @@ namespace Rift::Nodes
 		return IsMouseInCanvas();
 	}
 
-	bool IsNodeHovered(Id* const nodeId)
+	bool IsNodeHovered(AST::Id* nodeId)
 	{
 		assert(gNodes->currentScope != Scope::None);
 		assert(nodeId != nullptr);
 
-		const bool isHovered = gNodes->HoveredNodeIdx.IsValid();
+		const bool isHovered = gNodes->hoveredNodeId != AST::NoId;
 		if (isHovered)
 		{
 			const EditorContext& editor = GetEditorContext();
-			*nodeId                     = editor.nodes.Pool[gNodes->HoveredNodeIdx.Value()].id;
+			*nodeId                     = gNodes->hoveredNodeId;
 		}
 		return isHovered;
 	}
@@ -2457,25 +2431,24 @@ namespace Rift::Nodes
 	{
 		assert(gNodes->currentScope != Scope::None);
 		const EditorContext& editor = GetEditorContext();
-		return editor.SelectedNodeIndices.size();
+		return editor.selectedNodeIds.size();
 	}
 
 	i32 NumSelectedLinks()
 	{
 		assert(gNodes->currentScope != Scope::None);
 		const EditorContext& editor = GetEditorContext();
-		return editor.SelectedLinkIndices.size();
+		return editor.selectedLinkIndices.size();
 	}
 
-	void GetSelectedNodes(Id* nodeIds)
+	void GetSelectedNodes(AST::Id* nodeIds)
 	{
 		assert(nodeIds != nullptr);
 
 		const EditorContext& editor = GetEditorContext();
-		for (i32 i = 0; i < editor.SelectedNodeIndices.size(); ++i)
+		for (i32 i = 0; i < editor.selectedNodeIds.size(); ++i)
 		{
-			const i32 nodeIdx = editor.SelectedNodeIndices[i];
-			nodeIds[i]        = editor.nodes.Pool[nodeIdx].id;
+			nodeIds[i] = editor.selectedNodeIds[i];
 		}
 	}
 
@@ -2484,9 +2457,9 @@ namespace Rift::Nodes
 		assert(linkIds != nullptr);
 
 		const EditorContext& editor = GetEditorContext();
-		for (i32 i = 0; i < editor.SelectedLinkIndices.size(); ++i)
+		for (i32 i = 0; i < editor.selectedLinkIndices.size(); ++i)
 		{
-			const i32 linkIdx = editor.SelectedLinkIndices[i];
+			const i32 linkIdx = editor.selectedLinkIndices[i];
 			linkIds[i]        = editor.Links.Pool[linkIdx].id;
 		}
 	}
@@ -2494,60 +2467,63 @@ namespace Rift::Nodes
 	void ClearNodeSelection()
 	{
 		EditorContext& editor = GetEditorContext();
-		editor.SelectedNodeIndices.clear();
+		editor.selectedNodeIds.clear();
 	}
 
-	void ClearNodeSelection(Id nodeId)
+	void ClearNodeSelection(AST::Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
-		ClearObjectSelection(editor.nodes, editor.SelectedNodeIndices, nodeId);
+		assert(editor.selectedNodeIds.find(nodeId) != editor.selectedNodeIds.end());
+		editor.selectedNodeIds.find_erase_unsorted(nodeId);
 	}
 
 	void ClearLinkSelection()
 	{
 		EditorContext& editor = GetEditorContext();
-		editor.SelectedLinkIndices.clear();
+		editor.selectedLinkIndices.clear();
 	}
 
 	void ClearLinkSelection(Id linkId)
 	{
 		EditorContext& editor = GetEditorContext();
-		ClearObjectSelection(editor.Links, editor.SelectedLinkIndices, linkId);
+		const i32 idx         = ObjectPoolFind(editor.Links, linkId);
+		assert(idx >= 0);
+		assert(editor.selectedLinkIndices.find(idx) != editor.selectedLinkIndices.end());
+		editor.selectedLinkIndices.find_erase_unsorted(idx);
 	}
 
-	void SelectNode(Id nodeId)
+	void SelectNode(AST::Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
-		SelectObject(editor.nodes, editor.SelectedNodeIndices, nodeId);
+		assert(editor.selectedNodeIds.find(nodeId) == editor.selectedNodeIds.end());
+		editor.selectedNodeIds.push_back(nodeId);
 	}
 
 	void SelectLink(Id linkId)
 	{
 		EditorContext& editor = GetEditorContext();
-		SelectObject(editor.Links, editor.SelectedLinkIndices, linkId);
+		const i32 idx         = ObjectPoolFind(editor.Links, linkId);
+		assert(idx >= 0);
+		assert(editor.selectedLinkIndices.find(idx) == editor.selectedLinkIndices.end());
+		editor.selectedLinkIndices.push_back(idx);
 	}
 
-	bool IsNodeSelected(Id nodeId)
+	bool IsNodeSelected(AST::Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
-		return IsObjectSelected(editor.nodes, editor.SelectedNodeIndices, nodeId);
-	}
-	bool IsNodeSelectedByIdx(i32 nodeIdx)
-	{
-		EditorContext& editor = GetEditorContext();
-		return IsObjectSelectedByIdx(editor.nodes, editor.SelectedNodeIndices, nodeIdx);
+		return editor.selectedNodeIds.find(nodeId) != editor.selectedNodeIds.end();
 	}
 
 	bool IsLinkSelected(Id linkId)
 	{
 		EditorContext& editor = GetEditorContext();
-		return IsObjectSelected(editor.Links, editor.SelectedLinkIndices, linkId);
+		return IsObjectSelected(editor.Links, editor.selectedLinkIndices, linkId);
 	}
 
 	bool IsLinkSelectedByIdx(i32 linkIdx)
 	{
 		EditorContext& editor = GetEditorContext();
-		return IsObjectSelectedByIdx(editor.Links, editor.SelectedLinkIndices, linkIdx);
+		return IsObjectSelectedByIdx(editor.Links, editor.selectedLinkIndices, linkIdx);
 	}
 
 	bool IsPinActive()
@@ -2657,8 +2633,8 @@ namespace Rift::Nodes
 		return false;
 	}
 
-	bool IsLinkCreated(
-	    Id& outputNodeId, Id& outputPinId, Id& inputNodeId, Id& inputPinId, bool* createdFromSnap)
+	bool IsLinkCreated(AST::Id& outputNodeId, Id& outputPinId, AST::Id& inputNodeId, Id& inputPinId,
+	    bool* createdFromSnap)
 	{
 		Check(gNodes->currentScope == Scope::None);
 
@@ -2668,14 +2644,12 @@ namespace Rift::Nodes
 			const i32 outputIdx         = editor.clickInteraction.linkCreation.outputIdx;
 			const i32 inputIdx          = editor.clickInteraction.linkCreation.inputIdx;
 			const PinData& outputData   = editor.outputs.Pool[outputIdx];
-			const NodeData& outputNode  = editor.nodes.Pool[outputData.parentNodeIdx];
 			const PinData& inputData    = editor.inputs.Pool[inputIdx];
-			const NodeData& inputNode   = editor.nodes.Pool[inputData.parentNodeIdx];
 
 			outputPinId  = outputData.id;
-			outputNodeId = outputNode.id;
+			outputNodeId = outputData.parentNodeId;
 			inputPinId   = inputData.id;
-			inputNodeId  = inputNode.id;
+			inputNodeId  = inputData.parentNodeId;
 
 			if (createdFromSnap)
 			{

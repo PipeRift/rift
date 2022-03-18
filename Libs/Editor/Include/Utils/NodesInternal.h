@@ -1,11 +1,12 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "UI/Nodes.h"
-#include "UI/NodesMiniMap.h"
 #include "UI/UIImgui.h"
+#include "Utils/Nodes.h"
+#include "Utils/NodesMiniMap.h"
 
 #include <assert.h>
+#include <AST/Types.h>
 #include <Containers/Array.h>
 #include <Containers/BitArray.h>
 #include <limits.h>
@@ -83,6 +84,148 @@ namespace Rift::Nodes
 		ImGuiStorage idMap;
 	};
 
+	template<typename T>
+	struct TIndexedArray
+	{
+		using Iterator      = TArray<AST::Id>::Iterator;
+		using ConstIterator = TArray<AST::Id>::ConstIterator;
+
+
+		TArray<AST::Id> frameIds;
+		TArray<T> data;
+		TArray<AST::Id> lastFrameIds;
+		TArray<AST::Id> invalidIds;
+
+
+	public:
+		T& GetOrAdd(AST::Id id, bool* outAdded = nullptr)
+		{
+			const u32 index  = AST::GetIndex(id);
+			const bool added = frameIds.FindOrAddSorted(id).second;
+			if (added && !lastFrameIds.ContainsSorted(id))
+			{
+				// Id added
+				if (outAdded)
+				{
+					*outAdded = true;
+				}
+				if (index >= data.Size())
+				{
+					data.Resize(index + 1);
+				}
+				T* const ptr = GetByIndex(index);
+				*ptr         = {};
+				return *ptr;
+			}
+			return *GetByIndex(index);
+		}
+
+		T& Get(AST::Id id)
+		{
+			Check(Contains(id));
+			return *GetByIndex(AST::GetIndex(id));
+		}
+
+		const T& Get(AST::Id id) const
+		{
+			return const_cast<TIndexedArray<T>*>(this)->Get(id);
+		}
+
+		T* TryGet(AST::Id id)
+		{
+			if (Contains(id))
+			{
+				return GetByIndex(AST::GetIndex(id));
+			}
+			return nullptr;
+		}
+
+		bool Contains(AST::Id id) const
+		{
+			return frameIds.ContainsSorted(id);
+		}
+
+		T& operator[](AST::Id id)
+		{
+			return Get(id);
+		}
+		const T& operator[](AST::Id id) const
+		{
+			return Get(id);
+		}
+
+		void CacheInvalidIds()
+		{
+			invalidIds.Empty(false);
+			for (AST::Id id : lastFrameIds)
+			{
+				if (!frameIds.ContainsSorted(id))
+				{
+					invalidIds.Add(id);
+				}
+			}
+		}
+
+		// Clears ids that have not been used for one frame from the container
+		// @returns the invalid ids
+		void SwapFrameIds()
+		{
+			lastFrameIds = Move(frameIds);
+		}
+
+		ConstIterator begin() const
+		{
+			return frameIds.begin();
+		}
+
+		ConstIterator end() const
+		{
+			return frameIds.end();
+		}
+
+	private:
+		T* GetByIndex(u32 index)
+		{
+			return data.Data() + index;
+		}
+	};
+
+	template<typename T>
+	struct NodeArray : public TIndexedArray<T>
+	{
+		TArray<AST::Id> depthOrder;
+
+
+		T& GetOrAdd(AST::Id id, bool* outAdded = nullptr)
+		{
+			bool added = false;
+			T& node    = TIndexedArray<T>::GetOrAdd(id, &added);
+			// If id has not been added before
+			if (added)
+			{
+				depthOrder.Add(id);
+				if (outAdded)
+				{
+					*outAdded = true;
+				}
+			}
+			return node;
+		}
+
+		void PushToTheFront(AST::Id id)
+		{
+			depthOrder.Remove(id, false);
+			depthOrder.Add(id);
+		}
+
+		void ClearDepthOrder()
+		{
+			depthOrder.RemoveIf([this](AST::Id id) {
+				return TIndexedArray<T>::invalidIds.ContainsSorted(id);
+			});
+		}
+	};
+
 
 	// Emulates std::optional<i32> using the sentinel value `INVALID_INDEX`.
 	struct OptionalIndex
@@ -139,7 +282,6 @@ namespace Rift::Nodes
 
 	struct NodeData
 	{
-		Id id;
 		v2 Origin = v2::Zero();    // The node origin is in editor space
 		Rect TitleBarContentRect;
 		Rect rect{v2::Zero(), v2::Zero()};
@@ -162,14 +304,14 @@ namespace Rift::Nodes
 		bool Draggable = true;
 
 
-		NodeData(const Id id = NoId()) : id(id) {}
+		NodeData() {}
 	};
 
 
 	struct PinData
 	{
 		Id id;
-		i32 parentNodeIdx = NO_INDEX;
+		AST::Id parentNodeId = AST::NoId;
 		Rect rect;
 		PinShape Shape = PinShape_CircleFilled;
 		v2 position;    // screen-space coordinates
@@ -246,12 +388,10 @@ namespace Rift::Nodes
 
 	struct EditorContext
 	{
-		ObjectPool<NodeData> nodes;
+		NodeArray<NodeData> nodes;
 		ObjectPool<PinData> outputs;
 		ObjectPool<PinData> inputs;
 		ObjectPool<LinkData> Links;
-
-		ImVector<i32> NodeDepthOrder;
 
 		// ui related fields
 		v2 Panning = v2::Zero();
@@ -260,8 +400,8 @@ namespace Rift::Nodes
 		// Nodes::EndNode() call.
 		Rect gridContentBounds;
 
-		ImVector<i32> SelectedNodeIndices;
-		ImVector<i32> SelectedLinkIndices;
+		ImVector<AST::Id> selectedNodeIds;
+		ImVector<i32> selectedLinkIndices;
 
 		// Relative origins of selected nodes for snapping of dragged nodes
 		ImVector<v2> SelectedNodeOrigins;
@@ -271,6 +411,7 @@ namespace Rift::Nodes
 		ClickInteractionState clickInteraction;
 
 		MiniMap miniMap;
+
 
 		ObjectPool<PinData>& GetPinPool(PinType type)
 		{
@@ -310,8 +451,8 @@ namespace Rift::Nodes
 		// Canvas draw list and helper state
 		ImDrawList* CanvasDrawList;
 		ImGuiStorage NodeIdxToSubmissionIdx;
-		ImVector<i32> NodeIdxSubmissionOrder;
-		ImVector<i32> NodeIndicesOverlappingWithMouse;
+		ImVector<AST::Id> nodeSubmissionOrder;
+		ImVector<AST::Id> nodeIdsOverlappingWithMouse;
 		ImVector<PinIdx> occludedPinIndices;
 
 		// Canvas extents
@@ -332,11 +473,11 @@ namespace Rift::Nodes
 		ImVector<i32> pinFlagStack;
 
 		// UI element state
-		i32 CurrentNodeIdx;
+		AST::Id currentNodeId;
 		PinIdx CurrentPinIdx;
 		i32 CurrentPinId;
 
-		OptionalIndex HoveredNodeIdx;
+		AST::Id hoveredNodeId;
 		OptionalIndex HoveredLinkIdx;
 		PinIdx HoveredPinIdx;
 
@@ -389,38 +530,6 @@ namespace Rift::Nodes
 		}
 	}
 
-	template<>
-	inline void ObjectPoolUpdate(ObjectPool<NodeData>& nodes)
-	{
-		for (i32 i = 0; i < nodes.InUse.Size(); ++i)
-		{
-			if (nodes.InUse.IsSet(i))
-			{
-				auto& node = nodes.Pool[i];
-				node.inputs.clear();
-				node.outputs.clear();
-			}
-			else
-			{
-				const Id id = nodes.Pool[i].id;
-
-				if (nodes.idMap.GetInt(i32(id), -1) == i)
-				{
-					// Remove node idx form depth stack the first time we detect that this idx slot
-					// is unused
-					ImVector<i32>& depthStack = GetEditorContext().NodeDepthOrder;
-					const i32* const elem     = depthStack.find(i);
-					assert(elem != depthStack.end());
-					depthStack.erase(elem);
-
-					nodes.idMap.SetInt(i32(id), -1);
-					nodes.availableIds.Add(i);
-					(nodes.Pool.Data() + i)->~NodeData();
-				}
-			}
-		}
-	}
-
 	template<typename T>
 	static inline void ObjectPoolReset(ObjectPool<T>& objects)
 	{
@@ -458,40 +567,6 @@ namespace Rift::Nodes
 		// Flag it as used
 		objects.InUse.FillBit(index);
 		return index;
-	}
-
-	template<>
-	inline i32 ObjectPoolFindOrCreateIndex(ObjectPool<NodeData>& nodes, const Id nodeId)
-	{
-		i32 nodeIdx = nodes.idMap.GetInt(static_cast<ImGuiID>(i32(nodeId)), -1);
-
-		// Construct new node
-		if (nodeIdx == -1)
-		{
-			if (nodes.availableIds.IsEmpty())
-			{
-				nodeIdx = nodes.Pool.Size();
-				IM_ASSERT(nodes.Pool.Size() == nodes.InUse.Size());
-				const i32 newSize = nodes.Pool.Size() + 1;
-				nodes.Pool.Resize(newSize);
-				nodes.InUse.Resize(newSize);
-			}
-			else
-			{
-				nodeIdx = nodes.availableIds.Last();
-				nodes.availableIds.RemoveLast();
-			}
-			IM_PLACEMENT_NEW(nodes.Pool.Data() + nodeIdx) NodeData(nodeId);
-			nodes.idMap.SetInt(static_cast<ImGuiID>(i32(nodeId)), nodeIdx);
-
-			EditorContext& editor = GetEditorContext();
-			editor.NodeDepthOrder.push_back(nodeIdx);
-		}
-
-		// Flag node as used
-		nodes.InUse.FillBit(nodeIdx);
-
-		return nodeIdx;
 	}
 
 	template<typename T>

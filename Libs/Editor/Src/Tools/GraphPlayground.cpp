@@ -6,8 +6,8 @@
 #include "Statics/SEditor.h"
 #include "Utils/FunctionGraph.h"
 
-#include <UI/Nodes.h>
-#include <UI/NodesMiniMap.h>
+#include <Utils/Nodes.h>
+#include <Utils/NodesMiniMap.h>
 
 
 namespace Rift
