@@ -2384,18 +2384,23 @@ namespace Rift::Nodes
 		return IsMouseInCanvas();
 	}
 
+	AST::Id GetNodeHovered()
+	{
+		return gNodes->hoveredNodeId;
+	}
+
 	bool IsNodeHovered(AST::Id* nodeId)
 	{
 		assert(gNodes->currentScope != Scope::None);
 		assert(nodeId != nullptr);
-
 		const bool isHovered = gNodes->hoveredNodeId != AST::NoId;
 		if (isHovered)
 		{
 			const EditorContext& editor = GetEditorContext();
 			*nodeId                     = gNodes->hoveredNodeId;
+			return true;
 		}
-		return isHovered;
+		return false;
 	}
 
 	bool IsLinkHovered(Id* const linkId)

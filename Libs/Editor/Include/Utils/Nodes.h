@@ -395,6 +395,7 @@ namespace Rift::Nodes
 	// Returns true if the current node editor canvas is being hovered over by the mouse, and is
 	// not blocked by any other windows.
 	bool IsEditorHovered();
+	AST::Id GetNodeHovered();
 	// The following functions return true if a UI element is being hovered over by the mouse
 	// cursor. Assigns the id of the UI element being hovered over to the function argument. Use
 	// these functions after EndNodeEditor() has been called.
