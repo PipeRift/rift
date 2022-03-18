@@ -94,8 +94,6 @@ namespace Rift::Nodes
 		TArray<AST::Id> frameIds;
 		TArray<T> data;
 		TArray<AST::Id> lastFrameIds;
-
-	private:
 		TArray<AST::Id> invalidIds;
 
 
@@ -185,11 +183,6 @@ namespace Rift::Nodes
 			return frameIds.end();
 		}
 
-		const TArray<AST::Id>& GetInvalidIds() const
-		{
-			return invalidIds;
-		}
-
 	private:
 		T* GetByIndex(u32 index)
 		{
@@ -227,9 +220,8 @@ namespace Rift::Nodes
 
 		void ClearDepthOrder()
 		{
-			const TArray<AST::Id>& invalidIds = GetInvalidIds();
-			depthOrder.RemoveIf([&invalidIds](AST::Id id) {
-				return invalidIds.ContainsSorted(id);
+			depthOrder.RemoveIf([this](AST::Id id) {
+				return TIndexedArray<T>::invalidIds.ContainsSorted(id);
 			});
 		}
 	};
