@@ -219,7 +219,7 @@ namespace Rift::Nodes
 
 		void ClearDepthOrder()
 		{
-			depthOrder.RemoveIf([this](AST::Id id) {
+			depthOrder.RemoveIf([&](AST::Id id) {
 				return invalidIds.ContainsSorted(id);
 			});
 		}
