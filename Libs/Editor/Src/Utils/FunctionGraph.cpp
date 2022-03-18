@@ -348,109 +348,124 @@ namespace Rift::Graph
 	{
 		ImGui::PopStyleVar(2);
 	}
+	void DrawNodeContextMenu(AST::Tree& ast, AST::Id typeId, AST::Id nodeId)
+	{
+		if (UI::MenuItem("Delete")) {}
+	}
 
-	void DrawContextMenu(AST::Tree& ast, AST::Id typeId)
+	void DrawGraphContextMenu(AST::Tree& ast, AST::Id typeId)
+	{
+		static ImGuiTextFilter filter;
+		if (UI::IsWindowAppearing())
+		{
+			UI::SetKeyboardFocusHere();
+		}
+		filter.Draw("##Filter");
+		const v2 clickPos = UI::GetMousePosOnOpeningCurrentPopup();
+		const v2 gridPos  = Nodes::ScreenToGridPosition(clickPos);
+
+		if (filter.IsActive() || UI::TreeNode("Constructors"))
+		{
+			String makeStr{};
+			auto& typeList = ast.GetStatic<STypes>();
+			auto types     = ast.Filter<CType>();
+			for (const auto& it : typeList.typesByName)
+			{
+				if (auto* type = types.TryGet<CType>(it.second))
+				{
+					makeStr.clear();
+					Strings::FormatTo(makeStr, "Make {}", type->name);
+					if (filter.PassFilter(makeStr.c_str(), makeStr.c_str() + makeStr.size()))
+					{
+						if (UI::MenuItem(makeStr.c_str()))
+						{
+							AST::Id newId = AST::Functions::AddLiteral({ast, typeId}, it.second);
+							if (newId != AST::NoId)
+							{
+								ast.Add<CGraphTransform>(newId, gridPos);
+							}
+						}
+					}
+				}
+			}
+
+			if (!filter.IsActive())
+			{
+				UI::TreePop();
+			}
+		}
+
+		if (filter.IsActive() || UI::TreeNode("Variables"))
+		{
+			auto variables   = ast.Filter<CVariableDecl>();
+			auto identifiers = ast.Filter<CIdentifier>();
+			for (AST::Id variableId : variables)
+			{
+				if (auto* iden = identifiers.TryGet<CIdentifier>(variableId))
+				{
+					const String& name = iden->name.ToString();
+					if (filter.PassFilter(name.c_str(), name.c_str() + name.size()))
+					{
+						if (UI::MenuItem(name.c_str()))
+						{
+							AST::Id newId =
+							    AST::Functions::AddDeclarationReference({ast, typeId}, variableId);
+							if (newId != AST::NoId)
+							{
+								ast.Add<CGraphTransform>(newId, gridPos);
+							}
+						}
+					}
+				}
+			}
+
+			if (!filter.IsActive())
+			{
+				UI::TreePop();
+			}
+		}
+
+		if (filter.IsActive() || UI::TreeNode("Functions"))
+		{
+			auto functions   = ast.Filter<CFunctionDecl>();
+			auto identifiers = ast.Filter<CIdentifier>();
+			for (AST::Id functionId : functions)
+			{
+				if (auto* iden = identifiers.TryGet<CIdentifier>(functionId))
+				{
+					const String& name = iden->name.ToString();
+					if (filter.PassFilter(name.c_str(), name.c_str() + name.size()))
+					{
+						if (UI::MenuItem(name.c_str()))
+						{
+							AST::Id newId = AST::Functions::AddCall({ast, typeId}, functionId);
+							if (newId != AST::NoId)
+							{
+								ast.Add<CGraphTransform>(newId, gridPos);
+							}
+						}
+					}
+				}
+			}
+
+			if (!filter.IsActive())
+			{
+				ImGui::TreePop();
+			}
+		}
+	}
+
+	void DrawContextMenu(AST::Tree& ast, AST::Id typeId, AST::Id hoveredNodeId)
 	{
 		if (ImGui::BeginPopup("GraphContextMenu"))
 		{
-			static ImGuiTextFilter filter;
-			if (UI::IsWindowAppearing())
+			if (IsNone(hoveredNodeId))
 			{
-				UI::SetKeyboardFocusHere();
+				DrawGraphContextMenu(ast, typeId);
 			}
-			filter.Draw("##Filter");
-			const v2 clickPos = ImGui::GetMousePosOnOpeningCurrentPopup();
-			const v2 gridPos  = Nodes::ScreenToGridPosition(clickPos);
-
-			if (filter.IsActive() || ImGui::TreeNode("Constructors"))
+			else
 			{
-				String makeStr{};
-				auto& typeList = ast.GetStatic<STypes>();
-				auto types     = ast.Filter<CType>();
-				for (const auto& it : typeList.typesByName)
-				{
-					if (auto* type = types.TryGet<CType>(it.second))
-					{
-						makeStr.clear();
-						Strings::FormatTo(makeStr, "Make {}", type->name);
-						if (filter.PassFilter(makeStr.c_str(), makeStr.c_str() + makeStr.size()))
-						{
-							if (ImGui::MenuItem(makeStr.c_str()))
-							{
-								AST::Id newId =
-								    AST::Functions::AddLiteral({ast, typeId}, it.second);
-								if (newId != AST::NoId)
-								{
-									ast.Add<CGraphTransform>(newId, gridPos);
-								}
-							}
-						}
-					}
-				}
-
-				if (!filter.IsActive())
-				{
-					ImGui::TreePop();
-				}
-			}
-
-			if (filter.IsActive() || ImGui::TreeNode("Variables"))
-			{
-				auto variables   = ast.Filter<CVariableDecl>();
-				auto identifiers = ast.Filter<CIdentifier>();
-				for (AST::Id variableId : variables)
-				{
-					if (auto* iden = identifiers.TryGet<CIdentifier>(variableId))
-					{
-						const String& name = iden->name.ToString();
-						if (filter.PassFilter(name.c_str(), name.c_str() + name.size()))
-						{
-							if (ImGui::MenuItem(name.c_str()))
-							{
-								AST::Id newId = AST::Functions::AddDeclarationReference(
-								    {ast, typeId}, variableId);
-								if (newId != AST::NoId)
-								{
-									ast.Add<CGraphTransform>(newId, gridPos);
-								}
-							}
-						}
-					}
-				}
-
-				if (!filter.IsActive())
-				{
-					ImGui::TreePop();
-				}
-			}
-
-			if (filter.IsActive() || ImGui::TreeNode("Functions"))
-			{
-				auto functions   = ast.Filter<CFunctionDecl>();
-				auto identifiers = ast.Filter<CIdentifier>();
-				for (AST::Id functionId : functions)
-				{
-					if (auto* iden = identifiers.TryGet<CIdentifier>(functionId))
-					{
-						const String& name = iden->name.ToString();
-						if (filter.PassFilter(name.c_str(), name.c_str() + name.size()))
-						{
-							if (ImGui::MenuItem(name.c_str()))
-							{
-								AST::Id newId = AST::Functions::AddCall({ast, typeId}, functionId);
-								if (newId != AST::NoId)
-								{
-									ast.Add<CGraphTransform>(newId, gridPos);
-								}
-							}
-						}
-					}
-				}
-
-				if (!filter.IsActive())
-				{
-					ImGui::TreePop();
-				}
+				DrawNodeContextMenu(ast, typeId, hoveredNodeId);
 			}
 			ImGui::EndPopup();
 		}
@@ -520,8 +535,8 @@ namespace Rift::Graph
 					if (!IsNone(outputPinId) && !IsNone(inputNodeId))
 					{
 						// NOTE: Input pin ids equal input node ids
-						// TODO: Execution pin ids atm are the same as the node id. Implement proper
-						// output pin support
+						// TODO: Execution pin ids atm are the same as the node id. Implement
+						// proper output pin support
 						Nodes::Link(i32(inputNodeId), i32(outputPinId), i32(inputNodeId));
 					}
 				}
@@ -621,11 +636,13 @@ namespace Rift::Graph
 				AST::ExpressionGraph::Disconnect(ast, AST::Id(linkId));
 			}
 
+			static AST::Id contextNodeId = AST::NoId;
 			if (wantsToOpenContextMenu)
 			{
+				contextNodeId = Nodes::GetNodeHovered();
 				ImGui::OpenPopup("GraphContextMenu", ImGuiPopupFlags_AnyPopup);
 			}
-			DrawContextMenu(ast, typeId);
+			DrawContextMenu(ast, typeId, contextNodeId);
 			UI::End();
 		}
 	}
