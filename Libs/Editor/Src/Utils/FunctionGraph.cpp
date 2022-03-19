@@ -350,6 +350,14 @@ namespace Rift::Graph
 	}
 	void DrawNodeContextMenu(AST::Tree& ast, AST::Id typeId, AST::Id nodeId)
 	{
+		if (ast.Has<CFunctionDecl>(nodeId))
+		{
+			if (UI::MenuItem("Add return node"))
+			{
+				AST::Functions::AddReturn({ast, typeId}, nodeId);
+			}
+			UI::Separator();
+		}
 		if (UI::MenuItem("Delete")) {}
 	}
 
