@@ -12,6 +12,8 @@ namespace Rift::AST::Functions
 	Id AddInputArgument(Tree& ast, Id functionId);
 	Id AddOutputArgument(Tree& ast, Id functionId);
 
+	Id AddReturn(TypeRef type, Id functionId);
+
 	Id AddLiteral(TypeRef type, Id literalTypeId);
 	Id AddCall(TypeRef type, Id targetFunctionId);
 	Id AddDeclarationReference(TypeRef type, Id declId);

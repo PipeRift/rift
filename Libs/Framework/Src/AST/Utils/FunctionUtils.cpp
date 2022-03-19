@@ -17,6 +17,8 @@
 #include "AST/Statics/STypes.h"
 #include "AST/Utils/Hierarchy.h"
 
+#include <AST/Components/CReturnExpr.h>
+
 
 namespace Rift::AST::Functions
 {
@@ -40,6 +42,14 @@ namespace Rift::AST::Functions
 
 		Hierarchy::AddChildren(ast, functionId, id);
 		return id;
+	}
+
+	Id AddReturn(TypeRef type, Id functionId)
+	{
+		Tree& ast         = type.GetAST();
+		const Id returnId = ast.Create();
+		ast.Add<CReturnExpr>(returnId, {functionId});
+		return returnId;
 	}
 
 	Id AddLiteral(TypeRef type, Id literalTypeId)
