@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Plugin.h"
+
 #include <Context.h>
 
 
@@ -14,5 +16,16 @@ namespace Rift
 	class RiftContext : public Context
 	{
 		CLASS(RiftContext, Context)
+
+	protected:
+		TArray<TOwnPtr<Plugin>> plugins;
+
+
+	public:
+		template<typename T>
+		void AddPlugin()
+		{
+			plugins.Add(MakeOwned<T>());
+		}
 	};
 }    // namespace Rift

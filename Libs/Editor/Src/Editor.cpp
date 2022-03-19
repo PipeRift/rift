@@ -21,10 +21,9 @@
 
 namespace Rift
 {
-	int Editor::Run(StringView projectPath)
+	int Editor::Run(TPtr<RiftContext> context, StringView projectPath)
 	{
 		FileWatcher::StartAsync();
-		InitializeContext<RiftContext>();
 
 		// Setup window
 		Log::Info("Initializing editor...");

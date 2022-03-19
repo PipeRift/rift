@@ -8,7 +8,7 @@
 #include "AST/Systems/FunctionsSystem.h"
 #include "AST/Systems/LoadSystem.h"
 #include "AST/Systems/TypeSystem.h"
-#include "Framework/Paths.h"
+#include "AST/Utils/Paths.h"
 
 #include <Files/Files.h>
 #include <Files/Paths.h>
