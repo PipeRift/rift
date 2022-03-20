@@ -1,7 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Framework/Paths.h"
+#include "AST/Utils/Paths.h"
 
 #include <Containers/Set.h>
 #include <Files/FormatFileIterator.h>
