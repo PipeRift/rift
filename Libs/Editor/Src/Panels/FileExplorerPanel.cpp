@@ -14,9 +14,9 @@
 
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
+#include <AST/Utils/Paths.h>
 #include <AST/Utils/TypeUtils.h>
 #include <Files/FileDialog.h>
-#include <Framework/Paths.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
 #include <imgui_internal.h>
@@ -24,6 +24,7 @@
 #include <Strings/FixedString.h>
 #include <UI/Style.h>
 #include <UI/UI.h>
+
 
 
 namespace Rift

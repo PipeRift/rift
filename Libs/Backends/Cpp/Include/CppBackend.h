@@ -3,20 +3,34 @@
 #pragma once
 
 #include <Compiler/Backend.h>
+#include <Plugin.h>
+#include <RiftContext.h>
 
 
-namespace Rift::Compiler
+namespace Rift
 {
-	class CppBackend : public Backend
+	class CPPBackendPlugin : public Plugin
 	{
-		CLASS(CppBackend, Backend)
+		CLASS(CPPBackendPlugin, Plugin)
 
 	public:
-		Name GetName() override
-		{
-			return "Cpp";
-		}
-
-		void Build(Context& context) override;
+		void Register(TPtr<RiftContext> context) override {}
 	};
-}    // namespace Rift::Compiler
+
+
+	namespace Compiler
+	{
+		class CppBackend : public Backend
+		{
+			CLASS(CppBackend, Backend)
+
+		public:
+			Name GetName() override
+			{
+				return "Cpp";
+			}
+
+			void Build(Context& context) override;
+		};
+	}    // namespace Compiler
+}    // namespace Rift

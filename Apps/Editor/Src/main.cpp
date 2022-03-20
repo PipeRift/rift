@@ -8,14 +8,20 @@
 
 #include <iostream>
 
+using namespace Rift;
+
 
 #ifndef RUN_AS_CLI
 #	define RUN_AS_CLI 1
 #endif
 
-int RunEditor(Rift::StringView projectPath)
+int RunEditor(StringView projectPath)
 {
-	return Rift::Editor::Get().Run(projectPath);
+	auto context = InitializeContext<RiftContext>();
+	context->AddPlugin<LLVMBackendPlugin>();
+	context->AddPlugin<CPPBackendPlugin>();
+
+	return Editor::Get().Run(context, projectPath);
 }
 
 #if PLATFORM_WINDOWS && !RUN_AS_CLI
@@ -23,11 +29,11 @@ int RunEditor(Rift::StringView projectPath)
 #	include <windows.h>
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
 {
-	return RunEditor(__argc > 1 ? __argv[1] : Rift::StringView{});
+	return RunEditor(__argc > 1 ? __argv[1] : StringView{});
 }
 #else
 int main(int argc, char* argv[])
 {
-	return RunEditor(argc > 1 ? argv[1] : Rift::StringView{});
+	return RunEditor(argc > 1 ? argv[1] : StringView{});
 }
 #endif

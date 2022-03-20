@@ -13,7 +13,7 @@
 #include "AST/Serialization.h"
 #include "AST/Utils/Hierarchy.h"
 
-#include <Framework/Paths.h>
+#include <AST/Utils/Paths.h>
 #include <Misc/Checks.h>
 #include <Profiler.h>
 #include <Serialization/Formats/JsonFormat.h>
