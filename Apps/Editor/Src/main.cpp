@@ -6,7 +6,11 @@
 #include <CppBackend.h>
 #include <LLVMBackend.h>
 
+// Views
+#include <GraphView.h>
+
 #include <iostream>
+
 
 using namespace Rift;
 
@@ -20,6 +24,8 @@ int RunEditor(StringView projectPath)
 	auto context = InitializeContext<RiftContext>();
 	context->AddPlugin<LLVMBackendPlugin>();
 	context->AddPlugin<CPPBackendPlugin>();
+
+	context->AddPlugin<GraphViewPlugin>();
 
 	return Editor::Get().Run(context, projectPath);
 }
