@@ -172,12 +172,28 @@ namespace Rift
 		template<typename C>
 		void Remove(const AST::Id id) const requires(IsSame<C, Mut<C>>)
 		{
-			GetPool<C>()->Remove(id);
+			if (auto* pool = GetPool<C>())
+			{
+				pool->Remove(id);
+			}
 		}
 		template<typename... C>
-		void Remove(TSpan<const AST::Id> ids) const requires(IsSame<C, Mut<C>>&&...)
+		void Remove(const AST::Id id) const requires(sizeof...(C) > 1)
 		{
-			(GetPool<C>()->Remove(ids), ...);
+			(Remove<C>(id), ...);
+		}
+		template<typename C>
+		void Remove(TSpan<const AST::Id> ids) const requires(IsSame<C, Mut<C>>)
+		{
+			if (auto* pool = GetPool<C>())
+			{
+				pool->Remove(ids);
+			}
+		}
+		template<typename... C>
+		void Remove(TSpan<const AST::Id> ids) const requires(sizeof...(C) > 1)
+		{
+			(Remove<C>(ids), ...);
 		}
 
 		template<typename C>
