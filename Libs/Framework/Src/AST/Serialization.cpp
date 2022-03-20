@@ -66,7 +66,21 @@ namespace Rift::AST
 	template<typename T>
 	void WritePool(WriteContext& ct, TAccessRef<T> access, const TArray<Id>& nodes)
 	{
-		TArray<Id> componentIds = GetIf<T>(access, nodes);
+		TArray<TPair<i32, Id>> componentIds;
+
+		if (auto* pool = access.GetPool<const T>())
+		{
+			componentIds.ReserveMore(Math::Min(i32(pool->Size()), nodes.Size()));
+			for (i32 i = 0; i < nodes.Size(); ++i)
+			{
+				const Id id = nodes[i];
+				if (pool->Has(id))
+				{
+					componentIds.Add({i, id});
+				}
+			}
+		}
+
 		if (componentIds.IsEmpty())
 		{
 			return;
@@ -79,10 +93,10 @@ namespace Rift::AST
 		{
 			String key;
 			ct.BeginObject();
-			for (i32 i = 0; i < componentIds.Size(); ++i)
+			for (auto id : componentIds)
 			{
 				key.clear();
-				Strings::FormatTo(key, "{}", i);
+				Strings::FormatTo(key, "{}", id.first);
 
 				if constexpr (std::is_empty_v<T>)
 				{
@@ -90,7 +104,7 @@ namespace Rift::AST
 				}
 				else
 				{
-					ct.Next(StringView{key}, access.template Get<const T>(componentIds[i]));
+					ct.Next(StringView{key}, access.template Get<const T>(id.second));
 				}
 			}
 			ct.Leave();
