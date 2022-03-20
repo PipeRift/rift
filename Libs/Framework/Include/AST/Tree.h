@@ -117,12 +117,28 @@ namespace Rift::AST
 		template<typename Component>
 		void Remove(const Id id)
 		{
-			GetPool<Component>()->Remove(id);
+			if (auto* pool = GetPool<Component>())
+			{
+				pool->Remove(id);
+			}
 		}
 		template<typename... Component>
+		void Remove(const Id id) requires(sizeof...(Component) > 1)
+		{
+			(Remove<Component>(id), ...);
+		}
+		template<typename Component>
 		void Remove(TSpan<const Id> ids)
 		{
-			(GetPool<Component>()->Remove(ids), ...);
+			if (auto* pool = GetPool<Component>())
+			{
+				pool->Remove(ids);
+			}
+		}
+		template<typename... Component>
+		void Remove(TSpan<const Id> ids) requires(sizeof...(Component) > 1)
+		{
+			(Remove<Component>(ids), ...);
 		}
 
 		template<typename Component>
