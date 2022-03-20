@@ -62,6 +62,10 @@ namespace Rift
 
 int main(int argc, char** argv)
 {
+	auto context = InitializeContext<RiftContext>();
+	context->AddPlugin<LLVMBackendPlugin>();
+	context->AddPlugin<CPPBackendPlugin>();
+
 	CLI::App app{"Rift compiler"};
 	String pathStr;
 	app.add_option("-p,--project", pathStr, "Project path")->required();
@@ -76,7 +80,6 @@ int main(int argc, char** argv)
 	TPtr<Compiler::Backend> backend = FindBackendByName(availableBackends, selectedBackendStr);
 
 	ZoneScopedNC("CLI Execution", 0x459bd1);
-	auto context = InitializeContext<RiftContext>();
 
 	const Path path = Paths::FromString(pathStr);
 	AST::Tree ast;

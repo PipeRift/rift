@@ -4,6 +4,7 @@
 #include <AST/Tree.h>
 #include <Files/Paths.h>
 #include <Misc/Time.h>
+#include <RiftContext.h>
 
 
 namespace Rift
@@ -30,7 +31,7 @@ namespace Rift
 
 		~Editor();
 
-		int Run(StringView projectPath = {});
+		int Run(TPtr<RiftContext> context, StringView projectPath = {});
 
 		void Tick();
 
@@ -47,6 +48,7 @@ namespace Rift
 			return Get().ast;
 		}
 
+		bool CreateProject(const Path& path, bool closeFirst = true);
 		bool OpenProject(const Path& path, bool closeFirst = true);
 
 		void Close();

@@ -92,6 +92,13 @@ namespace Rift::AST
 			return AssurePool<Component>().Add(id, value);
 		}
 
+		// Add Component to many entities (if they dont have it already)
+		template<typename Component>
+		decltype(auto) Add(TSpan<const Id> ids, const Component& value = {})
+		{
+			return AssurePool<Component>().Add(ids.begin(), ids.end(), value);
+		}
+
 		// Adds Component to an entity (if the entity doesnt have it already)
 		template<typename... Component>
 		void Add(Id id) requires(sizeof...(Component) > 1)
@@ -100,13 +107,7 @@ namespace Rift::AST
 			(Add<Component>(id), ...);
 		}
 
-		template<typename Component>
-		decltype(auto) Add(TSpan<const Id> ids, const Component& value = {})
-		{
-			return AssurePool<Component>().Add(ids.begin(), ids.end(), value);
-		}
-
-		// Adds Component to an entity (if the entity doesnt have it already)
+		// Add Components to many entities (if they dont have it already)
 		template<typename... Component>
 		void Add(TSpan<const Id> ids) requires(sizeof...(Component) > 1)
 		{
@@ -116,12 +117,28 @@ namespace Rift::AST
 		template<typename Component>
 		void Remove(const Id id)
 		{
-			GetPool<Component>()->Remove(id);
+			if (auto* pool = GetPool<Component>())
+			{
+				pool->Remove(id);
+			}
 		}
 		template<typename... Component>
+		void Remove(const Id id) requires(sizeof...(Component) > 1)
+		{
+			(Remove<Component>(id), ...);
+		}
+		template<typename Component>
 		void Remove(TSpan<const Id> ids)
 		{
-			(GetPool<Component>()->Remove(ids), ...);
+			if (auto* pool = GetPool<Component>())
+			{
+				pool->Remove(ids);
+			}
+		}
+		template<typename... Component>
+		void Remove(TSpan<const Id> ids) requires(sizeof...(Component) > 1)
+		{
+			(Remove<Component>(ids), ...);
 		}
 
 		template<typename Component>

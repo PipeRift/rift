@@ -6,8 +6,8 @@
 #include "Statics/SEditor.h"
 #include "Utils/FunctionGraph.h"
 
-#include <UI/Nodes.h>
-#include <UI/NodesMiniMap.h>
+#include <Utils/Nodes.h>
+#include <Utils/NodesMiniMap.h>
 
 
 namespace Rift
@@ -35,9 +35,9 @@ namespace Rift
 			}
 
 			static bool boolValue = false;
-			Graph::Literals::DrawBoolNode(AST::Id(0), boolValue);
+			// Graph::Literals::DrawBoolNode(AST::Id(0), boolValue);
 			static String stringValue;
-			Graph::Literals::DrawStringNode(AST::Id(1), stringValue);
+			// Graph::Literals::DrawStringNode(AST::Id(1), stringValue);
 
 			// Graph::DrawCallNode({}, AST::Id(958), "ApplyDamage", "DamageSystem");
 

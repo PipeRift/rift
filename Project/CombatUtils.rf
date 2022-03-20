@@ -36,19 +36,16 @@
                 "name": "Attack"
             }
         },
-        "CStructDecl": {},
-        "CClassDecl": {},
-        "CVariableDecl": {},
         "CFunctionDecl": {
             "1": {}
         },
         "CCallExpr": {
             "2": {
-                "typeName": "none",
+                "ownerName": "none",
                 "functionName": "none"
             },
             "3": {
-                "typeName": "InventoryItem",
+                "ownerName": "none",
                 "functionName": "Add"
             }
         },
@@ -74,9 +71,6 @@
                 "linkOutputNode": -1
             }
         },
-        "CBoolLiteral": {},
-        "CFloatLiteral": {},
-        "CStringLiteral": {},
         "CGraphTransform": {
             "1": {
                 "position": {
@@ -86,14 +80,14 @@
             },
             "2": {
                 "position": {
-                    "x": 173.0,
-                    "y": 23.0
+                    "x": 7.0,
+                    "y": 0.0
                 }
             },
             "3": {
                 "position": {
-                    "x": 154.0,
-                    "y": 46.0
+                    "x": 14.0,
+                    "y": 0.0
                 }
             }
         }

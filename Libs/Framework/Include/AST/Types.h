@@ -2,7 +2,7 @@
 #pragma once
 
 #include <Platform/Platform.h>
-#include <Reflection/Registry/NativeTypeBuilder.h>
+#include <Reflection/Builders/NativeTypeBuilder.h>
 #include <Serialization/ContextsFwd.h>
 #include <Templates/TypeList.h>
 

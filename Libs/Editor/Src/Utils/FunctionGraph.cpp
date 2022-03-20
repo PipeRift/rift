@@ -22,18 +22,21 @@
 #include <AST/Components/CStatementOutputs.h>
 #include <AST/Components/CVariableDecl.h>
 #include <AST/Components/Views/CGraphTransform.h>
+#include <AST/Filtering.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/TransactionUtils.h>
-#include <UI/Nodes.h>
-#include <UI/NodesInternal.h>
-#include <UI/NodesMiniMap.h>
 #include <UI/Style.h>
+#include <Utils/Nodes.h>
+#include <Utils/NodesInternal.h>
+#include <Utils/NodesMiniMap.h>
 
 
 namespace Rift::Graph
 {
+	static CGraphTransform* currentNodeTransform = nullptr;
+
 	void Settings::SetGridSize(float size)
 	{
 		gridSize                      = size;
@@ -61,83 +64,106 @@ namespace Rift::Graph
 		return {0.f, settings.verticalMargin + settings.verticalPadding};
 	}
 
-	void BeginNode(AST::Id id)
+	void BeginNode(TAccessRef<TWrite<CGraphTransform>> access, AST::Id id)
 	{
+		if (UI::IsWindowAppearing()
+		    && !(Nodes::GetCurrentContext()->leftMouseDragging && Nodes::IsNodeSelected(id)))
+		{
+			currentNodeTransform = &access.GetOrAdd<CGraphTransform>(id);
+			SetNodePosition(id, currentNodeTransform->position);
+		}
+
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
-		Nodes::BeginNode(i32(id));
+		Nodes::BeginNode(id);
 	}
 
-	void EndNode()
+	void EndNode(const TransactionAccess& access)
 	{
 		// Selection outline
 		const auto* context = Nodes::GetCurrentContext();
-		if (Nodes::IsNodeSelectedByIdx(context->CurrentNodeIdx))
+		if (Nodes::IsNodeSelected(context->currentNodeId))
 		{
-			Nodes::GetEditorContext()
-			    .nodes.Pool[context->CurrentNodeIdx]
-			    .LayoutStyle.BorderThickness = 2.f;
+			Nodes::GetEditorContext().nodes[context->currentNodeId].LayoutStyle.BorderThickness =
+			    2.f;
 		}
-
 		Nodes::EndNode();
 		Nodes::PopStyleColor(1);
+
+		if (currentNodeTransform && context->leftMouseReleased)
+		{
+			const AST::Id id = context->currentNodeId;
+			v2 newPosition   = GetNodePosition(id);
+			if (!newPosition.Equals(currentNodeTransform->position, 0.1f))
+			{
+				ScopedChange(access, id);
+				currentNodeTransform->position = newPosition;
+			}
+		}
+		currentNodeTransform = nullptr;
 	}
 
-
-	namespace Literals
+	void PushExecutionPinStyle()
 	{
-		void DrawBoolNode(AST::Id id, bool& value)
+		static constexpr Color color = Style::executionColor;
+		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+	}
+
+	void PopExecutionPinStyle()
+	{
+		Nodes::PopStyleColor(2);
+	}
+
+	void DrawLiteralBool(AST::Tree& ast, AST::Id id, bool& value)
+	{
+		static constexpr Color color = Style::GetTypeColor<bool>();
+
+		Style::PushNodeBackgroundColor(color);
+		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+
+		BeginNode(ast, id);
 		{
-			static constexpr Color color = Style::GetTypeColor<bool>();
-
-			Style::PushNodeBackgroundColor(color);
-			Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
-
-			BeginNode(id);
-			{
-				Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
-				PushInnerNodeStyle();
-				UI::Checkbox("##value", &value);
-				PopInnerNodeStyle();
-				Nodes::EndOutput();
-			}
-			EndNode();
-			Nodes::PopStyleColor(2);
-			Style::PopNodeBackgroundColor();
+			Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+			PushInnerNodeStyle();
+			UI::Checkbox("##value", &value);
+			PopInnerNodeStyle();
+			Nodes::EndOutput();
 		}
+		EndNode(ast);
+		Nodes::PopStyleColor(2);
+		Style::PopNodeBackgroundColor();
+	}
 
-		void DrawStringNode(AST::Id id, String& value)
+	void DrawLiteralString(AST::Tree& ast, AST::Id id, String& value)
+	{
+		static constexpr Color color = Style::GetTypeColor<String>();
+
+		Style::PushNodeBackgroundColor(color);
+		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+
+		BeginNode(ast, id);
 		{
-			static constexpr Color color = Style::GetTypeColor<String>();
-
-			Style::PushNodeBackgroundColor(color);
-			Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
-
-			BeginNode(id);
-			{
-				Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
-				PushInnerNodeStyle();
-				ImGuiStyle& style = ImGui::GetStyle();
-				const ImVec2 textSize =
-				    ImGui::CalcTextSize(value.data(), value.data() + value.size());
-				const v2 minSize{settings.GetGridSize() * 4.f, settings.GetGridSize()};
-				const v2 size{Math::Max(minSize.x, textSize.x), Math::Max(minSize.y, textSize.y)};
-				UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
-				PopInnerNodeStyle();
-				Nodes::EndOutput();
-			}
-			EndNode();
-
-			Nodes::PopStyleColor(2);
-			Style::PopNodeBackgroundColor();
+			Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+			PushInnerNodeStyle();
+			ImGuiStyle& style     = ImGui::GetStyle();
+			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
+			const v2 minSize{settings.GetGridSize() * 4.f, settings.GetGridSize()};
+			const v2 size{Math::Max(minSize.x, textSize.x), Math::Max(minSize.y, textSize.y)};
+			UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
+			PopInnerNodeStyle();
+			Nodes::EndOutput();
 		}
-	}    // namespace Literals
+		EndNode(ast);
+
+		Nodes::PopStyleColor(2);
+		Style::PopNodeBackgroundColor();
+	}
 
 
 	void DrawFunctionDecl(AST::Tree& ast, AST::Id functionId)
 	{
-		auto* nodes      = Nodes::GetCurrentContext();
 		auto identifiers = ast.Filter<CIdentifier>();
 
 		Name name;
@@ -146,32 +172,20 @@ namespace Rift::Graph
 			name = identifier->name;
 		}
 
-		auto& transform = ast.GetOrAdd<CGraphTransform>(functionId);
-		if (UI::IsWindowAppearing()
-		    && !(nodes->leftMouseDragging && Nodes::IsNodeSelected(i32(functionId))))
-		{
-			SetNodePosition(functionId, transform.position);
-		}
-
-		static constexpr Color headerColor = Style::functionColor;
-		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
-
-		Style::PushNodeBackgroundColor(bodyColor);
-		Style::PushNodeTitleColor(headerColor);
-		BeginNode(functionId);
+		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
+		Style::PushNodeTitleColor(Style::functionColor);
+		BeginNode(ast, functionId);
 		{
 			Nodes::BeginNodeTitleBar();
 			{
 				UI::Text(name.ToString());
 				UI::SameLine();
 
-				static constexpr Color color = Style::executionColor;
-				Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-				Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+				PushExecutionPinStyle();
 				Nodes::BeginOutput(i32(functionId), Nodes::PinShape_QuadFilled);
 				UI::Text("");
 				Nodes::EndOutput();
-				Nodes::PopStyleColor(2);
+				PopExecutionPinStyle();
 			}
 			Nodes::EndNodeTitleBar();
 
@@ -200,31 +214,20 @@ namespace Rift::Graph
 				}
 			}
 		}
-		EndNode();
+		EndNode(ast);
 		Style::PopNodeTitleColor();
 		Style::PopNodeBackgroundColor();
-
-		if (nodes->leftMouseDragging || nodes->leftMouseReleased)
-		{
-			ScopedChange(ast, functionId);
-			transform.position = GetNodePosition(functionId);
-		}
 	}
 
 	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView ownerName)
 	{
-		static constexpr Color headerColor = Style::callColor;
-		static constexpr Color bodyColor{Rift::Style::GetNeutralColor(0)};
-
-		Style::PushNodeBackgroundColor(bodyColor);
-		Style::PushNodeTitleColor(headerColor);
-		BeginNode(id);
+		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
+		Style::PushNodeTitleColor(Style::callColor);
+		BeginNode(ast, id);
 		{
 			Nodes::BeginNodeTitleBar();
 			{
-				static constexpr Color color = Style::executionColor;
-				Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-				Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+				PushExecutionPinStyle();
 
 				Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
 				UI::TextUnformatted("");
@@ -246,7 +249,7 @@ namespace Rift::Graph
 				UI::TextUnformatted("");
 				Nodes::EndOutput();
 
-				Nodes::PopStyleColor(2);
+				PopExecutionPinStyle();
 			}
 			Nodes::EndNodeTitleBar();
 
@@ -291,7 +294,7 @@ namespace Rift::Graph
 				UI::EndGroup();
 			}
 		}
-		EndNode();
+		EndNode(ast);
 		Style::PopNodeTitleColor();
 		Style::PopNodeBackgroundColor();
 	}
@@ -345,109 +348,132 @@ namespace Rift::Graph
 	{
 		ImGui::PopStyleVar(2);
 	}
+	void DrawNodeContextMenu(AST::Tree& ast, AST::Id typeId, AST::Id nodeId)
+	{
+		if (ast.Has<CFunctionDecl>(nodeId))
+		{
+			if (UI::MenuItem("Add return node"))
+			{
+				AST::Functions::AddReturn({ast, typeId}, nodeId);
+			}
+			UI::Separator();
+		}
+		if (UI::MenuItem("Delete")) {}
+	}
 
-	void DrawContextMenu(AST::Tree& ast, AST::Id typeId)
+	void DrawGraphContextMenu(AST::Tree& ast, AST::Id typeId)
+	{
+		static ImGuiTextFilter filter;
+		if (UI::IsWindowAppearing())
+		{
+			UI::SetKeyboardFocusHere();
+		}
+		filter.Draw("##Filter");
+		const v2 clickPos = UI::GetMousePosOnOpeningCurrentPopup();
+		const v2 gridPos  = Nodes::ScreenToGridPosition(clickPos);
+
+		if (filter.IsActive() || UI::TreeNode("Constructors"))
+		{
+			String makeStr{};
+			auto& typeList = ast.GetStatic<STypes>();
+			auto types     = ast.Filter<CType>();
+			for (const auto& it : typeList.typesByName)
+			{
+				if (auto* type = types.TryGet<CType>(it.second))
+				{
+					makeStr.clear();
+					Strings::FormatTo(makeStr, "Make {}", type->name);
+					if (filter.PassFilter(makeStr.c_str(), makeStr.c_str() + makeStr.size()))
+					{
+						if (UI::MenuItem(makeStr.c_str()))
+						{
+							AST::Id newId = AST::Functions::AddLiteral({ast, typeId}, it.second);
+							if (newId != AST::NoId)
+							{
+								ast.Add<CGraphTransform>(newId, gridPos);
+							}
+						}
+					}
+				}
+			}
+
+			if (!filter.IsActive())
+			{
+				UI::TreePop();
+			}
+		}
+
+		if (filter.IsActive() || UI::TreeNode("Variables"))
+		{
+			auto variables   = ast.Filter<CVariableDecl>();
+			auto identifiers = ast.Filter<CIdentifier>();
+			for (AST::Id variableId : variables)
+			{
+				if (auto* iden = identifiers.TryGet<CIdentifier>(variableId))
+				{
+					const String& name = iden->name.ToString();
+					if (filter.PassFilter(name.c_str(), name.c_str() + name.size()))
+					{
+						if (UI::MenuItem(name.c_str()))
+						{
+							AST::Id newId =
+							    AST::Functions::AddDeclarationReference({ast, typeId}, variableId);
+							if (newId != AST::NoId)
+							{
+								ast.Add<CGraphTransform>(newId, gridPos);
+							}
+						}
+					}
+				}
+			}
+
+			if (!filter.IsActive())
+			{
+				UI::TreePop();
+			}
+		}
+
+		if (filter.IsActive() || UI::TreeNode("Functions"))
+		{
+			auto functions   = ast.Filter<CFunctionDecl>();
+			auto identifiers = ast.Filter<CIdentifier>();
+			for (AST::Id functionId : functions)
+			{
+				if (auto* iden = identifiers.TryGet<CIdentifier>(functionId))
+				{
+					const String& name = iden->name.ToString();
+					if (filter.PassFilter(name.c_str(), name.c_str() + name.size()))
+					{
+						if (UI::MenuItem(name.c_str()))
+						{
+							AST::Id newId = AST::Functions::AddCall({ast, typeId}, functionId);
+							if (newId != AST::NoId)
+							{
+								ast.Add<CGraphTransform>(newId, gridPos);
+							}
+						}
+					}
+				}
+			}
+
+			if (!filter.IsActive())
+			{
+				ImGui::TreePop();
+			}
+		}
+	}
+
+	void DrawContextMenu(AST::Tree& ast, AST::Id typeId, AST::Id hoveredNodeId)
 	{
 		if (ImGui::BeginPopup("GraphContextMenu"))
 		{
-			static ImGuiTextFilter filter;
-			if (UI::IsWindowAppearing())
+			if (IsNone(hoveredNodeId))
 			{
-				UI::SetKeyboardFocusHere();
+				DrawGraphContextMenu(ast, typeId);
 			}
-			filter.Draw("##Filter");
-			const v2 clickPos = ImGui::GetMousePosOnOpeningCurrentPopup();
-			const v2 gridPos  = Nodes::ScreenToGridPosition(clickPos);
-
-			if (filter.IsActive() || ImGui::TreeNode("Constructors"))
+			else
 			{
-				String makeStr{};
-				auto& typeList = ast.GetStatic<STypes>();
-				auto types     = ast.Filter<CType>();
-				for (const auto& it : typeList.typesByName)
-				{
-					if (auto* type = types.TryGet<CType>(it.second))
-					{
-						makeStr.clear();
-						Strings::FormatTo(makeStr, "Make {}", type->name);
-						if (filter.PassFilter(makeStr.c_str(), makeStr.c_str() + makeStr.size()))
-						{
-							if (ImGui::MenuItem(makeStr.c_str()))
-							{
-								AST::Id newId =
-								    AST::Functions::AddLiteral({ast, typeId}, it.second);
-								if (newId != AST::NoId)
-								{
-									ast.Add<CGraphTransform>(newId, gridPos);
-								}
-							}
-						}
-					}
-				}
-
-				if (!filter.IsActive())
-				{
-					ImGui::TreePop();
-				}
-			}
-
-			if (filter.IsActive() || ImGui::TreeNode("Variables"))
-			{
-				auto variables   = ast.Filter<CVariableDecl>();
-				auto identifiers = ast.Filter<CIdentifier>();
-				for (AST::Id variableId : variables)
-				{
-					if (auto* iden = identifiers.TryGet<CIdentifier>(variableId))
-					{
-						const String& name = iden->name.ToString();
-						if (filter.PassFilter(name.c_str(), name.c_str() + name.size()))
-						{
-							if (ImGui::MenuItem(name.c_str()))
-							{
-								AST::Id newId = AST::Functions::AddDeclarationReference(
-								    {ast, typeId}, variableId);
-								if (newId != AST::NoId)
-								{
-									ast.Add<CGraphTransform>(newId, gridPos);
-								}
-							}
-						}
-					}
-				}
-
-				if (!filter.IsActive())
-				{
-					ImGui::TreePop();
-				}
-			}
-
-			if (filter.IsActive() || ImGui::TreeNode("Functions"))
-			{
-				auto functions   = ast.Filter<CFunctionDecl>();
-				auto identifiers = ast.Filter<CIdentifier>();
-				for (AST::Id functionId : functions)
-				{
-					if (auto* iden = identifiers.TryGet<CIdentifier>(functionId))
-					{
-						const String& name = iden->name.ToString();
-						if (filter.PassFilter(name.c_str(), name.c_str() + name.size()))
-						{
-							if (ImGui::MenuItem(name.c_str()))
-							{
-								AST::Id newId = AST::Functions::AddCall({ast, typeId}, functionId);
-								if (newId != AST::NoId)
-								{
-									ast.Add<CGraphTransform>(newId, gridPos);
-								}
-							}
-						}
-					}
-				}
-
-				if (!filter.IsActive())
-				{
-					ImGui::TreePop();
-				}
+				DrawNodeContextMenu(ast, typeId, hoveredNodeId);
 			}
 			ImGui::EndPopup();
 		}
@@ -485,22 +511,14 @@ namespace Rift::Graph
 
 	void DrawLiterals(AST::Tree& ast, const TArray<AST::Id>& children)
 	{
-		auto boolLiterals = ast.Filter<CLiteralBool>();
-		for (AST::Id child : children)
+		for (AST::Id id : AST::GetIf<CLiteralBool>(ast, children))
 		{
-			if (auto* literal = boolLiterals.TryGet<CLiteralBool>(child))
-			{
-				Literals::DrawBoolNode(child, literal->value);
-			}
+			DrawLiteralBool(ast, id, ast.Get<CLiteralBool>(id).value);
 		}
 
-		auto stringLiterals = ast.Filter<CLiteralString>();
-		for (AST::Id child : children)
+		for (AST::Id id : AST::GetIf<CLiteralString>(ast, children))
 		{
-			if (auto* literal = stringLiterals.TryGet<CLiteralString>(child))
-			{
-				Literals::DrawStringNode(child, literal->value);
-			}
+			DrawLiteralString(ast, id, ast.Get<CLiteralString>(id).value);
 		}
 	}
 
@@ -525,8 +543,8 @@ namespace Rift::Graph
 					if (!IsNone(outputPinId) && !IsNone(inputNodeId))
 					{
 						// NOTE: Input pin ids equal input node ids
-						// TODO: Execution pin ids atm are the same as the node id. Implement proper
-						// output pin support
+						// TODO: Execution pin ids atm are the same as the node id. Implement
+						// proper output pin support
 						Nodes::Link(i32(inputNodeId), i32(outputPinId), i32(inputNodeId));
 					}
 				}
@@ -626,11 +644,13 @@ namespace Rift::Graph
 				AST::ExpressionGraph::Disconnect(ast, AST::Id(linkId));
 			}
 
+			static AST::Id contextNodeId = AST::NoId;
 			if (wantsToOpenContextMenu)
 			{
+				contextNodeId = Nodes::GetNodeHovered();
 				ImGui::OpenPopup("GraphContextMenu", ImGuiPopupFlags_AnyPopup);
 			}
-			DrawContextMenu(ast, typeId);
+			DrawContextMenu(ast, typeId, contextNodeId);
 			UI::End();
 		}
 	}
@@ -638,12 +658,12 @@ namespace Rift::Graph
 	void SetNodePosition(AST::Id id, v2 position)
 	{
 		position *= settings.GetGridSize();
-		Nodes::SetNodeGridSpacePos(i32(id), position);
+		Nodes::SetNodeGridSpacePos(id, position);
 	}
 
 	v2 GetNodePosition(AST::Id id)
 	{
-		const ImVec2 pos = Nodes::GetNodeGridSpacePos(i32(id));
+		const ImVec2 pos = Nodes::GetNodeGridSpacePos(id);
 		return {pos.x * settings.GetInvGridSize(), pos.y * settings.GetInvGridSize()};
 	}
 }    // namespace Rift::Graph

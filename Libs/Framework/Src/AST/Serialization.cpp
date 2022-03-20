@@ -14,12 +14,14 @@
 #include "AST/Components/CLiteralString.h"
 #include "AST/Components/CParameterDecl.h"
 #include "AST/Components/CParent.h"
+#include "AST/Components/CReturnExpr.h"
 #include "AST/Components/CStatementInput.h"
 #include "AST/Components/CStatementOutputs.h"
 #include "AST/Components/CStructDecl.h"
 #include "AST/Components/CVariableDecl.h"
 #include "AST/Components/Tags/CNotSerialized.h"
 #include "AST/Components/Views/CGraphTransform.h"
+#include "AST/Filtering.h"
 #include "AST/Utils/Hierarchy.h"
 
 #include <Reflection/TypeName.h>
@@ -28,7 +30,7 @@
 namespace Rift::AST
 {
 	template<typename T>
-	void ReadPool(ReadContext& ct, Tree& ast)
+	void ReadPool(ReadContext& ct, TAccessRef<TWrite<T>> access)
 	{
 		if (ct.EnterNext(GetTypeName<T>(false)))
 		{
@@ -47,12 +49,12 @@ namespace Rift::AST
 					ct.BeginObject();
 					if constexpr (!IsEmpty<T>())
 					{
-						T& comp = ast.GetOrAdd<T>(node);
+						T& comp = access.template GetOrAdd<T>(node);
 						ct.Serialize(comp);
 					}
-					else if (!ast.Has<T>(node))
+					else if (!access.template Has<T>(node))
 					{
-						ast.Add<T>(node);
+						access.template Add<T>(node);
 					}
 					ct.Leave();
 				}
@@ -62,9 +64,27 @@ namespace Rift::AST
 	}
 
 	template<typename T>
-	void WritePool(WriteContext& ct, Tree& ast, const TArray<Id>& nodes)
+	void WritePool(WriteContext& ct, TAccessRef<T> access, const TArray<Id>& nodes)
 	{
-		auto view = ast.Filter<T>();
+		TArray<TPair<i32, Id>> componentIds;
+
+		if (auto* pool = access.template GetPool<const T>())
+		{
+			componentIds.ReserveMore(Math::Min(i32(pool->Size()), nodes.Size()));
+			for (i32 i = 0; i < nodes.Size(); ++i)
+			{
+				const Id id = nodes[i];
+				if (pool->Has(id))
+				{
+					componentIds.Add({i, id});
+				}
+			}
+		}
+
+		if (componentIds.IsEmpty())
+		{
+			return;
+		}
 
 		// FIX: yyjson doesn't seem to take into account stringview length when generating text
 		// Temporarely fixed by caching component name keys
@@ -73,22 +93,18 @@ namespace Rift::AST
 		{
 			String key;
 			ct.BeginObject();
-			for (i32 i = 0; i < nodes.Size(); ++i)
+			for (auto id : componentIds)
 			{
-				const Id node = nodes[i];
 				key.clear();
-				Strings::FormatTo(key, "{}", i);
+				Strings::FormatTo(key, "{}", id.first);
 
-				if (view.Has(node))
+				if constexpr (std::is_empty_v<T>)
 				{
-					if constexpr (std::is_empty_v<T>)
-					{
-						ct.Next(StringView{key}, T{});
-					}
-					else
-					{
-						ct.Next(StringView{key}, view.template Get<T>(node));
-					}
+					ct.Next(StringView{key}, T{});
+				}
+				else
+				{
+					ct.Next(StringView{key}, access.template Get<const T>(id.second));
 				}
 			}
 			ct.Leave();
@@ -143,6 +159,7 @@ namespace Rift::AST
 			ReadPool<CLiteralFloat>(*this, ast);
 			ReadPool<CLiteralString>(*this, ast);
 			ReadPool<CGraphTransform>(*this, ast);
+			ReadPool<CReturnExpr>(*this, ast);
 			Leave();
 		}
 
@@ -191,6 +208,7 @@ namespace Rift::AST
 			WritePool<CLiteralFloat>(*this, ast, treeEntities);
 			WritePool<CLiteralString>(*this, ast, treeEntities);
 			WritePool<CGraphTransform>(*this, ast, treeEntities);
+			WritePool<CReturnExpr>(*this, ast, treeEntities);
 			Leave();
 		}
 	}

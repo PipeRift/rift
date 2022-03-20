@@ -2,20 +2,34 @@
 #pragma once
 
 #include <Compiler/Backend.h>
+#include <Plugin.h>
+#include <RiftContext.h>
 
 
-namespace Rift::Compiler
+namespace Rift
 {
-	class LLVMBackend : public Backend
+	class LLVMBackendPlugin : public Plugin
 	{
-		CLASS(LLVMBackend, Backend)
+		CLASS(LLVMBackendPlugin, Plugin)
 
 	public:
-		Name GetName() override
-		{
-			return "LLVM";
-		}
-
-		void Build(Context& context) override;
+		void Register(TPtr<RiftContext> context) override {}
 	};
-}    // namespace Rift::Compiler
+
+
+	namespace Compiler
+	{
+		class LLVMBackend : public Backend
+		{
+			CLASS(LLVMBackend, Backend)
+
+		public:
+			Name GetName() override
+			{
+				return "LLVM";
+			}
+
+			void Build(Context& context) override;
+		};
+	}    // namespace Compiler
+}    // namespace Rift

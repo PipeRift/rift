@@ -5,21 +5,13 @@
         0
     ],
     "components": {
-        "CChild": {},
-        "CParent": {},
-        "CIdentifier": {},
+        "CChild": {
+            "0": {
+                "parent": -1
+            }
+        },
         "CStructDecl": {
             "0": {}
-        },
-        "CClassDecl": {},
-        "CVariableDecl": {},
-        "CFunctionDecl": {},
-        "CCallExpr": {},
-        "CStatementOutputs": {},
-        "CStatementInput": {},
-        "CBoolLiteral": {},
-        "CFloatLiteral": {},
-        "CStringLiteral": {},
-        "CGraphTransform": {}
+        }
     }
 }

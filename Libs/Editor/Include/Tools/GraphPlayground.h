@@ -3,8 +3,9 @@
 
 #include "AST/Tree.h"
 
-#include <UI/NodesInternal.h>
 #include <UI/UI.h>
+#include <Utils/NodesInternal.h>
+
 
 
 namespace Rift

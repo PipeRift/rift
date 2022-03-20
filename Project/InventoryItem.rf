@@ -68,39 +68,33 @@
                 "name": "Index"
             }
         },
-        "CStructDecl": {},
         "CClassDecl": {
             "0": {}
         },
-        "CVariableDecl": {},
         "CFunctionDecl": {
             "1": {}
         },
         "CParameterDecl": {
             "4": {
-                "type": "none",
-                "name": ""
+                "type": "none"
             },
             "5": {
-                "type": "none",
-                "name": ""
+                "type": "none"
             },
             "6": {
-                "type": "none",
-                "name": ""
+                "type": "none"
             },
             "7": {
-                "type": "none",
-                "name": ""
+                "type": "none"
             }
         },
         "CCallExpr": {
             "2": {
-                "typeName": "CombatUtils",
+                "ownerName": "none",
                 "functionName": "Attack"
             },
             "3": {
-                "typeName": "none",
+                "ownerName": "none",
                 "functionName": "none"
             }
         },
@@ -142,9 +136,6 @@
                 "linkOutputPin": -1
             }
         },
-        "CBoolLiteral": {},
-        "CFloatLiteral": {},
-        "CStringLiteral": {},
         "CGraphTransform": {
             "1": {
                 "position": {
@@ -154,14 +145,14 @@
             },
             "2": {
                 "position": {
-                    "x": 114.0,
-                    "y": 48.0
+                    "x": 15.0,
+                    "y": 1.0
                 }
             },
             "3": {
                 "position": {
-                    "x": 225.0,
-                    "y": 138.0
+                    "x": 8.0,
+                    "y": -4.0
                 }
             }
         }

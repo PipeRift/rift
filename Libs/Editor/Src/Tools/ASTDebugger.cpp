@@ -5,9 +5,9 @@
 #include <AST/Components/CStatementOutputs.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Tree.h>
-#include <Framework/Paths.h>
+#include <AST/Utils/Paths.h>
 #include <IconsFontAwesome5.h>
-#include <Reflection/Registry/Registry.h>
+#include <Reflection/Registry.h>
 #include <UI/Inspection.h>
 #include <UI/UI.h>
 

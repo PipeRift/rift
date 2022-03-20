@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <AST/Types.h>
 #include <Math/Vector.h>
 #include <Platform/Platform.h>
 
@@ -20,7 +21,7 @@ namespace Rift::Nodes
 
 	struct MiniMap
 	{
-		using NodeHoveringCallback         = void (*)(i32, void*);
+		using NodeHoveringCallback         = void (*)(AST::Id, void*);
 		using NodeHoveringCallbackUserData = void*;
 
 
@@ -40,7 +41,7 @@ namespace Rift::Nodes
 		bool IsHovered() const;
 		void CalculateLayout();
 
-		void DrawNode(EditorContext& editor, const i32 nodeIdx);
+		void DrawNode(EditorContext& editor, const AST::Id nodeId);
 		void DrawLink(EditorContext& editor, const i32 linkIdx);
 		void Update();
 	};
