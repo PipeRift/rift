@@ -49,12 +49,12 @@ namespace Rift::AST
 					ct.BeginObject();
 					if constexpr (!IsEmpty<T>())
 					{
-						T& comp = access.GetOrAdd<T>(node);
+						T& comp = access.template GetOrAdd<T>(node);
 						ct.Serialize(comp);
 					}
-					else if (!access.Has<T>(node))
+					else if (!access.template Has<T>(node))
 					{
-						access.Add<T>(node);
+						access.template Add<T>(node);
 					}
 					ct.Leave();
 				}
@@ -68,7 +68,7 @@ namespace Rift::AST
 	{
 		TArray<TPair<i32, Id>> componentIds;
 
-		if (auto* pool = access.GetPool<const T>())
+		if (auto* pool = access.template GetPool<const T>())
 		{
 			componentIds.ReserveMore(Math::Min(i32(pool->Size()), nodes.Size()));
 			for (i32 i = 0; i < nodes.Size(); ++i)
