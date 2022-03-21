@@ -7,5 +7,5 @@ add_subdirectory(Backends/LLVM)
 add_subdirectory(Backends/Cpp)
 
 add_subdirectory(UI)
-add_subdirectory(Views/Nodes)
+add_subdirectory(Views/Graph)
 add_subdirectory(Editor)

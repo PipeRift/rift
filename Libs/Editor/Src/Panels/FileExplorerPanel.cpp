@@ -26,7 +26,6 @@
 #include <UI/UI.h>
 
 
-
 namespace Rift
 {
 	void FileExplorerPanel::Draw(AST::Tree& ast)
@@ -111,16 +110,15 @@ namespace Rift
 			{
 				if (UI::MenuItem("Class"))
 				{
-					CreateType(ast, "Create Class file", TypeCategory::Class, path);
+					CreateType(ast, "Create Class file", Type::Class, path);
 				}
 				if (UI::MenuItem("Struct"))
 				{
-					CreateType(ast, "Create Struct file", TypeCategory::Struct, path);
+					CreateType(ast, "Create Struct file", Type::Struct, path);
 				}
 				if (UI::MenuItem("Function Library"))
 				{
-					CreateType(
-					    ast, "Create Function Library file", TypeCategory::FunctionLibrary, path);
+					CreateType(ast, "Create Function Library file", Type::FunctionLibrary, path);
 				}
 				UI::EndMenu();
 			}
@@ -391,7 +389,7 @@ namespace Rift
 	void FileExplorerPanel::DrawTypeActions(AST::Id id, CType& type) {}
 
 	void FileExplorerPanel::CreateType(
-	    AST::Tree& ast, StringView title, TypeCategory category, Path folderPath)
+	    AST::Tree& ast, StringView title, Type category, Path folderPath)
 	{
 		const Path path = Dialogs::SaveFile(title, folderPath,
 		    {
