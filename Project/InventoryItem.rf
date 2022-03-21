@@ -1,6 +1,6 @@
 {
     "type": "Class",
-    "count": 8,
+    "count": 9,
     "roots": [
         0
     ],
@@ -19,7 +19,7 @@
                 "parent": 0
             },
             "4": {
-                "parent": 1
+                "parent": 0
             },
             "5": {
                 "parent": 1
@@ -29,6 +29,9 @@
             },
             "7": {
                 "parent": 1
+            },
+            "8": {
+                "parent": 1
             }
         },
         "CParent": {
@@ -36,15 +39,16 @@
                 "children": [
                     1,
                     2,
-                    3
+                    3,
+                    4
                 ]
             },
             "1": {
                 "children": [
-                    4,
                     5,
                     6,
-                    7
+                    7,
+                    8
                 ]
             },
             "2": {
@@ -55,16 +59,16 @@
             "1": {
                 "name": "Add"
             },
-            "4": {
+            "5": {
                 "name": "Item"
             },
-            "5": {
+            "6": {
                 "name": "Count"
             },
-            "6": {
+            "7": {
                 "name": "Result"
             },
-            "7": {
+            "8": {
                 "name": "Index"
             }
         },
@@ -75,9 +79,6 @@
             "1": {}
         },
         "CParameterDecl": {
-            "4": {
-                "type": "none"
-            },
             "5": {
                 "type": "none"
             },
@@ -85,6 +86,9 @@
                 "type": "none"
             },
             "7": {
+                "type": "none"
+            },
+            "8": {
                 "type": "none"
             }
         },
@@ -100,8 +104,12 @@
         },
         "CStatementOutputs": {
             "1": {
-                "linkPins": [],
-                "linkInputNodes": []
+                "linkPins": [
+                    1
+                ],
+                "linkInputNodes": [
+                    4
+                ]
             },
             "2": {
                 "linkPins": [],
@@ -118,21 +126,24 @@
             },
             "3": {
                 "linkOutputNode": -1
+            },
+            "4": {
+                "linkOutputNode": 1
             }
         },
         "CExpressionOutputs": {
-            "4": {
+            "5": {
                 "linkInputPins": []
             },
-            "5": {
+            "6": {
                 "linkInputPins": []
             }
         },
         "CExpressionInput": {
-            "6": {
+            "7": {
                 "linkOutputPin": -1
             },
-            "7": {
+            "8": {
                 "linkOutputPin": -1
             }
         },
@@ -155,6 +166,9 @@
                     "y": -4.0
                 }
             }
+        },
+        "CReturnExpr": {
+            "4": {}
         }
     }
 }

@@ -17,6 +17,7 @@
 #include <AST/Components/CFunctionDecl.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CParameterDecl.h>
+#include <AST/Components/CReturnExpr.h>
 #include <AST/Components/CStatementInput.h>
 #include <AST/Components/CStatementOutputs.h>
 #include <AST/Components/CStringLiteral.h>
@@ -219,6 +220,35 @@ namespace Rift::Graph
 		Style::PopNodeBackgroundColor();
 	}
 
+	void DrawReturnNode(
+	    TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef>
+	        access,
+	    AST::Id returnId)
+	{
+		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
+		Style::PushNodeTitleColor(Style::returnColor);
+		BeginNode(access, returnId);
+		{
+			Nodes::BeginNodeTitleBar();
+			{
+				PushExecutionPinStyle();
+				Nodes::BeginInput(i32(returnId), Nodes::PinShape_QuadFilled);
+				UI::TextUnformatted("");
+				Nodes::EndInput();
+				UI::SameLine();
+				PopExecutionPinStyle();
+
+				UI::BeginGroup();
+				UI::TextUnformatted("Return");
+				UI::EndGroup();
+			}
+			Nodes::EndNodeTitleBar();
+		}
+		EndNode(access);
+		Style::PopNodeTitleColor();
+		Style::PopNodeBackgroundColor();
+	}
+
 	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView ownerName)
 	{
 		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
@@ -354,7 +384,7 @@ namespace Rift::Graph
 		{
 			if (UI::MenuItem("Add return node"))
 			{
-				AST::Functions::AddReturn({ast, typeId}, nodeId);
+				AST::Functions::AddReturn({ast, typeId});
 			}
 			UI::Separator();
 		}
@@ -488,6 +518,17 @@ namespace Rift::Graph
 		}
 	}
 
+	void DrawReturns(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>,
+	                     CChild, CFileRef, CReturnExpr>
+	                     access,
+	    const TArray<AST::Id>& children)
+	{
+		for (AST::Id returnId : GetIf<CReturnExpr>(access, children))
+		{
+			DrawReturnNode(access, returnId);
+		}
+	}
+
 	void DrawCalls(AST::Tree& ast, AST::Id typeId, const TArray<AST::Id>& children)
 	{
 		auto calls         = ast.Filter<CCallExpr>();
@@ -618,6 +659,7 @@ namespace Rift::Graph
 				}
 
 				DrawFunctionDecls(ast, functions);
+				DrawReturns(ast, *children);
 				DrawCalls(ast, typeId, *children);
 				DrawLiterals(ast, *children);
 				DrawStatementLinks(ast, *children);

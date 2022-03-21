@@ -44,11 +44,16 @@ namespace Rift::AST::Functions
 		return id;
 	}
 
-	Id AddReturn(TypeRef type, Id functionId)
+	Id AddReturn(TypeRef type)
 	{
 		Tree& ast         = type.GetAST();
 		const Id returnId = ast.Create();
-		ast.Add<CReturnExpr>(returnId, {functionId});
+		ast.Add<CReturnExpr>(returnId);
+		ast.Add<CStatementInput>(returnId);
+		if (type)
+		{
+			Hierarchy::AddChildren(ast, type.GetId(), returnId);
+		}
 		return returnId;
 	}
 
