@@ -68,11 +68,9 @@
                 "name": "Index"
             }
         },
-        "CStructDecl": {},
         "CClassDecl": {
             "0": {}
         },
-        "CVariableDecl": {},
         "CFunctionDecl": {
             "1": {}
         },
@@ -138,9 +136,6 @@
                 "linkOutputPin": -1
             }
         },
-        "CBoolLiteral": {},
-        "CFloatLiteral": {},
-        "CStringLiteral": {},
         "CGraphTransform": {
             "1": {
                 "position": {

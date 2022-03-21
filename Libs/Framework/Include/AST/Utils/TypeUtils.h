@@ -10,10 +10,10 @@
 
 namespace Rift::Types
 {
-	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, TypeCategory category);
-	TypeCategory GetCategory(AST::Tree& ast, AST::Id id);
+	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, Type category);
+	Type GetCategory(AST::Tree& ast, AST::Id id);
 
-	AST::Id CreateType(AST::Tree& ast, TypeCategory type, Name name = Name::None());
+	AST::Id CreateType(AST::Tree& ast, Type type, Name name = Name::None());
 
 	AST::Id AddVariable(AST::TypeRef type, Name name);
 	AST::Id AddFunction(AST::TypeRef type, Name name);

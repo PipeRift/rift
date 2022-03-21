@@ -12,6 +12,7 @@ target_link_libraries(RiftCLIExe PUBLIC
     Rift::Rift
     Rift::Backend::LLVM
     Rift::Backend::Cpp
+    Rift::View::Graph
     CLI11
 )
 rift_target_define_platform(RiftCLIExe)

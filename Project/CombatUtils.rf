@@ -36,13 +36,9 @@
                 "name": "Attack"
             }
         },
-        "CStructDecl": {},
-        "CClassDecl": {},
-        "CVariableDecl": {},
         "CFunctionDecl": {
             "1": {}
         },
-        "CParameterDecl": {},
         "CCallExpr": {
             "2": {
                 "ownerName": "none",
@@ -75,11 +71,6 @@
                 "linkOutputNode": -1
             }
         },
-        "CExpressionOutputs": {},
-        "CExpressionInput": {},
-        "CBoolLiteral": {},
-        "CFloatLiteral": {},
-        "CStringLiteral": {},
         "CGraphTransform": {
             "1": {
                 "position": {

@@ -21,7 +21,7 @@
 
 namespace Rift::Types
 {
-	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, TypeCategory category)
+	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, Type category)
 	{
 		if (auto* fileRef = ast.TryGet<CFileRef>(id))
 		{
@@ -32,30 +32,30 @@ namespace Rift::Types
 
 		switch (category)
 		{
-			case TypeCategory::Class: ast.Add<CClassDecl>(id); break;
-			case TypeCategory::Struct: ast.Add<CStructDecl>(id); break;
-			case TypeCategory::FunctionLibrary: ast.Add<CFunctionLibraryDecl>(id); break;
+			case Type::Class: ast.Add<CClassDecl>(id); break;
+			case Type::Struct: ast.Add<CStructDecl>(id); break;
+			case Type::FunctionLibrary: ast.Add<CFunctionLibraryDecl>(id); break;
 		}
 	}
 
-	TypeCategory GetCategory(AST::Tree& ast, AST::Id id)
+	Type GetCategory(AST::Tree& ast, AST::Id id)
 	{
 		if (ast.Has<CStructDecl>(id))
 		{
-			return TypeCategory::Struct;
+			return Type::Struct;
 		}
 		else if (ast.Has<CClassDecl>(id))
 		{
-			return TypeCategory::Class;
+			return Type::Class;
 		}
 		else if (ast.Has<CFunctionLibraryDecl>(id))
 		{
-			return TypeCategory::FunctionLibrary;
+			return Type::FunctionLibrary;
 		}
-		return TypeCategory::None;
+		return Type::None;
 	}
 
-	AST::Id CreateType(AST::Tree& ast, TypeCategory type, Name name)
+	AST::Id CreateType(AST::Tree& ast, Type type, Name name)
 	{
 		AST::Id id = ast.Create();
 		InitTypeFromCategory(ast, id, type);
@@ -122,7 +122,7 @@ namespace Rift::Types
 		AST::ReadContext ct{reader, ast};
 		ct.BeginObject();
 
-		TypeCategory category = TypeCategory::None;
+		Type category = Type::None;
 		ct.Next("type", category);
 		Types::InitTypeFromCategory(ast, id, category);
 

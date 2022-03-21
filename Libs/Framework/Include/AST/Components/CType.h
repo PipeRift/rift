@@ -7,13 +7,14 @@
 
 namespace Rift
 {
-	enum class TypeCategory : u8
+	enum class Type : u8
 	{
-		None,
-		Class,
-		Struct,
-		FunctionLibrary
+		None            = 0,
+		Class           = 1 << 0,
+		Struct          = 1 << 1,
+		FunctionLibrary = 1 << 2
 	};
+
 
 	struct CType : public Struct
 	{
@@ -21,6 +22,9 @@ namespace Rift
 
 		PROP(name)
 		Name name;
+
+		PROP(view)
+		Name view;
 
 		CType(Name name = {}) : name(name) {}
 	};

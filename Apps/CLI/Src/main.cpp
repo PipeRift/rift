@@ -12,6 +12,9 @@
 #include <CppBackend.h>
 #include <LLVMBackend.h>
 
+// Views
+#include <GraphView.h>
+
 #include <chrono>
 #include <CLI/CLI.hpp>
 
@@ -65,6 +68,8 @@ int main(int argc, char** argv)
 	auto context = InitializeContext<RiftContext>();
 	context->AddPlugin<LLVMBackendPlugin>();
 	context->AddPlugin<CPPBackendPlugin>();
+
+	context->AddPlugin<GraphViewPlugin>();
 
 	CLI::App app{"Rift compiler"};
 	String pathStr;

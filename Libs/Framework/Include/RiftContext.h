@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Plugin.h"
+#include "View.h"
 
 #include <Context.h>
 
@@ -20,12 +21,20 @@ namespace Rift
 	protected:
 		TArray<TOwnPtr<Plugin>> plugins;
 
+		TArray<View> views;
+
 
 	public:
 		template<typename T>
 		void AddPlugin()
 		{
 			plugins.Add(MakeOwned<T>());
+		}
+
+		template<typename T>
+		void AddView(T view)
+		{
+			views.Add(Move(view));
 		}
 	};
 }    // namespace Rift
