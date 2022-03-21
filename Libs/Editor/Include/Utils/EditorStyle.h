@@ -13,6 +13,7 @@ namespace Rift::Style
 	constexpr Color executionColor{Color::FromHEX(0xdbdbdb)};
 
 	constexpr Color functionColor{Color::FromHEX(0xCC3D33)};
+	constexpr Color returnColor{functionColor.Shade(0.1f)};
 	constexpr Color callColor{Color::FromHEX(0x3366CC)};
 
 	template<typename T>

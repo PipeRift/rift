@@ -6,15 +6,12 @@
 
 namespace Rift
 {
+	/** Represents a return expression of a function
+	 * Return arguments are dynamically populated depending on the function this expression is
+	 * connected to.
+	 */
 	struct CReturnExpr : public CExpression
 	{
 		STRUCT(CReturnExpr, CExpression)
-
-		PROP(id)
-		AST::Id id = AST::NoId;
-
-
-		CReturnExpr() = default;
-		CReturnExpr(AST::Id id) : id{id} {}
 	};
 }    // namespace Rift
