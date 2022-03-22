@@ -1,6 +1,6 @@
 {
     "type": "FunctionLibrary",
-    "count": 4,
+    "count": 5,
     "roots": [
         0
     ],
@@ -17,6 +17,9 @@
             },
             "3": {
                 "parent": 0
+            },
+            "4": {
+                "parent": 1
             }
         },
         "CParent": {
@@ -28,16 +31,26 @@
                 ]
             },
             "1": {
-                "children": []
+                "children": [
+                    4
+                ]
             }
         },
         "CIdentifier": {
             "1": {
                 "name": "Attack"
+            },
+            "4": {
+                "name": "damage"
             }
         },
         "CFunctionDecl": {
             "1": {}
+        },
+        "CParameterDecl": {
+            "4": {
+                "type": "none"
+            }
         },
         "CCallExpr": {
             "2": {
@@ -69,6 +82,11 @@
             },
             "3": {
                 "linkOutputNode": -1
+            }
+        },
+        "CExpressionOutputs": {
+            "4": {
+                "linkInputPins": []
             }
         },
         "CGraphTransform": {

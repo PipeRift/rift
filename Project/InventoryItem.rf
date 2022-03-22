@@ -108,12 +108,16 @@
                     1
                 ],
                 "linkInputNodes": [
-                    4
+                    2
                 ]
             },
             "2": {
-                "linkPins": [],
-                "linkInputNodes": []
+                "linkPins": [
+                    2
+                ],
+                "linkInputNodes": [
+                    4
+                ]
             },
             "3": {
                 "linkPins": [],
@@ -122,13 +126,13 @@
         },
         "CStatementInput": {
             "2": {
-                "linkOutputNode": -1
+                "linkOutputNode": 1
             },
             "3": {
                 "linkOutputNode": -1
             },
             "4": {
-                "linkOutputNode": 1
+                "linkOutputNode": 2
             }
         },
         "CExpressionOutputs": {
@@ -156,14 +160,20 @@
             },
             "2": {
                 "position": {
-                    "x": 15.0,
-                    "y": 1.0
+                    "x": 12.0,
+                    "y": 0.0
                 }
             },
             "3": {
                 "position": {
                     "x": 8.0,
                     "y": -4.0
+                }
+            },
+            "4": {
+                "position": {
+                    "x": 27.0,
+                    "y": 0.0
                 }
             }
         },
