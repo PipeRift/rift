@@ -18,6 +18,7 @@
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CParameterDecl.h>
 #include <AST/Components/CReturnExpr.h>
+#include <AST/Components/CStatementIf.h>
 #include <AST/Components/CStatementInput.h>
 #include <AST/Components/CStatementOutputs.h>
 #include <AST/Components/CStringLiteral.h>
@@ -223,16 +224,16 @@ namespace Rift::Graph
 	void DrawReturnNode(
 	    TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef>
 	        access,
-	    AST::Id returnId)
+	    AST::Id id)
 	{
 		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
 		Style::PushNodeTitleColor(Style::returnColor);
-		BeginNode(access, returnId);
+		BeginNode(access, id);
 		{
 			Nodes::BeginNodeTitleBar();
 			{
 				PushExecutionPinStyle();
-				Nodes::BeginInput(i32(returnId), Nodes::PinShape_QuadFilled);
+				Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
 				UI::TextUnformatted("");
 				Nodes::EndInput();
 				UI::SameLine();
@@ -329,6 +330,49 @@ namespace Rift::Graph
 		Style::PopNodeBackgroundColor();
 	}
 
+	void DrawIf(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>, CChild,
+	                CFileRef, CStatementOutputs, CParent>
+	                access,
+	    AST::Id id)
+	{
+		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
+		Style::PushNodeTitleColor(Style::flowColor);
+		BeginNode(access, id);
+		{
+			Nodes::BeginNodeTitleBar();
+			{
+				PushExecutionPinStyle();
+				Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
+				UI::TextUnformatted("");
+				Nodes::EndInput();
+				UI::SameLine();
+
+				UI::BeginGroup();
+				UI::TextUnformatted("if");
+				UI::EndGroup();
+
+				UI::SameLine();
+				UI::BeginGroup();
+				{
+					TArray<AST::Id> statementOutputs;
+					AST::Hierarchy::GetChildren(access, id, statementOutputs);
+					Nodes::BeginOutput(i32(statementOutputs[0]), Nodes::PinShape_QuadFilled);
+					UI::TextUnformatted("true");
+					Nodes::EndOutput();
+					Nodes::BeginOutput(i32(statementOutputs[1]), Nodes::PinShape_QuadFilled);
+					UI::TextUnformatted("false");
+					Nodes::EndOutput();
+				}
+				UI::EndGroup();
+
+				PopExecutionPinStyle();
+			}
+			Nodes::EndNodeTitleBar();
+		}
+		EndNode(access);
+		Style::PopNodeTitleColor();
+		Style::PopNodeBackgroundColor();
+	}
 
 	void Init()
 	{
@@ -401,6 +445,23 @@ namespace Rift::Graph
 		filter.Draw("##Filter");
 		const v2 clickPos = UI::GetMousePosOnOpeningCurrentPopup();
 		const v2 gridPos  = Nodes::ScreenToGridPosition(clickPos);
+
+		if (filter.IsActive() || UI::TreeNode("Flow"))
+		{
+			if (filter.PassFilter("Return") && UI::MenuItem("Return"))
+			{
+				AST::Functions::AddReturn({ast, typeId});
+			}
+			if (filter.PassFilter("If") && UI::MenuItem("If"))
+			{
+				AST::Functions::AddIf({ast, typeId});
+			}
+
+			if (!filter.IsActive())
+			{
+				UI::TreePop();
+			}
+		}
 
 		if (filter.IsActive() || UI::TreeNode("Constructors"))
 		{
@@ -523,9 +584,9 @@ namespace Rift::Graph
 	                     access,
 	    const TArray<AST::Id>& children)
 	{
-		for (AST::Id returnId : GetIf<CReturnExpr>(access, children))
+		for (AST::Id id : GetIf<CReturnExpr>(access, children))
 		{
-			DrawReturnNode(access, returnId);
+			DrawReturnNode(access, id);
 		}
 	}
 
@@ -560,6 +621,17 @@ namespace Rift::Graph
 		for (AST::Id id : AST::GetIf<CStringLiteral>(ast, children))
 		{
 			DrawLiteralString(ast, id, ast.Get<CStringLiteral>(id).value);
+		}
+	}
+
+	void DrawIfs(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>, CChild,
+	                 CFileRef, CStatementIf, CStatementOutputs, CParent>
+	                 access,
+	    const TArray<AST::Id>& children)
+	{
+		for (AST::Id id : AST::GetIf<CStatementIf>(access, children))
+		{
+			DrawIf(access, id);
 		}
 	}
 
@@ -658,10 +730,15 @@ namespace Rift::Graph
 					}
 				}
 
+				// Nodes
 				DrawFunctionDecls(ast, functions);
 				DrawReturns(ast, *children);
 				DrawCalls(ast, typeId, *children);
 				DrawLiterals(ast, *children);
+
+				DrawIfs(ast, *children);
+
+				// Links
 				DrawStatementLinks(ast, *children);
 				DrawExpressionLinks(ast, *children);
 			}

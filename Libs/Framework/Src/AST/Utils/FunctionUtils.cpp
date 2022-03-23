@@ -11,11 +11,13 @@
 #include "AST/Components/CFunctionDecl.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CParameterDecl.h"
+#include "AST/Components/CStatementIf.h"
 #include "AST/Components/CStatementInput.h"
 #include "AST/Components/CStatementOutputs.h"
 #include "AST/Components/CStringLiteral.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Utils/Hierarchy.h"
+#include "AST/Utils/StatementGraph.h"
 
 #include <AST/Components/CReturnExpr.h>
 
@@ -41,6 +43,29 @@ namespace Rift::AST::Functions
 		ast.Add<CExpressionInput>(id);
 
 		Hierarchy::AddChildren(ast, functionId, id);
+		return id;
+	}
+
+	Id AddIf(TypeRef type)
+	{
+		Tree& ast   = type.GetAST();
+		const Id id = ast.Create();
+		ast.Add<CStatementIf>(id);
+		ast.Add<CStatementInput>(id);
+		ast.Add<CStatementOutputs>(id);
+
+		// Bool input
+		ast.Add<CExpressionInput>(id);
+
+		const Id trueId  = ast.Create();
+		const Id falseId = ast.Create();
+		Hierarchy::AddChildren(ast, id, trueId);
+		Hierarchy::AddChildren(ast, id, falseId);
+
+		if (type)
+		{
+			Hierarchy::AddChildren(ast, type.GetId(), id);
+		}
 		return id;
 	}
 
