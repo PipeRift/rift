@@ -5,6 +5,7 @@
 #include <AST/Tree.h>
 #include <Math/Color.h>
 #include <Reflection/TypeId.h>
+#include <UI/Style.h>
 
 
 namespace Rift::Style
@@ -15,6 +16,7 @@ namespace Rift::Style
 	constexpr Color functionColor{Color::FromHEX(0xCC3D33)};
 	constexpr Color returnColor{functionColor.Shade(0.1f)};
 	constexpr Color callColor{Color::FromHEX(0x3366CC)};
+	constexpr Color flowColor{GetNeutralColor(4)};
 
 	template<typename T>
 	constexpr Color GetTypeColor()
