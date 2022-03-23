@@ -67,10 +67,10 @@ namespace Rift::Graph
 
 	void BeginNode(TAccessRef<TWrite<CGraphTransform>> access, AST::Id id)
 	{
+		currentNodeTransform = &access.GetOrAdd<CGraphTransform>(id);
 		if (UI::IsWindowAppearing()
 		    && !(Nodes::GetCurrentContext()->leftMouseDragging && Nodes::IsNodeSelected(id)))
 		{
-			currentNodeTransform = &access.GetOrAdd<CGraphTransform>(id);
 			SetNodePosition(id, currentNodeTransform->position);
 		}
 
@@ -705,7 +705,7 @@ namespace Rift::Graph
 
 	v2 GetNodePosition(AST::Id id)
 	{
-		const ImVec2 pos = Nodes::GetNodeGridSpacePos(id);
-		return {pos.x * settings.GetInvGridSize(), pos.y * settings.GetInvGridSize()};
+		const v2 pos = Nodes::GetNodeGridSpacePos(id);
+		return v2{pos.x * settings.GetInvGridSize(), pos.y * settings.GetInvGridSize()}.Floor();
 	}
 }    // namespace Rift::Graph

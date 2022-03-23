@@ -760,7 +760,7 @@ namespace Rift::Nodes
 		}
 	}
 
-	v2 SnapOrigi32oGrid(v2 origin)
+	v2 SnapOriginToGrid(v2 origin)
 	{
 		if ((gNodes->style.Flags & StyleFlags_GridSnapping)
 		    || ((gNodes->style.Flags & StyleFlags_GridSnappingOnRelease)
@@ -843,7 +843,7 @@ namespace Rift::Nodes
 		if (gNodes->leftMouseDragging || gNodes->leftMouseReleased)
 		{
 			const v2 origin =
-			    SnapOrigi32oGrid(gNodes->mousePosition - gNodes->CanvasOriginScreenSpace
+			    SnapOriginToGrid(gNodes->mousePosition - gNodes->CanvasOriginScreenSpace
 			                     - editor.Panning + editor.PrimaryNodeOffset);
 			for (i32 i = 0; i < editor.selectedNodeIds.size(); ++i)
 			{
