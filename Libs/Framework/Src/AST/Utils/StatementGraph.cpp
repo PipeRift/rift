@@ -32,7 +32,7 @@ namespace Rift::AST::StatementGraph
 			return false;
 		}
 
-		// Resolve node. Some times the pin itself is the node
+		// Resolve output node. Sometimes the output pin itself is the node
 		Id outputNode = outputPin;
 		if (!ast.Has<CStatementOutputs>(outputPin))
 		{
