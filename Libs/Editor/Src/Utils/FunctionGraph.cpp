@@ -751,8 +751,7 @@ namespace Rift::Graph
 			Nodes::Id inputPin;
 			if (Nodes::IsLinkCreated(outputPin, inputPin))
 			{
-				AST::StatementGraph::TryConnect(
-				    ast, AST::Id(outputPin), AST::Id(outputPin), AST::Id(inputPin));
+				AST::StatementGraph::TryConnect(ast, AST::Id(outputPin), AST::Id(inputPin));
 				AST::ExpressionGraph::TryConnect(ast, AST::Id(outputPin), AST::Id(inputPin));
 			}
 			Nodes::Id linkId;

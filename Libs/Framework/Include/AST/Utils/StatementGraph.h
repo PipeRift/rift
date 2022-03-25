@@ -13,8 +13,7 @@ namespace Rift::AST::StatementGraph
 {
 	bool CanConnect(const Tree& ast, Id outputNode, Id outputPin, Id inputNode);
 
-	bool TryConnect(Tree& ast, AST::Id outputNode, AST::Id outputPin, AST::Id inputNode);
-	bool TryConnect(Tree& ast, AST::Id outputPin, AST::Id inputPin);
+	bool TryConnect(Tree& ast, AST::Id outputPin, AST::Id inputNode);
 	// Disconnects a particular link. (Note: link ids are the same as input nodes)
 	bool Disconnect(Tree& ast, AST::Id linkId);
 	bool DisconnectFromInputPin(Tree& ast, AST::Id inputPin);
