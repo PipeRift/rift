@@ -339,12 +339,29 @@ namespace Rift::Graph
 		Style::PushNodeTitleColor(Style::flowColor);
 		BeginNode(access, id);
 		{
+			TArray<AST::Id> pins;
+			AST::Hierarchy::GetChildren(access, id, pins);
+
 			Nodes::BeginNodeTitleBar();
 			{
-				PushExecutionPinStyle();
-				Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
-				UI::TextUnformatted("");
-				Nodes::EndInput();
+				UI::BeginGroup();
+				{
+					PushExecutionPinStyle();
+					Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
+					UI::TextUnformatted("");
+					Nodes::EndInput();
+					PopExecutionPinStyle();
+
+					const Color pinColor = Style::GetTypeColor<bool>();
+					Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+					Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+
+					Nodes::BeginInput(i32(pins[0]), Nodes::PinShape_CircleFilled);
+					UI::TextUnformatted("");
+					Nodes::EndInput();
+					Nodes::PopStyleColor(2);
+				}
+				UI::EndGroup();
 				UI::SameLine();
 
 				UI::BeginGroup();
@@ -354,18 +371,16 @@ namespace Rift::Graph
 				UI::SameLine();
 				UI::BeginGroup();
 				{
-					TArray<AST::Id> statementOutputs;
-					AST::Hierarchy::GetChildren(access, id, statementOutputs);
-					Nodes::BeginOutput(i32(statementOutputs[0]), Nodes::PinShape_QuadFilled);
+					PushExecutionPinStyle();
+					Nodes::BeginOutput(i32(pins[1]), Nodes::PinShape_QuadFilled);
 					UI::TextUnformatted("true");
 					Nodes::EndOutput();
-					Nodes::BeginOutput(i32(statementOutputs[1]), Nodes::PinShape_QuadFilled);
+					Nodes::BeginOutput(i32(pins[2]), Nodes::PinShape_QuadFilled);
 					UI::TextUnformatted("false");
 					Nodes::EndOutput();
+					PopExecutionPinStyle();
 				}
 				UI::EndGroup();
-
-				PopExecutionPinStyle();
 			}
 			Nodes::EndNodeTitleBar();
 		}

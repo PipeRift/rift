@@ -57,6 +57,10 @@ namespace Rift::AST::Functions
 		// Bool input
 		ast.Add<CExpressionInput>(id);
 
+		const Id valueId = ast.Create();
+		ast.Add<CExpressionInput>(valueId);
+		Hierarchy::AddChildren(ast, id, valueId);
+
 		const Id trueId  = ast.Create();
 		const Id falseId = ast.Create();
 		Hierarchy::AddChildren(ast, id, trueId);
