@@ -25,11 +25,22 @@ namespace Rift::AST::StatementGraph
 		return !WouldLoop(ast, outputNode, outputPin, inputNode);
 	}
 
-	bool TryConnect(Tree& ast, Id outputNode, Id outputPin, Id inputNode)
+	bool TryConnect(Tree& ast, Id outputPin, Id inputNode)
 	{
-		if (!Ensure(!IsNone(outputNode) && !IsNone(outputPin) && !IsNone(inputNode)))
+		if (!Ensure(!IsNone(outputPin) && !IsNone(inputNode)))
 		{
 			return false;
+		}
+
+		// Resolve output node. Sometimes the output pin itself is the node
+		Id outputNode = outputPin;
+		if (!ast.Has<CStatementOutputs>(outputPin))
+		{
+			outputNode = Hierarchy::GetParent(ast, outputPin);
+			if (!Ensure(!IsNone(outputNode)))
+			{
+				return false;
+			}
 		}
 
 		if (!CanConnect(ast, outputNode, outputPin, inputNode))
@@ -44,7 +55,7 @@ namespace Rift::AST::StatementGraph
 			if (inputComp.linkOutputNode != AST::NoId)
 			{
 				auto& lastOutputsComp = ast.Get<CStatementOutputs>(inputComp.linkOutputNode);
-				lastOutputsComp.linkPins.FindRef(outputPin) = AST::NoId;
+				lastOutputsComp.linkInputNodes.FindRef(inputNode) = AST::NoId;
 			}
 			inputComp.linkOutputNode = outputNode;
 		}
@@ -71,13 +82,6 @@ namespace Rift::AST::StatementGraph
 			}
 		}
 		return true;
-	}
-
-	bool TryConnect(Tree& ast, AST::Id outputPin, AST::Id inputPin)
-	{
-		const Id outputNode = Hierarchy::GetParent(ast, outputPin);
-		// NOTE: Input pin ids equal input node ids
-		return TryConnect(ast, outputNode, outputPin, inputPin);
 	}
 
 	bool Disconnect(Tree& ast, Id linkId)
