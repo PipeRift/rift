@@ -44,15 +44,15 @@
                 "name": "damage"
             }
         },
-        "CFunctionDecl": {
+        "CDeclFunction": {
             "1": {}
         },
-        "CParameterDecl": {
+        "CDeclParameter": {
             "4": {
                 "type": "none"
             }
         },
-        "CCallExpr": {
+        "CExprCall": {
             "2": {
                 "ownerName": "none",
                 "functionName": "none"
@@ -62,7 +62,7 @@
                 "functionName": "Add"
             }
         },
-        "CStatementOutputs": {
+        "CStmtOutputs": {
             "1": {
                 "linkPins": [],
                 "linkInputNodes": []
@@ -76,7 +76,7 @@
                 "linkInputNodes": []
             }
         },
-        "CStatementInput": {
+        "CStmtInput": {
             "2": {
                 "linkOutputNode": -1
             },
@@ -84,7 +84,7 @@
                 "linkOutputNode": -1
             }
         },
-        "CExpressionOutputs": {
+        "CExprOutputs": {
             "4": {
                 "linkInputPins": []
             }

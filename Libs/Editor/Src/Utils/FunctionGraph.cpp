@@ -2,7 +2,7 @@
 
 #include "Utils/FunctionGraph.h"
 
-#include "AST/Components/CParameterDecl.h"
+#include "AST/Components/CDeclParameter.h"
 #include "AST/Utils/ExpressionGraph.h"
 #include "AST/Utils/StatementGraph.h"
 #include "Components/CTypeEditor.h"
@@ -10,19 +10,19 @@
 #include "Utils/EditorStyle.h"
 #include "Utils/TypeUtils.h"
 
-#include <AST/Components/CBoolLiteral.h>
-#include <AST/Components/CCallExpr.h>
-#include <AST/Components/CExpressionInput.h>
-#include <AST/Components/CExpressionOutputs.h>
-#include <AST/Components/CFunctionDecl.h>
+#include <AST/Components/CDeclFunction.h>
+#include <AST/Components/CDeclParameter.h>
+#include <AST/Components/CDeclVariable.h>
+#include <AST/Components/CExprCall.h>
+#include <AST/Components/CExprInput.h>
+#include <AST/Components/CExprOutputs.h>
+#include <AST/Components/CExprReturn.h>
 #include <AST/Components/CIdentifier.h>
-#include <AST/Components/CParameterDecl.h>
-#include <AST/Components/CReturnExpr.h>
-#include <AST/Components/CStatementIf.h>
-#include <AST/Components/CStatementInput.h>
-#include <AST/Components/CStatementOutputs.h>
-#include <AST/Components/CStringLiteral.h>
-#include <AST/Components/CVariableDecl.h>
+#include <AST/Components/CLiteralBool.h>
+#include <AST/Components/CLiteralString.h>
+#include <AST/Components/CStmtIf.h>
+#include <AST/Components/CStmtInput.h>
+#include <AST/Components/CStmtOutputs.h>
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Filtering.h>
 #include <AST/Statics/STypes.h>
@@ -33,6 +33,7 @@
 #include <Utils/Nodes.h>
 #include <Utils/NodesInternal.h>
 #include <Utils/NodesMiniMap.h>
+
 
 
 namespace Rift::Graph
@@ -193,12 +194,12 @@ namespace Rift::Graph
 
 			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, functionId))
 			{
-				auto inputParameters = ast.Filter<CParameterDecl, CExpressionOutputs>();
+				auto inputParameters = ast.Filter<CDeclParameter, CExprOutputs>();
 				for (AST::Id childId : *children)
 				{
 					if (inputParameters.Has(childId))
 					{
-						auto& param = inputParameters.Get<CParameterDecl>(childId);
+						auto& param = inputParameters.Get<CDeclParameter>(childId);
 
 						const Color pinColor = Style::GetTypeColor(ast, param.typeId);
 						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
@@ -286,12 +287,12 @@ namespace Rift::Graph
 
 			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, id))
 			{
-				auto callArgsView = ast.Filter<CIdentifier, CExpressionInput, CExpressionOutputs>();
+				auto callArgsView = ast.Filter<CIdentifier, CExprInput, CExprOutputs>();
 
 				UI::BeginGroup();    // Inputs
 				for (AST::Id inputId : *children)
 				{
-					if (callArgsView.Has<CExpressionInput>(inputId)
+					if (callArgsView.Has<CExprInput>(inputId)
 					    && callArgsView.Has<CIdentifier>(inputId))
 					{
 						auto& name           = callArgsView.Get<CIdentifier>(inputId);
@@ -309,7 +310,7 @@ namespace Rift::Graph
 				UI::BeginGroup();    // Outputs
 				for (AST::Id outputId : *children)
 				{
-					if (callArgsView.Has<CExpressionOutputs>(outputId)
+					if (callArgsView.Has<CExprOutputs>(outputId)
 					    && callArgsView.Has<CIdentifier>(outputId))
 					{
 						auto& name           = callArgsView.Get<CIdentifier>(outputId);
@@ -331,7 +332,7 @@ namespace Rift::Graph
 	}
 
 	void DrawIf(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>, CChild,
-	                CFileRef, CStatementOutputs, CParent>
+	                CFileRef, CStmtOutputs, CParent>
 	                access,
 	    AST::Id id)
 	{
@@ -439,7 +440,7 @@ namespace Rift::Graph
 	}
 	void DrawNodeContextMenu(AST::Tree& ast, AST::Id typeId, AST::Id nodeId)
 	{
-		if (ast.Has<CFunctionDecl>(nodeId))
+		if (ast.Has<CDeclFunction>(nodeId))
 		{
 			if (UI::MenuItem("Add return node"))
 			{
@@ -511,7 +512,7 @@ namespace Rift::Graph
 
 		if (filter.IsActive() || UI::TreeNode("Variables"))
 		{
-			auto variables   = ast.Filter<CVariableDecl>();
+			auto variables   = ast.Filter<CDeclVariable>();
 			auto identifiers = ast.Filter<CIdentifier>();
 			for (AST::Id variableId : variables)
 			{
@@ -541,7 +542,7 @@ namespace Rift::Graph
 
 		if (filter.IsActive() || UI::TreeNode("Functions"))
 		{
-			auto functions   = ast.Filter<CFunctionDecl>();
+			auto functions   = ast.Filter<CDeclFunction>();
 			auto identifiers = ast.Filter<CIdentifier>();
 			for (AST::Id functionId : functions)
 			{
@@ -587,7 +588,7 @@ namespace Rift::Graph
 
 	void DrawFunctionDecls(AST::Tree& ast, const TArray<AST::Id>& functionDecls)
 	{
-		auto functions = ast.Filter<CFunctionDecl>();
+		auto functions = ast.Filter<CDeclFunction>();
 		for (AST::Id functionId : functionDecls)
 		{
 			DrawFunctionDecl(ast, functionId);
@@ -595,11 +596,11 @@ namespace Rift::Graph
 	}
 
 	void DrawReturns(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>,
-	                     CChild, CFileRef, CReturnExpr>
+	                     CChild, CFileRef, CExprReturn>
 	                     access,
 	    const TArray<AST::Id>& children)
 	{
-		for (AST::Id id : GetIf<CReturnExpr>(access, children))
+		for (AST::Id id : GetIf<CExprReturn>(access, children))
 		{
 			DrawReturnNode(access, id);
 		}
@@ -607,12 +608,12 @@ namespace Rift::Graph
 
 	void DrawCalls(AST::Tree& ast, AST::Id typeId, const TArray<AST::Id>& children)
 	{
-		auto calls         = ast.Filter<CCallExpr>();
-		auto functionDecls = ast.Filter<CFunctionDecl, CIdentifier>();
+		auto calls         = ast.Filter<CExprCall>();
+		auto functionDecls = ast.Filter<CDeclFunction, CIdentifier>();
 
 		for (AST::Id child : children)
 		{
-			auto* call = calls.TryGet<CCallExpr>(child);
+			auto* call = calls.TryGet<CExprCall>(child);
 			if (call)
 			{
 				StringView functionName = call->functionName.ToString().c_str();
@@ -628,23 +629,23 @@ namespace Rift::Graph
 
 	void DrawLiterals(AST::Tree& ast, const TArray<AST::Id>& children)
 	{
-		for (AST::Id id : AST::GetIf<CBoolLiteral>(ast, children))
+		for (AST::Id id : AST::GetIf<CLiteralBool>(ast, children))
 		{
-			DrawLiteralBool(ast, id, ast.Get<CBoolLiteral>(id).value);
+			DrawLiteralBool(ast, id, ast.Get<CLiteralBool>(id).value);
 		}
 
-		for (AST::Id id : AST::GetIf<CStringLiteral>(ast, children))
+		for (AST::Id id : AST::GetIf<CLiteralString>(ast, children))
 		{
-			DrawLiteralString(ast, id, ast.Get<CStringLiteral>(id).value);
+			DrawLiteralString(ast, id, ast.Get<CLiteralString>(id).value);
 		}
 	}
 
 	void DrawIfs(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>, CChild,
-	                 CFileRef, CStatementIf, CStatementOutputs, CParent>
+	                 CFileRef, CStmtIf, CStmtOutputs, CParent>
 	                 access,
 	    const TArray<AST::Id>& children)
 	{
-		for (AST::Id id : AST::GetIf<CStatementIf>(access, children))
+		for (AST::Id id : AST::GetIf<CStmtIf>(access, children))
 		{
 			DrawIf(access, id);
 		}
@@ -657,10 +658,10 @@ namespace Rift::Graph
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(Style::executionColor));
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
 
-		auto stmtOutputs = ast.Filter<CStatementOutputs>();
+		auto stmtOutputs = ast.Filter<CStmtOutputs>();
 		for (AST::Id childId : children)
 		{
-			if (auto* childOutputs = stmtOutputs.TryGet<CStatementOutputs>(childId))
+			if (auto* childOutputs = stmtOutputs.TryGet<CStmtOutputs>(childId))
 			{
 				CheckMsg(childOutputs->linkInputNodes.Size() == childOutputs->linkPins.Size(),
 				    "Inputs and pins must match. Graph might be corrupted.");
@@ -687,14 +688,14 @@ namespace Rift::Graph
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 1.5f);
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
 
-		auto inputsFilter = ast.Filter<CExpressionInput>();
+		auto inputsFilter = ast.Filter<CExprInput>();
 		TArray<AST::Id> exprInputs;
 		AST::Hierarchy::GetChildren(ast, children, exprInputs);
 		inputsFilter.FilterIds(exprInputs);
 
 		for (AST::Id inputPinId : exprInputs)
 		{
-			const auto& input         = inputsFilter.Get<CExpressionInput>(inputPinId);
+			const auto& input         = inputsFilter.Get<CExprInput>(inputPinId);
 			const AST::Id outputPinId = input.linkOutputPin;
 
 			if (!IsNone(outputPinId))
@@ -736,7 +737,7 @@ namespace Rift::Graph
 			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, typeId))
 			{
 				TArray<AST::Id> functions;
-				auto functionsQuery = ast.Filter<CFunctionDecl>();
+				auto functionsQuery = ast.Filter<CDeclFunction>();
 				for (AST::Id childId : *children)
 				{
 					if (functionsQuery.Has(childId))

@@ -1,7 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Components/CCallExpr.h"
+#include "AST/Components/CExprCall.h"
 #include "AST/Components/CFileRef.h"
 
 #include <Types/Struct.h>
@@ -23,5 +23,5 @@ namespace Rift
 	using CFileDirty = TDirty<CFileRef>;
 
 	// Marks a type as dirty, meaning is has been modified
-	using CCallDirty = TDirty<CCallExprId>;
+	using CCallDirty = TDirty<CExprCallId>;
 }    // namespace Rift

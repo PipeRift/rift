@@ -2,8 +2,8 @@
 
 #include "AST/Utils/StatementGraph.h"
 
-#include "AST/Components/CStatementInput.h"
-#include "AST/Components/CStatementOutputs.h"
+#include "AST/Components/CStmtInput.h"
+#include "AST/Components/CStmtOutputs.h"
 #include "AST/Types.h"
 #include "AST/Utils/Hierarchy.h"
 
@@ -17,7 +17,7 @@ namespace Rift::AST::StatementGraph
 			return false;
 		}
 
-		if (!ast.Has<CStatementOutputs>(outputNode) || !ast.Has<CStatementInput>(inputNode))
+		if (!ast.Has<CStmtOutputs>(outputNode) || !ast.Has<CStmtInput>(inputNode))
 		{
 			return false;
 		}
@@ -34,7 +34,7 @@ namespace Rift::AST::StatementGraph
 
 		// Resolve output node. Sometimes the output pin itself is the node
 		Id outputNode = outputPin;
-		if (!ast.Has<CStatementOutputs>(outputPin))
+		if (!ast.Has<CStmtOutputs>(outputPin))
 		{
 			outputNode = Hierarchy::GetParent(ast, outputPin);
 			if (!Ensure(!IsNone(outputNode)))
@@ -50,11 +50,11 @@ namespace Rift::AST::StatementGraph
 
 		// Link input
 		{
-			auto& inputComp = ast.Get<CStatementInput>(inputNode);
+			auto& inputComp = ast.Get<CStmtInput>(inputNode);
 			// Disconnect previous output connected to input if any
 			if (inputComp.linkOutputNode != AST::NoId)
 			{
-				auto& lastOutputsComp = ast.Get<CStatementOutputs>(inputComp.linkOutputNode);
+				auto& lastOutputsComp = ast.Get<CStmtOutputs>(inputComp.linkOutputNode);
 				lastOutputsComp.linkInputNodes.FindRef(inputNode) = AST::NoId;
 			}
 			inputComp.linkOutputNode = outputNode;
@@ -62,7 +62,7 @@ namespace Rift::AST::StatementGraph
 
 		// Link output
 		{
-			auto& outputsComp  = ast.GetOrAdd<CStatementOutputs>(outputNode);
+			auto& outputsComp  = ast.GetOrAdd<CStmtOutputs>(outputNode);
 			const i32 pinIndex = outputsComp.linkPins.FindIndex(outputPin);
 			if (pinIndex != NO_INDEX)
 			{
@@ -70,7 +70,7 @@ namespace Rift::AST::StatementGraph
 				// Disconnect previous input connected to output if any
 				if (lastInputNode != AST::NoId)
 				{
-					ast.Get<CStatementInput>(lastInputNode).linkOutputNode = AST::NoId;
+					ast.Get<CStmtInput>(lastInputNode).linkOutputNode = AST::NoId;
 				}
 				lastInputNode = inputNode;
 			}
@@ -92,12 +92,12 @@ namespace Rift::AST::StatementGraph
 		}
 
 		const Id inputNode = linkId;
-		auto* inputComp    = ast.TryGet<CStatementInput>(inputNode);
+		auto* inputComp    = ast.TryGet<CStmtInput>(inputNode);
 		if (EnsureMsg(inputComp && !IsNone(inputComp->linkOutputNode),
 		        "Trying to disconnect a unexistant link")) [[likely]]
 		{
 			// We expect the other side to have outputs component
-			auto& outputsComp = ast.Get<CStatementOutputs>(inputComp->linkOutputNode);
+			auto& outputsComp = ast.Get<CStmtOutputs>(inputComp->linkOutputNode);
 			if (Id* lastInputNode = outputsComp.linkInputNodes.Find(inputNode)) [[likely]]
 			{
 				*lastInputNode = AST::NoId;
@@ -121,7 +121,7 @@ namespace Rift::AST::StatementGraph
 	{
 		// NOTE: Can be optimized if needed since outputs is accessed twice counting
 		// Disconnect()
-		if (auto* outputsComp = ast.TryGet<CStatementOutputs>(outputNode))
+		if (auto* outputsComp = ast.TryGet<CStmtOutputs>(outputNode))
 		{
 			i32 pinIndex = outputsComp->linkPins.FindIndex(outputPin);
 			if (pinIndex != NO_INDEX) [[likely]]
@@ -137,7 +137,7 @@ namespace Rift::AST::StatementGraph
 		AST::Id currentNode = outputNode;
 		while (!IsNone(currentNode))
 		{
-			const auto* input = ast.TryGet<CStatementInput>(currentNode);
+			const auto* input = ast.TryGet<CStmtInput>(currentNode);
 			if (!input)
 			{
 				return false;

@@ -10,8 +10,8 @@ namespace Rift
 	 * Return arguments are dynamically populated depending on the function this expression is
 	 * connected to.
 	 */
-	struct CReturnExpr : public CExpression
+	struct CExprReturn : public CExpression
 	{
-		STRUCT(CReturnExpr, CExpression)
+		STRUCT(CExprReturn, CExpression)
 	};
 }    // namespace Rift

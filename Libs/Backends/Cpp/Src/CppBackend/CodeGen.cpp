@@ -6,15 +6,15 @@
 #include "CppBackend/Components/CCppCodeGenFragment.h"
 
 #include <AST/Components/CChild.h>
-#include <AST/Components/CClassDecl.h>
-#include <AST/Components/CFunctionDecl.h>
+#include <AST/Components/CDeclClass.h>
+#include <AST/Components/CDeclFunction.h>
+#include <AST/Components/CDeclParameter.h>
+#include <AST/Components/CDeclStruct.h>
+#include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CModule.h>
-#include <AST/Components/CParameterDecl.h>
 #include <AST/Components/CParent.h>
-#include <AST/Components/CStructDecl.h>
 #include <AST/Components/CType.h>
-#include <AST/Components/CVariableDecl.h>
 #include <AST/Filtering.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Hierarchy.h>
@@ -144,13 +144,13 @@ namespace Rift::Compiler::Cpp
 	}
 
 	void AddTypeVariables(
-	    String& code, TAccessRef<CIdentifier, CVariableDecl, CParent> access, AST::Id owner)
+	    String& code, TAccessRef<CIdentifier, CDeclVariable, CParent> access, AST::Id owner)
 	{
 		if (const auto* parent = access.TryGet<const CParent>(owner))
 		{
 			for (AST::Id entity : parent->children)
 			{
-				if (access.Has<const CIdentifier, const CVariableDecl>(entity))
+				if (access.Has<const CIdentifier, const CDeclVariable>(entity))
 				{
 					auto& identifier = access.Get<const CIdentifier>(entity);
 					AddVariable(code, "bool", identifier.name.ToString(), "false");
@@ -159,7 +159,7 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void DeclareTypes(String& code, TAccessRef<CType, CIdentifier, CVariableDecl, CParent> access,
+	void DeclareTypes(String& code, TAccessRef<CType, CIdentifier, CDeclVariable, CParent> access,
 	    AST::Id moduleId, const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
 		for (AST::Id entity : structs)
@@ -180,7 +180,7 @@ namespace Rift::Compiler::Cpp
 	}
 
 
-	void DeclareFunctions(String& code, TAccessRef<CIdentifier, CType, CClassDecl, CChild> access,
+	void DeclareFunctions(String& code, TAccessRef<CIdentifier, CType, CDeclClass, CChild> access,
 	    AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
 		for (AST::Id entity : functions)
@@ -201,7 +201,7 @@ namespace Rift::Compiler::Cpp
 	}
 
 
-	void DefineFunctions(String& code, TAccessRef<CIdentifier, CType, CClassDecl, CChild> access,
+	void DefineFunctions(String& code, TAccessRef<CIdentifier, CType, CDeclClass, CChild> access,
 	    AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
 		for (AST::Id entity : functions)
@@ -221,11 +221,11 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void GenParameters(TAccessRef<CParameterDecl, CIdentifier, TWrite<CCppCodeGenFragment>> access)
+	void GenParameters(TAccessRef<CDeclParameter, CIdentifier, TWrite<CCppCodeGenFragment>> access)
 	{
-		for (AST::Id entity : AST::ListAll<CParameterDecl, CIdentifier>(access))
+		for (AST::Id entity : AST::ListAll<CDeclParameter, CIdentifier>(access))
 		{
-			const auto& param = access.Get<const CParameterDecl>(entity);
+			const auto& param = access.Get<const CDeclParameter>(entity);
 			const auto& name  = access.Get<const CIdentifier>(entity);
 
 			auto& fragment = access.Add<CCppCodeGenFragment>(entity);
@@ -262,8 +262,8 @@ namespace Rift::Compiler::Cpp
 		AST::RemoveIfNot<CType>(ast, classes);
 		structs = classes;
 
-		AST::RemoveIfNot<CClassDecl>(ast, classes);
-		AST::RemoveIfNot<CStructDecl>(ast, structs);
+		AST::RemoveIfNot<CDeclClass>(ast, classes);
+		AST::RemoveIfNot<CDeclStruct>(ast, structs);
 
 		Spacing(code);
 		Comment(code, "Forward declarations");
@@ -277,7 +277,7 @@ namespace Rift::Compiler::Cpp
 		TArray<AST::Id> functions;
 		// Module -> Types -> Functions = depth 2
 		AST::Hierarchy::GetChildrenDeep(ast, moduleId, functions, 2);
-		AST::RemoveIfNot<CIdentifier, CFunctionDecl>(ast, functions);
+		AST::RemoveIfNot<CIdentifier, CDeclFunction>(ast, functions);
 
 		Spacing(code);
 		Comment(code, "Function Declarations");

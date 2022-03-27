@@ -8,8 +8,8 @@
 
 namespace Rift
 {
-	struct CFunctionLibraryDecl : public CDeclaration
+	struct CDeclFunctionLibrary : public CDeclaration
 	{
-		STRUCT(CFunctionLibraryDecl, CDeclaration)
+		STRUCT(CDeclFunctionLibrary, CDeclaration)
 	};
 }    // namespace Rift

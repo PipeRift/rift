@@ -6,9 +6,9 @@
 
 namespace Rift
 {
-	struct CStringLiteral : public CLiteral
+	struct CLiteralString : public CLiteral
 	{
-		STRUCT(CStringLiteral, CLiteral)
+		STRUCT(CLiteralString, CLiteral)
 
 		PROP(value)
 		String value;

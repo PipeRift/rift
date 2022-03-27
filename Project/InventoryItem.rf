@@ -72,13 +72,13 @@
                 "name": "Index"
             }
         },
-        "CClassDecl": {
+        "CDeclClass": {
             "0": {}
         },
-        "CFunctionDecl": {
+        "CDeclFunction": {
             "1": {}
         },
-        "CParameterDecl": {
+        "CDeclParameter": {
             "5": {
                 "type": "none"
             },
@@ -92,7 +92,7 @@
                 "type": "none"
             }
         },
-        "CCallExpr": {
+        "CExprCall": {
             "2": {
                 "ownerName": "none",
                 "functionName": "Attack"
@@ -102,7 +102,7 @@
                 "functionName": "none"
             }
         },
-        "CStatementOutputs": {
+        "CStmtOutputs": {
             "1": {
                 "linkPins": [
                     1
@@ -124,7 +124,7 @@
                 "linkInputNodes": []
             }
         },
-        "CStatementInput": {
+        "CStmtInput": {
             "2": {
                 "linkOutputNode": 1
             },
@@ -135,7 +135,7 @@
                 "linkOutputNode": 2
             }
         },
-        "CExpressionOutputs": {
+        "CExprOutputs": {
             "5": {
                 "linkInputPins": []
             },
@@ -143,7 +143,7 @@
                 "linkInputPins": []
             }
         },
-        "CExpressionInput": {
+        "CExprInput": {
             "7": {
                 "linkOutputPin": -1
             },
@@ -177,7 +177,7 @@
                 }
             }
         },
-        "CReturnExpr": {
+        "CExprReturn": {
             "4": {}
         }
     }
