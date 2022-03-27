@@ -3,10 +3,10 @@
 #include "AST/Systems/FunctionsSystem.h"
 
 #include "AST/Components/CDeclFunction.h"
-#include "AST/Components/CDeclParameter.h"
 #include "AST/Components/CExprCall.h"
 #include "AST/Components/CExprInput.h"
 #include "AST/Components/CExprOutputs.h"
+#include "AST/Components/CExprType.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
@@ -77,7 +77,7 @@ namespace Rift::FunctionsSystem
 
 	void SyncCallArguments(AST::Tree& ast)
 	{
-		auto functionParams = ast.Filter<CDeclParameter, CExprInput, CExprOutputs>();
+		auto functionParams = ast.Filter<CExprType, CExprInput, CExprOutputs>();
 		auto identifiers    = ast.Filter<CIdentifier>();
 		auto exprInputs     = ast.Filter<CExprInput>();
 		auto exprOutputs    = ast.Filter<CExprOutputs>();
@@ -108,7 +108,7 @@ namespace Rift::FunctionsSystem
 				call.functionOutputs.Resize(functionChildren->Size());
 				for (AST::Id childId : *functionChildren)
 				{
-					if (functionParams.Has<CDeclParameter>(childId))
+					if (functionParams.Has<CExprType>(childId))
 					{
 						if (functionParams.Has<CExprOutputs>(childId))
 						{

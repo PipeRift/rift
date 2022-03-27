@@ -13,11 +13,11 @@
 #include <AST/Components/CDeclClass.h>
 #include <AST/Components/CDeclFunction.h>
 #include <AST/Components/CDeclFunctionLibrary.h>
-#include <AST/Components/CDeclParameter.h>
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprInput.h>
 #include <AST/Components/CExprOutputs.h>
+#include <AST/Components/CExprType.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/Hierarchy.h>
@@ -38,8 +38,8 @@ namespace Rift
 	    DrawFieldFlags flags)
 	{
 		CIdentifier* identifier = ast.TryGet<CIdentifier>(fieldId);
-		auto* paramDecl         = ast.TryGet<CDeclParameter>(fieldId);
-		if (!identifier || !paramDecl)
+		auto* type              = ast.TryGet<CExprType>(fieldId);
+		if (!identifier || !type)
 		{
 			return;
 		}
@@ -47,7 +47,7 @@ namespace Rift
 		UI::BeginGroup();
 		UI::PushID(AST::GetIndex(fieldId));
 		{
-			const Color color                  = Style::GetTypeColor(ast, paramDecl->typeId);
+			const Color color                  = Style::GetTypeColor(ast, type->id);
 			static constexpr float frameHeight = 20.f;
 			{    // Custom Selectable
 				Color bgColor = color;
@@ -72,7 +72,7 @@ namespace Rift
 			{
 				UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 				UI::SetNextItemWidth(-FLT_MIN);
-				Editor::TypeCombo(ast, "##type", paramDecl->typeId);
+				Editor::TypeCombo(ast, "##type", type->id);
 				UI::PopStyleVar();
 			}
 

@@ -2,21 +2,18 @@
 
 #include "Utils/FunctionGraph.h"
 
-#include "AST/Components/CDeclParameter.h"
-#include "AST/Utils/ExpressionGraph.h"
-#include "AST/Utils/StatementGraph.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "Utils/EditorStyle.h"
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CDeclFunction.h>
-#include <AST/Components/CDeclParameter.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprCall.h>
 #include <AST/Components/CExprInput.h>
 #include <AST/Components/CExprOutputs.h>
 #include <AST/Components/CExprReturn.h>
+#include <AST/Components/CExprType.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CLiteralBool.h>
 #include <AST/Components/CLiteralString.h>
@@ -26,8 +23,10 @@
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Filtering.h>
 #include <AST/Statics/STypes.h>
+#include <AST/Utils/ExpressionGraph.h>
 #include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/Hierarchy.h>
+#include <AST/Utils/StatementGraph.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
@@ -193,14 +192,14 @@ namespace Rift::Graph
 
 			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, functionId))
 			{
-				auto inputParameters = ast.Filter<CDeclParameter, CExprOutputs>();
+				auto inputParameters = ast.Filter<CExprType, CExprOutputs>();
 				for (AST::Id childId : *children)
 				{
 					if (inputParameters.Has(childId))
 					{
-						auto& param = inputParameters.Get<CDeclParameter>(childId);
+						auto& type = inputParameters.Get<CExprType>(childId);
 
-						const Color pinColor = Style::GetTypeColor(ast, param.typeId);
+						const Color pinColor = Style::GetTypeColor(ast, type.id);
 						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
 						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
 

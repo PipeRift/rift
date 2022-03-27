@@ -3,11 +3,11 @@
 #include "AST/Utils/FunctionUtils.h"
 
 #include "AST/Components/CDeclFunction.h"
-#include "AST/Components/CDeclParameter.h"
 #include "AST/Components/CExprCall.h"
 #include "AST/Components/CExprDeclRef.h"
 #include "AST/Components/CExprInput.h"
 #include "AST/Components/CExprOutputs.h"
+#include "AST/Components/CExprType.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CLiteralBool.h"
 #include "AST/Components/CLiteralFloat.h"
@@ -22,14 +22,13 @@
 #include <AST/Components/CExprReturn.h>
 
 
-
 namespace Rift::AST::Functions
 {
 	Id AddInputArgument(Tree& ast, Id functionId)
 	{
 		Id id = ast.Create();
 		ast.Add<CIdentifier>(id);
-		ast.Add<CDeclParameter>(id);
+		ast.Add<CExprType>(id);
 		ast.Add<CExprOutputs>(id);
 
 		Hierarchy::AddChildren(ast, functionId, id);
@@ -40,7 +39,7 @@ namespace Rift::AST::Functions
 	{
 		Id id = ast.Create();
 		ast.Add<CIdentifier>(id);
-		ast.Add<CDeclParameter>(id);
+		ast.Add<CExprType>(id);
 		ast.Add<CExprInput>(id);
 
 		Hierarchy::AddChildren(ast, functionId, id);
@@ -57,6 +56,7 @@ namespace Rift::AST::Functions
 
 		// Bool input
 		const Id valueId = ast.Create();
+		ast.Add<CExprType>(valueId, {ast.GetNativeTypes().boolId});
 		ast.Add<CExprInput>(valueId);
 		Hierarchy::AddChildren(ast, id, valueId);
 
