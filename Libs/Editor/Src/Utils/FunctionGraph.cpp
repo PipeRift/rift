@@ -2,21 +2,18 @@
 
 #include "Utils/FunctionGraph.h"
 
-#include "AST/Components/CDeclParameter.h"
-#include "AST/Utils/ExpressionGraph.h"
-#include "AST/Utils/StatementGraph.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "Utils/EditorStyle.h"
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CDeclFunction.h>
-#include <AST/Components/CDeclParameter.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprCall.h>
 #include <AST/Components/CExprInput.h>
 #include <AST/Components/CExprOutputs.h>
 #include <AST/Components/CExprReturn.h>
+#include <AST/Components/CExprType.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CLiteralBool.h>
 #include <AST/Components/CLiteralString.h>
@@ -26,8 +23,10 @@
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Filtering.h>
 #include <AST/Statics/STypes.h>
+#include <AST/Utils/ExpressionGraph.h>
 #include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/Hierarchy.h>
+#include <AST/Utils/StatementGraph.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
@@ -193,14 +192,14 @@ namespace Rift::Graph
 
 			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, functionId))
 			{
-				auto inputParameters = ast.Filter<CDeclParameter, CExprOutputs>();
+				auto inputParameters = ast.Filter<CExprType, CExprOutputs>();
 				for (AST::Id childId : *children)
 				{
 					if (inputParameters.Has(childId))
 					{
-						auto& param = inputParameters.Get<CDeclParameter>(childId);
+						auto& type = inputParameters.Get<CExprType>(childId);
 
-						const Color pinColor = Style::GetTypeColor(ast, param.typeId);
+						const Color pinColor = Style::GetTypeColor(ast, type.id);
 						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
 						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
 
@@ -679,32 +678,45 @@ namespace Rift::Graph
 		Nodes::PopStyleVar();
 	}
 
-	void DrawExpressionLinks(AST::Tree& ast, const TArray<AST::Id>& children)
+	void DrawExpressionLinks(
+	    TAccessRef<CParent, CExprInput, CExprType>& access, const TArray<AST::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 1.5f);
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
 
-		auto inputsFilter = ast.Filter<CExprInput>();
 		TArray<AST::Id> exprInputs;
-		AST::Hierarchy::GetChildren(ast, children, exprInputs);
-		inputsFilter.FilterIds(exprInputs);
-
-		for (AST::Id inputPinId : exprInputs)
+		AST::Hierarchy::GetChildren(access, children, exprInputs);
+		AST::RemoveIfNot<CExprInput>(access, exprInputs);
+		for (AST::Id inputId : exprInputs)
 		{
-			const auto& input         = inputsFilter.Get<CExprInput>(inputPinId);
-			const AST::Id outputPinId = input.linkOutputPin;
-
-			if (!IsNone(outputPinId))
+			const auto& input      = access.Get<const CExprInput>(inputId);
+			const AST::Id outputId = input.linkOutputPin;
+			if (IsNone(outputId))
 			{
-				// #TODO: Implement link types
-				const Color color = Style::GetTypeColor<float>();
-				Nodes::PushStyleColor(Nodes::ColorVar_Link, color);
-				Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(color));
-
-				Nodes::Link(i32(inputPinId), i32(outputPinId), i32(inputPinId));
-
-				Nodes::PopStyleColor(2);
+				continue;
 			}
+
+
+			AST::Id typeId = AST::NoId;
+			if (const auto* type = access.TryGet<const CExprType>(outputId))
+			{
+				typeId = type->id;
+			}
+			if (IsNone(typeId))
+			{
+				if (const auto* type = access.TryGet<const CExprType>(inputId))
+				{
+					typeId = type->id;
+				}
+			}
+
+			const Color color = Style::GetTypeColor(access.GetAST(), typeId);
+			Nodes::PushStyleColor(Nodes::ColorVar_Link, color);
+			Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(color));
+
+			Nodes::Link(i32(inputId), i32(outputId), i32(inputId));
+
+			Nodes::PopStyleColor(2);
 		}
 		Nodes::PopStyleColor();
 		Nodes::PopStyleVar();

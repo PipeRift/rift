@@ -8,9 +8,9 @@
 #include <AST/Components/CChild.h>
 #include <AST/Components/CDeclClass.h>
 #include <AST/Components/CDeclFunction.h>
-#include <AST/Components/CDeclParameter.h>
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CDeclVariable.h>
+#include <AST/Components/CExprType.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CModule.h>
 #include <AST/Components/CParent.h>
@@ -221,16 +221,16 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void GenParameters(TAccessRef<CDeclParameter, CIdentifier, TWrite<CCppCodeGenFragment>> access)
+	void GenParameters(TAccessRef<CExprType, CIdentifier, TWrite<CCppCodeGenFragment>> access)
 	{
-		for (AST::Id entity : AST::ListAll<CDeclParameter, CIdentifier>(access))
+		for (AST::Id entity : AST::ListAll<CExprType, CIdentifier>(access))
 		{
-			const auto& param = access.Get<const CDeclParameter>(entity);
-			const auto& name  = access.Get<const CIdentifier>(entity);
+			const auto& type = access.Get<const CExprType>(entity);
+			const auto& name = access.Get<const CIdentifier>(entity);
 
 			auto& fragment = access.Add<CCppCodeGenFragment>(entity);
 			fragment.code.clear();
-			Strings::FormatTo(fragment.code, "{} {}", param.type, name.name);
+			Strings::FormatTo(fragment.code, "{} {}", type.name, name.name);
 		}
 	}
 

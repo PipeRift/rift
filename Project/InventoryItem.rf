@@ -78,7 +78,7 @@
         "CDeclFunction": {
             "1": {}
         },
-        "CDeclParameter": {
+        "CExprType": {
             "5": {
                 "type": "none"
             },
