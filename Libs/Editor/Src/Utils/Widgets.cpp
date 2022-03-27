@@ -2,10 +2,10 @@
 
 #include "Utils/Widgets.h"
 
-#include <AST/Components/CClassDecl.h>
+#include <AST/Components/CDeclClass.h>
+#include <AST/Components/CDeclNative.h>
+#include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CIdentifier.h>
-#include <AST/Components/CNativeDecl.h>
-#include <AST/Components/CStructDecl.h>
 #include <AST/Components/CType.h>
 #include <UI/UI.h>
 
@@ -58,9 +58,9 @@ namespace Rift::Editor
 			UI::SetNextItemWidth(-FLT_MIN);
 			filter.Draw("##Filter");
 
-			auto natives = ast.Filter<CType, CNativeDecl>();
-			auto structs = ast.Filter<CType, CStructDecl>();
-			auto classes = ast.Filter<CType, CClassDecl>();
+			auto natives = ast.Filter<CType, CDeclNative>();
+			auto structs = ast.Filter<CType, CDeclStruct>();
+			auto classes = ast.Filter<CType, CDeclClass>();
 
 			if (filter.IsActive())
 			{

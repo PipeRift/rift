@@ -2,12 +2,12 @@
 
 #include "AST/Systems/FunctionsSystem.h"
 
-#include "AST/Components/CCallExpr.h"
-#include "AST/Components/CExpressionInput.h"
-#include "AST/Components/CExpressionOutputs.h"
-#include "AST/Components/CFunctionDecl.h"
+#include "AST/Components/CDeclFunction.h"
+#include "AST/Components/CDeclParameter.h"
+#include "AST/Components/CExprCall.h"
+#include "AST/Components/CExprInput.h"
+#include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CIdentifier.h"
-#include "AST/Components/CParameterDecl.h"
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 #include "AST/Components/Tags/CInvalid.h"
@@ -34,23 +34,23 @@ namespace Rift::FunctionsSystem
 
 	void Init(AST::Tree& ast)
 	{
-		ast.OnAdd<CCallExprId>().Bind([](auto& ast, auto ids) {
+		ast.OnAdd<CExprCallId>().Bind([](auto& ast, auto ids) {
 			ast.template Add<CCallDirty>(ids);
 		});
 	}
 
 	void ResolveCallFunctionIds(AST::Tree& ast)
 	{
-		auto callExprs   = ast.Filter<CCallExpr>(AST::TExclude<CCallExprId>());
-		auto callExprIds = ast.Filter<CCallExprId>();
+		auto callExprs   = ast.Filter<CExprCall>(AST::TExclude<CExprCallId>());
+		auto callExprIds = ast.Filter<CExprCallId>();
 		for (AST::Id id : callExprs)
 		{
-			auto& call = callExprs.Get<CCallExpr>(id);
+			auto& call = callExprs.Get<CExprCall>(id);
 			AST::Id functionId =
 			    AST::Functions::FindFunctionByName(ast, call.ownerName, call.functionName);
 			if (!IsNone(functionId))
 			{
-				callExprIds.Add(id, CCallExprId{functionId});
+				callExprIds.Add(id, CExprCallId{functionId});
 			}
 		}
 	}
@@ -63,11 +63,11 @@ namespace Rift::FunctionsSystem
 			return;
 		}
 
-		auto callExprIds = ast.Filter<CCallExprId>(AST::TExclude<CCallDirty>{});
+		auto callExprIds = ast.Filter<CExprCallId>(AST::TExclude<CCallDirty>{});
 		auto dirtyCalls  = ast.Filter<CCallDirty>();
 		for (AST::Id id : callExprIds)
 		{
-			const AST::Id functionId = callExprIds.Get<CCallExprId>(id).functionId;
+			const AST::Id functionId = callExprIds.Get<CExprCallId>(id).functionId;
 			if (!IsNone(functionId) && changed.Has(functionId))
 			{
 				dirtyCalls.Add<CCallDirty>(id);
@@ -77,16 +77,16 @@ namespace Rift::FunctionsSystem
 
 	void SyncCallArguments(AST::Tree& ast)
 	{
-		auto functionParams = ast.Filter<CParameterDecl, CExpressionInput, CExpressionOutputs>();
+		auto functionParams = ast.Filter<CDeclParameter, CExprInput, CExprOutputs>();
 		auto identifiers    = ast.Filter<CIdentifier>();
-		auto exprInputs     = ast.Filter<CExpressionInput>();
-		auto exprOutputs    = ast.Filter<CExpressionOutputs>();
+		auto exprInputs     = ast.Filter<CExprInput>();
+		auto exprOutputs    = ast.Filter<CExprOutputs>();
 
 		TArray<CallToSync> calls;
-		auto dirtyCallExprs = ast.Filter<CCallDirty, CCallExprId>();
+		auto dirtyCallExprs = ast.Filter<CCallDirty, CExprCallId>();
 		for (AST::Id id : dirtyCallExprs)
 		{
-			auto& call = dirtyCallExprs.Get<CCallExprId>(id);
+			auto& call = dirtyCallExprs.Get<CExprCallId>(id);
 			if (IsNone(call.functionId))
 			{
 				continue;
@@ -108,13 +108,13 @@ namespace Rift::FunctionsSystem
 				call.functionOutputs.Resize(functionChildren->Size());
 				for (AST::Id childId : *functionChildren)
 				{
-					if (functionParams.Has<CParameterDecl>(childId))
+					if (functionParams.Has<CDeclParameter>(childId))
 					{
-						if (functionParams.Has<CExpressionOutputs>(childId))
+						if (functionParams.Has<CExprOutputs>(childId))
 						{
 							call.functionInputs.Add(childId);
 						}
-						else if (functionParams.Has<CExpressionInput>(childId))
+						else if (functionParams.Has<CExprInput>(childId))
 						{
 							call.functionOutputs.Add(childId);
 						}
@@ -150,7 +150,7 @@ namespace Rift::FunctionsSystem
 				{
 					AST::Id id = ast.Create();
 					identifiers.Add<CIdentifier>(id, name);
-					exprOutputs.Add<CExpressionOutputs>(id);
+					exprOutputs.Add<CExprOutputs>(id);
 					call.outputArgs.Add(id);
 				}
 			}
@@ -171,7 +171,7 @@ namespace Rift::FunctionsSystem
 				{
 					AST::Id id = ast.Create();
 					identifiers.Add<CIdentifier>(id, name);
-					exprInputs.Add<CExpressionInput>(id);
+					exprInputs.Add<CExprInput>(id);
 					call.inputArgs.Add(id);
 				}
 			}
@@ -200,12 +200,12 @@ namespace Rift::FunctionsSystem
 
 	void RemoveInvalidDisconnectedArgs(AST::Tree& ast)
 	{
-		auto invalidInputs  = ast.Filter<CInvalid, CExpressionInput>();
-		auto invalidOutputs = ast.Filter<CInvalid, CExpressionOutputs>();
+		auto invalidInputs  = ast.Filter<CInvalid, CExprInput>();
+		auto invalidOutputs = ast.Filter<CInvalid, CExprOutputs>();
 		TArray<AST::Id> disconnectedPins;
 		for (AST::Id id : invalidInputs)
 		{
-			auto& input = invalidInputs.Get<CExpressionInput>(id);
+			auto& input = invalidInputs.Get<CExprInput>(id);
 			if (IsNone(input.linkOutputPin))
 			{
 				disconnectedPins.Add(id);
@@ -213,7 +213,7 @@ namespace Rift::FunctionsSystem
 		}
 		for (AST::Id id : invalidOutputs)
 		{
-			auto& output = invalidOutputs.Get<CExpressionOutputs>(id);
+			auto& output = invalidOutputs.Get<CExprOutputs>(id);
 			if (output.linkInputPins.IsEmpty())
 			{
 				disconnectedPins.Add(id);

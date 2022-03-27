@@ -10,15 +10,15 @@
 #include "Utils/EditorStyle.h"
 #include "Utils/Widgets.h"
 
-#include <AST/Components/CClassDecl.h>
-#include <AST/Components/CExpressionInput.h>
-#include <AST/Components/CExpressionOutputs.h>
-#include <AST/Components/CFunctionDecl.h>
-#include <AST/Components/CFunctionLibraryDecl.h>
+#include <AST/Components/CDeclClass.h>
+#include <AST/Components/CDeclFunction.h>
+#include <AST/Components/CDeclFunctionLibrary.h>
+#include <AST/Components/CDeclParameter.h>
+#include <AST/Components/CDeclStruct.h>
+#include <AST/Components/CDeclVariable.h>
+#include <AST/Components/CExprInput.h>
+#include <AST/Components/CExprOutputs.h>
 #include <AST/Components/CIdentifier.h>
-#include <AST/Components/CParameterDecl.h>
-#include <AST/Components/CStructDecl.h>
-#include <AST/Components/CVariableDecl.h>
 #include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/TransactionUtils.h>
@@ -38,7 +38,7 @@ namespace Rift
 	    DrawFieldFlags flags)
 	{
 		CIdentifier* identifier = ast.TryGet<CIdentifier>(fieldId);
-		auto* paramDecl         = ast.TryGet<CParameterDecl>(fieldId);
+		auto* paramDecl         = ast.TryGet<CDeclParameter>(fieldId);
 		if (!identifier || !paramDecl)
 		{
 			return;
@@ -110,7 +110,7 @@ namespace Rift
 	void DrawVariable(AST::Tree& ast, CTypeEditor& editor, AST::Id variableId)
 	{
 		CIdentifier* identifier = ast.TryGet<CIdentifier>(variableId);
-		auto* variableDecl      = ast.TryGet<CVariableDecl>(variableId);
+		auto* variableDecl      = ast.TryGet<CDeclVariable>(variableId);
 		if (!identifier || !variableDecl)
 		{
 			return;
@@ -264,7 +264,7 @@ namespace Rift
 				UI::TableNextColumn();
 				if (auto* children = AST::Hierarchy::GetChildren(ast, functionId))
 				{
-					auto exprOutputs = ast.Filter<CExpressionOutputs>();
+					auto exprOutputs = ast.Filter<CExprOutputs>();
 					for (AST::Id childId : *children)
 					{
 						if (exprOutputs.Has(childId))
@@ -285,7 +285,7 @@ namespace Rift
 				UI::TableNextColumn();
 				if (auto* children = AST::Hierarchy::GetChildren(ast, functionId))
 				{
-					auto exprInputs = ast.Filter<CExpressionInput>();
+					auto exprInputs = ast.Filter<CExprInput>();
 					for (AST::Id childId : *children)
 					{
 						if (exprInputs.Has(childId))
@@ -313,7 +313,7 @@ namespace Rift
 	{
 		if (UI::CollapsingHeader("Variables", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			auto variableView = ast.Filter<CVariableDecl>();
+			auto variableView = ast.Filter<CDeclVariable>();
 			UI::Indent(10.f);
 			if (auto* children = AST::Hierarchy::GetChildren(ast, typeId))
 			{
@@ -357,7 +357,7 @@ namespace Rift
 		                               | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
 		if (UI::CollapsingHeader("Functions", flags))
 		{
-			auto functionView = ast.Filter<CFunctionDecl>();
+			auto functionView = ast.Filter<CDeclFunction>();
 			UI::Indent(10.f);
 
 			if (auto* children = AST::Hierarchy::GetChildren(ast, typeId))

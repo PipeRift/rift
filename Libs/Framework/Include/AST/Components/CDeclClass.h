@@ -1,15 +1,15 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Components/CDeclaration.h"
+#include "AST/Components/CDeclRecord.h"
 
 #include <AST/Tree.h>
 
 
 namespace Rift
 {
-	struct CRecordDecl : public CDeclaration
+	struct CDeclClass : public CDeclRecord
 	{
-		STRUCT(CRecordDecl, CDeclaration)
+		STRUCT(CDeclClass, CDeclRecord)
 	};
 }    // namespace Rift

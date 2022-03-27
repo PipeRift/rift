@@ -6,9 +6,9 @@
 
 namespace Rift
 {
-	struct CParameterDecl : public CDeclaration
+	struct CDeclParameter : public CDeclaration
 	{
-		STRUCT(CParameterDecl, CDeclaration)
+		STRUCT(CDeclParameter, CDeclaration)
 
 		PROP(typeId, Prop_NotSerialized)
 		AST::Id typeId = AST::NoId;

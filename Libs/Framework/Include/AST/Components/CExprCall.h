@@ -10,9 +10,9 @@
 
 namespace Rift
 {
-	struct CCallExpr : public CExpression
+	struct CExprCall : public CExpression
 	{
-		STRUCT(CCallExpr, CExpression)
+		STRUCT(CExprCall, CExpression)
 
 		PROP(ownerName)
 		Name ownerName;
@@ -21,16 +21,16 @@ namespace Rift
 		Name functionName;
 	};
 
-	// Data pointing to the id of the function from CCallExpr's type and function names
-	struct CCallExprId : public CExpression
+	// Data pointing to the id of the function from CExprCall's type and function names
+	struct CExprCallId : public CExpression
 	{
-		STRUCT(CCallExprId, CExpression, Struct_NotSerialized)
+		STRUCT(CExprCallId, CExpression, Struct_NotSerialized)
 
 		// Id pointing to the function declaration
 		PROP(functionId)
 		AST::Id functionId = AST::NoId;
 
 
-		CCallExprId(AST::Id functionId = AST::NoId) : functionId{functionId} {}
+		CExprCallId(AST::Id functionId = AST::NoId) : functionId{functionId} {}
 	};
 }    // namespace Rift

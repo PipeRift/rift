@@ -6,11 +6,11 @@
 
 namespace Rift
 {
-	struct CBoolLiteral : public CLiteral
+	struct CLiteralFloat : public CLiteral
 	{
-		STRUCT(CBoolLiteral, CLiteral)
+		STRUCT(CLiteralFloat, CLiteral)
 
 		PROP(value)
-		bool value = false;
+		float value = 0.f;
 	};
 }    // namespace Rift

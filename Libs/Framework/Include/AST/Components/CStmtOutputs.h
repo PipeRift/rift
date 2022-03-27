@@ -8,9 +8,9 @@
 
 namespace Rift
 {
-	struct CStatementOutputs : public Struct
+	struct CStmtOutputs : public Struct
 	{
-		STRUCT(CStatementOutputs, Struct)
+		STRUCT(CStmtOutputs, Struct)
 
 		// Both arrays keep the same index to the input node and the output pin
 		PROP(linkPins)

@@ -8,9 +8,9 @@
 
 namespace Rift
 {
-	struct CExpressionInput : public Struct
+	struct CExprInput : public Struct
 	{
-		STRUCT(CExpressionInput, Struct)
+		STRUCT(CExprInput, Struct)
 
 		PROP(linkOutputPin)
 		AST::Id linkOutputPin = AST::NoId;

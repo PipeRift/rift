@@ -6,7 +6,7 @@
 #include "CppBackend/CodeGen.h"
 #include "CppBackend/Components/CCppNativeName.h"
 
-#include <AST/Components/CClassDecl.h>
+#include <AST/Components/CDeclClass.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CModule.h>
 #include <AST/Filtering.h>

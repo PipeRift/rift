@@ -2,8 +2,8 @@
 
 #include "AST/Utils/ExpressionGraph.h"
 
-#include "AST/Components/CExpressionInput.h"
-#include "AST/Components/CExpressionOutputs.h"
+#include "AST/Components/CExprInput.h"
+#include "AST/Components/CExprOutputs.h"
 #include "AST/Types.h"
 #include "AST/Utils/Hierarchy.h"
 
@@ -17,7 +17,7 @@ namespace Rift::AST::ExpressionGraph
 			return false;
 		}
 
-		if (!ast.Has<CExpressionOutputs>(outputNode) || !ast.Has<CExpressionInput>(inputPin))
+		if (!ast.Has<CExprOutputs>(outputNode) || !ast.Has<CExprInput>(inputPin))
 		{
 			return false;
 		}
@@ -40,11 +40,11 @@ namespace Rift::AST::ExpressionGraph
 
 		// Link input
 		{
-			auto& inputComp = ast.Get<CExpressionInput>(inputPin);
+			auto& inputComp = ast.Get<CExprInput>(inputPin);
 			// Disconnect previous output connected to input if any
 			if (inputComp.linkOutputPin != AST::NoId)
 			{
-				auto& lastOutputsComp = ast.Get<CExpressionOutputs>(inputComp.linkOutputPin);
+				auto& lastOutputsComp = ast.Get<CExprOutputs>(inputComp.linkOutputPin);
 				lastOutputsComp.linkInputPins.Remove(inputPin);
 			}
 			inputComp.linkOutputPin = outputPin;
@@ -52,7 +52,7 @@ namespace Rift::AST::ExpressionGraph
 
 		// Link output
 		{
-			auto& outputsComp = ast.GetOrAdd<CExpressionOutputs>(outputPin);
+			auto& outputsComp = ast.GetOrAdd<CExprOutputs>(outputPin);
 
 			i32 index = outputsComp.linkInputPins.FindIndex(outputPin);
 			if (index != NO_INDEX)
@@ -61,7 +61,7 @@ namespace Rift::AST::ExpressionGraph
 				// Disconnect previous input connected to output if any
 				if (lastInputPin != AST::NoId)
 				{
-					ast.Get<CExpressionInput>(lastInputPin).linkOutputPin = AST::NoId;
+					ast.Get<CExprInput>(lastInputPin).linkOutputPin = AST::NoId;
 				}
 				lastInputPin = inputPin;
 			}
@@ -82,12 +82,12 @@ namespace Rift::AST::ExpressionGraph
 		}
 
 		const Id inputPin = linkId;
-		auto* inputComp   = ast.TryGet<CExpressionInput>(inputPin);
+		auto* inputComp   = ast.TryGet<CExprInput>(inputPin);
 		if (EnsureMsg(inputComp && !IsNone(inputComp->linkOutputPin),
 		        "Trying to disconnect a unexistant link")) [[likely]]
 		{
 			// We expect the other side to have outputs component
-			auto& outputsComp = ast.Get<CExpressionOutputs>(inputComp->linkOutputPin);
+			auto& outputsComp = ast.Get<CExprOutputs>(inputComp->linkOutputPin);
 			if (Id* lastInputPin = outputsComp.linkInputPins.Find(inputPin)) [[likely]]
 			{
 				*lastInputPin = AST::NoId;
@@ -107,7 +107,7 @@ namespace Rift::AST::ExpressionGraph
 	{
 		// NOTE: Can be optimized if needed since outputs is accessed twice counting
 		// Disconnect()
-		if (auto* outputsComp = ast.TryGet<CExpressionOutputs>(outputPin))
+		if (auto* outputsComp = ast.TryGet<CExprOutputs>(outputPin))
 		{
 			i32 pinIndex = outputsComp->linkInputPins.FindIndex(outputPin);
 			if (pinIndex != NO_INDEX) [[likely]]
