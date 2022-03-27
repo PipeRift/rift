@@ -35,7 +35,6 @@
 #include <Utils/NodesMiniMap.h>
 
 
-
 namespace Rift::Graph
 {
 	static CGraphTransform* currentNodeTransform = nullptr;
@@ -588,7 +587,6 @@ namespace Rift::Graph
 
 	void DrawFunctionDecls(AST::Tree& ast, const TArray<AST::Id>& functionDecls)
 	{
-		auto functions = ast.Filter<CDeclFunction>();
 		for (AST::Id functionId : functionDecls)
 		{
 			DrawFunctionDecl(ast, functionId);
@@ -608,9 +606,7 @@ namespace Rift::Graph
 
 	void DrawCalls(AST::Tree& ast, AST::Id typeId, const TArray<AST::Id>& children)
 	{
-		auto calls         = ast.Filter<CExprCall>();
-		auto functionDecls = ast.Filter<CDeclFunction, CIdentifier>();
-
+		auto calls = ast.Filter<CExprCall>();
 		for (AST::Id child : children)
 		{
 			auto* call = calls.TryGet<CExprCall>(child);
