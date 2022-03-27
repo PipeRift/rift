@@ -678,32 +678,45 @@ namespace Rift::Graph
 		Nodes::PopStyleVar();
 	}
 
-	void DrawExpressionLinks(AST::Tree& ast, const TArray<AST::Id>& children)
+	void DrawExpressionLinks(
+	    TAccessRef<CParent, CExprInput, CExprType>& access, const TArray<AST::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 1.5f);
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
 
-		auto inputsFilter = ast.Filter<CExprInput>();
 		TArray<AST::Id> exprInputs;
-		AST::Hierarchy::GetChildren(ast, children, exprInputs);
-		inputsFilter.FilterIds(exprInputs);
-
-		for (AST::Id inputPinId : exprInputs)
+		AST::Hierarchy::GetChildren(access, children, exprInputs);
+		AST::RemoveIfNot<CExprInput>(access, exprInputs);
+		for (AST::Id inputId : exprInputs)
 		{
-			const auto& input         = inputsFilter.Get<CExprInput>(inputPinId);
-			const AST::Id outputPinId = input.linkOutputPin;
-
-			if (!IsNone(outputPinId))
+			const auto& input      = access.Get<const CExprInput>(inputId);
+			const AST::Id outputId = input.linkOutputPin;
+			if (IsNone(outputId))
 			{
-				// #TODO: Implement link types
-				const Color color = Style::GetTypeColor<float>();
-				Nodes::PushStyleColor(Nodes::ColorVar_Link, color);
-				Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(color));
-
-				Nodes::Link(i32(inputPinId), i32(outputPinId), i32(inputPinId));
-
-				Nodes::PopStyleColor(2);
+				continue;
 			}
+
+
+			AST::Id typeId = AST::NoId;
+			if (const auto* type = access.TryGet<const CExprType>(outputId))
+			{
+				typeId = type->id;
+			}
+			if (IsNone(typeId))
+			{
+				if (const auto* type = access.TryGet<const CExprType>(inputId))
+				{
+					typeId = type->id;
+				}
+			}
+
+			const Color color = Style::GetTypeColor(access.GetAST(), typeId);
+			Nodes::PushStyleColor(Nodes::ColorVar_Link, color);
+			Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(color));
+
+			Nodes::Link(i32(inputId), i32(outputId), i32(inputId));
+
+			Nodes::PopStyleColor(2);
 		}
 		Nodes::PopStyleColor();
 		Nodes::PopStyleVar();
