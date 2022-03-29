@@ -1,6 +1,6 @@
 {
     "type": "FunctionLibrary",
-    "count": 4,
+    "count": 5,
     "roots": [
         0
     ],
@@ -17,6 +17,9 @@
             },
             "3": {
                 "parent": 0
+            },
+            "4": {
+                "parent": 1
             }
         },
         "CParent": {
@@ -28,18 +31,28 @@
                 ]
             },
             "1": {
-                "children": []
+                "children": [
+                    4
+                ]
             }
         },
         "CIdentifier": {
             "1": {
                 "name": "Attack"
+            },
+            "4": {
+                "name": "damage"
             }
         },
-        "CFunctionDecl": {
+        "CDeclFunction": {
             "1": {}
         },
-        "CCallExpr": {
+        "CExprType": {
+            "4": {
+                "type": "none"
+            }
+        },
+        "CExprCall": {
             "2": {
                 "ownerName": "none",
                 "functionName": "none"
@@ -49,7 +62,7 @@
                 "functionName": "Add"
             }
         },
-        "CStatementOutputs": {
+        "CStmtOutputs": {
             "1": {
                 "linkPins": [],
                 "linkInputNodes": []
@@ -63,12 +76,17 @@
                 "linkInputNodes": []
             }
         },
-        "CStatementInput": {
+        "CStmtInput": {
             "2": {
                 "linkOutputNode": -1
             },
             "3": {
                 "linkOutputNode": -1
+            }
+        },
+        "CExprOutputs": {
+            "4": {
+                "linkInputPins": []
             }
         },
         "CGraphTransform": {

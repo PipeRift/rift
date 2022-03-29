@@ -20,7 +20,7 @@ namespace Rift::AST
 	struct Tree;
 
 
-	template<typename Allocator = Memory::DefaultAllocator>
+	template<typename Allocator = Memory::TDefaultAllocator<Id>>
 	struct TPoolSet : public Rift::AST::BasicSparseSet<STLAllocator<Id, Allocator>>
 	{
 		using Super = Rift::AST::BasicSparseSet<STLAllocator<Id, Allocator>>;
@@ -456,7 +456,7 @@ namespace Rift::AST
 	};
 
 
-	template<typename T, typename Allocator = Memory::DefaultAllocator>
+	template<typename T, typename Allocator = Memory::TDefaultAllocator<T>>
 	struct TPool : public Pool
 	{
 	private:

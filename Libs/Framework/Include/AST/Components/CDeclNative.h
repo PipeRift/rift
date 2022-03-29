@@ -1,13 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Types/Struct.h>
+#include "AST/Components/CDeclRecord.h"
 
 
 namespace Rift
 {
-	struct CExpression : public Struct
+	struct CDeclNative : public CDeclRecord
 	{
-		STRUCT(CExpression, Struct)
+		STRUCT(CDeclNative, CDeclRecord)
 	};
 }    // namespace Rift

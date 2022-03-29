@@ -2,30 +2,31 @@
 
 #include "Utils/FunctionGraph.h"
 
-#include "AST/Components/CParameterDecl.h"
-#include "AST/Utils/ExpressionGraph.h"
-#include "AST/Utils/StatementGraph.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "Utils/EditorStyle.h"
 #include "Utils/TypeUtils.h"
 
+#include <AST/Components/CDeclFunction.h>
+#include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprCall.h>
-#include <AST/Components/CExpressionInput.h>
-#include <AST/Components/CExpressionOutputs.h>
-#include <AST/Components/CFunctionDecl.h>
+#include <AST/Components/CExprInput.h>
+#include <AST/Components/CExprOutputs.h>
+#include <AST/Components/CExprReturn.h>
+#include <AST/Components/CExprType.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CLiteralBool.h>
 #include <AST/Components/CLiteralString.h>
-#include <AST/Components/CParameterDecl.h>
-#include <AST/Components/CStatementInput.h>
-#include <AST/Components/CStatementOutputs.h>
-#include <AST/Components/CVariableDecl.h>
+#include <AST/Components/CStmtIf.h>
+#include <AST/Components/CStmtInput.h>
+#include <AST/Components/CStmtOutputs.h>
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Filtering.h>
 #include <AST/Statics/STypes.h>
+#include <AST/Utils/ExpressionGraph.h>
 #include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/Hierarchy.h>
+#include <AST/Utils/StatementGraph.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
@@ -66,10 +67,10 @@ namespace Rift::Graph
 
 	void BeginNode(TAccessRef<TWrite<CGraphTransform>> access, AST::Id id)
 	{
+		currentNodeTransform = &access.GetOrAdd<CGraphTransform>(id);
 		if (UI::IsWindowAppearing()
 		    && !(Nodes::GetCurrentContext()->leftMouseDragging && Nodes::IsNodeSelected(id)))
 		{
-			currentNodeTransform = &access.GetOrAdd<CGraphTransform>(id);
 			SetNodePosition(id, currentNodeTransform->position);
 		}
 
@@ -191,14 +192,14 @@ namespace Rift::Graph
 
 			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, functionId))
 			{
-				auto inputParameters = ast.Filter<CParameterDecl, CExpressionOutputs>();
+				auto inputParameters = ast.Filter<CExprType, CExprOutputs>();
 				for (AST::Id childId : *children)
 				{
 					if (inputParameters.Has(childId))
 					{
-						auto& param = inputParameters.Get<CParameterDecl>(childId);
+						auto& type = inputParameters.Get<CExprType>(childId);
 
-						const Color pinColor = Style::GetTypeColor(ast, param.typeId);
+						const Color pinColor = Style::GetTypeColor(ast, type.id);
 						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
 						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
 
@@ -215,6 +216,35 @@ namespace Rift::Graph
 			}
 		}
 		EndNode(ast);
+		Style::PopNodeTitleColor();
+		Style::PopNodeBackgroundColor();
+	}
+
+	void DrawReturnNode(
+	    TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef>
+	        access,
+	    AST::Id id)
+	{
+		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
+		Style::PushNodeTitleColor(Style::returnColor);
+		BeginNode(access, id);
+		{
+			Nodes::BeginNodeTitleBar();
+			{
+				PushExecutionPinStyle();
+				Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
+				UI::TextUnformatted("");
+				Nodes::EndInput();
+				UI::SameLine();
+				PopExecutionPinStyle();
+
+				UI::BeginGroup();
+				UI::TextUnformatted("Return");
+				UI::EndGroup();
+			}
+			Nodes::EndNodeTitleBar();
+		}
+		EndNode(access);
 		Style::PopNodeTitleColor();
 		Style::PopNodeBackgroundColor();
 	}
@@ -255,12 +285,12 @@ namespace Rift::Graph
 
 			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, id))
 			{
-				auto callArgsView = ast.Filter<CIdentifier, CExpressionInput, CExpressionOutputs>();
+				auto callArgsView = ast.Filter<CIdentifier, CExprInput, CExprOutputs>();
 
 				UI::BeginGroup();    // Inputs
 				for (AST::Id inputId : *children)
 				{
-					if (callArgsView.Has<CExpressionInput>(inputId)
+					if (callArgsView.Has<CExprInput>(inputId)
 					    && callArgsView.Has<CIdentifier>(inputId))
 					{
 						auto& name           = callArgsView.Get<CIdentifier>(inputId);
@@ -278,7 +308,7 @@ namespace Rift::Graph
 				UI::BeginGroup();    // Outputs
 				for (AST::Id outputId : *children)
 				{
-					if (callArgsView.Has<CExpressionOutputs>(outputId)
+					if (callArgsView.Has<CExprOutputs>(outputId)
 					    && callArgsView.Has<CIdentifier>(outputId))
 					{
 						auto& name           = callArgsView.Get<CIdentifier>(outputId);
@@ -299,6 +329,64 @@ namespace Rift::Graph
 		Style::PopNodeBackgroundColor();
 	}
 
+	void DrawIf(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>, CChild,
+	                CFileRef, CStmtOutputs, CParent>
+	                access,
+	    AST::Id id)
+	{
+		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
+		Style::PushNodeTitleColor(Style::flowColor);
+		BeginNode(access, id);
+		{
+			TArray<AST::Id> pins;
+			AST::Hierarchy::GetChildren(access, id, pins);
+
+			Nodes::BeginNodeTitleBar();
+			{
+				UI::BeginGroup();
+				{
+					PushExecutionPinStyle();
+					Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
+					UI::TextUnformatted("");
+					Nodes::EndInput();
+					PopExecutionPinStyle();
+
+					const Color pinColor = Style::GetTypeColor<bool>();
+					Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+					Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+
+					Nodes::BeginInput(i32(pins[0]), Nodes::PinShape_CircleFilled);
+					UI::TextUnformatted("");
+					Nodes::EndInput();
+					Nodes::PopStyleColor(2);
+				}
+				UI::EndGroup();
+				UI::SameLine();
+
+				UI::BeginGroup();
+				UI::TextUnformatted("if");
+				UI::EndGroup();
+
+				UI::SameLine();
+				UI::BeginGroup();
+				{
+					PushExecutionPinStyle();
+					Nodes::BeginOutput(i32(pins[1]), Nodes::PinShape_QuadFilled);
+					UI::TextUnformatted("true");
+					Nodes::EndOutput();
+					Nodes::BeginOutput(i32(pins[2]), Nodes::PinShape_QuadFilled);
+					UI::TextUnformatted("false");
+					Nodes::EndOutput();
+					PopExecutionPinStyle();
+				}
+				UI::EndGroup();
+			}
+			Nodes::EndNodeTitleBar();
+		}
+		EndNode(access);
+		Style::PopNodeTitleColor();
+		Style::PopNodeBackgroundColor();
+	}
 
 	void Init()
 	{
@@ -350,11 +438,11 @@ namespace Rift::Graph
 	}
 	void DrawNodeContextMenu(AST::Tree& ast, AST::Id typeId, AST::Id nodeId)
 	{
-		if (ast.Has<CFunctionDecl>(nodeId))
+		if (ast.Has<CDeclFunction>(nodeId))
 		{
 			if (UI::MenuItem("Add return node"))
 			{
-				AST::Functions::AddReturn({ast, typeId}, nodeId);
+				AST::Functions::AddReturn({ast, typeId});
 			}
 			UI::Separator();
 		}
@@ -371,6 +459,23 @@ namespace Rift::Graph
 		filter.Draw("##Filter");
 		const v2 clickPos = UI::GetMousePosOnOpeningCurrentPopup();
 		const v2 gridPos  = Nodes::ScreenToGridPosition(clickPos);
+
+		if (filter.IsActive() || UI::TreeNode("Flow"))
+		{
+			if (filter.PassFilter("Return") && UI::MenuItem("Return"))
+			{
+				AST::Functions::AddReturn({ast, typeId});
+			}
+			if (filter.PassFilter("If") && UI::MenuItem("If"))
+			{
+				AST::Functions::AddIf({ast, typeId});
+			}
+
+			if (!filter.IsActive())
+			{
+				UI::TreePop();
+			}
+		}
 
 		if (filter.IsActive() || UI::TreeNode("Constructors"))
 		{
@@ -405,7 +510,7 @@ namespace Rift::Graph
 
 		if (filter.IsActive() || UI::TreeNode("Variables"))
 		{
-			auto variables   = ast.Filter<CVariableDecl>();
+			auto variables   = ast.Filter<CDeclVariable>();
 			auto identifiers = ast.Filter<CIdentifier>();
 			for (AST::Id variableId : variables)
 			{
@@ -435,7 +540,7 @@ namespace Rift::Graph
 
 		if (filter.IsActive() || UI::TreeNode("Functions"))
 		{
-			auto functions   = ast.Filter<CFunctionDecl>();
+			auto functions   = ast.Filter<CDeclFunction>();
 			auto identifiers = ast.Filter<CIdentifier>();
 			for (AST::Id functionId : functions)
 			{
@@ -481,18 +586,26 @@ namespace Rift::Graph
 
 	void DrawFunctionDecls(AST::Tree& ast, const TArray<AST::Id>& functionDecls)
 	{
-		auto functions = ast.Filter<CFunctionDecl>();
 		for (AST::Id functionId : functionDecls)
 		{
 			DrawFunctionDecl(ast, functionId);
 		}
 	}
 
+	void DrawReturns(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>,
+	                     CChild, CFileRef, CExprReturn>
+	                     access,
+	    const TArray<AST::Id>& children)
+	{
+		for (AST::Id id : GetIf<CExprReturn>(access, children))
+		{
+			DrawReturnNode(access, id);
+		}
+	}
+
 	void DrawCalls(AST::Tree& ast, AST::Id typeId, const TArray<AST::Id>& children)
 	{
-		auto calls         = ast.Filter<CExprCall>();
-		auto functionDecls = ast.Filter<CFunctionDecl, CIdentifier>();
-
+		auto calls = ast.Filter<CExprCall>();
 		for (AST::Id child : children)
 		{
 			auto* call = calls.TryGet<CExprCall>(child);
@@ -522,6 +635,17 @@ namespace Rift::Graph
 		}
 	}
 
+	void DrawIfs(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>, CChild,
+	                 CFileRef, CStmtIf, CStmtOutputs, CParent>
+	                 access,
+	    const TArray<AST::Id>& children)
+	{
+		for (AST::Id id : AST::GetIf<CStmtIf>(access, children))
+		{
+			DrawIf(access, id);
+		}
+	}
+
 	void DrawStatementLinks(AST::Tree& ast, const TArray<AST::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 2.f);
@@ -529,10 +653,10 @@ namespace Rift::Graph
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(Style::executionColor));
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
 
-		auto stmtOutputs = ast.Filter<CStatementOutputs>();
+		auto stmtOutputs = ast.Filter<CStmtOutputs>();
 		for (AST::Id childId : children)
 		{
-			if (auto* childOutputs = stmtOutputs.TryGet<CStatementOutputs>(childId))
+			if (auto* childOutputs = stmtOutputs.TryGet<CStmtOutputs>(childId))
 			{
 				CheckMsg(childOutputs->linkInputNodes.Size() == childOutputs->linkPins.Size(),
 				    "Inputs and pins must match. Graph might be corrupted.");
@@ -554,32 +678,45 @@ namespace Rift::Graph
 		Nodes::PopStyleVar();
 	}
 
-	void DrawExpressionLinks(AST::Tree& ast, const TArray<AST::Id>& children)
+	void DrawExpressionLinks(
+	    TAccessRef<CParent, CExprInput, CExprType>& access, const TArray<AST::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 1.5f);
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
 
-		auto inputsFilter = ast.Filter<CExpressionInput>();
 		TArray<AST::Id> exprInputs;
-		AST::Hierarchy::GetChildren(ast, children, exprInputs);
-		inputsFilter.FilterIds(exprInputs);
-
-		for (AST::Id inputPinId : exprInputs)
+		AST::Hierarchy::GetChildren(access, children, exprInputs);
+		AST::RemoveIfNot<CExprInput>(access, exprInputs);
+		for (AST::Id inputId : exprInputs)
 		{
-			const auto& input         = inputsFilter.Get<CExpressionInput>(inputPinId);
-			const AST::Id outputPinId = input.linkOutputPin;
-
-			if (!IsNone(outputPinId))
+			const auto& input      = access.Get<const CExprInput>(inputId);
+			const AST::Id outputId = input.linkOutputPin;
+			if (IsNone(outputId))
 			{
-				// #TODO: Implement link types
-				const Color color = Style::GetTypeColor<float>();
-				Nodes::PushStyleColor(Nodes::ColorVar_Link, color);
-				Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(color));
-
-				Nodes::Link(i32(inputPinId), i32(outputPinId), i32(inputPinId));
-
-				Nodes::PopStyleColor(2);
+				continue;
 			}
+
+
+			AST::Id typeId = AST::NoId;
+			if (const auto* type = access.TryGet<const CExprType>(outputId))
+			{
+				typeId = type->id;
+			}
+			if (IsNone(typeId))
+			{
+				if (const auto* type = access.TryGet<const CExprType>(inputId))
+				{
+					typeId = type->id;
+				}
+			}
+
+			const Color color = Style::GetTypeColor(access.GetAST(), typeId);
+			Nodes::PushStyleColor(Nodes::ColorVar_Link, color);
+			Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(color));
+
+			Nodes::Link(i32(inputId), i32(outputId), i32(inputId));
+
+			Nodes::PopStyleColor(2);
 		}
 		Nodes::PopStyleColor();
 		Nodes::PopStyleVar();
@@ -608,7 +745,7 @@ namespace Rift::Graph
 			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, typeId))
 			{
 				TArray<AST::Id> functions;
-				auto functionsQuery = ast.Filter<CFunctionDecl>();
+				auto functionsQuery = ast.Filter<CDeclFunction>();
 				for (AST::Id childId : *children)
 				{
 					if (functionsQuery.Has(childId))
@@ -617,9 +754,15 @@ namespace Rift::Graph
 					}
 				}
 
+				// Nodes
 				DrawFunctionDecls(ast, functions);
+				DrawReturns(ast, *children);
 				DrawCalls(ast, typeId, *children);
 				DrawLiterals(ast, *children);
+
+				DrawIfs(ast, *children);
+
+				// Links
 				DrawStatementLinks(ast, *children);
 				DrawExpressionLinks(ast, *children);
 			}
@@ -632,8 +775,7 @@ namespace Rift::Graph
 			Nodes::Id inputPin;
 			if (Nodes::IsLinkCreated(outputPin, inputPin))
 			{
-				AST::StatementGraph::TryConnect(
-				    ast, AST::Id(outputPin), AST::Id(outputPin), AST::Id(inputPin));
+				AST::StatementGraph::TryConnect(ast, AST::Id(outputPin), AST::Id(inputPin));
 				AST::ExpressionGraph::TryConnect(ast, AST::Id(outputPin), AST::Id(inputPin));
 			}
 			Nodes::Id linkId;
@@ -663,7 +805,7 @@ namespace Rift::Graph
 
 	v2 GetNodePosition(AST::Id id)
 	{
-		const ImVec2 pos = Nodes::GetNodeGridSpacePos(id);
-		return {pos.x * settings.GetInvGridSize(), pos.y * settings.GetInvGridSize()};
+		const v2 pos = Nodes::GetNodeGridSpacePos(id);
+		return v2{pos.x * settings.GetInvGridSize(), pos.y * settings.GetInvGridSize()}.Floor();
 	}
 }    // namespace Rift::Graph

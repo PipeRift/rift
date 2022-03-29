@@ -2,14 +2,14 @@
 
 #include "AST/Utils/TypeUtils.h"
 
-#include "AST/Components/CClassDecl.h"
+#include "AST/Components/CDeclClass.h"
+#include "AST/Components/CDeclFunction.h"
+#include "AST/Components/CDeclFunctionLibrary.h"
+#include "AST/Components/CDeclStruct.h"
+#include "AST/Components/CDeclVariable.h"
 #include "AST/Components/CFileRef.h"
-#include "AST/Components/CFunctionDecl.h"
-#include "AST/Components/CFunctionLibraryDecl.h"
 #include "AST/Components/CIdentifier.h"
-#include "AST/Components/CStatementOutputs.h"
-#include "AST/Components/CStructDecl.h"
-#include "AST/Components/CVariableDecl.h"
+#include "AST/Components/CStmtOutputs.h"
 #include "AST/Serialization.h"
 #include "AST/Utils/Hierarchy.h"
 
@@ -32,24 +32,24 @@ namespace Rift::Types
 
 		switch (category)
 		{
-			case Type::Class: ast.Add<CClassDecl>(id); break;
-			case Type::Struct: ast.Add<CStructDecl>(id); break;
-			case Type::FunctionLibrary: ast.Add<CFunctionLibraryDecl>(id); break;
+			case Type::Class: ast.Add<CDeclClass>(id); break;
+			case Type::Struct: ast.Add<CDeclStruct>(id); break;
+			case Type::FunctionLibrary: ast.Add<CDeclFunctionLibrary>(id); break;
 			default: break;
 		}
 	}
 
 	Type GetCategory(AST::Tree& ast, AST::Id id)
 	{
-		if (ast.Has<CStructDecl>(id))
+		if (ast.Has<CDeclStruct>(id))
 		{
 			return Type::Struct;
 		}
-		else if (ast.Has<CClassDecl>(id))
+		else if (ast.Has<CDeclClass>(id))
 		{
 			return Type::Class;
 		}
-		else if (ast.Has<CFunctionLibraryDecl>(id))
+		else if (ast.Has<CDeclFunctionLibrary>(id))
 		{
 			return Type::FunctionLibrary;
 		}
@@ -73,7 +73,7 @@ namespace Rift::Types
 
 		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);
-		ast.Add<CVariableDecl, CParent>(id);
+		ast.Add<CDeclVariable, CParent>(id);
 
 		if (type)
 		{
@@ -88,8 +88,8 @@ namespace Rift::Types
 
 		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);
-		ast.Add<CFunctionDecl, CParent>(id);
-		ast.Add<CStatementOutputs>(id);
+		ast.Add<CDeclFunction, CParent>(id);
+		ast.Add<CStmtOutputs>(id);
 
 		if (type)
 		{
@@ -132,26 +132,26 @@ namespace Rift::Types
 
 	bool IsClass(const AST::Tree& ast, AST::Id typeId)
 	{
-		return ast.Has<CClassDecl>(typeId);
+		return ast.Has<CDeclClass>(typeId);
 	}
 
 	bool IsStruct(const AST::Tree& ast, AST::Id typeId)
 	{
-		return ast.Has<CStructDecl>(typeId);
+		return ast.Has<CDeclStruct>(typeId);
 	}
 
 	bool IsFunctionLibrary(const AST::Tree& ast, AST::Id typeId)
 	{
-		return ast.Has<CFunctionLibraryDecl>(typeId);
+		return ast.Has<CDeclFunctionLibrary>(typeId);
 	}
 
 	bool CanContainVariables(const AST::Tree& ast, AST::Id typeId)
 	{
-		return ast.HasAny<CClassDecl, CStructDecl>(typeId);
+		return ast.HasAny<CDeclClass, CDeclStruct>(typeId);
 	}
 
 	bool CanContainFunctions(const AST::Tree& ast, AST::Id typeId)
 	{
-		return ast.HasAny<CClassDecl, CFunctionLibraryDecl>(typeId);
+		return ast.HasAny<CDeclClass, CDeclFunctionLibrary>(typeId);
 	}
 }    // namespace Rift::Types

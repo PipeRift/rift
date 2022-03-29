@@ -2,7 +2,7 @@
 
 #include "Tools/ASTDebugger.h"
 
-#include <AST/Components/CStatementOutputs.h>
+#include <AST/Components/CStmtOutputs.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Paths.h>

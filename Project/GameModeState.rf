@@ -10,7 +10,7 @@
                 "parent": -1
             }
         },
-        "CStructDecl": {
+        "CDeclStruct": {
             "0": {}
         }
     }

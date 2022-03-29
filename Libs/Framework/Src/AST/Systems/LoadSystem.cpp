@@ -2,12 +2,12 @@
 
 #include "AST/Systems/LoadSystem.h"
 
-#include "AST/Components/CClassDecl.h"
+#include "AST/Components/CDeclClass.h"
+#include "AST/Components/CDeclFunctionLibrary.h"
+#include "AST/Components/CDeclStruct.h"
 #include "AST/Components/CFileRef.h"
-#include "AST/Components/CFunctionLibraryDecl.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CModule.h"
-#include "AST/Components/CStructDecl.h"
 #include "AST/Components/CType.h"
 #include "AST/Serialization.h"
 #include "AST/Statics/SLoadQueue.h"

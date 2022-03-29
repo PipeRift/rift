@@ -2,22 +2,24 @@
 
 #include "AST/Utils/FunctionUtils.h"
 
+#include "AST/Components/CDeclFunction.h"
 #include "AST/Components/CExprCall.h"
 #include "AST/Components/CExprDeclRef.h"
-#include "AST/Components/CExpressionInput.h"
-#include "AST/Components/CExpressionOutputs.h"
-#include "AST/Components/CFunctionDecl.h"
+#include "AST/Components/CExprInput.h"
+#include "AST/Components/CExprOutputs.h"
+#include "AST/Components/CExprType.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CLiteralBool.h"
 #include "AST/Components/CLiteralFloat.h"
 #include "AST/Components/CLiteralString.h"
-#include "AST/Components/CParameterDecl.h"
-#include "AST/Components/CStatementInput.h"
-#include "AST/Components/CStatementOutputs.h"
+#include "AST/Components/CStmtIf.h"
+#include "AST/Components/CStmtInput.h"
+#include "AST/Components/CStmtOutputs.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Utils/Hierarchy.h"
+#include "AST/Utils/StatementGraph.h"
 
-#include <AST/Components/CReturnExpr.h>
+#include <AST/Components/CExprReturn.h>
 
 
 namespace Rift::AST::Functions
@@ -26,8 +28,8 @@ namespace Rift::AST::Functions
 	{
 		Id id = ast.Create();
 		ast.Add<CIdentifier>(id);
-		ast.Add<CParameterDecl>(id);
-		ast.Add<CExpressionOutputs>(id);
+		ast.Add<CExprType>(id);
+		ast.Add<CExprOutputs>(id);
 
 		Hierarchy::AddChildren(ast, functionId, id);
 		return id;
@@ -37,18 +39,49 @@ namespace Rift::AST::Functions
 	{
 		Id id = ast.Create();
 		ast.Add<CIdentifier>(id);
-		ast.Add<CParameterDecl>(id);
-		ast.Add<CExpressionInput>(id);
+		ast.Add<CExprType>(id);
+		ast.Add<CExprInput>(id);
 
 		Hierarchy::AddChildren(ast, functionId, id);
 		return id;
 	}
 
-	Id AddReturn(TypeRef type, Id functionId)
+	Id AddIf(TypeRef type)
+	{
+		Tree& ast   = type.GetAST();
+		const Id id = ast.Create();
+		ast.Add<CStmtIf>(id);
+		ast.Add<CStmtInput>(id);
+		ast.Add<CStmtOutputs>(id);
+
+		// Bool input
+		const Id valueId = ast.Create();
+		ast.Add<CExprType>(valueId, {ast.GetNativeTypes().boolId});
+		ast.Add<CExprInput>(valueId);
+		Hierarchy::AddChildren(ast, id, valueId);
+
+		const Id trueId  = ast.Create();
+		const Id falseId = ast.Create();
+		Hierarchy::AddChildren(ast, id, trueId);
+		Hierarchy::AddChildren(ast, id, falseId);
+
+		if (type)
+		{
+			Hierarchy::AddChildren(ast, type.GetId(), id);
+		}
+		return id;
+	}
+
+	Id AddReturn(TypeRef type)
 	{
 		Tree& ast         = type.GetAST();
 		const Id returnId = ast.Create();
-		ast.Add<CReturnExpr>(returnId, {functionId});
+		ast.Add<CExprReturn>(returnId);
+		ast.Add<CStmtInput>(returnId);
+		if (type)
+		{
+			Hierarchy::AddChildren(ast, type.GetId(), returnId);
+		}
 		return returnId;
 	}
 
@@ -93,7 +126,7 @@ namespace Rift::AST::Functions
 		Tree& ast       = type.GetAST();
 		const Id callId = ast.Create();
 
-		ast.Add<CStatementInput, CStatementOutputs>(callId);
+		ast.Add<CStmtInput, CStmtOutputs>(callId);
 
 		const Id typeId = Hierarchy::GetParent(ast, functionId);
 		Check(!IsNone(typeId));
@@ -115,7 +148,7 @@ namespace Rift::AST::Functions
 		Tree& ast   = type.GetAST();
 		const Id id = ast.Create();
 
-		ast.Add<CExprDeclRef, CExpressionOutputs>(id);
+		ast.Add<CExprDeclRef, CExprOutputs>(id);
 
 		const Id typeId = Hierarchy::GetParent(ast, declId);
 		Check(!IsNone(typeId));
@@ -139,7 +172,7 @@ namespace Rift::AST::Functions
 		{
 			if (const auto* children = Hierarchy::GetChildren(ast, *typeId))
 			{
-				auto functions = ast.Filter<CFunctionDecl, CIdentifier>();
+				auto functions = ast.Filter<CDeclFunction, CIdentifier>();
 				for (Id childId : *children)
 				{
 					if (functions.Has(childId)
@@ -156,8 +189,8 @@ namespace Rift::AST::Functions
 	void GetCallArgs(Tree& ast, TSpan<Id> callIds, TArray<Id>& inputArgIds,
 	    TArray<Id>& outputArgIds, TArray<Id>& otherIds)
 	{
-		auto exprInputs  = ast.Filter<CExpressionInput>();
-		auto exprOutputs = ast.Filter<CExpressionOutputs>();
+		auto exprInputs  = ast.Filter<CExprInput>();
+		auto exprOutputs = ast.Filter<CExprOutputs>();
 
 		TArray<Id> children;
 		for (Id id : callIds)

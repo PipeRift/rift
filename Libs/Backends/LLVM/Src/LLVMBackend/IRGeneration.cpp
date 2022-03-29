@@ -7,11 +7,11 @@
 #include "LLVMBackend/Components/CIRStruct.h"
 #include "LLVMBackend/LLVMHelpers.h"
 
-#include <AST/Components/CClassDecl.h>
-#include <AST/Components/CFunctionDecl.h>
+#include <AST/Components/CDeclClass.h>
+#include <AST/Components/CDeclFunction.h>
+#include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CLiteralFloat.h>
 #include <AST/Components/CLiteralI32.h>
-#include <AST/Components/CStructDecl.h>
 #include <AST/Components/CType.h>
 #include <AST/Filtering.h>
 #include <AST/Utils/Hierarchy.h>
@@ -48,7 +48,7 @@ namespace Rift::Compiler::LLVM
 		ZoneScoped;
 		StructType* irStruct = access.Get<const CIRStruct>(id).instance;
 
-		TArray<Type*> memberTypes;
+		TArray<llvm::Type*> memberTypes;
 		irStruct->setBody(ToLLVM(memberTypes));
 	}
 
@@ -94,8 +94,8 @@ namespace Rift::Compiler::LLVM
 		AST::RemoveIfNot<CType>(ast, types);
 		TArray<AST::Id> classes = types, structs = types;
 
-		AST::RemoveIfNot<CClassDecl>(ast, classes);
-		AST::RemoveIfNot<CStructDecl>(ast, structs);
+		AST::RemoveIfNot<CDeclClass>(ast, classes);
+		AST::RemoveIfNot<CDeclStruct>(ast, structs);
 
 		// Declare types
 		TAccess<CType, TWrite<CIRStruct>> declareStructAccess{ast};
@@ -111,7 +111,7 @@ namespace Rift::Compiler::LLVM
 		// Declare functions
 		TArray<AST::Id> functions;
 		AST::Hierarchy::GetChildren(ast, types, functions);
-		AST::RemoveIfNot<CFunctionDecl>(ast, functions);
+		AST::RemoveIfNot<CDeclFunction>(ast, functions);
 		TAccess<TWrite<CIRFunction>, CIdentifier> declareFunctionAccess{ast};
 		for (AST::Id id : functions)
 		{
