@@ -68,8 +68,10 @@ namespace Rift::Graph
 	void BeginNode(TAccessRef<TWrite<CGraphTransform>> access, AST::Id id)
 	{
 		currentNodeTransform = &access.GetOrAdd<CGraphTransform>(id);
+		auto* context        = Nodes::GetCurrentContext();
 		if (UI::IsWindowAppearing()
-		    && !(Nodes::GetCurrentContext()->leftMouseDragging && Nodes::IsNodeSelected(id)))
+		    || (!context->leftMouseDragging && !context->leftMouseReleased
+		        && !Nodes::IsNodeSelected(id)))
 		{
 			SetNodePosition(id, currentNodeTransform->position);
 		}
@@ -458,17 +460,25 @@ namespace Rift::Graph
 		}
 		filter.Draw("##Filter");
 		const v2 clickPos = UI::GetMousePosOnOpeningCurrentPopup();
-		const v2 gridPos  = Nodes::ScreenToGridPosition(clickPos);
+		const v2 gridPos  = GetGridPosition(clickPos).Floor();
 
 		if (filter.IsActive() || UI::TreeNode("Flow"))
 		{
 			if (filter.PassFilter("Return") && UI::MenuItem("Return"))
 			{
-				AST::Functions::AddReturn({ast, typeId});
+				AST::Id newId = AST::Functions::AddReturn({ast, typeId});
+				if (!IsNone(newId))
+				{
+					ast.Add<CGraphTransform>(newId, gridPos);
+				}
 			}
 			if (filter.PassFilter("If") && UI::MenuItem("If"))
 			{
-				AST::Functions::AddIf({ast, typeId});
+				AST::Id newId = AST::Functions::AddIf({ast, typeId});
+				if (!IsNone(newId))
+				{
+					ast.Add<CGraphTransform>(newId, gridPos);
+				}
 			}
 
 			if (!filter.IsActive())
@@ -493,7 +503,7 @@ namespace Rift::Graph
 						if (UI::MenuItem(makeStr.c_str()))
 						{
 							AST::Id newId = AST::Functions::AddLiteral({ast, typeId}, it.second);
-							if (newId != AST::NoId)
+							if (!IsNone(newId))
 							{
 								ast.Add<CGraphTransform>(newId, gridPos);
 							}
@@ -523,7 +533,7 @@ namespace Rift::Graph
 						{
 							AST::Id newId =
 							    AST::Functions::AddDeclarationReference({ast, typeId}, variableId);
-							if (newId != AST::NoId)
+							if (!IsNone(newId))
 							{
 								ast.Add<CGraphTransform>(newId, gridPos);
 							}
@@ -552,7 +562,7 @@ namespace Rift::Graph
 						if (UI::MenuItem(name.c_str()))
 						{
 							AST::Id newId = AST::Functions::AddCall({ast, typeId}, functionId);
-							if (newId != AST::NoId)
+							if (!IsNone(newId))
 							{
 								ast.Add<CGraphTransform>(newId, gridPos);
 							}
@@ -795,6 +805,12 @@ namespace Rift::Graph
 			DrawContextMenu(ast, typeId, contextNodeId);
 			UI::End();
 		}
+	}
+
+
+	v2 GetGridPosition(v2 screenPosition)
+	{
+		return Nodes::ScreenToGridPosition(screenPosition) * settings.GetInvGridSize();
 	}
 
 	void SetNodePosition(AST::Id id, v2 position)
