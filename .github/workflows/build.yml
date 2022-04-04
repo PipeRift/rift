@@ -11,8 +11,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang]
         config: [Release, Debug]
+        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang]
         include:
           - name: windows-msvc
             os: windows-latest
