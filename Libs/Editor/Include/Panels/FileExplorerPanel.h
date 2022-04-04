@@ -54,6 +54,8 @@ namespace Rift
 		String renameBuffer;
 		bool renameHasFocused = false;
 
+		Path pendingOpenCreatedPath;
+
 
 	public:
 		FileExplorerPanel() {}

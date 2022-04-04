@@ -31,6 +31,18 @@ namespace Rift
 {
 	void FileExplorerPanel::Draw(AST::Tree& ast)
 	{
+		// Open recently created types
+		if (!pendingOpenCreatedPath.empty())
+		{
+			AST::Id typeId = Types::FindTypeByPath(ast, pendingOpenCreatedPath);
+			if (!IsNone(typeId))
+			{
+				Types::OpenEditor(ast, typeId);
+				pendingOpenCreatedPath = Path{};
+			}
+		}
+
+
 		auto& editor = ast.GetStatic<SEditor>();
 		editor.layout.BindNextWindowToNode(SEditor::leftNode);
 
@@ -410,8 +422,7 @@ namespace Rift
         },
 		    true);
 
-		AST::Id typeId = Types::CreateType(ast, category);
-		ast.Add<CFileRef>(typeId, path);
+		AST::Id typeId = Types::CreateType(ast, category, Name::None(), path);
 
 		String data;
 		Types::Serialize(ast, typeId, data);
@@ -419,5 +430,8 @@ namespace Rift
 
 		// Destroy the temporal type after saving it
 		ast.Destroy(typeId);
+
+		// Mark path to be opened later once the type has loaded
+		pendingOpenCreatedPath = path;
 	}
 }    // namespace Rift

@@ -11,6 +11,7 @@
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CStmtOutputs.h"
 #include "AST/Serialization.h"
+#include "AST/Statics/STypes.h"
 #include "AST/Utils/Hierarchy.h"
 
 #include <AST/Utils/Paths.h>
@@ -55,14 +56,18 @@ namespace Rift::Types
 		return Type::None;
 	}
 
-	AST::Id CreateType(AST::Tree& ast, Type type, Name name)
+	AST::Id CreateType(AST::Tree& ast, Type type, Name name, const Path& path)
 	{
 		AST::Id id = ast.Create();
-		InitTypeFromCategory(ast, id, type);
 		if (!name.IsNone())
 		{
 			ast.Add<CIdentifier>(id, name);
 		}
+		if (!path.empty())
+		{
+			ast.Add<CFileRef>(id, path);
+		}
+		InitTypeFromCategory(ast, id, type);
 		return id;
 	}
 
@@ -127,6 +132,20 @@ namespace Rift::Types
 		Types::InitTypeFromCategory(ast, id, category);
 
 		ct.SerializeEntity(id);
+	}
+
+
+	AST::Id FindTypeByPath(AST::Tree& ast, const Path& path)
+	{
+		if (auto* types = ast.TryGetStatic<STypes>())
+		{
+			const Name pathName{Paths::ToString(path)};
+			if (AST::Id* id = types->typesByPath.Find(pathName))
+			{
+				return *id;
+			}
+		}
+		return AST::NoId;
 	}
 
 	bool IsClass(const AST::Tree& ast, AST::Id typeId)
