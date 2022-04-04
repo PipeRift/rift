@@ -55,7 +55,7 @@ namespace Rift::Graph
 	void DrawContextMenu(AST::Tree& ast);
 	void DrawTypeGraph(AST::Tree& ast, AST::Id typeId, CTypeEditor& typeEditor);
 
-
+	v2 GetGridPosition(v2 screenPosition);
 	void SetNodePosition(AST::Id id, v2 position);
 	v2 GetNodePosition(AST::Id id);
 
