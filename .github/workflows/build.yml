@@ -6,11 +6,12 @@ on:
 
 jobs:
   Build:
-    name: ${{ matrix.os-name }} (${{ matrix.compiler }})
+    name: ${{ matrix.os-name }} (${{ matrix.compiler }}, ${{ matrix.config }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        config: [Release, Debug]
         name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang]
         include:
           - name: windows-msvc
@@ -65,34 +66,23 @@ jobs:
       - name: Get CMake
         uses: lukka/get-cmake@latest
 
-      - name: Build Release
+      - name: Build
         uses: lukka/run-cmake@v3.3
         with:
           cmakeGenerator: 'Ninja'
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-          cmakeBuildType: Release
+          cmakeBuildType: ${{ matrix.config }}
           cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'
-          buildWithCMakeArgs: --config Release
+          buildWithCMakeArgs: --config ${{ matrix.config }}
           buildDirectory: 'Build'
 
       - name: Upload binaries as artifacts
         uses: actions/upload-artifact@v2
-        if: ${{ matrix.compiler == 'clang'}} # Only clang artifacts are stored
+        if: ${{ matrix.config == 'Release' && matrix.compiler == 'clang' }} # Only clang artifacts are stored
         with:
           name: rift-${{ matrix.name }}
           path: Build/Bin
 
-      - name: Build Debug
-        uses: lukka/run-cmake@v3.3
-        id: runcmake
-        with:
-          cmakeGenerator: 'Ninja'
-          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-          cmakeBuildType: Debug
-          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'
-          buildWithCMakeArgs: --config Debug
-          buildDirectory: 'Build'
-
       - name: Run Tests
         working-directory: ./Build
-        run: ctest --output-on-failure -j2 -C Debug
+        run: ctest --output-on-failure -j2 -C ${{ matrix.config }}
