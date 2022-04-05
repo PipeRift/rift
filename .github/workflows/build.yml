@@ -88,13 +88,13 @@ jobs:
         uses: actions/cache@v2
         with:
           path: Build
-          key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.build-type }}-build-${{ secrets.VCACHE}}
+          key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
 
       - name: Configure
-        run: cmake -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'
+        run: cmake -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'
 
       - name: Build
-        run: cmake --build Build --config ${{ matrix.build-type }}
+        run: cmake --build Build --config ${{ matrix.config }}
 
       - name: Upload binaries as artifacts
         uses: actions/upload-artifact@v2
