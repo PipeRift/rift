@@ -66,15 +66,35 @@ jobs:
       - name: Get CMake
         uses: lukka/get-cmake@latest
 
-      - name: Build
-        uses: lukka/run-cmake@v3.3
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: ${{ matrix.compiler == 'cl' }}
+
+      - name: Cache Clang
+        if: ${{ matrix.compiler == 'clang' }}
+        id: cache-llvm
+        uses: actions/cache@v2
         with:
-          cmakeGenerator: 'Ninja'
-          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-          cmakeBuildType: ${{ matrix.config }}
-          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'
-          buildWithCMakeArgs: --config ${{ matrix.config }}
-          buildDirectory: 'Build'
+          path: ${{ runner.temp }}/llvm
+          key: llvm-14.0-${{ matrix.os-name }}
+      - name: Install Clang
+        if: ${{ matrix.compiler == 'clang' }}
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "14.0"
+          directory: ${{ runner.temp }}/llvm
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+
+      - name: Cache Build
+        uses: actions/cache@v2
+        with:
+          path: Build
+          key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.build-type }}-build-${{ secrets.VCACHE}}
+
+      - name: Configure
+        run: cmake -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'
+
+      - name: Build
+        run: cmake --build Build --config ${{ matrix.build-type }}
 
       - name: Upload binaries as artifacts
         uses: actions/upload-artifact@v2
