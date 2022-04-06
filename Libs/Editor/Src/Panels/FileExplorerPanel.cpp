@@ -77,7 +77,8 @@ namespace Rift
 		UI::BeginChild("Files");
 		if (UI::BeginPopupContextWindow())
 		{
-			DrawContextMenu(ast, {}, AST::NoId);
+			String projectPath = Paths::ToString(Modules::GetProjectPath(ast));
+			DrawContextMenu(ast, projectPath, AST::NoId);
 			UI::EndPopup();
 		}
 
@@ -145,8 +146,7 @@ namespace Rift
 
 		if (UI::MenuItem("Show in Explorer"))
 		{
-			PlatformProcess::ShowFolder(
-			    !path.empty() ? path : Paths::ToString(Modules::GetProjectPath(ast)));
+			PlatformProcess::ShowFolder(path);
 		}
 	}
 
