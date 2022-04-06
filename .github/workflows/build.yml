@@ -58,31 +58,33 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential xz-utils curl libx11-dev xorg-dev libglu1-mesa-dev
 
-      - name: Download pre-built LLVM
-        run: |
-          curl -L -o "${{ runner.temp }}/llvm.zip" https://github.com/piperift/rift-llvm/releases/download/v13.0.1/llvm-${{ matrix.os-name }}.zip
-          7z x -o"${{ runner.temp }}" "${{ runner.temp }}/llvm.zip"
-
-      - name: Get CMake
-        uses: lukka/get-cmake@latest
-
       - uses: ilammy/msvc-dev-cmd@v1
         if: ${{ matrix.compiler == 'cl' }}
 
-      - name: Cache Clang
+      - name: Cache LLVM
         if: ${{ matrix.compiler == 'clang' }}
         id: cache-llvm
         uses: actions/cache@v2
         with:
-          path: ${{ runner.temp }}/clang
+          path: ${{ runner.temp }}/llvm
           key: llvm-14.0-${{ matrix.os-name }}
-      - name: Install Clang
+      - name: Install LLVM
         if: ${{ matrix.compiler == 'clang' }}
         uses: KyleMayes/install-llvm-action@v1
         with:
           version: "14.0"
-          directory: ${{ runner.temp }}/clang
+          directory: ${{ runner.temp }}/llvm
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+
+
+      - name: Download pre-built development LLVM for Rift
+        run: |
+          curl -L -o "${{ runner.temp }}/rift-llvm.zip" https://github.com/piperift/rift-llvm/releases/download/v13.0.1/llvm-${{ matrix.os-name }}.zip
+          7z x -o"${{ runner.temp }}" "${{ runner.temp }}/rift-llvm.zip"
+
+      - name: Get CMake
+        uses: lukka/get-cmake@latest
+
 
       - name: Cache Build
         uses: actions/cache@v2
@@ -91,7 +93,7 @@ jobs:
           key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
 
       - name: Configure
-        run: cmake -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'
+        run: cmake -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/rift-llvm'
 
       - name: Build
         run: cmake --build Build --config ${{ matrix.config }}
