@@ -74,14 +74,14 @@ jobs:
         id: cache-llvm
         uses: actions/cache@v2
         with:
-          path: ${{ runner.temp }}/llvm
+          path: ${{ runner.temp }}/clang
           key: llvm-14.0-${{ matrix.os-name }}
       - name: Install Clang
         if: ${{ matrix.compiler == 'clang' }}
         uses: KyleMayes/install-llvm-action@v1
         with:
           version: "14.0"
-          directory: ${{ runner.temp }}/llvm
+          directory: ${{ runner.temp }}/clang
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
       - name: Cache Build
