@@ -80,7 +80,7 @@ jobs:
       - name: Download pre-built development LLVM for Rift
         run: |
           curl -L -o "${{ runner.temp }}/rift-llvm.zip" https://github.com/piperift/rift-llvm/releases/download/v13.0.1/llvm-${{ matrix.os-name }}.zip
-          7z x -o"${{ runner.temp }}" "${{ runner.temp }}/rift-llvm.zip"
+          7z x -o"${{ runner.temp }}/rift" "${{ runner.temp }}/rift-llvm.zip"
 
       - name: Get CMake
         uses: lukka/get-cmake@latest
@@ -93,7 +93,7 @@ jobs:
           key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
 
       - name: Configure
-        run: cmake -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/rift-llvm'
+        run: cmake -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/rift/llvm'
 
       - name: Build
         run: cmake --build Build --config ${{ matrix.config }}
