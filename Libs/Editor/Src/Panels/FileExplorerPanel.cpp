@@ -77,7 +77,8 @@ namespace Rift
 		UI::BeginChild("Files");
 		if (UI::BeginPopupContextWindow())
 		{
-			DrawContextMenu(ast, {}, AST::NoId);
+			String projectPath = Paths::ToString(Modules::GetProjectPath(ast));
+			DrawContextMenu(ast, projectPath, AST::NoId);
 			UI::EndPopup();
 		}
 
@@ -96,23 +97,6 @@ namespace Rift
 		const bool hasId    = ast.IsValid(itemId);
 		const bool isType   = hasId && ast.Has<CType>(itemId);
 		const bool isModule = hasId && ast.Has<CModule>(itemId);
-
-		if (!isType && UI::BeginMenu("Create"))
-		{
-			if (UI::MenuItem("Class"))
-			{
-				CreateType(ast, "Create Class file", Type::Class, path);
-			}
-			if (UI::MenuItem("Struct"))
-			{
-				CreateType(ast, "Create Struct file", Type::Struct, path);
-			}
-			if (UI::MenuItem("Function Library"))
-			{
-				CreateType(ast, "Create Function Library file", Type::FunctionLibrary, path);
-			}
-			UI::EndMenu();
-		}
 
 		if (hasId)
 		{
@@ -141,12 +125,33 @@ namespace Rift
 			{
 				AST::Hierarchy::RemoveDeep(ast, itemId);
 			}
+
+			UI::Separator();
+		}
+
+		if (!isType)
+		{
+			if (UI::BeginMenu("Create"))
+			{
+				if (UI::MenuItem("Class"))
+				{
+					CreateType(ast, "Create Class file", Type::Class, path);
+				}
+				if (UI::MenuItem("Struct"))
+				{
+					CreateType(ast, "Create Struct file", Type::Struct, path);
+				}
+				if (UI::MenuItem("Function Library"))
+				{
+					CreateType(ast, "Create Function Library file", Type::FunctionLibrary, path);
+				}
+				UI::EndMenu();
+			}
 		}
 
 		if (UI::MenuItem("Show in Explorer"))
 		{
-			PlatformProcess::ShowFolder(
-			    !path.empty() ? path : Paths::ToString(Modules::GetProjectPath(ast)));
+			PlatformProcess::ShowFolder(path);
 		}
 	}
 
@@ -297,6 +302,11 @@ namespace Rift
 				{
 					DrawContextMenu(ast, path, item.id);
 					UI::EndPopup();
+				}
+
+				if (UI::IsItemClicked() && UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				{
+					Modules::OpenEditor(ast, item.id);
 				}
 
 				if (open)
