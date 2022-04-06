@@ -58,23 +58,45 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential xz-utils curl libx11-dev xorg-dev libglu1-mesa-dev
 
-      - name: Download pre-built LLVM
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: ${{ matrix.compiler == 'cl' }}
+
+      - name: Cache LLVM
+        if: ${{ matrix.compiler == 'clang' }}
+        id: cache-llvm
+        uses: actions/cache@v2
+        with:
+          path: ${{ runner.temp }}/llvm
+          key: llvm-14.0-${{ matrix.os-name }}
+      - name: Install LLVM
+        if: ${{ matrix.compiler == 'clang' }}
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "14.0"
+          directory: ${{ runner.temp }}/llvm
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+
+
+      - name: Download pre-built development LLVM for Rift
         run: |
-          curl -L -o "${{ runner.temp }}/llvm.zip" https://github.com/piperift/rift-llvm/releases/download/v13.0.1/llvm-${{ matrix.os-name }}.zip
-          7z x -o"${{ runner.temp }}" "${{ runner.temp }}/llvm.zip"
+          curl -L -o "${{ runner.temp }}/rift-llvm.zip" https://github.com/piperift/rift-llvm/releases/download/v13.0.1/llvm-${{ matrix.os-name }}.zip
+          7z x -o"${{ runner.temp }}/rift" "${{ runner.temp }}/rift-llvm.zip"
 
       - name: Get CMake
         uses: lukka/get-cmake@latest
 
-      - name: Build
-        uses: lukka/run-cmake@v3.3
+
+      - name: Cache Build
+        uses: actions/cache@v2
         with:
-          cmakeGenerator: 'Ninja'
-          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-          cmakeBuildType: ${{ matrix.config }}
-          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/llvm'
-          buildWithCMakeArgs: --config ${{ matrix.config }}
-          buildDirectory: 'Build'
+          path: Build
+          key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
+
+      - name: Configure
+        run: cmake -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/rift/llvm'
+
+      - name: Build
+        run: cmake --build Build --config ${{ matrix.config }}
 
       - name: Upload binaries as artifacts
         uses: actions/upload-artifact@v2
