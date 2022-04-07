@@ -20,6 +20,7 @@
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
 #include <imgui_internal.h>
+#include <Platform/PlatformProcess.h>
 #include <RiftContext.h>
 #include <Strings/FixedString.h>
 #include <UI/Style.h>
@@ -30,6 +31,18 @@ namespace Rift
 {
 	void FileExplorerPanel::Draw(AST::Tree& ast)
 	{
+		// Open recently created types
+		if (!pendingOpenCreatedPath.empty())
+		{
+			AST::Id typeId = Types::FindTypeByPath(ast, pendingOpenCreatedPath);
+			if (!IsNone(typeId))
+			{
+				Types::OpenEditor(ast, typeId);
+				pendingOpenCreatedPath = Path{};
+			}
+		}
+
+
 		auto& editor = ast.GetStatic<SEditor>();
 		editor.layout.BindNextWindowToNode(SEditor::leftNode);
 
@@ -64,7 +77,8 @@ namespace Rift
 		UI::BeginChild("Files");
 		if (UI::BeginPopupContextWindow())
 		{
-			DrawContextMenu(ast, {}, AST::NoId);
+			String projectPath = Paths::ToString(Modules::GetProjectPath(ast));
+			DrawContextMenu(ast, projectPath, AST::NoId);
 			UI::EndPopup();
 		}
 
@@ -80,18 +94,22 @@ namespace Rift
 
 	void FileExplorerPanel::DrawContextMenu(AST::Tree& ast, StringView path, AST::Id itemId)
 	{
-		if (itemId != AST::NoId)
+		const bool hasId    = ast.IsValid(itemId);
+		const bool isType   = hasId && ast.Has<CType>(itemId);
+		const bool isModule = hasId && ast.Has<CModule>(itemId);
+
+		if (hasId)
 		{
-			if (ast.Has<CType>(itemId))
+			if (isType)
 			{
-				if (UI::MenuItem("Edit"))
+				if (UI::MenuItem("Open"))
 				{
 					Types::OpenEditor(ast, itemId);
 				}
 			}
-			else if (ast.Has<CModule>(itemId))
+			else if (isModule)
 			{
-				if (UI::MenuItem("Edit Module"))
+				if (UI::MenuItem("Open Module"))
 				{
 					Modules::OpenEditor(ast, itemId);
 				}
@@ -102,9 +120,16 @@ namespace Rift
 				renameId     = itemId;
 				renameBuffer = Paths::GetFilename(path);
 			}
-			if (UI::MenuItem("Delete")) {}
+
+			if (isType && UI::MenuItem("Delete"))
+			{
+				AST::Hierarchy::RemoveDeep(ast, itemId);
+			}
+
+			UI::Separator();
 		}
-		else
+
+		if (!isType)
 		{
 			if (UI::BeginMenu("Create"))
 			{
@@ -122,6 +147,11 @@ namespace Rift
 				}
 				UI::EndMenu();
 			}
+		}
+
+		if (UI::MenuItem("Show in Explorer"))
+		{
+			PlatformProcess::ShowFolder(path);
 		}
 	}
 
@@ -274,6 +304,11 @@ namespace Rift
 					UI::EndPopup();
 				}
 
+				if (UI::IsItemClicked() && UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				{
+					Modules::OpenEditor(ast, item.id);
+				}
+
 				if (open)
 				{
 					UI::TreePush(text.data());
@@ -397,8 +432,7 @@ namespace Rift
         },
 		    true);
 
-		AST::Id typeId = Types::CreateType(ast, category);
-		ast.Add<CFileRef>(typeId, path);
+		AST::Id typeId = Types::CreateType(ast, category, Name::None(), path);
 
 		String data;
 		Types::Serialize(ast, typeId, data);
@@ -406,5 +440,8 @@ namespace Rift
 
 		// Destroy the temporal type after saving it
 		ast.Destroy(typeId);
+
+		// Mark path to be opened later once the type has loaded
+		pendingOpenCreatedPath = path;
 	}
 }    // namespace Rift

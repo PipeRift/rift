@@ -50,7 +50,6 @@ namespace Rift::EditorSystem
 			builder.Split(builder.GetRootNode(), ImGuiDir_Left, 0.2f, SEditor::leftNode,
 			    SEditor::centralNode);
 
-			builder.GetNodeLocalFlags(SEditor::leftNode) |= ImGuiDockNodeFlags_AutoHideTabBar;
 			builder.GetNodeLocalFlags(SEditor::centralNode) |= ImGuiDockNodeFlags_CentralNode;
 		});
 
