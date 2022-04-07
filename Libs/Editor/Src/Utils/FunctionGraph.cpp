@@ -5,10 +5,12 @@
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "Utils/EditorStyle.h"
+#include "Utils/FunctionUtils.h"
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CDeclFunction.h>
 #include <AST/Components/CDeclVariable.h>
+#include <AST/Components/CExprBinaryOperator.h>
 #include <AST/Components/CExprCall.h>
 #include <AST/Components/CExprInput.h>
 #include <AST/Components/CExprOutputs.h>
@@ -24,7 +26,6 @@
 #include <AST/Filtering.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Utils/ExpressionGraph.h>
-#include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/StatementGraph.h>
 #include <AST/Utils/TransactionUtils.h>
@@ -331,64 +332,6 @@ namespace Rift::Graph
 		Style::PopNodeBackgroundColor();
 	}
 
-	void DrawIf(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>, CChild,
-	                CFileRef, CStmtOutputs, CParent>
-	                access,
-	    AST::Id id)
-	{
-		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
-		Style::PushNodeTitleColor(Style::flowColor);
-		BeginNode(access, id);
-		{
-			TArray<AST::Id> pins;
-			AST::Hierarchy::GetChildren(access, id, pins);
-
-			Nodes::BeginNodeTitleBar();
-			{
-				UI::BeginGroup();
-				{
-					PushExecutionPinStyle();
-					Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
-					UI::TextUnformatted("");
-					Nodes::EndInput();
-					PopExecutionPinStyle();
-
-					const Color pinColor = Style::GetTypeColor<bool>();
-					Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-					Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-
-					Nodes::BeginInput(i32(pins[0]), Nodes::PinShape_CircleFilled);
-					UI::TextUnformatted("");
-					Nodes::EndInput();
-					Nodes::PopStyleColor(2);
-				}
-				UI::EndGroup();
-				UI::SameLine();
-
-				UI::BeginGroup();
-				UI::TextUnformatted("if");
-				UI::EndGroup();
-
-				UI::SameLine();
-				UI::BeginGroup();
-				{
-					PushExecutionPinStyle();
-					Nodes::BeginOutput(i32(pins[1]), Nodes::PinShape_QuadFilled);
-					UI::TextUnformatted("true");
-					Nodes::EndOutput();
-					Nodes::BeginOutput(i32(pins[2]), Nodes::PinShape_QuadFilled);
-					UI::TextUnformatted("false");
-					Nodes::EndOutput();
-					PopExecutionPinStyle();
-				}
-				UI::EndGroup();
-			}
-			Nodes::EndNodeTitleBar();
-		}
-		EndNode(access);
-		Style::PopNodeTitleColor();
-		Style::PopNodeBackgroundColor();
-	}
 
 	void Init()
 	{
@@ -478,6 +421,33 @@ namespace Rift::Graph
 				if (!IsNone(newId))
 				{
 					ast.Add<CGraphTransform>(newId, gridPos);
+				}
+			}
+
+			if (!filter.IsActive())
+			{
+				UI::TreePop();
+			}
+		}
+
+		if (filter.IsActive() || UI::TreeNode("Operators"))
+		{
+			static String name;
+			auto types = Refl::GetEnumValues<BinaryOperatorType>();
+			for (auto type : types)
+			{
+				StringView shortName = Functions::GetBinaryOperatorName(type);
+				StringView longName  = Functions::GetBinaryOperatorLongName(type);
+				name.clear();
+				Strings::FormatTo(name, "{}   ({})", shortName, longName);
+				if (filter.PassFilter(name.data(), name.data() + name.size())
+				    && UI::MenuItem(name.data()))
+				{
+					AST::Id newId = AST::Functions::AddBinaryOperator({ast, typeId}, type);
+					if (!IsNone(newId))
+					{
+						ast.Add<CGraphTransform>(newId, gridPos);
+					}
 				}
 			}
 
@@ -650,9 +620,72 @@ namespace Rift::Graph
 	                 access,
 	    const TArray<AST::Id>& children)
 	{
+		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
+		Style::PushNodeTitleColor(Style::flowColor);
 		for (AST::Id id : AST::GetIf<CStmtIf>(access, children))
 		{
-			DrawIf(access, id);
+			BeginNode(access, id);
+			{
+				TArray<AST::Id> pins;
+				AST::Hierarchy::GetChildren(access, id, pins);
+
+				Nodes::BeginNodeTitleBar();
+				{
+					UI::BeginGroup();
+					{
+						PushExecutionPinStyle();
+						Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
+						UI::TextUnformatted("");
+						Nodes::EndInput();
+						PopExecutionPinStyle();
+
+						const Color pinColor = Style::GetTypeColor<bool>();
+						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+
+						Nodes::BeginInput(i32(pins[0]), Nodes::PinShape_CircleFilled);
+						UI::TextUnformatted("");
+						Nodes::EndInput();
+						Nodes::PopStyleColor(2);
+					}
+					UI::EndGroup();
+					UI::SameLine();
+
+					UI::BeginGroup();
+					UI::TextUnformatted("if");
+					UI::EndGroup();
+
+					UI::SameLine();
+					UI::BeginGroup();
+					{
+						PushExecutionPinStyle();
+						Nodes::BeginOutput(i32(pins[1]), Nodes::PinShape_QuadFilled);
+						UI::TextUnformatted("true");
+						Nodes::EndOutput();
+						Nodes::BeginOutput(i32(pins[2]), Nodes::PinShape_QuadFilled);
+						UI::TextUnformatted("false");
+						Nodes::EndOutput();
+						PopExecutionPinStyle();
+					}
+					UI::EndGroup();
+				}
+				Nodes::EndNodeTitleBar();
+			}
+			EndNode(access);
+		}
+		Style::PopNodeTitleColor();
+		Style::PopNodeBackgroundColor();
+	}
+
+	void DrawBinaryOperators(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>,
+	                             TWrite<CFileDirty>, CChild, CParent, CFileRef, CExprBinaryOperator>
+	                             access,
+	    const TArray<AST::Id>& children)
+	{
+		for (AST::Id id : AST::GetIf<CExprBinaryOperator>(access, children))
+		{
+			BeginNode(access, id);
+			EndNode(access);
 		}
 	}
 
@@ -771,6 +804,7 @@ namespace Rift::Graph
 				DrawLiterals(ast, *children);
 
 				DrawIfs(ast, *children);
+				DrawBinaryOperators(ast, *children);
 
 				// Links
 				DrawStatementLinks(ast, *children);

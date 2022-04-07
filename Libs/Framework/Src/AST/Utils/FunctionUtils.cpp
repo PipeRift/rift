@@ -165,6 +165,25 @@ namespace Rift::AST::Functions
 		return id;
 	}
 
+	Id AddBinaryOperator(TypeRef type, BinaryOperatorType operatorType)
+	{
+		Tree& ast   = type.GetAST();
+		const Id id = ast.Create();
+		ast.Add<CExprBinaryOperator>(id, {operatorType});
+		ast.Add<CExprOutputs>(id);
+
+		AST::Id valueIds[2];
+		ast.Create(valueIds);
+		ast.Add<CExprInput>(valueIds);
+		Hierarchy::AddChildren(ast, id, valueIds);
+
+		if (type)
+		{
+			Hierarchy::AddChildren(ast, type.GetId(), id);
+		}
+		return id;
+	}
+
 	Id FindFunctionByName(Tree& ast, Name ownerName, Name functionName)
 	{
 		auto& types = ast.GetStatic<STypes>();
