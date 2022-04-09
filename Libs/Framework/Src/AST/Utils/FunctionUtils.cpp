@@ -87,38 +87,39 @@ namespace Rift::AST::Functions
 
 	Id AddLiteral(TypeRef type, Id literalTypeId)
 	{
-		Tree& ast          = type.GetAST();
-		const Id literalId = ast.Create();
+		Tree& ast   = type.GetAST();
+		const Id id = ast.Create();
+		ast.Add<CExprOutputs>(id);
 
 		bool created        = false;
 		const auto& natives = ast.GetNativeTypes();
 		if (literalTypeId == natives.boolId)
 		{
-			ast.Add<CLiteralBool>(literalId);
+			ast.Add<CLiteralBool>(id);
 			created = true;
 		}
 		else if (literalTypeId == natives.floatId)
 		{
-			ast.Add<CLiteralFloat>(literalId);
+			ast.Add<CLiteralFloat>(id);
 			created = true;
 		}
 		else if (literalTypeId == natives.stringId)
 		{
-			ast.Add<CLiteralString>(literalId);
+			ast.Add<CLiteralString>(id);
 			created = true;
 		}
 
 		if (!created)
 		{
-			ast.Destroy(literalId);
+			ast.Destroy(id);
 			return NoId;
 		}
 
 		if (type)
 		{
-			Hierarchy::AddChildren(ast, type.GetId(), literalId);
+			Hierarchy::AddChildren(ast, type.GetId(), id);
 		}
-		return literalId;
+		return id;
 	}
 
 	Id AddCall(TypeRef type, Id functionId)
@@ -165,6 +166,20 @@ namespace Rift::AST::Functions
 		return id;
 	}
 
+	Id AddUnaryOperator(TypeRef type, UnaryOperatorType operatorType)
+	{
+		Tree& ast   = type.GetAST();
+		const Id id = ast.Create();
+		ast.Add<CExprUnaryOperator>(id, {operatorType});
+		ast.Add<CExprInput>(id);
+		ast.Add<CExprOutputs>(id);
+		if (type)
+		{
+			Hierarchy::AddChildren(ast, type.GetId(), id);
+		}
+		return id;
+	}
+
 	Id AddBinaryOperator(TypeRef type, BinaryOperatorType operatorType)
 	{
 		Tree& ast   = type.GetAST();
@@ -176,7 +191,6 @@ namespace Rift::AST::Functions
 		ast.Create(valueIds);
 		ast.Add<CExprInput>(valueIds);
 		Hierarchy::AddChildren(ast, id, valueIds);
-
 		if (type)
 		{
 			Hierarchy::AddChildren(ast, type.GetId(), id);

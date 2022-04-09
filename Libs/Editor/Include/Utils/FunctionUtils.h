@@ -3,11 +3,38 @@
 #pragma once
 
 #include <AST/Components/CExprBinaryOperator.h>
+#include <AST/Components/CExprUnaryOperator.h>
 #include <AST/Utils/FunctionUtils.h>
 
 
 namespace Rift::Functions
 {
+	constexpr StringView GetUnaryOperatorName(UnaryOperatorType type)
+	{
+		switch (type)
+		{
+			case UnaryOperatorType::Not: return "!";
+			case UnaryOperatorType::Negation: return "-";
+			case UnaryOperatorType::Increment: return "++";
+			case UnaryOperatorType::Decrement: return "--";
+			case UnaryOperatorType::BitNot: return "~";
+		}
+		return "";
+	}
+
+	constexpr StringView GetUnaryOperatorLongName(UnaryOperatorType type)
+	{
+		switch (type)
+		{
+			case UnaryOperatorType::Not: return "not";
+			case UnaryOperatorType::Negation: return "negation";
+			case UnaryOperatorType::Increment: return "increment";
+			case UnaryOperatorType::Decrement: return "decrement";
+			case UnaryOperatorType::BitNot: return "bitwise not / one's complement";
+		}
+		return "";
+	}
+
 	constexpr StringView GetBinaryOperatorName(BinaryOperatorType type)
 	{
 		switch (type)

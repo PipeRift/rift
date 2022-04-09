@@ -7,11 +7,13 @@
 #include "AST/Components/CDeclFunction.h"
 #include "AST/Components/CDeclStruct.h"
 #include "AST/Components/CDeclVariable.h"
+#include "AST/Components/CExprBinaryOperator.h"
 #include "AST/Components/CExprCall.h"
 #include "AST/Components/CExprInput.h"
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CExprReturn.h"
 #include "AST/Components/CExprType.h"
+#include "AST/Components/CExprUnaryOperator.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CLiteralBool.h"
 #include "AST/Components/CLiteralFloat.h"
@@ -147,11 +149,13 @@ namespace Rift::AST
 			ReadPool<CDeclFunction>(*this, ast);
 			ReadPool<CDeclStruct>(*this, ast);
 			ReadPool<CDeclVariable>(*this, ast);
+			ReadPool<CExprBinaryOperator>(*this, ast);
 			ReadPool<CExprCall>(*this, ast);
 			ReadPool<CExprInput>(*this, ast);
 			ReadPool<CExprOutputs>(*this, ast);
 			ReadPool<CExprReturn>(*this, ast);
 			ReadPool<CExprType>(*this, ast);
+			ReadPool<CExprUnaryOperator>(*this, ast);
 			ReadPool<CIdentifier>(*this, ast);
 			ReadPool<CGraphTransform>(*this, ast);
 			ReadPool<CParent>(*this, ast);
@@ -196,11 +200,13 @@ namespace Rift::AST
 			WritePool<CDeclClass>(*this, ast, treeEntities);
 			WritePool<CDeclVariable>(*this, ast, treeEntities);
 			WritePool<CDeclFunction>(*this, ast, treeEntities);
+			WritePool<CExprBinaryOperator>(*this, ast, treeEntities);
 			WritePool<CExprCall>(*this, ast, treeEntities);
 			WritePool<CExprInput>(*this, ast, treeEntities);
 			WritePool<CExprOutputs>(*this, ast, treeEntities);
 			WritePool<CExprReturn>(*this, ast, treeEntities);
 			WritePool<CExprType>(*this, ast, treeEntities);
+			WritePool<CExprUnaryOperator>(*this, ast, treeEntities);
 			WritePool<CGraphTransform>(*this, ast, treeEntities);
 			WritePool<CIdentifier>(*this, ast, treeEntities);
 			WritePool<CParent>(*this, ast, treeEntities);

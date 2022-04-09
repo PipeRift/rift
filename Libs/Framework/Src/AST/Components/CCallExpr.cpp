@@ -4,6 +4,5 @@
 #include "AST/Serialization.h"
 
 
-
 namespace Rift
 {}    // namespace Rift
