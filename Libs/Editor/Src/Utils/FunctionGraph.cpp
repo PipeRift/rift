@@ -12,6 +12,7 @@
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprBinaryOperator.h>
 #include <AST/Components/CExprCall.h>
+#include <AST/Components/CExprDeclRef.h>
 #include <AST/Components/CExprInput.h>
 #include <AST/Components/CExprOutputs.h>
 #include <AST/Components/CExprReturn.h>
@@ -633,7 +634,43 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawVariables(AST::Tree& ast, const TArray<AST::Id>& children) {}
+	void DrawVariableRefs(AST::Tree& ast, const TArray<AST::Id>& children)
+	{
+		String name;
+		for (AST::Id id : AST::GetIf<CExprDeclRefId>(ast, children))
+		{
+			AST::Id typeId     = AST::NoId;
+			AST::Id variableId = ast.Get<const CExprDeclRefId>(id).declarationId;
+			if (ast.IsValid(variableId))
+			{
+				typeId = ast.Get<const CDeclVariable>(variableId).typeId;
+			}
+
+			const Color color = Style::GetTypeColor(ast, typeId);
+			Style::PushNodeBackgroundColor(color);
+			Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
+			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+
+			BeginNode(ast, id);
+			{
+				Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+				PushInnerNodeStyle();
+				StringView name = "Invalid";
+				if (const auto* identifier = ast.IsValid(variableId)
+				                               ? ast.TryGet<const CIdentifier>(variableId)
+				                               : nullptr)
+				{
+					name = identifier->name.ToString();
+				}
+				UI::Text(name);
+				PopInnerNodeStyle();
+				Nodes::EndOutput();
+			}
+			EndNode(ast);
+			Nodes::PopStyleColor(2);
+			Style::PopNodeBackgroundColor();
+		}
+	}
 
 	void DrawIfs(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>, CChild,
 	                 CFileRef, CStmtIf, CStmtOutputs, CParent>
@@ -900,7 +937,7 @@ namespace Rift::Graph
 				DrawReturns(ast, *children);
 				DrawCalls(ast, typeId, *children);
 				DrawLiterals(ast, *children);
-				DrawVariables(ast, *children);
+				DrawVariableRefs(ast, *children);
 
 				DrawIfs(ast, *children);
 				DrawUnaryOperators(ast, *children);

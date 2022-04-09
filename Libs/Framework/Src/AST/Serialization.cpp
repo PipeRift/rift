@@ -9,6 +9,7 @@
 #include "AST/Components/CDeclVariable.h"
 #include "AST/Components/CExprBinaryOperator.h"
 #include "AST/Components/CExprCall.h"
+#include "AST/Components/CExprDeclRef.h"
 #include "AST/Components/CExprInput.h"
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CExprReturn.h"
@@ -151,6 +152,7 @@ namespace Rift::AST
 			ReadPool<CDeclVariable>(*this, ast);
 			ReadPool<CExprBinaryOperator>(*this, ast);
 			ReadPool<CExprCall>(*this, ast);
+			ReadPool<CExprDeclRefId>(*this, ast);
 			ReadPool<CExprInput>(*this, ast);
 			ReadPool<CExprOutputs>(*this, ast);
 			ReadPool<CExprReturn>(*this, ast);
@@ -202,6 +204,7 @@ namespace Rift::AST
 			WritePool<CDeclFunction>(*this, ast, treeEntities);
 			WritePool<CExprBinaryOperator>(*this, ast, treeEntities);
 			WritePool<CExprCall>(*this, ast, treeEntities);
+			WritePool<CExprDeclRefId>(*this, ast, treeEntities);
 			WritePool<CExprInput>(*this, ast, treeEntities);
 			WritePool<CExprOutputs>(*this, ast, treeEntities);
 			WritePool<CExprReturn>(*this, ast, treeEntities);
