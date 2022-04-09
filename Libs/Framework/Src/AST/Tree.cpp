@@ -9,7 +9,6 @@
 #include "AST/Statics/STypes.h"
 
 
-
 namespace Rift::AST
 {
 	Tree::Tree()
