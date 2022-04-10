@@ -197,6 +197,26 @@ namespace Rift::AST
 	void ListAny(const TArray<const Pool*>& pools, TArray<Id>& ids)
 	{
 		ZoneScoped;
+		for (const Pool* pool : pools)
+		{
+			if (!EnsureMsg(pool,
+			        "One of the pools is null. Is the access missing one or more of the specified "
+			        "components?"))
+			{
+				return;
+			}
+		}
+
+		ids.Empty();
+		for (const Pool* pool : pools)
+		{
+			ids.Append(pool->begin(), pool->end());
+		}
+	}
+
+	void ListAnyUnique(const TArray<const Pool*>& pools, TArray<Id>& ids)
+	{
+		ZoneScoped;
 		i32 maxPossibleSize = 0;
 		for (const Pool* pool : pools)
 		{

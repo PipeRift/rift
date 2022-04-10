@@ -17,7 +17,7 @@
 #include "AST/Components/CExprUnaryOperator.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CLiteralBool.h"
-#include "AST/Components/CLiteralFloat.h"
+#include "AST/Components/CLiteralFloating.h"
 #include "AST/Components/CLiteralString.h"
 #include "AST/Components/CParent.h"
 #include "AST/Components/CStmtInput.h"
@@ -162,7 +162,7 @@ namespace Rift::AST
 			ReadPool<CGraphTransform>(*this, ast);
 			ReadPool<CParent>(*this, ast);
 			ReadPool<CLiteralBool>(*this, ast);
-			ReadPool<CLiteralFloat>(*this, ast);
+			ReadPool<CLiteralFloating>(*this, ast);
 			ReadPool<CLiteralString>(*this, ast);
 			ReadPool<CStmtOutputs>(*this, ast);
 			ReadPool<CStmtInput>(*this, ast);
@@ -214,7 +214,7 @@ namespace Rift::AST
 			WritePool<CIdentifier>(*this, ast, treeEntities);
 			WritePool<CParent>(*this, ast, treeEntities);
 			WritePool<CLiteralBool>(*this, ast, treeEntities);
-			WritePool<CLiteralFloat>(*this, ast, treeEntities);
+			WritePool<CLiteralFloating>(*this, ast, treeEntities);
 			WritePool<CLiteralString>(*this, ast, treeEntities);
 			WritePool<CStmtOutputs>(*this, ast, treeEntities);
 			WritePool<CStmtInput>(*this, ast, treeEntities);

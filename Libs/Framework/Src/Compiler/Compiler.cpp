@@ -36,7 +36,7 @@ namespace Rift::Compiler
 		LoadSystem::Run(ast);
 
 		OptimizationSystem::PruneDisconnectedExpressions(ast);
-		TypeSystem::RunChecks(ast);
+		TypeSystem::PropagateExpressions(ast);
 
 		backend->Build(context);
 	}

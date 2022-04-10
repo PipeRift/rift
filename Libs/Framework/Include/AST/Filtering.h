@@ -59,8 +59,11 @@ namespace Rift::AST
 	/** Find all ids containing all of the components */
 	void ListAll(TArray<const Pool*> pools, TArray<Id>& ids);
 
-	/** Find all ids containing any of the components */
+	/** Find all ids containing any of the components. Includes possible duplicates */
 	void ListAny(const TArray<const Pool*>& pools, TArray<Id>& ids);
+
+	/** Find all ids containing any of the components. Prevents duplicates */
+	void ListAnyUnique(const TArray<const Pool*>& pools, TArray<Id>& ids);
 
 
 	// Templated API
@@ -284,7 +287,8 @@ namespace Rift::AST
 	}
 
 	/**
-	 * Find all ids containing any of the components
+	 * Find all ids containing any of the components.
+	 * Includes possible duplicates
 	 *
 	 * @param access from where to access pools
 	 * @param ids array where matching ids will be added
@@ -297,7 +301,22 @@ namespace Rift::AST
 	}
 
 	/**
-	 * Find all ids containing any of the components
+	 * Find all ids containing any of the components.
+	 * Prevents duplicates
+	 *
+	 * @param access from where to access pools
+	 * @param ids array where matching ids will be added
+	 * @see ListAnyUnique()
+	 */
+	template<typename... C, typename AccessType>
+	void ListAnyUnique(const AccessType& access, TArray<Id>& ids)
+	{
+		ListAnyUnique({&access.template AssurePool<const C>()...}, ids);
+	}
+
+	/**
+	 * Find all ids containing any of the components.
+	 * Includes possible duplicates
 	 *
 	 * @param access from where to access pools
 	 * @return ids array with matching ids
@@ -308,6 +327,22 @@ namespace Rift::AST
 	{
 		TArray<Id> ids;
 		ListAny<C...>(access, ids);
+		return Move(ids);
+	}
+
+	/**
+	 * Find all ids containing any of the components.
+	 * Prevents duplicates
+	 *
+	 * @param access from where to access pools
+	 * @return ids array with matching ids
+	 * @see ListAny()
+	 */
+	template<typename... C, typename AccessType>
+	TArray<Id> ListAnyUnique(const AccessType& access)
+	{
+		TArray<Id> ids;
+		ListAnyUnique<C...>(access, ids);
 		return Move(ids);
 	}
 

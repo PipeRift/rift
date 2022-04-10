@@ -10,7 +10,7 @@
 #include "AST/Components/CExprType.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CLiteralBool.h"
-#include "AST/Components/CLiteralFloat.h"
+#include "AST/Components/CLiteralFloating.h"
 #include "AST/Components/CLiteralString.h"
 #include "AST/Components/CStmtIf.h"
 #include "AST/Components/CStmtInput.h"
@@ -100,7 +100,7 @@ namespace Rift::AST::Functions
 		}
 		else if (literalTypeId == natives.floatId)
 		{
-			ast.Add<CLiteralFloat>(id);
+			ast.Add<CLiteralFloating>(id);
 			created = true;
 		}
 		else if (literalTypeId == natives.stringId)
