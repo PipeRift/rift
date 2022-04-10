@@ -25,7 +25,7 @@ namespace Rift
 
 
 		PROP(value)
-		float value = 0.f;
+		double value = 0.;
 
 		PROP(type)
 		FloatingType type = FloatingType::F32;

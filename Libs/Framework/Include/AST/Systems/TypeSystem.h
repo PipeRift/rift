@@ -11,5 +11,5 @@ namespace Rift::TypeSystem
 {
 	void Init(AST::Tree& ast);
 
-	void PropagateExpressions(AST::Tree& ast);
+	void PropagateExpressionTypes(AST::Tree& ast);
 }    // namespace Rift::TypeSystem
