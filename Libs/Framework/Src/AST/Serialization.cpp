@@ -18,6 +18,7 @@
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CLiteralBool.h"
 #include "AST/Components/CLiteralFloating.h"
+#include "AST/Components/CLiteralIntegral.h"
 #include "AST/Components/CLiteralString.h"
 #include "AST/Components/CParent.h"
 #include "AST/Components/CStmtInput.h"
@@ -163,6 +164,7 @@ namespace Rift::AST
 			ReadPool<CParent>(*this, ast);
 			ReadPool<CLiteralBool>(*this, ast);
 			ReadPool<CLiteralFloating>(*this, ast);
+			ReadPool<CLiteralIntegral>(*this, ast);
 			ReadPool<CLiteralString>(*this, ast);
 			ReadPool<CStmtOutputs>(*this, ast);
 			ReadPool<CStmtInput>(*this, ast);
@@ -215,6 +217,7 @@ namespace Rift::AST
 			WritePool<CParent>(*this, ast, treeEntities);
 			WritePool<CLiteralBool>(*this, ast, treeEntities);
 			WritePool<CLiteralFloating>(*this, ast, treeEntities);
+			WritePool<CLiteralIntegral>(*this, ast, treeEntities);
 			WritePool<CLiteralString>(*this, ast, treeEntities);
 			WritePool<CStmtOutputs>(*this, ast, treeEntities);
 			WritePool<CStmtInput>(*this, ast, treeEntities);
