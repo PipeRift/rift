@@ -1,8 +1,22 @@
 
-set(RIFT_LLVM_PATH "" CACHE STRING "Location of an external LLVM installation to use. CMake will try to find if this path is not set")
+set(RIFT_LLVM_PATH_RELEASE "" CACHE STRING "Location of Rift LLVM installation to use on Release. CMake will try to find if this path is not set")
+set(RIFT_LLVM_PATH_DEBUG "" CACHE STRING "Location of Rift LLVM installation to use on Debug. CMake will try to find if this path is not set")
+set(RIFT_LLVM_PATH_MINSIZEREL "" CACHE STRING "Location of Rift LLVM installation to use on MinSizeRel. CMake will try to find if this path is not set")
+set(RIFT_LLVM_PATH_RELWITHDEBINFO "" CACHE STRING "Location of Rift LLVM installation to use on RelWithDebInfo. CMake will try to find if this path is not set")
+set(RIFT_LLVM_PATH "" CACHE STRING "Location of an external LLVM installation to use. Used if RIFT_LLVM_PATH_{CONFIG} is not set")
+
+string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UPPER)
+if (NOT ${RIFT_LLVM_PATH_${CMAKE_BUILD_TYPE_UPPER}} STREQUAL "")
+    set(RIFT_LLVM_PATH ${RIFT_LLVM_PATH_${CMAKE_BUILD_TYPE_UPPER}})
+else()
+    message(STATUS "RIFT_LLVM_PATH_${CMAKE_BUILD_TYPE_UPPER} not provided. Defaulted to RIFT_LLVM_PATH")
+endif()
+
 if (NOT RIFT_LLVM_PATH STREQUAL "")
     message(STATUS "Provided LLVM installation: ${RIFT_LLVM_PATH}")
     set(LLVM_DIR "${RIFT_LLVM_PATH}/lib/cmake/llvm")
+else()
+    message(WARNING "LLVM path not provided. Set RIFT_LLVM_PATH_{CONFIG} to your llvm installation matching the config mode")
 endif()
 
 find_package(LLVM REQUIRED CONFIG)
