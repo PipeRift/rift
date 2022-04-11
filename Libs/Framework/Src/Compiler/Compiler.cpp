@@ -42,7 +42,7 @@ namespace Rift::Compiler
 			LoadSystem::Run(ast);
 
 			OptimizationSystem::PruneDisconnectedExpressions(ast);
-			TypeSystem::RunChecks(ast);
+			TypeSystem::PropagateExpressionTypes(ast);
 		}
 
 		Log::Info("Building project '{}'", Modules::GetProjectName(context.ast));

@@ -20,6 +20,8 @@
 #include <AST/Components/CExprUnaryOperator.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CLiteralBool.h>
+#include <AST/Components/CLiteralFloating.h>
+#include <AST/Components/CLiteralIntegral.h>
 #include <AST/Components/CLiteralString.h>
 #include <AST/Components/CStmtIf.h>
 #include <AST/Components/CStmtInput.h>
@@ -133,6 +135,85 @@ namespace Rift::Graph
 			Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
 			PushInnerNodeStyle();
 			UI::Checkbox("##value", &value);
+			PopInnerNodeStyle();
+			Nodes::EndOutput();
+		}
+		EndNode(ast);
+		Nodes::PopStyleColor(2);
+		Style::PopNodeBackgroundColor();
+	}
+
+	void DrawLiteralIntegral(AST::Tree& ast, AST::Id id, CLiteralIntegral& value)
+	{
+		const bool isSigned = value.IsSigned();
+		const Color color   = isSigned ? Style::GetTypeColor<i32>() : Style::GetTypeColor<u32>();
+
+		Style::PushNodeBackgroundColor(color);
+		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+
+		BeginNode(ast, id);
+		{
+			Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+			PushInnerNodeStyle();
+			UI::SetNextItemWidth(Math::Max(settings.GetGridSize() * 4.f, 30.f));
+			switch (value.type)
+			{
+				case IntegralType::S8:
+					UI::InputScalar("##value", ImGuiDataType_S8, &value.value);
+					break;
+				case IntegralType::S16:
+					UI::InputScalar("##value", ImGuiDataType_S16, &value.value);
+					break;
+				case IntegralType::S32:
+					UI::InputScalar("##value", ImGuiDataType_S32, &value.value);
+					break;
+				case IntegralType::S64:
+					UI::InputScalar("##value", ImGuiDataType_S64, &value.value);
+					break;
+				case IntegralType::U8:
+					UI::InputScalar("##value", ImGuiDataType_U8, &value.value);
+					break;
+				case IntegralType::U16:
+					UI::InputScalar("##value", ImGuiDataType_U16, &value.value);
+					break;
+				case IntegralType::U32:
+					UI::InputScalar("##value", ImGuiDataType_U32, &value.value);
+					break;
+				case IntegralType::U64:
+					UI::InputScalar("##value", ImGuiDataType_U64, &value.value);
+					break;
+			}
+			PopInnerNodeStyle();
+			Nodes::EndOutput();
+		}
+		EndNode(ast);
+		Nodes::PopStyleColor(2);
+		Style::PopNodeBackgroundColor();
+	}
+
+	void DrawLiteralFloating(AST::Tree& ast, AST::Id id, CLiteralFloating& value)
+	{
+		const bool isDouble = value.type == FloatingType::F64;
+		const Color color = isDouble ? Style::GetTypeColor<double>() : Style::GetTypeColor<float>();
+
+		Style::PushNodeBackgroundColor(color);
+		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+
+		BeginNode(ast, id);
+		{
+			Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+			PushInnerNodeStyle();
+			UI::SetNextItemWidth(Math::Max(settings.GetGridSize() * 4.f, 30.f));
+			if (isDouble)
+			{
+				UI::InputFloat("##value", reinterpret_cast<float*>(&value.value));
+			}
+			else
+			{
+				UI::InputDouble("##value", &value.value);
+			}
 			PopInnerNodeStyle();
 			Nodes::EndOutput();
 		}
@@ -628,6 +709,16 @@ namespace Rift::Graph
 			DrawLiteralBool(ast, id, ast.Get<CLiteralBool>(id).value);
 		}
 
+		for (AST::Id id : AST::GetIf<CLiteralIntegral>(ast, children))
+		{
+			DrawLiteralIntegral(ast, id, ast.Get<CLiteralIntegral>(id));
+		}
+
+		for (AST::Id id : AST::GetIf<CLiteralFloating>(ast, children))
+		{
+			DrawLiteralFloating(ast, id, ast.Get<CLiteralFloating>(id));
+		}
+
 		for (AST::Id id : AST::GetIf<CLiteralString>(ast, children))
 		{
 			DrawLiteralString(ast, id, ast.Get<CLiteralString>(id).value);
@@ -844,8 +935,8 @@ namespace Rift::Graph
 					if (!IsNone(outputPinId) && !IsNone(inputNodeId))
 					{
 						// NOTE: Input pin ids equal input node ids
-						// TODO: Execution pin ids atm are the same as the node id. Implement
-						// proper output pin support
+						// TODO: Execution pin ids atm are the same as the node id.
+						// Implement proper output pin support
 						Nodes::Link(i32(inputNodeId), i32(outputPinId), i32(inputNodeId));
 					}
 				}

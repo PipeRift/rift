@@ -3,7 +3,12 @@
 #include "AST/Systems/TypeSystem.h"
 
 #include "AST/Components/CFileRef.h"
+#include "AST/Components/CLiteralBool.h"
+#include "AST/Components/CLiteralFloating.h"
+#include "AST/Components/CLiteralIntegral.h"
+#include "AST/Components/CLiteralString.h"
 #include "AST/Components/CType.h"
+#include "AST/Filtering.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Tree.h"
 
@@ -73,8 +78,9 @@ namespace Rift::TypeSystem
 		});
 	}
 
-	void RunChecks(AST::Tree& ast)
+	void PropagateExpressionTypes(AST::Tree& ast)
 	{
-		// Load pending files
+		TArray<AST::Id> literals =
+		    AST::ListAny<CLiteralBool, CLiteralIntegral, CLiteralFloating, CLiteralString>(ast);
 	}
 }    // namespace Rift::TypeSystem
