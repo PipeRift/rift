@@ -11,6 +11,7 @@
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CLiteralBool.h"
 #include "AST/Components/CLiteralFloating.h"
+#include "AST/Components/CLiteralIntegral.h"
 #include "AST/Components/CLiteralString.h"
 #include "AST/Components/CStmtIf.h"
 #include "AST/Components/CStmtInput.h"
@@ -93,6 +94,7 @@ namespace Rift::AST::Functions
 
 		bool created        = false;
 		const auto& natives = ast.GetNativeTypes();
+		// TODO: Refactor this
 		if (literalTypeId == natives.boolId)
 		{
 			ast.Add<CLiteralBool>(id);
@@ -100,8 +102,53 @@ namespace Rift::AST::Functions
 		}
 		else if (literalTypeId == natives.floatId)
 		{
-			ast.Add<CLiteralFloating>(id);
-			created = true;
+			ast.Add<CLiteralFloating>(id).type = FloatingType::F32;
+			created                            = true;
+		}
+		else if (literalTypeId == natives.doubleId)
+		{
+			ast.Add<CLiteralFloating>(id).type = FloatingType::F64;
+			created                            = true;
+		}
+		else if (literalTypeId == natives.u8Id)
+		{
+			ast.Add<CLiteralIntegral>(id).type = IntegralType::U8;
+			created                            = true;
+		}
+		else if (literalTypeId == natives.u16Id)
+		{
+			ast.Add<CLiteralIntegral>(id).type = IntegralType::U16;
+			created                            = true;
+		}
+		else if (literalTypeId == natives.u32Id)
+		{
+			ast.Add<CLiteralIntegral>(id).type = IntegralType::U32;
+			created                            = true;
+		}
+		else if (literalTypeId == natives.u64Id)
+		{
+			ast.Add<CLiteralIntegral>(id).type = IntegralType::U64;
+			created                            = true;
+		}
+		else if (literalTypeId == natives.i8Id)
+		{
+			ast.Add<CLiteralIntegral>(id).type = IntegralType::S8;
+			created                            = true;
+		}
+		else if (literalTypeId == natives.i16Id)
+		{
+			ast.Add<CLiteralIntegral>(id).type = IntegralType::S16;
+			created                            = true;
+		}
+		else if (literalTypeId == natives.i32Id)
+		{
+			ast.Add<CLiteralIntegral>(id).type = IntegralType::S32;
+			created                            = true;
+		}
+		else if (literalTypeId == natives.i64Id)
+		{
+			ast.Add<CLiteralIntegral>(id).type = IntegralType::S64;
+			created                            = true;
 		}
 		else if (literalTypeId == natives.stringId)
 		{

@@ -78,7 +78,7 @@ namespace Rift::TypeSystem
 		});
 	}
 
-	void PropagateExpressions(AST::Tree& ast)
+	void PropagateExpressionTypes(AST::Tree& ast)
 	{
 		TArray<AST::Id> literals =
 		    AST::ListAny<CLiteralBool, CLiteralIntegral, CLiteralFloating, CLiteralString>(ast);

@@ -21,7 +21,7 @@ namespace Rift
 		U8       = S8 | Unsigned,
 		U16      = S16 | Unsigned,
 		U32      = S32 | Unsigned,
-		U64      = S16 | Unsigned
+		U64      = S64 | Unsigned
 	};
 	ENUM(IntegralType)
 
