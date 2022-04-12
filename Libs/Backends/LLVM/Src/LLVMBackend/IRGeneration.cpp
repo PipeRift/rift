@@ -10,7 +10,7 @@
 #include <AST/Components/CDeclClass.h>
 #include <AST/Components/CDeclFunction.h>
 #include <AST/Components/CDeclStruct.h>
-#include <AST/Components/CLiteralFloat.h>
+#include <AST/Components/CLiteralFloating.h>
 #include <AST/Components/CLiteralI32.h>
 #include <AST/Components/CType.h>
 #include <AST/Filtering.h>
@@ -31,9 +31,12 @@ namespace Rift::Compiler::LLVM
 		return ConstantInt::get(llvm, APInt(32, access.Get<const CLiteralI32>(id).value));
 	}
 
-	Value* GetLiteralFloat(LLVMContext& llvm, TAccessRef<CLiteralFloat> access, AST::Id id)
+	Value* GetLiteralFloating(LLVMContext& llvm, TAccessRef<CLiteralFloating> access, AST::Id id)
 	{
-		return ConstantFP::get(llvm, APFloat(access.Get<const CLiteralFloat>(id).value));
+		const auto& floating = access.Get<const CLiteralFloating>(id);
+		return ConstantFP::get(
+		    llvm, APFloat(floating.type == FloatingType::F32 ? static_cast<float>(floating.value)
+		                                                     : floating.value));
 	}
 
 	void DeclareStruct(LLVMContext& llvm, TAccessRef<CType, TWrite<CIRStruct>> access, AST::Id id)
