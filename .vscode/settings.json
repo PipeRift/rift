@@ -222,5 +222,14 @@
         "--background-index"
     ],
     "lldb.showDisassembly": "auto",
-    "lldb.dereferencePointers": true
+    "lldb.dereferencePointers": true,
+    "cmake.debugConfig": {
+        "cwd": "${workspaceRoot}",
+        "args": [
+            "--project",
+            "Project",
+            "--backend",
+            "LLVM"
+        ]
+    }
 }

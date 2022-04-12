@@ -1,6 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "CppBackend/CodeGen.h"
+#include "CppBackend/CppGeneration.h"
 
 #include "CppBackend.h"
 #include "CppBackend/Components/CCppCodeGenFragment.h"
@@ -239,8 +239,7 @@ namespace Rift::Compiler::Cpp
 	{
 		ZoneScopedC(0x459bd1);
 
-		const auto& config = context.config;
-		auto& ast          = context.ast;
+		auto& ast = context.ast;
 
 		const Name name        = Modules::GetModuleName(ast, moduleId);
 		const Path modulePath  = codePath / name.ToString();

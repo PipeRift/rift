@@ -26,6 +26,7 @@
 #include <CppBackend.h>
 #include <Files/FileDialog.h>
 #include <IconsFontAwesome5.h>
+#include <LLVMBackend.h>
 #include <RiftContext.h>
 #include <UI/Inspection.h>
 #include <UI/Notify.h>
@@ -113,7 +114,7 @@ namespace Rift::EditorSystem
 
 	void Draw(AST::Tree& ast)
 	{
-		ZoneScopedN("EditorSystem::Draw");
+		ZoneScoped;
 
 		if (Modules::HasProject(ast))
 		{
@@ -214,7 +215,7 @@ namespace Rift::EditorSystem
 
 	void DrawProject(AST::Tree& ast)
 	{
-		ZoneScopedN("EditorSystem::DrawProject");
+		ZoneScoped;
 
 		if (!Ensure(ast.HasStatic<SEditor>()))
 		{
@@ -311,13 +312,13 @@ namespace Rift::EditorSystem
 				{
 					AST::Tree compileAST{ast};    // Intentional copy
 					Compiler::Config config;
-					Compiler::Build(compileAST, config, Compiler::CppBackend::GetStaticType());
+					Compiler::Build<Compiler::LLVMBackend>(compileAST, config);
 				}
 				if (UI::MenuItem("Build all"))
 				{
 					AST::Tree compileAST{ast};    // Intentional copy
 					Compiler::Config config;
-					Compiler::Build(compileAST, config, Compiler::CppBackend::GetStaticType());
+					Compiler::Build<Compiler::LLVMBackend>(compileAST, config);
 				}
 				UI::EndMenu();
 			}
@@ -479,6 +480,8 @@ namespace Rift::EditorSystem
 
 	void DrawTypes(AST::Tree& ast, SEditor& editor)
 	{
+		ZoneScoped;
+
 		TAccess<TWrite<CTypeEditor>, CType, CFileRef> typeEditors{ast};
 		for (AST::Id typeId : AST::ListAll<CType, CTypeEditor, CFileRef>(typeEditors))
 		{

@@ -3,8 +3,8 @@
 #include "CppBackend.h"
 
 #include "CppBackend/CMakeGen.h"
-#include "CppBackend/CodeGen.h"
 #include "CppBackend/Components/CCppNativeName.h"
+#include "CppBackend/CppGeneration.h"
 
 #include <AST/Components/CDeclClass.h>
 #include <AST/Components/CIdentifier.h>
@@ -39,7 +39,7 @@ namespace Rift::Compiler
 
 		void BuildCode(Context& context, const Path& codePath, const Path& cmakePath)
 		{
-			ZoneScopedC(0x459bd1);
+			ZoneScoped;
 			Files::CreateFolder(cmakePath, true);
 
 
@@ -62,38 +62,21 @@ namespace Rift::Compiler
 				return;
 			}
 		}
-
-		void BuildModule(Context& context, AST::Id moduleId)
-		{
-			if (!context.ast.Has<CModule>(moduleId))
-			{
-				Log::Info("Can't find module");
-				return;
-			}
-
-			Log::Info("Building module '{}'", Modules::GetModuleName(context.ast, moduleId));
-			Log::Info("Loading module files");
-			// project->LoadAllAssets();
-		}
 	}    // namespace Cpp
 
 	void CppBackend::Build(Context& context)
 	{
-		ZoneScopedC(0x459bd1);
+		ZoneScopedN("Backend: Cpp");
 
-		Log::Info("Building project '{}'", Modules::GetProjectName(context.ast));
 		DateTime startTime = DateTime::Now();
-
-		Cpp::AssignNativeTypeNames(context.ast);
-
 
 		const Path& codePath = context.config.intermediatesPath / "Code";
 		Files::Delete(codePath, true, false);
-		Files::Delete(context.config.binariesPath, true, false);
 		Files::CreateFolder(codePath, true);
-		Files::CreateFolder(context.config.binariesPath, true);
 
-		Log::Info("Generating Code: C++");
+		Cpp::AssignNativeTypeNames(context.ast);
+
+		Log::Info("Generating C++");
 		Cpp::GenerateCode(context, codePath);
 		if (context.HasErrors())
 		{
@@ -102,7 +85,7 @@ namespace Rift::Compiler
 		}
 
 
-		Log::Info("Generating code: CMake");
+		Log::Info("Generating CMake");
 		Cpp::GenerateCMake(context, codePath);
 		if (context.HasErrors())
 		{

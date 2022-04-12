@@ -36,6 +36,7 @@ namespace Rift::Types
 			case Type::Class: ast.Add<CDeclClass>(id); break;
 			case Type::Struct: ast.Add<CDeclStruct>(id); break;
 			case Type::FunctionLibrary: ast.Add<CDeclFunctionLibrary>(id); break;
+			default: break;
 		}
 	}
 

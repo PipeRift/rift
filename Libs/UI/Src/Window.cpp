@@ -120,7 +120,7 @@ namespace Rift::UI
 
 	void Render()
 	{
-		ZoneScopedNC("Render", 0xA245D1);
+		ZoneScopedC(0xA245D1);
 
 		ImGui::Render();
 		i32 displayW, displayH;

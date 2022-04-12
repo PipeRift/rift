@@ -1,0 +1,50 @@
+name: publish-release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+
+  publish:
+    name: ${{ matrix.name }} (${{ matrix.config }})
+    needs: build
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [Windows, Linux, MacOS]
+        config: [Release]
+        include:
+          - name: Windows
+            os: windows-latest
+            os-name: windows
+          - name: Linux
+            os: ubuntu-latest
+            os-name: linux
+          - name: MacOS
+            os: macos-latest
+            os-name: macos
+    steps:
+      - name: Download Rift build
+        uses: actions/download-artifact@v2
+        with:
+          name: rift-${{ matrix.os-name }}
+          path: rift
+
+      - name: Package
+        uses: thedoctor0/zip-release@master
+        with:
+          type: 'zip'
+          path: 'rift'
+          filename: 'rift-${{ matrix.os-name }}.zip'
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: rift-${{ matrix.os-name }}.zip

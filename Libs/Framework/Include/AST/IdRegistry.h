@@ -15,7 +15,15 @@ namespace Rift::AST
 		using Index   = Traits::Index;
 		using Version = Traits::Version;
 
-		IdRegistry()                        = default;
+	private:
+
+		TArray<Id> entities;
+		TArray<Index> available;
+
+
+	public:
+
+		IdRegistry() {}
 		IdRegistry(IdRegistry&& other)      = default;
 		IdRegistry(const IdRegistry& other) = default;
 		IdRegistry& operator=(IdRegistry&& other) = default;
@@ -55,10 +63,5 @@ namespace Rift::AST
 				}
 			}
 		}
-
-	private:
-
-		TArray<Id> entities;
-		TArray<Index> available;
 	};
 }    // namespace Rift::AST
