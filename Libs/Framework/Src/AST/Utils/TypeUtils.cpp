@@ -15,6 +15,7 @@
 #include "AST/Utils/Hierarchy.h"
 
 #include <AST/Utils/Paths.h>
+#include <Files/Files.h>
 #include <Misc/Checks.h>
 #include <Profiler.h>
 #include <Serialization/Formats/JsonFormat.h>
@@ -101,6 +102,22 @@ namespace Rift::Types
 			AST::Hierarchy::AddChildren(ast, type, id);
 		}
 		return id;
+	}
+
+	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access,
+	    TSpan<AST::Id> typeIds, bool removeFromDisk)
+	{
+		if (removeFromDisk)
+		{
+			for (AST::Id id : typeIds)
+			{
+				if (const auto* file = access.TryGet<const CFileRef>(id))
+				{
+					Files::Delete(file->path, true, false);
+				}
+			}
+		}
+		AST::Hierarchy::RemoveDeep(access, typeIds);
 	}
 
 	void Serialize(AST::Tree& ast, AST::Id id, String& data)

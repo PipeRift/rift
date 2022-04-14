@@ -33,6 +33,7 @@
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/StatementGraph.h>
 #include <AST/Utils/TransactionUtils.h>
+#include <GLFW/glfw3.h>
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
 #include <Utils/NodesInternal.h>
@@ -464,17 +465,31 @@ namespace Rift::Graph
 	{
 		ImGui::PopStyleVar(2);
 	}
-	void DrawNodeContextMenu(AST::Tree& ast, AST::Id typeId, AST::Id nodeId)
+	void DrawNodeContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> nodeIds)
 	{
-		if (ast.Has<CDeclFunction>(nodeId))
+		Check(!nodeIds.IsEmpty());
+
+		AST::Id firstNodeId = nodeIds[0];
+
+		if (nodeIds.Size() == 1 && ast.Has<CDeclFunction>(firstNodeId))
 		{
 			if (UI::MenuItem("Add return node"))
 			{
-				AST::Functions::AddReturn({ast, typeId});
+				AST::Id newId = AST::Functions::AddReturn({ast, typeId});
+				if (!IsNone(newId))
+				{
+					v2 position = ast.Get<CGraphTransform>(firstNodeId).position;
+					ast.Add<CGraphTransform>(newId, position + v2{10.f, 0.f});
+
+					AST::StatementGraph::TryConnect(ast, firstNodeId, newId);
+				}
 			}
 			UI::Separator();
 		}
-		if (UI::MenuItem("Delete")) {}
+		if (UI::MenuItem("Delete"))
+		{
+			AST::Functions::RemoveNodes(ast, nodeIds);
+		}
 	}
 
 	void DrawGraphContextMenu(AST::Tree& ast, AST::Id typeId)
@@ -655,6 +670,10 @@ namespace Rift::Graph
 			if (IsNone(hoveredNodeId))
 			{
 				DrawGraphContextMenu(ast, typeId);
+			}
+			else if (Nodes::IsNodeSelected(hoveredNodeId))
+			{
+				DrawNodeContextMenu(ast, typeId, Nodes::GetSelectedNodes());
 			}
 			else
 			{
@@ -914,25 +933,25 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawStatementLinks(AST::Tree& ast, const TArray<AST::Id>& children)
+	void DrawStatementLinks(
+	    TAccessRef<CParent, CStmtOutputs>& access, const TArray<AST::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 2.f);
 		Nodes::PushStyleColor(Nodes::ColorVar_Link, Style::executionColor);
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(Style::executionColor));
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
 
-		auto stmtOutputs = ast.Filter<CStmtOutputs>();
-		for (AST::Id childId : children)
+		for (AST::Id outputId : GetIf<CStmtOutputs>(access, children))
 		{
-			if (auto* childOutputs = stmtOutputs.TryGet<CStmtOutputs>(childId))
+			if (const auto* outputs = access.TryGet<const CStmtOutputs>(outputId))
 			{
-				CheckMsg(childOutputs->linkInputNodes.Size() == childOutputs->linkPins.Size(),
+				CheckMsg(childOutputs->linkInputNodes.Size() == outputs->linkPins.Size(),
 				    "Inputs and pins must match. Graph might be corrupted.");
-				for (i32 i = 0; i < childOutputs->linkInputNodes.Size(); ++i)
+				for (i32 i = 0; i < outputs->linkInputNodes.Size(); ++i)
 				{
-					const AST::Id outputPinId = childOutputs->linkPins[i];
-					const AST::Id inputNodeId = childOutputs->linkInputNodes[i];
-					if (!IsNone(outputPinId) && !IsNone(inputNodeId))
+					const AST::Id outputPinId = outputs->linkPins[i];
+					const AST::Id inputNodeId = outputs->linkInputNodes[i];
+					if (access.IsValid(outputPinId) && access.IsValid(inputNodeId))
 					{
 						// NOTE: Input pin ids equal input node ids
 						// TODO: Execution pin ids atm are the same as the node id.
@@ -960,7 +979,7 @@ namespace Rift::Graph
 		{
 			const auto& input      = access.Get<const CExprInput>(inputId);
 			const AST::Id outputId = input.linkOutputPin;
-			if (IsNone(outputId))
+			if (!access.IsValid(outputId))
 			{
 				continue;
 			}
@@ -1037,6 +1056,11 @@ namespace Rift::Graph
 				// Links
 				DrawStatementLinks(ast, *children);
 				DrawExpressionLinks(ast, *children);
+
+				if (UI::IsKeyReleased(GLFW_KEY_DELETE))
+				{
+					AST::Functions::RemoveNodes(ast, Nodes::GetSelectedNodes());
+				}
 			}
 
 			Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);

@@ -255,7 +255,7 @@ namespace Rift::AST::Hierarchy
 		}
 		return AST::NoId;
 	}
-	void FindParents(TAccessRef<CChild> access, TSpan<Id> childrenIds, TArray<Id>& outParents,
+	void FindParents(TAccessRef<CChild> access, TSpan<const Id> childrenIds, TArray<Id>& outParents,
 	    const TFunction<bool(AST::Id)>& callback)
 	{
 		outParents.Empty(false);

@@ -17,8 +17,7 @@ namespace Rift
 	{
 		struct Transaction
 		{
-			const TransactionAccess* access = nullptr;
-			TArray<Id> entityIds;
+			bool active = false;
 		};
 
 		struct ScopedTransaction

@@ -400,7 +400,7 @@ namespace Rift::Nodes
 		// Nodes::EndNode() call.
 		Rect gridContentBounds;
 
-		ImVector<AST::Id> selectedNodeIds;
+		TArray<AST::Id> selectedNodeIds;
 		ImVector<i32> selectedLinkIndices;
 
 		// Relative origins of selected nodes for snapping of dragged nodes

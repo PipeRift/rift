@@ -109,7 +109,7 @@ namespace Rift::Nodes
 				nodeHoveringCallback(nodeId, nodeHoveringCallbackUserData);
 			}
 		}
-		else if (editor.selectedNodeIds.contains(nodeId))
+		else if (editor.selectedNodeIds.Contains(nodeId))
 		{
 			miniMapNodeBackground = gNodes->style.colors[ColorVar_MiniMapNodeBackgroundSelected];
 		}

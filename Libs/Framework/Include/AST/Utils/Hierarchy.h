@@ -45,7 +45,7 @@ namespace Rift::AST::Hierarchy
 	 */
 	AST::Id FindParent(
 	    TAccessRef<CChild> access, AST::Id child, const TFunction<bool(AST::Id)>& callback);
-	void FindParents(TAccessRef<CChild> access, TSpan<Id> children, TArray<Id>& outParents,
+	void FindParents(TAccessRef<CChild> access, TSpan<const Id> children, TArray<Id>& outParents,
 	    const TFunction<bool(AST::Id)>& callback);
 
 	// void Copy(Tree& ast, const TArray<Id>& nodes, TArray<Id>& outNewNodes);
