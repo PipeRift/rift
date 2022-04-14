@@ -123,7 +123,7 @@ namespace Rift
 
 			if (isType && UI::MenuItem("Delete"))
 			{
-				AST::Hierarchy::RemoveDeep(ast, itemId);
+				Types::RemoveTypes(ast, itemId, true);
 			}
 
 			UI::Separator();

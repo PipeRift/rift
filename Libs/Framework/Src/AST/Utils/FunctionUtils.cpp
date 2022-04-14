@@ -19,6 +19,7 @@
 #include "AST/Statics/STypes.h"
 #include "AST/Utils/Hierarchy.h"
 #include "AST/Utils/StatementGraph.h"
+#include "AST/Utils/TransactionUtils.h"
 
 #include <AST/Components/CExprReturn.h>
 
@@ -264,6 +265,12 @@ namespace Rift::AST::Functions
 			}
 		}
 		return NoId;
+	}
+
+	void RemoveNodes(const RemoveAccess& access, TSpan<Id> ids)
+	{
+		ScopedChange(access, ids);
+		Hierarchy::RemoveDeep(access, ids);
 	}
 
 	void GetCallArgs(Tree& ast, TSpan<Id> callIds, TArray<Id>& inputArgIds,

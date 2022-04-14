@@ -405,12 +405,11 @@ namespace Rift::Nodes
 
 	// Use The following two functions to query the number of selected nodes or links in the
 	// current editor. Use after calling EndNodeEditor().
-	int NumSelectedNodes();
 	int NumSelectedLinks();
 	// Get the selected node/link ids. The pointer argument should point to an integer array
 	// with at least as many elements as the respective NumSelectedNodes/NumSelectedLinks
 	// function call returned.
-	void GetSelectedNodes(AST::Id* nodeIds);
+	const TArray<AST::Id>& GetSelectedNodes();
 	void GetSelectedLinks(Id* linkIds);
 	// Clears the list of selected nodes/links. Useful if you want to delete a selected node or
 	// link.

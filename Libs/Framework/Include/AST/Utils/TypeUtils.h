@@ -5,6 +5,10 @@
 #include "AST/Tree.h"
 #include "AST/TypeRef.h"
 
+#include <AST/Access.h>
+#include <AST/Components/CChild.h>
+#include <AST/Components/CFileRef.h>
+#include <AST/Components/CParent.h>
 #include <AST/Components/CType.h>
 
 
@@ -17,6 +21,9 @@ namespace Rift::Types
 
 	AST::Id AddVariable(AST::TypeRef type, Name name);
 	AST::Id AddFunction(AST::TypeRef type, Name name);
+
+	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access,
+	    TSpan<AST::Id> types, bool removeFromDisk = false);
 
 	void Serialize(AST::Tree& ast, AST::Id id, String& data);
 	void Deserialize(AST::Tree& ast, AST::Id id, const String& data);

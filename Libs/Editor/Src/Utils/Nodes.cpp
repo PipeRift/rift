@@ -557,12 +557,12 @@ namespace Rift::Nodes
 		//
 		// Otherwise, we want to allow for the possibility of multiple nodes to be
 		// moved at once.
-		if (!editor.selectedNodeIds.contains(nodeId))
+		if (!editor.selectedNodeIds.Contains(nodeId))
 		{
 			editor.selectedLinkIndices.clear();
 			if (!gNodes->multipleSelectModifier)
-				editor.selectedNodeIds.clear();
-			editor.selectedNodeIds.push_back(nodeId);
+				editor.selectedNodeIds.Empty();
+			editor.selectedNodeIds.Add(nodeId);
 
 			// Ensure that individually selected nodes get rendered on top
 			editor.nodes.PushToTheFront(nodeId);
@@ -570,8 +570,7 @@ namespace Rift::Nodes
 		// Deselect a previously-selected node
 		else if (gNodes->multipleSelectModifier)
 		{
-			const AST::Id* const nodePtr = editor.selectedNodeIds.find(nodeId);
-			editor.selectedNodeIds.erase(nodePtr);
+			editor.selectedNodeIds.Remove(nodeId);
 
 			// Don't allow dragging after deselecting
 			editor.clickInteraction.type = ClickInteractionType_None;
@@ -596,7 +595,7 @@ namespace Rift::Nodes
 		editor.clickInteraction.type = ClickInteractionType_Link;
 		// When a link is selected, clear all other selections, and insert the link
 		// as the sole selection.
-		editor.selectedNodeIds.clear();
+		editor.selectedNodeIds.Empty();
 		editor.selectedLinkIndices.clear();
 		editor.selectedLinkIndices.push_back(linkIdx);
 	}
@@ -716,7 +715,7 @@ namespace Rift::Nodes
 
 		// Update node selection
 
-		editor.selectedNodeIds.clear();
+		editor.selectedNodeIds.Empty();
 
 		// Test for overlap against node rectangles
 
@@ -725,7 +724,7 @@ namespace Rift::Nodes
 			NodeData& node = editor.nodes.Get(nodeId);
 			if (boxRect.Overlaps(node.rect))
 			{
-				editor.selectedNodeIds.push_back(nodeId);
+				editor.selectedNodeIds.Add(nodeId);
 			}
 		}
 
@@ -845,7 +844,7 @@ namespace Rift::Nodes
 			const v2 origin =
 			    SnapOriginToGrid(gNodes->mousePosition - gNodes->CanvasOriginScreenSpace
 			                     - editor.Panning + editor.PrimaryNodeOffset);
-			for (i32 i = 0; i < editor.selectedNodeIds.size(); ++i)
+			for (i32 i = 0; i < editor.selectedNodeIds.Size(); ++i)
 			{
 				const v2 nodeRel     = editor.SelectedNodeOrigins[i];
 				const AST::Id nodeId = editor.selectedNodeIds[i];
@@ -883,20 +882,20 @@ namespace Rift::Nodes
 
 		if (gNodes->leftMouseReleased)
 		{
-			TArray<AST::Id>& depthStack          = editor.nodes.depthOrder;
-			const ImVector<AST::Id>& selectedIds = editor.selectedNodeIds;
+			TArray<AST::Id>& depthStack        = editor.nodes.depthOrder;
+			const TArray<AST::Id>& selectedIds = editor.selectedNodeIds;
 
 			// Bump the selected node indices, in order, to the top of the depth stack.
 			// NOTE: this algorithm has worst case time complexity of O(N^2), if the
 			// node selection is ~ N (due to selected_ids.contains()).
 
-			if ((selectedIds.Size > 0) && (selectedIds.Size < depthStack.Size()))
+			if ((selectedIds.Size() > 0) && (selectedIds.Size() < depthStack.Size()))
 			{
 				// The number of indices moved. Stop after selected_ids.Size
 				i32 numMoved = 0;
-				for (i32 i = 0; i < depthStack.Size() - selectedIds.Size; ++i)
+				for (i32 i = 0; i < depthStack.Size() - selectedIds.Size(); ++i)
 				{
-					for (AST::Id nodeId = depthStack[i]; selectedIds.contains(nodeId);
+					for (AST::Id nodeId = depthStack[i]; selectedIds.Contains(nodeId);
 					     nodeId         = depthStack[i])
 					{
 						depthStack.RemoveAt(i, false);
@@ -904,7 +903,7 @@ namespace Rift::Nodes
 						++numMoved;
 					}
 
-					if (numMoved == selectedIds.Size)
+					if (numMoved == selectedIds.Size())
 					{
 						break;
 					}
@@ -1408,7 +1407,7 @@ namespace Rift::Nodes
 
 		Color nodeBackground     = node.colorStyle.Background;
 		Color titlebarBackground = node.colorStyle.Titlebar;
-		if (editor.selectedNodeIds.contains(nodeId))
+		if (editor.selectedNodeIds.Contains(nodeId))
 		{
 			nodeBackground     = node.colorStyle.BackgroundSelected;
 			titlebarBackground = node.colorStyle.TitlebarSelected;
@@ -2436,7 +2435,7 @@ namespace Rift::Nodes
 	{
 		assert(gNodes->currentScope != Scope::None);
 		const EditorContext& editor = GetEditorContext();
-		return editor.selectedNodeIds.size();
+		return editor.selectedNodeIds.Size();
 	}
 
 	i32 NumSelectedLinks()
@@ -2446,15 +2445,10 @@ namespace Rift::Nodes
 		return editor.selectedLinkIndices.size();
 	}
 
-	void GetSelectedNodes(AST::Id* nodeIds)
+	const TArray<AST::Id>& GetSelectedNodes()
 	{
-		assert(nodeIds != nullptr);
-
 		const EditorContext& editor = GetEditorContext();
-		for (i32 i = 0; i < editor.selectedNodeIds.size(); ++i)
-		{
-			nodeIds[i] = editor.selectedNodeIds[i];
-		}
+		return editor.selectedNodeIds;
 	}
 
 	void GetSelectedLinks(Id* linkIds)
@@ -2472,14 +2466,13 @@ namespace Rift::Nodes
 	void ClearNodeSelection()
 	{
 		EditorContext& editor = GetEditorContext();
-		editor.selectedNodeIds.clear();
+		editor.selectedNodeIds.Empty();
 	}
 
 	void ClearNodeSelection(AST::Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
-		assert(editor.selectedNodeIds.find(nodeId) != editor.selectedNodeIds.end());
-		editor.selectedNodeIds.find_erase_unsorted(nodeId);
+		editor.selectedNodeIds.Remove(nodeId);
 	}
 
 	void ClearLinkSelection()
@@ -2500,8 +2493,7 @@ namespace Rift::Nodes
 	void SelectNode(AST::Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
-		assert(editor.selectedNodeIds.find(nodeId) == editor.selectedNodeIds.end());
-		editor.selectedNodeIds.push_back(nodeId);
+		editor.selectedNodeIds.AddUnique(nodeId);
 	}
 
 	void SelectLink(Id linkId)
@@ -2516,7 +2508,7 @@ namespace Rift::Nodes
 	bool IsNodeSelected(AST::Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
-		return editor.selectedNodeIds.find(nodeId) != editor.selectedNodeIds.end();
+		return editor.selectedNodeIds.Contains(nodeId);
 	}
 
 	bool IsLinkSelected(Id linkId)

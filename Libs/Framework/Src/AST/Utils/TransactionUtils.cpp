@@ -31,45 +31,40 @@ namespace Rift::AST::Transactions
 
 	bool PreChange(const TransactionAccess& access, TSpan<const Id> entityIds)
 	{
-		if (!EnsureMsg(!activeTransaction.access,
+		if (!EnsureMsg(!activeTransaction.active,
 		        "Tried to record a transaction while another is already being recorded"))
 		{
 			return false;
 		}
 
-		activeTransaction = Transaction{&access};
-		activeTransaction.entityIds.Append(entityIds);
-		// TODO: Capture AST state
-		return true;
-	}
+		activeTransaction = Transaction{true};
 
-	void PostChange()
-	{
-		if (!EnsureMsg(
-		        activeTransaction.access, "Cant finish a transaction while none is being recorded"))
-		{
-			return;
-		}
-
-		const TransactionAccess& access = *activeTransaction.access;
-
-		access.Add<CChanged>(activeTransaction.entityIds);
+		access.Add<CChanged>(entityIds);
 
 		// Mark files dirty
 		TArray<Id> fileIds;
-		Hierarchy::FindParents(access, activeTransaction.entityIds, fileIds,
-		    [&access](Id parentId) {
+		Hierarchy::FindParents(access, entityIds, fileIds, [&access](Id parentId) {
 			return access.Has<CFileRef>(parentId);
 		});
 
 		// Transaction ids can also be files. FindParents doesn't consider them, so we merge it
-		fileIds.Append(activeTransaction.entityIds);
+		fileIds.Append(entityIds);
 		AST::RemoveIfNot<CFileRef>(access, fileIds);
 		if (!fileIds.IsEmpty())
 		{
 			access.Add<CFileDirty>(fileIds);
 		}
 
-		activeTransaction = {};
+		// TODO: Capture AST state
+		return true;
+	}
+
+	void PostChange()
+	{
+		if (EnsureMsg(
+		        activeTransaction.active, "Cant finish a transaction while none is being recorded"))
+		{
+			activeTransaction = {};
+		}
 	}
 }    // namespace Rift::AST::Transactions
