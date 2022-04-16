@@ -1,4 +1,7 @@
 {
     "name": "TestProject",
-    "target": "Executable"
+    "target": "Executable",
+    "type": "Rift",
+    "dependencies": [],
+    "libraryFiles": []
 }

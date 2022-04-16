@@ -99,16 +99,77 @@ namespace Rift::UI
 			UI::InputFloat3(label.c_str(), static_cast<float*>(data));
 		}
 	}
+
+	void DrawValue(void* data, Refl::Type* type)
+	{
+		if (auto* nativeType = type->AsNative())
+		{
+			DrawNativeValue(data, nativeType);
+		}
+		else if (auto* enumType = type->AsEnum())
+		{
+			DrawEnumValue(data, enumType);
+		}
+	}
+
+
 	void InspectProperty(const Refl::PropertyHandle& handle)
 	{
 		UI::TableNextRow();
+		auto* type = handle.GetType();
+		if (!type)
+		{
+			return;
+		}
 
-		StringView name = handle.GetDisplayName();
+		if (auto* arrayProperty = handle.GetArrayProperty())
+		{
+			void* instance = handle.GetPtr();
+			const i32 size = arrayProperty->GetSize(instance);
 
-		if (auto* structType = handle.GetType() ? handle.GetType()->AsStruct() : nullptr)
+			UI::TableSetColumnIndex(0);
+			const bool open = BeginInspectHeader(handle.GetDisplayName().data());
+			UI::TableSetColumnIndex(1);
+			UI::Text(Strings::Format("{} items", size));
+			if (open)
+			{
+				static String label;
+				if (auto* structType = type->AsStruct())
+				{
+					for (i32 i = 0; i < size; ++i)
+					{
+						label.clear();
+						Strings::FormatTo(label, "{}##{}", i, handle.GetDisplayName());
+						UI::TableNextRow();
+						UI::TableSetColumnIndex(0);
+						if (BeginInspectHeader(label))
+						{
+							InspectProperties(arrayProperty->GetItem(instance, i), structType);
+							EndInspectHeader();
+						}
+					}
+				}
+				else
+				{
+					for (i32 i = 0; i < size; ++i)
+					{
+						label.clear();
+						Strings::FormatTo(label, "{}", i);
+						UI::TableNextRow();
+						UI::TableSetColumnIndex(0);
+						UI::AlignTextToFramePadding();
+						UI::Text(label);
+						UI::TableSetColumnIndex(1);
+						DrawValue(arrayProperty->GetItem(instance, i), type);
+					}
+				}
+				EndInspectHeader();
+			}
+		}
+		else if (auto* structType = type->AsStruct())
 		{
 			UI::TableSetColumnIndex(0);
-			if (BeginInspectHeader(name.data()))
+			if (BeginInspectHeader(handle.GetDisplayName().data()))
 			{
 				InspectProperties(handle.GetPtr(), structType);
 				EndInspectHeader();
@@ -118,17 +179,10 @@ namespace Rift::UI
 		{
 			UI::TableSetColumnIndex(0);
 			UI::AlignTextToFramePadding();
-			UI::Text(name);
+			UI::Text(handle.GetDisplayName());
 
 			UI::TableSetColumnIndex(1);
-			if (auto* nativeType = handle.GetType() ? handle.GetType()->AsNative() : nullptr)
-			{
-				DrawNativeValue(handle.GetPtr(), nativeType);
-			}
-			else if (auto* enumType = handle.GetType() ? handle.GetType()->AsEnum() : nullptr)
-			{
-				DrawEnumValue(handle.GetPtr(), enumType);
-			}
+			DrawValue(handle.GetPtr(), type);
 		}
 	}
 
@@ -152,13 +206,13 @@ namespace Rift::UI
 		UI::PopID();
 	}
 
-	bool BeginInspectHeader(const char* label)
+	bool BeginInspectHeader(StringView label)
 	{
 		Style::PushHeaderColor(Style::GetNeutralColor(1));
 
 		UI::AlignTextToFramePadding();
 		bool isOpen = UI::CollapsingHeader(
-		    label, ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_AllowItemOverlap);
+		    label.data(), ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_AllowItemOverlap);
 		Style::PopHeaderColor();
 
 		if (isOpen)

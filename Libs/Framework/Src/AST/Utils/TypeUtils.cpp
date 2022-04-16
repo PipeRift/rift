@@ -4,6 +4,7 @@
 
 #include "AST/Components/CDeclClass.h"
 #include "AST/Components/CDeclFunction.h"
+#include "AST/Components/CDeclFunctionInterface.h"
 #include "AST/Components/CDeclFunctionLibrary.h"
 #include "AST/Components/CDeclStruct.h"
 #include "AST/Components/CDeclVariable.h"
@@ -37,6 +38,7 @@ namespace Rift::Types
 			case Type::Class: ast.Add<CDeclClass>(id); break;
 			case Type::Struct: ast.Add<CDeclStruct>(id); break;
 			case Type::FunctionLibrary: ast.Add<CDeclFunctionLibrary>(id); break;
+			case Type::FunctionInterface: ast.Add<CDeclFunctionInterface>(id); break;
 			default: break;
 		}
 	}
@@ -54,6 +56,10 @@ namespace Rift::Types
 		else if (ast.Has<CDeclFunctionLibrary>(id))
 		{
 			return Type::FunctionLibrary;
+		}
+		else if (ast.Has<CDeclFunctionInterface>(id))
+		{
+			return Type::FunctionInterface;
 		}
 		return Type::None;
 	}

@@ -1,1 +1,7 @@
-{}
+{
+    "name": "none",
+    "target": "Static",
+    "type": "CBinding",
+    "dependencies": [],
+    "libraryFiles": []
+}

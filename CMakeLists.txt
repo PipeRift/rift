@@ -35,7 +35,7 @@ include(CMake/LLVM.cmake)
 
 message(STATUS "LLVM_USE_CRT_RELEASE ${LLVM_USE_CRT_RELEASE}")
 message(STATUS "LLVM_USE_CRT_DEBUG ${LLVM_USE_CRT_DEBUG}")
-#include(ChooseMSVCCRT)
+include(ChooseMSVCCRT)
 
 add_subdirectory(Extern)
 
