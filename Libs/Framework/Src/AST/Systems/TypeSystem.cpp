@@ -78,6 +78,19 @@ namespace Rift::TypeSystem
 		});
 	}
 
+	void PropagateVariableTypes(PropagateVariableTypesAccess access)
+	{
+		for (AST::Id id : AST::ListAll<CExprDeclRefId>(access))
+		{
+			const AST::Id declId = access.Get<const CExprDeclRefId>(id).declarationId;
+			if (access.IsValid(declId))
+			{
+				const AST::Id typeId = access.Get<const CDeclVariable>(declId).typeId;
+				access.Add<CExprType>(id, {typeId});
+			}
+		}
+	}
+
 	void PropagateExpressionTypes(AST::Tree& ast)
 	{
 		TArray<AST::Id> literals =

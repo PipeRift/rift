@@ -28,8 +28,6 @@ namespace Rift::Compiler
 
 		{
 			ZoneScopedN("Frontend");
-			LoadSystem::Init(ast);
-			TypeSystem::Init(ast);
 
 			if (!Modules::HasProject(ast))
 			{
@@ -42,6 +40,7 @@ namespace Rift::Compiler
 			LoadSystem::Run(ast);
 
 			OptimizationSystem::PruneDisconnectedExpressions(ast);
+			TypeSystem::PropagateVariableTypes(ast);
 			TypeSystem::PropagateExpressionTypes(ast);
 		}
 
