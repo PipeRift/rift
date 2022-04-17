@@ -2,6 +2,7 @@
 
 #include "UI/Inspection.h"
 
+#include <IconsFontAwesome5.h>
 #include <Reflection/GetType.h>
 #include <Reflection/StructType.h>
 
@@ -99,18 +100,131 @@ namespace Rift::UI
 			UI::InputFloat3(label.c_str(), static_cast<float*>(data));
 		}
 	}
+
+	void DrawValue(void* data, Refl::Type* type)
+	{
+		if (auto* nativeType = type->AsNative())
+		{
+			DrawNativeValue(data, nativeType);
+		}
+		else if (auto* enumType = type->AsEnum())
+		{
+			DrawEnumValue(data, enumType);
+		}
+	}
+
+	void DrawArrayValue(bool open, const Refl::ArrayProperty& property, void* instance)
+	{
+		UI::Text(Strings::Format("{} items", property.GetSize(instance)));
+		if (open)    // NOTE: Prevents buttons from being affected by indent
+		{
+			UI::Unindent(20.f);
+		}
+		UI::SameLine(ImGui::GetContentRegionAvailWidth() - 50.f);
+		Style::PushStyleCompact();
+		if (UI::Button(ICON_FA_PLUS "##AddItem", v2(16.f, 18.f)))
+		{
+			property.AddItem(instance, nullptr);
+		}
+		UI::SameLine();
+		if (UI::Button(ICON_FA_TRASH_ALT "##Empty", v2(16.f, 18.f)))
+		{
+			property.Empty(instance);
+		}
+		Style::PopStyleCompact();
+		if (open)
+		{
+			UI::Indent(20.f);
+		}
+	}
+
+	void DrawArrayItemButtons(const Refl::ArrayProperty& property, void* instance, i32 index)
+	{
+		UI::SameLine(ImGui::GetContentRegionAvailWidth() - 20.f);
+		Style::PushStyleCompact();
+		static String label;
+		label.clear();
+		Strings::FormatTo(label, ICON_FA_TIMES "##removeItem_{}", index);
+		if (UI::Button(label.c_str(), v2(18.f, 18.f)))
+		{
+			property.RemoveItem(instance, index);
+		}
+		Style::PopStyleCompact();
+	}
+
+	void InspectArrayProperty(const Refl::ArrayProperty& property, void* instance)
+	{
+		UI::TableSetColumnIndex(0);
+		const bool open = BeginInspectHeader(property.GetDisplayName().data());
+		UI::TableSetColumnIndex(1);
+		DrawArrayValue(open, property, instance);
+		if (open)
+		{
+			const i32 size = property.GetSize(instance);
+			static String label;
+			if (auto* structType = property.GetType()->AsStruct())
+			{
+				for (i32 i = 0; i < size; ++i)
+				{
+					label.clear();
+					Strings::FormatTo(label, "{}", i);
+					UI::TableNextRow();
+					UI::TableSetColumnIndex(0);
+					bool open = BeginInspectHeader(label);
+					if (open)
+					{
+						UI::Unindent(20.f);
+					}
+					UI::TableSetColumnIndex(1);
+					DrawArrayItemButtons(property, instance, i);
+					if (open)
+					{
+						UI::Indent(20.f);
+						InspectProperties(property.GetItem(instance, i), structType);
+						EndInspectHeader();
+					}
+				}
+			}
+			else
+			{
+				for (i32 i = 0; i < size; ++i)
+				{
+					label.clear();
+					Strings::FormatTo(label, "{}", i);
+					UI::TableNextRow();
+					UI::TableSetColumnIndex(0);
+					UI::AlignTextToFramePadding();
+					UI::Text(label);
+					UI::TableSetColumnIndex(1);
+					DrawValue(property.GetItem(instance, i), property.GetType());
+					DrawArrayItemButtons(property, instance, i);
+				}
+			}
+			EndInspectHeader();
+		}
+	}
+
 	void InspectProperty(const Refl::PropertyHandle& handle)
 	{
 		UI::TableNextRow();
+		auto* type = handle.GetType();
+		if (!type)
+		{
+			return;
+		}
 
-		StringView name = handle.GetDisplayName();
-
-		if (auto* structType = handle.GetType() ? handle.GetType()->AsStruct() : nullptr)
+		void* instance = handle.GetPtr();
+		UI::PushID(instance);
+		if (auto* arrayProperty = handle.GetArrayProperty())
+		{
+			InspectArrayProperty(*arrayProperty, instance);
+		}
+		else if (auto* structType = type->AsStruct())
 		{
 			UI::TableSetColumnIndex(0);
-			if (BeginInspectHeader(name.data()))
+			if (BeginInspectHeader(handle.GetDisplayName().data()))
 			{
-				InspectProperties(handle.GetPtr(), structType);
+				InspectProperties(instance, structType);
 				EndInspectHeader();
 			}
 		}
@@ -118,18 +232,12 @@ namespace Rift::UI
 		{
 			UI::TableSetColumnIndex(0);
 			UI::AlignTextToFramePadding();
-			UI::Text(name);
+			UI::Text(handle.GetDisplayName());
 
 			UI::TableSetColumnIndex(1);
-			if (auto* nativeType = handle.GetType() ? handle.GetType()->AsNative() : nullptr)
-			{
-				DrawNativeValue(handle.GetPtr(), nativeType);
-			}
-			else if (auto* enumType = handle.GetType() ? handle.GetType()->AsEnum() : nullptr)
-			{
-				DrawEnumValue(handle.GetPtr(), enumType);
-			}
+			DrawValue(instance, type);
 		}
+		UI::PopID();
 	}
 
 	void InspectProperties(void* container, Refl::DataType* type)
@@ -152,13 +260,13 @@ namespace Rift::UI
 		UI::PopID();
 	}
 
-	bool BeginInspectHeader(const char* label)
+	bool BeginInspectHeader(StringView label)
 	{
 		Style::PushHeaderColor(Style::GetNeutralColor(1));
 
 		UI::AlignTextToFramePadding();
 		bool isOpen = UI::CollapsingHeader(
-		    label, ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_AllowItemOverlap);
+		    label.data(), ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_AllowItemOverlap);
 		Style::PopHeaderColor();
 
 		if (isOpen)

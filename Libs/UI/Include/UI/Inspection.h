@@ -17,6 +17,7 @@ namespace Rift::UI
 {
 	void DrawEnumValue(void* data, Refl::EnumType* type);
 	void DrawNativeValue(void* data, Refl::NativeType* type);
+	void DrawValue(void* data, Refl::Type* type);
 
 	void InspectProperty(const Refl::PropertyHandle& property);
 	void InspectProperties(void* container, Refl::DataType* type);
@@ -35,7 +36,7 @@ namespace Rift::UI
 		InspectProperties(data, type);
 	}
 
-	bool BeginInspectHeader(const char* label);
+	bool BeginInspectHeader(StringView label);
 	void EndInspectHeader();
 
 	bool BeginInspector(const char* name, v2 size = v2{0.f, 0.f});

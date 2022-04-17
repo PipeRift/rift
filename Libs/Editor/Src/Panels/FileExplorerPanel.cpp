@@ -145,6 +145,11 @@ namespace Rift
 				{
 					CreateType(ast, "Create Function Library file", Type::FunctionLibrary, path);
 				}
+				if (UI::MenuItem("Function Interface"))
+				{
+					CreateType(
+					    ast, "Create Function Interface file", Type::FunctionInterface, path);
+				}
 				UI::EndMenu();
 			}
 		}

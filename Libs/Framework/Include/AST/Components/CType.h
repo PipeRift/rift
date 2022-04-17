@@ -9,10 +9,11 @@ namespace Rift
 {
 	enum class Type : u8
 	{
-		None            = 0,
-		Class           = 1 << 0,
-		Struct          = 1 << 1,
-		FunctionLibrary = 1 << 2
+		None              = 0,
+		Class             = 1 << 0,
+		Struct            = 1 << 1,
+		FunctionLibrary   = 1 << 2,
+		FunctionInterface = 1 << 3
 	};
 
 

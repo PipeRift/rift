@@ -945,7 +945,7 @@ namespace Rift::Graph
 		{
 			if (const auto* outputs = access.TryGet<const CStmtOutputs>(outputId))
 			{
-				CheckMsg(childOutputs->linkInputNodes.Size() == outputs->linkPins.Size(),
+				CheckMsg(outputs->linkInputNodes.Size() == outputs->linkPins.Size(),
 				    "Inputs and pins must match. Graph might be corrupted.");
 				for (i32 i = 0; i < outputs->linkInputNodes.Size(); ++i)
 				{

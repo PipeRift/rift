@@ -23,8 +23,8 @@ namespace Rift
 		void Register(TPtr<RiftContext> context) override
 		{
 			context->AddView(View{.name = "Graph",
-			    .supportedTypes         = Type::Class | Type::FunctionLibrary,
-			    .onDrawEditor           = &GraphViewPlugin::DrawEditor});
+			    .supportedTypes = Type::Class | Type::FunctionLibrary | Type::FunctionInterface,
+			    .onDrawEditor   = &GraphViewPlugin::DrawEditor});
 		}
 
 		static void DrawEditor() {}
