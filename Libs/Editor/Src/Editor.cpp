@@ -11,12 +11,14 @@
 #include <AST/Systems/FunctionsSystem.h>
 #include <AST/Systems/LoadSystem.h>
 #include <AST/Systems/TransactionSystem.h>
+#include <AST/Systems/TypeSystem.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Files/Files.h>
 #include <Log.h>
 #include <Profiler.h>
 #include <RiftContext.h>
 #include <UI/Window.h>
+
 
 
 namespace Rift
@@ -72,6 +74,8 @@ namespace Rift
 
 			LoadSystem::Run(ast);
 			FunctionsSystem::ResolveCallFunctionIds(ast);
+			TypeSystem::PropagateVariableTypes(ast);
+			TypeSystem::PropagateExpressionTypes(ast);
 
 			EditorSystem::Draw(ast);
 			FunctionsSystem::PropagateDirtyIntoCalls(ast);

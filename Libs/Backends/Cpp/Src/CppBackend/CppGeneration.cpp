@@ -221,18 +221,7 @@ namespace Rift::Compiler::Cpp
 		}
 	}
 
-	void GenParameters(TAccessRef<CExprType, CIdentifier, TWrite<CCppCodeGenFragment>> access)
-	{
-		for (AST::Id entity : AST::ListAll<CExprType, CIdentifier>(access))
-		{
-			const auto& type = access.Get<const CExprType>(entity);
-			const auto& name = access.Get<const CIdentifier>(entity);
-
-			auto& fragment = access.Add<CCppCodeGenFragment>(entity);
-			fragment.code.clear();
-			Strings::FormatTo(fragment.code, "{} {}", type.name, name.name);
-		}
-	}
+	void GenParameters(TAccessRef<CExprType, CIdentifier, TWrite<CCppCodeGenFragment>> access) {}
 
 
 	void GenerateModuleCode(Context& context, AST::Id moduleId, const Path& codePath)

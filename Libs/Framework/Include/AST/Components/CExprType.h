@@ -15,9 +15,6 @@ namespace Rift
 		PROP(id, Prop_NotSerialized)
 		AST::Id id = AST::NoId;
 
-		PROP(name)
-		Name name;
-
 
 		CExprType(AST::Id id = AST::NoId) : id{id} {}
 	};

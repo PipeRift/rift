@@ -749,12 +749,10 @@ namespace Rift::Graph
 		String name;
 		for (AST::Id id : AST::GetIf<CExprDeclRefId>(ast, children))
 		{
-			AST::Id typeId     = AST::NoId;
 			AST::Id variableId = ast.Get<const CExprDeclRefId>(id).declarationId;
-			if (ast.IsValid(variableId))
-			{
-				typeId = ast.Get<const CDeclVariable>(variableId).typeId;
-			}
+
+			const CExprType* exprType = ast.TryGet<CExprType>(id);
+			AST::Id typeId            = exprType ? exprType->id : AST::NoId;
 
 			const Color color = Style::GetTypeColor(ast, typeId);
 			Style::PushNodeBackgroundColor(color);
@@ -766,11 +764,9 @@ namespace Rift::Graph
 				Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
 				PushInnerNodeStyle();
 				StringView name = "Invalid";
-				if (const auto* identifier = ast.IsValid(variableId)
-				                               ? ast.TryGet<const CIdentifier>(variableId)
-				                               : nullptr)
+				if (ast.IsValid(variableId) && ast.Has<CIdentifier>(variableId))
 				{
-					name = identifier->name.ToString();
+					name = ast.Get<const CIdentifier>(variableId).name.ToString();
 				}
 				UI::Text(name);
 				PopInnerNodeStyle();
