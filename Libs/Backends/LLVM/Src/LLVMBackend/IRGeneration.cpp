@@ -3,6 +3,7 @@
 #include "LLVMBackend/IRGeneration.h"
 
 #include "LLVMBackend/Components/CIRFunction.h"
+#include "LLVMBackend/Components/CIRInstruction.h"
 #include "LLVMBackend/Components/CIRModule.h"
 #include "LLVMBackend/Components/CIRStruct.h"
 #include "LLVMBackend/LLVMHelpers.h"
@@ -10,6 +11,7 @@
 #include <AST/Components/CDeclClass.h>
 #include <AST/Components/CDeclFunction.h>
 #include <AST/Components/CDeclStruct.h>
+#include <AST/Components/CExprCall.h>
 #include <AST/Components/CLiteralFloating.h>
 #include <AST/Components/CLiteralIntegral.h>
 #include <AST/Components/CType.h>
@@ -63,6 +65,49 @@ namespace Rift::Compiler::LLVM
 		}
 	}
 
+	void DeclareFunctions(LLVMContext& llvm, IRBuilder<>& builder,
+	    TAccessRef<TWrite<CIRFunction>, CIdentifier> access, TSpan<AST::Id> ids, Module& irModule)
+	{
+		ZoneScoped;
+		for (AST::Id id : ids)
+		{
+			const CIdentifier& ident = access.Get<const CIdentifier>(id);
+
+			FunctionType* type = FunctionType::get(builder.getVoidTy(), false);
+			access.Add<CIRFunction>(id,
+			    {Function::Create(type, Function::ExternalLinkage, ToLLVM(ident.name), &irModule)});
+		}
+	}
+
+	void AddExprCalls(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
+	    TAccessRef<CExprCallId, CIRFunction, TWrite<CIRInstruction>> access)
+	{
+		ZoneScoped;
+		for (AST::Id id : AST::ListAll<CExprCallId>(access))
+		{
+			const AST::Id functionId = access.Get<const CExprCallId>(id).functionId;
+			if (!access.IsValid(functionId))
+			{
+				context.AddError("Call to an unknown function");
+				continue;
+			}
+			const auto* function = access.TryGet<const CIRFunction>(functionId);
+			if (!Ensure(function))
+			{
+				context.AddError("Call to an invalid function");
+				continue;
+			}
+
+			// TODO: Make sure arguments match
+			// if (CalleeF->arg_size() != Args.size())
+			//	context.AddError("Incorrect number of arguments provided");
+
+			TArray<Value*> args;
+			access.Add<CIRInstruction>(
+			    id, {builder.CreateCall(function->instance, ToLLVM(args), "calltmp")});
+		}
+	}
+
 	void DefineStructs(LLVMContext& llvm, TAccessRef<CIRStruct> access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
@@ -84,20 +129,6 @@ namespace Rift::Compiler::LLVM
 
 			TArray<llvm::Type*> memberTypes;
 			irStruct->setBody(ToLLVM(memberTypes));
-		}
-	}
-
-	void DeclareFunctions(LLVMContext& llvm, IRBuilder<>& builder,
-	    TAccessRef<TWrite<CIRFunction>, CIdentifier> access, TSpan<AST::Id> ids, Module& irModule)
-	{
-		ZoneScoped;
-		for (AST::Id id : ids)
-		{
-			const CIdentifier& ident = access.Get<const CIdentifier>(id);
-
-			FunctionType* type = FunctionType::get(builder.getVoidTy(), false);
-			access.Add<CIRFunction>(id,
-			    {Function::Create(type, Function::ExternalLinkage, ToLLVM(ident.name), &irModule)});
 		}
 	}
 
@@ -151,6 +182,8 @@ namespace Rift::Compiler::LLVM
 
 		DefineStructs(llvm, ast, structIds);
 		DefineClasses(llvm, ast, classIds);
+
+		AddExprCalls(context, llvm, builder, ast);
 		DefineFunctions(llvm, builder, ast, functionIds, irModule);
 	}
 
