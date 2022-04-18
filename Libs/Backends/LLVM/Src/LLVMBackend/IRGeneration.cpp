@@ -11,7 +11,7 @@
 #include <AST/Components/CDeclFunction.h>
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CLiteralFloating.h>
-#include <AST/Components/CLiteralI32.h>
+#include <AST/Components/CLiteralIntegral.h>
 #include <AST/Components/CType.h>
 #include <AST/Filtering.h>
 #include <AST/Utils/Hierarchy.h>
@@ -26,9 +26,11 @@ namespace Rift::Compiler::LLVM
 {
 	using namespace llvm;
 
-	Value* GetLiteralI32(LLVMContext& llvm, TAccessRef<CLiteralI32> access, AST::Id id)
+	Value* GetLiteralIntegral(LLVMContext& llvm, TAccessRef<CLiteralIntegral> access, AST::Id id)
 	{
-		return ConstantInt::get(llvm, APInt(32, access.Get<const CLiteralI32>(id).value));
+		const auto& integral = access.Get<const CLiteralIntegral>(id);
+		return ConstantInt::get(
+		    llvm, APInt(integral.GetSize(), integral.value, integral.IsSigned()));
 	}
 
 	Value* GetLiteralFloating(LLVMContext& llvm, TAccessRef<CLiteralFloating> access, AST::Id id)
@@ -39,33 +41,71 @@ namespace Rift::Compiler::LLVM
 		                                                     : floating.value));
 	}
 
-	void DeclareStruct(LLVMContext& llvm, TAccessRef<CType, TWrite<CIRStruct>> access, AST::Id id)
+	void DeclareStructs(
+	    LLVMContext& llvm, TAccessRef<CType, TWrite<CIRStruct>> access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
-		const Name name = access.Get<const CType>(id).name;
-		access.Add(id, CIRStruct{StructType::create(llvm, ToLLVM(name))});
+		for (AST::Id id : ids)
+		{
+			const Name name = access.Get<const CType>(id).name;
+			access.Add(id, CIRStruct{StructType::create(llvm, ToLLVM(name))});
+		}
 	}
 
-	void DefineStruct(LLVMContext& llvm, TAccessRef<CIRStruct> access, AST::Id id)
+	void DeclareClasses(
+	    LLVMContext& llvm, TAccessRef<CType, TWrite<CIRStruct>> access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
-		StructType* irStruct = access.Get<const CIRStruct>(id).instance;
-
-		TArray<llvm::Type*> memberTypes;
-		irStruct->setBody(ToLLVM(memberTypes));
+		for (AST::Id id : ids)
+		{
+			const Name name = access.Get<const CType>(id).name;
+			access.Add(id, CIRStruct{StructType::create(llvm, ToLLVM(name))});
+		}
 	}
 
-	void DeclareFunction(LLVMContext& llvm, IRBuilder<>& builder,
-	    TAccessRef<TWrite<CIRFunction>, CIdentifier> access, AST::Id id, Module& irModule)
+	void DefineStructs(LLVMContext& llvm, TAccessRef<CIRStruct> access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
+		for (AST::Id id : ids)
+		{
+			StructType* irStruct = access.Get<const CIRStruct>(id).instance;
 
-		const CIdentifier& ident = access.Get<const CIdentifier>(id);
+			TArray<llvm::Type*> memberTypes;
+			irStruct->setBody(ToLLVM(memberTypes));
+		}
+	}
 
-		FunctionType* type = FunctionType::get(builder.getVoidTy(), false);
+	void DefineClasses(LLVMContext& llvm, TAccessRef<CIRStruct> access, TSpan<AST::Id> ids)
+	{
+		ZoneScoped;
+		for (AST::Id id : ids)
+		{
+			StructType* irStruct = access.Get<const CIRStruct>(id).instance;
 
-		access.Add(id, CIRFunction{Function::Create(
-		                   type, Function::ExternalLinkage, ToLLVM(ident.name), &irModule)});
+			TArray<llvm::Type*> memberTypes;
+			irStruct->setBody(ToLLVM(memberTypes));
+		}
+	}
+
+	void DeclareFunctions(LLVMContext& llvm, IRBuilder<>& builder,
+	    TAccessRef<TWrite<CIRFunction>, CIdentifier> access, TSpan<AST::Id> ids, Module& irModule)
+	{
+		ZoneScoped;
+		for (AST::Id id : ids)
+		{
+			const CIdentifier& ident = access.Get<const CIdentifier>(id);
+
+			FunctionType* type = FunctionType::get(builder.getVoidTy(), false);
+			access.Add<CIRFunction>(id,
+			    {Function::Create(type, Function::ExternalLinkage, ToLLVM(ident.name), &irModule)});
+		}
+	}
+
+	void DefineFunctions(LLVMContext& llvm, IRBuilder<>& builder, TAccessRef<CIRFunction> access,
+	    TSpan<AST::Id> functionIds, Module& irModule)
+	{
+		ZoneScoped;
+		for (AST::Id id : functionIds) {}
 	}
 
 	void CreateEntry(
@@ -92,45 +132,26 @@ namespace Rift::Compiler::LLVM
 		module.instance   = Move(MakeOwned<Module>(ToLLVM(name), llvm));
 		Module& irModule  = *module.instance.Get();
 
-		TArray<AST::Id> types;
-		AST::Hierarchy::GetChildren(ast, moduleId, types);
-		AST::RemoveIfNot<CType>(ast, types);
-		TArray<AST::Id> classes = types, structs = types;
+		// Filter all classIds and structIds
+		TArray<AST::Id> typeIds;
+		AST::Hierarchy::GetChildren(ast, moduleId, typeIds);
+		AST::RemoveIfNot<CType>(ast, typeIds);
+		TArray<AST::Id> classIds = typeIds, structIds = typeIds;
+		AST::RemoveIfNot<CDeclStruct>(ast, structIds);
+		AST::RemoveIfNot<CDeclClass>(ast, classIds);
 
-		AST::RemoveIfNot<CDeclClass>(ast, classes);
-		AST::RemoveIfNot<CDeclStruct>(ast, structs);
+		// Filter functions
+		TArray<AST::Id> functionIds;
+		AST::Hierarchy::GetChildren(ast, typeIds, functionIds);
+		AST::RemoveIfNot<CDeclFunction>(ast, functionIds);
 
-		// Declare types
-		TAccess<CType, TWrite<CIRStruct>> declareStructAccess{ast};
-		for (AST::Id id : structs)
-		{
-			DeclareStruct(llvm, declareStructAccess, id);
-		}
-		for (AST::Id id : classes)
-		{
-			DeclareStruct(llvm, declareStructAccess, id);
-		}
+		DeclareStructs(llvm, ast, structIds);
+		DeclareClasses(llvm, ast, classIds);
+		DeclareFunctions(llvm, builder, ast, functionIds, irModule);
 
-		// Declare functions
-		TArray<AST::Id> functions;
-		AST::Hierarchy::GetChildren(ast, types, functions);
-		AST::RemoveIfNot<CDeclFunction>(ast, functions);
-		TAccess<TWrite<CIRFunction>, CIdentifier> declareFunctionAccess{ast};
-		for (AST::Id id : functions)
-		{
-			DeclareFunction(llvm, builder, declareFunctionAccess, id, irModule);
-		}
-
-		// Define types
-		TAccess<CIRStruct> defineStructAccess{ast};
-		for (AST::Id id : structs)
-		{
-			DefineStruct(llvm, defineStructAccess, id);
-		}
-		for (AST::Id id : classes)
-		{
-			DefineStruct(llvm, defineStructAccess, id);
-		}
+		DefineStructs(llvm, ast, structIds);
+		DefineClasses(llvm, ast, classIds);
+		DefineFunctions(llvm, builder, ast, functionIds, irModule);
 	}
 
 	void GenerateIR(Context& context, LLVMContext& llvm, IRBuilder<>& builder)
