@@ -180,11 +180,13 @@ namespace Rift::Compiler::LLVM
 		DeclareClasses(llvm, ast, classIds);
 		DeclareFunctions(llvm, builder, ast, functionIds, irModule);
 
+		// Generate expressions
+		AddExprCalls(context, llvm, builder, ast);
+
 		DefineStructs(llvm, ast, structIds);
 		DefineClasses(llvm, ast, classIds);
 
-		AddExprCalls(context, llvm, builder, ast);
-		DefineFunctions(llvm, builder, ast, functionIds, irModule);
+		DefineFunctions(context, llvm, builder, ast, functionIds, irModule);
 	}
 
 	void GenerateIR(Context& context, LLVMContext& llvm, IRBuilder<>& builder)
