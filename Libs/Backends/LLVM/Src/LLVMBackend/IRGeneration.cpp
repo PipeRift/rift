@@ -22,6 +22,7 @@
 #include <llvm/ADT/APInt.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Module.h>
+#include <llvm/IR/Verifier.h>
 
 
 namespace Rift::Compiler::LLVM
@@ -41,6 +42,18 @@ namespace Rift::Compiler::LLVM
 		return ConstantFP::get(
 		    llvm, APFloat(floating.type == FloatingType::F32 ? static_cast<float>(floating.value)
 		                                                     : floating.value));
+	}
+
+	Value* AddIf(TAccessRef<CStmtIf> access, AST::Id id, AST::Id valueId)
+	{
+		// Value* CondV = value;
+		// Convert condition to a bool by comparing non-equal to 0.0.
+		// CondV = Builder.CreateFCmpONE(CondV, ConstantFP::get(TheContext, APFloat(0.0)),
+		// "ifcond");
+		// BasicBlock* ThenBB  = BasicBlock::Create(TheContext, "then", TheFunction);
+		// BasicBlock* ElseBB  = BasicBlock::Create(TheContext, "else");
+		// BasicBlock* MergeBB = BasicBlock::Create(TheContext, "ifcont");
+		// Builder.CreateCondBr(CondV, ThenBB, ElseBB);
 	}
 
 	void DeclareStructs(
@@ -104,7 +117,7 @@ namespace Rift::Compiler::LLVM
 
 			TArray<Value*> args;
 			access.Add<CIRInstruction>(
-			    id, {builder.CreateCall(function->instance, ToLLVM(args), "calltmp")});
+			    id, {CallInst::Create(function->instance, ToLLVM(args), "calltmp")});
 		}
 	}
 
@@ -132,11 +145,18 @@ namespace Rift::Compiler::LLVM
 		}
 	}
 
-	void DefineFunctions(LLVMContext& llvm, IRBuilder<>& builder, TAccessRef<CIRFunction> access,
-	    TSpan<AST::Id> functionIds, Module& irModule)
+	void DefineFunctions(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
+	    TAccessRef<CIRFunction> access, TSpan<AST::Id> ids, Module& irModule)
 	{
 		ZoneScoped;
-		for (AST::Id id : functionIds) {}
+		for (AST::Id id : ids)
+		{
+			const auto& irFunction = access.Get<const CIRFunction>(id);
+			BasicBlock* bb         = BasicBlock::Create(llvm, "entry", irFunction.instance);
+			builder.SetInsertPoint(bb);
+
+			verifyFunction(*irFunction.instance);
+		}
 	}
 
 	void CreateEntry(
@@ -185,7 +205,6 @@ namespace Rift::Compiler::LLVM
 
 		DefineStructs(llvm, ast, structIds);
 		DefineClasses(llvm, ast, classIds);
-
 		DefineFunctions(context, llvm, builder, ast, functionIds, irModule);
 	}
 
