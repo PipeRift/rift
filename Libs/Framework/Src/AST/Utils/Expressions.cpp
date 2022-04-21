@@ -1,14 +1,14 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "AST/Utils/ExpressionGraph.h"
-
 #include "AST/Components/CExprInput.h"
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Types.h"
+#include "AST/Utils/Expressions.h"
 #include "AST/Utils/Hierarchy.h"
 
 
-namespace Rift::AST::ExpressionGraph
+
+namespace Rift::AST::Expressions
 {
 	bool CanConnect(const Tree& ast, AST::Id outputNode, AST::Id inputPin)
 	{
@@ -117,4 +117,4 @@ namespace Rift::AST::ExpressionGraph
 		}
 		return false;
 	}
-}    // namespace Rift::AST::ExpressionGraph
+}    // namespace Rift::AST::Expressions

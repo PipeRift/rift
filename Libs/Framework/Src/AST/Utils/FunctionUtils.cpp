@@ -18,7 +18,7 @@
 #include "AST/Components/CStmtOutputs.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Utils/Hierarchy.h"
-#include "AST/Utils/StatementGraph.h"
+#include "AST/Utils/Statements.h"
 #include "AST/Utils/TransactionUtils.h"
 
 #include <AST/Components/CExprReturn.h>

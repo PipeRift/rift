@@ -14,10 +14,13 @@
 #include <AST/Components/CExprCall.h>
 #include <AST/Components/CLiteralFloating.h>
 #include <AST/Components/CLiteralIntegral.h>
+#include <AST/Components/CStmtIf.h>
+#include <AST/Components/CStmtOutputs.h>
 #include <AST/Components/CType.h>
 #include <AST/Filtering.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
+#include <AST/Utils/Statements.h>
 #include <Compiler/Compiler.h>
 #include <llvm/ADT/APInt.h>
 #include <llvm/IR/Function.h>
@@ -46,14 +49,13 @@ namespace Rift::Compiler::LLVM
 
 	Value* AddIf(TAccessRef<CStmtIf> access, AST::Id id, AST::Id valueId)
 	{
-		// Value* CondV = value;
+		// Value* condV = value;
 		// Convert condition to a bool by comparing non-equal to 0.0.
-		// CondV = Builder.CreateFCmpONE(CondV, ConstantFP::get(TheContext, APFloat(0.0)),
-		// "ifcond");
-		// BasicBlock* ThenBB  = BasicBlock::Create(TheContext, "then", TheFunction);
-		// BasicBlock* ElseBB  = BasicBlock::Create(TheContext, "else");
-		// BasicBlock* MergeBB = BasicBlock::Create(TheContext, "ifcont");
-		// Builder.CreateCondBr(CondV, ThenBB, ElseBB);
+		// condV = builder.CreateFCmpONE(condV, ConstantFP::get(llvm, APFloat(0.0)), "ifcond");
+		// BasicBlock* thenBlock  = BasicBlock::Create(llvm, "then", function);
+		// BasicBlock* elseBlock  = BasicBlock::Create(llvm, "else");
+		// BasicBlock* mergeBlock = BasicBlock::Create(llvm, "ifcont");
+		// builder.CreateCondBr(condV, thenBlock, elseBlock);
 	}
 
 	void DeclareStructs(
@@ -146,7 +148,7 @@ namespace Rift::Compiler::LLVM
 	}
 
 	void DefineFunctions(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
-	    TAccessRef<CIRFunction> access, TSpan<AST::Id> ids, Module& irModule)
+	    TAccessRef<CIRFunction, CStmtOutputs> access, TSpan<AST::Id> ids, Module& irModule)
 	{
 		ZoneScoped;
 		for (AST::Id id : ids)
@@ -155,11 +157,27 @@ namespace Rift::Compiler::LLVM
 			BasicBlock* bb         = BasicBlock::Create(llvm, "entry", irFunction.instance);
 			builder.SetInsertPoint(bb);
 
+			TArray<AST::Id> stmtIds{id};
+
+			// Scan function statement chain and cache it
+			TArray<AST::Id> stmtsToCheck{id};
+			TArray<AST::Id> lastStmtOutputs;
+			while (!stmtsToCheck.IsEmpty())
+			{
+				AST::Statements::GetConnectedToOutputs(access, stmtsToCheck, lastStmtOutputs);
+				lastStmtOutputs.RemoveIf([&access](AST::Id id) {
+					return !access.IsValid(id);
+				});
+				stmtIds.Append(lastStmtOutputs);
+				stmtsToCheck = lastStmtOutputs;
+				lastStmtOutputs.Empty(false);
+			}
 			verifyFunction(*irFunction.instance);
 		}
 	}
 
-	void CreateEntry(
+
+	void CreateMain(
 	    Context& context, LLVMContext& llvm, IRBuilder<>& builder, const CIRModule& irModule)
 	{
 		FunctionType* mainType = FunctionType::get(builder.getInt32Ty(), false);
@@ -221,7 +239,7 @@ namespace Rift::Compiler::LLVM
 			if (mod.target == ModuleTarget::Executable)
 			{
 				const auto& irModule = context.ast.Get<const CIRModule>(moduleId);
-				LLVM::CreateEntry(context, llvm, builder, irModule);
+				LLVM::CreateMain(context, llvm, builder, irModule);
 			}
 		}
 	}
