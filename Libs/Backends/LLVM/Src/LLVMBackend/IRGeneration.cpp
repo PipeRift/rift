@@ -6,16 +6,20 @@
 #include "LLVMBackend/Components/CIRInstruction.h"
 #include "LLVMBackend/Components/CIRModule.h"
 #include "LLVMBackend/Components/CIRStruct.h"
+#include "LLVMBackend/Components/CIRValue.h"
 #include "LLVMBackend/LLVMHelpers.h"
 
 #include <AST/Components/CDeclClass.h>
 #include <AST/Components/CDeclFunction.h>
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CExprCall.h>
+#include <AST/Components/CLiteralBool.h>
 #include <AST/Components/CLiteralFloating.h>
 #include <AST/Components/CLiteralIntegral.h>
+#include <AST/Components/CLiteralString.h>
 #include <AST/Components/CStmtIf.h>
 #include <AST/Components/CStmtOutputs.h>
+#include <AST/Components/CStmtReturn.h>
 #include <AST/Components/CType.h>
 #include <AST/Filtering.h>
 #include <AST/Utils/Hierarchy.h>
@@ -31,21 +35,6 @@
 namespace Rift::Compiler::LLVM
 {
 	using namespace llvm;
-
-	Value* GetLiteralIntegral(LLVMContext& llvm, TAccessRef<CLiteralIntegral> access, AST::Id id)
-	{
-		const auto& integral = access.Get<const CLiteralIntegral>(id);
-		return ConstantInt::get(
-		    llvm, APInt(integral.GetSize(), integral.value, integral.IsSigned()));
-	}
-
-	Value* GetLiteralFloating(LLVMContext& llvm, TAccessRef<CLiteralFloating> access, AST::Id id)
-	{
-		const auto& floating = access.Get<const CLiteralFloating>(id);
-		return ConstantFP::get(
-		    llvm, APFloat(floating.type == FloatingType::F32 ? static_cast<float>(floating.value)
-		                                                     : floating.value));
-	}
 
 	Value* AddIf(TAccessRef<CStmtIf> access, AST::Id id, AST::Id valueId)
 	{
@@ -148,7 +137,9 @@ namespace Rift::Compiler::LLVM
 	}
 
 	void DefineFunctions(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
-	    TAccessRef<CIRFunction, CStmtOutputs> access, TSpan<AST::Id> ids, Module& irModule)
+	    TAccessRef<CIRFunction, CStmtOutputs, CExprCall, CStmtIf, CStmtReturn, CIRInstruction>
+	        access,
+	    TSpan<AST::Id> ids, Module& irModule)
 	{
 		ZoneScoped;
 		for (AST::Id id : ids)
@@ -172,6 +163,7 @@ namespace Rift::Compiler::LLVM
 				stmtsToCheck = lastStmtOutputs;
 				lastStmtOutputs.Empty(false);
 			}
+
 			verifyFunction(*irFunction.instance);
 		}
 	}
@@ -187,6 +179,39 @@ namespace Rift::Compiler::LLVM
 		builder.SetInsertPoint(entry);
 
 		builder.CreateRet(ConstantInt::get(llvm, APInt(32, 0)));
+	}
+
+	void GenerateLiterals(LLVMContext& llvm, TAccessRef<CLiteralBool, CLiteralIntegral,
+	                                             CLiteralFloating, CLiteralString, TWrite<CIRValue>>
+	                                             access)
+	{
+		for (AST::Id id : AST::ListAll<CLiteralBool>(access))
+		{
+			const auto& boolean = access.Get<const CLiteralBool>(id);
+			Value* value        = ConstantInt::get(llvm, APInt(8, boolean.value, true));
+			access.Add<CIRValue>(id, value);
+		}
+		for (AST::Id id : AST::ListAll<CLiteralIntegral>(access))
+		{
+			const auto& integral = access.Get<const CLiteralIntegral>(id);
+			Value* value         = ConstantInt::get(
+			            llvm, APInt(integral.GetSize(), integral.value, integral.IsSigned()));
+			access.Add<CIRValue>(id, value);
+		}
+		for (AST::Id id : AST::ListAll<CLiteralFloating>(access))
+		{
+			const auto& floating = access.Get<const CLiteralFloating>(id);
+			Value* value         = ConstantFP::get(llvm,
+			            APFloat(floating.type == FloatingType::F32 ? static_cast<float>(floating.value)
+			                                                       : floating.value));
+			access.Add<CIRValue>(id, value);
+		}
+		for (AST::Id id : AST::ListAll<CLiteralString>(access))
+		{
+			const auto& string = access.Get<const CLiteralString>(id);
+			Value* value       = ConstantDataArray::getString(llvm, ToLLVM(string.value));
+			access.Add<CIRValue>(id, value);
+		}
 	}
 
 	void GenerateIRModule(
@@ -228,6 +253,8 @@ namespace Rift::Compiler::LLVM
 
 	void GenerateIR(Context& context, LLVMContext& llvm, IRBuilder<>& builder)
 	{
+		GenerateLiterals(llvm, context.ast);
+
 		for (AST::Id moduleId : AST::ListAll<CModule>(context.ast))
 		{
 			GenerateIRModule(context, moduleId, llvm, builder);

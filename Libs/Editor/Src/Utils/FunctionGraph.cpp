@@ -15,7 +15,6 @@
 #include <AST/Components/CExprDeclRef.h>
 #include <AST/Components/CExprInput.h>
 #include <AST/Components/CExprOutputs.h>
-#include <AST/Components/CExprReturn.h>
 #include <AST/Components/CExprType.h>
 #include <AST/Components/CExprUnaryOperator.h>
 #include <AST/Components/CIdentifier.h>
@@ -26,6 +25,7 @@
 #include <AST/Components/CStmtIf.h>
 #include <AST/Components/CStmtInput.h>
 #include <AST/Components/CStmtOutputs.h>
+#include <AST/Components/CStmtReturn.h>
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Filtering.h>
 #include <AST/Statics/STypes.h>
@@ -38,6 +38,7 @@
 #include <Utils/Nodes.h>
 #include <Utils/NodesInternal.h>
 #include <Utils/NodesMiniMap.h>
+
 
 
 namespace Rift::Graph
@@ -692,11 +693,11 @@ namespace Rift::Graph
 	}
 
 	void DrawReturns(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>,
-	                     CChild, CFileRef, CExprReturn>
+	                     CChild, CFileRef, CStmtReturn>
 	                     access,
 	    const TArray<AST::Id>& children)
 	{
-		for (AST::Id id : GetIf<CExprReturn>(access, children))
+		for (AST::Id id : GetIf<CStmtReturn>(access, children))
 		{
 			DrawReturnNode(access, id);
 		}

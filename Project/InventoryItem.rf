@@ -96,7 +96,7 @@
                 "linkInputPins": []
             }
         },
-        "CExprReturn": {
+        "CStmtReturn": {
             "4": {}
         },
         "CExprType": {

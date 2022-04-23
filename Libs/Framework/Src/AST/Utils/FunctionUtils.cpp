@@ -21,7 +21,7 @@
 #include "AST/Utils/Statements.h"
 #include "AST/Utils/TransactionUtils.h"
 
-#include <AST/Components/CExprReturn.h>
+#include <AST/Components/CStmtReturn.h>
 
 
 namespace Rift::AST::Functions
@@ -78,7 +78,7 @@ namespace Rift::AST::Functions
 	{
 		Tree& ast         = type.GetAST();
 		const Id returnId = ast.Create();
-		ast.Add<CExprReturn>(returnId);
+		ast.Add<CStmtReturn>(returnId);
 		ast.Add<CStmtInput>(returnId);
 		if (type)
 		{
