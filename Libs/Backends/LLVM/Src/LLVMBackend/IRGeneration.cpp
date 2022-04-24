@@ -227,6 +227,7 @@ namespace Rift::Compiler::LLVM
 		// BasicBlock* elseBlock  = BasicBlock::Create(llvm, "else");
 		// BasicBlock* mergeBlock = BasicBlock::Create(llvm, "ifcont");
 		// builder.CreateCondBr(condV, thenBlock, elseBlock);
+		return nullptr;
 	}
 
 
