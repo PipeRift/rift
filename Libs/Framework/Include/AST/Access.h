@@ -89,7 +89,10 @@ namespace Rift
 			static_assert(
 			    validMutables, "Parent access lacks *mutable* dependencies from this access.");
 
-			pools = {std::get<AST::TPool<AsComponent<T>>*>(other.pools)...};
+			if constexpr (validConstants && validMutables)
+			{
+				pools = {std::get<AST::TPool<AsComponent<T>>*>(other.pools)...};
+			}
 		}
 
 		template<typename C>

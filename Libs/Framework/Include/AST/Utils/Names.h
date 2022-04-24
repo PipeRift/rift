@@ -10,6 +10,7 @@ namespace Rift::Names
 {
 	Name GetName(TAccessRef<CIdentifier> access, AST::Id id)
 	{
-		return access.Get<const CIdentifier>(id).name;
+		auto* identifier = access.TryGet<const CIdentifier>(id);
+		return identifier ? identifier->name : Name::None();
 	}
 };    // namespace Rift::Names
