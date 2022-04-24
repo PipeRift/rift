@@ -5,7 +5,7 @@
 #include "LLVMBackend/Components/CIRFunction.h"
 #include "LLVMBackend/Components/CIRInstruction.h"
 #include "LLVMBackend/Components/CIRModule.h"
-#include "LLVMBackend/Components/CIRStruct.h"
+#include "LLVMBackend/Components/CIRType.h"
 #include "LLVMBackend/Components/CIRValue.h"
 #include "LLVMBackend/LLVMHelpers.h"
 
@@ -13,6 +13,8 @@
 #include <AST/Components/CDeclFunction.h>
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CExprCall.h>
+#include <AST/Components/CExprOutputs.h>
+#include <AST/Components/CExprType.h>
 #include <AST/Components/CLiteralBool.h>
 #include <AST/Components/CLiteralFloating.h>
 #include <AST/Components/CLiteralIntegral.h>
@@ -24,6 +26,7 @@
 #include <AST/Filtering.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
+#include <AST/Utils/Names.h>
 #include <AST/Utils/Statements.h>
 #include <Compiler/Compiler.h>
 #include <llvm/ADT/APInt.h>
@@ -48,38 +51,78 @@ namespace Rift::Compiler::LLVM
 	}
 
 	void DeclareStructs(
-	    LLVMContext& llvm, TAccessRef<CType, TWrite<CIRStruct>> access, TSpan<AST::Id> ids)
+	    LLVMContext& llvm, TAccessRef<CType, TWrite<CIRType>> access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
 		for (AST::Id id : ids)
 		{
 			const Name name = access.Get<const CType>(id).name;
-			access.Add(id, CIRStruct{StructType::create(llvm, ToLLVM(name))});
+			access.Add(id, CIRType{StructType::create(llvm, ToLLVM(name))});
 		}
 	}
 
 	void DeclareClasses(
-	    LLVMContext& llvm, TAccessRef<CType, TWrite<CIRStruct>> access, TSpan<AST::Id> ids)
+	    LLVMContext& llvm, TAccessRef<CType, TWrite<CIRType>> access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
 		for (AST::Id id : ids)
 		{
 			const Name name = access.Get<const CType>(id).name;
-			access.Add(id, CIRStruct{StructType::create(llvm, ToLLVM(name))});
+			access.Add(id, CIRType{StructType::create(llvm, ToLLVM(name))});
 		}
 	}
 
-	void DeclareFunctions(LLVMContext& llvm, IRBuilder<>& builder,
-	    TAccessRef<TWrite<CIRFunction>, CIdentifier> access, TSpan<AST::Id> ids, Module& irModule)
+	void DeclareFunctions(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
+	    TAccessRef<TWrite<CIRFunction>, CIdentifier, CExprType, CExprOutputs, CIRType, CParent>
+	        access,
+	    TSpan<AST::Id> ids, Module& irModule)
 	{
 		ZoneScoped;
 		for (AST::Id id : ids)
 		{
 			const CIdentifier& ident = access.Get<const CIdentifier>(id);
 
-			FunctionType* type = FunctionType::get(builder.getVoidTy(), false);
-			access.Add<CIRFunction>(id,
-			    {Function::Create(type, Function::ExternalLinkage, ToLLVM(ident.name), &irModule)});
+			TArray<AST::Id> inputIds;
+			TArray<llvm::Type*> inputTypes;
+			{    // Gather arguments
+				AST::Hierarchy::GetChildren(access, id, inputIds);
+				AST::RemoveIfNot<CExprOutputs>(access, inputIds);
+				AST::RemoveIfNot<CExprType>(access, inputIds);
+
+				for (i32 i = 0; i < inputIds.Size(); ++i)
+				{
+					AST::Id inputId = inputIds[i];
+					AST::Id typeId  = access.Get<const CExprType>(inputId).id;
+					if (auto* irType = access.TryGet<const CIRType>(typeId))
+					{
+						inputTypes.Add(irType->instance);
+					}
+					else
+					{
+						const Name argName      = Names::GetName(access, inputId);
+						const Name functionName = Names::GetName(access, id);
+						context.AddError(
+						    Strings::Format("Input '{}' in function '{}' has an invalid type",
+						        argName, functionName));
+
+						inputIds.RemoveAt(i, false);    // Remove input to keep ids stable with args
+						--i;
+					}
+				}
+			}
+
+			FunctionType* functionType =
+			    FunctionType::get(builder.getVoidTy(), ToLLVM(inputTypes), false);
+			auto* function = Function::Create(
+			    functionType, Function::ExternalLinkage, ToLLVM(ident.name), &irModule);
+			access.Add<CIRFunction>(id, {function});
+			// Set argument names
+			i32 i = 0;
+			for (auto& arg : function->args())
+			{
+				Name name = Names::GetName(access, inputIds[i++]);
+				arg.setName(ToLLVM(name));
+			}
 		}
 	}
 
@@ -112,24 +155,24 @@ namespace Rift::Compiler::LLVM
 		}
 	}
 
-	void DefineStructs(LLVMContext& llvm, TAccessRef<CIRStruct> access, TSpan<AST::Id> ids)
+	void DefineStructs(LLVMContext& llvm, TAccessRef<CIRType> access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
 		for (AST::Id id : ids)
 		{
-			StructType* irStruct = access.Get<const CIRStruct>(id).instance;
+			auto* irStruct = static_cast<StructType*>(access.Get<const CIRType>(id).instance);
 
 			TArray<llvm::Type*> memberTypes;
 			irStruct->setBody(ToLLVM(memberTypes));
 		}
 	}
 
-	void DefineClasses(LLVMContext& llvm, TAccessRef<CIRStruct> access, TSpan<AST::Id> ids)
+	void DefineClasses(LLVMContext& llvm, TAccessRef<CIRType> access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
 		for (AST::Id id : ids)
 		{
-			StructType* irStruct = access.Get<const CIRStruct>(id).instance;
+			auto* irStruct = static_cast<StructType*>(access.Get<const CIRType>(id).instance);
 
 			TArray<llvm::Type*> memberTypes;
 			irStruct->setBody(ToLLVM(memberTypes));
@@ -179,6 +222,23 @@ namespace Rift::Compiler::LLVM
 		builder.SetInsertPoint(entry);
 
 		builder.CreateRet(ConstantInt::get(llvm, APInt(32, 0)));
+	}
+
+	void BindNativeTypes(LLVMContext& llvm, TAccessRef<CType, TWrite<CIRType>> access)
+	{
+		const auto& nativeTypes = access.GetAST().GetNativeTypes();
+		access.Add<CIRType>(nativeTypes.boolId, {llvm::Type::getInt8Ty(llvm)});
+		access.Add<CIRType>(nativeTypes.floatId, {llvm::Type::getFloatTy(llvm)});
+		access.Add<CIRType>(nativeTypes.doubleId, {llvm::Type::getDoubleTy(llvm)});
+		access.Add<CIRType>(nativeTypes.u8Id, {llvm::Type::getInt8Ty(llvm)});
+		access.Add<CIRType>(nativeTypes.i8Id, {llvm::Type::getInt8Ty(llvm)});
+		access.Add<CIRType>(nativeTypes.u16Id, {llvm::Type::getInt16Ty(llvm)});
+		access.Add<CIRType>(nativeTypes.i16Id, {llvm::Type::getInt16Ty(llvm)});
+		access.Add<CIRType>(nativeTypes.u32Id, {llvm::Type::getInt32Ty(llvm)});
+		access.Add<CIRType>(nativeTypes.i32Id, {llvm::Type::getInt32Ty(llvm)});
+		access.Add<CIRType>(nativeTypes.u64Id, {llvm::Type::getInt64Ty(llvm)});
+		access.Add<CIRType>(nativeTypes.i64Id, {llvm::Type::getInt64Ty(llvm)});
+		// access.Add<CIRType>(nativeTypes.stringId, {});
 	}
 
 	void GenerateLiterals(LLVMContext& llvm, TAccessRef<CLiteralBool, CLiteralIntegral,
@@ -234,14 +294,14 @@ namespace Rift::Compiler::LLVM
 		AST::RemoveIfNot<CDeclStruct>(ast, structIds);
 		AST::RemoveIfNot<CDeclClass>(ast, classIds);
 
-		// Filter functions
-		TArray<AST::Id> functionIds;
-		AST::Hierarchy::GetChildren(ast, typeIds, functionIds);
-		AST::RemoveIfNot<CDeclFunction>(ast, functionIds);
 
 		DeclareStructs(llvm, ast, structIds);
 		DeclareClasses(llvm, ast, classIds);
-		DeclareFunctions(llvm, builder, ast, functionIds, irModule);
+
+		TArray<AST::Id> functionIds;
+		AST::Hierarchy::GetChildren(ast, typeIds, functionIds);
+		AST::RemoveIfNot<CDeclFunction>(ast, functionIds);
+		DeclareFunctions(context, llvm, builder, ast, functionIds, irModule);
 
 		// Generate expressions
 		AddExprCalls(context, llvm, builder, ast);
@@ -253,6 +313,7 @@ namespace Rift::Compiler::LLVM
 
 	void GenerateIR(Context& context, LLVMContext& llvm, IRBuilder<>& builder)
 	{
+		BindNativeTypes(llvm, context.ast);
 		GenerateLiterals(llvm, context.ast);
 
 		for (AST::Id moduleId : AST::ListAll<CModule>(context.ast))
