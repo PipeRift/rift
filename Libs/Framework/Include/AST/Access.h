@@ -77,17 +77,22 @@ namespace Rift
 
 		// Construct a child access (super-set) from another access
 		template<typename... T2>
-		TAccess(const TAccess<T2...>& other)
-		    : ast{other.ast}, pools{std::get<AST::TPool<AsComponent<T>>*>(other.pools)...}
+		TAccess(const TAccess<T2...>& other) : ast{other.ast}
 		{
 			using Other = TAccess<T2...>;
-			static_assert((Other::template HasType<T>() && ...),
-			    "Parent TAccess lacks one or more dependencies from a child TAccess.");
 
-			static_assert(
+			constexpr bool validConstants = (Other::template HasType<T>() && ...);
+			constexpr bool validMutables =
 			    ((Other::template IsWritable<T>() || TTypeAccessInfo<T>::mode != AccessMode::Write)
-			        && ...),
-			    "Parent TAccess lacks one or more *mutable* dependencies from a child TAccess.");
+			        && ...);
+			static_assert(validConstants, "Parent access lacks dependencies from this access.");
+			static_assert(
+			    validMutables, "Parent access lacks *mutable* dependencies from this access.");
+
+			if constexpr (validConstants && validMutables)
+			{
+				pools = {std::get<AST::TPool<AsComponent<T>>*>(other.pools)...};
+			}
 		}
 
 		template<typename C>

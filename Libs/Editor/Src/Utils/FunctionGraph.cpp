@@ -15,7 +15,6 @@
 #include <AST/Components/CExprDeclRef.h>
 #include <AST/Components/CExprInput.h>
 #include <AST/Components/CExprOutputs.h>
-#include <AST/Components/CExprReturn.h>
 #include <AST/Components/CExprType.h>
 #include <AST/Components/CExprUnaryOperator.h>
 #include <AST/Components/CIdentifier.h>
@@ -26,18 +25,20 @@
 #include <AST/Components/CStmtIf.h>
 #include <AST/Components/CStmtInput.h>
 #include <AST/Components/CStmtOutputs.h>
+#include <AST/Components/CStmtReturn.h>
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Filtering.h>
 #include <AST/Statics/STypes.h>
-#include <AST/Utils/ExpressionGraph.h>
+#include <AST/Utils/Expressions.h>
 #include <AST/Utils/Hierarchy.h>
-#include <AST/Utils/StatementGraph.h>
+#include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <GLFW/glfw3.h>
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
 #include <Utils/NodesInternal.h>
 #include <Utils/NodesMiniMap.h>
+
 
 
 namespace Rift::Graph
@@ -481,7 +482,7 @@ namespace Rift::Graph
 					v2 position = ast.Get<CGraphTransform>(firstNodeId).position;
 					ast.Add<CGraphTransform>(newId, position + v2{10.f, 0.f});
 
-					AST::StatementGraph::TryConnect(ast, firstNodeId, newId);
+					AST::Statements::TryConnect(ast, firstNodeId, newId);
 				}
 			}
 			UI::Separator();
@@ -692,11 +693,11 @@ namespace Rift::Graph
 	}
 
 	void DrawReturns(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>,
-	                     CChild, CFileRef, CExprReturn>
+	                     CChild, CFileRef, CStmtReturn>
 	                     access,
 	    const TArray<AST::Id>& children)
 	{
-		for (AST::Id id : GetIf<CExprReturn>(access, children))
+		for (AST::Id id : GetIf<CStmtReturn>(access, children))
 		{
 			DrawReturnNode(access, id);
 		}
@@ -1067,15 +1068,15 @@ namespace Rift::Graph
 			Nodes::Id inputPin;
 			if (Nodes::IsLinkCreated(outputPin, inputPin))
 			{
-				AST::StatementGraph::TryConnect(ast, AST::Id(outputPin), AST::Id(inputPin));
-				AST::ExpressionGraph::TryConnect(ast, AST::Id(outputPin), AST::Id(inputPin));
+				AST::Statements::TryConnect(ast, AST::Id(outputPin), AST::Id(inputPin));
+				AST::Expressions::TryConnect(ast, AST::Id(outputPin), AST::Id(inputPin));
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))
 			{
 				// linkId is always the outputId
-				AST::StatementGraph::Disconnect(ast, AST::Id(linkId));
-				AST::ExpressionGraph::Disconnect(ast, AST::Id(linkId));
+				AST::Statements::Disconnect(ast, AST::Id(linkId));
+				AST::Expressions::Disconnect(ast, AST::Id(linkId));
 			}
 
 			static AST::Id contextNodeId = AST::NoId;

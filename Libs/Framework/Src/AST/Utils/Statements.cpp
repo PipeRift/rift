@@ -1,14 +1,12 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "AST/Utils/StatementGraph.h"
+#include "AST/Utils/Statements.h"
 
-#include "AST/Components/CStmtInput.h"
-#include "AST/Components/CStmtOutputs.h"
 #include "AST/Types.h"
 #include "AST/Utils/Hierarchy.h"
 
 
-namespace Rift::AST::StatementGraph
+namespace Rift::AST::Statements
 {
 	bool CanConnect(const Tree& ast, Id outputNode, Id outputPin, Id inputNode)
 	{
@@ -150,4 +148,45 @@ namespace Rift::AST::StatementGraph
 		}
 		return false;
 	}
-}    // namespace Rift::AST::StatementGraph
+
+	Id GetConnectedToInput(TAccessRef<CStmtInput> access, Id node)
+	{
+		if (const auto* input = access.TryGet<const CStmtInput>(node))
+		{
+			return input->linkOutputNode;
+		}
+		return NoId;
+	}
+
+	void GetConnectedToInputs(TAccessRef<CStmtInput> access, TSpan<const Id> nodes, TArray<Id>& ids)
+	{
+		for (const Id node : nodes)
+		{
+			if (const auto* input = access.TryGet<const CStmtInput>(node))
+			{
+				ids.Add(input->linkOutputNode);
+			}
+		}
+	}
+
+	TSpan<Id> GetConnectedToOutputs(TAccessRef<CStmtOutputs> access, Id node)
+	{
+		if (const auto* output = access.TryGet<const CStmtOutputs>(node))
+		{
+			return output->linkInputNodes;
+		}
+		return {};
+	}
+
+	void GetConnectedToOutputs(
+	    TAccessRef<CStmtOutputs> access, TSpan<const Id> nodes, TArray<Id>& ids)
+	{
+		for (const Id node : nodes)
+		{
+			if (const auto* output = access.TryGet<const CStmtOutputs>(node))
+			{
+				ids.Append(output->linkInputNodes);
+			}
+		}
+	}
+}    // namespace Rift::AST::Statements

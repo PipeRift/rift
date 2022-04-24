@@ -66,7 +66,7 @@ namespace Rift::Functions
 		switch (type)
 		{
 			case BinaryOperatorType::Add: return "add";
-			case BinaryOperatorType::Sub: return "substract";
+			case BinaryOperatorType::Sub: return "subtract";
 			case BinaryOperatorType::Mul: return "multiply";
 			case BinaryOperatorType::Div: return "divide";
 			case BinaryOperatorType::Mod: return "module";

@@ -1,23 +1,27 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "AST/Access.h"
+#include "AST/Components/CStmtInput.h"
+#include "AST/Components/CStmtOutputs.h"
 #include "AST/Tree.h"
 #include "AST/Types.h"
-#include "AST/Utils/ExpressionGraph.h"
+#include "AST/Utils/Statements.h"
 
 #include <Containers/Span.h>
 
 
-// NOTE: In expression graphs, the Link Id is the Input Pin Id
-namespace Rift::AST::ExpressionGraph
+// NOTE: In statement graphs, the Link Id is the Input Node Id
+namespace Rift::AST::Statements
 {
-	bool CanConnect(const Tree& ast, AST::Id outputPin, AST::Id inputPin);
+	bool CanConnect(const Tree& ast, Id outputNode, Id outputPin, Id inputNode);
 
-	bool TryConnect(Tree& ast, AST::Id outputPin, AST::Id inputPin);
+	bool TryConnect(Tree& ast, AST::Id outputPin, AST::Id inputNode);
 	// Disconnects a particular link. (Note: link ids are the same as input nodes)
 	bool Disconnect(Tree& ast, AST::Id linkId);
 	bool DisconnectFromInputPin(Tree& ast, AST::Id inputPin);
 	bool DisconnectFromOutputPin(Tree& ast, AST::Id outputPin);
+	bool DisconnectFromOutputPin(Tree& ast, AST::Id outputPin, AST::Id outputNode);
 
 	/**
 	 * @brief Disconnects all inputs and outputs from this ids and the children nodes
@@ -38,4 +42,14 @@ namespace Rift::AST::ExpressionGraph
 
 	/** Look for invalid ids and set them to NoId */
 	void CleanInvalidIds(Tree& ast);
-}    // namespace Rift::AST::ExpressionGraph
+
+	// If two pins were to be connected, would they create a loop?
+	bool WouldLoop(const Tree& ast, Id outputNode, Id outputPin, Id inputNode);
+
+	Id GetConnectedToInput(TAccessRef<CStmtInput> access, Id node);
+	void GetConnectedToInputs(
+	    TAccessRef<CStmtInput> access, TSpan<const Id> nodes, TArray<Id>& ids);
+	TSpan<Id> GetConnectedToOutputs(TAccessRef<CStmtOutputs> access, Id node);
+	void GetConnectedToOutputs(
+	    TAccessRef<CStmtOutputs> access, TSpan<const Id> nodes, TArray<Id>& ids);
+}    // namespace Rift::AST::Statements

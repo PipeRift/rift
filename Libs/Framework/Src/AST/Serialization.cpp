@@ -12,7 +12,6 @@
 #include "AST/Components/CExprDeclRef.h"
 #include "AST/Components/CExprInput.h"
 #include "AST/Components/CExprOutputs.h"
-#include "AST/Components/CExprReturn.h"
 #include "AST/Components/CExprType.h"
 #include "AST/Components/CExprUnaryOperator.h"
 #include "AST/Components/CIdentifier.h"
@@ -23,12 +22,14 @@
 #include "AST/Components/CParent.h"
 #include "AST/Components/CStmtInput.h"
 #include "AST/Components/CStmtOutputs.h"
+#include "AST/Components/CStmtReturn.h"
 #include "AST/Components/Tags/CNotSerialized.h"
 #include "AST/Components/Views/CGraphTransform.h"
 #include "AST/Filtering.h"
 #include "AST/Utils/Hierarchy.h"
 
 #include <Reflection/TypeName.h>
+
 
 
 namespace Rift::AST
@@ -154,9 +155,10 @@ namespace Rift::AST
 			ReadPool<CExprBinaryOperator>(*this, ast);
 			ReadPool<CExprCall>(*this, ast);
 			ReadPool<CExprDeclRefId>(*this, ast);
-			ReadPool<CExprInput>(*this, ast);
 			ReadPool<CExprOutputs>(*this, ast);
-			ReadPool<CExprReturn>(*this, ast);
+			ReadPool<CExprInput>(
+			    *this, ast);    // TODO: Rebuild from CExprOutputs instead of serializing
+			ReadPool<CStmtReturn>(*this, ast);
 			ReadPool<CExprType>(*this, ast);
 			ReadPool<CExprUnaryOperator>(*this, ast);
 			ReadPool<CIdentifier>(*this, ast);
@@ -167,7 +169,8 @@ namespace Rift::AST
 			ReadPool<CLiteralIntegral>(*this, ast);
 			ReadPool<CLiteralString>(*this, ast);
 			ReadPool<CStmtOutputs>(*this, ast);
-			ReadPool<CStmtInput>(*this, ast);
+			ReadPool<CStmtInput>(
+			    *this, ast);    // TODO: Rebuild from CStmtOutputs instead of serializing
 			Leave();
 		}
 
@@ -207,9 +210,10 @@ namespace Rift::AST
 			WritePool<CExprBinaryOperator>(*this, ast, treeEntities);
 			WritePool<CExprCall>(*this, ast, treeEntities);
 			WritePool<CExprDeclRefId>(*this, ast, treeEntities);
-			WritePool<CExprInput>(*this, ast, treeEntities);
 			WritePool<CExprOutputs>(*this, ast, treeEntities);
-			WritePool<CExprReturn>(*this, ast, treeEntities);
+			WritePool<CExprInput>(*this, ast,
+			    treeEntities);    // TODO: When rebuilding from CExprOutputs, ignore this pool
+			WritePool<CStmtReturn>(*this, ast, treeEntities);
 			WritePool<CExprType>(*this, ast, treeEntities);
 			WritePool<CExprUnaryOperator>(*this, ast, treeEntities);
 			WritePool<CGraphTransform>(*this, ast, treeEntities);
@@ -220,7 +224,8 @@ namespace Rift::AST
 			WritePool<CLiteralIntegral>(*this, ast, treeEntities);
 			WritePool<CLiteralString>(*this, ast, treeEntities);
 			WritePool<CStmtOutputs>(*this, ast, treeEntities);
-			WritePool<CStmtInput>(*this, ast, treeEntities);
+			WritePool<CStmtInput>(*this, ast,
+			    treeEntities);    // TODO: When rebuilding from CStmtOutputs, ignore this pool
 			Leave();
 		}
 	}
