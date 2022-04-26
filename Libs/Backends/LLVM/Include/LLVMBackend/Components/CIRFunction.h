@@ -1,6 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include <AST/Types.h>
 #include <llvm/IR/Function.h>
 #include <Types/Struct.h>
 
@@ -13,7 +14,10 @@ namespace Rift
 
 		llvm::Function* instance = nullptr;
 
+		TArray<llvm::Value*> inputs;
+		TArray<AST::Id> inputIds;
 
-		CIRFunction(llvm::Function* instance) : instance(instance) {}
+
+		CIRFunction() {}
 	};
 }    // namespace Rift

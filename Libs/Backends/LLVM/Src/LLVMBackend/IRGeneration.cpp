@@ -41,6 +41,17 @@ namespace Rift::Compiler::LLVM
 	using namespace llvm;
 
 
+	using BlockAccessRef = TAccessRef<CStmtOutputs, CStmtIf, CExprCallId, CIRFunction>;
+
+	// Forward declarations
+	void AddStmtBlock(LLVMContext& llvm, IRBuilder<>& builder, BlockAccessRef access,
+	    BasicBlock* block, const CIRFunction& function);
+	BasicBlock* AddIf(LLVMContext& llvm, IRBuilder<>& builder, BlockAccessRef access, AST::Id id,
+	    const CIRFunction& function);
+	void AddCall(Context& context, LLVMContext& llvm, IRBuilder<>& builder, const CExprCallId& call,
+	    TAccessRef<CIRFunction> access);
+
+
 	void BindNativeTypes(LLVMContext& llvm, TAccessRef<CType, TWrite<CIRType>> access)
 	{
 		const auto& nativeTypes = access.GetAST().GetNativeTypes();
@@ -104,38 +115,6 @@ namespace Rift::Compiler::LLVM
 		}
 	}
 
-	void DefineFunctions(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
-	    TAccessRef<CIRFunction, CStmtOutputs, CExprCall, CStmtIf, CStmtReturn, CIRInstruction>
-	        access,
-	    TSpan<AST::Id> ids, Module& irModule)
-	{
-		ZoneScoped;
-		for (AST::Id id : ids)
-		{
-			const auto& irFunction = access.Get<const CIRFunction>(id);
-			BasicBlock* bb         = BasicBlock::Create(llvm, "entry", irFunction.instance);
-			builder.SetInsertPoint(bb);
-
-			TArray<AST::Id> stmtIds{id};
-
-			// Scan function statement chain and cache it
-			TArray<AST::Id> stmtsToCheck{id};
-			TArray<AST::Id> lastStmtOutputs;
-			while (!stmtsToCheck.IsEmpty())
-			{
-				AST::Statements::GetConnectedToOutputs(access, stmtsToCheck, lastStmtOutputs);
-				lastStmtOutputs.RemoveIf([&access](AST::Id id) {
-					return !access.IsValid(id);
-				});
-				stmtIds.Append(lastStmtOutputs);
-				stmtsToCheck = lastStmtOutputs;
-				lastStmtOutputs.Empty(false);
-			}
-
-			verifyFunction(*irFunction.instance);
-		}
-	}
-
 	void DeclareFunctions(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
 	    TAccessRef<TWrite<CIRFunction>, CIdentifier, CExprType, CExprOutputs, CIRType, CParent>
 	        access,
@@ -146,9 +125,9 @@ namespace Rift::Compiler::LLVM
 		TArray<llvm::Type*> inputTypes;
 		for (AST::Id id : ids)
 		{
+			auto& functionComp = access.Add<CIRFunction>(id);
+
 			// Gather arguments
-			inputIds.Empty(false);
-			inputTypes.Empty(false);
 			AST::Hierarchy::GetChildren(access, id, inputIds);
 			AST::RemoveIfNot<CExprOutputs>(access, inputIds);
 			AST::RemoveIfNot<CExprType>(access, inputIds);
@@ -175,59 +154,111 @@ namespace Rift::Compiler::LLVM
 			// Create function
 			const CIdentifier& ident = access.Get<const CIdentifier>(id);
 			auto* functionType = FunctionType::get(builder.getVoidTy(), ToLLVM(inputTypes), false);
-			auto* function     = Function::Create(
-			        functionType, Function::ExternalLinkage, ToLLVM(ident.name), &irModule);
+			functionComp.instance = Function::Create(
+			    functionType, Function::ExternalLinkage, ToLLVM(ident.name), &irModule);
 
 			// Set argument names
-			i32 i = 0;
-			for (auto& arg : function->args())
+			i32 i            = 0;
+			const auto& args = functionComp.instance->args();
+			for (auto& arg : args)
 			{
 				Name name = Names::GetName(access, inputIds[i++]);
 				arg.setName(ToLLVM(name));
 			}
-			access.Add<CIRFunction>(id, {function});
+
+			// Cache final inputs
+			functionComp.inputs   = {args.begin(), args.end()};
+			functionComp.inputIds = inputIds;
+			inputIds.Empty(false);
+			inputTypes.Empty(false);
 		}
 	}
 
-	void AddExprCalls(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
-	    TAccessRef<CExprCallId, CIRFunction, TWrite<CIRInstruction>> access)
+	void AddStmtBlock(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
+	    BlockAccessRef access, BasicBlock* block, const CIRFunction& function)
 	{
 		ZoneScoped;
-		for (AST::Id id : AST::ListAll<CExprCallId>(access))
+		builder.SetInsertPoint(block);
+
+		TArray<AST::Id> stmtIds;
+		AST::Id flowId = AST::NoId;
+		for (AST::Id id : stmtIds)
 		{
-			const AST::Id functionId = access.Get<const CExprCallId>(id).functionId;
-			if (!access.IsValid(functionId))
+			if (const auto* call = access.TryGet<const CExprCallId>(id))
 			{
-				context.AddError("Call to an unknown function");
-				continue;
+				AddCall(context, llvm, builder, *call, access);
 			}
-			const auto* function = access.TryGet<const CIRFunction>(functionId);
-			if (!Ensure(function))
-			{
-				context.AddError("Call to an invalid function");
-				continue;
-			}
-
-			// TODO: Make sure arguments match
-			// if (CalleeF->arg_size() != Args.size())
-			//	context.AddError("Incorrect number of arguments provided");
-
-			TArray<Value*> args;
-			access.Add<CIRInstruction>(
-			    id, {CallInst::Create(function->instance, ToLLVM(args), "calltmp")});
 		}
+
+		if (flowId != AST::NoId)
+		{
+			if (const auto* ifComp = access.TryGet<const CStmtIf>(flowId))
+			{
+				AddIf(llvm, builder, access, flowId, function);
+			}
+		}
+		// TODO: Resolve continuation block and generate it
 	}
 
-	Value* AddIf(TAccessRef<CStmtIf> access, AST::Id id, AST::Id valueId)
+	BasicBlock* AddIf(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
+	    BlockAccessRef access, AST::Id id, const CIRFunction& function)
 	{
-		// Value* condV = value;
+		// Temporarily using value false until we have expressions
+		Value* condV = ConstantInt::get(llvm, APInt(8, false, true));
+
 		// Convert condition to a bool by comparing non-equal to 0.0.
-		// condV = builder.CreateFCmpONE(condV, ConstantFP::get(llvm, APFloat(0.0)), "ifcond");
-		// BasicBlock* thenBlock  = BasicBlock::Create(llvm, "then", function);
-		// BasicBlock* elseBlock  = BasicBlock::Create(llvm, "else");
-		// BasicBlock* mergeBlock = BasicBlock::Create(llvm, "ifcont");
-		// builder.CreateCondBr(condV, thenBlock, elseBlock);
-		return nullptr;
+		condV = builder.CreateFCmpONE(condV, ConstantFP::get(llvm, APFloat(0.0)), "ifcond");
+
+		BasicBlock* thenBlock = BasicBlock::Create(llvm, "then");
+		BasicBlock* elseBlock = BasicBlock::Create(llvm, "else");
+		BasicBlock* contBlock = BasicBlock::Create(llvm, "continue");
+		builder.CreateCondBr(condV, thenBlock, elseBlock);
+
+		function.instance->getBasicBlockList().push_back(thenBlock);
+		AddStmtBlock(context, llvm, builder, access, thenBlock, function);
+		builder.CreateBr(contBlock);
+
+		function.instance->getBasicBlockList().push_back(elseBlock);
+		AddStmtBlock(context, llvm, builder, access, elseBlock, function);
+		builder.CreateBr(contBlock);
+
+		function.instance->getBasicBlockList().push_back(contBlock);
+		return contBlock;
+	}
+
+	void AddCall(Context& context, LLVMContext& llvm, IRBuilder<>& builder, const CExprCallId& call,
+	    BlockAccessRef access)
+	{
+		const AST::Id functionId = call.functionId;
+		if (!access.IsValid(functionId))
+		{
+			context.AddError("Call to an unknown function");
+			return;
+		}
+		const auto* function = access.TryGet<const CIRFunction>(functionId);
+		if (!Ensure(function))
+		{
+			context.AddError("Call to an invalid function");
+			return;
+		}
+
+		TArray<Value*> args;
+		// TODO: Pass arguments
+		builder.CreateCall(function->instance, ToLLVM(args), "calltmp");
+	}
+
+	void DefineFunctions(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
+	    BlockAccessRef access, TSpan<AST::Id> ids, Module& irModule)
+	{
+		ZoneScoped;
+		for (AST::Id id : ids)
+		{
+			const auto& irFunction = access.Get<const CIRFunction>(id);
+			BasicBlock* block      = BasicBlock::Create(llvm, "entry", irFunction.instance);
+			AddStmtBlock(context, llvm, builder, access, block, irFunction);
+
+			verifyFunction(*irFunction.instance);
+		}
 	}
 
 
@@ -296,7 +327,6 @@ namespace Rift::Compiler::LLVM
 		AST::RemoveIfNot<CDeclStruct>(ast, structIds);
 		AST::RemoveIfNot<CDeclClass>(ast, classIds);
 
-
 		DeclareStructs(llvm, ast, structIds, false);
 		DeclareStructs(llvm, ast, classIds, true);    // Declare classes
 
@@ -304,9 +334,6 @@ namespace Rift::Compiler::LLVM
 		AST::Hierarchy::GetChildren(ast, typeIds, functionIds);
 		AST::RemoveIfNot<CDeclFunction>(ast, functionIds);
 		DeclareFunctions(context, llvm, builder, ast, functionIds, irModule);
-
-		// Generate expressions
-		AddExprCalls(context, llvm, builder, ast);
 
 		DefineStructs(context, llvm, ast, structIds, false);
 		DefineStructs(context, llvm, ast, classIds, true);    // Define classes
