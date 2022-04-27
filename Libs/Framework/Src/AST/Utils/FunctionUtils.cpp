@@ -24,73 +24,72 @@
 #include <AST/Components/CStmtReturn.h>
 
 
-namespace Rift::AST::Functions
+namespace Rift::Functions
 {
-	Id AddInputArgument(Tree& ast, Id functionId)
+	AST::Id AddInputArgument(AST::Tree& ast, AST::Id functionId)
 	{
-		Id id = ast.Create();
+		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id);
 		ast.Add<CExprType>(id);
 		ast.Add<CExprOutputs>(id);
 
-		Hierarchy::AddChildren(ast, functionId, id);
+		AST::Hierarchy::AddChildren(ast, functionId, id);
 		return id;
 	}
 
-	Id AddOutputArgument(Tree& ast, Id functionId)
+	AST::Id AddOutputArgument(AST::Tree& ast, AST::Id functionId)
 	{
-		Id id = ast.Create();
+		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id);
 		ast.Add<CExprType>(id);
 		ast.Add<CExprInput>(id);
 
-		Hierarchy::AddChildren(ast, functionId, id);
+		AST::Hierarchy::AddChildren(ast, functionId, id);
 		return id;
 	}
 
-	Id AddIf(TypeRef type)
+	AST::Id AddIf(AST::TypeRef type)
 	{
-		Tree& ast   = type.GetAST();
-		const Id id = ast.Create();
+		AST::Tree& ast   = type.GetAST();
+		const AST::Id id = ast.Create();
 		ast.Add<CStmtIf>(id);
 		ast.Add<CStmtInput>(id);
-		ast.Add<CStmtOutputs>(id);
 
 		// Bool input
-		const Id valueId = ast.Create();
+		const AST::Id valueId = ast.Create();
 		ast.Add<CExprType>(valueId, {ast.GetNativeTypes().boolId});
 		ast.Add<CExprInput>(valueId);
-		Hierarchy::AddChildren(ast, id, valueId);
+		AST::Hierarchy::AddChildren(ast, id, valueId);
 
-		const Id trueId  = ast.Create();
-		const Id falseId = ast.Create();
-		Hierarchy::AddChildren(ast, id, trueId);
-		Hierarchy::AddChildren(ast, id, falseId);
+		TArray<AST::Id> outIds(2);
+		ast.Create(outIds);
+		AST::Hierarchy::AddChildren(ast, id, outIds);
+		ast.Add<CStmtOutputs>(id, Move(outIds));
 
 		if (type)
 		{
-			Hierarchy::AddChildren(ast, type.GetId(), id);
+			AST::Hierarchy::AddChildren(ast, type.GetId(), id);
 		}
 		return id;
 	}
 
-	Id AddReturn(TypeRef type)
+	AST::Id AddReturn(AST::TypeRef type)
 	{
-		Tree& ast         = type.GetAST();
-		const Id returnId = ast.Create();
+		AST::Tree& ast         = type.GetAST();
+		const AST::Id returnId = ast.Create();
 		ast.Add<CStmtReturn>(returnId);
 		ast.Add<CStmtInput>(returnId);
 		if (type)
 		{
-			Hierarchy::AddChildren(ast, type.GetId(), returnId);
+			AST::Hierarchy::AddChildren(ast, type.GetId(), returnId);
 		}
 		return returnId;
 	}
 
-	Id AddLiteral(TypeRef type, Id literalTypeId)
+	AST::Id AddLiteral(AST::TypeRef type, AST::Id literalTypeId)
 	{
-		Tree& ast   = type.GetAST();
-		const Id id = ast.Create();
+		AST::Tree& ast   = type.GetAST();
+		const AST::Id id = ast.Create();
 		ast.Add<CExprOutputs>(id);
 
 		bool created        = false;
@@ -160,46 +159,48 @@ namespace Rift::AST::Functions
 		if (!created)
 		{
 			ast.Destroy(id);
-			return NoId;
+			return AST::NoId;
 		}
 
 		if (type)
 		{
-			Hierarchy::AddChildren(ast, type.GetId(), id);
+			AST::Hierarchy::AddChildren(ast, type.GetId(), id);
 		}
 		return id;
 	}
 
-	Id AddCall(TypeRef type, Id functionId)
+	AST::Id AddCall(AST::TypeRef type, AST::Id functionId)
 	{
-		Tree& ast       = type.GetAST();
-		const Id callId = ast.Create();
+		AST::Tree& ast = type.GetAST();
 
-		ast.Add<CStmtInput, CStmtOutputs>(callId);
-
-		const Id typeId = Hierarchy::GetParent(ast, functionId);
-		Check(!IsNone(typeId));
-		auto& callExpr        = ast.Add<CExprCall>(callId);
-		callExpr.ownerName    = ast.Get<CType>(typeId).name;
-		callExpr.functionName = ast.Get<CIdentifier>(functionId).name;
+		const AST::Id callId = ast.Create();
+		ast.Add<CStmtInput, CStmtOutput>(callId);
 		auto& callExprId      = ast.Add<CExprCallId>(callId);
 		callExprId.functionId = functionId;
 
+		auto& callExpr        = ast.Add<CExprCall>(callId);
+		callExpr.functionName = ast.Get<CIdentifier>(functionId).name;
+		const AST::Id typeId  = AST::Hierarchy::GetParent(ast, functionId);
+		if (!IsNone(typeId))
+		{
+			callExpr.ownerName = ast.Get<CType>(typeId).name;
+		}
+
 		if (type)
 		{
-			Hierarchy::AddChildren(ast, type.GetId(), callId);
+			AST::Hierarchy::AddChildren(ast, type.GetId(), callId);
 		}
 		return callId;
 	}
 
-	Id AddDeclarationReference(TypeRef type, Id declId)
+	AST::Id AddDeclarationReference(AST::TypeRef type, AST::Id declId)
 	{
-		Tree& ast   = type.GetAST();
-		const Id id = ast.Create();
+		AST::Tree& ast   = type.GetAST();
+		const AST::Id id = ast.Create();
 
 		ast.Add<CExprDeclRef, CExprOutputs>(id);
 
-		const Id typeId = Hierarchy::GetParent(ast, declId);
+		const AST::Id typeId = AST::Hierarchy::GetParent(ast, declId);
 		Check(!IsNone(typeId));
 		auto& declRefExpr           = ast.Add<CExprDeclRef>(id);
 		declRefExpr.ownerName       = ast.Get<CType>(typeId).name;
@@ -209,52 +210,52 @@ namespace Rift::AST::Functions
 
 		if (type)
 		{
-			Hierarchy::AddChildren(ast, type.GetId(), id);
+			AST::Hierarchy::AddChildren(ast, type.GetId(), id);
 		}
 		return id;
 	}
 
-	Id AddUnaryOperator(TypeRef type, UnaryOperatorType operatorType)
+	AST::Id AddUnaryOperator(AST::TypeRef type, UnaryOperatorType operatorType)
 	{
-		Tree& ast   = type.GetAST();
-		const Id id = ast.Create();
+		AST::Tree& ast   = type.GetAST();
+		const AST::Id id = ast.Create();
 		ast.Add<CExprUnaryOperator>(id, {operatorType});
 		ast.Add<CExprInput>(id);
 		ast.Add<CExprOutputs>(id);
 		if (type)
 		{
-			Hierarchy::AddChildren(ast, type.GetId(), id);
+			AST::Hierarchy::AddChildren(ast, type.GetId(), id);
 		}
 		return id;
 	}
 
-	Id AddBinaryOperator(TypeRef type, BinaryOperatorType operatorType)
+	AST::Id AddBinaryOperator(AST::TypeRef type, BinaryOperatorType operatorType)
 	{
-		Tree& ast   = type.GetAST();
-		const Id id = ast.Create();
+		AST::Tree& ast   = type.GetAST();
+		const AST::Id id = ast.Create();
 		ast.Add<CExprBinaryOperator>(id, {operatorType});
 		ast.Add<CExprOutputs>(id);
 
 		AST::Id valueIds[2];
 		ast.Create(valueIds);
 		ast.Add<CExprInput>(valueIds);
-		Hierarchy::AddChildren(ast, id, valueIds);
+		AST::Hierarchy::AddChildren(ast, id, valueIds);
 		if (type)
 		{
-			Hierarchy::AddChildren(ast, type.GetId(), id);
+			AST::Hierarchy::AddChildren(ast, type.GetId(), id);
 		}
 		return id;
 	}
 
-	Id FindFunctionByName(Tree& ast, Name ownerName, Name functionName)
+	AST::Id FindFunctionByName(AST::Tree& ast, Name ownerName, Name functionName)
 	{
 		auto& types = ast.GetStatic<STypes>();
-		if (const Id* typeId = types.typesByName.Find(ownerName))
+		if (const AST::Id* typeId = types.typesByName.Find(ownerName))
 		{
-			if (const auto* children = Hierarchy::GetChildren(ast, *typeId))
+			if (const auto* children = AST::Hierarchy::GetChildren(ast, *typeId))
 			{
 				auto functions = ast.Filter<CDeclFunction, CIdentifier>();
-				for (Id childId : *children)
+				for (AST::Id childId : *children)
 				{
 					if (functions.Has(childId)
 					    && functions.Get<CIdentifier>(childId).name == functionName)
@@ -264,28 +265,28 @@ namespace Rift::AST::Functions
 				}
 			}
 		}
-		return NoId;
+		return AST::NoId;
 	}
 
-	void RemoveNodes(const RemoveAccess& access, TSpan<Id> ids)
+	void RemoveNodes(const RemoveAccess& access, TSpan<AST::Id> ids)
 	{
 		ScopedChange(access, ids);
-		Hierarchy::RemoveDeep(access, ids);
+		AST::Hierarchy::RemoveDeep(access, ids);
 	}
 
-	void GetCallArgs(Tree& ast, TSpan<Id> callIds, TArray<Id>& inputArgIds,
-	    TArray<Id>& outputArgIds, TArray<Id>& otherIds)
+	void GetCallArgs(AST::Tree& ast, TSpan<AST::Id> callIds, TArray<AST::Id>& inputArgIds,
+	    TArray<AST::Id>& outputArgIds, TArray<AST::Id>& otherIds)
 	{
 		auto exprInputs  = ast.Filter<CExprInput>();
 		auto exprOutputs = ast.Filter<CExprOutputs>();
 
-		TArray<Id> children;
-		for (Id id : callIds)
+		TArray<AST::Id> children;
+		for (AST::Id id : callIds)
 		{
-			Hierarchy::GetChildren(ast, id, children);
+			AST::Hierarchy::GetChildren(ast, id, children);
 		}
 
-		for (Id id : children)
+		for (AST::Id id : children)
 		{
 			if (exprInputs.Has(id))
 			{
@@ -301,4 +302,4 @@ namespace Rift::AST::Functions
 			}
 		}
 	}
-}    // namespace Rift::AST::Functions
+}    // namespace Rift::Functions

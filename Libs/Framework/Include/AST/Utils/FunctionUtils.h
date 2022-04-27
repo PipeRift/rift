@@ -15,27 +15,27 @@
 #include "AST/TypeRef.h"
 
 
-namespace Rift::AST::Functions
+namespace Rift::Functions
 {
-	Id AddInputArgument(Tree& ast, Id functionId);
-	Id AddOutputArgument(Tree& ast, Id functionId);
+	AST::Id AddInputArgument(AST::Tree& ast, AST::Id functionId);
+	AST::Id AddOutputArgument(AST::Tree& ast, AST::Id functionId);
 
-	Id AddIf(TypeRef type);
-	Id AddReturn(TypeRef type);
+	AST::Id AddIf(AST::TypeRef type);
+	AST::Id AddReturn(AST::TypeRef type);
 
-	Id AddLiteral(TypeRef type, Id literalTypeId);
-	Id AddCall(TypeRef type, Id targetFunctionId);
-	Id AddDeclarationReference(TypeRef type, Id declId);
-	Id AddUnaryOperator(TypeRef type, UnaryOperatorType operatorType);
-	Id AddBinaryOperator(TypeRef type, BinaryOperatorType operatorType);
+	AST::Id AddLiteral(AST::TypeRef type, AST::Id literalTypeId);
+	AST::Id AddCall(AST::TypeRef type, AST::Id targetFunctionId);
+	AST::Id AddDeclarationReference(AST::TypeRef type, AST::Id declId);
+	AST::Id AddUnaryOperator(AST::TypeRef type, UnaryOperatorType operatorType);
+	AST::Id AddBinaryOperator(AST::TypeRef type, BinaryOperatorType operatorType);
 
-	Id FindFunctionByName(Tree& ast, Name ownerName, Name functionName);
+	AST::Id FindFunctionByName(AST::Tree& ast, Name ownerName, Name functionName);
 
 	using RemoveAccess =
 	    TAccess<TWrite<CChanged>, TWrite<CFileDirty>, TWrite<CExprInput>, TWrite<CExprOutputs>,
 	        TWrite<CStmtInput>, TWrite<CStmtOutputs>, TWrite<CParent>, TWrite<CChild>, CFileRef>;
-	void RemoveNodes(const RemoveAccess& access, TSpan<Id> ids);
+	void RemoveNodes(const RemoveAccess& access, TSpan<AST::Id> ids);
 
-	void GetCallArgs(Tree& ast, TSpan<Id> callIds, TArray<Id>& inputArgIds,
-	    TArray<Id>& outputArgIds, TArray<Id>& otherIds);
-}    // namespace Rift::AST::Functions
+	void GetCallArgs(AST::Tree& ast, TSpan<AST::Id> callIds, TArray<AST::Id>& inputArgIds,
+	    TArray<AST::Id>& outputArgIds, TArray<AST::Id>& otherIds);
+}    // namespace Rift::Functions

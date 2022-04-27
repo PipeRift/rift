@@ -47,7 +47,7 @@ namespace Rift::FunctionsSystem
 		{
 			auto& call = callExprs.Get<CExprCall>(id);
 			AST::Id functionId =
-			    AST::Functions::FindFunctionByName(ast, call.ownerName, call.functionName);
+			    Functions::FindFunctionByName(ast, call.ownerName, call.functionName);
 			if (!IsNone(functionId))
 			{
 				callExprIds.Add(id, CExprCallId{functionId});
@@ -131,7 +131,7 @@ namespace Rift::FunctionsSystem
 		{
 			currentInputs.Empty(false);
 			currentOutputs.Empty(false);
-			AST::Functions::GetCallArgs(
+			Functions::GetCallArgs(
 			    ast, call.id, currentInputs, currentOutputs, call.unrelatedCallChildren);
 
 			for (AST::Id id : call.functionOutputs)

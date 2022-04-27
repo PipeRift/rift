@@ -31,7 +31,6 @@
 #include <Reflection/TypeName.h>
 
 
-
 namespace Rift::AST
 {
 	template<typename T>
@@ -168,6 +167,7 @@ namespace Rift::AST
 			ReadPool<CLiteralFloating>(*this, ast);
 			ReadPool<CLiteralIntegral>(*this, ast);
 			ReadPool<CLiteralString>(*this, ast);
+			ReadPool<CStmtOutput>(*this, ast);
 			ReadPool<CStmtOutputs>(*this, ast);
 			ReadPool<CStmtInput>(
 			    *this, ast);    // TODO: Rebuild from CStmtOutputs instead of serializing
@@ -223,6 +223,7 @@ namespace Rift::AST
 			WritePool<CLiteralFloating>(*this, ast, treeEntities);
 			WritePool<CLiteralIntegral>(*this, ast, treeEntities);
 			WritePool<CLiteralString>(*this, ast, treeEntities);
+			WritePool<CStmtOutput>(*this, ast, treeEntities);
 			WritePool<CStmtOutputs>(*this, ast, treeEntities);
 			WritePool<CStmtInput>(*this, ast,
 			    treeEntities);    // TODO: When rebuilding from CStmtOutputs, ignore this pool

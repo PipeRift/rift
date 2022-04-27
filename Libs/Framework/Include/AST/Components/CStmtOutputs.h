@@ -8,6 +8,15 @@
 
 namespace Rift
 {
+	struct CStmtOutput : public Struct
+	{
+		STRUCT(CStmtOutput, Struct)
+
+		PROP(linkInputNode)
+		AST::Id linkInputNode = AST::NoId;
+	};
+
+
 	struct CStmtOutputs : public Struct
 	{
 		STRUCT(CStmtOutputs, Struct)
@@ -17,5 +26,9 @@ namespace Rift
 		TArray<AST::Id> linkPins;
 		PROP(linkInputNodes)
 		TArray<AST::Id> linkInputNodes;
+
+
+		CStmtOutputs() = default;
+		CStmtOutputs(TArray<AST::Id> linkPins) : linkPins{Move(linkPins)} {}
 	};
 }    // namespace Rift

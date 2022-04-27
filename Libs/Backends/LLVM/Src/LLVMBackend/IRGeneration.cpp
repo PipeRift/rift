@@ -41,15 +41,15 @@ namespace Rift::Compiler::LLVM
 	using namespace llvm;
 
 
-	using BlockAccessRef = TAccessRef<CStmtOutputs, CStmtIf, CExprCallId, CIRFunction>;
+	using BlockAccessRef = TAccessRef<CStmtOutput, CStmtOutputs, CStmtIf, CExprCallId, CIRFunction>;
 
 	// Forward declarations
-	void AddStmtBlock(LLVMContext& llvm, IRBuilder<>& builder, BlockAccessRef access,
-	    BasicBlock* block, const CIRFunction& function);
-	BasicBlock* AddIf(LLVMContext& llvm, IRBuilder<>& builder, BlockAccessRef access, AST::Id id,
-	    const CIRFunction& function);
+	void AddStmtBlock(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
+	    BlockAccessRef access, AST::Id firstStmtId, BasicBlock* block, const CIRFunction& function);
+	BasicBlock* AddIf(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
+	    BlockAccessRef access, AST::Id id, const CIRFunction& function);
 	void AddCall(Context& context, LLVMContext& llvm, IRBuilder<>& builder, const CExprCallId& call,
-	    TAccessRef<CIRFunction> access);
+	    BlockAccessRef access);
 
 
 	void BindNativeTypes(LLVMContext& llvm, TAccessRef<CType, TWrite<CIRType>> access)
@@ -175,13 +175,15 @@ namespace Rift::Compiler::LLVM
 	}
 
 	void AddStmtBlock(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
-	    BlockAccessRef access, BasicBlock* block, const CIRFunction& function)
+	    BlockAccessRef access, AST::Id firstStmtId, BasicBlock* block, const CIRFunction& function)
 	{
 		ZoneScoped;
 		builder.SetInsertPoint(block);
 
+		AST::Id splitId = AST::NoId;
 		TArray<AST::Id> stmtIds;
-		AST::Id flowId = AST::NoId;
+		AST::Statements::GetChain(access, firstStmtId, stmtIds, splitId);
+
 		for (AST::Id id : stmtIds)
 		{
 			if (const auto* call = access.TryGet<const CExprCallId>(id))
@@ -190,11 +192,11 @@ namespace Rift::Compiler::LLVM
 			}
 		}
 
-		if (flowId != AST::NoId)
+		if (splitId != AST::NoId)
 		{
-			if (const auto* ifComp = access.TryGet<const CStmtIf>(flowId))
+			if (const auto* ifComp = access.TryGet<const CStmtIf>(splitId))
 			{
-				AddIf(llvm, builder, access, flowId, function);
+				AddIf(context, llvm, builder, access, splitId, function);
 			}
 		}
 		// TODO: Resolve continuation block and generate it
@@ -203,6 +205,10 @@ namespace Rift::Compiler::LLVM
 	BasicBlock* AddIf(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
 	    BlockAccessRef access, AST::Id id, const CIRFunction& function)
 	{
+		const auto& outputs      = access.Get<const CStmtOutputs>(id);
+		const auto& connectedIds = outputs.linkInputNodes;
+		Check(connectedIds.Size() == 2);
+
 		// Temporarily using value false until we have expressions
 		Value* condV = ConstantInt::get(llvm, APInt(8, false, true));
 
@@ -215,11 +221,11 @@ namespace Rift::Compiler::LLVM
 		builder.CreateCondBr(condV, thenBlock, elseBlock);
 
 		function.instance->getBasicBlockList().push_back(thenBlock);
-		AddStmtBlock(context, llvm, builder, access, thenBlock, function);
+		AddStmtBlock(context, llvm, builder, access, connectedIds[0], thenBlock, function);
 		builder.CreateBr(contBlock);
 
 		function.instance->getBasicBlockList().push_back(elseBlock);
-		AddStmtBlock(context, llvm, builder, access, elseBlock, function);
+		AddStmtBlock(context, llvm, builder, access, connectedIds[1], elseBlock, function);
 		builder.CreateBr(contBlock);
 
 		function.instance->getBasicBlockList().push_back(contBlock);
@@ -255,7 +261,7 @@ namespace Rift::Compiler::LLVM
 		{
 			const auto& irFunction = access.Get<const CIRFunction>(id);
 			BasicBlock* block      = BasicBlock::Create(llvm, "entry", irFunction.instance);
-			AddStmtBlock(context, llvm, builder, access, block, irFunction);
+			AddStmtBlock(context, llvm, builder, access, id, block, irFunction);
 
 			verifyFunction(*irFunction.instance);
 		}

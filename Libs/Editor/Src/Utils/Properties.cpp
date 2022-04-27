@@ -277,7 +277,7 @@ namespace Rift
 				if (UI::Button(ICON_FA_PLUS "##FunctionInput", ImVec2(-FLT_MIN, 0.0f)))
 				{
 					ScopedChange(ast, functionId);
-					AST::Functions::AddInputArgument(ast, functionId);
+					Functions::AddInputArgument(ast, functionId);
 				}
 				UI::HelpTooltip("Adds a new input parameter to a function");
 				Style::PopStyleCompact();
@@ -298,7 +298,7 @@ namespace Rift
 				if (UI::Button(ICON_FA_PLUS "##FunctionOutput", ImVec2(-FLT_MIN, 0.0f)))
 				{
 					ScopedChange(ast, functionId);
-					AST::Functions::AddOutputArgument(ast, functionId);
+					Functions::AddOutputArgument(ast, functionId);
 				}
 				UI::HelpTooltip("Adds a new output parameter to a function");
 				Style::PopStyleCompact();

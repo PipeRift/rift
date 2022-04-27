@@ -40,7 +40,6 @@
 #include <Utils/NodesMiniMap.h>
 
 
-
 namespace Rift::Graph
 {
 	static CGraphTransform* currentNodeTransform = nullptr;
@@ -476,7 +475,7 @@ namespace Rift::Graph
 		{
 			if (UI::MenuItem("Add return node"))
 			{
-				AST::Id newId = AST::Functions::AddReturn({ast, typeId});
+				AST::Id newId = Functions::AddReturn({ast, typeId});
 				if (!IsNone(newId))
 				{
 					v2 position = ast.Get<CGraphTransform>(firstNodeId).position;
@@ -489,7 +488,7 @@ namespace Rift::Graph
 		}
 		if (UI::MenuItem("Delete"))
 		{
-			AST::Functions::RemoveNodes(ast, nodeIds);
+			Functions::RemoveNodes(ast, nodeIds);
 		}
 	}
 
@@ -508,7 +507,7 @@ namespace Rift::Graph
 		{
 			if (filter.PassFilter("Return") && UI::MenuItem("Return"))
 			{
-				AST::Id newId = AST::Functions::AddReturn({ast, typeId});
+				AST::Id newId = Functions::AddReturn({ast, typeId});
 				if (!IsNone(newId))
 				{
 					ast.Add<CGraphTransform>(newId, gridPos);
@@ -516,7 +515,7 @@ namespace Rift::Graph
 			}
 			if (filter.PassFilter("If") && UI::MenuItem("If"))
 			{
-				AST::Id newId = AST::Functions::AddIf({ast, typeId});
+				AST::Id newId = Functions::AddIf({ast, typeId});
 				if (!IsNone(newId))
 				{
 					ast.Add<CGraphTransform>(newId, gridPos);
@@ -542,7 +541,7 @@ namespace Rift::Graph
 				if (filter.PassFilter(name.data(), name.data() + name.size())
 				    && UI::MenuItem(name.data()))
 				{
-					AST::Id newId = AST::Functions::AddUnaryOperator({ast, typeId}, type);
+					AST::Id newId = Functions::AddUnaryOperator({ast, typeId}, type);
 					if (!IsNone(newId))
 					{
 						ast.Add<CGraphTransform>(newId, gridPos);
@@ -559,7 +558,7 @@ namespace Rift::Graph
 				if (filter.PassFilter(name.data(), name.data() + name.size())
 				    && UI::MenuItem(name.data()))
 				{
-					AST::Id newId = AST::Functions::AddBinaryOperator({ast, typeId}, type);
+					AST::Id newId = Functions::AddBinaryOperator({ast, typeId}, type);
 					if (!IsNone(newId))
 					{
 						ast.Add<CGraphTransform>(newId, gridPos);
@@ -588,7 +587,7 @@ namespace Rift::Graph
 					{
 						if (UI::MenuItem(makeStr.c_str()))
 						{
-							AST::Id newId = AST::Functions::AddLiteral({ast, typeId}, it.second);
+							AST::Id newId = Functions::AddLiteral({ast, typeId}, it.second);
 							if (!IsNone(newId))
 							{
 								ast.Add<CGraphTransform>(newId, gridPos);
@@ -618,7 +617,7 @@ namespace Rift::Graph
 						if (UI::MenuItem(name.c_str()))
 						{
 							AST::Id newId =
-							    AST::Functions::AddDeclarationReference({ast, typeId}, variableId);
+							    Functions::AddDeclarationReference({ast, typeId}, variableId);
 							if (!IsNone(newId))
 							{
 								ast.Add<CGraphTransform>(newId, gridPos);
@@ -647,7 +646,7 @@ namespace Rift::Graph
 					{
 						if (UI::MenuItem(name.c_str()))
 						{
-							AST::Id newId = AST::Functions::AddCall({ast, typeId}, functionId);
+							AST::Id newId = Functions::AddCall({ast, typeId}, functionId);
 							if (!IsNone(newId))
 							{
 								ast.Add<CGraphTransform>(newId, gridPos);
@@ -1056,7 +1055,7 @@ namespace Rift::Graph
 
 				if (UI::IsKeyReleased(GLFW_KEY_DELETE))
 				{
-					AST::Functions::RemoveNodes(ast, Nodes::GetSelectedNodes());
+					Functions::RemoveNodes(ast, Nodes::GetSelectedNodes());
 				}
 			}
 
