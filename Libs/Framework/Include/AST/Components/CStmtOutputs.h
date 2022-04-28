@@ -29,6 +29,8 @@ namespace Rift
 
 
 		CStmtOutputs() = default;
-		CStmtOutputs(TArray<AST::Id> linkPins) : linkPins{Move(linkPins)} {}
+		CStmtOutputs(TArray<AST::Id> pins)
+		    : linkPins{Move(pins)}, linkInputNodes(linkPins.Size(), AST::NoId)
+		{}
 	};
 }    // namespace Rift

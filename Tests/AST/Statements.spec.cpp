@@ -78,6 +78,23 @@ go_bandit([]() {
 			AST::Id ifId    = Functions::AddIf({ast, AST::NoId});
 			AST::Id call1Id = Functions::AddCall({ast, AST::NoId}, functionId);
 			AST::Id call2Id = Functions::AddCall({ast, AST::NoId}, functionId);
+
+			AssertThat(
+			    AST::Statements::TryConnect(ast, ast.Get<CStmtOutputs>(ifId).linkPins[0], call2Id),
+			    Equals(true));
+			AssertThat(ast.Get<CStmtOutputs>(ifId).linkInputNodes[0], Equals(call2Id));
+
+			// Can replace a connection
+			AssertThat(
+			    AST::Statements::TryConnect(ast, ast.Get<CStmtOutputs>(ifId).linkPins[0], call1Id),
+			    Equals(true));
+			AssertThat(ast.Get<CStmtOutputs>(ifId).linkInputNodes[0], Equals(call1Id));
+
+			// Can connect to a different pin
+			AssertThat(
+			    AST::Statements::TryConnect(ast, ast.Get<CStmtOutputs>(ifId).linkPins[1], call2Id),
+			    Equals(true));
+			AssertThat(ast.Get<CStmtOutputs>(ifId).linkInputNodes[1], Equals(call2Id));
 		});
 	});
 });

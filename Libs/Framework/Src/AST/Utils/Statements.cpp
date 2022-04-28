@@ -40,7 +40,8 @@ namespace Rift::AST::Statements
 		else
 		{
 			outputNode = Hierarchy::GetParent(ast, outputPin);
-			if (!Ensure(!IsNone(outputNode)))
+			Log::Error("{}", outputNode);
+			if (IsNone(outputNode))
 			{
 				return false;
 			}

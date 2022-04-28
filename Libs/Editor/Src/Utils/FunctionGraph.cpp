@@ -930,29 +930,42 @@ namespace Rift::Graph
 	}
 
 	void DrawStatementLinks(
-	    TAccessRef<CParent, CStmtOutputs>& access, const TArray<AST::Id>& children)
+	    TAccessRef<CParent, CStmtOutput, CStmtOutputs>& access, const TArray<AST::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 2.f);
 		Nodes::PushStyleColor(Nodes::ColorVar_Link, Style::executionColor);
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(Style::executionColor));
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
 
+		for (AST::Id outputId : GetIf<CStmtOutput>(access, children))
+		{
+			const auto* output = access.TryGet<const CStmtOutput>(outputId);
+			if (output && access.IsValid(output->linkInputNode))
+			{
+				// Input pin ids equal input node ids
+				// Output pin ids equal output node ids
+				Nodes::Link(i32(output->linkInputNode), i32(outputId), i32(output->linkInputNode));
+			}
+		}
+
 		for (AST::Id outputId : GetIf<CStmtOutputs>(access, children))
 		{
 			if (const auto* outputs = access.TryGet<const CStmtOutputs>(outputId))
 			{
-				CheckMsg(outputs->linkInputNodes.Size() == outputs->linkPins.Size(),
-				    "Inputs and pins must match. Graph might be corrupted.");
-				for (i32 i = 0; i < outputs->linkInputNodes.Size(); ++i)
+				if (EnsureMsg(outputs->linkInputNodes.Size() == outputs->linkPins.Size(),
+				        "Inputs and pins must match. Graph might be corrupted."))
 				{
-					const AST::Id outputPinId = outputs->linkPins[i];
-					const AST::Id inputNodeId = outputs->linkInputNodes[i];
-					if (access.IsValid(outputPinId) && access.IsValid(inputNodeId))
+					for (i32 i = 0; i < outputs->linkInputNodes.Size(); ++i)
 					{
-						// NOTE: Input pin ids equal input node ids
-						// TODO: Execution pin ids atm are the same as the node id.
-						// Implement proper output pin support
-						Nodes::Link(i32(inputNodeId), i32(outputPinId), i32(inputNodeId));
+						const AST::Id outputPinId = outputs->linkPins[i];
+						const AST::Id inputNodeId = outputs->linkInputNodes[i];
+						if (access.IsValid(outputPinId) && access.IsValid(inputNodeId))
+						{
+							// Input pin ids equal input node ids
+							// TODO: Execution pin ids atm are the same as the node id.
+							// Implement proper output pin support
+							Nodes::Link(i32(inputNodeId), i32(outputPinId), i32(inputNodeId));
+						}
 					}
 				}
 			}
