@@ -15,4 +15,12 @@ namespace Rift
 		PROP(linkOutputNode)
 		AST::Id linkOutputNode = AST::NoId;
 	};
+	static void Read(Serl::ReadContext& ct, CStmtInput& val)
+	{
+		ct.Serialize(val.linkOutputNode);
+	}
+	static void Write(Serl::WriteContext& ct, const CStmtInput& val)
+	{
+		ct.Serialize(val.linkOutputNode);
+	}
 }    // namespace Rift

@@ -3,6 +3,7 @@
 
 #include "AST/Types.h"
 
+#include <Serialization/Contexts.h>
 #include <Types/Struct.h>
 
 
@@ -15,6 +16,15 @@ namespace Rift
 		PROP(linkInputNode)
 		AST::Id linkInputNode = AST::NoId;
 	};
+
+	static void Read(Serl::ReadContext& ct, CStmtOutput& val)
+	{
+		ct.Serialize(val.linkInputNode);
+	}
+	static void Write(Serl::WriteContext& ct, const CStmtOutput& val)
+	{
+		ct.Serialize(val.linkInputNode);
+	}
 
 
 	struct CStmtOutputs : public Struct

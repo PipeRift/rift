@@ -15,4 +15,12 @@ namespace Rift
 		PROP(children)
 		TArray<AST::Id> children;
 	};
+	static void Read(Serl::ReadContext& ct, CParent& val)
+	{
+		ct.Serialize(val.children);
+	}
+	static void Write(Serl::WriteContext& ct, const CParent& val)
+	{
+		ct.Serialize(val.children);
+	}
 }    // namespace Rift

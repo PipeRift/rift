@@ -25,19 +25,21 @@ namespace Rift::AST::Hierarchy
 	void AddChildren(
 	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id node, TSpan<const Id> children)
 	{
-		children.Each([&access, node](Id child) {
-			if (CChild* cChild = access.TryGet<CChild>(child))
+		children.Each([&access, node](Id childId) {
+			if (CChild* cChild = access.TryGet<CChild>(childId))
 			{
-				if (EnsureMsg(IsNone(cChild->parent),
+				if (cChild->parent == node
+				    || !EnsureMsg(IsNone(cChild->parent),
 				        "A node trying to be linked already has a parent. Consider using "
 				        "TransferChildren()"))
 				{
-					cChild->parent = node;
+					return;
 				}
+				cChild->parent = node;
 			}
 			else
 			{
-				access.Add<CChild>(child).parent = node;
+				access.Add<CChild>(childId).parent = node;
 			}
 		});
 		access.GetOrAdd<CParent>(node).children.Append(children);

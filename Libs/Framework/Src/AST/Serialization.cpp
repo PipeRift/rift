@@ -48,19 +48,18 @@ namespace Rift::AST
 				key.clear();
 				Strings::FormatTo(key, "{}", i);
 
-				if (ct.EnterNext(key))
+				if constexpr (!IsEmpty<T>())
 				{
-					ct.BeginObject();
-					if constexpr (!IsEmpty<T>())
-					{
-						T& comp = access.template GetOrAdd<T>(node);
-						ct.Serialize(comp);
-					}
-					else if (!access.template Has<T>(node))
+					T& comp = access.template GetOrAdd<T>(node);
+					ct.Next(key, comp);
+				}
+				else
+				{
+					if (!access.template Has<T>(node) && ct.EnterNext(key))
 					{
 						access.template Add<T>(node);
+						ct.Leave();
 					}
-					ct.Leave();
 				}
 			}
 			ct.Leave();

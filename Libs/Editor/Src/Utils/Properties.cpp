@@ -10,18 +10,9 @@
 #include "Utils/EditorStyle.h"
 #include "Utils/Widgets.h"
 
-#include <AST/Components/CDeclClass.h>
-#include <AST/Components/CDeclFunction.h>
-#include <AST/Components/CDeclFunctionLibrary.h>
-#include <AST/Components/CDeclStruct.h>
-#include <AST/Components/CDeclVariable.h>
-#include <AST/Components/CExprInput.h>
-#include <AST/Components/CExprOutputs.h>
-#include <AST/Components/CExprType.h>
-#include <AST/Components/CIdentifier.h>
+#include <AST/Filtering.h>
 #include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/Hierarchy.h>
-#include <AST/Utils/TransactionUtils.h>
 #include <AST/Utils/TypeUtils.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
@@ -107,10 +98,10 @@ namespace Rift
 		}
 	}
 
-	void DrawVariable(AST::Tree& ast, CTypeEditor& editor, AST::Id variableId)
+	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, AST::Id variableId)
 	{
-		CIdentifier* identifier = ast.TryGet<CIdentifier>(variableId);
-		auto* variableDecl      = ast.TryGet<CDeclVariable>(variableId);
+		CIdentifier* identifier = access.TryGet<CIdentifier>(variableId);
+		auto* variableDecl      = access.TryGet<CDeclVariable>(variableId);
 		if (!identifier || !variableDecl)
 		{
 			return;
@@ -118,7 +109,7 @@ namespace Rift
 
 		ImGui::PushID(identifier);
 
-		const Color color                  = Style::GetTypeColor(ast, variableDecl->typeId);
+		const Color color = Style::GetTypeColor(access.GetAST(), variableDecl->typeId);
 		static constexpr float frameHeight = 20.f;
 
 		UI::TableNextColumn();
@@ -186,7 +177,7 @@ namespace Rift
 		{
 			UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 			UI::SetNextItemWidth(-FLT_MIN);
-			Editor::TypeCombo(ast, "##type", variableDecl->typeId);
+			Editor::TypeCombo(access, "##type", variableDecl->typeId);
 			UI::PopStyleVar();
 		}
 
@@ -309,40 +300,40 @@ namespace Rift
 		}
 	}
 
-	void DrawVariables(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId)
+	void DrawVariables(TVariableAccessRef access, TransactionAccess transAccess,
+	    CTypeEditor& editor, AST::Id typeId)
 	{
 		if (UI::CollapsingHeader("Variables", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			auto variableView = ast.Filter<CDeclVariable>();
 			UI::Indent(10.f);
-			if (auto* children = AST::Hierarchy::GetChildren(ast, typeId))
+			TArray<AST::Id> variableIds;
+			AST::Hierarchy::GetChildren(access, typeId, variableIds);
+			AST::RemoveIfNot<CDeclVariable>(access, variableIds);
+
+			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
+			bool showTable = UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit);
+			UI::PopStyleVar();
+			if (showTable)
 			{
-				UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
-				bool showTable =
-				    UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit);
-				UI::PopStyleVar();
-				if (showTable)
+				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.45f);
+				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.25f);
+				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.30f);
+				for (AST::Id child : variableIds)
 				{
-					ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.45f);
-					ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.25f);
-					ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.30f);
-					for (AST::Id child : *children)
+					if (access.Has<CDeclVariable>(child))
 					{
-						if (variableView.Has(child))
-						{
-							UI::TableNextRow();
-							DrawVariable(ast, editor, child);
-						}
+						UI::TableNextRow();
+						DrawVariable(access, editor, child);
 					}
-					UI::EndTable();
 				}
+				UI::EndTable();
 			}
 
 			Style::PushStyleCompact();
 			if (UI::Button(ICON_FA_PLUS "##Variable", ImVec2(-FLT_MIN, 0.0f)))
 			{
-				ScopedChange(ast, typeId);
-				Types::AddVariable({ast, typeId}, "NewVariable");
+				ScopedChange(transAccess, typeId);
+				Types::AddVariable({access.GetAST(), typeId}, "NewVariable");
 			}
 			Style::PopStyleCompact();
 			UI::Unindent(10.f);
@@ -392,7 +383,7 @@ namespace Rift
 		{
 			if (Types::CanContainVariables(ast, typeId))
 			{
-				DrawVariables(ast, editor, typeId);
+				DrawVariables(ast, ast, editor, typeId);
 			}
 
 			if (Types::CanContainFunctions(ast, typeId))
