@@ -215,14 +215,7 @@ namespace Rift::AST::Statements
 	void GetChain(TAccessRef<CStmtOutput, CStmtOutputs> access, Id firstStmtId, TArray<Id>& stmtIds,
 	    Id& splitStmtId)
 	{
-		// Skip first
-		auto* firstOutput = access.TryGet<const CStmtOutput>(firstStmtId);
-		if (!firstOutput)
-		{
-			return;
-		}
-		Id id = firstOutput->linkInputNode;
-
+		Id id = firstStmtId;
 		while (id != AST::NoId && access.Has<CStmtOutput>(id))
 		{
 			stmtIds.Add(id);

@@ -1,6 +1,6 @@
 {
     "type": "Class",
-    "count": 6,
+    "count": 9,
     "roots": [
         0
     ],
@@ -9,23 +9,37 @@
             "0": -1,
             "1": 0,
             "2": 0,
-            "3": 2,
-            "4": 2,
-            "5": 2
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 2,
+            "7": 2,
+            "8": 2
         },
         "CDeclClass": {
             "0": {}
         },
         "CDeclFunction": {
-            "1": {}
+            "1": {},
+            "3": {}
+        },
+        "CExprCall": {
+            "4": {
+                "ownerName": "Inventory",
+                "functionName": "Add"
+            },
+            "5": {
+                "ownerName": "Inventory",
+                "functionName": "Remove"
+            }
         },
         "CExprInput": {
-            "3": {
+            "6": {
                 "linkOutputPin": -1
             }
         },
         "CExprType": {
-            "3": {}
+            "6": {}
         },
         "CGraphTransform": {
             "1": {
@@ -36,7 +50,25 @@
             },
             "2": {
                 "position": {
-                    "x": 7.0,
+                    "x": 11.0,
+                    "y": 0.0
+                }
+            },
+            "3": {
+                "position": {
+                    "x": 0.0,
+                    "y": 7.0
+                }
+            },
+            "4": {
+                "position": {
+                    "x": 18.0,
+                    "y": 0.0
+                }
+            },
+            "5": {
+                "position": {
+                    "x": 4.0,
                     "y": 0.0
                 }
             }
@@ -44,40 +76,54 @@
         "CIdentifier": {
             "1": {
                 "name": "Add"
+            },
+            "3": {
+                "name": "Remove"
             }
         },
         "CParent": {
             "0": [
                 1,
-                2
-            ],
-            "1": [],
-            "2": [
+                2,
                 3,
                 4,
                 5
-            ]
+            ],
+            "1": [],
+            "2": [
+                6,
+                7,
+                8
+            ],
+            "3": [],
+            "4": [],
+            "5": []
         },
         "CStmtIf": {
             "2": {}
         },
         "CStmtOutput": {
-            "1": 2
+            "1": 5,
+            "3": -1,
+            "4": -1,
+            "5": 2
         },
         "CStmtOutputs": {
             "2": {
                 "linkPins": [
-                    4,
-                    5
+                    7,
+                    8
                 ],
                 "linkInputNodes": [
-                    -1,
+                    4,
                     -1
                 ]
             }
         },
         "CStmtInput": {
-            "2": 1
+            "2": 5,
+            "4": 2,
+            "5": 1
         }
     }
 }

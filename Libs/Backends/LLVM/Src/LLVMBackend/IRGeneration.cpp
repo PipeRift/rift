@@ -194,7 +194,7 @@ namespace Rift::Compiler::LLVM
 
 		if (splitId != AST::NoId)
 		{
-			if (const auto* ifComp = access.TryGet<const CStmtIf>(splitId))
+			if (access.Has<const CStmtIf>(splitId))
 			{
 				AddIf(context, llvm, builder, access, splitId, function);
 			}
@@ -210,10 +210,7 @@ namespace Rift::Compiler::LLVM
 		Check(connectedIds.Size() == 2);
 
 		// Temporarily using value false until we have expressions
-		Value* condV = ConstantInt::get(llvm, APInt(8, false, true));
-
-		// Convert condition to a bool by comparing non-equal to 0.0.
-		condV = builder.CreateFCmpONE(condV, ConstantFP::get(llvm, APFloat(0.0)), "ifcond");
+		Value* condV = ConstantInt::get(llvm, APInt(1, false, true));
 
 		BasicBlock* thenBlock = BasicBlock::Create(llvm, "then");
 		BasicBlock* elseBlock = BasicBlock::Create(llvm, "else");
@@ -250,7 +247,7 @@ namespace Rift::Compiler::LLVM
 
 		TArray<Value*> args;
 		// TODO: Pass arguments
-		builder.CreateCall(function->instance, ToLLVM(args), "calltmp");
+		builder.CreateCall(function->instance, ToLLVM(args));
 	}
 
 	void DefineFunctions(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
@@ -261,7 +258,9 @@ namespace Rift::Compiler::LLVM
 		{
 			const auto& irFunction = access.Get<const CIRFunction>(id);
 			BasicBlock* block      = BasicBlock::Create(llvm, "entry", irFunction.instance);
-			AddStmtBlock(context, llvm, builder, access, id, block, irFunction);
+
+			const auto& output = access.Get<const CStmtOutput>(id);
+			AddStmtBlock(context, llvm, builder, access, output.linkInputNode, block, irFunction);
 
 			verifyFunction(*irFunction.instance);
 		}
@@ -287,7 +286,7 @@ namespace Rift::Compiler::LLVM
 		for (AST::Id id : AST::ListAll<CLiteralBool>(access))
 		{
 			const auto& boolean = access.Get<const CLiteralBool>(id);
-			Value* value        = ConstantInt::get(llvm, APInt(8, boolean.value, true));
+			Value* value        = ConstantInt::get(llvm, APInt(1, boolean.value, true));
 			access.Add<CIRValue>(id, value);
 		}
 		for (AST::Id id : AST::ListAll<CLiteralIntegral>(access))
