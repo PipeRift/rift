@@ -20,6 +20,7 @@
 #include "AST/Components/CLiteralIntegral.h"
 #include "AST/Components/CLiteralString.h"
 #include "AST/Components/CParent.h"
+#include "AST/Components/CStmtIf.h"
 #include "AST/Components/CStmtInput.h"
 #include "AST/Components/CStmtOutputs.h"
 #include "AST/Components/CStmtReturn.h"
@@ -29,7 +30,6 @@
 #include "AST/Utils/Hierarchy.h"
 
 #include <Reflection/TypeName.h>
-
 
 
 namespace Rift::AST
@@ -51,13 +51,12 @@ namespace Rift::AST
 
 				if (ct.EnterNext(key))
 				{
-					ct.BeginObject();
 					if constexpr (!IsEmpty<T>())
 					{
 						T& comp = access.template GetOrAdd<T>(node);
 						ct.Serialize(comp);
 					}
-					else if (!access.template Has<T>(node))
+					else
 					{
 						access.template Add<T>(node);
 					}
@@ -168,6 +167,8 @@ namespace Rift::AST
 			ReadPool<CLiteralFloating>(*this, ast);
 			ReadPool<CLiteralIntegral>(*this, ast);
 			ReadPool<CLiteralString>(*this, ast);
+			ReadPool<CStmtIf>(*this, ast);
+			ReadPool<CStmtOutput>(*this, ast);
 			ReadPool<CStmtOutputs>(*this, ast);
 			ReadPool<CStmtInput>(
 			    *this, ast);    // TODO: Rebuild from CStmtOutputs instead of serializing
@@ -223,6 +224,8 @@ namespace Rift::AST
 			WritePool<CLiteralFloating>(*this, ast, treeEntities);
 			WritePool<CLiteralIntegral>(*this, ast, treeEntities);
 			WritePool<CLiteralString>(*this, ast, treeEntities);
+			WritePool<CStmtIf>(*this, ast, treeEntities);
+			WritePool<CStmtOutput>(*this, ast, treeEntities);
 			WritePool<CStmtOutputs>(*this, ast, treeEntities);
 			WritePool<CStmtInput>(*this, ast,
 			    treeEntities);    // TODO: When rebuilding from CStmtOutputs, ignore this pool

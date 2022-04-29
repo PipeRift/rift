@@ -40,7 +40,6 @@
 #include <Utils/NodesMiniMap.h>
 
 
-
 namespace Rift::Graph
 {
 	static CGraphTransform* currentNodeTransform = nullptr;
@@ -476,7 +475,7 @@ namespace Rift::Graph
 		{
 			if (UI::MenuItem("Add return node"))
 			{
-				AST::Id newId = AST::Functions::AddReturn({ast, typeId});
+				AST::Id newId = Functions::AddReturn({ast, typeId});
 				if (!IsNone(newId))
 				{
 					v2 position = ast.Get<CGraphTransform>(firstNodeId).position;
@@ -489,7 +488,7 @@ namespace Rift::Graph
 		}
 		if (UI::MenuItem("Delete"))
 		{
-			AST::Functions::RemoveNodes(ast, nodeIds);
+			Functions::RemoveNodes(ast, nodeIds);
 		}
 	}
 
@@ -508,7 +507,7 @@ namespace Rift::Graph
 		{
 			if (filter.PassFilter("Return") && UI::MenuItem("Return"))
 			{
-				AST::Id newId = AST::Functions::AddReturn({ast, typeId});
+				AST::Id newId = Functions::AddReturn({ast, typeId});
 				if (!IsNone(newId))
 				{
 					ast.Add<CGraphTransform>(newId, gridPos);
@@ -516,7 +515,7 @@ namespace Rift::Graph
 			}
 			if (filter.PassFilter("If") && UI::MenuItem("If"))
 			{
-				AST::Id newId = AST::Functions::AddIf({ast, typeId});
+				AST::Id newId = Functions::AddIf({ast, typeId});
 				if (!IsNone(newId))
 				{
 					ast.Add<CGraphTransform>(newId, gridPos);
@@ -542,7 +541,7 @@ namespace Rift::Graph
 				if (filter.PassFilter(name.data(), name.data() + name.size())
 				    && UI::MenuItem(name.data()))
 				{
-					AST::Id newId = AST::Functions::AddUnaryOperator({ast, typeId}, type);
+					AST::Id newId = Functions::AddUnaryOperator({ast, typeId}, type);
 					if (!IsNone(newId))
 					{
 						ast.Add<CGraphTransform>(newId, gridPos);
@@ -559,7 +558,7 @@ namespace Rift::Graph
 				if (filter.PassFilter(name.data(), name.data() + name.size())
 				    && UI::MenuItem(name.data()))
 				{
-					AST::Id newId = AST::Functions::AddBinaryOperator({ast, typeId}, type);
+					AST::Id newId = Functions::AddBinaryOperator({ast, typeId}, type);
 					if (!IsNone(newId))
 					{
 						ast.Add<CGraphTransform>(newId, gridPos);
@@ -588,7 +587,7 @@ namespace Rift::Graph
 					{
 						if (UI::MenuItem(makeStr.c_str()))
 						{
-							AST::Id newId = AST::Functions::AddLiteral({ast, typeId}, it.second);
+							AST::Id newId = Functions::AddLiteral({ast, typeId}, it.second);
 							if (!IsNone(newId))
 							{
 								ast.Add<CGraphTransform>(newId, gridPos);
@@ -618,7 +617,7 @@ namespace Rift::Graph
 						if (UI::MenuItem(name.c_str()))
 						{
 							AST::Id newId =
-							    AST::Functions::AddDeclarationReference({ast, typeId}, variableId);
+							    Functions::AddDeclarationReference({ast, typeId}, variableId);
 							if (!IsNone(newId))
 							{
 								ast.Add<CGraphTransform>(newId, gridPos);
@@ -647,7 +646,7 @@ namespace Rift::Graph
 					{
 						if (UI::MenuItem(name.c_str()))
 						{
-							AST::Id newId = AST::Functions::AddCall({ast, typeId}, functionId);
+							AST::Id newId = Functions::AddCall({ast, typeId}, functionId);
 							if (!IsNone(newId))
 							{
 								ast.Add<CGraphTransform>(newId, gridPos);
@@ -931,29 +930,42 @@ namespace Rift::Graph
 	}
 
 	void DrawStatementLinks(
-	    TAccessRef<CParent, CStmtOutputs>& access, const TArray<AST::Id>& children)
+	    TAccessRef<CParent, CStmtOutput, CStmtOutputs>& access, const TArray<AST::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 2.f);
 		Nodes::PushStyleColor(Nodes::ColorVar_Link, Style::executionColor);
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(Style::executionColor));
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
 
+		for (AST::Id outputId : GetIf<CStmtOutput>(access, children))
+		{
+			const auto* output = access.TryGet<const CStmtOutput>(outputId);
+			if (output && access.IsValid(output->linkInputNode))
+			{
+				// Input pin ids equal input node ids
+				// Output pin ids equal output node ids
+				Nodes::Link(i32(output->linkInputNode), i32(outputId), i32(output->linkInputNode));
+			}
+		}
+
 		for (AST::Id outputId : GetIf<CStmtOutputs>(access, children))
 		{
 			if (const auto* outputs = access.TryGet<const CStmtOutputs>(outputId))
 			{
-				CheckMsg(outputs->linkInputNodes.Size() == outputs->linkPins.Size(),
-				    "Inputs and pins must match. Graph might be corrupted.");
-				for (i32 i = 0; i < outputs->linkInputNodes.Size(); ++i)
+				if (EnsureMsg(outputs->linkInputNodes.Size() == outputs->linkPins.Size(),
+				        "Inputs and pins must match. Graph might be corrupted."))
 				{
-					const AST::Id outputPinId = outputs->linkPins[i];
-					const AST::Id inputNodeId = outputs->linkInputNodes[i];
-					if (access.IsValid(outputPinId) && access.IsValid(inputNodeId))
+					for (i32 i = 0; i < outputs->linkInputNodes.Size(); ++i)
 					{
-						// NOTE: Input pin ids equal input node ids
-						// TODO: Execution pin ids atm are the same as the node id.
-						// Implement proper output pin support
-						Nodes::Link(i32(inputNodeId), i32(outputPinId), i32(inputNodeId));
+						const AST::Id outputPinId = outputs->linkPins[i];
+						const AST::Id inputNodeId = outputs->linkInputNodes[i];
+						if (access.IsValid(outputPinId) && access.IsValid(inputNodeId))
+						{
+							// Input pin ids equal input node ids
+							// TODO: Execution pin ids atm are the same as the node id.
+							// Implement proper output pin support
+							Nodes::Link(i32(inputNodeId), i32(outputPinId), i32(inputNodeId));
+						}
 					}
 				}
 			}
@@ -1056,7 +1068,7 @@ namespace Rift::Graph
 
 				if (UI::IsKeyReleased(GLFW_KEY_DELETE))
 				{
-					AST::Functions::RemoveNodes(ast, Nodes::GetSelectedNodes());
+					Functions::RemoveNodes(ast, Nodes::GetSelectedNodes());
 				}
 			}
 

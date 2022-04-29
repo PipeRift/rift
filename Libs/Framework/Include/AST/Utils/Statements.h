@@ -52,4 +52,7 @@ namespace Rift::AST::Statements
 	TSpan<Id> GetConnectedToOutputs(TAccessRef<CStmtOutputs> access, Id node);
 	void GetConnectedToOutputs(
 	    TAccessRef<CStmtOutputs> access, TSpan<const Id> nodes, TArray<Id>& ids);
+
+	void GetChain(TAccessRef<CStmtOutput, CStmtOutputs> access, Id firstStmtId, TArray<Id>& stmtIds,
+	    Id& splitStmtId);
 }    // namespace Rift::AST::Statements

@@ -15,7 +15,8 @@ namespace Rift::AST::Statements
 			return false;
 		}
 
-		if (!ast.Has<CStmtOutputs>(outputNode) || !ast.Has<CStmtInput>(inputNode))
+		if ((!ast.Has<CStmtOutput>(outputNode) && !ast.Has<CStmtOutputs>(outputNode))
+		    || !ast.Has<CStmtInput>(inputNode))
 		{
 			return false;
 		}
@@ -31,11 +32,16 @@ namespace Rift::AST::Statements
 		}
 
 		// Resolve output node. Sometimes the output pin itself is the node
-		Id outputNode = outputPin;
-		if (!ast.Has<CStmtOutputs>(outputPin))
+		Id outputNode = AST::NoId;
+		if (ast.Has<CStmtOutput>(outputPin))
+		{
+			outputNode = outputPin;
+		}
+		else
 		{
 			outputNode = Hierarchy::GetParent(ast, outputPin);
-			if (!Ensure(!IsNone(outputNode)))
+			Log::Error("{}", outputNode);
+			if (IsNone(outputNode))
 			{
 				return false;
 			}
@@ -46,25 +52,41 @@ namespace Rift::AST::Statements
 			return false;
 		}
 
-		// Link input
-		{
-			auto& inputComp = ast.Get<CStmtInput>(inputNode);
-			// Disconnect previous output connected to input if any
-			if (inputComp.linkOutputNode != AST::NoId)
-			{
-				auto& lastOutputsComp = ast.Get<CStmtOutputs>(inputComp.linkOutputNode);
-				lastOutputsComp.linkInputNodes.FindRef(inputNode) = AST::NoId;
-			}
-			inputComp.linkOutputNode = outputNode;
-		}
 
-		// Link output
+		auto& inputComp = ast.Get<CStmtInput>(inputNode);
+		if (inputComp.linkOutputNode != AST::NoId)
 		{
-			auto& outputsComp  = ast.GetOrAdd<CStmtOutputs>(outputNode);
-			const i32 pinIndex = outputsComp.linkPins.FindIndex(outputPin);
+			// Disconnect previous output connected to input if any
+			if (auto* lastOutputComp = ast.TryGet<CStmtOutput>(inputComp.linkOutputNode))
+			{
+				lastOutputComp->linkInputNode = AST::NoId;
+			}
+			else if (auto* lastOutputsComp = ast.TryGet<CStmtOutputs>(inputComp.linkOutputNode))
+			{
+				lastOutputsComp->linkInputNodes.FindRef(inputNode) = AST::NoId;
+			}
+		}
+		inputComp.linkOutputNode = outputNode;
+
+
+		if (auto* outputComp = ast.TryGet<CStmtOutput>(outputNode))
+		{
+			// Connect if single output
+			Id& lastInputNode = outputComp->linkInputNode;
+			// Disconnect previous input connected to output if any
+			if (lastInputNode != AST::NoId)
+			{
+				ast.Get<CStmtInput>(lastInputNode).linkOutputNode = AST::NoId;
+			}
+			lastInputNode = inputNode;
+		}
+		else if (auto* outputsComp = ast.TryGet<CStmtOutputs>(outputNode))
+		{
+			// Connect if multiple output
+			const i32 pinIndex = outputsComp->linkPins.FindIndex(outputPin);
 			if (pinIndex != NO_INDEX)
 			{
-				Id& lastInputNode = outputsComp.linkInputNodes[pinIndex];
+				Id& lastInputNode = outputsComp->linkInputNodes[pinIndex];
 				// Disconnect previous input connected to output if any
 				if (lastInputNode != AST::NoId)
 				{
@@ -74,9 +96,9 @@ namespace Rift::AST::Statements
 			}
 			else
 			{
-				// Pin didnt exist on the graph
-				outputsComp.linkPins.Add(outputPin);
-				outputsComp.linkInputNodes.Add(inputNode);
+				// Pin didn't exist on the graph
+				outputsComp->linkPins.Add(outputPin);
+				outputsComp->linkInputNodes.Add(inputNode);
 			}
 		}
 		return true;
@@ -187,6 +209,22 @@ namespace Rift::AST::Statements
 			{
 				ids.Append(output->linkInputNodes);
 			}
+		}
+	}
+
+	void GetChain(TAccessRef<CStmtOutput, CStmtOutputs> access, Id firstStmtId, TArray<Id>& stmtIds,
+	    Id& splitStmtId)
+	{
+		Id id = firstStmtId;
+		while (id != AST::NoId && access.Has<CStmtOutput>(id))
+		{
+			stmtIds.Add(id);
+			id = access.Get<const CStmtOutput>(id).linkInputNode;
+		}
+
+		if (access.Has<CStmtOutputs>(id))
+		{
+			splitStmtId = id;
 		}
 	}
 }    // namespace Rift::AST::Statements

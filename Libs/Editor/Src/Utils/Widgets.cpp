@@ -2,23 +2,17 @@
 
 #include "Utils/Widgets.h"
 
-#include <AST/Components/CDeclClass.h>
-#include <AST/Components/CDeclNative.h>
-#include <AST/Components/CDeclStruct.h>
-#include <AST/Components/CIdentifier.h>
-#include <AST/Components/CType.h>
 #include <UI/UI.h>
 
 
 namespace Rift::Editor
 {
-	template<typename Filter>
-	void ListTypesFromFilter(
-	    Filter& filter, AST::Id& selectedId, bool& changed, ImGuiTextFilter& searchFilter)
+	void ListTypesFromFilter(TAccessRef<CType> access, TArray<AST::Id> typeIds, AST::Id& selectedId,
+	    bool& changed, ImGuiTextFilter& searchFilter)
 	{
-		for (AST::Id id : filter)
+		for (AST::Id id : typeIds)
 		{
-			auto& type         = filter.template Get<CType>(id);
+			const auto& type   = access.Get<const CType>(id);
 			const String& name = type.name.ToString();
 
 			if (!searchFilter.PassFilter(name.c_str(), name.c_str() + name.size()))
@@ -36,15 +30,13 @@ namespace Rift::Editor
 		}
 	}
 
-	bool TypeCombo(AST::Tree& ast, StringView label, AST::Id& selectedId)
+	bool TypeCombo(TAccessRef<CType, CDeclNative, CDeclStruct, CDeclClass> access, StringView label,
+	    AST::Id& selectedId)
 	{
-		auto types = ast.Filter<CType>();
-
 		Name ownerName;
 		if (!IsNone(selectedId))
 		{
-			auto& identifier = types.Get<CType>(selectedId);
-			ownerName        = identifier.name;
+			ownerName = access.Get<const CType>(selectedId).name;
 		}
 
 		bool changed = false;
@@ -58,25 +50,24 @@ namespace Rift::Editor
 			UI::SetNextItemWidth(-FLT_MIN);
 			filter.Draw("##Filter");
 
-			auto natives = ast.Filter<CType, CDeclNative>();
-			auto structs = ast.Filter<CType, CDeclStruct>();
-			auto classes = ast.Filter<CType, CDeclClass>();
-
+			auto nativeIds = AST::ListAll<CType, CDeclNative>(access);
+			auto structIds = AST::ListAll<CType, CDeclStruct>(access);
+			auto classIds  = AST::ListAll<CType, CDeclClass>(access);
 			if (filter.IsActive())
 			{
 				if (UI::TreeNodeEx("Native##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					ListTypesFromFilter(natives, selectedId, changed, filter);
+					ListTypesFromFilter(access, nativeIds, selectedId, changed, filter);
 					UI::TreePop();
 				}
 				if (UI::TreeNodeEx("Structs##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					ListTypesFromFilter(structs, selectedId, changed, filter);
+					ListTypesFromFilter(access, structIds, selectedId, changed, filter);
 					UI::TreePop();
 				}
 				if (UI::TreeNodeEx("Classes##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					ListTypesFromFilter(classes, selectedId, changed, filter);
+					ListTypesFromFilter(access, classIds, selectedId, changed, filter);
 					UI::TreePop();
 				}
 			}
@@ -84,23 +75,22 @@ namespace Rift::Editor
 			{
 				if (UI::TreeNodeEx("Native", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					ListTypesFromFilter(natives, selectedId, changed, filter);
+					ListTypesFromFilter(access, nativeIds, selectedId, changed, filter);
 					UI::TreePop();
 				}
 				if (UI::TreeNode("Structs"))
 				{
-					ListTypesFromFilter(structs, selectedId, changed, filter);
+					ListTypesFromFilter(access, structIds, selectedId, changed, filter);
 					UI::TreePop();
 				}
 				if (UI::TreeNode("Classes"))
 				{
-					ListTypesFromFilter(classes, selectedId, changed, filter);
+					ListTypesFromFilter(access, classIds, selectedId, changed, filter);
 					UI::TreePop();
 				}
 			}
 			UI::EndCombo();
 		}
-
 		return changed;
 	}
 

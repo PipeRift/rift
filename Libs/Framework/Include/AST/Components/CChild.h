@@ -18,4 +18,12 @@ namespace Rift
 		CChild() = default;
 		CChild(AST::Id parent) : parent(parent) {}
 	};
+	static void Read(Serl::ReadContext& ct, CChild& val)
+	{
+		ct.Serialize(val.parent);
+	}
+	static void Write(Serl::WriteContext& ct, const CChild& val)
+	{
+		ct.Serialize(val.parent);
+	}
 }    // namespace Rift

@@ -101,7 +101,7 @@ namespace Rift::Types
 		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);
 		ast.Add<CDeclFunction, CParent>(id);
-		ast.Add<CStmtOutputs>(id);
+		ast.Add<CStmtOutput>(id);
 
 		if (type)
 		{
