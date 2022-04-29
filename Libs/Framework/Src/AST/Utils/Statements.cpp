@@ -222,7 +222,7 @@ namespace Rift::AST::Statements
 			id = access.Get<const CStmtOutput>(id).linkInputNode;
 		}
 
-		if (const auto* outputs = access.TryGet<const CStmtOutputs>(id))
+		if (access.Has<CStmtOutputs>(id))
 		{
 			splitStmtId = id;
 		}

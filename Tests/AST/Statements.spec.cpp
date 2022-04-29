@@ -13,14 +13,6 @@ using namespace bandit;
 using namespace Rift;
 
 
-struct Type
-{
-	bool value = false;
-};
-struct TypeTwo
-{};
-
-
 go_bandit([]() {
 	describe("AST.Statements", []() {
 		it("Initializes outputs correctly", [&]() {
