@@ -1,12 +1,83 @@
 {
     "type": "Class",
-    "count": 1,
+    "count": 6,
     "roots": [
         0
     ],
     "components": {
+        "CChild": {
+            "0": -1,
+            "1": 0,
+            "2": 0,
+            "3": 2,
+            "4": 2,
+            "5": 2
+        },
         "CDeclClass": {
             "0": {}
+        },
+        "CDeclFunction": {
+            "1": {}
+        },
+        "CExprInput": {
+            "3": {
+                "linkOutputPin": -1
+            }
+        },
+        "CExprType": {
+            "3": {}
+        },
+        "CGraphTransform": {
+            "1": {
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            },
+            "2": {
+                "position": {
+                    "x": 7.0,
+                    "y": 0.0
+                }
+            }
+        },
+        "CIdentifier": {
+            "1": {
+                "name": "Add"
+            }
+        },
+        "CParent": {
+            "0": [
+                1,
+                2
+            ],
+            "1": [],
+            "2": [
+                3,
+                4,
+                5
+            ]
+        },
+        "CStmtIf": {
+            "2": {}
+        },
+        "CStmtOutput": {
+            "1": 2
+        },
+        "CStmtOutputs": {
+            "2": {
+                "linkPins": [
+                    4,
+                    5
+                ],
+                "linkInputNodes": [
+                    -1,
+                    -1
+                ]
+            }
+        },
+        "CStmtInput": {
+            "2": 1
         }
     }
 }

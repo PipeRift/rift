@@ -20,6 +20,7 @@
 #include "AST/Components/CLiteralIntegral.h"
 #include "AST/Components/CLiteralString.h"
 #include "AST/Components/CParent.h"
+#include "AST/Components/CStmtIf.h"
 #include "AST/Components/CStmtInput.h"
 #include "AST/Components/CStmtOutputs.h"
 #include "AST/Components/CStmtReturn.h"
@@ -48,18 +49,18 @@ namespace Rift::AST
 				key.clear();
 				Strings::FormatTo(key, "{}", i);
 
-				if constexpr (!IsEmpty<T>())
+				if (ct.EnterNext(key))
 				{
-					T& comp = access.template GetOrAdd<T>(node);
-					ct.Next(key, comp);
-				}
-				else
-				{
-					if (!access.template Has<T>(node) && ct.EnterNext(key))
+					if constexpr (!IsEmpty<T>())
+					{
+						T& comp = access.template GetOrAdd<T>(node);
+						ct.Serialize(comp);
+					}
+					else
 					{
 						access.template Add<T>(node);
-						ct.Leave();
 					}
+					ct.Leave();
 				}
 			}
 			ct.Leave();
@@ -166,6 +167,7 @@ namespace Rift::AST
 			ReadPool<CLiteralFloating>(*this, ast);
 			ReadPool<CLiteralIntegral>(*this, ast);
 			ReadPool<CLiteralString>(*this, ast);
+			ReadPool<CStmtIf>(*this, ast);
 			ReadPool<CStmtOutput>(*this, ast);
 			ReadPool<CStmtOutputs>(*this, ast);
 			ReadPool<CStmtInput>(
@@ -222,6 +224,7 @@ namespace Rift::AST
 			WritePool<CLiteralFloating>(*this, ast, treeEntities);
 			WritePool<CLiteralIntegral>(*this, ast, treeEntities);
 			WritePool<CLiteralString>(*this, ast, treeEntities);
+			WritePool<CStmtIf>(*this, ast, treeEntities);
 			WritePool<CStmtOutput>(*this, ast, treeEntities);
 			WritePool<CStmtOutputs>(*this, ast, treeEntities);
 			WritePool<CStmtInput>(*this, ast,
