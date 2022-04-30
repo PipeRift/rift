@@ -185,7 +185,7 @@ namespace Rift::AST
 		const Pool* iterablePool = pools[smallestIdx];
 		pools.RemoveAtSwap(smallestIdx);
 
-		ids.Empty();
+		ids.Empty(false);
 		ids.Append(iterablePool->begin(), iterablePool->end());
 
 		for (const Pool* pool : pools)

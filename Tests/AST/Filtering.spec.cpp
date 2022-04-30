@@ -41,6 +41,7 @@ go_bandit([]() {
 	AST::Id id2;
 	AST::Id id3;
 	AST::Id id4;
+	AST::Id id5;
 	describe("AST.Filtering", [&]() {
 		before_each([&]() {
 			ast = {};
@@ -48,10 +49,12 @@ go_bandit([]() {
 			id2 = ast.Create();
 			id3 = ast.Create();
 			id4 = ast.Create();
+			id5 = ast.Create();
 			ast.Add<Type>(id1);
 			ast.Add<Type, TypeTwo, TypeThree>(id2);
 			ast.Add<TypeTwo, TypeThree>(id3);
 			ast.Add<TypeTwo, TypeThree>(id4);
+			ast.Add<TypeTwo>(id5);
 		});
 
 		describe("ListAny/ListAll", [&]() {
@@ -84,10 +87,12 @@ go_bandit([]() {
 			it("Doesn't list removed ids", [&]() {
 				TAccess<TypeTwo> access{ast};
 				ast.Destroy(id2);    // Remove first in the pool
+				ast.Destroy(id3);    // Remove last in the pool
 				ast.Destroy(id4);    // Remove last in the pool
 
 				TArray<AST::Id> ids = AST::ListAll<TypeTwo>(access);
 				AssertThat(ids.Contains(AST::NoId), Is().False());
+				AssertThat(ids.Size(), Equals(1));
 			});
 		});
 
