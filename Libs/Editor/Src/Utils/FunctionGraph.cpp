@@ -857,6 +857,11 @@ namespace Rift::Graph
 
 			Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
 			PopNodeStyle();
+
+			if (UI::IsKeyReleased(GLFW_KEY_DELETE))
+			{
+				Functions::RemoveNodes(ast, Nodes::GetSelectedNodes());
+			}
 			Nodes::EndNodeEditor();
 
 			Nodes::Id outputPin;
@@ -881,10 +886,6 @@ namespace Rift::Graph
 				ImGui::OpenPopup("GraphContextMenu", ImGuiPopupFlags_AnyPopup);
 			}
 			DrawContextMenu(ast, typeId, contextNodeId);
-			if (UI::IsKeyReleased(GLFW_KEY_DELETE))
-			{
-				Functions::RemoveNodes(ast, Nodes::GetSelectedNodes());
-			}
 			UI::End();
 		}
 	}

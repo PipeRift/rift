@@ -122,7 +122,6 @@ namespace Rift::Nodes
 
 		T& Get(AST::Id id)
 		{
-			Check(Contains(id));
 			return *GetByIndex(AST::GetIndex(id));
 		}
 
@@ -186,6 +185,7 @@ namespace Rift::Nodes
 	private:
 		T* GetByIndex(u32 index)
 		{
+			Check(data.IsValidIndex(index));
 			return data.Data() + index;
 		}
 	};
