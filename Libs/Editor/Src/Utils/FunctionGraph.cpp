@@ -5,8 +5,8 @@
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "Utils/EditorStyle.h"
+#include "Utils/FunctionGraphContextMenu.h"
 #include "Utils/FunctionUtils.h"
-#include "Utils/TypeUtils.h"
 
 #include <AST/Components/CDeclFunction.h>
 #include <AST/Components/CDeclVariable.h>
@@ -26,9 +26,9 @@
 #include <AST/Components/CStmtInput.h>
 #include <AST/Components/CStmtOutputs.h>
 #include <AST/Components/CStmtReturn.h>
+#include <AST/Components/CType.h>
 #include <AST/Components/Views/CGraphTransform.h>
 #include <AST/Filtering.h>
-#include <AST/Statics/STypes.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/Statements.h>
@@ -69,6 +69,11 @@ namespace Rift::Graph
 	v2 Settings::GetContentPadding() const
 	{
 		return {0.f, settings.verticalMargin + settings.verticalPadding};
+	}
+
+	v2 Settings::GetGridPosition(v2 screenPosition) const
+	{
+		return Nodes::ScreenToGridPosition(screenPosition) * GetInvGridSize();
 	}
 
 	void BeginNode(TAccessRef<TWrite<CGraphTransform>> access, AST::Id id)
@@ -465,223 +470,6 @@ namespace Rift::Graph
 	{
 		ImGui::PopStyleVar(2);
 	}
-	void DrawNodeContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> nodeIds)
-	{
-		Check(!nodeIds.IsEmpty());
-
-		AST::Id firstNodeId = nodeIds[0];
-
-		if (nodeIds.Size() == 1 && ast.Has<CDeclFunction>(firstNodeId))
-		{
-			if (UI::MenuItem("Add return node"))
-			{
-				AST::Id newId = Functions::AddReturn({ast, typeId});
-				if (!IsNone(newId))
-				{
-					v2 position = ast.Get<CGraphTransform>(firstNodeId).position;
-					ast.Add<CGraphTransform>(newId, position + v2{10.f, 0.f});
-
-					AST::Statements::TryConnect(ast, firstNodeId, newId);
-				}
-			}
-			UI::Separator();
-		}
-		if (UI::MenuItem("Delete"))
-		{
-			Functions::RemoveNodes(ast, nodeIds);
-		}
-	}
-
-	void DrawGraphContextMenu(AST::Tree& ast, AST::Id typeId)
-	{
-		static ImGuiTextFilter filter;
-		if (UI::IsWindowAppearing())
-		{
-			UI::SetKeyboardFocusHere();
-		}
-		filter.Draw("##Filter");
-		const v2 clickPos = UI::GetMousePosOnOpeningCurrentPopup();
-		const v2 gridPos  = GetGridPosition(clickPos).Floor();
-
-		if (filter.IsActive() || UI::TreeNode("Flow"))
-		{
-			if (filter.PassFilter("Return") && UI::MenuItem("Return"))
-			{
-				AST::Id newId = Functions::AddReturn({ast, typeId});
-				if (!IsNone(newId))
-				{
-					ast.Add<CGraphTransform>(newId, gridPos);
-				}
-			}
-			if (filter.PassFilter("If") && UI::MenuItem("If"))
-			{
-				AST::Id newId = Functions::AddIf({ast, typeId});
-				if (!IsNone(newId))
-				{
-					ast.Add<CGraphTransform>(newId, gridPos);
-				}
-			}
-
-			if (!filter.IsActive())
-			{
-				UI::TreePop();
-			}
-		}
-
-		if (filter.IsActive() || UI::TreeNode("Operators"))
-		{
-			static String name;
-			// Unary operators
-			for (auto type : Refl::GetEnumValues<UnaryOperatorType>())
-			{
-				StringView shortName = Functions::GetUnaryOperatorName(type);
-				StringView longName  = Functions::GetUnaryOperatorLongName(type);
-				name.clear();
-				Strings::FormatTo(name, "{}   ({})", shortName, longName);
-				if (filter.PassFilter(name.data(), name.data() + name.size())
-				    && UI::MenuItem(name.data()))
-				{
-					AST::Id newId = Functions::AddUnaryOperator({ast, typeId}, type);
-					if (!IsNone(newId))
-					{
-						ast.Add<CGraphTransform>(newId, gridPos);
-					}
-				}
-			}
-			// Binary operators
-			for (auto type : Refl::GetEnumValues<BinaryOperatorType>())
-			{
-				StringView shortName = Functions::GetBinaryOperatorName(type);
-				StringView longName  = Functions::GetBinaryOperatorLongName(type);
-				name.clear();
-				Strings::FormatTo(name, "{}   ({})", shortName, longName);
-				if (filter.PassFilter(name.data(), name.data() + name.size())
-				    && UI::MenuItem(name.data()))
-				{
-					AST::Id newId = Functions::AddBinaryOperator({ast, typeId}, type);
-					if (!IsNone(newId))
-					{
-						ast.Add<CGraphTransform>(newId, gridPos);
-					}
-				}
-			}
-
-			if (!filter.IsActive())
-			{
-				UI::TreePop();
-			}
-		}
-
-		if (filter.IsActive() || UI::TreeNode("Constructors"))
-		{
-			String makeStr{};
-			auto& typeList = ast.GetStatic<STypes>();
-			auto types     = ast.Filter<CType>();
-			for (const auto& it : typeList.typesByName)
-			{
-				if (auto* type = types.TryGet<CType>(it.second))
-				{
-					makeStr.clear();
-					Strings::FormatTo(makeStr, "Make {}", type->name);
-					if (filter.PassFilter(makeStr.c_str(), makeStr.c_str() + makeStr.size()))
-					{
-						if (UI::MenuItem(makeStr.c_str()))
-						{
-							AST::Id newId = Functions::AddLiteral({ast, typeId}, it.second);
-							if (!IsNone(newId))
-							{
-								ast.Add<CGraphTransform>(newId, gridPos);
-							}
-						}
-					}
-				}
-			}
-
-			if (!filter.IsActive())
-			{
-				UI::TreePop();
-			}
-		}
-
-		if (filter.IsActive() || UI::TreeNode("Variables"))
-		{
-			auto variables   = ast.Filter<CDeclVariable>();
-			auto identifiers = ast.Filter<CIdentifier>();
-			for (AST::Id variableId : variables)
-			{
-				if (auto* iden = identifiers.TryGet<CIdentifier>(variableId))
-				{
-					const String& name = iden->name.ToString();
-					if (filter.PassFilter(name.c_str(), name.c_str() + name.size()))
-					{
-						if (UI::MenuItem(name.c_str()))
-						{
-							AST::Id newId =
-							    Functions::AddDeclarationReference({ast, typeId}, variableId);
-							if (!IsNone(newId))
-							{
-								ast.Add<CGraphTransform>(newId, gridPos);
-							}
-						}
-					}
-				}
-			}
-
-			if (!filter.IsActive())
-			{
-				UI::TreePop();
-			}
-		}
-
-		if (filter.IsActive() || UI::TreeNode("Functions"))
-		{
-			auto functions   = ast.Filter<CDeclFunction>();
-			auto identifiers = ast.Filter<CIdentifier>();
-			for (AST::Id functionId : functions)
-			{
-				if (auto* iden = identifiers.TryGet<CIdentifier>(functionId))
-				{
-					const String& name = iden->name.ToString();
-					if (filter.PassFilter(name.c_str(), name.c_str() + name.size()))
-					{
-						if (UI::MenuItem(name.c_str()))
-						{
-							AST::Id newId = Functions::AddCall({ast, typeId}, functionId);
-							if (!IsNone(newId))
-							{
-								ast.Add<CGraphTransform>(newId, gridPos);
-							}
-						}
-					}
-				}
-			}
-
-			if (!filter.IsActive())
-			{
-				ImGui::TreePop();
-			}
-		}
-	}
-
-	void DrawContextMenu(AST::Tree& ast, AST::Id typeId, AST::Id hoveredNodeId)
-	{
-		if (ImGui::BeginPopup("GraphContextMenu"))
-		{
-			if (IsNone(hoveredNodeId))
-			{
-				DrawGraphContextMenu(ast, typeId);
-			}
-			else if (Nodes::IsNodeSelected(hoveredNodeId))
-			{
-				DrawNodeContextMenu(ast, typeId, Nodes::GetSelectedNodes());
-			}
-			else
-			{
-				DrawNodeContextMenu(ast, typeId, hoveredNodeId);
-			}
-			ImGui::EndPopup();
-		}
-	}
 
 	void DrawFunctionDecls(AST::Tree& ast, const TArray<AST::Id>& functionDecls)
 	{
@@ -1065,15 +853,15 @@ namespace Rift::Graph
 				// Links
 				DrawStatementLinks(ast, *children);
 				DrawExpressionLinks(ast, *children);
-
-				if (UI::IsKeyReleased(GLFW_KEY_DELETE))
-				{
-					Functions::RemoveNodes(ast, Nodes::GetSelectedNodes());
-				}
 			}
 
 			Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
 			PopNodeStyle();
+
+			if (UI::IsKeyReleased(GLFW_KEY_DELETE))
+			{
+				Functions::RemoveNodes(ast, Nodes::GetSelectedNodes());
+			}
 			Nodes::EndNodeEditor();
 
 			Nodes::Id outputPin;
@@ -1100,12 +888,6 @@ namespace Rift::Graph
 			DrawContextMenu(ast, typeId, contextNodeId);
 			UI::End();
 		}
-	}
-
-
-	v2 GetGridPosition(v2 screenPosition)
-	{
-		return Nodes::ScreenToGridPosition(screenPosition) * settings.GetInvGridSize();
 	}
 
 	void SetNodePosition(AST::Id id, v2 position)

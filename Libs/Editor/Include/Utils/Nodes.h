@@ -439,15 +439,16 @@ namespace Rift::Nodes
 	// Use the following functions to query a change of state for an existing link, or new link.
 	// Call these after EndNodeEditor().
 
-	// Did the user start dragging a new link from a pin?
-	bool IsLinkStarted(Id* outputPinId);
+	bool IsDraggingLink();
+	TPair<Id, PinType> GetDraggedOriginPin();
 	// Did the user drop the dragged link before attaching it to a pin?
 	// There are two different kinds of situations to consider when handling this event:
 	// 1) a link which is created at a pin and then dropped
 	// 2) an existing link which is detached from a pin and then dropped
 	// Use the including_detached_links flag to control whether this function triggers when the
 	// user detaches a link and drops it.
-	bool IsLinkDropped(Id* outputPinId = nullptr, bool includingDetachedLinks = true);
+	bool IsLinkDropped(
+	    Id* outputId = nullptr, Id* inputId = nullptr, bool includingDetachedLinks = true);
 	// Did the user finish creating a new link?
 	bool IsLinkCreated(Id& outputPinId, Id& inputPinId, bool* createdFromSnap = nullptr);
 	bool IsLinkCreated(AST::Id& outputNodeId, Id& outputPinId, AST::Id& inputNodeId, Id& inputPinId,

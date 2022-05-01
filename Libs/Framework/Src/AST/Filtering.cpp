@@ -185,8 +185,17 @@ namespace Rift::AST
 		const Pool* iterablePool = pools[smallestIdx];
 		pools.RemoveAtSwap(smallestIdx);
 
-		ids.Empty();
-		ids.Append(iterablePool->begin(), iterablePool->end());
+		ids.Empty(false);
+		ids.Reserve(iterablePool->Size());
+		for (AST::Id id : *iterablePool)
+		{
+			if (!IsNone(id)) [[likely]]
+			{
+				ids.Add(id);
+			}
+		}
+		// Faster but doesnt exclude invalid ids. TODO: Improve PoolSet
+		// ids.Append(iterablePool->begin(), iterablePool->end());
 
 		for (const Pool* pool : pools)
 		{

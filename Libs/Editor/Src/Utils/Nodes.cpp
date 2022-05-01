@@ -2552,27 +2552,28 @@ namespace Rift::Nodes
 		return true;
 	}
 
-	bool IsLinkStarted(Id* outputId, Id* inputId)
+	bool IsDraggingLink()
 	{
-		// Call this function after EndNodeEditor()!
-		assert(gNodes->currentScope != Scope::None);
-		assert(outputId != nullptr);
-		if ((gNodes->UIState & UIState_LinkStarted) != 0)
+		return (gNodes->UIState & UIState_LinkStarted) != 0;
+	}
+	TPair<Id, PinType> GetDraggedOriginPin()
+	{
+		if (IsDraggingLink())
 		{
 			const EditorContext& editor = GetEditorContext();
-			const i32 outputIdx         = editor.clickInteraction.linkCreation.outputIdx;
-			if (outputId && outputIdx != NO_INDEX)
+
+			const i32 outputIdx = editor.clickInteraction.linkCreation.outputIdx;
+			if (outputIdx != NO_INDEX)
 			{
-				*outputId = editor.GetPinData({outputIdx, PinType::Output}).id;
+				return {editor.GetPinData({outputIdx, PinType::Output}).id, PinType::Output};
 			}
 			const i32 inputIdx = editor.clickInteraction.linkCreation.inputIdx;
-			if (inputId && inputIdx != NO_INDEX)
+			if (inputIdx != NO_INDEX)
 			{
-				*inputId = editor.GetPinData({inputIdx, PinType::Input}).id;
+				return {editor.GetPinData({inputIdx, PinType::Input}).id, PinType::Input};
 			}
-			return true;
 		}
-		return false;
+		return {0, PinType::None};
 	}
 
 	bool IsLinkDropped(Id* outputId, Id* inputId, bool includingDetachedLinks)

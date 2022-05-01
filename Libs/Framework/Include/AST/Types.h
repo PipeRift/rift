@@ -126,5 +126,5 @@ namespace Rift::AST
 
 constexpr bool IsNone(Rift::AST::Id id)
 {
-	return id == Rift::AST::NoId;
+	return Rift::AST::GetVersion(id) == Rift::AST::GetVersion(Rift::AST::NoId);
 }
