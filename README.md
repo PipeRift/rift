@@ -5,6 +5,9 @@
 
 Rift is a **compiled**, **typed** and **visual** programming language.
 
+![Fibonacci](/Docs/Img/fibonacci.png)
+
+
 ## Code is Data
 
 **Rift** code files do not contain plain code, instead they have a **data representation of the code**.

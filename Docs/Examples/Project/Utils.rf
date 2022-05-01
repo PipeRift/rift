@@ -1,0 +1,52 @@
+{
+    "type": "FunctionLibrary",
+    "count": 3,
+    "roots": [
+        0
+    ],
+    "components": {
+        "CChild": {
+            "0": -1,
+            "1": 0,
+            "2": 1
+        },
+        "CDeclFunction": {
+            "1": {}
+        },
+        "CExprOutputs": {
+            "2": {
+                "linkInputPins": []
+            }
+        },
+        "CExprType": {
+            "2": {}
+        },
+        "CGraphTransform": {
+            "1": {
+                "position": {
+                    "x": 1.0,
+                    "y": 9.0
+                }
+            }
+        },
+        "CIdentifier": {
+            "1": {
+                "name": "Print"
+            },
+            "2": {
+                "name": "text"
+            }
+        },
+        "CParent": {
+            "0": [
+                1
+            ],
+            "1": [
+                2
+            ]
+        },
+        "CStmtOutput": {
+            "1": -1
+        }
+    }
+}

@@ -1,0 +1,285 @@
+{
+    "type": "Struct",
+    "count": 23,
+    "roots": [
+        0
+    ],
+    "components": {
+        "CChild": {
+            "0": -1,
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": -1,
+            "11": 1,
+            "12": 1,
+            "13": 1,
+            "14": 2,
+            "15": 2,
+            "16": 4,
+            "17": 4,
+            "18": 4,
+            "19": 8,
+            "20": 8,
+            "21": 9,
+            "22": 10
+        },
+        "CDeclStruct": {
+            "0": {}
+        },
+        "CDeclClass": {
+            "0": {}
+        },
+        "CDeclFunction": {
+            "1": {},
+            "9": {}
+        },
+        "CExprBinaryOperator": {
+            "2": {
+                "type": "Equal"
+            },
+            "8": {
+                "type": "Add"
+            }
+        },
+        "CExprCall": {
+            "10": {
+                "ownerName": "Welcome",
+                "functionName": "Print"
+            }
+        },
+        "CExprOutputs": {
+            "2": {
+                "linkInputPins": [
+                    16
+                ]
+            },
+            "3": {
+                "linkInputPins": [
+                    15
+                ]
+            },
+            "6": {
+                "linkInputPins": []
+            },
+            "8": {
+                "linkInputPins": [
+                    22
+                ]
+            },
+            "11": {
+                "linkInputPins": [
+                    14,
+                    19
+                ]
+            },
+            "13": {
+                "linkInputPins": [
+                    20
+                ]
+            },
+            "21": {
+                "linkInputPins": []
+            }
+        },
+        "CExprInput": {
+            "12": {
+                "linkOutputPin": -1
+            },
+            "14": {
+                "linkOutputPin": 11
+            },
+            "15": {
+                "linkOutputPin": 3
+            },
+            "16": {
+                "linkOutputPin": 2
+            },
+            "19": {
+                "linkOutputPin": 11
+            },
+            "20": {
+                "linkOutputPin": 13
+            },
+            "22": {
+                "linkOutputPin": 8
+            }
+        },
+        "CStmtReturn": {
+            "5": {},
+            "7": {}
+        },
+        "CExprType": {
+            "11": {},
+            "12": {},
+            "13": {},
+            "16": {},
+            "21": {}
+        },
+        "CGraphTransform": {
+            "1": {
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            },
+            "2": {
+                "position": {
+                    "x": 8.0,
+                    "y": 2.0
+                }
+            },
+            "3": {
+                "position": {
+                    "x": 0.0,
+                    "y": 4.0
+                }
+            },
+            "4": {
+                "position": {
+                    "x": 13.0,
+                    "y": 0.0
+                }
+            },
+            "5": {
+                "position": {
+                    "x": 28.0,
+                    "y": 0.0
+                }
+            },
+            "6": {
+                "position": {
+                    "x": 23.0,
+                    "y": 1.0
+                }
+            },
+            "7": {
+                "position": {
+                    "x": 28.0,
+                    "y": 5.0
+                }
+            },
+            "8": {
+                "position": {
+                    "x": 10.0,
+                    "y": 7.0
+                }
+            },
+            "9": {
+                "position": {
+                    "x": 0.0,
+                    "y": 20.0
+                }
+            },
+            "10": {
+                "position": {
+                    "x": 23.0,
+                    "y": 5.0
+                }
+            }
+        },
+        "CIdentifier": {
+            "1": {
+                "name": "Fibonacci"
+            },
+            "9": {
+                "name": "Print"
+            },
+            "11": {
+                "name": "value"
+            },
+            "12": {
+                "name": "result"
+            },
+            "13": {
+                "name": "lastValue"
+            },
+            "21": {
+                "name": "value"
+            },
+            "22": {
+                "name": "value"
+            }
+        },
+        "CParent": {
+            "0": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ],
+            "1": [
+                11,
+                12,
+                13
+            ],
+            "2": [
+                14,
+                15
+            ],
+            "4": [
+                16,
+                17,
+                18
+            ],
+            "8": [
+                19,
+                20
+            ],
+            "9": [
+                21
+            ],
+            "10": [
+                22
+            ]
+        },
+        "CLiteralIntegral": {
+            "3": {
+                "value": 0,
+                "type": "S32"
+            },
+            "6": {
+                "value": 1,
+                "type": "S32"
+            }
+        },
+        "CStmtIf": {
+            "4": {}
+        },
+        "CStmtOutput": {
+            "1": 4,
+            "9": -1,
+            "10": 7
+        },
+        "CStmtOutputs": {
+            "4": {
+                "linkPins": [
+                    17,
+                    18
+                ],
+                "linkInputNodes": [
+                    5,
+                    10
+                ]
+            }
+        },
+        "CStmtInput": {
+            "4": 1,
+            "5": 4,
+            "7": 10,
+            "10": 4
+        }
+    }
+}
