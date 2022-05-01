@@ -31,10 +31,10 @@ message(STATUS "LLVM_INCLUDE_DIRS: ${LLVM_INCLUDE_DIRS}")
 message(STATUS "LLVM_DEFINITIONS: ${LLVM_DEFINITIONS_LIST}")
 
 
-add_library(LLVM INTERFACE)
-target_include_directories(LLVM INTERFACE ${LLVM_INCLUDE_DIRS})
+add_library(RiftLLVM INTERFACE)
+target_include_directories(RiftLLVM INTERFACE ${LLVM_INCLUDE_DIRS})
 llvm_map_components_to_libnames(llvm_libs core x86asmparser x86codegen)
-target_link_libraries(LLVM INTERFACE ${LLVM_AVAILABLE_LIBS})
-target_compile_definitions(LLVM INTERFACE ${LLVM_DEFINITIONS_LIST}  -DNOMINMAX)
+target_link_libraries(RiftLLVM INTERFACE ${LLVM_AVAILABLE_LIBS})
+target_compile_definitions(RiftLLVM INTERFACE ${LLVM_DEFINITIONS_LIST}  -DNOMINMAX)
 # rift_target_disable_all_warnings(LLVM INTERFACE)
 

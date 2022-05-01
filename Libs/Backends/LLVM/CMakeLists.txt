@@ -12,7 +12,7 @@ rift_target_shared_output_directory(RiftBackendLLVM)
 
 target_link_libraries(RiftBackendLLVM PUBLIC Rift::Rift)
 
-target_link_libraries(RiftBackendLLVM PRIVATE LLVM)
+target_link_libraries(RiftBackendLLVM PRIVATE RiftLLVM)
 
 
 install(TARGETS RiftBackendLLVM

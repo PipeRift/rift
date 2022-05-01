@@ -464,7 +464,7 @@ namespace Rift::AST
 
 
 	public:
-		TPool(AST::Tree& ast) : Pool(ast, DeletionPolicy::Swap) {}
+		TPool(AST::Tree& ast) : Pool(ast, DeletionPolicy::InPlace) {}
 		~TPool() override
 		{
 			Reset();
