@@ -10,10 +10,10 @@
             "request": "launch",
             "program": "${command:cmake.launchTargetPath}",
             "args": [
-                "${workspaceFolder}/Project"
+                "${workspaceFolder}/Docs/Examples"
             ],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/Project",
+            "cwd": "${workspaceFolder}/Docs/Examples",
             "console": "integratedTerminal"
         },
         {
@@ -25,7 +25,7 @@
                 "--reporter=spec"
             ],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/Project",
+            "cwd": "${workspaceFolder}/Docs/Examples",
             "environment": [],
             "console": "integratedTerminal"
         },
@@ -38,7 +38,7 @@
                 "--reporter=spec"
             ],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/Project",
+            "cwd": "${workspaceFolder}/Docs/Examples",
             "environment": [],
             "console": "integratedTerminal"
         }

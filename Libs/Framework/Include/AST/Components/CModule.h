@@ -1,6 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include <Math/Color.h>
 #include <Types/Struct.h>
 
 
@@ -40,6 +41,13 @@ namespace Rift
 		PROP(libraryFiles)
 		TArray<Path> libraryFiles;
 
+		PROP(linearColor)
+		LinearColor linearColor;
+		PROP(rgbaColor)
+		Color rgbaColor;
+
+		PROP(hsvColor)
+		HSVColor hsvColor;
 
 		CModule() {}
 	};

@@ -11,6 +11,16 @@ namespace Rift::UI
 {
 	static const char* currentInspector = nullptr;
 
+	static TMap<Refl::Type*, CustomKeyValue> customKeyValues;
+
+
+	void RegisterCustomInspection(Refl::Type* typeId, const CustomKeyValue& custom)
+	{
+		if (custom)
+		{
+			customKeyValues.Insert(typeId, custom);
+		}
+	}
 
 	void DrawEnumValue(void* data, Refl::EnumType* type)
 	{
@@ -50,6 +60,19 @@ namespace Rift::UI
 		{
 			UI::Checkbox(label.c_str(), static_cast<bool*>(data));
 		}
+		else if (type == GetType<String>())
+		{
+			UI::InputText(label.c_str(), *static_cast<String*>(data));
+		}
+		else if (type == GetType<Name>())
+		{
+			Name& name  = *static_cast<Name*>(data);
+			String text = name.ToString();
+			if (UI::InputText(label.c_str(), text))
+			{
+				name = Name{text};
+			}
+		}
 		else if (type == GetType<u8>())
 		{
 			UI::InputScalar(label.c_str(), ImGuiDataType_U8, data);
@@ -78,19 +101,6 @@ namespace Rift::UI
 		{
 			UI::InputScalar(label.c_str(), ImGuiDataType_Double, data);
 		}
-		else if (type == GetType<String>())
-		{
-			UI::InputText(label.c_str(), *static_cast<String*>(data));
-		}
-		else if (type == GetType<Name>())
-		{
-			Name& name  = *static_cast<Name*>(data);
-			String text = name.ToString();
-			if (UI::InputText(label.c_str(), text))
-			{
-				name = Name{text};
-			}
-		}
 		else if (type == GetType<v2>())
 		{
 			UI::InputFloat2(label.c_str(), static_cast<float*>(data));
@@ -101,8 +111,13 @@ namespace Rift::UI
 		}
 	}
 
-	void DrawValue(void* data, Refl::Type* type)
+	void DrawKeyValue(StringView label, void* data, Refl::Type* type)
 	{
+		UI::TableNextRow();
+		UI::TableSetColumnIndex(0);
+		UI::AlignTextToFramePadding();
+		UI::Text(label);
+		UI::TableSetColumnIndex(1);
 		if (auto* nativeType = type->AsNative())
 		{
 			DrawNativeValue(data, nativeType);
@@ -154,6 +169,7 @@ namespace Rift::UI
 
 	void InspectArrayProperty(const Refl::ArrayProperty& property, void* instance)
 	{
+		UI::TableNextRow();
 		UI::TableSetColumnIndex(0);
 		const bool open = BeginInspectHeader(property.GetDisplayName().data());
 		UI::TableSetColumnIndex(1);
@@ -161,8 +177,9 @@ namespace Rift::UI
 		if (open)
 		{
 			const i32 size = property.GetSize(instance);
+			auto* type     = property.GetType();
 			static String label;
-			if (auto* structType = property.GetType()->AsStruct())
+			if (auto* structType = type->AsStruct())
 			{
 				for (i32 i = 0; i < size; ++i)
 				{
@@ -170,7 +187,7 @@ namespace Rift::UI
 					Strings::FormatTo(label, "{}", i);
 					UI::TableNextRow();
 					UI::TableSetColumnIndex(0);
-					bool open = BeginInspectHeader(label);
+					const bool open = BeginInspectHeader(label);
 					if (open)
 					{
 						UI::Unindent(20.f);
@@ -185,18 +202,23 @@ namespace Rift::UI
 					}
 				}
 			}
+			else if (auto* custom = customKeyValues.Find(type))
+			{
+				for (i32 i = 0; i < size; ++i)
+				{
+					label.clear();
+					Strings::FormatTo(label, "{}", i);
+					(*custom)(label, property.GetItem(instance, i), type);
+					DrawArrayItemButtons(property, instance, i);
+				}
+			}
 			else
 			{
 				for (i32 i = 0; i < size; ++i)
 				{
 					label.clear();
 					Strings::FormatTo(label, "{}", i);
-					UI::TableNextRow();
-					UI::TableSetColumnIndex(0);
-					UI::AlignTextToFramePadding();
-					UI::Text(label);
-					UI::TableSetColumnIndex(1);
-					DrawValue(property.GetItem(instance, i), property.GetType());
+					DrawKeyValue(label, property.GetItem(instance, i), type);
 					DrawArrayItemButtons(property, instance, i);
 				}
 			}
@@ -206,7 +228,6 @@ namespace Rift::UI
 
 	void InspectProperty(const Refl::PropertyHandle& handle)
 	{
-		UI::TableNextRow();
 		auto* type = handle.GetType();
 		if (!type)
 		{
@@ -219,10 +240,15 @@ namespace Rift::UI
 		{
 			InspectArrayProperty(*arrayProperty, instance);
 		}
+		else if (auto* custom = customKeyValues.Find(type))
+		{
+			(*custom)(handle.GetDisplayName(), instance, type);
+		}
 		else if (auto* structType = type->AsStruct())
 		{
+			UI::TableNextRow();
 			UI::TableSetColumnIndex(0);
-			if (BeginInspectHeader(handle.GetDisplayName().data()))
+			if (BeginInspectHeader(handle.GetDisplayName()))
 			{
 				InspectProperties(instance, structType);
 				EndInspectHeader();
@@ -230,12 +256,7 @@ namespace Rift::UI
 		}
 		else
 		{
-			UI::TableSetColumnIndex(0);
-			UI::AlignTextToFramePadding();
-			UI::Text(handle.GetDisplayName());
-
-			UI::TableSetColumnIndex(1);
-			DrawValue(instance, type);
+			DrawKeyValue(handle.GetDisplayName(), instance, type);
 		}
 		UI::PopID();
 	}
@@ -310,5 +331,49 @@ namespace Rift::UI
 		}
 		UI::EndTable();
 		currentInspector = nullptr;
+	}
+
+
+	bool DrawColorKeyValue(StringView label, LinearColor& color, ImGuiColorEditFlags flags)
+	{
+		float* data =
+		    reinterpret_cast<float*>(&color);    // LinearColor* can be interpreted as float*
+		UI::TableNextRow();
+		UI::TableSetColumnIndex(0);
+		UI::AlignTextToFramePadding();
+		UI::Text(label);
+		UI::TableSetColumnIndex(1);
+		return UI::ColorEdit4("##value", data, flags | ImGuiColorEditFlags_AlphaBar);
+	}
+
+	void RegisterCoreKeyValueInspections()
+	{
+		UI::RegisterCustomInspection<LinearColor>(
+		    [](StringView label, void* data, Refl::Type* type) {
+			DrawColorKeyValue(label, *reinterpret_cast<LinearColor*>(data),
+			    ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaPreviewHalf);
+		});
+
+		UI::RegisterCustomInspection<HSVColor>([](StringView label, void* data, Refl::Type* type) {
+			auto* color = reinterpret_cast<HSVColor*>(data);
+			LinearColor lColor{*color};
+			if (DrawColorKeyValue(label, lColor,
+			        ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV
+			            | ImGuiColorEditFlags_AlphaPreviewHalf))
+			{
+				*color = HSVColor{lColor};
+			}
+		});
+
+		UI::RegisterCustomInspection<Color>([](StringView label, void* data, Refl::Type* type) {
+			auto* color = reinterpret_cast<Color*>(data);
+			LinearColor lColor{*color};
+			if (DrawColorKeyValue(label, lColor,
+			        ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayRGB
+			            | ImGuiColorEditFlags_AlphaPreviewHalf))
+			{
+				*color = Color{lColor};
+			}
+		});
 	}
 }    // namespace Rift::UI
