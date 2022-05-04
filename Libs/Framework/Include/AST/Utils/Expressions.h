@@ -17,7 +17,6 @@ namespace Rift::AST::Expressions
 	// Disconnects a particular link. (Note: link ids are the same as input nodes)
 	bool Disconnect(Tree& ast, AST::Id linkId);
 	bool DisconnectFromInputPin(Tree& ast, AST::Id inputPin);
-	bool DisconnectFromOutputPin(Tree& ast, AST::Id outputPin);
 
 	/**
 	 * @brief Disconnects all inputs and outputs from this ids and the children nodes

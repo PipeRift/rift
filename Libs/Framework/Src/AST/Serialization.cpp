@@ -154,9 +154,9 @@ namespace Rift::AST
 			ReadPool<CExprBinaryOperator>(*this, ast);
 			ReadPool<CExprCall>(*this, ast);
 			ReadPool<CExprDeclRefId>(*this, ast);
-			ReadPool<CExprOutputs>(*this, ast);
-			ReadPool<CExprInput>(
+			ReadPool<CExprOutputs>(
 			    *this, ast);    // TODO: Rebuild from CExprOutputs instead of serializing
+			ReadPool<CExprInput>(*this, ast);
 			ReadPool<CStmtReturn>(*this, ast);
 			ReadPool<CExprType>(*this, ast);
 			ReadPool<CExprUnaryOperator>(*this, ast);
@@ -211,9 +211,9 @@ namespace Rift::AST
 			WritePool<CExprBinaryOperator>(*this, ast, treeEntities);
 			WritePool<CExprCall>(*this, ast, treeEntities);
 			WritePool<CExprDeclRefId>(*this, ast, treeEntities);
-			WritePool<CExprOutputs>(*this, ast, treeEntities);
-			WritePool<CExprInput>(*this, ast,
-			    treeEntities);    // TODO: When rebuilding from CExprOutputs, ignore this pool
+			WritePool<CExprOutputs>(*this, ast,
+			    treeEntities);    // TODO: When rebuilding from CExprInputs, ignore this pool
+			WritePool<CExprInput>(*this, ast, treeEntities);
 			WritePool<CStmtReturn>(*this, ast, treeEntities);
 			WritePool<CExprType>(*this, ast, treeEntities);
 			WritePool<CExprUnaryOperator>(*this, ast, treeEntities);
