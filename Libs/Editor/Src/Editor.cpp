@@ -17,12 +17,19 @@
 #include <Log.h>
 #include <Profiler.h>
 #include <RiftContext.h>
+#include <UI/Inspection.h>
 #include <UI/Window.h>
-
 
 
 namespace Rift
 {
+	void RegisterKeyValueInspections()
+	{
+		UI::RegisterCustomInspection<AST::Id>([](StringView label, void* data, Refl::Type* type) {
+			UI::DrawKeyValue(label, data, GetType<AST::IdTraits<AST::Id>::Entity>());
+		});
+	}
+
 	int Editor::Run(TPtr<RiftContext> context, StringView projectPath)
 	{
 		FileWatcher::StartAsync();
@@ -35,6 +42,7 @@ namespace Rift
 			return 1;
 		}
 		Graph::Init();
+		RegisterKeyValueInspections();
 		Log::Info("Editor is ready");
 
 		// Open a project if a path has been provided

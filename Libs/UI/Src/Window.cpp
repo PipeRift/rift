@@ -2,12 +2,15 @@
 
 #include "UI/Window.h"
 
+#include "UI/Inspection.h"
 #include "UI/Style.h"
+#include "UI/UI.h"
 
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 
 #include <cstdio>
+
 // OpenGL loader
 #include <GL/gl3w.h>
 // Include glfw3.h after our OpenGL definitions
@@ -25,7 +28,6 @@ namespace Rift::UI
 	{
 		Log::Error("Glfw Error {}: {}", error, description);
 	}
-
 
 	bool Init()
 	{
@@ -89,6 +91,8 @@ namespace Rift::UI
 		// Setup Platform/Renderer backends
 		ImGui_ImplGlfw_InitForOpenGL(gWindow, true);
 		ImGui_ImplOpenGL3_Init(glslVersion);
+
+		RegisterCoreKeyValueInspections();
 		return true;
 	}
 
