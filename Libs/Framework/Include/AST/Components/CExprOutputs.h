@@ -12,18 +12,25 @@ namespace Rift
 	{
 		STRUCT(CExprOutputs, Struct)
 
-		PROP(types)
-		TArray<AST::Id> types;
+		PROP(pinIds)
+		TArray<AST::Id> pinIds;
 
-		PROP(names)
-		TArray<Name> names;
+		PROP(typeIds)
+		TArray<AST::Id> typeIds;
+
+		CExprOutputs() {}
+		CExprOutputs(AST::Id pinId, AST::Id typeId)
+		{
+			pinIds.Add(pinId);
+			typeIds.Add(typeId);
+		}
 	};
 
 	struct CExprInvalidOutputs : public Struct
 	{
 		STRUCT(CExprInvalidOutputs, Struct)
 
-		PROP(names)
-		TArray<Name> names;
+		PROP(pinIds)
+		TArray<AST::Id> pinIds;
 	};
 }    // namespace Rift

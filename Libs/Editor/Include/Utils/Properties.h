@@ -8,7 +8,6 @@
 #include <AST/Components/CDeclNative.h>
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CDeclVariable.h>
-#include <AST/Components/CExprInput.h>
 #include <AST/Components/CExprType.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CType.h>

@@ -375,6 +375,38 @@ namespace Rift::Graph
 			}
 			Nodes::EndNodeTitleBar();
 
+			// Inputs
+			if (const auto* input = ast.TryGet<const CExprInput>(id))
+			{
+				const Color pinColor = Style::GetTypeColor<float>();
+				Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+				Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+				Nodes::BeginInput(i32(input->pinId), Nodes::PinShape_CircleFilled);
+				UI::Text(input->name.ToString());
+				Nodes::EndInput();
+				Nodes::PopStyleColor(2);
+			}
+			else if (const auto* inputs = ast.TryGet<const CExprInputs>(id))
+			{
+				if (EnsureMsg(inputs->pinIds.Size() == inputs->names.Size(),
+				        "Inputs are invalid. The graph might be corrupted.")) [[likely]]
+				{
+					for (i32 i = 0; i < inputs->pinIds.Size(); ++i)
+					{
+						AST::Id pinId        = inputs->pinIds[i];
+						Name name            = inputs->names[i];
+						const Color pinColor = Style::GetTypeColor<float>();
+						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+						Nodes::BeginInput(i32(pinId), Nodes::PinShape_CircleFilled);
+						UI::Text(name.ToString());
+						Nodes::EndInput();
+						Nodes::PopStyleColor(2);
+					}
+				}
+			}
+
+			// Outputs
 			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, id))
 			{
 				auto callArgsView = ast.Filter<CIdentifier, CExprInput, CExprOutputs>();

@@ -90,7 +90,7 @@ namespace Rift::Functions
 	{
 		AST::Tree& ast   = type.GetAST();
 		const AST::Id id = ast.Create();
-		ast.Add<CExprOutputs>(id);
+		ast.Add<CExprOutputs>(id, {id, literalTypeId});
 
 		bool created        = false;
 		const auto& natives = ast.GetNativeTypes();

@@ -1,11 +1,11 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
+#include "AST/Utils/Expressions.h"
+
 #include "AST/Components/CExprInput.h"
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Types.h"
-#include "AST/Utils/Expressions.h"
 #include "AST/Utils/Hierarchy.h"
-
 
 
 namespace Rift::AST::Expressions
@@ -102,19 +102,5 @@ namespace Rift::AST::Expressions
 	{
 		// NOTE: Input pin ids equal input node ids
 		return Disconnect(ast, inputPin);
-	}
-	bool DisconnectFromOutputPin(Tree& ast, AST::Id outputPin)
-	{
-		// NOTE: Can be optimized if needed since outputs is accessed twice counting
-		// Disconnect()
-		if (auto* outputsComp = ast.TryGet<CExprOutputs>(outputPin))
-		{
-			i32 pinIndex = outputsComp->linkInputPins.FindIndex(outputPin);
-			if (pinIndex != NO_INDEX) [[likely]]
-			{
-				return Disconnect(ast, outputsComp->linkInputPins[pinIndex]);
-			}
-		}
-		return false;
 	}
 }    // namespace Rift::AST::Expressions
