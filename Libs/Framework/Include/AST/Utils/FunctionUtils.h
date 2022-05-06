@@ -4,7 +4,7 @@
 
 #include "AST/Access.h"
 #include "AST/Components/CExprBinaryOperator.h"
-#include "AST/Components/CExprInput.h"
+#include "AST/Components/CExprInputs.h"
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CExprUnaryOperator.h"
 #include "AST/Components/CStmtInput.h"
@@ -31,9 +31,8 @@ namespace Rift::Functions
 
 	AST::Id FindFunctionByName(AST::Tree& ast, Name ownerName, Name functionName);
 
-	using RemoveAccess =
-	    TAccess<TWrite<CChanged>, TWrite<CFileDirty>, TWrite<CExprInput>, TWrite<CExprOutputs>,
-	        TWrite<CStmtInput>, TWrite<CStmtOutputs>, TWrite<CParent>, TWrite<CChild>, CFileRef>;
+	using RemoveAccess = TAccess<TWrite<CChanged>, TWrite<CFileDirty>, TWrite<CStmtInput>,
+	    TWrite<CStmtOutputs>, TWrite<CParent>, TWrite<CChild>, CFileRef>;
 	void RemoveNodes(const RemoveAccess& access, TSpan<AST::Id> ids);
 
 	void GetCallArgs(AST::Tree& ast, TSpan<AST::Id> callIds, TArray<AST::Id>& inputArgIds,

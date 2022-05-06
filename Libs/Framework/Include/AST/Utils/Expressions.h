@@ -11,9 +11,10 @@
 // NOTE: In expression graphs, the Link Id is the Input Pin Id
 namespace Rift::AST::Expressions
 {
-	bool CanConnect(const Tree& ast, AST::Id outputPin, AST::Id inputPin);
+	bool CanConnect(TAccessRef<CExprInputs, CExprOutputs> access, OutputId output, InputId input);
 
-	bool TryConnect(Tree& ast, AST::Id outputPin, AST::Id inputPin);
+	bool TryConnect(
+	    TAccessRef<TWrite<CExprInputs>, CExprOutputs> access, OutputId output, InputId input);
 	// Disconnects a particular link. (Note: link ids are the same as input nodes)
 	bool Disconnect(Tree& ast, AST::Id linkId);
 	bool DisconnectFromInputPin(Tree& ast, AST::Id inputPin);

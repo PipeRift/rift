@@ -13,7 +13,7 @@
 #include <AST/Components/CExprBinaryOperator.h>
 #include <AST/Components/CExprCall.h>
 #include <AST/Components/CExprDeclRef.h>
-#include <AST/Components/CExprInput.h>
+#include <AST/Components/CExprInputs.h>
 #include <AST/Components/CExprOutputs.h>
 #include <AST/Components/CExprType.h>
 #include <AST/Components/CExprUnaryOperator.h>
@@ -376,17 +376,7 @@ namespace Rift::Graph
 			Nodes::EndNodeTitleBar();
 
 			// Inputs
-			if (const auto* input = ast.TryGet<const CExprInput>(id))
-			{
-				const Color pinColor = Style::GetTypeColor<float>();
-				Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-				Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-				Nodes::BeginInput(i32(input->pinId), Nodes::PinShape_CircleFilled);
-				UI::Text(input->name.ToString());
-				Nodes::EndInput();
-				Nodes::PopStyleColor(2);
-			}
-			else if (const auto* inputs = ast.TryGet<const CExprInputs>(id))
+			if (const auto* inputs = ast.TryGet<const CExprInputs>(id))
 			{
 				if (EnsureMsg(inputs->pinIds.Size() == inputs->names.Size(),
 				        "Inputs are invalid. The graph might be corrupted.")) [[likely]]

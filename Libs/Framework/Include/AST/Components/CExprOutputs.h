@@ -8,6 +8,17 @@
 
 namespace Rift
 {
+	struct InputId : public Struct
+	{
+		STRUCT(InputId, Struct)
+
+		PROP(nodeId)
+		AST::Id nodeId = AST::NoId;
+
+		PROP(pinId)
+		AST::Id pinId = AST::NoId;
+	};
+
 	struct CExprOutputs : public Struct
 	{
 		STRUCT(CExprOutputs, Struct)

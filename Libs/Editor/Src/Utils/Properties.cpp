@@ -274,15 +274,11 @@ namespace Rift
 				Style::PopStyleCompact();
 
 				UI::TableNextColumn();
-				if (auto* children = AST::Hierarchy::GetChildren(ast, functionId))
+				if (const auto* exprInputs = ast.TryGet<const CExprInputs>(functionId))
 				{
-					auto exprInputs = ast.Filter<CExprInput>();
-					for (AST::Id childId : *children)
+					for (AST::Id pinId : exprInputs->pinIds)
 					{
-						if (exprInputs.Has(childId))
-						{
-							DrawField(ast, editor, functionId, childId);
-						}
+						DrawField(ast, editor, functionId, pinId);
 					}
 				}
 				Style::PushStyleCompact();

@@ -19,22 +19,6 @@ namespace Rift
 		AST::Id pinId = AST::NoId;
 	};
 
-	struct CExprInput : public Struct
-	{
-		STRUCT(CExprInput, Struct)
-
-		PROP(linkedOutput)
-		OutputId linkedOutput;
-
-		PROP(pinId)
-		AST::Id pinId = AST::NoId;
-
-		PROP(typeId)
-		AST::Id typeId = AST::NoId;
-
-
-		CExprInput(AST::Id pinId, AST::Id typeId) : pinId{pinId}, typeId{typeId} {}
-	};
 
 	struct CExprInputs : public Struct
 	{

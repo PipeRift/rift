@@ -2,7 +2,7 @@
 
 #include "AST/Utils/Expressions.h"
 
-#include "AST/Components/CExprInput.h"
+#include "AST/Components/CExprInputs.h"
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Types.h"
 #include "AST/Utils/Hierarchy.h"
@@ -10,68 +10,80 @@
 
 namespace Rift::AST::Expressions
 {
-	bool CanConnect(const Tree& ast, AST::Id outputNode, AST::Id inputPin)
+	bool WouldLoop(
+	    TAccessRef<CExprInputs, CExprOutputs> access, AST::Id outputNodeId, AST::Id inputNodeId)
 	{
-		if (outputNode == inputPin)
+		TArray<AST::Id> currentNodeIds{outputNodeId};
+		TArray<AST::Id> nextNodeIds{};
+		while (!currentNodeIds.IsEmpty())
 		{
-			return false;
+			for (AST::Id id : currentNodeIds)
+			{
+				if (const auto* inputs = access.TryGet<const CExprInputs>(id))
+				{
+					nextNodeIds.ReserveMore(inputs->linkedOutputs.Size());
+					for (OutputId output : inputs->linkedOutputs)
+					{
+						if (output.nodeId == inputNodeId)
+						{
+							return true;
+						}
+						else if (!IsNone(output.nodeId))
+						{
+							nextNodeIds.Add(output.nodeId);
+						}
+					}
+				}
+			}
+			currentNodeIds = nextNodeIds;
+			nextNodeIds.Empty(false);
 		}
-
-		if (!ast.Has<CExprOutputs>(outputNode) || !ast.Has<CExprInput>(inputPin))
-		{
-			return false;
-		}
-
-		// TODO: Ensure outputNode doesnt loop to inputPin
-		return true;
+		return false;
 	}
 
-	bool TryConnect(Tree& ast, Id outputPin, Id inputPin)
+	bool CanConnect(TAccessRef<CExprInputs, CExprOutputs> access, OutputId output, InputId input)
 	{
-		if (!Ensure(!IsNone(outputPin) && !IsNone(inputPin)))
+		if (IsNone(output.nodeId) || IsNone(output.pinId) || IsNone(input.nodeId)
+		    || IsNone(input.pinId))
 		{
 			return false;
 		}
 
-		if (!CanConnect(ast, outputPin, inputPin))
+		if (output.nodeId == input.nodeId || output.pinId == input.pinId)
+		{
+			return false;    // Can't connect to same node or same pin
+		}
+
+		if (!access.Has<CExprOutputs>(output.nodeId) || !access.Has<CExprInputs>(input.nodeId))
+		{
+			return false;
+		}
+
+		// Ensure output and input wouldn't loop
+		return !WouldLoop(access, output.nodeId, input.nodeId);
+	}
+
+	bool TryConnect(
+	    TAccessRef<TWrite<CExprInputs>, CExprOutputs> access, OutputId output, InputId input)
+	{
+		if (!CanConnect(access, output, input))
 		{
 			return false;
 		}
 
 		// Link input
-		{
-			auto& inputComp = ast.Get<CExprInput>(inputPin);
-			// Disconnect previous output connected to input if any
-			if (inputComp.linkOutputPin != AST::NoId)
-			{
-				auto& lastOutputsComp = ast.Get<CExprOutputs>(inputComp.linkOutputPin);
-				lastOutputsComp.linkInputPins.Remove(inputPin);
-			}
-			inputComp.linkOutputPin = outputPin;
-		}
+		auto& inputs = access.Get<CExprInputs>(input.nodeId);
 
-		// Link output
-		{
-			auto& outputsComp = ast.GetOrAdd<CExprOutputs>(outputPin);
+		const i32 index = inputs.pinIds.FindIndex([&input](AST::Id pinId) {
+			return input.pinId == pinId;
+		});
 
-			i32 index = outputsComp.linkInputPins.FindIndex(outputPin);
-			if (index != NO_INDEX)
-			{
-				AST::Id& lastInputPin = outputsComp.linkInputPins[index];
-				// Disconnect previous input connected to output if any
-				if (lastInputPin != AST::NoId)
-				{
-					ast.Get<CExprInput>(lastInputPin).linkOutputPin = AST::NoId;
-				}
-				lastInputPin = inputPin;
-			}
-			else
-			{
-				// Pin didnt exist on the graph
-				outputsComp.linkInputPins.Add(inputPin);
-			}
+		if (index != NO_INDEX && Ensure(index < inputs.linkedOutputs.Size()))
+		{
+			inputs.linkedOutputs[index] = output;
+			return true;
 		}
-		return true;
+		return false;    // Pin was invalid
 	}
 
 	bool Disconnect(Tree& ast, Id linkId)

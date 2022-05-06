@@ -4,7 +4,7 @@
 
 #include "AST/Components/CDeclFunction.h"
 #include "AST/Components/CExprCall.h"
-#include "AST/Components/CExprInput.h"
+#include "AST/Components/CExprInputs.h"
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CExprType.h"
 #include "AST/Components/CIdentifier.h"

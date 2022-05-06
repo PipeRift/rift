@@ -5,7 +5,7 @@
 #include "AST/Components/CDeclFunction.h"
 #include "AST/Components/CExprCall.h"
 #include "AST/Components/CExprDeclRef.h"
-#include "AST/Components/CExprInput.h"
+#include "AST/Components/CExprInputs.h"
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CExprType.h"
 #include "AST/Components/CIdentifier.h"
@@ -56,7 +56,7 @@ namespace Rift::Functions
 		// Bool input
 		const AST::Id valueId = ast.Create();
 		AST::Hierarchy::AddChildren(ast, id, valueId);
-		ast.Add<CExprInput>(id, {valueId, ast.GetNativeTypes().boolId});
+		ast.Add<CExprInputs>(id).AddPin(valueId, ast.GetNativeTypes().boolId);
 
 		TArray<AST::Id> outIds(2);
 		ast.Create(outIds);
@@ -218,7 +218,7 @@ namespace Rift::Functions
 		AST::Tree& ast   = type.GetAST();
 		const AST::Id id = ast.Create();
 		ast.Add<CExprUnaryOperator>(id, {operatorType});
-		ast.Add<CExprInput>(id, {id, AST::NoId});
+		ast.Add<CExprInputs>(id).AddPin(id, AST::NoId);
 		ast.Add<CExprOutputs>(id).AddPin(id, AST::NoId);
 		if (type)
 		{
@@ -275,7 +275,7 @@ namespace Rift::Functions
 	void GetCallArgs(AST::Tree& ast, TSpan<AST::Id> callIds, TArray<AST::Id>& inputArgIds,
 	    TArray<AST::Id>& outputArgIds, TArray<AST::Id>& otherIds)
 	{
-		auto exprInputs  = ast.Filter<CExprInput>();
+		auto exprInputs  = ast.Filter<CExprInputs>();
 		auto exprOutputs = ast.Filter<CExprOutputs>();
 
 		TArray<AST::Id> children;
