@@ -17,8 +17,8 @@
 
 namespace Rift::Functions
 {
-	AST::Id AddInputArgument(AST::Tree& ast, AST::Id functionId);
-	AST::Id AddOutputArgument(AST::Tree& ast, AST::Id functionId);
+	AST::Id AddInputArgument(AST::Tree& ast, AST::Id functionId, Name name = Name::None());
+	AST::Id AddOutputArgument(AST::Tree& ast, AST::Id functionId, Name name = Name::None());
 
 	AST::Id AddIf(AST::TypeRef type);
 	AST::Id AddReturn(AST::TypeRef type);

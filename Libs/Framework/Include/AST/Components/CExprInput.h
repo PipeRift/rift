@@ -8,8 +8,10 @@
 
 namespace Rift
 {
-	struct OutputId
+	struct OutputId : public Struct
 	{
+		STRUCT(OutputId, Struct)
+
 		PROP(nodeId)
 		AST::Id nodeId = AST::NoId;
 
@@ -29,6 +31,9 @@ namespace Rift
 
 		PROP(typeId)
 		AST::Id typeId = AST::NoId;
+
+
+		CExprInput(AST::Id pinId, AST::Id typeId) : pinId{pinId}, typeId{typeId} {}
 	};
 
 	struct CExprInputs : public Struct
@@ -42,6 +47,22 @@ namespace Rift
 		TArray<AST::Id> pinIds;
 
 		PROP(typeIds)
-		TArray<AST::Id> typeids;
+		TArray<AST::Id> typeIds;
+
+
+		CExprInputs& AddPin(AST::Id pinId, AST::Id typeId)
+		{
+			linkedOutputs.AddDefaulted();
+			pinIds.Add(pinId);
+			typeIds.Add(typeId);
+			return *this;
+		}
+
+		void Resize(u32 count)
+		{
+			linkedOutputs.Resize(count);
+			pinIds.Resize(count, AST::NoId);
+			typeIds.Resize(count, AST::NoId);
+		}
 	};
 }    // namespace Rift

@@ -26,25 +26,23 @@
 
 namespace Rift::Functions
 {
-	AST::Id AddInputArgument(AST::Tree& ast, AST::Id functionId)
+	AST::Id AddInputArgument(AST::Tree& ast, AST::Id functionId, Name name)
 	{
 		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id);
-		ast.Add<CExprType>(id);
-		ast.Add<CExprOutputs>(id);
-
 		AST::Hierarchy::AddChildren(ast, functionId, id);
+
+		ast.GetOrAdd<CExprInputs>(functionId).AddPin(id, AST::NoId);
 		return id;
 	}
 
-	AST::Id AddOutputArgument(AST::Tree& ast, AST::Id functionId)
+	AST::Id AddOutputArgument(AST::Tree& ast, AST::Id functionId, Name name)
 	{
 		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id);
-		ast.Add<CExprType>(id);
-		ast.Add<CExprInput>(id);
-
 		AST::Hierarchy::AddChildren(ast, functionId, id);
+
+		ast.GetOrAdd<CExprOutputs>(functionId).AddPin(id, AST::NoId);
 		return id;
 	}
 
@@ -57,9 +55,8 @@ namespace Rift::Functions
 
 		// Bool input
 		const AST::Id valueId = ast.Create();
-		ast.Add<CExprType>(valueId, {ast.GetNativeTypes().boolId});
-		ast.Add<CExprInput>(valueId);
 		AST::Hierarchy::AddChildren(ast, id, valueId);
+		ast.Add<CExprInput>(id, {valueId, ast.GetNativeTypes().boolId});
 
 		TArray<AST::Id> outIds(2);
 		ast.Create(outIds);
@@ -90,7 +87,7 @@ namespace Rift::Functions
 	{
 		AST::Tree& ast   = type.GetAST();
 		const AST::Id id = ast.Create();
-		ast.Add<CExprOutputs>(id, {id, literalTypeId});
+		ast.Add<CExprOutputs>(id).AddPin(id, literalTypeId);
 
 		bool created        = false;
 		const auto& natives = ast.GetNativeTypes();
@@ -198,7 +195,8 @@ namespace Rift::Functions
 		AST::Tree& ast   = type.GetAST();
 		const AST::Id id = ast.Create();
 
-		ast.Add<CExprDeclRef, CExprOutputs>(id);
+		ast.Add<CExprDeclRef>(id);
+		ast.Add<CExprOutputs>(id).AddPin(id, AST::NoId);    // Types gets resolved by a system later
 
 		const AST::Id typeId = AST::Hierarchy::GetParent(ast, declId);
 		Check(!IsNone(typeId));
@@ -220,8 +218,8 @@ namespace Rift::Functions
 		AST::Tree& ast   = type.GetAST();
 		const AST::Id id = ast.Create();
 		ast.Add<CExprUnaryOperator>(id, {operatorType});
-		ast.Add<CExprInput>(id);
-		ast.Add<CExprOutputs>(id);
+		ast.Add<CExprInput>(id, {id, AST::NoId});
+		ast.Add<CExprOutputs>(id).AddPin(id, AST::NoId);
 		if (type)
 		{
 			AST::Hierarchy::AddChildren(ast, type.GetId(), id);
@@ -236,10 +234,10 @@ namespace Rift::Functions
 		ast.Add<CExprBinaryOperator>(id, {operatorType});
 		ast.Add<CExprOutputs>(id);
 
-		AST::Id valueIds[2];
-		ast.Create(valueIds);
-		ast.Add<CExprInput>(valueIds);
-		AST::Hierarchy::AddChildren(ast, id, valueIds);
+		auto& inputs = ast.Add<CExprInputs>(id);
+		inputs.Resize(2);
+		ast.Create(inputs.pinIds);
+		AST::Hierarchy::AddChildren(ast, id, inputs.pinIds);
 		if (type)
 		{
 			AST::Hierarchy::AddChildren(ast, type.GetId(), id);

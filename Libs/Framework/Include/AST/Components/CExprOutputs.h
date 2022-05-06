@@ -21,8 +21,14 @@ namespace Rift
 		CExprOutputs() {}
 		CExprOutputs(AST::Id pinId, AST::Id typeId)
 		{
+			AddPin(pinId, typeId);
+		}
+
+		CExprOutputs& AddPin(AST::Id pinId, AST::Id typeId)
+		{
 			pinIds.Add(pinId);
 			typeIds.Add(typeId);
+			return *this;
 		}
 	};
 
