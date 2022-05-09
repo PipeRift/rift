@@ -1,6 +1,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "AST/Components/CExprInputs.h"
+#include "AST/Components/CExprOutputs.h"
+#include "AST/Filtering.h"
 #include "AST/Tree.h"
 #include "AST/Types.h"
 #include "AST/Utils/Expressions.h"

@@ -1,7 +1,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "AST/Filtering.h"
 #include "AST/Types.h"
+#include "AST/Utils/Hierarchy.h"
 
 #include <Types/Struct.h>
 
@@ -17,6 +19,15 @@ namespace Rift
 
 		PROP(pinId)
 		AST::Id pinId = AST::NoId;
+
+
+		InputId() = default;
+		explicit InputId(TAccessRef<struct CExprInputs, CChild> access, AST::Id pinId);
+
+		bool IsNone() const
+		{
+			return ::IsNone(nodeId) || ::IsNone(pinId);
+		}
 	};
 
 	struct CExprOutputs : public Struct

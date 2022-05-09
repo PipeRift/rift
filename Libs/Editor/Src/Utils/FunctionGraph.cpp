@@ -6,7 +6,7 @@
 #include "DockSpaceLayout.h"
 #include "Utils/EditorStyle.h"
 #include "Utils/FunctionGraphContextMenu.h"
-#include "Utils/FunctionUtils.h"
+#include "Utils/TypeUtils.h"
 
 #include <AST/Components/CDeclFunction.h>
 #include <AST/Components/CDeclVariable.h>
@@ -676,7 +676,7 @@ namespace Rift::Graph
 				UI::SameLine();
 
 				const auto& op       = access.Get<const CExprUnaryOperator>(id);
-				StringView shortName = Functions::GetUnaryOperatorName(op.type);
+				StringView shortName = Types::GetUnaryOperatorName(op.type);
 				UI::Text(shortName);
 
 				UI::SameLine();
@@ -724,7 +724,7 @@ namespace Rift::Graph
 				UI::SameLine();
 
 				const auto& op       = access.Get<const CExprBinaryOperator>(id);
-				StringView shortName = Functions::GetBinaryOperatorName(op.type);
+				StringView shortName = Types::GetBinaryOperatorName(op.type);
 				UI::Text(shortName);
 
 				UI::SameLine();
@@ -882,7 +882,7 @@ namespace Rift::Graph
 
 			if (UI::IsKeyReleased(GLFW_KEY_DELETE))
 			{
-				Functions::RemoveNodes(ast, Nodes::GetSelectedNodes());
+				Types::RemoveNodes(ast, Nodes::GetSelectedNodes());
 			}
 			Nodes::EndNodeEditor();
 
@@ -891,7 +891,8 @@ namespace Rift::Graph
 			if (Nodes::IsLinkCreated(outputPin, inputPin))
 			{
 				AST::Statements::TryConnect(ast, AST::Id(outputPin), AST::Id(inputPin));
-				AST::Expressions::TryConnect(ast, AST::Id(outputPin), AST::Id(inputPin));
+				AST::Expressions::TryConnect(
+				    ast, OutputId(ast, AST::Id(outputPin)), InputId(ast, AST::Id(inputPin)));
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))

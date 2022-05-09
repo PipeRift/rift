@@ -3,7 +3,6 @@
 #include "Utils/FunctionGraphContextMenu.h"
 
 #include "Utils/FunctionGraph.h"
-#include "Utils/FunctionUtils.h"
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CDeclFunction.h>
@@ -32,11 +31,11 @@ namespace Rift::Graph
 			{
 				case Nodes::PinType::Output:
 					AST::Statements::TryConnect(ast, linkPinId, id);
-					AST::Expressions::TryConnect(ast, linkPinId, id);
+					AST::Expressions::TryConnect(ast, OutputId(ast, linkPinId), InputId(ast, id));
 					break;
 				case Nodes::PinType::Input:
 					AST::Statements::TryConnect(ast, id, linkPinId);
-					AST::Expressions::TryConnect(ast, id, linkPinId);
+					AST::Expressions::TryConnect(ast, OutputId(ast, id), InputId(ast, linkPinId));
 					break;
 				default: break;
 			}
@@ -80,7 +79,7 @@ namespace Rift::Graph
 		{
 			if (UI::MenuItem("Add return node"))
 			{
-				AST::Id newId = Functions::AddReturn({ast, typeId});
+				AST::Id newId = Types::AddReturn({ast, typeId});
 				if (!IsNone(newId))
 				{
 					v2 position = ast.Get<CGraphTransform>(firstNodeId).position;
@@ -93,7 +92,7 @@ namespace Rift::Graph
 		}
 		if (UI::MenuItem("Delete"))
 		{
-			Functions::RemoveNodes(ast, nodeIds);
+			Types::RemoveNodes(ast, nodeIds);
 		}
 	}
 
@@ -113,12 +112,12 @@ namespace Rift::Graph
 		{
 			if (ContextItem("Return", filter))
 			{
-				AST::Id newId = Functions::AddReturn({ast, typeId});
+				AST::Id newId = Types::AddReturn({ast, typeId});
 				SetPositionAndConnect(ast, newId, gridPos);
 			}
 			if (ContextItem("If", filter))
 			{
-				AST::Id newId = Functions::AddIf({ast, typeId});
+				AST::Id newId = Types::AddIf({ast, typeId});
 				SetPositionAndConnect(ast, newId, gridPos);
 			}
 			ContextTreePop(filter);
@@ -137,7 +136,7 @@ namespace Rift::Graph
 					Strings::FormatTo(makeStr, "Make {}", type->name);
 					if (ContextItem(makeStr, filter))
 					{
-						AST::Id newId = Functions::AddLiteral({ast, typeId}, it.second);
+						AST::Id newId = Types::AddLiteral({ast, typeId}, it.second);
 						SetPositionAndConnect(ast, newId, gridPos);
 					}
 				}
@@ -165,7 +164,7 @@ namespace Rift::Graph
 				}
 				if (ContextItem(label, filter))
 				{
-					AST::Id newId = Functions::AddCall({ast, typeId}, functionId);
+					AST::Id newId = Types::AddCall({ast, typeId}, functionId);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}
@@ -192,7 +191,7 @@ namespace Rift::Graph
 				}
 				if (ContextItem(label, filter))
 				{
-					AST::Id newId = Functions::AddDeclarationReference({ast, typeId}, variableId);
+					AST::Id newId = Types::AddDeclarationReference({ast, typeId}, variableId);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}
@@ -206,12 +205,12 @@ namespace Rift::Graph
 			for (auto type : Refl::GetEnumValues<UnaryOperatorType>())
 			{
 				name.clear();
-				StringView shortName = Functions::GetUnaryOperatorName(type);
-				StringView longName  = Functions::GetUnaryOperatorLongName(type);
+				StringView shortName = Types::GetUnaryOperatorName(type);
+				StringView longName  = Types::GetUnaryOperatorLongName(type);
 				Strings::FormatTo(name, "{}   ({})", shortName, longName);
 				if (ContextItem(name, filter))
 				{
-					AST::Id newId = Functions::AddUnaryOperator({ast, typeId}, type);
+					AST::Id newId = Types::AddUnaryOperator({ast, typeId}, type);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}
@@ -219,12 +218,12 @@ namespace Rift::Graph
 			for (auto type : Refl::GetEnumValues<BinaryOperatorType>())
 			{
 				name.clear();
-				StringView shortName = Functions::GetBinaryOperatorName(type);
-				StringView longName  = Functions::GetBinaryOperatorLongName(type);
+				StringView shortName = Types::GetBinaryOperatorName(type);
+				StringView longName  = Types::GetBinaryOperatorLongName(type);
 				Strings::FormatTo(name, "{}   ({})", shortName, longName);
 				if (ContextItem(name, filter))
 				{
-					AST::Id newId = Functions::AddBinaryOperator({ast, typeId}, type);
+					AST::Id newId = Types::AddBinaryOperator({ast, typeId}, type);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}

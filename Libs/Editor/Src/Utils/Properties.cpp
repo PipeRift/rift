@@ -11,13 +11,13 @@
 #include "Utils/Widgets.h"
 
 #include <AST/Filtering.h>
-#include <AST/Utils/FunctionUtils.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/TypeUtils.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
 #include <Misc/EnumFlags.h>
 #include <UI/UI.h>
+
 
 
 namespace Rift
@@ -268,7 +268,7 @@ namespace Rift
 				if (UI::Button(ICON_FA_PLUS "##FunctionInput", ImVec2(-FLT_MIN, 0.0f)))
 				{
 					ScopedChange(ast, functionId);
-					Functions::AddInputArgument(ast, functionId);
+					Types::AddCallInput(ast, functionId);
 				}
 				UI::HelpTooltip("Adds a new input parameter to a function");
 				Style::PopStyleCompact();
@@ -285,7 +285,7 @@ namespace Rift
 				if (UI::Button(ICON_FA_PLUS "##FunctionOutput", ImVec2(-FLT_MIN, 0.0f)))
 				{
 					ScopedChange(ast, functionId);
-					Functions::AddOutputArgument(ast, functionId);
+					Types::AddCallOutput(ast, functionId);
 				}
 				UI::HelpTooltip("Adds a new output parameter to a function");
 				Style::PopStyleCompact();
