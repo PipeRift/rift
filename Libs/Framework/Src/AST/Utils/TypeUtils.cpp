@@ -242,7 +242,7 @@ namespace Rift::Types
 		ast.Add<CIdentifier>(id, name);
 		AST::Hierarchy::AddChildren(ast, functionId, id);
 
-		ast.GetOrAdd<CExprInputs>(functionId).AddPin(id, AST::NoId);
+		ast.GetOrAdd<CExprInputs>(functionId).Add(id);
 		return id;
 	}
 
@@ -252,7 +252,7 @@ namespace Rift::Types
 		ast.Add<CIdentifier>(id, name);
 		AST::Hierarchy::AddChildren(ast, functionId, id);
 
-		ast.GetOrAdd<CExprOutputs>(functionId).AddPin(id, AST::NoId);
+		ast.GetOrAdd<CExprOutputs>(functionId).Add(id);
 		return id;
 	}
 
@@ -294,8 +294,9 @@ namespace Rift::Types
 
 		// Bool input
 		const AST::Id valueId = ast.Create();
+		ast.Add<CExprType>(valueId, {ast.GetNativeTypes().boolId});
 		AST::Hierarchy::AddChildren(ast, id, valueId);
-		ast.Add<CExprInputs>(id).AddPin(valueId, ast.GetNativeTypes().boolId);
+		ast.Add<CExprInputs>(id).Add(valueId);
 
 		TArray<AST::Id> outIds(2);
 		ast.Create(outIds);
@@ -326,7 +327,8 @@ namespace Rift::Types
 	{
 		AST::Tree& ast   = type.GetAST();
 		const AST::Id id = ast.Create();
-		ast.Add<CExprOutputs>(id).AddPin(id, literalTypeId);
+		ast.Add<CExprType>(id, {literalTypeId});
+		ast.Add<CExprOutputs>(id).Add(id);
 
 		bool created        = false;
 		const auto& natives = ast.GetNativeTypes();
@@ -411,7 +413,7 @@ namespace Rift::Types
 		const AST::Id id = ast.Create();
 
 		ast.Add<CExprDeclRef>(id);
-		ast.Add<CExprOutputs>(id).AddPin(id, AST::NoId);    // Types gets resolved by a system later
+		ast.Add<CExprOutputs>(id).Add(id);    // Types gets resolved by a system later
 
 		const AST::Id typeId = AST::Hierarchy::GetParent(ast, declId);
 		Check(!IsNone(typeId));
@@ -433,8 +435,8 @@ namespace Rift::Types
 		AST::Tree& ast   = type.GetAST();
 		const AST::Id id = ast.Create();
 		ast.Add<CExprUnaryOperator>(id, {operatorType});
-		ast.Add<CExprInputs>(id).AddPin(id, AST::NoId);
-		ast.Add<CExprOutputs>(id).AddPin(id, AST::NoId);
+		ast.Add<CExprInputs>(id).Add(id);
+		ast.Add<CExprOutputs>(id).Add(id);
 		if (type)
 		{
 			AST::Hierarchy::AddChildren(ast, type.GetId(), id);

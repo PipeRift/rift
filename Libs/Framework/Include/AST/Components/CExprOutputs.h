@@ -1,6 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "AST/Access.h"
 #include "AST/Filtering.h"
 #include "AST/Types.h"
 #include "AST/Utils/Hierarchy.h"
@@ -22,7 +23,6 @@ namespace Rift
 
 
 		InputId() = default;
-		explicit InputId(TAccessRef<struct CExprInputs, CChild> access, AST::Id pinId);
 
 		bool IsNone() const
 		{
@@ -37,19 +37,28 @@ namespace Rift
 		PROP(pinIds)
 		TArray<AST::Id> pinIds;
 
-		PROP(typeIds)
-		TArray<AST::Id> typeIds;
 
 		CExprOutputs() {}
-		CExprOutputs(AST::Id pinId, AST::Id typeId)
+		CExprOutputs(AST::Id pinId)
 		{
-			AddPin(pinId, typeId);
+			Add(pinId);
 		}
 
-		CExprOutputs& AddPin(AST::Id pinId, AST::Id typeId)
+		CExprOutputs& Add(AST::Id pinId)
 		{
 			pinIds.Add(pinId);
-			typeIds.Add(typeId);
+			return *this;
+		}
+
+		CExprOutputs& Insert(i32 index, AST::Id pinId)
+		{
+			pinIds.Insert(index, pinId);
+			return *this;
+		}
+
+		CExprOutputs& Swap(i32 firstIndex, i32 secondIndex)
+		{
+			pinIds.Swap(firstIndex, secondIndex);
 			return *this;
 		}
 	};

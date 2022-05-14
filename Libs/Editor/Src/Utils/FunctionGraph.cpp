@@ -343,6 +343,8 @@ namespace Rift::Graph
 
 	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView ownerName)
 	{
+		TAccess<CExprInputs, CExprOutputs, CIdentifier, CExprType> access{ast};
+
 		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
 		Style::PushNodeTitleColor(Style::callColor);
 		BeginNode(ast, id);
@@ -376,64 +378,49 @@ namespace Rift::Graph
 			Nodes::EndNodeTitleBar();
 
 			// Inputs
-			if (const auto* inputs = ast.TryGet<const CExprInputs>(id))
+			if (const auto* inputs = access.TryGet<const CExprInputs>(id))
 			{
-				if (EnsureMsg(inputs->pinIds.Size() == inputs->names.Size(),
-				        "Inputs are invalid. The graph might be corrupted.")) [[likely]]
+				UI::BeginGroup();
+				for (AST::Id pinId : inputs->pinIds)
 				{
-					for (i32 i = 0; i < inputs->pinIds.Size(); ++i)
-					{
-						AST::Id pinId        = inputs->pinIds[i];
-						Name name            = inputs->names[i];
-						const Color pinColor = Style::GetTypeColor<float>();
-						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-						Nodes::BeginInput(i32(pinId), Nodes::PinShape_CircleFilled);
-						UI::Text(name.ToString());
-						Nodes::EndInput();
-						Nodes::PopStyleColor(2);
-					}
-				}
-			}
-
-			// Outputs
-			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, id))
-			{
-				auto callArgsView = ast.Filter<CIdentifier, CExprInput, CExprOutputs>();
-
-				UI::BeginGroup();    // Inputs
-				for (AST::Id inputId : *children)
-				{
-					if (callArgsView.Has<CExprInput>(inputId)
-					    && callArgsView.Has<CIdentifier>(inputId))
-					{
-						auto& name           = callArgsView.Get<CIdentifier>(inputId);
-						const Color pinColor = Style::GetTypeColor<float>();
-						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-						Nodes::BeginInput(i32(inputId), Nodes::PinShape_CircleFilled);
-						UI::Text(name.name.ToString());
-						Nodes::EndInput();
-						Nodes::PopStyleColor(2);
-					}
+					Name name            = access.Has<CIdentifier>(pinId)
+					                         ? access.Get<const CIdentifier>(pinId).name
+					                         : Name::None();
+					AST::Id typeId       = access.Has<CExprType>(pinId)
+					                         ? access.Get<const CExprType>(pinId).id
+					                         : AST::NoId;
+					const Color pinColor = Style::GetTypeColor(ast, typeId);
+					Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+					Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+					Nodes::BeginInput(i32(pinId), Nodes::PinShape_CircleFilled);
+					UI::Text(name.ToString());
+					Nodes::EndInput();
+					Nodes::PopStyleColor(2);
 				}
 				UI::EndGroup();
 				UI::SameLine();
-				UI::BeginGroup();    // Outputs
-				for (AST::Id outputId : *children)
+			}
+
+			// Outputs
+			if (const auto* outputs = access.TryGet<const CExprOutputs>(id))
+			{
+				UI::BeginGroup();
+				for (AST::Id pinId : outputs->pinIds)
 				{
-					if (callArgsView.Has<CExprOutputs>(outputId)
-					    && callArgsView.Has<CIdentifier>(outputId))
-					{
-						auto& name           = callArgsView.Get<CIdentifier>(outputId);
-						const Color pinColor = Style::GetTypeColor<float>();
-						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-						Nodes::BeginOutput(i32(outputId), Nodes::PinShape_CircleFilled);
-						UI::Text(name.name.ToString());
-						Nodes::EndOutput();
-						Nodes::PopStyleColor(2);
-					}
+					Name name      = access.Has<CIdentifier>(pinId)
+					                   ? access.Get<const CIdentifier>(pinId).name
+					                   : Name::None();
+					AST::Id typeId = access.Has<CExprType>(pinId)
+					                   ? access.Get<const CExprType>(pinId).id
+					                   : AST::NoId;
+
+					const Color pinColor = Style::GetTypeColor(ast, typeId);
+					Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+					Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+					Nodes::BeginInput(i32(pinId), Nodes::PinShape_CircleFilled);
+					UI::Text(name.ToString());
+					Nodes::EndInput();
+					Nodes::PopStyleColor(2);
 				}
 				UI::EndGroup();
 			}
@@ -785,45 +772,51 @@ namespace Rift::Graph
 	}
 
 	void DrawExpressionLinks(
-	    TAccessRef<CParent, CExprInput, CExprType>& access, const TArray<AST::Id>& children)
+	    TAccessRef<CParent, CExprInputs, CExprType>& access, const TArray<AST::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 1.5f);
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
 
-		TArray<AST::Id> exprInputs;
-		exprInputs.Append(children);    // Include nodes as possible inputs
-		AST::Hierarchy::GetChildren(access, children, exprInputs);
-		AST::RemoveIfNot<CExprInput>(access, exprInputs);
-		for (AST::Id inputId : exprInputs)
+		for (AST::Id nodeId : AST::GetIf<CExprInputs>(access, children))
 		{
-			const auto& input      = access.Get<const CExprInput>(inputId);
-			const AST::Id outputId = input.linkOutputPin;
-			if (!access.IsValid(outputId))
+			const auto& inputs = access.Get<const CExprInputs>(nodeId);
+			if (EnsureMsg(inputs.pinIds.Size() == inputs.linkedOutputs.Size(),
+			        "Inputs are invalid. The graph might be corrupted.")) [[likely]]
 			{
 				continue;
 			}
 
+			for (i32 i = 0; i < inputs.linkedOutputs.Size(); ++i)
+			{
+				AST::Id inputId = inputs.pinIds[i];
+				OutputId output = inputs.linkedOutputs[i];
+				if (output.IsNone())
+				{
+					continue;
+				}
 
-			AST::Id typeId = AST::NoId;
-			if (const auto* type = access.TryGet<const CExprType>(outputId))
-			{
-				typeId = type->id;
-			}
-			if (IsNone(typeId))
-			{
-				if (const auto* type = access.TryGet<const CExprType>(inputId))
+				AST::Id typeId = AST::NoId;
+
+				if (const auto* type = access.TryGet<const CExprType>(output.pinId))
 				{
 					typeId = type->id;
 				}
+				if (IsNone(typeId))
+				{
+					if (const auto* type = access.TryGet<const CExprType>(inputs.pinIds[i]))
+					{
+						typeId = type->id;
+					}
+				}
+
+				const Color color = Style::GetTypeColor(access.GetAST(), typeId);
+				Nodes::PushStyleColor(Nodes::ColorVar_Link, color);
+				Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(color));
+
+				Nodes::Link(i32(inputId), i32(output.pinId), i32(inputId));
+
+				Nodes::PopStyleColor(2);
 			}
-
-			const Color color = Style::GetTypeColor(access.GetAST(), typeId);
-			Nodes::PushStyleColor(Nodes::ColorVar_Link, color);
-			Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(color));
-
-			Nodes::Link(i32(inputId), i32(outputId), i32(inputId));
-
-			Nodes::PopStyleColor(2);
 		}
 		Nodes::PopStyleColor();
 		Nodes::PopStyleVar();
@@ -891,15 +884,17 @@ namespace Rift::Graph
 			if (Nodes::IsLinkCreated(outputPin, inputPin))
 			{
 				AST::Statements::TryConnect(ast, AST::Id(outputPin), AST::Id(inputPin));
-				AST::Expressions::TryConnect(
-				    ast, OutputId(ast, AST::Id(outputPin)), InputId(ast, AST::Id(inputPin)));
+				AST::Expressions::TryConnect(ast,
+				    AST::Expressions::OutputFromPinId(ast, AST::Id(outputPin)),
+				    AST::Expressions::InputFromPinId(ast, AST::Id(inputPin)));
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))
 			{
 				// linkId is always the outputId
 				AST::Statements::Disconnect(ast, AST::Id(linkId));
-				AST::Expressions::Disconnect(ast, AST::Id(linkId));
+				AST::Expressions::Disconnect(
+				    ast, AST::Expressions::InputFromPinId(ast, AST::Id(linkId)));
 			}
 
 			static AST::Id contextNodeId = AST::NoId;

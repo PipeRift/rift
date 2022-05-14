@@ -103,4 +103,31 @@ namespace Rift::AST::Expressions
 		}
 		return false;
 	}
+
+
+	InputId InputFromPinId(TAccessRef<CExprInputs, CChild> access, AST::Id pinId)
+	{
+		InputId input{};
+		input.pinId = pinId;
+		// If node is not the pin itself, it must be the parent
+		input.nodeId = pinId;
+		if (!IsNone(input.nodeId) && !access.Has<CExprInputs>(input.nodeId))
+		{
+			input.nodeId = AST::Hierarchy::GetParent(access, pinId);
+		}
+		return input;
+	}
+
+	OutputId OutputFromPinId(TAccessRef<CExprOutputs, CChild> access, AST::Id pinId)
+	{
+		OutputId output{};
+		output.pinId = pinId;
+		// If node is not the pin itself, it must be the parent
+		output.nodeId = pinId;
+		if (!IsNone(output.nodeId) && !access.Has<CExprOutputs>(output.nodeId))
+		{
+			output.nodeId = AST::Hierarchy::GetParent(access, pinId);
+		}
+		return output;
+	}
 }    // namespace Rift::AST::Expressions

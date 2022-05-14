@@ -31,11 +31,14 @@ namespace Rift::Graph
 			{
 				case Nodes::PinType::Output:
 					AST::Statements::TryConnect(ast, linkPinId, id);
-					AST::Expressions::TryConnect(ast, OutputId(ast, linkPinId), InputId(ast, id));
+					AST::Expressions::TryConnect(ast,
+					    AST::Expressions::OutputFromPinId(ast, linkPinId),
+					    AST::Expressions::InputFromPinId(ast, id));
 					break;
 				case Nodes::PinType::Input:
 					AST::Statements::TryConnect(ast, id, linkPinId);
-					AST::Expressions::TryConnect(ast, OutputId(ast, id), InputId(ast, linkPinId));
+					AST::Expressions::TryConnect(ast, AST::Expressions::OutputFromPinId(ast, id),
+					    AST::Expressions::InputFromPinId(ast, linkPinId));
 					break;
 				default: break;
 			}

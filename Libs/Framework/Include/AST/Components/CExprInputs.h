@@ -22,14 +22,12 @@ namespace Rift
 
 
 		OutputId() = default;
-		explicit OutputId(TAccessRef<struct CExprOutputs, CChild> access, AST::Id pinId);
 
 		bool IsNone() const
 		{
 			return ::IsNone(nodeId) || ::IsNone(pinId);
 		}
 	};
-
 
 	struct CExprInputs : public Struct
 	{
@@ -41,15 +39,11 @@ namespace Rift
 		PROP(pinIds)
 		TArray<AST::Id> pinIds;
 
-		PROP(typeIds)
-		TArray<AST::Id> typeIds;
 
-
-		CExprInputs& AddPin(AST::Id pinId, AST::Id typeId)
+		CExprInputs& Add(AST::Id pinId)
 		{
 			linkedOutputs.AddDefaulted();
 			pinIds.Add(pinId);
-			typeIds.Add(typeId);
 			return *this;
 		}
 
@@ -57,7 +51,6 @@ namespace Rift
 		{
 			linkedOutputs.Resize(count);
 			pinIds.Resize(count, AST::NoId);
-			typeIds.Resize(count, AST::NoId);
 		}
 	};
 

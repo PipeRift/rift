@@ -19,8 +19,7 @@ namespace Rift::AST::Expressions
 	bool TryConnect(
 	    TAccessRef<TWrite<CExprInputs>, CExprOutputs> access, OutputId output, InputId input);
 	// Disconnects a particular link. (Note: link ids are the same as input nodes)
-	bool Disconnect(Tree& ast, AST::Id linkId);
-	bool DisconnectFromInputPin(Tree& ast, AST::Id inputPin);
+	bool Disconnect(Tree& ast, InputId input);
 
 	/**
 	 * @brief Disconnects all inputs and outputs from this ids and the children nodes
@@ -41,4 +40,7 @@ namespace Rift::AST::Expressions
 
 	/** Look for invalid ids and set them to NoId */
 	void CleanInvalidIds(Tree& ast);
+
+	InputId InputFromPinId(TAccessRef<CExprInputs, CChild> access, AST::Id pinId);
+	OutputId OutputFromPinId(TAccessRef<CExprOutputs, CChild> access, AST::Id pinId);
 }    // namespace Rift::AST::Expressions

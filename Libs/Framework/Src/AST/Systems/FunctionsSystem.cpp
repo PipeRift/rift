@@ -76,17 +76,18 @@ namespace Rift::FunctionsSystem
 
 	void SyncCallArguments(AST::Tree& ast)
 	{
-		auto functionParams = ast.Filter<CExprType, CExprInput, CExprOutputs>();
-		auto identifiers    = ast.Filter<CIdentifier>();
-		auto exprInputs     = ast.Filter<CExprInput>();
-		auto exprOutputs    = ast.Filter<CExprOutputs>();
-
+		// auto functionParams = ast.Filter<CExprType, CExprInput, CExprOutputs>();
+		// auto identifiers    = ast.Filter<CIdentifier>();
+		// auto exprInputs     = ast.Filter<CExprInput>();
+		// auto exprOutputs    = ast.Filter<CExprOutputs>();
 
 		TArray<CallToSync> calls;
-		TAccess<CCallDirty, CExprCallId, CExprInputs, CExprOutputs, CIdentifier> access{ast};
-		for (AST::Id id : AST::ListAll<CCallDirty, CExprCallId>(callAccess))
+		TAccess<CCallDirty, CExprCallId, TWrite<CExprInputs>, TWrite<CExprOutputs>,
+		    TWrite<CExprInvalidOutputs>, TWrite<CExprType>, TWrite<CIdentifier>>
+		    access{ast};
+		for (AST::Id id : AST::ListAll<CCallDirty, CExprCallId>(access))
 		{
-			auto& call = callAccess.Get<CExprCallId>(id);
+			const auto& call = access.Get<const CExprCallId>(id);
 			if (IsNone(call.functionId))
 			{
 				continue;
@@ -102,125 +103,131 @@ namespace Rift::FunctionsSystem
 
 
 		// Resolve current call parameters and create missing new pins
-		TArray<AST::Id> invalidOutputs;
 		for (auto& call : calls)
 		{
-			auto& callOutputs = access.GetOrAdd<const CExprOutputs>(call.id);
-
-			invalidOutputs.Empty(false);
-			invalidOutputs = callOutputs.pinIds;
-
+			auto& callOutputs = access.GetOrAdd<CExprOutputs>(call.id);
+			// For each function pin
 			for (i32 i = 0; i < call.functionOutputs->pinIds.Size(); ++i)
 			{
 				const AST::Id pinId = call.functionOutputs->pinIds[i];
-				const auto* name    = access.TryGet<const CIdentifier>(id);
+				const auto* name    = access.TryGet<const CIdentifier>(pinId);
 				if (!name)
 				{
 					continue;
 				}
 
-				if (i >= callOutputs->pinIds.Size())
+				const auto* pinType     = access.TryGet<const CExprType>(pinId);
+				const AST::Id pinTypeId = pinType ? pinType->id : AST::NoId;
+
+				if (i >= callOutputs.pinIds.Size())
 				{
 					AST::Id id = ast.Create();
 					access.Add<CIdentifier>(id, *name);
-					callOutputs.AddPin(id);
+					access.Add<CExprType>(id, {pinTypeId});
+					callOutputs.Add(id);
 					continue;
 				}
 
 				// Search matching pin to 'pinId' from i to end
 				i32 callPinIdx = i;
-				while (callPinIdx < callOutputs->pinIds.Size())
+				while (callPinIdx < callOutputs.pinIds.Size())
 				{
-					const AST::Id pinId     = callOutputs->pinIds[callPinIdx];
+					const AST::Id pinId     = callOutputs.pinIds[callPinIdx];
 					const auto* callPinName = access.TryGet<const CIdentifier>(pinId);
 					if (!callPinName || *callPinName != *name)
 						++callPinIdx;
 				}
-				if (callPinIdx == callOutputs->pinIds.Size())    // Pin not found, insert it
+				if (callPinIdx == callOutputs.pinIds.Size())    // Pin not found, insert it
 				{
 					AST::Id id = ast.Create();
-					identifiers.Add<CIdentifier>(id, *name);
-					callOutputs.AddPinAt(i, id);
+					access.Add<CIdentifier>(id, *name);
+					access.Add<CExprType>(id, {pinTypeId});
+					callOutputs.Insert(i, id);
 				}
 				else if (callPinIdx > i)
 				{
 					// Correct pin is after where it should, we swap it to ensure correct order
-					callOutputs->pinIds.Swap(callPinIdx, i);
+					callOutputs.Swap(callPinIdx, i);
 				}
 			}
 
-			// TODO: Extract last pins exceeding function pin size into invalids
-		}
-
-		for (auto& call : calls)
-		{
-			for (AST::Id id : call.functionInputs->pinIds)
+			// Extract last pins exceeding function pin size into invalids pins
+			if (call.functionOutputs->pinIds.Size() < callOutputs.pinIds.Size())
 			{
-				invalidOutputs.Empty(false);
-				const auto& name = identifiers.Get<CIdentifier>(id);
+				const i32 firstIndex = call.functionOutputs->pinIds.Size();
+				const i32 count      = callOutputs.pinIds.Size() - firstIndex;
 
-				const i32 idx = invalidOuputs.FindIndex([&identifiers, &name](AST::Id id) {
-					return identifiers.Get<CIdentifier>(id) == name;
-				});
-				if (idx != NO_INDEX)
-				{
-					call.inputArgs.Add(invalidOutputs[idx]);
-					currentInputs.RemoveAtSwap(idx, false);
-				}
-				else
-				{
-					AST::Id id = ast.Create();
-					identifiers.Add<CIdentifier>(id, name);
-					exprInputs.Add<CExprInput>(id);
-					call.inputArgs.Add(id);
-				}
+				AST::Id* first = callOutputs.pinIds.Data() + firstIndex;
+
+				auto& invalidOutputs = access.GetOrAdd<CExprInvalidOutputs>(call.id);
+				invalidOutputs.pinIds.Append(first, first + count);
+				callOutputs.pinIds.RemoveLast(count);
 			}
-
-			call.invalidArgs.Append(currentInputs);
-			call.invalidArgs.Append(currentOutputs);
 		}
 
-		// Mark or delete invalid args
-		for (auto& call : calls)
+		/*for (auto& call : calls)
 		{
-			ast.Add<CInvalid>(call.invalidArgs);
-		}
+		    for (AST::Id id : call.functionInputs->pinIds)
+		    {
+		        invalidOutputs.Empty(false);
+		        const auto& name = access.Get<CIdentifier>(id);
 
-		for (auto& call : calls)
-		{
-			// AST::Hierarchy::RemoveAllChildren(ast, call.id, true);
-			// AST::Hierarchy::AddChildren(ast, call.id, call.inputArgs);
-			// AST::Hierarchy::AddChildren(ast, call.id, call.outputArgs);
-			// AST::Hierarchy::AddChildren(ast, call.id, call.invalidArgs);
-			// AST::Hierarchy::AddChildren(ast, call.id, call.unrelatedCallChildren);
-		}
+		        const i32 idx = invalidOutputs.FindIndex([&access, &name](AST::Id id) {
+		            return access.Get<CIdentifier>(id) == name;
+		        });
+		        if (idx != NO_INDEX)
+		        {
+		            call.inputArgs.Add(invalidOutputs[idx]);
+		            currentInputs.RemoveAtSwap(idx, false);
+		        }
+		        else
+		        {
+		            AST::Id id = ast.Create();
+		            access.Add<CIdentifier>(id, name);
+		            // access.Add<CExprInput>(id);
+		            call.inputArgs.Add(id);
+		        }
+		    }
 
-		RemoveInvalidDisconnectedArgs(ast);
+		    call.invalidArgs.Append(currentInputs);
+		    call.invalidArgs.Append(currentOutputs);
+		}*/
+
+		// for (auto& call : calls)
+		//{
+		//  AST::Hierarchy::RemoveAllChildren(ast, call.id, true);
+		//  AST::Hierarchy::AddChildren(ast, call.id, call.inputArgs);
+		//  AST::Hierarchy::AddChildren(ast, call.id, call.outputArgs);
+		//  AST::Hierarchy::AddChildren(ast, call.id, call.invalidArgs);
+		//  AST::Hierarchy::AddChildren(ast, call.id, call.unrelatedCallChildren);
+		//}
+
+		// RemoveInvalidDisconnectedArgs(ast);
 	}
 
-	void RemoveInvalidDisconnectedArgs(AST::Tree& ast)
+	/*void RemoveInvalidDisconnectedArgs(AST::Tree& ast)
 	{
-		auto invalidInputs  = ast.Filter<CInvalid, CExprInput>();
-		auto invalidOutputs = ast.Filter<CInvalid, CExprOutputs>();
-		TArray<AST::Id> disconnectedPins;
-		for (AST::Id id : invalidInputs)
-		{
-			auto& input = invalidInputs.Get<CExprInput>(id);
-			if (IsNone(input.linkOutputPin))
-			{
-				disconnectedPins.Add(id);
-			}
-		}
-		for (AST::Id id : invalidOutputs)
-		{
-			auto& output = invalidOutputs.Get<CExprOutputs>(id);
-			if (output.linkInputPins.IsEmpty())
-			{
-				disconnectedPins.Add(id);
-			}
-		}
-		AST::Hierarchy::Remove(ast, disconnectedPins);
-	}
+	    auto invalidInputs  = ast.Filter<CInvalid, CExprInput>();
+	    auto invalidOutputs = ast.Filter<CInvalid, CExprOutputs>();
+	    TArray<AST::Id> disconnectedPins;
+	    for (AST::Id id : invalidInputs)
+	    {
+	        auto& input = invalidInputs.Get<CExprInput>(id);
+	        if (IsNone(input.linkOutputPin))
+	        {
+	            disconnectedPins.Add(id);
+	        }
+	    }
+	    for (AST::Id id : invalidOutputs)
+	    {
+	        auto& output = invalidOutputs.Get<CExprOutputs>(id);
+	        if (output.linkInputPins.IsEmpty())
+	        {
+	            disconnectedPins.Add(id);
+	        }
+	    }
+	    AST::Hierarchy::Remove(ast, disconnectedPins);
+	}*/
 
 	void ClearAddedTags(AST::Tree& ast)
 	{

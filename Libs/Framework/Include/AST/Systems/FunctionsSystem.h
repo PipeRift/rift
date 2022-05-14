@@ -17,7 +17,7 @@ namespace Rift::FunctionsSystem
 	void Init(AST::Tree& ast);
 	void ResolveCallFunctionIds(AST::Tree& ast);
 	void PropagateDirtyIntoCalls(AST::Tree& ast);
-	void SyncCallArg(AST::Tree& ast);
+	void SyncCallArguments(AST::Tree& ast);
 	void RemoveInvalidDisconnectedArgs(AST::Tree& ast);
 	void ClearAddedTags(AST::Tree& ast);
 }    // namespace Rift::FunctionsSystem
