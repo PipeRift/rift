@@ -25,7 +25,7 @@
 #include "AST/Components/CStmtOutputs.h"
 #include "AST/Components/CStmtReturn.h"
 #include "AST/Components/Tags/CNotSerialized.h"
-#include "AST/Components/Views/CGraphTransform.h"
+#include "AST/Components/Views/CNodePosition.h"
 #include "AST/Filtering.h"
 #include "AST/Utils/Hierarchy.h"
 
@@ -161,7 +161,7 @@ namespace Rift::AST
 			ReadPool<CExprType>(*this, ast);
 			ReadPool<CExprUnaryOperator>(*this, ast);
 			ReadPool<CIdentifier>(*this, ast);
-			ReadPool<CGraphTransform>(*this, ast);
+			ReadPool<CNodePosition>(*this, ast);
 			ReadPool<CParent>(*this, ast);
 			ReadPool<CLiteralBool>(*this, ast);
 			ReadPool<CLiteralFloating>(*this, ast);
@@ -217,7 +217,7 @@ namespace Rift::AST
 			WritePool<CStmtReturn>(*this, ast, treeEntities);
 			WritePool<CExprType>(*this, ast, treeEntities);
 			WritePool<CExprUnaryOperator>(*this, ast, treeEntities);
-			WritePool<CGraphTransform>(*this, ast, treeEntities);
+			WritePool<CNodePosition>(*this, ast, treeEntities);
 			WritePool<CIdentifier>(*this, ast, treeEntities);
 			WritePool<CParent>(*this, ast, treeEntities);
 			WritePool<CLiteralBool>(*this, ast, treeEntities);

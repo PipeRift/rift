@@ -9,7 +9,7 @@
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CType.h>
-#include <AST/Components/Views/CGraphTransform.h>
+#include <AST/Components/Views/CNodePosition.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Hierarchy.h>
@@ -22,7 +22,7 @@ namespace Rift::Graph
 	{
 		if (!IsNone(id))
 		{
-			ast.Add<CGraphTransform>(id, position);
+			ast.Add<CNodePosition>(id, position);
 
 			// TODO: Improve nodes input to handle this correctly
 			TPair<Nodes::Id, Nodes::PinType> linkPin = Nodes::GetDraggedOriginPin();
@@ -85,8 +85,8 @@ namespace Rift::Graph
 				AST::Id newId = Types::AddReturn({ast, typeId});
 				if (!IsNone(newId))
 				{
-					v2 position = ast.Get<CGraphTransform>(firstNodeId).position;
-					ast.Add<CGraphTransform>(newId, position + v2{10.f, 0.f});
+					v2 position = ast.Get<CNodePosition>(firstNodeId).position;
+					ast.Add<CNodePosition>(newId, position + v2{10.f, 0.f});
 
 					AST::Statements::TryConnect(ast, firstNodeId, newId);
 				}

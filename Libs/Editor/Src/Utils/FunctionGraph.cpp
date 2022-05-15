@@ -27,7 +27,7 @@
 #include <AST/Components/CStmtOutputs.h>
 #include <AST/Components/CStmtReturn.h>
 #include <AST/Components/CType.h>
-#include <AST/Components/Views/CGraphTransform.h>
+#include <AST/Components/Views/CNodePosition.h>
 #include <AST/Filtering.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Hierarchy.h>
@@ -42,7 +42,7 @@
 
 namespace Rift::Graph
 {
-	static CGraphTransform* currentNodeTransform = nullptr;
+	static CNodePosition* currentNodeTransform = nullptr;
 
 	void Settings::SetGridSize(float size)
 	{
@@ -76,9 +76,9 @@ namespace Rift::Graph
 		return Nodes::ScreenToGridPosition(screenPosition) * GetInvGridSize();
 	}
 
-	void BeginNode(TAccessRef<TWrite<CGraphTransform>> access, AST::Id id)
+	void BeginNode(TAccessRef<TWrite<CNodePosition>> access, AST::Id id)
 	{
-		currentNodeTransform = &access.GetOrAdd<CGraphTransform>(id);
+		currentNodeTransform = &access.GetOrAdd<CNodePosition>(id);
 		auto* context        = Nodes::GetCurrentContext();
 		if (UI::IsWindowAppearing()
 		    || (!context->leftMouseDragging && !context->leftMouseReleased
@@ -313,7 +313,7 @@ namespace Rift::Graph
 	}
 
 	void DrawReturnNode(
-	    TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef>
+	    TAccessRef<TWrite<CNodePosition>, TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef>
 	        access,
 	    AST::Id id)
 	{
@@ -488,8 +488,8 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawReturns(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>,
-	                     CChild, CFileRef, CStmtReturn>
+	void DrawReturns(TAccessRef<TWrite<CNodePosition>, TWrite<CChanged>, TWrite<CFileDirty>, CChild,
+	                     CFileRef, CStmtReturn>
 	                     access,
 	    const TArray<AST::Id>& children)
 	{
@@ -575,27 +575,19 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawIfs(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>, TWrite<CFileDirty>, CChild,
-	                 CFileRef, CStmtIf, CStmtOutputs, CParent>
+	void DrawIfs(TAccessRef<TWrite<CNodePosition>, TWrite<CChanged>, TWrite<CFileDirty>, CChild,
+	                 CFileRef, CStmtIf, CStmtOutputs, CExprInputs, CParent>
 	                 access,
 	    const TArray<AST::Id>& children)
 	{
 		Style::PushNodeBackgroundColor(Style::GetNeutralColor(0));
 		Style::PushNodeTitleColor(Style::flowColor);
-		TArray<AST::Id> pinIds;
-		for (AST::Id id : AST::GetIf<CStmtIf>(access, children))
+		for (AST::Id id : AST::GetIf<CStmtIf, CExprInputs, CStmtOutputs>(access, children))
 		{
 			BeginNode(access, id);
 			{
-				pinIds.Empty(false);
-				AST::Hierarchy::GetChildren(access, id, pinIds);
-
 				Nodes::BeginNodeTitleBar();
 				{
-					if (!Ensure(pinIds.Size() >= 3))
-					{
-						continue;
-					}
 					UI::BeginGroup();
 					{
 						PushExecutionPinStyle();
@@ -608,7 +600,12 @@ namespace Rift::Graph
 						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
 						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
 
-						Nodes::BeginInput(i32(pinIds[0]), Nodes::PinShape_CircleFilled);
+						auto& inputs = access.Get<const CExprInputs>(id);
+						if (!Ensure(inputs.pinIds.Size() == 1))
+						{
+							continue;
+						}
+						Nodes::BeginInput(i32(inputs.pinIds[0]), Nodes::PinShape_CircleFilled);
 						UI::TextUnformatted("");
 						Nodes::EndInput();
 						Nodes::PopStyleColor(2);
@@ -623,11 +620,16 @@ namespace Rift::Graph
 					UI::SameLine();
 					UI::BeginGroup();
 					{
+						auto& outputs = access.Get<const CStmtOutputs>(id);
+						if (!Ensure(outputs.pinIds.Size() == 2))
+						{
+							continue;
+						}
 						PushExecutionPinStyle();
-						Nodes::BeginOutput(i32(pinIds[1]), Nodes::PinShape_QuadFilled);
+						Nodes::BeginOutput(i32(outputs.pinIds[0]), Nodes::PinShape_QuadFilled);
 						UI::TextUnformatted("true");
 						Nodes::EndOutput();
-						Nodes::BeginOutput(i32(pinIds[2]), Nodes::PinShape_QuadFilled);
+						Nodes::BeginOutput(i32(outputs.pinIds[1]), Nodes::PinShape_QuadFilled);
 						UI::TextUnformatted("false");
 						Nodes::EndOutput();
 						PopExecutionPinStyle();
@@ -642,8 +644,8 @@ namespace Rift::Graph
 		Style::PopNodeBackgroundColor();
 	}
 
-	void DrawUnaryOperators(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>,
-	                            TWrite<CFileDirty>, CChild, CParent, CFileRef, CExprUnaryOperator>
+	void DrawUnaryOperators(TAccessRef<TWrite<CNodePosition>, TWrite<CChanged>, TWrite<CFileDirty>,
+	                            CChild, CParent, CFileRef, CExprUnaryOperator>
 	                            access,
 	    const TArray<AST::Id>& children)
 	{
@@ -678,8 +680,8 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawBinaryOperators(TAccessRef<TWrite<CGraphTransform>, TWrite<CChanged>,
-	                             TWrite<CFileDirty>, CChild, CParent, CFileRef, CExprBinaryOperator>
+	void DrawBinaryOperators(TAccessRef<TWrite<CNodePosition>, TWrite<CChanged>, TWrite<CFileDirty>,
+	                             CChild, CParent, CFileRef, CExprBinaryOperator>
 	                             access,
 	    const TArray<AST::Id>& children)
 	{
@@ -749,12 +751,12 @@ namespace Rift::Graph
 		{
 			if (const auto* outputs = access.TryGet<const CStmtOutputs>(outputId))
 			{
-				if (EnsureMsg(outputs->linkInputNodes.Size() == outputs->linkPins.Size(),
+				if (EnsureMsg(outputs->linkInputNodes.Size() == outputs->pinIds.Size(),
 				        "Inputs and pins must match. Graph might be corrupted."))
 				{
 					for (i32 i = 0; i < outputs->linkInputNodes.Size(); ++i)
 					{
-						const AST::Id outputPinId = outputs->linkPins[i];
+						const AST::Id outputPinId = outputs->pinIds[i];
 						const AST::Id inputNodeId = outputs->linkInputNodes[i];
 						if (access.IsValid(outputPinId) && access.IsValid(inputNodeId))
 						{
@@ -780,7 +782,7 @@ namespace Rift::Graph
 		for (AST::Id nodeId : AST::GetIf<CExprInputs>(access, children))
 		{
 			const auto& inputs = access.Get<const CExprInputs>(nodeId);
-			if (EnsureMsg(inputs.pinIds.Size() == inputs.linkedOutputs.Size(),
+			if (!EnsureMsg(inputs.pinIds.Size() == inputs.linkedOutputs.Size(),
 			        "Inputs are invalid. The graph might be corrupted.")) [[likely]]
 			{
 				continue;

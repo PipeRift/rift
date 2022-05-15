@@ -72,6 +72,14 @@ namespace Rift::AST
 			}
 		}
 	}
+	void GetIf(const TArray<const Pool*>& pools, const TArray<Id>& source, TArray<Id>& results)
+	{
+		GetIf(pools.First(), source, results);
+		for (i32 i = 1; i < pools.Size(); ++i)
+		{
+			RemoveIfNot(pools[i], results, false);
+		}
+	}
 
 	void GetIfNot(const Pool* pool, const TArray<Id>& source, TArray<Id>& results)
 	{
