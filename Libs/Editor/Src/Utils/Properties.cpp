@@ -19,7 +19,6 @@
 #include <UI/UI.h>
 
 
-
 namespace Rift
 {
 	using namespace EnumOperators;
@@ -253,15 +252,11 @@ namespace Rift
 
 				UI::TableNextRow();
 				UI::TableNextColumn();
-				if (auto* children = AST::Hierarchy::GetChildren(ast, functionId))
+				if (const auto* exprInputs = ast.TryGet<const CExprInputs>(functionId))
 				{
-					auto exprOutputs = ast.Filter<CExprOutputs>();
-					for (AST::Id childId : *children)
+					for (AST::Id childId : exprInputs->pinIds)
 					{
-						if (exprOutputs.Has(childId))
-						{
-							DrawField(ast, editor, functionId, childId);
-						}
+						DrawField(ast, editor, functionId, childId);
 					}
 				}
 				Style::PushStyleCompact();
@@ -274,9 +269,9 @@ namespace Rift
 				Style::PopStyleCompact();
 
 				UI::TableNextColumn();
-				if (const auto* exprInputs = ast.TryGet<const CExprInputs>(functionId))
+				if (const auto* exprOutputs = ast.TryGet<const CExprOutputs>(functionId))
 				{
-					for (AST::Id pinId : exprInputs->pinIds)
+					for (AST::Id pinId : exprOutputs->pinIds)
 					{
 						DrawField(ast, editor, functionId, pinId);
 					}

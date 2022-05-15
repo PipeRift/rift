@@ -240,6 +240,7 @@ namespace Rift::Types
 	{
 		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);
+		ast.Add<CExprType>(id);
 		AST::Hierarchy::AddChildren(ast, functionId, id);
 
 		ast.GetOrAdd<CExprInputs>(functionId).Add(id);
@@ -250,6 +251,7 @@ namespace Rift::Types
 	{
 		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);
+		ast.Add<CExprType>(id);
 		AST::Hierarchy::AddChildren(ast, functionId, id);
 
 		ast.GetOrAdd<CExprOutputs>(functionId).Add(id);
