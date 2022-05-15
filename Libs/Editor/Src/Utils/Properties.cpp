@@ -252,9 +252,9 @@ namespace Rift
 
 				UI::TableNextRow();
 				UI::TableNextColumn();
-				if (const auto* exprInputs = ast.TryGet<const CExprInputs>(functionId))
+				if (const auto* exprOutputs = ast.TryGet<const CExprOutputs>(functionId))
 				{
-					for (AST::Id childId : exprInputs->pinIds)
+					for (AST::Id childId : exprOutputs->pinIds)
 					{
 						DrawField(ast, editor, functionId, childId);
 					}
@@ -269,9 +269,9 @@ namespace Rift
 				Style::PopStyleCompact();
 
 				UI::TableNextColumn();
-				if (const auto* exprOutputs = ast.TryGet<const CExprOutputs>(functionId))
+				if (const auto* exprInputs = ast.TryGet<const CExprInputs>(functionId))
 				{
-					for (AST::Id pinId : exprOutputs->pinIds)
+					for (AST::Id pinId : exprInputs->pinIds)
 					{
 						DrawField(ast, editor, functionId, pinId);
 					}

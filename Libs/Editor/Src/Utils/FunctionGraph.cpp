@@ -282,28 +282,27 @@ namespace Rift::Graph
 			}
 			Nodes::EndNodeTitleBar();
 
-			if (const TArray<AST::Id>* children = AST::Hierarchy::GetChildren(ast, functionId))
+			if (const auto* exprOutputs = ast.TryGet<const CExprOutputs>(functionId))
 			{
-				auto inputParameters = ast.Filter<CExprType, CExprOutputs>();
-				for (AST::Id childId : *children)
+				for (AST::Id outputId : exprOutputs->pinIds)
 				{
-					if (inputParameters.Has(childId))
+					const auto* type = ast.TryGet<const CExprType>(outputId);
+					if (!type)
 					{
-						auto& type = inputParameters.Get<CExprType>(childId);
-
-						const Color pinColor = Style::GetTypeColor(ast, type.id);
-						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-
-						Nodes::BeginOutput(i32(childId), Nodes::PinShape_CircleFilled);
-
-						auto* ident = identifiers.TryGet<CIdentifier>(childId);
-						String name = ident ? ident->name.ToString() : "";
-						UI::Text(name);
-
-						Nodes::EndOutput();
-						Nodes::PopStyleColor(2);
+						continue;
 					}
+					const Color pinColor = Style::GetTypeColor(ast, type->id);
+					Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+					Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+
+					Nodes::BeginOutput(i32(outputId), Nodes::PinShape_CircleFilled);
+
+					auto* ident = identifiers.TryGet<CIdentifier>(outputId);
+					String name = ident ? ident->name.ToString() : "";
+					UI::Text(name);
+
+					Nodes::EndOutput();
+					Nodes::PopStyleColor(2);
 				}
 			}
 		}
