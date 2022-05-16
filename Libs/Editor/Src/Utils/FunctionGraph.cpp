@@ -282,9 +282,9 @@ namespace Rift::Graph
 			}
 			Nodes::EndNodeTitleBar();
 
-			if (const auto* exprOutputs = ast.TryGet<const CExprOutputs>(functionId))
+			if (const auto* outputs = ast.TryGet<const CExprOutputs>(functionId))
 			{
-				for (AST::Id outputId : exprOutputs->pinIds)
+				for (AST::Id outputId : outputs->pinIds)
 				{
 					const auto* type = ast.TryGet<const CExprType>(outputId);
 					if (!type)
@@ -296,14 +296,30 @@ namespace Rift::Graph
 					Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
 
 					Nodes::BeginOutput(i32(outputId), Nodes::PinShape_CircleFilled);
-
-					auto* ident = identifiers.TryGet<CIdentifier>(outputId);
+					auto* ident = identifiers.TryGet<const CIdentifier>(outputId);
 					String name = ident ? ident->name.ToString() : "";
 					UI::Text(name);
-
 					Nodes::EndOutput();
+
 					Nodes::PopStyleColor(2);
 				}
+			}
+			if (const auto* invalidOutputs = ast.TryGet<const CExprInvalidOutputs>(functionId))
+			{
+				Style::PushTextColor(Style::invalidColor);
+				Nodes::PushStyleColor(Nodes::ColorVar_Pin, Style::invalidColor);
+				Nodes::PushStyleColor(
+				    Nodes::ColorVar_PinHovered, Style::Hovered(Style::invalidColor));
+				for (AST::Id outputId : invalidOutputs->pinIds)
+				{
+					Nodes::BeginOutput(i32(outputId), Nodes::PinShape_CircleFilled);
+					auto* ident = identifiers.TryGet<const CIdentifier>(outputId);
+					String name = ident ? ident->name.ToString() : "";
+					UI::Text(name);
+					Nodes::EndOutput();
+				}
+				Nodes::PopStyleColor(2);
+				Style::PopTextColor();
 			}
 		}
 		EndNode(ast);
@@ -377,34 +393,10 @@ namespace Rift::Graph
 			Nodes::EndNodeTitleBar();
 
 			// Inputs
+			UI::BeginGroup();
 			if (const auto* inputs = access.TryGet<const CExprInputs>(id))
 			{
-				UI::BeginGroup();
 				for (AST::Id pinId : inputs->pinIds)
-				{
-					Name name            = access.Has<CIdentifier>(pinId)
-					                         ? access.Get<const CIdentifier>(pinId).name
-					                         : Name::None();
-					AST::Id typeId       = access.Has<CExprType>(pinId)
-					                         ? access.Get<const CExprType>(pinId).id
-					                         : AST::NoId;
-					const Color pinColor = Style::GetTypeColor(ast, typeId);
-					Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-					Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-					Nodes::BeginInput(i32(pinId), Nodes::PinShape_CircleFilled);
-					UI::Text(name.ToString());
-					Nodes::EndInput();
-					Nodes::PopStyleColor(2);
-				}
-				UI::EndGroup();
-				UI::SameLine();
-			}
-
-			// Outputs
-			if (const auto* outputs = access.TryGet<const CExprOutputs>(id))
-			{
-				UI::BeginGroup();
-				for (AST::Id pinId : outputs->pinIds)
 				{
 					Name name      = access.Has<CIdentifier>(pinId)
 					                   ? access.Get<const CIdentifier>(pinId).name
@@ -421,8 +413,67 @@ namespace Rift::Graph
 					Nodes::EndInput();
 					Nodes::PopStyleColor(2);
 				}
-				UI::EndGroup();
 			}
+			if (const auto* invalidInputs = ast.TryGet<const CExprInvalidInputs>(id))
+			{
+				Style::PushTextColor(Style::invalidColor);
+				Nodes::PushStyleColor(Nodes::ColorVar_Pin, Style::invalidColor);
+				Nodes::PushStyleColor(
+				    Nodes::ColorVar_PinHovered, Style::Hovered(Style::invalidColor));
+				for (AST::Id pinId : invalidInputs->pinIds)
+				{
+					Nodes::BeginInput(i32(pinId), Nodes::PinShape_CircleFilled);
+					auto* ident = ast.TryGet<const CIdentifier>(pinId);
+					String name = ident ? ident->name.ToString() : "";
+					UI::Text(name);
+					Nodes::EndInput();
+				}
+				Nodes::PopStyleColor(2);
+				Style::PopTextColor();
+			}
+			UI::EndGroup();
+			UI::SameLine();
+
+			// Outputs
+			UI::BeginGroup();
+			if (const auto* outputs = access.TryGet<const CExprOutputs>(id))
+			{
+				for (AST::Id pinId : outputs->pinIds)
+				{
+					Name name      = access.Has<CIdentifier>(pinId)
+					                   ? access.Get<const CIdentifier>(pinId).name
+					                   : Name::None();
+					AST::Id typeId = access.Has<CExprType>(pinId)
+					                   ? access.Get<const CExprType>(pinId).id
+					                   : AST::NoId;
+
+					const Color pinColor = Style::GetTypeColor(ast, typeId);
+					Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+					Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+					Nodes::BeginOutput(i32(pinId), Nodes::PinShape_CircleFilled);
+					UI::Text(name.ToString());
+					Nodes::EndOutput();
+					Nodes::PopStyleColor(2);
+				}
+			}
+			if (const auto* invalidOutputs = ast.TryGet<const CExprInvalidOutputs>(id))
+			{
+				Style::PushTextColor(Style::invalidColor);
+				Nodes::PushStyleColor(Nodes::ColorVar_Pin, Style::invalidColor);
+				Nodes::PushStyleColor(
+				    Nodes::ColorVar_PinHovered, Style::Hovered(Style::invalidColor));
+				for (AST::Id pinId : invalidOutputs->pinIds)
+				{
+					Nodes::BeginOutput(i32(pinId), Nodes::PinShape_CircleFilled);
+					auto* ident = ast.TryGet<const CIdentifier>(pinId);
+					String name = ident ? ident->name.ToString() : "";
+					UI::Text(name);
+					Nodes::EndOutput();
+				}
+				Nodes::PopStyleColor(2);
+				Style::PopTextColor();
+			}
+			UI::EndGroup();
 		}
 		EndNode(ast);
 		Style::PopNodeTitleColor();

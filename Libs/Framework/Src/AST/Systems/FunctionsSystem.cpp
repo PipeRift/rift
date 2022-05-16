@@ -134,14 +134,16 @@ namespace Rift::FunctionsSystem
 				{
 					const AST::Id pinId     = callOutputs.pinIds[callPinIdx];
 					const auto* callPinName = access.TryGet<const CIdentifier>(pinId);
-					if (!callPinName || *callPinName != *name)
-						++callPinIdx;
+					if (callPinName && *callPinName == *name)
+						break;    // Found existing pin
+					++callPinIdx;
 				}
 				if (callPinIdx == callOutputs.pinIds.Size())    // Pin not found, insert it
 				{
 					AST::Id id = ast.Create();
 					access.Add<CIdentifier>(id, *name);
 					access.Add<CExprType>(id, {pinTypeId});
+					AST::Hierarchy::AddChildren(ast, call.id, id);
 					callOutputs.Insert(i, id);
 				}
 				else if (callPinIdx > i)
