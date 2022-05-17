@@ -39,20 +39,18 @@ namespace Rift::AST::Transactions
 
 		activeTransaction = Transaction{true};
 
-		access.Add<CChanged>(entityIds);
-
 		// Mark files dirty
-		TArray<Id> fileIds;
-		Hierarchy::FindParents(access, entityIds, fileIds, [&access](Id parentId) {
-			return access.Has<CFileRef>(parentId);
-		});
+		TArray<Id> parentIds;
+		Hierarchy::GetAllParents(access, entityIds, parentIds);
+
+		parentIds.Append(entityIds);
+		access.Add<CChanged>(parentIds);
 
 		// Transaction ids can also be files. FindParents doesn't consider them, so we merge it
-		fileIds.Append(entityIds);
-		AST::RemoveIfNot<CFileRef>(access, fileIds);
-		if (!fileIds.IsEmpty())
+		AST::RemoveIfNot<CFileRef>(access, parentIds);
+		if (!parentIds.IsEmpty())
 		{
-			access.Add<CFileDirty>(fileIds);
+			access.Add<CFileDirty>(parentIds);
 		}
 
 		// TODO: Capture AST state

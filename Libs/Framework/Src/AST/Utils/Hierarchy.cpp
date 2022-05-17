@@ -231,7 +231,7 @@ namespace Rift::AST::Hierarchy
 		return AST::NoId;
 	}
 
-	void GetParents(TAccessRef<CChild> access, TSpan<Id> children, TArray<Id>& outParents)
+	void GetParents(TAccessRef<CChild> access, TSpan<const Id> children, TArray<Id>& outParents)
 	{
 		outParents.Empty(false);
 		for (Id childId : children)
@@ -241,6 +241,37 @@ namespace Rift::AST::Hierarchy
 			{
 				outParents.AddUnique(child->parent);
 			}
+		}
+	}
+	void GetAllParents(TAccessRef<CChild> access, Id node, TArray<Id>& outParents)
+	{
+		outParents.Empty(false);
+
+		TArray<Id> children{node};
+		TArray<Id> parents;
+
+		while (children.Size() > 0)
+		{
+			GetParents(access, children, parents);
+			outParents.Append(parents);
+			Swap(children, parents);
+			parents.Empty(false);
+		}
+	}
+	void GetAllParents(
+	    TAccessRef<CChild> access, TSpan<const Id> childrenIds, TArray<Id>& outParents)
+	{
+		outParents.Empty(false);
+
+		TArray<Id> children{childrenIds.begin(), childrenIds.Size()};
+		TArray<Id> parents;
+
+		while (children.Size() > 0)
+		{
+			GetParents(access, children, parents);
+			outParents.Append(parents);
+			Swap(children, parents);
+			parents.Empty(false);
 		}
 	}
 
@@ -268,13 +299,17 @@ namespace Rift::AST::Hierarchy
 		while (children.Size() > 0)
 		{
 			GetParents(access, children, parents);
-			for (i32 i = 0; i < parents.Size(); ++i)
+			for (i32 i = 0; i < parents.Size();)
 			{
 				const Id parentId = parents[i];
 				if (callback(parentId))
 				{
 					outParents.Add(parentId);
 					parents.RemoveAtSwap(i, false);
+				}
+				else
+				{
+					++i;
 				}
 			}
 			Swap(children, parents);

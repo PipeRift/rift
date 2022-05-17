@@ -11,6 +11,7 @@
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 #include "AST/Components/Tags/CInvalid.h"
+#include "AST/Filtering.h"
 #include "AST/Utils/Hierarchy.h"
 #include "AST/Utils/TypeUtils.h"
 
@@ -56,20 +57,21 @@ namespace Rift::FunctionsSystem
 
 	void PropagateDirtyIntoCalls(AST::Tree& ast)
 	{
+		TAccess<CChanged, CExprCallId, TWrite<CCallDirty>> access{ast};
 		auto changed = ast.Filter<CChanged>();
-		if (changed.Size() <= 0)
+		if (access.Size<CChanged>() <= 0)
 		{
 			return;
 		}
 
-		auto callExprIds = ast.Filter<CExprCallId>(AST::TExclude<CCallDirty>{});
-		auto dirtyCalls  = ast.Filter<CCallDirty>();
+		TArray<AST::Id> callExprIds = AST::ListAll<CExprCallId>(access);
+		AST::RemoveIf<CCallDirty>(access, callExprIds);
 		for (AST::Id id : callExprIds)
 		{
-			const AST::Id functionId = callExprIds.Get<CExprCallId>(id).functionId;
-			if (!IsNone(functionId) && changed.Has(functionId))
+			const AST::Id functionId = access.Get<const CExprCallId>(id).functionId;
+			if (!IsNone(functionId) && access.Has(functionId))
 			{
-				dirtyCalls.Add<CCallDirty>(id);
+				access.Add<CCallDirty>(id);
 			}
 		}
 	}
@@ -83,7 +85,7 @@ namespace Rift::FunctionsSystem
 
 		TArray<CallToSync> calls;
 		TAccess<CCallDirty, CExprCallId, TWrite<CExprInputs>, TWrite<CExprOutputs>,
-		    TWrite<CExprInvalidOutputs>, TWrite<CExprType>, TWrite<CIdentifier>>
+		    TWrite<CInvalid>, TWrite<CExprType>, TWrite<CIdentifier>>
 		    access{ast};
 		for (AST::Id id : AST::ListAll<CCallDirty, CExprCallId>(access))
 		{
@@ -153,17 +155,16 @@ namespace Rift::FunctionsSystem
 				}
 			}
 
-			// Extract last pins exceeding function pin size into invalids pins
-			if (call.functionOutputs->pinIds.Size() < callOutputs.pinIds.Size())
+			// Mark as invalid all after N function params, and valid those before
+			const i32 firstInvalid = call.functionOutputs->pinIds.Size();
+			const i32 count = callOutputs.pinIds.Size() - call.functionOutputs->pinIds.Size();
+			if (firstInvalid > 0)
 			{
-				const i32 firstIndex = call.functionOutputs->pinIds.Size();
-				const i32 count      = callOutputs.pinIds.Size() - firstIndex;
-
-				AST::Id* first = callOutputs.pinIds.Data() + firstIndex;
-
-				auto& invalidOutputs = access.GetOrAdd<CExprInvalidOutputs>(call.id);
-				invalidOutputs.pinIds.Append(first, first + count);
-				callOutputs.pinIds.RemoveLast(count);
+				access.Remove<CInvalid>({callOutputs.pinIds.Data(), firstInvalid});
+			}
+			if (count > 0)
+			{
+				access.Add<CInvalid>({callOutputs.pinIds.Data() + firstInvalid, count});
 			}
 		}
 

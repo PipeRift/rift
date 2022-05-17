@@ -115,6 +115,7 @@ namespace Rift::AST::Expressions
 			}
 		}
 	}
+
 	void RemoveOutputPin(TAccessRef<TWrite<CExprOutputs>, CChild> access, OutputId output)
 	{
 		if (!output.IsNone())

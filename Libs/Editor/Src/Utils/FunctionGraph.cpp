@@ -27,6 +27,7 @@
 #include <AST/Components/CStmtOutputs.h>
 #include <AST/Components/CStmtReturn.h>
 #include <AST/Components/CType.h>
+#include <AST/Components/Tags/CInvalid.h>
 #include <AST/Components/Views/CNodePosition.h>
 #include <AST/Filtering.h>
 #include <AST/Utils/Expressions.h>
@@ -358,7 +359,7 @@ namespace Rift::Graph
 
 	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView ownerName)
 	{
-		TAccess<CExprInputs, CExprOutputs, CIdentifier, CExprType> access{ast};
+		TAccess<CExprInputs, CExprOutputs, CIdentifier, CExprType, CInvalid> access{ast};
 
 		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
 		Style::PushNodeTitleColor(Style::callColor);
@@ -394,9 +395,9 @@ namespace Rift::Graph
 
 			// Inputs
 			UI::BeginGroup();
-			if (const auto* inputs = access.TryGet<const CExprInputs>(id))
+			if (const auto* outputs = access.TryGet<const CExprOutputs>(id))
 			{
-				for (AST::Id pinId : inputs->pinIds)
+				for (AST::Id pinId : outputs->pinIds)
 				{
 					Name name      = access.Has<CIdentifier>(pinId)
 					                   ? access.Get<const CIdentifier>(pinId).name
@@ -405,40 +406,33 @@ namespace Rift::Graph
 					                   ? access.Get<const CExprType>(pinId).id
 					                   : AST::NoId;
 
-					const Color pinColor = Style::GetTypeColor(ast, typeId);
+					Color pinColor;
+					const bool isInvalid = access.Has<CInvalid>(pinId);
+					if (isInvalid)
+					{
+						Style::PushTextColor(Style::invalidColor);
+						pinColor = Style::invalidColor;
+					}
+					else
+						pinColor = Style::GetTypeColor(ast, typeId);
 					Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
 					Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
 					Nodes::BeginInput(i32(pinId), Nodes::PinShape_CircleFilled);
 					UI::Text(name.ToString());
 					Nodes::EndInput();
 					Nodes::PopStyleColor(2);
+					if (isInvalid)
+						Style::PopTextColor();
 				}
-			}
-			if (const auto* invalidInputs = ast.TryGet<const CExprInvalidInputs>(id))
-			{
-				Style::PushTextColor(Style::invalidColor);
-				Nodes::PushStyleColor(Nodes::ColorVar_Pin, Style::invalidColor);
-				Nodes::PushStyleColor(
-				    Nodes::ColorVar_PinHovered, Style::Hovered(Style::invalidColor));
-				for (AST::Id pinId : invalidInputs->pinIds)
-				{
-					Nodes::BeginInput(i32(pinId), Nodes::PinShape_CircleFilled);
-					auto* ident = ast.TryGet<const CIdentifier>(pinId);
-					String name = ident ? ident->name.ToString() : "";
-					UI::Text(name);
-					Nodes::EndInput();
-				}
-				Nodes::PopStyleColor(2);
-				Style::PopTextColor();
 			}
 			UI::EndGroup();
 			UI::SameLine();
 
 			// Outputs
 			UI::BeginGroup();
-			if (const auto* outputs = access.TryGet<const CExprOutputs>(id))
+			if (const auto* inputs = access.TryGet<const CExprInputs>(id))
 			{
-				for (AST::Id pinId : outputs->pinIds)
+				for (AST::Id pinId : inputs->pinIds)
 				{
 					Name name      = access.Has<CIdentifier>(pinId)
 					                   ? access.Get<const CIdentifier>(pinId).name
@@ -456,13 +450,13 @@ namespace Rift::Graph
 					Nodes::PopStyleColor(2);
 				}
 			}
-			if (const auto* invalidOutputs = ast.TryGet<const CExprInvalidOutputs>(id))
+			if (const auto* invalidInputs = ast.TryGet<const CExprInvalidInputs>(id))
 			{
 				Style::PushTextColor(Style::invalidColor);
 				Nodes::PushStyleColor(Nodes::ColorVar_Pin, Style::invalidColor);
 				Nodes::PushStyleColor(
 				    Nodes::ColorVar_PinHovered, Style::Hovered(Style::invalidColor));
-				for (AST::Id pinId : invalidOutputs->pinIds)
+				for (AST::Id pinId : invalidInputs->pinIds)
 				{
 					Nodes::BeginOutput(i32(pinId), Nodes::PinShape_CircleFilled);
 					auto* ident = ast.TryGet<const CIdentifier>(pinId);

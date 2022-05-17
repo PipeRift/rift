@@ -225,6 +225,12 @@ namespace Rift
 			return GetPool<T...>()->Size();
 		}
 
+		template<typename C>
+		i32 Size() const
+		{
+			return GetPool<const C>()->Size();
+		}
+
 		AST::Tree& GetAST() const
 		{
 			return ast;

@@ -1,12 +1,123 @@
 {
     "type": "Class",
-    "count": 1,
+    "count": 8,
     "roots": [
         0
     ],
     "components": {
+        "CChild": {
+            "0": -1,
+            "1": 0,
+            "2": 0,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 2,
+            "7": 2
+        },
         "CDeclClass": {
             "0": {}
+        },
+        "CDeclFunction": {
+            "1": {}
+        },
+        "CExprCall": {
+            "2": {
+                "ownerName": "Test",
+                "functionName": "ADdd"
+            }
+        },
+        "CExprOutputs": {
+            "1": {
+                "pinIds": [
+                    4,
+                    5
+                ]
+            },
+            "2": {
+                "pinIds": [
+                    -1,
+                    6,
+                    7,
+                    -1
+                ]
+            }
+        },
+        "CExprInputs": {
+            "1": {
+                "linkedOutputs": [
+                    {
+                        "nodeId": -1,
+                        "pinId": -1
+                    }
+                ],
+                "pinIds": [
+                    3
+                ]
+            },
+            "2": {
+                "linkedOutputs": [],
+                "pinIds": []
+            }
+        },
+        "CExprType": {
+            "3": {},
+            "4": {},
+            "5": {},
+            "6": {},
+            "7": {}
+        },
+        "CNodePosition": {
+            "1": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "2": {
+                "x": 22.0,
+                "y": 0.0
+            }
+        },
+        "CIdentifier": {
+            "1": {
+                "name": "ADdd"
+            },
+            "3": {
+                "name": "assd"
+            },
+            "4": {
+                "name": "d"
+            },
+            "5": {
+                "name": "v"
+            },
+            "6": {
+                "name": "v"
+            },
+            "7": {
+                "name": "b"
+            }
+        },
+        "CParent": {
+            "0": [
+                1,
+                2
+            ],
+            "1": [
+                3,
+                4,
+                5
+            ],
+            "2": [
+                6,
+                7
+            ]
+        },
+        "CStmtOutput": {
+            "1": -1,
+            "2": -1
+        },
+        "CStmtInput": {
+            "2": -1
         }
     }
 }
