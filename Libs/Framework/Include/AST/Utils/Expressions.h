@@ -29,17 +29,8 @@ namespace Rift::AST::Expressions
 	 */
 	void DisconnectAllDeep(Tree& ast, TSpan<const AST::Id> ids, bool ignoreRoot = false);
 
-	// TODO
-	/** Check that a and b are connected (in any direction) */
-	// bool AreNodesConnected(const Tree& ast, AST::Id outputNode, AST::Id inputNode);
-	// bool ArePinsConnected(const Tree& ast, AST::Id outputPin, AST::Id inputPin);
-	// bool IsOutputPinConnected(const Tree& ast, AST::Id outputPin);
-	// bool IsOutputPinConnected(const Tree& ast, AST::Id outputPin, AST::Id outputNode);
-	// bool IsInputPinConnected(const Tree& ast, AST::Id inputPin);
-	// bool IsInputPinConnected(const Tree& ast, AST::Id inputPin /*unused*/, AST::Id inputNode);
-
-	/** Look for invalid ids and set them to NoId */
-	void CleanInvalidIds(Tree& ast);
+	void RemoveInputPin(TAccessRef<TWrite<CExprInputs>, CChild> access, InputId id);
+	void RemoveOutputPin(TAccessRef<TWrite<CExprOutputs>, CChild> access, OutputId id);
 
 	InputId InputFromPinId(TAccessRef<CExprInputs, CChild> access, AST::Id pinId);
 	OutputId OutputFromPinId(TAccessRef<CExprOutputs, CChild> access, AST::Id pinId);

@@ -1,0 +1,12 @@
+{
+    "type": "Class",
+    "count": 1,
+    "roots": [
+        0
+    ],
+    "components": {
+        "CDeclClass": {
+            "0": {}
+        }
+    }
+}

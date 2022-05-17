@@ -318,9 +318,9 @@ namespace Rift::UI
 			currentInspector = label;
 			UI::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthStretch, 0.5f);
 			UI::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.5f);
+			return true;
 		}
-
-		return true;
+		return false;
 	}
 
 	void EndInspector()

@@ -105,6 +105,27 @@ namespace Rift::AST::Expressions
 	}
 
 
+	void RemoveInputPin(TAccessRef<TWrite<CExprInputs>, CChild> access, InputId input)
+	{
+		if (!input.IsNone())
+		{
+			if (auto* inputs = access.TryGet<CExprInputs>(input.nodeId))
+			{
+				inputs->pinIds.Remove(input.pinId);
+			}
+		}
+	}
+	void RemoveOutputPin(TAccessRef<TWrite<CExprOutputs>, CChild> access, OutputId output)
+	{
+		if (!output.IsNone())
+		{
+			if (auto* outputs = access.TryGet<CExprOutputs>(output.nodeId))
+			{
+				outputs->pinIds.Remove(output.pinId);
+			}
+		}
+	}
+
 	InputId InputFromPinId(TAccessRef<CExprInputs, CChild> access, AST::Id pinId)
 	{
 		InputId input{};

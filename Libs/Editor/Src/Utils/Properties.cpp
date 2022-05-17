@@ -13,6 +13,7 @@
 #include <AST/Filtering.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/TypeUtils.h>
+#include <AST/Utils/Expressions.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
 #include <Misc/EnumFlags.h>
@@ -386,6 +387,8 @@ namespace Rift
 
 		if (!IsNone(editor.pendingDeletePropertyId))
 		{
+			AST::Expressions::RemoveInputPin(ast, AST::Expressions::InputFromPinId(ast, editor.pendingDeletePropertyId));
+			AST::Expressions::RemoveOutputPin(ast, AST::Expressions::OutputFromPinId(ast, editor.pendingDeletePropertyId));
 			AST::Hierarchy::RemoveDeep(ast, editor.pendingDeletePropertyId);
 			editor.pendingDeletePropertyId = AST::NoId;
 		}
