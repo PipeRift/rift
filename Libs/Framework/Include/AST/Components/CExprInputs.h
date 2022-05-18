@@ -47,18 +47,24 @@ namespace Rift
 			return *this;
 		}
 
-		void Resize(u32 count)
+		CExprInputs& Insert(i32 index, AST::Id pinId)
+		{
+			pinIds.Insert(index, pinId);
+			linkedOutputs.Insert(index, {});
+			return *this;
+		}
+
+		CExprInputs& Swap(i32 firstIndex, i32 secondIndex)
+		{
+			pinIds.Swap(firstIndex, secondIndex);
+			linkedOutputs.Swap(firstIndex, secondIndex);
+			return *this;
+		}
+
+		void Resize(i32 count)
 		{
 			linkedOutputs.Resize(count);
 			pinIds.Resize(count, AST::NoId);
 		}
-	};
-
-	struct CExprInvalidInputs : public Struct
-	{
-		STRUCT(CExprInvalidInputs, Struct)
-
-		PROP(pinIds)
-		TArray<AST::Id> pinIds;
 	};
 }    // namespace Rift

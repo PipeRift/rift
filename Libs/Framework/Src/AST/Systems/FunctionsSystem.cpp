@@ -103,15 +103,14 @@ namespace Rift::FunctionsSystem
 			calls.Add(cache);
 		}
 
-
-		// Resolve current call parameters and create missing new pins
+		// Sync call outputs to function inputs
 		for (auto& call : calls)
 		{
 			auto& callOutputs = access.GetOrAdd<CExprOutputs>(call.id);
 			// For each function pin
-			for (i32 i = 0; i < call.functionOutputs->pinIds.Size(); ++i)
+			for (i32 i = 0; i < call.functionInputs->pinIds.Size(); ++i)
 			{
-				const AST::Id pinId = call.functionOutputs->pinIds[i];
+				const AST::Id pinId = call.functionInputs->pinIds[i];
 				const auto* name    = access.TryGet<const CIdentifier>(pinId);
 				if (!name)
 				{
@@ -126,6 +125,7 @@ namespace Rift::FunctionsSystem
 					AST::Id id = ast.Create();
 					access.Add<CIdentifier>(id, *name);
 					access.Add<CExprType>(id, {pinTypeId});
+					AST::Hierarchy::AddChildren(ast, call.id, id);
 					callOutputs.Add(id);
 					continue;
 				}
@@ -156,54 +156,82 @@ namespace Rift::FunctionsSystem
 			}
 
 			// Mark as invalid all after N function params, and valid those before
-			const i32 firstInvalid = call.functionOutputs->pinIds.Size();
-			const i32 count = callOutputs.pinIds.Size() - call.functionOutputs->pinIds.Size();
+			const i32 firstInvalid = call.functionInputs->pinIds.Size();
 			if (firstInvalid > 0)
 			{
 				access.Remove<CInvalid>({callOutputs.pinIds.Data(), firstInvalid});
 			}
+			const i32 count = callOutputs.pinIds.Size() - call.functionInputs->pinIds.Size();
 			if (count > 0)
 			{
 				access.Add<CInvalid>({callOutputs.pinIds.Data() + firstInvalid, count});
 			}
 		}
 
-		/*for (auto& call : calls)
+		// Sync call inputs to function outputs
+		for (auto& call : calls)
 		{
-		    for (AST::Id id : call.functionInputs->pinIds)
-		    {
-		        invalidOutputs.Empty(false);
-		        const auto& name = access.Get<CIdentifier>(id);
+			auto& callInputs = access.GetOrAdd<CExprInputs>(call.id);
+			// For each function pin
+			for (i32 i = 0; i < call.functionOutputs->pinIds.Size(); ++i)
+			{
+				const AST::Id pinId = call.functionOutputs->pinIds[i];
+				const auto* name    = access.TryGet<const CIdentifier>(pinId);
+				if (!name)
+				{
+					continue;
+				}
 
-		        const i32 idx = invalidOutputs.FindIndex([&access, &name](AST::Id id) {
-		            return access.Get<CIdentifier>(id) == name;
-		        });
-		        if (idx != NO_INDEX)
-		        {
-		            call.inputArgs.Add(invalidOutputs[idx]);
-		            currentInputs.RemoveAtSwap(idx, false);
-		        }
-		        else
-		        {
-		            AST::Id id = ast.Create();
-		            access.Add<CIdentifier>(id, name);
-		            // access.Add<CExprInput>(id);
-		            call.inputArgs.Add(id);
-		        }
-		    }
+				const auto* pinType     = access.TryGet<const CExprType>(pinId);
+				const AST::Id pinTypeId = pinType ? pinType->id : AST::NoId;
 
-		    call.invalidArgs.Append(currentInputs);
-		    call.invalidArgs.Append(currentOutputs);
-		}*/
+				if (i >= callInputs.pinIds.Size())
+				{
+					AST::Id id = ast.Create();
+					access.Add<CIdentifier>(id, *name);
+					access.Add<CExprType>(id, {pinTypeId});
+					AST::Hierarchy::AddChildren(ast, call.id, id);
+					callInputs.Add(id);
+					continue;
+				}
 
-		// for (auto& call : calls)
-		//{
-		//  AST::Hierarchy::RemoveAllChildren(ast, call.id, true);
-		//  AST::Hierarchy::AddChildren(ast, call.id, call.inputArgs);
-		//  AST::Hierarchy::AddChildren(ast, call.id, call.outputArgs);
-		//  AST::Hierarchy::AddChildren(ast, call.id, call.invalidArgs);
-		//  AST::Hierarchy::AddChildren(ast, call.id, call.unrelatedCallChildren);
-		//}
+				// Search matching pin to 'pinId' from i to end
+				i32 callPinIdx = i;
+				while (callPinIdx < callInputs.pinIds.Size())
+				{
+					const AST::Id pinId     = callInputs.pinIds[callPinIdx];
+					const auto* callPinName = access.TryGet<const CIdentifier>(pinId);
+					if (callPinName && *callPinName == *name)
+						break;    // Found existing pin
+					++callPinIdx;
+				}
+				if (callPinIdx == callInputs.pinIds.Size())    // Pin not found, insert it
+				{
+					AST::Id id = ast.Create();
+					access.Add<CIdentifier>(id, *name);
+					access.Add<CExprType>(id, {pinTypeId});
+					AST::Hierarchy::AddChildren(ast, call.id, id);
+					callInputs.Insert(i, id);
+				}
+				else if (callPinIdx > i)
+				{
+					// Correct pin is after where it should, we swap it to ensure correct order
+					callInputs.Swap(callPinIdx, i);
+				}
+			}
+
+			// Mark as invalid all after N function params, and valid those before
+			const i32 firstInvalid = call.functionOutputs->pinIds.Size();
+			if (firstInvalid > 0)
+			{
+				access.Remove<CInvalid>({callInputs.pinIds.Data(), firstInvalid});
+			}
+			const i32 count = callInputs.pinIds.Size() - call.functionOutputs->pinIds.Size();
+			if (count > 0)
+			{
+				access.Add<CInvalid>({callInputs.pinIds.Data() + firstInvalid, count});
+			}
+		}
 
 		// RemoveInvalidDisconnectedArgs(ast);
 	}

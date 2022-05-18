@@ -62,12 +62,4 @@ namespace Rift
 			return *this;
 		}
 	};
-
-	struct CExprInvalidOutputs : public Struct
-	{
-		STRUCT(CExprInvalidOutputs, Struct)
-
-		PROP(pinIds)
-		TArray<AST::Id> pinIds;
-	};
 }    // namespace Rift

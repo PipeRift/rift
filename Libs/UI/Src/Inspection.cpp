@@ -2,6 +2,8 @@
 
 #include "UI/Inspection.h"
 
+#include <Files/Paths.h>
+#include <Files/STDFileSystem.h>
 #include <IconsFontAwesome5.h>
 #include <Reflection/GetType.h>
 #include <Reflection/StructType.h>
@@ -317,7 +319,7 @@ namespace Rift::UI
 		{
 			currentInspector = label;
 			UI::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthStretch, 0.5f);
-			UI::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.5f);
+			UI::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 1.f);
 			return true;
 		}
 		return false;
@@ -373,6 +375,21 @@ namespace Rift::UI
 			            | ImGuiColorEditFlags_AlphaPreviewHalf))
 			{
 				*color = Color{lColor};
+			}
+		});
+
+		UI::RegisterCustomInspection<Path>([](StringView label, void* data, Refl::Type* type) {
+			auto* path = reinterpret_cast<Path*>(data);
+			UI::TableNextRow();
+			UI::TableSetColumnIndex(0);
+			UI::AlignTextToFramePadding();
+			UI::Text(label);
+			UI::TableSetColumnIndex(1);
+			UI::SetNextItemWidth(Math::Min(300.f, UI::GetContentRegionAvail().x));
+			String str = Paths::ToString(*path);
+			if (UI::InputText("##value", str))
+			{
+				*path = Paths::FromString(str);
 			}
 		});
 	}

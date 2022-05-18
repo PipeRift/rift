@@ -111,7 +111,9 @@ namespace Rift::AST::Expressions
 		{
 			if (auto* inputs = access.TryGet<CExprInputs>(input.nodeId))
 			{
-				inputs->pinIds.Remove(input.pinId);
+				i32 index = inputs->pinIds.FindIndex(input.pinId);
+				inputs->pinIds.RemoveAt(index);
+				inputs->linkedOutputs.RemoveAt(index);
 			}
 		}
 	}

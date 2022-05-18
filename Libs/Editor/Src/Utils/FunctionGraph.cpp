@@ -77,6 +77,73 @@ namespace Rift::Graph
 		return Nodes::ScreenToGridPosition(screenPosition) * GetInvGridSize();
 	}
 
+	void DrawInputs(TAccessRef<CInvalid, CExprType, CIdentifier> access, const CExprInputs& inputs)
+	{
+		for (AST::Id pinId : inputs.pinIds)
+		{
+			AST::Id typeId       = AST::NoId;
+			Color pinColor       = Style::GetTypeColor<void>();
+			const bool isInvalid = access.Has<CInvalid>(pinId);
+			if (isInvalid)
+			{
+				Style::PushTextColor(Style::invalidColor);
+				pinColor = Style::invalidColor;
+			}
+			else if (auto* type = access.TryGet<const CExprType>(pinId))
+			{
+				typeId   = type->id;
+				pinColor = Style::GetTypeColor(access.GetAST(), typeId);
+			}
+			Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+
+			Nodes::BeginInput(i32(pinId), Nodes::PinShape_CircleFilled);
+			auto* identifier = access.TryGet<const CIdentifier>(pinId);
+			UI::Text(identifier ? identifier->name.ToString() : "none");
+			Nodes::EndInput();
+
+			Nodes::PopStyleColor(2);
+			if (isInvalid)
+			{
+				Style::PopTextColor();
+			}
+		}
+	}
+
+	void DrawOutputs(
+	    TAccessRef<CInvalid, CExprType, CIdentifier> access, const CExprOutputs& outputs)
+	{
+		for (AST::Id pinId : outputs.pinIds)
+		{
+			AST::Id typeId       = AST::NoId;
+			Color pinColor       = Style::GetTypeColor<void>();
+			const bool isInvalid = access.Has<CInvalid>(pinId);
+			if (isInvalid)
+			{
+				Style::PushTextColor(Style::invalidColor);
+				pinColor = Style::invalidColor;
+			}
+			else if (auto* type = access.TryGet<const CExprType>(pinId))
+			{
+				typeId   = type->id;
+				pinColor = Style::GetTypeColor(access.GetAST(), typeId);
+			}
+			Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+
+			Nodes::BeginOutput(i32(pinId), Nodes::PinShape_CircleFilled);
+			auto* identifier = access.TryGet<const CIdentifier>(pinId);
+			UI::Text(identifier ? identifier->name.ToString() : "none");
+			Nodes::EndOutput();
+
+			Nodes::PopStyleColor(2);
+			if (isInvalid)
+			{
+				Style::PopTextColor();
+			}
+		}
+	}
+
 	void BeginNode(TAccessRef<TWrite<CNodePosition>> access, AST::Id id)
 	{
 		currentNodeTransform = &access.GetOrAdd<CNodePosition>(id);
@@ -285,42 +352,7 @@ namespace Rift::Graph
 
 			if (const auto* outputs = ast.TryGet<const CExprOutputs>(functionId))
 			{
-				for (AST::Id outputId : outputs->pinIds)
-				{
-					const auto* type = ast.TryGet<const CExprType>(outputId);
-					if (!type)
-					{
-						continue;
-					}
-					const Color pinColor = Style::GetTypeColor(ast, type->id);
-					Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-					Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-
-					Nodes::BeginOutput(i32(outputId), Nodes::PinShape_CircleFilled);
-					auto* ident = identifiers.TryGet<const CIdentifier>(outputId);
-					String name = ident ? ident->name.ToString() : "";
-					UI::Text(name);
-					Nodes::EndOutput();
-
-					Nodes::PopStyleColor(2);
-				}
-			}
-			if (const auto* invalidOutputs = ast.TryGet<const CExprInvalidOutputs>(functionId))
-			{
-				Style::PushTextColor(Style::invalidColor);
-				Nodes::PushStyleColor(Nodes::ColorVar_Pin, Style::invalidColor);
-				Nodes::PushStyleColor(
-				    Nodes::ColorVar_PinHovered, Style::Hovered(Style::invalidColor));
-				for (AST::Id outputId : invalidOutputs->pinIds)
-				{
-					Nodes::BeginOutput(i32(outputId), Nodes::PinShape_CircleFilled);
-					auto* ident = identifiers.TryGet<const CIdentifier>(outputId);
-					String name = ident ? ident->name.ToString() : "";
-					UI::Text(name);
-					Nodes::EndOutput();
-				}
-				Nodes::PopStyleColor(2);
-				Style::PopTextColor();
+				DrawOutputs(ast, *outputs);
 			}
 		}
 		EndNode(ast);
@@ -395,77 +427,18 @@ namespace Rift::Graph
 
 			// Inputs
 			UI::BeginGroup();
-			if (const auto* outputs = access.TryGet<const CExprOutputs>(id))
+			if (const auto* inputs = access.TryGet<const CExprInputs>(id))
 			{
-				for (AST::Id pinId : outputs->pinIds)
-				{
-					Name name      = access.Has<CIdentifier>(pinId)
-					                   ? access.Get<const CIdentifier>(pinId).name
-					                   : Name::None();
-					AST::Id typeId = access.Has<CExprType>(pinId)
-					                   ? access.Get<const CExprType>(pinId).id
-					                   : AST::NoId;
-
-					Color pinColor;
-					const bool isInvalid = access.Has<CInvalid>(pinId);
-					if (isInvalid)
-					{
-						Style::PushTextColor(Style::invalidColor);
-						pinColor = Style::invalidColor;
-					}
-					else
-						pinColor = Style::GetTypeColor(ast, typeId);
-					Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-					Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-					Nodes::BeginInput(i32(pinId), Nodes::PinShape_CircleFilled);
-					UI::Text(name.ToString());
-					Nodes::EndInput();
-					Nodes::PopStyleColor(2);
-					if (isInvalid)
-						Style::PopTextColor();
-				}
+				DrawInputs(access, *inputs);
 			}
 			UI::EndGroup();
 			UI::SameLine();
 
 			// Outputs
 			UI::BeginGroup();
-			if (const auto* inputs = access.TryGet<const CExprInputs>(id))
+			if (const auto* outputs = access.TryGet<const CExprOutputs>(id))
 			{
-				for (AST::Id pinId : inputs->pinIds)
-				{
-					Name name      = access.Has<CIdentifier>(pinId)
-					                   ? access.Get<const CIdentifier>(pinId).name
-					                   : Name::None();
-					AST::Id typeId = access.Has<CExprType>(pinId)
-					                   ? access.Get<const CExprType>(pinId).id
-					                   : AST::NoId;
-
-					const Color pinColor = Style::GetTypeColor(ast, typeId);
-					Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-					Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-					Nodes::BeginOutput(i32(pinId), Nodes::PinShape_CircleFilled);
-					UI::Text(name.ToString());
-					Nodes::EndOutput();
-					Nodes::PopStyleColor(2);
-				}
-			}
-			if (const auto* invalidInputs = ast.TryGet<const CExprInvalidInputs>(id))
-			{
-				Style::PushTextColor(Style::invalidColor);
-				Nodes::PushStyleColor(Nodes::ColorVar_Pin, Style::invalidColor);
-				Nodes::PushStyleColor(
-				    Nodes::ColorVar_PinHovered, Style::Hovered(Style::invalidColor));
-				for (AST::Id pinId : invalidInputs->pinIds)
-				{
-					Nodes::BeginOutput(i32(pinId), Nodes::PinShape_CircleFilled);
-					auto* ident = ast.TryGet<const CIdentifier>(pinId);
-					String name = ident ? ident->name.ToString() : "";
-					UI::Text(name);
-					Nodes::EndOutput();
-				}
-				Nodes::PopStyleColor(2);
-				Style::PopTextColor();
+				DrawOutputs(access, *outputs);
 			}
 			UI::EndGroup();
 		}

@@ -136,8 +136,7 @@ namespace Rift
 			static ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable
 			                             | ImGuiTableFlags_Hideable
 			                             | ImGuiTableFlags_SizingStretchProp;
-			ImGui::BeginChild("nodesTableChild",
-			    ImVec2(0.f, Math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
+			ImGui::BeginChild("nodesTableChild", {0.f, UI::GetContentRegionAvail().y - 20.f});
 			if (UI::BeginTable("nodesTable", 4, flags))
 			{
 				UI::TableSetupColumn("", ImGuiTableColumnFlags_IndentDisable
@@ -188,7 +187,18 @@ namespace Rift
 	{
 		static String idText;
 		idText.clear();
-		Strings::FormatTo(idText, "{}", nodeId);
+		if (nodeId == AST::NoId)
+		{
+			idText = "No Id";
+		}
+		else if (auto version = AST::GetVersion(nodeId); version > 0)
+		{
+			Strings::FormatTo(idText, "{} (v{})", AST::GetIndex(nodeId), version);
+		}
+		else
+		{
+			Strings::FormatTo(idText, "{}", AST::GetIndex(nodeId));
+		}
 
 		static String name;
 		name.clear();
