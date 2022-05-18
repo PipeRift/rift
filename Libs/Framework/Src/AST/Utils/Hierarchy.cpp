@@ -26,7 +26,7 @@ namespace Rift::AST::Hierarchy
 	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id node, TSpan<const Id> children)
 	{
 		children.Each([&access, node](Id childId) {
-			if (CChild* cChild = access.TryGet<CChild>(childId))
+			if (auto* cChild = access.TryGet<CChild>(childId))
 			{
 				if (cChild->parent == node
 				    || !EnsureMsg(IsNone(cChild->parent),
@@ -49,7 +49,7 @@ namespace Rift::AST::Hierarchy
 	    TSpan<Id> children, Id prevChild)
 	{
 		children.Each([&access, node](Id child) {
-			if (CChild* cChild = access.TryGet<CChild>(child))
+			if (auto* cChild = access.TryGet<CChild>(child))
 			{
 				if (EnsureMsg(IsNone(cChild->parent),
 				        "A node trying to be linked already has a parent. Consider using "
@@ -341,11 +341,11 @@ namespace Rift::AST::Hierarchy
 		bool fixed = false;
 		for (Id parentId : parents)
 		{
-			if (const CParent* parent = access.TryGet<const CParent>(parentId))
+			if (const auto* parent = access.TryGet<const CParent>(parentId))
 			{
 				for (Id childId : parent->children)
 				{
-					if (CChild* child = access.TryGet<CChild>(childId))
+					if (auto* child = access.TryGet<CChild>(childId))
 					{
 						if (child->parent != parentId)
 						{

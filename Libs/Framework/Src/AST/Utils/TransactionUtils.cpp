@@ -10,13 +10,13 @@
 namespace Rift::AST::Transactions
 {
 	// Transaction being recorded
-	static Transaction activeTransaction = {};
+	static Transaction gActiveTransaction = {};
 
 	ScopedTransaction::ScopedTransaction(const TransactionAccess& access, TSpan<const Id> entityIds)
 	{
 		active = PreChange(access, entityIds);
 	}
-	ScopedTransaction::ScopedTransaction(ScopedTransaction&& other)
+	ScopedTransaction::ScopedTransaction(ScopedTransaction&& other) noexcept
 	{
 		active       = other.active;
 		other.active = false;
@@ -31,13 +31,13 @@ namespace Rift::AST::Transactions
 
 	bool PreChange(const TransactionAccess& access, TSpan<const Id> entityIds)
 	{
-		if (!EnsureMsg(!activeTransaction.active,
+		if (!EnsureMsg(!gActiveTransaction.active,
 		        "Tried to record a transaction while another is already being recorded"))
 		{
 			return false;
 		}
 
-		activeTransaction = Transaction{true};
+		gActiveTransaction = Transaction{true};
 
 		// Mark files dirty
 		TArray<Id> parentIds;
@@ -59,10 +59,10 @@ namespace Rift::AST::Transactions
 
 	void PostChange()
 	{
-		if (EnsureMsg(
-		        activeTransaction.active, "Cant finish a transaction while none is being recorded"))
+		if (EnsureMsg(gActiveTransaction.active,
+		        "Cant finish a transaction while none is being recorded"))
 		{
-			activeTransaction = {};
+			gActiveTransaction = {};
 		}
 	}
 }    // namespace Rift::AST::Transactions

@@ -22,7 +22,7 @@ namespace Rift::UI
 		if (currentFrameRemainingTime <= 0.f)
 		{
 			++currentFrame.x;
-			if (currentFrame.x >= numFrames[currentFrame.y])
+			if (currentFrame.x >= numFrames[i32(currentFrame.y)])
 			{
 				currentFrame.x = 0;
 			}
@@ -120,7 +120,6 @@ namespace Rift::UI
 	ImRect GetWorkRect(v2 desiredSize, bool addhalfItemSpacing, v2 extent)
 	{
 		auto& style  = ImGui::GetStyle();
-		auto* table  = UI::GetCurrentTable();
 		auto* window = UI::GetCurrentWindow();
 		ImVec2 pos   = window->DC.CursorPos;
 		pos.y += window->DC.CurrLineTextBaseOffset;
