@@ -135,7 +135,7 @@ namespace Rift
 		}
 
 		template<typename... C>
-		bool Has(AST::Id id) const
+		bool Has(AST::Id id) const requires(sizeof...(C) >= 1)
 		{
 			return (GetPool<const C>()->Has(id) && ...);
 		}

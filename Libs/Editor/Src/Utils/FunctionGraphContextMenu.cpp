@@ -93,6 +93,12 @@ namespace Rift::Graph
 			}
 			UI::Separator();
 		}
+		TArray<AST::Id> calls = AST::GetIf<CExprCall>(ast, nodeIds);
+		if (!calls.IsEmpty() && UI::MenuItem("Refresh"))
+		{
+			ast.Add<CCallDirty>(calls);
+		}
+
 		if (UI::MenuItem("Delete"))
 		{
 			Types::RemoveNodes(ast, nodeIds);

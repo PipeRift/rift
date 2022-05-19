@@ -58,7 +58,6 @@ namespace Rift::FunctionsSystem
 	void PropagateDirtyIntoCalls(AST::Tree& ast)
 	{
 		TAccess<CChanged, CExprCallId, TWrite<CCallDirty>> access{ast};
-		auto changed = ast.Filter<CChanged>();
 		if (access.Size<CChanged>() <= 0)
 		{
 			return;
@@ -69,7 +68,7 @@ namespace Rift::FunctionsSystem
 		for (AST::Id id : callExprIds)
 		{
 			const AST::Id functionId = access.Get<const CExprCallId>(id).functionId;
-			if (!IsNone(functionId) && access.Has(functionId))
+			if (!IsNone(functionId) && access.Has<CChanged>(functionId))
 			{
 				access.Add<CCallDirty>(id);
 			}
@@ -117,42 +116,42 @@ namespace Rift::FunctionsSystem
 					continue;
 				}
 
-				const auto* pinType     = access.TryGet<const CExprType>(pinId);
-				const AST::Id pinTypeId = pinType ? pinType->id : AST::NoId;
-
 				if (i >= callOutputs.pinIds.Size())
 				{
 					AST::Id id = ast.Create();
 					access.Add<CIdentifier>(id, *name);
-					access.Add<CExprType>(id, {pinTypeId});
 					AST::Hierarchy::AddChildren(ast, call.id, id);
 					callOutputs.Add(id);
-					continue;
+				}
+				else
+				{
+					// Search matching pin to 'pinId' from i to end
+					i32 callPinIdx = i;
+					while (callPinIdx < callOutputs.pinIds.Size())
+					{
+						const AST::Id pinId     = callOutputs.pinIds[callPinIdx];
+						const auto* callPinName = access.TryGet<const CIdentifier>(pinId);
+						if (callPinName && *callPinName == *name)
+							break;    // Found existing pin
+						++callPinIdx;
+					}
+					if (callPinIdx == callOutputs.pinIds.Size())    // Pin not found, insert it
+					{
+						AST::Id id = ast.Create();
+						access.Add<CIdentifier>(id, *name);
+						AST::Hierarchy::AddChildren(ast, call.id, id);
+						callOutputs.Insert(i, id);
+					}
+					else if (callPinIdx > i)
+					{
+						// Correct pin is after where it should, we swap it to ensure correct order
+						callOutputs.Swap(callPinIdx, i);
+					}
 				}
 
-				// Search matching pin to 'pinId' from i to end
-				i32 callPinIdx = i;
-				while (callPinIdx < callOutputs.pinIds.Size())
-				{
-					const AST::Id pinId     = callOutputs.pinIds[callPinIdx];
-					const auto* callPinName = access.TryGet<const CIdentifier>(pinId);
-					if (callPinName && *callPinName == *name)
-						break;    // Found existing pin
-					++callPinIdx;
-				}
-				if (callPinIdx == callOutputs.pinIds.Size())    // Pin not found, insert it
-				{
-					AST::Id id = ast.Create();
-					access.Add<CIdentifier>(id, *name);
-					access.Add<CExprType>(id, {pinTypeId});
-					AST::Hierarchy::AddChildren(ast, call.id, id);
-					callOutputs.Insert(i, id);
-				}
-				else if (callPinIdx > i)
-				{
-					// Correct pin is after where it should, we swap it to ensure correct order
-					callOutputs.Swap(callPinIdx, i);
-				}
+				const auto* pinType     = access.TryGet<const CExprType>(pinId);
+				const AST::Id pinTypeId = pinType ? pinType->id : AST::NoId;
+				access.Add<CExprType>(callOutputs.pinIds[i], {pinTypeId});
 			}
 
 			// Mark as invalid all after N function params, and valid those before
@@ -182,42 +181,43 @@ namespace Rift::FunctionsSystem
 					continue;
 				}
 
-				const auto* pinType     = access.TryGet<const CExprType>(pinId);
-				const AST::Id pinTypeId = pinType ? pinType->id : AST::NoId;
 
 				if (i >= callInputs.pinIds.Size())
 				{
 					AST::Id id = ast.Create();
 					access.Add<CIdentifier>(id, *name);
-					access.Add<CExprType>(id, {pinTypeId});
 					AST::Hierarchy::AddChildren(ast, call.id, id);
 					callInputs.Add(id);
-					continue;
+				}
+				else
+				{
+					// Search matching pin to 'pinId' from i to end
+					i32 callPinIdx = i;
+					while (callPinIdx < callInputs.pinIds.Size())
+					{
+						const AST::Id pinId     = callInputs.pinIds[callPinIdx];
+						const auto* callPinName = access.TryGet<const CIdentifier>(pinId);
+						if (callPinName && *callPinName == *name)
+							break;    // Found existing pin
+						++callPinIdx;
+					}
+					if (callPinIdx == callInputs.pinIds.Size())    // Pin not found, insert it
+					{
+						AST::Id id = ast.Create();
+						access.Add<CIdentifier>(id, *name);
+						AST::Hierarchy::AddChildren(ast, call.id, id);
+						callInputs.Insert(i, id);
+					}
+					else if (callPinIdx > i)
+					{
+						// Correct pin is after where it should, we swap it to ensure correct order
+						callInputs.Swap(callPinIdx, i);
+					}
 				}
 
-				// Search matching pin to 'pinId' from i to end
-				i32 callPinIdx = i;
-				while (callPinIdx < callInputs.pinIds.Size())
-				{
-					const AST::Id pinId     = callInputs.pinIds[callPinIdx];
-					const auto* callPinName = access.TryGet<const CIdentifier>(pinId);
-					if (callPinName && *callPinName == *name)
-						break;    // Found existing pin
-					++callPinIdx;
-				}
-				if (callPinIdx == callInputs.pinIds.Size())    // Pin not found, insert it
-				{
-					AST::Id id = ast.Create();
-					access.Add<CIdentifier>(id, *name);
-					access.Add<CExprType>(id, {pinTypeId});
-					AST::Hierarchy::AddChildren(ast, call.id, id);
-					callInputs.Insert(i, id);
-				}
-				else if (callPinIdx > i)
-				{
-					// Correct pin is after where it should, we swap it to ensure correct order
-					callInputs.Swap(callPinIdx, i);
-				}
+				const auto* pinType     = access.TryGet<const CExprType>(pinId);
+				const AST::Id pinTypeId = pinType ? pinType->id : AST::NoId;
+				access.Add<CExprType>(callInputs.pinIds[i], {pinTypeId});
 			}
 
 			// Mark as invalid all after N function params, and valid those before
