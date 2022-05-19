@@ -4,13 +4,11 @@
 
 #include "AST/Components/CDeclFunction.h"
 #include "AST/Components/CExprCall.h"
-#include "AST/Components/CExprInputs.h"
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CExprType.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
-#include "AST/Components/Tags/CInvalid.h"
 #include "AST/Filtering.h"
 #include "AST/Utils/Hierarchy.h"
 #include "AST/Utils/TypeUtils.h"
@@ -181,7 +179,6 @@ namespace Rift::FunctionsSystem
 					continue;
 				}
 
-
 				if (i >= callInputs.pinIds.Size())
 				{
 					AST::Id id = ast.Create();
@@ -233,32 +230,20 @@ namespace Rift::FunctionsSystem
 			}
 		}
 
-		// RemoveInvalidDisconnectedArgs(ast);
+		RemoveInvalidDisconnectedArgs(ast);
 	}
 
-	/*void RemoveInvalidDisconnectedArgs(AST::Tree& ast)
+	void RemoveInvalidDisconnectedArgs(TAccessRef<CInvalid, CExprInputs> access)
 	{
-	    auto invalidInputs  = ast.Filter<CInvalid, CExprInput>();
-	    auto invalidOutputs = ast.Filter<CInvalid, CExprOutputs>();
-	    TArray<AST::Id> disconnectedPins;
-	    for (AST::Id id : invalidInputs)
-	    {
-	        auto& input = invalidInputs.Get<CExprInput>(id);
-	        if (IsNone(input.linkOutputPin))
-	        {
-	            disconnectedPins.Add(id);
-	        }
-	    }
-	    for (AST::Id id : invalidOutputs)
-	    {
-	        auto& output = invalidOutputs.Get<CExprOutputs>(id);
-	        if (output.linkInputPins.IsEmpty())
-	        {
-	            disconnectedPins.Add(id);
-	        }
-	    }
-	    AST::Hierarchy::Remove(ast, disconnectedPins);
-	}*/
+		if (access.Size<CInvalid>() <= 0)
+		{
+			// No invalids!
+			return;
+		}
+
+		// for (AST::Id id : AST::ListAll<CExprInputs>(access)) {}
+		// AST::Hierarchy::Remove(ast, disconnectedPins);
+	}
 
 	void ClearAddedTags(AST::Tree& ast)
 	{

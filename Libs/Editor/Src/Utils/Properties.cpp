@@ -63,7 +63,12 @@ namespace Rift
 			{
 				UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 				UI::SetNextItemWidth(-FLT_MIN);
-				Editor::TypeCombo(ast, "##type", type->id);
+				AST::Id selectedTypeId = type->id;
+				if (Editor::TypeCombo(ast, "##type", selectedTypeId))
+				{
+					ScopedChange(ast, fieldId);
+					type->id = selectedTypeId;
+				}
 				UI::PopStyleVar();
 			}
 
