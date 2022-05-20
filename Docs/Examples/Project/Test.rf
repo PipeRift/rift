@@ -56,8 +56,8 @@
             "2": {
                 "linkedOutputs": [
                     {
-                        "nodeId": -1,
-                        "pinId": -1
+                        "nodeId": 1,
+                        "pinId": 4
                     },
                     {
                         "nodeId": -1,

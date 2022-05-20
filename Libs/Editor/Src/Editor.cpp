@@ -87,7 +87,8 @@ namespace Rift
 
 			EditorSystem::Draw(ast);
 			FunctionsSystem::PropagateDirtyIntoCalls(ast);
-			FunctionsSystem::SyncCallArguments(ast);
+			FunctionsSystem::PushInvalidPinsBack(ast);
+			FunctionsSystem::SyncCallPinsFromFunction(ast);
 		}
 		else
 		{

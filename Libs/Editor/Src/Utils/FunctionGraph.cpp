@@ -81,6 +81,11 @@ namespace Rift::Graph
 	{
 		for (AST::Id pinId : inputs.pinIds)
 		{
+			if (!access.IsValid(pinId))
+			{
+				continue;
+			}
+
 			AST::Id typeId       = AST::NoId;
 			Color pinColor       = Style::GetTypeColor<void>();
 			const bool isInvalid = access.Has<CInvalid>(pinId);
@@ -115,6 +120,11 @@ namespace Rift::Graph
 	{
 		for (AST::Id pinId : outputs.pinIds)
 		{
+			if (!access.IsValid(pinId))
+			{
+				continue;
+			}
+
 			AST::Id typeId       = AST::NoId;
 			Color pinColor       = Style::GetTypeColor<void>();
 			const bool isInvalid = access.Has<CInvalid>(pinId);
@@ -790,8 +800,8 @@ namespace Rift::Graph
 		Nodes::PopStyleVar();
 	}
 
-	void DrawExpressionLinks(
-	    TAccessRef<CParent, CExprInputs, CExprType>& access, const TArray<AST::Id>& children)
+	void DrawExpressionLinks(TAccessRef<CParent, CExprInputs, CExprType, CInvalid>& access,
+	    const TArray<AST::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 1.5f);
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
@@ -809,26 +819,25 @@ namespace Rift::Graph
 			{
 				AST::Id inputId = inputs.pinIds[i];
 				OutputId output = inputs.linkedOutputs[i];
-				if (output.IsNone())
+				if (!access.IsValid(inputId) || !access.IsValid(output.pinId))
 				{
 					continue;
 				}
 
-				AST::Id typeId = AST::NoId;
-
-				if (const auto* type = access.TryGet<const CExprType>(output.pinId))
+				Color color;
+				if (access.Has<CInvalid>(inputId) || access.Has<CInvalid>(output.pinId))
 				{
-					typeId = type->id;
+					color = Style::invalidColor;
 				}
-				if (IsNone(typeId))
+				else if (const auto* type = access.TryGet<const CExprType>(output.pinId))
 				{
-					if (const auto* type = access.TryGet<const CExprType>(inputs.pinIds[i]))
-					{
-						typeId = type->id;
-					}
+					color = Style::GetTypeColor(access.GetAST(), type->id);
+				}
+				else if (const auto* type = access.TryGet<const CExprType>(inputId))
+				{
+					color = Style::GetTypeColor(access.GetAST(), type->id);
 				}
 
-				const Color color = Style::GetTypeColor(access.GetAST(), typeId);
 				Nodes::PushStyleColor(Nodes::ColorVar_Link, color);
 				Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(color));
 

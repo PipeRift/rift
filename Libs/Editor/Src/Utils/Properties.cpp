@@ -393,12 +393,17 @@ namespace Rift
 		if (!IsNone(editor.pendingDeletePropertyId))
 		{
 			ScopedChange(ast, editor.pendingDeletePropertyId);
-			AST::Expressions::RemoveInputPin(
+			bool removedPin = AST::Expressions::RemoveInputPin(
 			    ast, AST::Expressions::InputFromPinId(ast, editor.pendingDeletePropertyId));
-			AST::Expressions::RemoveOutputPin(
+			removedPin |= AST::Expressions::RemoveOutputPin(
 			    ast, AST::Expressions::OutputFromPinId(ast, editor.pendingDeletePropertyId));
-			AST::Hierarchy::RemoveDeep(ast, editor.pendingDeletePropertyId);
-			editor.pendingDeletePropertyId = AST::NoId;
+
+			// If pin has not been marked for removal, destroy the entity
+			if (!removedPin)
+			{
+				AST::Hierarchy::RemoveDeep(ast, editor.pendingDeletePropertyId);
+				editor.pendingDeletePropertyId = AST::NoId;
+			}
 		}
 	}
 }    // namespace Rift

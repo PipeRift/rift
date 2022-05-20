@@ -4,6 +4,7 @@
 
 #include "AST/Components/CDeclFunction.h"
 #include "AST/Components/CExprCall.h"
+#include "AST/Components/CExprInputs.h"
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CExprType.h"
 #include "AST/Components/CIdentifier.h"
@@ -73,13 +74,54 @@ namespace Rift::FunctionsSystem
 		}
 	}
 
-	void SyncCallArguments(AST::Tree& ast)
+	void PushInvalidPinsBack(TAccessRef<TWrite<CExprInputs>, TWrite<CExprOutputs>, CInvalid> access)
 	{
-		// auto functionParams = ast.Filter<CExprType, CExprInput, CExprOutputs>();
-		// auto identifiers    = ast.Filter<CIdentifier>();
-		// auto exprInputs     = ast.Filter<CExprInput>();
-		// auto exprOutputs    = ast.Filter<CExprOutputs>();
+		for (AST::Id inputsId : AST::ListAll<CExprInputs>(access))
+		{
+			auto& inputs  = access.Get<CExprInputs>(inputsId);
+			i32 validSize = inputs.pinIds.Size();
+			for (i32 i = 0; i < validSize;)
+			{
+				AST::Id id = inputs.pinIds[i];
+				if (access.Has<CInvalid>(id))
+				{
+					OutputId output = inputs.linkedOutputs[i];
+					inputs.pinIds.RemoveAt(i, false);
+					inputs.pinIds.Add(id);
+					inputs.linkedOutputs.RemoveAt(i, false);
+					inputs.linkedOutputs.Add(output);
+					--validSize;
+				}
+				else
+				{
+					++i;
+				}
+			}
+		}
 
+		for (AST::Id outputsId : AST::ListAll<CExprOutputs>(access))
+		{
+			auto& outputs = access.Get<CExprOutputs>(outputsId);
+			i32 validSize = outputs.pinIds.Size();
+			for (i32 i = 0; i < validSize;)
+			{
+				AST::Id id = outputs.pinIds[i];
+				if (access.Has<CInvalid>(id))
+				{
+					outputs.pinIds.RemoveAt(i, false);
+					outputs.pinIds.Add(id);
+					--validSize;
+				}
+				else
+				{
+					++i;
+				}
+			}
+		}
+	}
+
+	void SyncCallPinsFromFunction(AST::Tree& ast)
+	{
 		TArray<CallToSync> calls;
 		TAccess<CCallDirty, CExprCallId, TWrite<CExprInputs>, TWrite<CExprOutputs>,
 		    TWrite<CInvalid>, TWrite<CExprType>, TWrite<CIdentifier>>
@@ -104,11 +146,20 @@ namespace Rift::FunctionsSystem
 		for (auto& call : calls)
 		{
 			auto& callOutputs = access.GetOrAdd<CExprOutputs>(call.id);
+
+
 			// For each function pin
-			for (i32 i = 0; i < call.functionInputs->pinIds.Size(); ++i)
+			i32 validSize = call.functionInputs->pinIds.Size();
+			for (i32 i = 0; i < validSize; ++i)
 			{
 				const AST::Id pinId = call.functionInputs->pinIds[i];
-				const auto* name    = access.TryGet<const CIdentifier>(pinId);
+				if (access.Has<CInvalid>(pinId))
+				{
+					validSize = i;
+					break;
+				}
+
+				const auto* name = access.TryGet<const CIdentifier>(pinId);
 				if (!name)
 				{
 					continue;
@@ -127,8 +178,8 @@ namespace Rift::FunctionsSystem
 					i32 callPinIdx = i;
 					while (callPinIdx < callOutputs.pinIds.Size())
 					{
-						const AST::Id pinId     = callOutputs.pinIds[callPinIdx];
-						const auto* callPinName = access.TryGet<const CIdentifier>(pinId);
+						const AST::Id outputPinId = callOutputs.pinIds[callPinIdx];
+						const auto* callPinName   = access.TryGet<const CIdentifier>(outputPinId);
 						if (callPinName && *callPinName == *name)
 							break;    // Found existing pin
 						++callPinIdx;
@@ -153,12 +204,12 @@ namespace Rift::FunctionsSystem
 			}
 
 			// Mark as invalid all after N function params, and valid those before
-			const i32 firstInvalid = call.functionInputs->pinIds.Size();
+			const i32 firstInvalid = validSize;
 			if (firstInvalid > 0)
 			{
 				access.Remove<CInvalid>({callOutputs.pinIds.Data(), firstInvalid});
 			}
-			const i32 count = callOutputs.pinIds.Size() - call.functionInputs->pinIds.Size();
+			const i32 count = callOutputs.pinIds.Size() - validSize;
 			if (count > 0)
 			{
 				access.Add<CInvalid>({callOutputs.pinIds.Data() + firstInvalid, count});
@@ -170,10 +221,17 @@ namespace Rift::FunctionsSystem
 		{
 			auto& callInputs = access.GetOrAdd<CExprInputs>(call.id);
 			// For each function pin
-			for (i32 i = 0; i < call.functionOutputs->pinIds.Size(); ++i)
+			i32 validSize = call.functionOutputs->pinIds.Size();
+			for (i32 i = 0; i < validSize; ++i)
 			{
 				const AST::Id pinId = call.functionOutputs->pinIds[i];
-				const auto* name    = access.TryGet<const CIdentifier>(pinId);
+				if (access.Has<CInvalid>(pinId))
+				{
+					validSize = i;
+					break;
+				}
+
+				const auto* name = access.TryGet<const CIdentifier>(pinId);
 				if (!name)
 				{
 					continue;
@@ -218,12 +276,12 @@ namespace Rift::FunctionsSystem
 			}
 
 			// Mark as invalid all after N function params, and valid those before
-			const i32 firstInvalid = call.functionOutputs->pinIds.Size();
+			const i32 firstInvalid = validSize;
 			if (firstInvalid > 0)
 			{
 				access.Remove<CInvalid>({callInputs.pinIds.Data(), firstInvalid});
 			}
-			const i32 count = callInputs.pinIds.Size() - call.functionOutputs->pinIds.Size();
+			const i32 count = callInputs.pinIds.Size() - validSize;
 			if (count > 0)
 			{
 				access.Add<CInvalid>({callInputs.pinIds.Data() + firstInvalid, count});
@@ -233,7 +291,7 @@ namespace Rift::FunctionsSystem
 		RemoveInvalidDisconnectedArgs(ast);
 	}
 
-	void RemoveInvalidDisconnectedArgs(TAccessRef<CInvalid, CExprInputs> access)
+	void RemoveInvalidDisconnectedArgs(InvalidDisconnectedPinAccess access)
 	{
 		if (access.Size<CInvalid>() <= 0)
 		{
@@ -241,8 +299,41 @@ namespace Rift::FunctionsSystem
 			return;
 		}
 
-		// for (AST::Id id : AST::ListAll<CExprInputs>(access)) {}
-		// AST::Hierarchy::Remove(ast, disconnectedPins);
+		for (AST::Id id : AST::ListAll<CExprInputs>(access))
+		{
+			const auto& inputs = access.Get<const CExprInputs>(id);
+			for (i32 i = 0; i < inputs.pinIds.Size(); ++i)
+			{
+				AST::Id pinId          = inputs.pinIds[i];
+				const OutputId& output = inputs.linkedOutputs[i];
+				if (!output.IsNone())    // Is connected
+				{
+					if (access.Has<CInvalid>(pinId))
+					{
+						access.Add<CTmpInvalidKeep>(pinId);
+					}
+					if (access.Has<CInvalid>(output.pinId))
+					{
+						access.Add<CTmpInvalidKeep>(output.pinId);
+					}
+				}
+				else
+				{
+					// if (access.Has<CInvalid>(pinId))
+					//{
+					//	// Remove invalid disconnected input
+					//	inputs.pinIds.RemoveAt(i);
+					//	inputs.linkedOutputs.RemoveAt(i);
+					// }
+				}
+			}
+		}
+
+		TArray<AST::Id> pinsToRemove = AST::ListAll<CInvalid>(access);
+		AST::RemoveIf<CTmpInvalidKeep>(access, pinsToRemove);
+		AST::Hierarchy::Remove(access, pinsToRemove);
+
+		access.GetPool<CTmpInvalidKeep>()->Reset();
 	}
 
 	void ClearAddedTags(AST::Tree& ast)

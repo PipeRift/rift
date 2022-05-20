@@ -3,6 +3,7 @@
 
 #include "AST/Components/CExprInputs.h"
 #include "AST/Components/CExprOutputs.h"
+#include "AST/Components/Tags/CInvalid.h"
 #include "AST/Filtering.h"
 #include "AST/Tree.h"
 #include "AST/Types.h"
@@ -29,8 +30,10 @@ namespace Rift::AST::Expressions
 	 */
 	void DisconnectAllDeep(Tree& ast, TSpan<const AST::Id> ids, bool ignoreRoot = false);
 
-	void RemoveInputPin(TAccessRef<TWrite<CExprInputs>, CChild> access, InputId id);
-	void RemoveOutputPin(TAccessRef<TWrite<CExprOutputs>, CChild> access, OutputId id);
+	bool RemoveInputPin(
+	    TAccessRef<TWrite<CExprInputs>, TWrite<CInvalid>, CChild> access, InputId id);
+	bool RemoveOutputPin(
+	    TAccessRef<TWrite<CExprOutputs>, TWrite<CInvalid>, CChild> access, OutputId id);
 
 	InputId InputFromPinId(TAccessRef<CExprInputs, CChild> access, AST::Id pinId);
 	OutputId OutputFromPinId(TAccessRef<CExprOutputs, CChild> access, AST::Id pinId);
