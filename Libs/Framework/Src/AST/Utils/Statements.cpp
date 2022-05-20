@@ -73,7 +73,7 @@ namespace Rift::AST::Statements
 			// Connect if single output
 			Id& lastInputNode = outputComp->linkInputNode;
 			// Disconnect previous input connected to output if any
-			if (lastInputNode != AST::NoId)
+			if (lastInputNode != AST::NoId && ast.Has<CStmtInput>(lastInputNode))
 			{
 				ast.Get<CStmtInput>(lastInputNode).linkOutputNode = AST::NoId;
 			}

@@ -824,7 +824,7 @@ namespace Rift::Graph
 					continue;
 				}
 
-				Color color;
+				Color color = Style::GetTypeColor<void>();
 				if (access.Has<CInvalid>(inputId) || access.Has<CInvalid>(output.pinId))
 				{
 					color = Style::invalidColor;
