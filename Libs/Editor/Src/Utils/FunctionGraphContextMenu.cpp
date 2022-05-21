@@ -2,11 +2,14 @@
 
 #include "Utils/FunctionGraphContextMenu.h"
 
+#include "Utils/EditorStyle.h"
 #include "Utils/FunctionGraph.h"
 #include "Utils/TypeUtils.h"
+#include "Utils/Widgets.h"
 
 #include <AST/Components/CDeclFunction.h>
 #include <AST/Components/CDeclVariable.h>
+#include <AST/Components/CExprType.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CType.h>
 #include <AST/Components/Views/CNodePosition.h>
@@ -14,6 +17,9 @@
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/Statements.h>
+#include <AST/Utils/TransactionUtils.h>
+#include <IconsFontAwesome5.h>
+#include <UI/UI.h>
 
 
 namespace Rift::Graph
@@ -23,10 +29,10 @@ namespace Rift::Graph
 		if (!IsNone(id))
 		{
 			ast.Add<CNodePosition>(id, position);
-
 			// TODO: Improve nodes input to handle this correctly
 			TPair<Nodes::Id, Nodes::PinType> linkPin = Nodes::GetDraggedOriginPin();
-			const AST::Id linkPinId                  = AST::Id(linkPin.first);
+
+			const auto linkPinId = AST::Id(linkPin.first);
 			switch (linkPin.second)
 			{
 				case Nodes::PinType::Output:
@@ -72,6 +78,98 @@ namespace Rift::Graph
 		return false;
 	}
 
+	void EditFunctionPin(AST::Tree& ast, AST::Id typeId, AST::Id id)
+	{
+		auto* identifier = ast.TryGet<CIdentifier>(id);
+		auto* type       = ast.TryGet<CExprType>(id);
+		if (!identifier || !type)
+		{
+			return;
+		}
+
+		const Color color = Style::GetTypeColor(ast, type->id);
+
+		UI::PushID(AST::GetIndex(id));
+		UI::TableNextRow();
+		UI::TableSetBgColor(ImGuiTableBgTarget_RowBg0, color.DWColor());
+		UI::TableNextColumn();    // Name
+		String name = identifier->name.ToString();
+		if (UI::MutableText("##Name", name,
+		        ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
+		{
+			ScopedChange(ast, id);
+			identifier->name = Name{name};
+		}
+		UI::TableNextColumn();    // Type
+		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
+		UI::SetNextItemWidth(-FLT_MIN);
+		AST::Id selectedTypeId = type->id;
+		if (Editor::TypeCombo(ast, "##Type", selectedTypeId))
+		{
+			ScopedChange(ast, id);
+			type->id = selectedTypeId;
+		}
+		UI::PopStyleVar();
+		UI::PopID();
+	}
+
+	void EditFunctionSignature(AST::Tree& ast, AST::Id typeId, AST::Id id)
+	{
+		UI::Text("Inputs");
+		if (UI::BeginTable("##fields", 2, ImGuiTableFlags_SizingFixedFit, {200.f, 0.f}))
+		{
+			UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 0.9f);
+			UI::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch, 1.f);
+			if (const auto* exprOutputs = ast.TryGet<const CExprOutputs>(id))
+			{
+				for (AST::Id pinId : exprOutputs->pinIds)
+				{
+					EditFunctionPin(ast, id, pinId);
+				}
+			}
+			UI::EndTable();
+		}
+		Style::PushStyleCompact();
+		UI::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+		UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
+		if (UI::Selectable(ICON_FA_PLUS "##AddInput"))
+		{
+			ScopedChange(ast, id);
+			Types::AddCallInput(ast, id);
+		}
+		UI::HelpTooltip("Adds a new input parameter to a function");
+		UI::PopStyleVar();
+		Style::PopStyleCompact();
+		UI::Spacing();
+
+		UI::Text("Outputs");
+		if (UI::BeginTable("##fields", 2, ImGuiTableFlags_SizingFixedFit, {200.f, 0.f}))
+		{
+			UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 0.9f);
+			UI::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch, 1.f);
+			if (const auto* exprInputs = ast.TryGet<const CExprInputs>(id))
+			{
+				for (AST::Id pinId : exprInputs->pinIds)
+				{
+					EditFunctionPin(ast, id, pinId);
+				}
+			}
+			UI::EndTable();
+		}
+		Style::PushStyleCompact();
+		UI::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+		UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
+		if (UI::Selectable(ICON_FA_PLUS "##AddOutput"))
+		{
+			ScopedChange(ast, id);
+			Types::AddCallOutput(ast, id);
+		}
+		UI::HelpTooltip("Adds a new output parameter to a function");
+		UI::PopStyleVar();
+		Style::PopStyleCompact();
+		UI::Spacing();
+	}
+
 	void DrawNodeContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> nodeIds)
 	{
 		Check(!nodeIds.IsEmpty());
@@ -80,6 +178,9 @@ namespace Rift::Graph
 
 		if (nodeIds.Size() == 1 && ast.Has<CDeclFunction>(firstNodeId))
 		{
+			EditFunctionSignature(ast, typeId, nodeIds[0]);
+			UI::Separator();
+
 			if (UI::MenuItem("Add return node"))
 			{
 				AST::Id newId = Types::AddReturn({ast, typeId});
@@ -91,7 +192,6 @@ namespace Rift::Graph
 					AST::Statements::TryConnect(ast, firstNodeId, newId);
 				}
 			}
-			UI::Separator();
 		}
 		TArray<AST::Id> calls = AST::GetIf<CExprCall>(ast, nodeIds);
 		if (!calls.IsEmpty() && UI::MenuItem("Refresh"))
