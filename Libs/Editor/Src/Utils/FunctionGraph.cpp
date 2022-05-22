@@ -929,7 +929,7 @@ namespace Rift::Graph
 			if (wantsToOpenContextMenu)
 			{
 				contextNodeId = Nodes::GetNodeHovered();
-				ImGui::OpenPopup("GraphContextMenu", ImGuiPopupFlags_AnyPopup);
+				ImGui::OpenPopup("ContextMenu", ImGuiPopupFlags_AnyPopup);
 			}
 			DrawContextMenu(ast, typeId, contextNodeId);
 			UI::End();

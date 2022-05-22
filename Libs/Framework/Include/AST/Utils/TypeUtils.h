@@ -44,8 +44,8 @@ namespace Rift::Types
 	AST::Id AddFunction(AST::TypeRef type, Name name);
 
 	AST::Id AddCall(AST::TypeRef type, AST::Id targetFunctionId);
-	AST::Id AddCallInput(AST::Tree& ast, AST::Id functionId, Name name = Name::None());
-	AST::Id AddCallOutput(AST::Tree& ast, AST::Id functionId, Name name = Name::None());
+	AST::Id AddFunctionInput(AST::Tree& ast, AST::Id functionId, Name name = Name::None());
+	AST::Id AddFunctionOutput(AST::Tree& ast, AST::Id functionId, Name name = Name::None());
 	void GetCallArgs(AST::Tree& ast, TSpan<AST::Id> callIds, TArray<AST::Id>& inputArgIds,
 	    TArray<AST::Id>& outputArgIds, TArray<AST::Id>& otherIds);
 

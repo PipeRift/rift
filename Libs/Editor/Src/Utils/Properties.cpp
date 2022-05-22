@@ -5,9 +5,12 @@
 #include "AST/Types.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
+#include "imgui.h"
 #include "UI/Style.h"
 #include "UI/Widgets.h"
 #include "Utils/EditorStyle.h"
+#include "Utils/FunctionGraphContextMenu.h"
+#include "Utils/Nodes.h"
 #include "Utils/Widgets.h"
 
 #include <AST/Filtering.h>
@@ -24,84 +27,6 @@ namespace Rift
 {
 	using namespace EnumOperators;
 
-
-	void DrawField(AST::Tree& ast, CTypeEditor& editor, AST::Id functionId, AST::Id fieldId,
-	    DrawFieldFlags flags)
-	{
-		CIdentifier* identifier = ast.TryGet<CIdentifier>(fieldId);
-		auto* type              = ast.TryGet<CExprType>(fieldId);
-		if (!identifier || !type)
-		{
-			return;
-		}
-
-		UI::BeginGroup();
-		UI::PushID(AST::GetIndex(fieldId));
-		{
-			const Color color                  = Style::GetTypeColor(ast, type->id);
-			static constexpr float frameHeight = 20.f;
-			{    // Custom Selectable
-				Color bgColor = color;
-				ImRect bb     = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
-				UI::RenderFrame(bb.Min, bb.Max, bgColor.DWColor(), false, 2.f);
-			}
-
-			UI::SetNextItemWidth(UI::GetContentRegionAvailWidth() * 0.5f);
-			static String nameId;
-			nameId.clear();
-			Strings::FormatTo(nameId, " ##name_{}", fieldId);
-			String name = identifier->name.ToString();
-			if (UI::MutableText(nameId, name,
-			        ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
-			{
-				ScopedChange(ast, functionId);
-				identifier->name = Name{name};
-			}
-
-
-			UI::SameLine();
-			{
-				UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
-				UI::SetNextItemWidth(-FLT_MIN);
-				AST::Id selectedTypeId = type->id;
-				if (Editor::TypeCombo(ast, "##type", selectedTypeId))
-				{
-					ScopedChange(ast, fieldId);
-					type->id = selectedTypeId;
-				}
-				UI::PopStyleVar();
-			}
-
-			UI::SameLine();
-			if (!HasFlag(flags, DrawFieldFlags::HideValue))
-			{
-				UI::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{4.f, 4.f});
-				UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
-				static float value = 2.f;
-				UI::SetNextItemWidth(-FLT_MIN);
-				UI::InputFloat("##defaultValue", &value, 0.f, 0.f, "%.2f");
-				UI::PopStyleVar(2);
-			}
-		}
-		UI::PopID();
-		UI::EndGroup();
-
-		if (UI::IsItemHovered() && UI::IsKeyReleased(GLFW_KEY_DELETE))
-		{
-			editor.pendingDeletePropertyId = fieldId;
-		}
-		static String contextName;
-		contextName.clear();
-		Strings::FormatTo(contextName, "##FieldContextMenu_{}", fieldId);
-		if (UI::BeginPopupContextItem(contextName.c_str()))
-		{
-			if (UI::MenuItem("Delete"))
-			{
-				editor.pendingDeletePropertyId = fieldId;
-			}
-			UI::EndPopup();
-		}
-	}
 
 	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, AST::Id variableId)
 	{
@@ -199,9 +124,9 @@ namespace Rift
 		UI::PopID();
 	}
 
-	void DrawFunction(AST::Tree& ast, CTypeEditor& editor, AST::Id functionId)
+	void DrawFunction(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId, AST::Id id)
 	{
-		CIdentifier* identifier = ast.TryGet<CIdentifier>(functionId);
+		CIdentifier* identifier = ast.TryGet<CIdentifier>(id);
 		if (!identifier)
 		{
 			return;
@@ -213,87 +138,20 @@ namespace Rift
 		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
 		static String headerId;
 		headerId.clear();
-		Strings::FormatTo(headerId, " ###header_{}", functionId);
-		bool visible = true;
-		bool open    = UI::CollapsingHeader(headerId.c_str(), &visible);
+		Strings::FormatTo(headerId, "{}###{}", functionName, id);
+		UI::CollapsingHeader(headerId.c_str(), ImGuiTreeNodeFlags_Leaf);
 		UI::PopStyleVar();
 		Style::PopHeaderColor();
 
-		if (!visible || (UI::IsItemHovered() && UI::IsKeyReleased(GLFW_KEY_DELETE)))
-		{
-			editor.pendingDeletePropertyId = functionId;
-		}
 		if (ImGui::BeginPopupContextItem())
 		{
-			if (ImGui::MenuItem("Delete"))
+			if (UI::MenuItem("Show in Graph"))
 			{
-				editor.pendingDeletePropertyId = functionId;
+				Nodes::MoveToNode(id, v2{150.f, 150.f});
 			}
+			UI::Separator();
+			Graph::DrawNodesContextMenu(ast, typeId, id);
 			ImGui::EndPopup();
-		}
-
-		UI::SameLine();
-		// Expand text input to the right excluding the close button
-		auto* g = UI::GetCurrentContext();
-		UI::SetNextItemWidth(
-		    UI::GetContentRegionAvailWidth() - (g->Style.FramePadding.x * 2.0f + g->FontSize));
-		static String inputId;
-		inputId.clear();
-		Strings::FormatTo(inputId, "##name_{}", functionId);
-		if (UI::MutableText(inputId, functionName,
-		        ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
-		{
-			identifier->name = Name{functionName};
-		}
-
-		if (open)
-		{
-			static constexpr float extraIndent = 10.f;
-			UI::Indent(extraIndent);
-
-			if (UI::BeginTable("##fieldsTable", 2, ImGuiTableFlags_SizingFixedFit))
-			{
-				UI::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.5f);
-				UI::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.5f);
-
-				UI::TableNextRow();
-				UI::TableNextColumn();
-				if (const auto* exprOutputs = ast.TryGet<const CExprOutputs>(functionId))
-				{
-					for (AST::Id childId : exprOutputs->pinIds)
-					{
-						DrawField(ast, editor, functionId, childId);
-					}
-				}
-				Style::PushStyleCompact();
-				if (UI::Button(ICON_FA_PLUS "##FunctionInput", ImVec2(-FLT_MIN, 0.0f)))
-				{
-					ScopedChange(ast, functionId);
-					Types::AddCallInput(ast, functionId);
-				}
-				UI::HelpTooltip("Adds a new input parameter to a function");
-				Style::PopStyleCompact();
-
-				UI::TableNextColumn();
-				if (const auto* exprInputs = ast.TryGet<const CExprInputs>(functionId))
-				{
-					for (AST::Id pinId : exprInputs->pinIds)
-					{
-						DrawField(ast, editor, functionId, pinId);
-					}
-				}
-				Style::PushStyleCompact();
-				if (UI::Button(ICON_FA_PLUS "##FunctionOutput", ImVec2(-FLT_MIN, 0.0f)))
-				{
-					ScopedChange(ast, functionId);
-					Types::AddCallOutput(ast, functionId);
-				}
-				UI::HelpTooltip("Adds a new output parameter to a function");
-				Style::PopStyleCompact();
-				UI::EndTable();
-			}
-
-			UI::Unindent(extraIndent);
 		}
 	}
 
@@ -354,7 +212,7 @@ namespace Rift
 				{
 					if (functionView.Has(child))
 					{
-						DrawFunction(ast, editor, child);
+						DrawFunction(ast, editor, typeId, child);
 					}
 				}
 			}

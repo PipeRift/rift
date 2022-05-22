@@ -236,7 +236,7 @@ namespace Rift::Types
 		return callId;
 	}
 
-	AST::Id AddCallInput(AST::Tree& ast, AST::Id functionId, Name name)
+	AST::Id AddFunctionInput(AST::Tree& ast, AST::Id functionId, Name name)
 	{
 		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);
@@ -246,7 +246,7 @@ namespace Rift::Types
 		return id;
 	}
 
-	AST::Id AddCallOutput(AST::Tree& ast, AST::Id functionId, Name name)
+	AST::Id AddFunctionOutput(AST::Tree& ast, AST::Id functionId, Name name)
 	{
 		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);

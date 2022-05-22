@@ -87,34 +87,52 @@ namespace Rift::Graph
 			return;
 		}
 
-		const Color color = Style::GetTypeColor(ast, type->id);
+		static String labelId;
 
-		UI::PushID(AST::GetIndex(id));
 		UI::TableNextRow();
+		const Color color = Style::GetTypeColor(ast, type->id);
 		UI::TableSetBgColor(ImGuiTableBgTarget_RowBg0, color.DWColor());
 		UI::TableNextColumn();    // Name
+		labelId.clear();
+		Strings::FormatTo(labelId, "##Name_{}", id);
 		String name = identifier->name.ToString();
-		if (UI::MutableText("##Name", name,
-		        ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
+		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
+		if (UI::MutableText(labelId, name, ImGuiInputTextFlags_AutoSelectAll))
 		{
 			ScopedChange(ast, id);
 			identifier->name = Name{name};
 		}
 		UI::TableNextColumn();    // Type
 		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
-		UI::SetNextItemWidth(-FLT_MIN);
+		labelId.clear();
+		Strings::FormatTo(labelId, "##Type_{}", id);
 		AST::Id selectedTypeId = type->id;
-		if (Editor::TypeCombo(ast, "##Type", selectedTypeId))
+		UI::SetNextItemWidth(-FLT_MIN);
+		if (Editor::TypeCombo(ast, labelId, selectedTypeId))
 		{
 			ScopedChange(ast, id);
 			type->id = selectedTypeId;
 		}
 		UI::PopStyleVar();
-		UI::PopID();
 	}
 
-	void EditFunctionSignature(AST::Tree& ast, AST::Id typeId, AST::Id id)
+	void EditFunction(AST::Tree& ast, AST::Id typeId, AST::Id id)
 	{
+		auto* identifier = ast.TryGet<CIdentifier>(id);
+		if (!identifier)
+		{
+			return;
+		}
+
+		String functionName = identifier->name.ToString();
+		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
+		if (UI::InputText("##name", functionName, ImGuiInputTextFlags_AutoSelectAll))
+		{
+			ScopedChange(ast, id);
+			identifier->name = Name{functionName};
+		}
+		UI::Spacing();
+
 		UI::Text("Inputs");
 		if (UI::BeginTable("##fields", 2, ImGuiTableFlags_SizingFixedFit, {200.f, 0.f}))
 		{
@@ -130,12 +148,12 @@ namespace Rift::Graph
 			UI::EndTable();
 		}
 		Style::PushStyleCompact();
-		UI::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+		UI::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, {0.5f, 0.5f});
 		UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
 		if (UI::Selectable(ICON_FA_PLUS "##AddInput"))
 		{
 			ScopedChange(ast, id);
-			Types::AddCallInput(ast, id);
+			Types::AddFunctionInput(ast, id);
 		}
 		UI::HelpTooltip("Adds a new input parameter to a function");
 		UI::PopStyleVar();
@@ -162,7 +180,7 @@ namespace Rift::Graph
 		if (UI::Selectable(ICON_FA_PLUS "##AddOutput"))
 		{
 			ScopedChange(ast, id);
-			Types::AddCallOutput(ast, id);
+			Types::AddFunctionOutput(ast, id);
 		}
 		UI::HelpTooltip("Adds a new output parameter to a function");
 		UI::PopStyleVar();
@@ -170,7 +188,7 @@ namespace Rift::Graph
 		UI::Spacing();
 	}
 
-	void DrawNodeContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> nodeIds)
+	void DrawNodesContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> nodeIds)
 	{
 		Check(!nodeIds.IsEmpty());
 
@@ -178,7 +196,7 @@ namespace Rift::Graph
 
 		if (nodeIds.Size() == 1 && ast.Has<CDeclFunction>(firstNodeId))
 		{
-			EditFunctionSignature(ast, typeId, nodeIds[0]);
+			EditFunction(ast, typeId, nodeIds[0]);
 			UI::Separator();
 
 			if (UI::MenuItem("Add return node"))
@@ -208,6 +226,7 @@ namespace Rift::Graph
 	void DrawGraphContextMenu(AST::Tree& ast, AST::Id typeId)
 	{
 		static ImGuiTextFilter filter;
+
 		if (UI::IsWindowAppearing())
 		{
 			UI::SetKeyboardFocusHere();
@@ -342,7 +361,7 @@ namespace Rift::Graph
 
 	void DrawContextMenu(AST::Tree& ast, AST::Id typeId, AST::Id hoveredNodeId)
 	{
-		if (ImGui::BeginPopup("GraphContextMenu"))
+		if (UI::BeginPopup("ContextMenu"))
 		{
 			if (IsNone(hoveredNodeId))
 			{
@@ -350,13 +369,13 @@ namespace Rift::Graph
 			}
 			else if (Nodes::IsNodeSelected(hoveredNodeId))
 			{
-				DrawNodeContextMenu(ast, typeId, Nodes::GetSelectedNodes());
+				DrawNodesContextMenu(ast, typeId, Nodes::GetSelectedNodes());
 			}
 			else
 			{
-				DrawNodeContextMenu(ast, typeId, hoveredNodeId);
+				DrawNodesContextMenu(ast, typeId, hoveredNodeId);
 			}
-			ImGui::EndPopup();
+			UI::EndPopup();
 		}
 	}
 }    // namespace Rift::Graph

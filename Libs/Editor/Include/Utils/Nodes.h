@@ -290,9 +290,9 @@ namespace Rift::Nodes
 	EditorContext* EditorContextCreate();
 	void EditorContextFree(EditorContext*);
 	void SetEditorContext(EditorContext*);
-	v2 GetEditorContextPanning();
-	void EditorContextResetPanning(const v2& pos);
-	void EditorContextMoveToNode(AST::Id nodeId);
+	v2 GetPanning();
+	void ResetPanning(const v2& pos);
+	void MoveToNode(AST::Id nodeId, v2 offset = v2::Zero());
 
 	IO& GetIO();
 

@@ -394,7 +394,7 @@ namespace Rift::Nodes
 		ObjectPool<LinkData> Links;
 
 		// ui related fields
-		v2 Panning = v2::Zero();
+		v2 panning = v2::Zero();
 		v2 AutoPanningDelta;
 		// Minimum and maximum extents of all content in grid space. Valid after final
 		// Nodes::EndNode() call.
