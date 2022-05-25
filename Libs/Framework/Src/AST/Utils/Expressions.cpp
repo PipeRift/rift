@@ -56,6 +56,12 @@ namespace Rift::AST::Expressions
 			return false;
 		}
 
+		if (!access.Get<const CExprOutputs>(output.nodeId).pinIds.Contains(output.pinId)
+		    || !access.Get<const CExprInputs>(input.nodeId).pinIds.Contains(input.pinId))
+		{
+			return false;
+		}
+
 		// Ensure output and input wouldn't loop
 		return !WouldLoop(access, output.nodeId, input.nodeId);
 	}

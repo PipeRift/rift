@@ -140,6 +140,10 @@ namespace Rift
 		headerId.clear();
 		Strings::FormatTo(headerId, "{}###{}", functionName, id);
 		UI::CollapsingHeader(headerId.c_str(), ImGuiTreeNodeFlags_Leaf);
+		if (UI::IsItemHovered() && UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+		{
+			Nodes::MoveToNode(id, v2{150.f, 150.f});
+		}
 		UI::PopStyleVar();
 		Style::PopHeaderColor();
 
