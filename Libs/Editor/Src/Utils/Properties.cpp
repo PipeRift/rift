@@ -5,7 +5,6 @@
 #include "AST/Types.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
-#include "imgui.h"
 #include "UI/Style.h"
 #include "UI/Widgets.h"
 #include "Utils/EditorStyle.h"

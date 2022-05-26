@@ -2,6 +2,8 @@
 
 #include "Utils/FunctionGraphContextMenu.h"
 
+#include "UI/Style.h"
+#include "UI/Widgets.h"
 #include "Utils/EditorStyle.h"
 #include "Utils/FunctionGraph.h"
 #include "Utils/TypeUtils.h"
@@ -18,6 +20,7 @@
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
+#include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
 #include <UI/UI.h>
 
@@ -87,11 +90,19 @@ namespace Rift::Graph
 			return;
 		}
 
+		bool removePin = false;
+		bool hovered   = false;
+
 		static String labelId;
+		static String popupName;
+		popupName.clear();
+		Strings::FormatTo(popupName, "##PinContextMenu_{}", id);
+
 
 		UI::TableNextRow();
 		const Color color = Style::GetTypeColor(ast, type->id);
 		UI::TableSetBgColor(ImGuiTableBgTarget_RowBg0, color.DWColor());
+
 		UI::TableNextColumn();    // Name
 		labelId.clear();
 		Strings::FormatTo(labelId, "##Name_{}", id);
@@ -102,6 +113,11 @@ namespace Rift::Graph
 			ScopedChange(ast, id);
 			identifier->name = Name{name};
 		}
+		if (UI::IsItemHovered())
+		{
+			hovered = true;
+		}
+
 		UI::TableNextColumn();    // Type
 		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 		labelId.clear();
@@ -114,6 +130,35 @@ namespace Rift::Graph
 			type->id = selectedTypeId;
 		}
 		UI::PopStyleVar();
+		if (UI::IsItemHovered())
+		{
+			hovered = true;
+		}
+
+		if (hovered)
+		{
+			if (UI::IsKeyReleased(GLFW_KEY_DELETE))
+			{
+				removePin = true;
+			}
+			else if (UI::IsMouseReleased(ImGuiMouseButton_Right))
+			{
+				UI::OpenPopup(popupName.c_str());
+			}
+		}
+		if (UI::BeginPopup(popupName.c_str()))
+		{
+			if (UI::MenuItem("Delete"))
+			{
+				removePin = true;
+			}
+			UI::EndPopup();
+		}
+		if (removePin)
+		{
+			AST::Expressions::RemoveInputPin(ast, AST::Expressions::InputFromPinId(ast, id));
+			AST::Expressions::RemoveOutputPin(ast, AST::Expressions::OutputFromPinId(ast, id));
+		}
 	}
 
 	void EditFunction(AST::Tree& ast, AST::Id typeId, AST::Id id)
