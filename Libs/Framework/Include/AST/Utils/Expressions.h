@@ -30,10 +30,8 @@ namespace Rift::AST::Expressions
 	 */
 	void DisconnectAllDeep(Tree& ast, TSpan<const AST::Id> ids, bool ignoreRoot = false);
 
-	bool RemoveInputPin(
-	    TAccessRef<TWrite<CExprInputs>, TWrite<CInvalid>, CChild> access, InputId id);
-	bool RemoveOutputPin(
-	    TAccessRef<TWrite<CExprOutputs>, TWrite<CInvalid>, CChild> access, OutputId id);
+	bool RemoveInputPin(TAccessRef<CExprInputs, TWrite<CInvalid>> access, InputId id);
+	bool RemoveOutputPin(TAccessRef<CExprOutputs, TWrite<CInvalid>> access, OutputId id);
 
 	InputId InputFromPinId(TAccessRef<CExprInputs, CChild> access, AST::Id pinId);
 	OutputId OutputFromPinId(TAccessRef<CExprOutputs, CChild> access, AST::Id pinId);

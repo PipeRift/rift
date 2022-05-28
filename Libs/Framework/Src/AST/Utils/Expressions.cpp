@@ -111,7 +111,7 @@ namespace Rift::AST::Expressions
 	}
 
 
-	bool RemoveInputPin(TAccessRef<TWrite<CExprInputs>, TWrite<CInvalid>> access, InputId input)
+	bool RemoveInputPin(TAccessRef<CExprInputs, TWrite<CInvalid>> access, InputId input)
 	{
 		if (!input.IsNone())
 		{
