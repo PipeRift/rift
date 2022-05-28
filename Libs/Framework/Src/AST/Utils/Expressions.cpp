@@ -111,14 +111,13 @@ namespace Rift::AST::Expressions
 	}
 
 
-	bool RemoveInputPin(
-	    TAccessRef<TWrite<CExprInputs>, TWrite<CInvalid>, CChild> access, InputId input)
+	bool RemoveInputPin(TAccessRef<TWrite<CExprInputs>, TWrite<CInvalid>> access, InputId input)
 	{
 		if (!input.IsNone())
 		{
-			if (auto* inputs = access.TryGet<CExprInputs>(input.nodeId))
+			const auto* inputs = access.TryGet<const CExprInputs>(input.nodeId);
+			if (inputs && inputs->pinIds.FindIndex(input.pinId) != NO_INDEX)
 			{
-				i32 index = inputs->pinIds.FindIndex(input.pinId);
 				access.Add<CInvalid>(input.pinId);
 				return true;
 			}
@@ -126,12 +125,11 @@ namespace Rift::AST::Expressions
 		return false;
 	}
 
-	bool RemoveOutputPin(
-	    TAccessRef<TWrite<CExprOutputs>, TWrite<CInvalid>, CChild> access, OutputId output)
+	bool RemoveOutputPin(TAccessRef<CExprOutputs, TWrite<CInvalid>> access, OutputId output)
 	{
 		if (!output.IsNone())
 		{
-			if (auto* outputs = access.TryGet<CExprOutputs>(output.nodeId))
+			if (access.Has<CExprOutputs>(output.nodeId))
 			{
 				access.Add<CInvalid>(output.pinId);
 				return true;
