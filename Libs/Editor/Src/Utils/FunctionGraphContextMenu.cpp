@@ -277,9 +277,12 @@ namespace Rift::Graph
 
 		if (UI::MenuItem("Delete"))
 		{
-			AST::Expressions::Disconnect(ast, AST::Expressions::InputFromPinId(ast, firstLinkId));
-			AST::Statements::DisconnectFromInputPin(ast, firstLinkId);
-			// Types::RemoveNodes(ast, nodeIds);
+			for (AST::Id linkId : linkIds)
+			{
+				AST::Expressions::Disconnect(
+				    ast, AST::Expressions::InputFromPinId(ast, firstLinkId));
+				AST::Statements::DisconnectFromInputPin(ast, firstLinkId);
+			}
 		}
 	}
 
