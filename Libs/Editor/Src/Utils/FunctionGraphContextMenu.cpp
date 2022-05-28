@@ -6,6 +6,7 @@
 #include "UI/Widgets.h"
 #include "Utils/EditorStyle.h"
 #include "Utils/FunctionGraph.h"
+#include "Utils/Nodes.h"
 #include "Utils/TypeUtils.h"
 #include "Utils/Widgets.h"
 
@@ -268,6 +269,20 @@ namespace Rift::Graph
 		}
 	}
 
+	void DrawLinksContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> linkIds)
+	{
+		Check(!linkIds.IsEmpty());
+
+		AST::Id firstLinkId = linkIds[0];
+
+		if (UI::MenuItem("Delete"))
+		{
+			AST::Expressions::Disconnect(ast, AST::Expressions::InputFromPinId(ast, firstLinkId));
+			AST::Statements::DisconnectFromInputPin(ast, firstLinkId);
+			// Types::RemoveNodes(ast, nodeIds);
+		}
+	}
+
 	void DrawGraphContextMenu(AST::Tree& ast, AST::Id typeId)
 	{
 		static ImGuiTextFilter filter;
@@ -404,21 +419,39 @@ namespace Rift::Graph
 		}
 	}
 
-	void DrawContextMenu(AST::Tree& ast, AST::Id typeId, AST::Id hoveredNodeId)
+	void DrawLinkContextMenu() {}
+
+	void DrawContextMenu(
+	    AST::Tree& ast, AST::Id typeId, AST::Id hoveredNodeId, AST::Id hoveredLinkId)
 	{
 		if (UI::BeginPopup("ContextMenu"))
 		{
-			if (IsNone(hoveredNodeId))
+			if (!IsNone(hoveredNodeId))
 			{
-				DrawGraphContextMenu(ast, typeId);
+				if (Nodes::IsNodeSelected(hoveredNodeId))
+				{
+					DrawNodesContextMenu(ast, typeId, Nodes::GetSelectedNodes());
+				}
+				else
+				{
+					DrawNodesContextMenu(ast, typeId, hoveredNodeId);
+				}
 			}
-			else if (Nodes::IsNodeSelected(hoveredNodeId))
+			else if (!IsNone(hoveredLinkId))
 			{
-				DrawNodesContextMenu(ast, typeId, Nodes::GetSelectedNodes());
+				TArray<AST::Id> selectedLinkIds;
+				if (Nodes::GetSelectedLinks(selectedLinkIds))
+				{
+					DrawLinksContextMenu(ast, typeId, selectedLinkIds);
+				}
+				else
+				{
+					DrawLinksContextMenu(ast, typeId, hoveredLinkId);
+				}
 			}
 			else
 			{
-				DrawNodesContextMenu(ast, typeId, hoveredNodeId);
+				DrawGraphContextMenu(ast, typeId);
 			}
 			UI::EndPopup();
 		}

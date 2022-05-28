@@ -925,13 +925,15 @@ namespace Rift::Graph
 				    ast, AST::Expressions::InputFromPinId(ast, AST::Id(linkId)));
 			}
 
-			static AST::Id contextNodeId = AST::NoId;
+			static AST::Id hoveredNodeId = AST::NoId;
+			static AST::Id hoveredLinkId = AST::NoId;
 			if (wantsToOpenContextMenu)
 			{
-				contextNodeId = Nodes::GetNodeHovered();
+				hoveredNodeId = Nodes::GetHoveredNode();
+				hoveredLinkId = Nodes::GetHoveredLink();
 				ImGui::OpenPopup("ContextMenu", ImGuiPopupFlags_AnyPopup);
 			}
-			DrawContextMenu(ast, typeId, contextNodeId);
+			DrawContextMenu(ast, typeId, hoveredNodeId, hoveredLinkId);
 			UI::End();
 		}
 	}

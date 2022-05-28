@@ -2384,37 +2384,34 @@ namespace Rift::Nodes
 		return IsMouseInCanvas();
 	}
 
-	AST::Id GetNodeHovered()
+	AST::Id GetHoveredNode()
 	{
 		return gNodes->hoveredNodeId;
 	}
 
-	bool IsNodeHovered(AST::Id* nodeId)
+	AST::Id GetHoveredLink()
 	{
-		assert(gNodes->currentScope != Scope::None);
-		assert(nodeId != nullptr);
-		const bool isHovered = gNodes->hoveredNodeId != AST::NoId;
-		if (isHovered)
+		if (gNodes->HoveredLinkIdx.IsValid())
 		{
 			const EditorContext& editor = GetEditorContext();
-			*nodeId                     = gNodes->hoveredNodeId;
-			return true;
+			return AST::Id(editor.Links.Pool[gNodes->HoveredLinkIdx.Value()].id);
 		}
-		return false;
+		return AST::NoId;
 	}
 
-	bool IsLinkHovered(Id* const linkId)
+	bool IsNodeHovered(AST::Id nodeId)
 	{
 		assert(gNodes->currentScope != Scope::None);
-		assert(linkId != nullptr);
+		return gNodes->hoveredNodeId == nodeId && gNodes->hoveredNodeId != AST::NoId;
+	}
 
-		const bool isHovered = gNodes->HoveredLinkIdx.IsValid();
-		if (isHovered)
-		{
-			const EditorContext& editor = GetEditorContext();
-			*linkId                     = editor.Links.Pool[gNodes->HoveredLinkIdx.Value()].id;
-		}
-		return isHovered;
+	bool IsLinkHovered(AST::Id linkId)
+	{
+		assert(gNodes->currentScope != Scope::None);
+
+		const EditorContext& editor = GetEditorContext();
+		return gNodes->HoveredLinkIdx.IsValid()
+		    && linkId == AST::Id(editor.Links.Pool[gNodes->HoveredLinkIdx.Value()].id);
 	}
 
 	bool IsPinHovered(Id* const pin)
@@ -2452,16 +2449,16 @@ namespace Rift::Nodes
 		return editor.selectedNodeIds;
 	}
 
-	void GetSelectedLinks(Id* linkIds)
+	bool GetSelectedLinks(TArray<AST::Id>& linkIds)
 	{
-		assert(linkIds != nullptr);
-
 		const EditorContext& editor = GetEditorContext();
+		linkIds.Resize(editor.selectedLinkIndices.size());
 		for (i32 i = 0; i < editor.selectedLinkIndices.size(); ++i)
 		{
 			const i32 linkIdx = editor.selectedLinkIndices[i];
-			linkIds[i]        = editor.Links.Pool[linkIdx].id;
+			linkIds[i]        = AST::Id(editor.Links.Pool[linkIdx].id);
 		}
+		return !linkIds.IsEmpty();
 	}
 
 	void ClearNodeSelection()
