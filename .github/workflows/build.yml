@@ -88,7 +88,7 @@ jobs:
 
       - name: Download pre-built development LLVM for Rift
         run: |
-          curl -L -o "${{ runner.temp }}/rift-llvm.zip" https://github.com/piperift/rift-llvm/releases/download/v13.0.1/llvm-${{ matrix.os-name }}-${{ matrix.config }}.zip
+          curl -L -o "${{ runner.temp }}/rift-llvm.zip" https://github.com/piperift/rift-llvm/releases/download/v14.0.5/llvm-${{ matrix.os-name }}-${{ matrix.config }}.zip
           7z x -o"${{ runner.temp }}/rift" "${{ runner.temp }}/rift-llvm.zip"
 
       - name: Get CMake
