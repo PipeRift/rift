@@ -186,11 +186,11 @@ namespace Rift::Modules
 		AST::WriteContext ct{writer.GetContext(), ast, true};
 		ct.BeginObject();
 		Serl::CommonContext common{ct};
-		if (CIdentifier* ident = ast.TryGet<CIdentifier>(id))
+		if (auto* ident = ast.TryGet<CIdentifier>(id))
 		{
 			ident->SerializeReflection(common);
 		}
-		if (CModule* module = ast.TryGet<CModule>(id))
+		if (auto* module = ast.TryGet<CModule>(id))
 		{
 			module->SerializeReflection(common);
 		}

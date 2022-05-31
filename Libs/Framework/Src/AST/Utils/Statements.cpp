@@ -73,7 +73,7 @@ namespace Rift::AST::Statements
 			// Connect if single output
 			Id& lastInputNode = outputComp->linkInputNode;
 			// Disconnect previous input connected to output if any
-			if (lastInputNode != AST::NoId)
+			if (lastInputNode != AST::NoId && ast.Has<CStmtInput>(lastInputNode))
 			{
 				ast.Get<CStmtInput>(lastInputNode).linkOutputNode = AST::NoId;
 			}
@@ -82,12 +82,12 @@ namespace Rift::AST::Statements
 		else if (auto* outputsComp = ast.TryGet<CStmtOutputs>(outputNode))
 		{
 			// Connect if multiple output
-			const i32 pinIndex = outputsComp->linkPins.FindIndex(outputPin);
+			const i32 pinIndex = outputsComp->pinIds.FindIndex(outputPin);
 			if (pinIndex != NO_INDEX)
 			{
 				Id& lastInputNode = outputsComp->linkInputNodes[pinIndex];
 				// Disconnect previous input connected to output if any
-				if (lastInputNode != AST::NoId)
+				if (lastInputNode != AST::NoId && ast.Has<CStmtInput>(lastInputNode))
 				{
 					ast.Get<CStmtInput>(lastInputNode).linkOutputNode = AST::NoId;
 				}
@@ -96,7 +96,7 @@ namespace Rift::AST::Statements
 			else
 			{
 				// Pin didn't exist on the graph
-				outputsComp->linkPins.Add(outputPin);
+				outputsComp->pinIds.Add(outputPin);
 				outputsComp->linkInputNodes.Add(inputNode);
 			}
 		}
@@ -142,7 +142,7 @@ namespace Rift::AST::Statements
 		// Disconnect()
 		if (auto* outputsComp = ast.TryGet<CStmtOutputs>(outputNode))
 		{
-			i32 pinIndex = outputsComp->linkPins.FindIndex(outputPin);
+			i32 pinIndex = outputsComp->pinIds.FindIndex(outputPin);
 			if (pinIndex != NO_INDEX) [[likely]]
 			{
 				return Disconnect(ast, outputsComp->linkInputNodes[pinIndex]);

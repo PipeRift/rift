@@ -57,7 +57,7 @@ namespace Rift::AST
 		    shouldShrink);
 	}
 
-	void GetIf(const Pool* pool, const TArray<Id>& source, TArray<Id>& results)
+	void GetIf(const Pool* pool, const TSpan<Id>& source, TArray<Id>& results)
 	{
 		ZoneScoped;
 		if (pool)
@@ -72,8 +72,16 @@ namespace Rift::AST
 			}
 		}
 	}
+	void GetIf(const TArray<const Pool*>& pools, const TSpan<Id>& source, TArray<Id>& results)
+	{
+		GetIf(pools.First(), source, results);
+		for (i32 i = 1; i < pools.Size(); ++i)
+		{
+			RemoveIfNot(pools[i], results, false);
+		}
+	}
 
-	void GetIfNot(const Pool* pool, const TArray<Id>& source, TArray<Id>& results)
+	void GetIfNot(const Pool* pool, const TSpan<Id>& source, TArray<Id>& results)
 	{
 		ZoneScoped;
 		if (pool)
@@ -90,7 +98,7 @@ namespace Rift::AST
 		else
 		{
 			// No pool means no id has the component
-			results = source;
+			results.Append(source);
 		}
 	}
 

@@ -45,7 +45,7 @@ namespace Rift
 		const Name def = backends.IsEmpty() ? Name::None() : backends[0]->GetName();
 		selected       = def.ToString();
 
-		std::string stdDesc = Strings::Convert<std::string>(desc);
+		auto stdDesc = Strings::Convert<std::string>(desc);
 		app.add_option("-b,--backend", selected, stdDesc, true);
 	}
 

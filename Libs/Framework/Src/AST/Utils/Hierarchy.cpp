@@ -26,7 +26,7 @@ namespace Rift::AST::Hierarchy
 	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id node, TSpan<const Id> children)
 	{
 		children.Each([&access, node](Id childId) {
-			if (CChild* cChild = access.TryGet<CChild>(childId))
+			if (auto* cChild = access.TryGet<CChild>(childId))
 			{
 				if (cChild->parent == node
 				    || !EnsureMsg(IsNone(cChild->parent),
@@ -49,7 +49,7 @@ namespace Rift::AST::Hierarchy
 	    TSpan<Id> children, Id prevChild)
 	{
 		children.Each([&access, node](Id child) {
-			if (CChild* cChild = access.TryGet<CChild>(child))
+			if (auto* cChild = access.TryGet<CChild>(child))
 			{
 				if (EnsureMsg(IsNone(cChild->parent),
 				        "A node trying to be linked already has a parent. Consider using "
@@ -231,7 +231,7 @@ namespace Rift::AST::Hierarchy
 		return AST::NoId;
 	}
 
-	void GetParents(TAccessRef<CChild> access, TSpan<Id> children, TArray<Id>& outParents)
+	void GetParents(TAccessRef<CChild> access, TSpan<const Id> children, TArray<Id>& outParents)
 	{
 		outParents.Empty(false);
 		for (Id childId : children)
@@ -241,6 +241,37 @@ namespace Rift::AST::Hierarchy
 			{
 				outParents.AddUnique(child->parent);
 			}
+		}
+	}
+	void GetAllParents(TAccessRef<CChild> access, Id node, TArray<Id>& outParents)
+	{
+		outParents.Empty(false);
+
+		TArray<Id> children{node};
+		TArray<Id> parents;
+
+		while (children.Size() > 0)
+		{
+			GetParents(access, children, parents);
+			outParents.Append(parents);
+			Swap(children, parents);
+			parents.Empty(false);
+		}
+	}
+	void GetAllParents(
+	    TAccessRef<CChild> access, TSpan<const Id> childrenIds, TArray<Id>& outParents)
+	{
+		outParents.Empty(false);
+
+		TArray<Id> children{childrenIds.begin(), childrenIds.Size()};
+		TArray<Id> parents;
+
+		while (children.Size() > 0)
+		{
+			GetParents(access, children, parents);
+			outParents.Append(parents);
+			Swap(children, parents);
+			parents.Empty(false);
 		}
 	}
 
@@ -268,13 +299,17 @@ namespace Rift::AST::Hierarchy
 		while (children.Size() > 0)
 		{
 			GetParents(access, children, parents);
-			for (i32 i = 0; i < parents.Size(); ++i)
+			for (i32 i = 0; i < parents.Size();)
 			{
 				const Id parentId = parents[i];
 				if (callback(parentId))
 				{
 					outParents.Add(parentId);
 					parents.RemoveAtSwap(i, false);
+				}
+				else
+				{
+					++i;
 				}
 			}
 			Swap(children, parents);
@@ -306,11 +341,11 @@ namespace Rift::AST::Hierarchy
 		bool fixed = false;
 		for (Id parentId : parents)
 		{
-			if (const CParent* parent = access.TryGet<const CParent>(parentId))
+			if (const auto* parent = access.TryGet<const CParent>(parentId))
 			{
 				for (Id childId : parent->children)
 				{
-					if (CChild* child = access.TryGet<CChild>(childId))
+					if (auto* child = access.TryGet<CChild>(childId))
 					{
 						if (child->parent != parentId)
 						{

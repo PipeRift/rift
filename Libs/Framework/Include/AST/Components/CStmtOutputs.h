@@ -32,15 +32,15 @@ namespace Rift
 		STRUCT(CStmtOutputs, Struct)
 
 		// Both arrays keep the same index to the input node and the output pin
-		PROP(linkPins)
-		TArray<AST::Id> linkPins;
+		PROP(pinIds)
+		TArray<AST::Id> pinIds;
 		PROP(linkInputNodes)
 		TArray<AST::Id> linkInputNodes;
 
 
 		CStmtOutputs() = default;
 		CStmtOutputs(TArray<AST::Id> pins)
-		    : linkPins{Move(pins)}, linkInputNodes(linkPins.Size(), AST::NoId)
+		    : pinIds{Move(pins)}, linkInputNodes(pinIds.Size(), AST::NoId)
 		{}
 	};
 }    // namespace Rift

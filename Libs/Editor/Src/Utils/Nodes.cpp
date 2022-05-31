@@ -226,22 +226,22 @@ namespace Rift::Nodes
 
 	v2 ScreenToGridPosition(const EditorContext& editor, const v2& v)
 	{
-		return v - gNodes->CanvasOriginScreenSpace - editor.Panning;
+		return v - gNodes->CanvasOriginScreenSpace - editor.panning;
 	}
 
 	v2 GridToScreenPosition(const EditorContext& editor, const v2& v)
 	{
-		return v + gNodes->CanvasOriginScreenSpace + editor.Panning;
+		return v + gNodes->CanvasOriginScreenSpace + editor.panning;
 	}
 
 	v2 GridToEditorPosition(const EditorContext& editor, const v2& v)
 	{
-		return v + editor.Panning;
+		return v + editor.panning;
 	}
 
 	v2 EditorToGridPosition(const EditorContext& editor, const v2& v)
 	{
-		return v - editor.Panning;
+		return v - editor.panning;
 	}
 
 	v2 MiniMapToGridPosition(const EditorContext& editor, const v2& v)
@@ -437,7 +437,7 @@ namespace Rift::Nodes
 		    gNodes->NodeIdxToSubmissionIdx.GetInt(static_cast<ImGuiID>(AST::GetIndex(nodeId)), -1);
 		// There is a discrepancy in the submitted node count and the rendered node count! Did
 		// you call one of the following functions
-		// * EditorContextMoveToNode
+		// * MoveToNode
 		// * SetNodeScreenSpacePos
 		// * SetNodeGridSpacePos
 		// * SetNodeDraggable
@@ -580,7 +580,7 @@ namespace Rift::Nodes
 		// each node in the selection to the origin of the dragged node.
 		const v2 refOrigin = editor.nodes.Get(nodeId).Origin;
 		editor.PrimaryNodeOffset =
-		    refOrigin + gNodes->CanvasOriginScreenSpace + editor.Panning - gNodes->mousePosition;
+		    refOrigin + gNodes->CanvasOriginScreenSpace + editor.panning - gNodes->mousePosition;
 
 		editor.SelectedNodeOrigins.clear();
 		for (AST::Id id : editor.selectedNodeIds)
@@ -843,7 +843,7 @@ namespace Rift::Nodes
 		{
 			const v2 origin =
 			    SnapOriginToGrid(gNodes->mousePosition - gNodes->CanvasOriginScreenSpace
-			                     - editor.Panning + editor.PrimaryNodeOffset);
+			                     - editor.panning + editor.PrimaryNodeOffset);
 			for (i32 i = 0; i < editor.selectedNodeIds.Size(); ++i)
 			{
 				const v2 nodeRel     = editor.SelectedNodeOrigins[i];
@@ -1011,7 +1011,7 @@ namespace Rift::Nodes
 
 		if (dragging)
 		{
-			editor.Panning += v2{ImGui::GetIO().MouseDelta};
+			editor.panning += v2{ImGui::GetIO().MouseDelta};
 		}
 		else
 		{
@@ -1258,7 +1258,7 @@ namespace Rift::Nodes
 
 	void DrawGrid(EditorContext& editor, const v2& canvasSize)
 	{
-		const v2 offset   = editor.Panning;
+		const v2 offset   = editor.panning;
 		u32 lineColor     = gNodes->style.colors[ColorVar_GridLine].ToPackedABGR();
 		u32 lineColorPrim = gNodes->style.colors[ColorVar_GridLinePrimary].ToPackedABGR();
 		bool drawPrimary  = gNodes->style.Flags & StyleFlags_GridLinesPrimary;
@@ -1400,7 +1400,7 @@ namespace Rift::Nodes
 	void DrawNode(EditorContext& editor, const AST::Id nodeId)
 	{
 		const NodeData& node = editor.nodes[nodeId];
-		ImGui::SetCursorPos(node.Origin + editor.Panning);
+		ImGui::SetCursorPos(node.Origin + editor.panning);
 
 		const bool nodeHovered = gNodes->hoveredNodeId == nodeId
 		                      && editor.clickInteraction.type != ClickInteractionType_BoxSelection;
@@ -1665,25 +1665,26 @@ namespace Rift::Nodes
 		gNodes->EditorCtx = ctx;
 	}
 
-	v2 GetEditorContextPanning()
+	v2 GetPanning()
 	{
 		const EditorContext& editor = GetEditorContext();
-		return editor.Panning;
+		return editor.panning;
 	}
 
-	void EditorContextResetPanning(const v2& pos)
+	void ResetPanning(const v2& pos)
 	{
 		EditorContext& editor = GetEditorContext();
-		editor.Panning        = pos;
+		editor.panning        = pos;
 	}
 
-	void EditorContextMoveToNode(AST::Id nodeId)
+	void MoveToNode(AST::Id nodeId, v2 offset)
 	{
 		EditorContext& editor = GetEditorContext();
 		NodeData& node        = editor.nodes.Get(nodeId);
 
-		editor.Panning.x = -node.Origin.x;
-		editor.Panning.y = -node.Origin.y;
+		editor.panning.x = -node.Origin.x;
+		editor.panning.y = -node.Origin.y;
+		editor.panning += offset;
 	}
 
 	void SetImGuiContext(ImGuiContext* ctx)
@@ -2024,7 +2025,7 @@ namespace Rift::Nodes
 
 				editor.AutoPanningDelta =
 				    direction * ImGui::GetIO().DeltaTime * gNodes->io.AutoPanningSpeed;
-				editor.Panning += editor.AutoPanningDelta;
+				editor.panning += editor.AutoPanningDelta;
 			}
 		}
 		UpdateClickInteraction(editor);
@@ -2383,37 +2384,34 @@ namespace Rift::Nodes
 		return IsMouseInCanvas();
 	}
 
-	AST::Id GetNodeHovered()
+	AST::Id GetHoveredNode()
 	{
 		return gNodes->hoveredNodeId;
 	}
 
-	bool IsNodeHovered(AST::Id* nodeId)
+	AST::Id GetHoveredLink()
 	{
-		assert(gNodes->currentScope != Scope::None);
-		assert(nodeId != nullptr);
-		const bool isHovered = gNodes->hoveredNodeId != AST::NoId;
-		if (isHovered)
+		if (gNodes->HoveredLinkIdx.IsValid())
 		{
 			const EditorContext& editor = GetEditorContext();
-			*nodeId                     = gNodes->hoveredNodeId;
-			return true;
+			return AST::Id(editor.Links.Pool[gNodes->HoveredLinkIdx.Value()].id);
 		}
-		return false;
+		return AST::NoId;
 	}
 
-	bool IsLinkHovered(Id* const linkId)
+	bool IsNodeHovered(AST::Id nodeId)
 	{
 		assert(gNodes->currentScope != Scope::None);
-		assert(linkId != nullptr);
+		return gNodes->hoveredNodeId == nodeId && gNodes->hoveredNodeId != AST::NoId;
+	}
 
-		const bool isHovered = gNodes->HoveredLinkIdx.IsValid();
-		if (isHovered)
-		{
-			const EditorContext& editor = GetEditorContext();
-			*linkId                     = editor.Links.Pool[gNodes->HoveredLinkIdx.Value()].id;
-		}
-		return isHovered;
+	bool IsLinkHovered(AST::Id linkId)
+	{
+		assert(gNodes->currentScope != Scope::None);
+
+		const EditorContext& editor = GetEditorContext();
+		return gNodes->HoveredLinkIdx.IsValid()
+		    && linkId == AST::Id(editor.Links.Pool[gNodes->HoveredLinkIdx.Value()].id);
 	}
 
 	bool IsPinHovered(Id* const pin)
@@ -2451,16 +2449,16 @@ namespace Rift::Nodes
 		return editor.selectedNodeIds;
 	}
 
-	void GetSelectedLinks(Id* linkIds)
+	bool GetSelectedLinks(TArray<AST::Id>& linkIds)
 	{
-		assert(linkIds != nullptr);
-
 		const EditorContext& editor = GetEditorContext();
+		linkIds.Resize(editor.selectedLinkIndices.size());
 		for (i32 i = 0; i < editor.selectedLinkIndices.size(); ++i)
 		{
 			const i32 linkIdx = editor.selectedLinkIndices[i];
-			linkIds[i]        = editor.Links.Pool[linkIdx].id;
+			linkIds[i]        = AST::Id(editor.Links.Pool[linkIdx].id);
 		}
+		return !linkIds.IsEmpty();
 	}
 
 	void ClearNodeSelection()

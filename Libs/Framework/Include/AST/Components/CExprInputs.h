@@ -1,7 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Access.h"
 #include "AST/Filtering.h"
 #include "AST/Types.h"
 #include "AST/Utils/Hierarchy.h"
@@ -11,9 +10,9 @@
 
 namespace Rift
 {
-	struct InputId : public Struct
+	struct OutputId : public Struct
 	{
-		STRUCT(InputId, Struct)
+		STRUCT(OutputId, Struct)
 
 		PROP(nodeId)
 		AST::Id nodeId = AST::NoId;
@@ -22,7 +21,7 @@ namespace Rift
 		AST::Id pinId = AST::NoId;
 
 
-		InputId() = default;
+		OutputId() = default;
 
 		bool IsNone() const
 		{
@@ -30,36 +29,42 @@ namespace Rift
 		}
 	};
 
-	struct CExprOutputs : public Struct
+	struct CExprInputs : public Struct
 	{
-		STRUCT(CExprOutputs, Struct)
+		STRUCT(CExprInputs, Struct)
+
+		PROP(linkedOutputs)
+		TArray<OutputId> linkedOutputs;
 
 		PROP(pinIds)
 		TArray<AST::Id> pinIds;
 
 
-		CExprOutputs() {}
-		CExprOutputs(AST::Id pinId)
+		CExprInputs& Add(AST::Id pinId)
 		{
-			Add(pinId);
-		}
-
-		CExprOutputs& Add(AST::Id pinId)
-		{
+			linkedOutputs.AddDefaulted();
 			pinIds.Add(pinId);
 			return *this;
 		}
 
-		CExprOutputs& Insert(i32 index, AST::Id pinId)
+		CExprInputs& Insert(i32 index, AST::Id pinId)
 		{
 			pinIds.Insert(index, pinId);
+			linkedOutputs.Insert(index, {});
 			return *this;
 		}
 
-		CExprOutputs& Swap(i32 firstIndex, i32 secondIndex)
+		CExprInputs& Swap(i32 firstIndex, i32 secondIndex)
 		{
 			pinIds.Swap(firstIndex, secondIndex);
+			linkedOutputs.Swap(firstIndex, secondIndex);
 			return *this;
+		}
+
+		void Resize(i32 count)
+		{
+			linkedOutputs.Resize(count);
+			pinIds.Resize(count, AST::NoId);
 		}
 	};
 }    // namespace Rift

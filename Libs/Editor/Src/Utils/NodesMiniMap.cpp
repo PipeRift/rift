@@ -229,7 +229,7 @@ namespace Rift::Nodes
 		{
 			v2 target      = MiniMapToGridPosition(editor, ImGui::GetMousePos());
 			v2 center      = gNodes->CanvasRectScreenSpace.GetSize() * 0.5f;
-			editor.Panning = ImFloor(center - target);
+			editor.panning = ImFloor(center - target);
 		}
 
 		// Reset callback info after use

@@ -26,7 +26,7 @@ namespace Rift
 
 			ScopedTransaction() {}
 			ScopedTransaction(const TransactionAccess& access, TSpan<const Id> entityIds);
-			ScopedTransaction(ScopedTransaction&& other);
+			ScopedTransaction(ScopedTransaction&& other) noexcept;
 			~ScopedTransaction();
 		};
 

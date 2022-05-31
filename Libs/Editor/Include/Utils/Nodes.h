@@ -290,9 +290,9 @@ namespace Rift::Nodes
 	EditorContext* EditorContextCreate();
 	void EditorContextFree(EditorContext*);
 	void SetEditorContext(EditorContext*);
-	v2 GetEditorContextPanning();
-	void EditorContextResetPanning(const v2& pos);
-	void EditorContextMoveToNode(AST::Id nodeId);
+	v2 GetPanning();
+	void ResetPanning(const v2& pos);
+	void MoveToNode(AST::Id nodeId, v2 offset = v2::Zero());
 
 	IO& GetIO();
 
@@ -395,12 +395,11 @@ namespace Rift::Nodes
 	// Returns true if the current node editor canvas is being hovered over by the mouse, and is
 	// not blocked by any other windows.
 	bool IsEditorHovered();
-	AST::Id GetNodeHovered();
-	// The following functions return true if a UI element is being hovered over by the mouse
-	// cursor. Assigns the id of the UI element being hovered over to the function argument. Use
-	// these functions after EndNodeEditor() has been called.
-	bool IsNodeHovered(AST::Id* nodeId);
-	bool IsLinkHovered(Id* linkId);
+	AST::Id GetHoveredNode();
+	AST::Id GetHoveredLink();
+
+	bool IsNodeHovered(AST::Id nodeId);
+	bool IsLinkHovered(AST::Id linkId);
 	bool IsPinHovered(Id* attributeId);
 
 	// Use The following two functions to query the number of selected nodes or links in the
@@ -410,7 +409,7 @@ namespace Rift::Nodes
 	// with at least as many elements as the respective NumSelectedNodes/NumSelectedLinks
 	// function call returned.
 	const TArray<AST::Id>& GetSelectedNodes();
-	void GetSelectedLinks(Id* linkIds);
+	bool GetSelectedLinks(TArray<AST::Id>& linkIds);
 	// Clears the list of selected nodes/links. Useful if you want to delete a selected node or
 	// link.
 	void ClearNodeSelection();

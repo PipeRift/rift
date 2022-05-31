@@ -8,7 +8,7 @@
 namespace Rift::Editor
 {
 	void ListTypesFromFilter(TAccessRef<CType> access, TArray<AST::Id> typeIds, AST::Id& selectedId,
-	    bool& changed, ImGuiTextFilter& searchFilter)
+	    ImGuiTextFilter& searchFilter)
 	{
 		for (AST::Id id : typeIds)
 		{
@@ -24,7 +24,6 @@ namespace Rift::Editor
 			if (UI::Selectable(name.c_str(), id == selectedId))
 			{
 				selectedId = id;
-				changed    = true;
 			}
 			UI::PopID();
 		}
@@ -39,7 +38,7 @@ namespace Rift::Editor
 			ownerName = access.Get<const CType>(selectedId).name;
 		}
 
-		bool changed = false;
+		AST::Id lastId = selectedId;
 		if (UI::BeginCombo(label.data(), ownerName.ToString().c_str()))
 		{
 			static ImGuiTextFilter filter;
@@ -57,17 +56,17 @@ namespace Rift::Editor
 			{
 				if (UI::TreeNodeEx("Native##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					ListTypesFromFilter(access, nativeIds, selectedId, changed, filter);
+					ListTypesFromFilter(access, nativeIds, selectedId, filter);
 					UI::TreePop();
 				}
 				if (UI::TreeNodeEx("Structs##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					ListTypesFromFilter(access, structIds, selectedId, changed, filter);
+					ListTypesFromFilter(access, structIds, selectedId, filter);
 					UI::TreePop();
 				}
 				if (UI::TreeNodeEx("Classes##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					ListTypesFromFilter(access, classIds, selectedId, changed, filter);
+					ListTypesFromFilter(access, classIds, selectedId, filter);
 					UI::TreePop();
 				}
 			}
@@ -75,23 +74,23 @@ namespace Rift::Editor
 			{
 				if (UI::TreeNodeEx("Native", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					ListTypesFromFilter(access, nativeIds, selectedId, changed, filter);
+					ListTypesFromFilter(access, nativeIds, selectedId, filter);
 					UI::TreePop();
 				}
 				if (UI::TreeNode("Structs"))
 				{
-					ListTypesFromFilter(access, structIds, selectedId, changed, filter);
+					ListTypesFromFilter(access, structIds, selectedId, filter);
 					UI::TreePop();
 				}
 				if (UI::TreeNode("Classes"))
 				{
-					ListTypesFromFilter(access, classIds, selectedId, changed, filter);
+					ListTypesFromFilter(access, classIds, selectedId, filter);
 					UI::TreePop();
 				}
 			}
 			UI::EndCombo();
 		}
-		return changed;
+		return selectedId != lastId;
 	}
 
 	bool InputLiteralValue(AST::Tree& ast, StringView label, AST::Id literalId)

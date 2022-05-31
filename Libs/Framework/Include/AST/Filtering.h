@@ -21,10 +21,11 @@ namespace Rift::AST
 
 
 	/** Find ids containing a component from a list 'source' into 'results'. */
-	void GetIf(const Pool* pool, const TArray<Id>& source, TArray<Id>& results);
+	void GetIf(const Pool* pool, const TSpan<Id>& source, TArray<Id>& results);
+	void GetIf(const TArray<const Pool*>& pools, const TSpan<Id>& source, TArray<Id>& results);
 
 	/** Find ids NOT containing a component from a list 'source' into 'results'. */
-	void GetIfNot(const Pool* pool, const TArray<Id>& source, TArray<Id>& results);
+	void GetIfNot(const Pool* pool, const TSpan<Id>& source, TArray<Id>& results);
 
 
 	/**
@@ -153,15 +154,23 @@ namespace Rift::AST
 
 	/** Find ids containing a component from a list 'source' into 'results'. */
 	template<typename C, typename AccessType>
-	void GetIf(const AccessType& access, const TArray<Id>& source, TArray<Id>& results)
+	void GetIf(const AccessType& access, const TSpan<Id>& source, TArray<Id>& results)
 	{
 		GetIf(&access.template AssurePool<const C>(), source, results);
 	}
-	template<typename C, typename AccessType>
-	TArray<Id> GetIf(const AccessType& access, const TArray<Id>& source)
+
+	template<typename... C, typename AccessType>
+	void GetIf(const AccessType& access, const TSpan<Id>& source, TArray<Id>& results) requires(
+	    sizeof...(C) > 1)
+	{
+		GetIf({&access.template AssurePool<const C>()...}, source, results);
+	}
+
+	template<typename... C, typename AccessType>
+	TArray<Id> GetIf(const AccessType& access, const TSpan<Id>& source)
 	{
 		TArray<Id> results;
-		GetIf<C>(access, source, results);
+		GetIf<C...>(access, source, results);
 		return Move(results);
 	}
 

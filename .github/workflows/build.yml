@@ -68,7 +68,7 @@ jobs:
           sudo apt-get install -y build-essential xz-utils curl libx11-dev xorg-dev libglu1-mesa-dev
 
       - uses: ilammy/msvc-dev-cmd@v1
-        if: ${{ matrix.compiler == 'cl' }}
+        if: ${{ matrix.compiler == 'msvc' }}
 
       - name: Cache LLVM
         if: ${{ matrix.compiler == 'clang' }}
@@ -88,7 +88,7 @@ jobs:
 
       - name: Download pre-built development LLVM for Rift
         run: |
-          curl -L -o "${{ runner.temp }}/rift-llvm.zip" https://github.com/piperift/rift-llvm/releases/download/v13.0.1/llvm-${{ matrix.os-name }}-${{ matrix.config }}.zip
+          curl -L -o "${{ runner.temp }}/rift-llvm.zip" https://github.com/piperift/rift-llvm/releases/download/v14.0.5/llvm-${{ matrix.os-name }}-${{ matrix.config }}.zip
           7z x -o"${{ runner.temp }}/rift" "${{ runner.temp }}/rift-llvm.zip"
 
       - name: Get CMake

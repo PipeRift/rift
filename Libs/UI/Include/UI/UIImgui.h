@@ -94,14 +94,14 @@ namespace Rift::UI
 		return UI::GetID(id.data(), id.data() + id.size());
 	}
 
-	inline void PushStyleColor(ImGuiCol idx, const LinearColor& color)
-	{
-		ImGui::PushStyleColor(idx, color);
-	}
-
 	inline void PushStyleColor(ImGuiCol idx, Color color)
 	{
 		ImGui::PushStyleColor(idx, color.DWColor());
+	}
+
+	inline void PushStyleColor(ImGuiCol idx, const LinearColor& color)
+	{
+		ImGui::PushStyleColor(idx, color);
 	}
 
 	inline void Text(const char* fmt, ...)
@@ -128,7 +128,7 @@ namespace Rift::UI
 	{
 		va_list args;
 		va_start(args, fmt);
-		TextColoredV(color, fmt, args);
+		TextColoredV(ImVec4(color), fmt, args);
 		va_end(args);
 	}
 	inline void TextColored(const LinearColor& color, StringView text)

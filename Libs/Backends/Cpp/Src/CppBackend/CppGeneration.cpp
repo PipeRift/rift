@@ -187,7 +187,7 @@ namespace Rift::Compiler::Cpp
 		{
 			StringView ownerName;
 			AST::Id parentId = AST::Hierarchy::GetParent(access, entity);
-			if (!IsNone(parentId) && access.Has(parentId))
+			if (!IsNone(parentId))
 			{
 				if (auto* type = access.TryGet<const CType>(parentId))
 				{
@@ -208,7 +208,7 @@ namespace Rift::Compiler::Cpp
 		{
 			StringView ownerName;
 			AST::Id parentId = AST::Hierarchy::GetParent(access, entity);
-			if (!IsNone(parentId) && access.Has(parentId))
+			if (!IsNone(parentId))
 			{
 				if (const auto* type = access.TryGet<const CType>(parentId))
 				{

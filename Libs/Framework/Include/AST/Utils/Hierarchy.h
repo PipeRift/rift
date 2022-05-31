@@ -38,7 +38,10 @@ namespace Rift::AST::Hierarchy
 	void GetChildrenDeep(TAccessRef<CParent> access, TSpan<const Id> roots,
 	    TArray<Id>& outLinkedNodes, u32 depth = 0);
 	Id GetParent(TAccessRef<CChild> access, Id node);
-	void GetParents(TAccessRef<CChild> access, TSpan<Id> children, TArray<Id>& outParents);
+	void GetParents(TAccessRef<CChild> access, TSpan<const Id> children, TArray<Id>& outParents);
+	void GetAllParents(TAccessRef<CChild> access, Id node, TArray<Id>& outParents);
+	void GetAllParents(
+	    TAccessRef<CChild> access, TSpan<const Id> childrenIds, TArray<Id>& outParents);
 
 	/**
 	 * Find a parent id matching a delegate
@@ -48,7 +51,7 @@ namespace Rift::AST::Hierarchy
 	void FindParents(TAccessRef<CChild> access, TSpan<const Id> children, TArray<Id>& outParents,
 	    const TFunction<bool(AST::Id)>& callback);
 
-	// void Copy(Tree& ast, const TArray<Id>& nodes, TArray<Id>& outNewNodes);
+	// void Copy(Tree& ast, t TArray<Id>& nodes, TArray<Id>& outNewNodes);
 	// void CopyDeep(Tree& ast, const TArray<Id>& rootNodes, TArray<Id>& outNewRootNodes);
 	// void CopyAndTransferAllChildrenDeep(Tree& ast, Id root, Id otherRoot);
 

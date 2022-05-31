@@ -135,7 +135,7 @@ namespace Rift
 		}
 
 		template<typename... C>
-		bool Has(AST::Id id) const
+		bool Has(AST::Id id) const requires(sizeof...(C) >= 1)
 		{
 			return (GetPool<const C>()->Has(id) && ...);
 		}
@@ -223,6 +223,12 @@ namespace Rift
 		{
 			static_assert(sizeof...(T) == 1, "Can only get the size of single component accesses");
 			return GetPool<T...>()->Size();
+		}
+
+		template<typename C>
+		i32 Size() const
+		{
+			return GetPool<const C>()->Size();
 		}
 
 		AST::Tree& GetAST() const

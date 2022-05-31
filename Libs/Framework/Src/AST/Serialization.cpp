@@ -10,7 +10,7 @@
 #include "AST/Components/CExprBinaryOperator.h"
 #include "AST/Components/CExprCall.h"
 #include "AST/Components/CExprDeclRef.h"
-#include "AST/Components/CExprInput.h"
+#include "AST/Components/CExprInputs.h"
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CExprType.h"
 #include "AST/Components/CExprUnaryOperator.h"
@@ -25,7 +25,7 @@
 #include "AST/Components/CStmtOutputs.h"
 #include "AST/Components/CStmtReturn.h"
 #include "AST/Components/Tags/CNotSerialized.h"
-#include "AST/Components/Views/CGraphTransform.h"
+#include "AST/Components/Views/CNodePosition.h"
 #include "AST/Filtering.h"
 #include "AST/Utils/Hierarchy.h"
 
@@ -154,14 +154,14 @@ namespace Rift::AST
 			ReadPool<CExprBinaryOperator>(*this, ast);
 			ReadPool<CExprCall>(*this, ast);
 			ReadPool<CExprDeclRefId>(*this, ast);
-			ReadPool<CExprOutputs>(*this, ast);
-			ReadPool<CExprInput>(
+			ReadPool<CExprOutputs>(
 			    *this, ast);    // TODO: Rebuild from CExprOutputs instead of serializing
+			ReadPool<CExprInputs>(*this, ast);
 			ReadPool<CStmtReturn>(*this, ast);
 			ReadPool<CExprType>(*this, ast);
 			ReadPool<CExprUnaryOperator>(*this, ast);
 			ReadPool<CIdentifier>(*this, ast);
-			ReadPool<CGraphTransform>(*this, ast);
+			ReadPool<CNodePosition>(*this, ast);
 			ReadPool<CParent>(*this, ast);
 			ReadPool<CLiteralBool>(*this, ast);
 			ReadPool<CLiteralFloating>(*this, ast);
@@ -211,13 +211,13 @@ namespace Rift::AST
 			WritePool<CExprBinaryOperator>(*this, ast, treeEntities);
 			WritePool<CExprCall>(*this, ast, treeEntities);
 			WritePool<CExprDeclRefId>(*this, ast, treeEntities);
-			WritePool<CExprOutputs>(*this, ast, treeEntities);
-			WritePool<CExprInput>(*this, ast,
-			    treeEntities);    // TODO: When rebuilding from CExprOutputs, ignore this pool
+			WritePool<CExprOutputs>(*this, ast,
+			    treeEntities);    // TODO: When rebuilding from CExprInputs, ignore this pool
+			WritePool<CExprInputs>(*this, ast, treeEntities);
 			WritePool<CStmtReturn>(*this, ast, treeEntities);
 			WritePool<CExprType>(*this, ast, treeEntities);
 			WritePool<CExprUnaryOperator>(*this, ast, treeEntities);
-			WritePool<CGraphTransform>(*this, ast, treeEntities);
+			WritePool<CNodePosition>(*this, ast, treeEntities);
 			WritePool<CIdentifier>(*this, ast, treeEntities);
 			WritePool<CParent>(*this, ast, treeEntities);
 			WritePool<CLiteralBool>(*this, ast, treeEntities);

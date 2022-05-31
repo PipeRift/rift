@@ -25,7 +25,7 @@ namespace Rift::TypeSystem
 		types.typesByName.Reserve(u32(typesView.Size()));
 		for (AST::Id typeId : typesView)
 		{
-			const CType& type = typesView.Get<const CType>(typeId);
+			const auto& type = typesView.Get<const CType>(typeId);
 			types.typesByName.Insert(type.name, typeId);
 		}
 
@@ -33,7 +33,7 @@ namespace Rift::TypeSystem
 			auto& types = ast.template GetOrSetStatic<STypes>();
 			for (AST::Id id : ids)
 			{
-				if (const CType* type = ast.template TryGet<const CType>(id))
+				if (const auto* type = ast.template TryGet<const CType>(id))
 				{
 					types.typesByName.Insert(type->name, id);
 				}
@@ -44,7 +44,7 @@ namespace Rift::TypeSystem
 			auto& types = ast.template GetOrSetStatic<STypes>();
 			for (AST::Id id : ids)
 			{
-				if (const CType* type = ast.template TryGet<const CType>(id))
+				if (const auto* type = ast.template TryGet<const CType>(id))
 				{
 					types.typesByName.Remove(type->name);
 				}
@@ -57,7 +57,7 @@ namespace Rift::TypeSystem
 			{
 				if (ast.template Has<CType>(id) && ast.template Has<CFileRef>(id))
 				{
-					const CFileRef& file = ast.template Get<const CFileRef>(id);
+					const auto& file = ast.template Get<const CFileRef>(id);
 					const Name pathName{Paths::ToString(file.path)};
 					types.typesByPath.Insert(pathName, id);
 				}
@@ -70,7 +70,7 @@ namespace Rift::TypeSystem
 			{
 				if (ast.template Has<CType>(id) && ast.template Has<CFileRef>(id))
 				{
-					const CFileRef& file = ast.template Get<const CFileRef>(id);
+					const auto& file = ast.template Get<const CFileRef>(id);
 					const Name pathName{Paths::ToString(file.path)};
 					types.typesByPath.Remove(pathName);
 				}

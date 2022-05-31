@@ -17,6 +17,7 @@ namespace Rift::Style
 	constexpr Color returnColor{functionColor.Shade(0.1f)};
 	constexpr Color callColor{Color::FromHEX(0x3366CC)};
 	constexpr Color flowColor{GetNeutralColor(4)};
+	constexpr Color invalidColor{Color::FromHEX(0xF95040)};
 
 	template<typename T>
 	constexpr Color GetTypeColor()

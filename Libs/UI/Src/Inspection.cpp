@@ -2,6 +2,8 @@
 
 #include "UI/Inspection.h"
 
+#include <Files/Paths.h>
+#include <Files/STDFileSystem.h>
 #include <IconsFontAwesome5.h>
 #include <Reflection/GetType.h>
 #include <Reflection/StructType.h>
@@ -9,16 +11,16 @@
 
 namespace Rift::UI
 {
-	static const char* currentInspector = nullptr;
+	static const char* gCurrentInspector = nullptr;
 
-	static TMap<Refl::Type*, CustomKeyValue> customKeyValues;
+	static TMap<Refl::Type*, CustomKeyValue> gCustomKeyValues;
 
 
 	void RegisterCustomInspection(Refl::Type* typeId, const CustomKeyValue& custom)
 	{
 		if (custom)
 		{
-			customKeyValues.Insert(typeId, custom);
+			gCustomKeyValues.Insert(typeId, custom);
 		}
 	}
 
@@ -202,7 +204,7 @@ namespace Rift::UI
 					}
 				}
 			}
-			else if (auto* custom = customKeyValues.Find(type))
+			else if (auto* custom = gCustomKeyValues.Find(type))
 			{
 				for (i32 i = 0; i < size; ++i)
 				{
@@ -240,7 +242,7 @@ namespace Rift::UI
 		{
 			InspectArrayProperty(*arrayProperty, instance);
 		}
-		else if (auto* custom = customKeyValues.Find(type))
+		else if (auto* custom = gCustomKeyValues.Find(type))
 		{
 			(*custom)(handle.GetDisplayName(), instance, type);
 		}
@@ -263,7 +265,7 @@ namespace Rift::UI
 
 	void InspectProperties(void* container, Refl::DataType* type)
 	{
-		if (!EnsureMsg(currentInspector,
+		if (!EnsureMsg(gCurrentInspector,
 		        "Make sure to call Begin/EndInspector around reflection widgets."))
 		{
 			return;
@@ -304,7 +306,7 @@ namespace Rift::UI
 
 	bool BeginInspector(const char* label, v2 size)
 	{
-		if (!EnsureMsg(!currentInspector,
+		if (!EnsureMsg(!gCurrentInspector,
 		        "Called BeginInspector() twice without calling EndInspector() first."))
 		{
 			return false;
@@ -315,28 +317,28 @@ namespace Rift::UI
 		                                   | ImGuiTableFlags_PadOuterX;
 		if (UI::BeginTable(label, 2, flags, size))
 		{
-			currentInspector = label;
+			gCurrentInspector = label;
 			UI::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthStretch, 0.5f);
-			UI::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.5f);
+			UI::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 1.f);
+			return true;
 		}
-
-		return true;
+		return false;
 	}
 
 	void EndInspector()
 	{
-		if (!EnsureMsg(currentInspector, "Called EndInspector() but no inspector was drawing."))
+		if (!EnsureMsg(gCurrentInspector, "Called EndInspector() but no inspector was drawing."))
 		{
 			return;
 		}
 		UI::EndTable();
-		currentInspector = nullptr;
+		gCurrentInspector = nullptr;
 	}
 
 
 	bool DrawColorKeyValue(StringView label, LinearColor& color, ImGuiColorEditFlags flags)
 	{
-		float* data =
+		auto* data =
 		    reinterpret_cast<float*>(&color);    // LinearColor* can be interpreted as float*
 		UI::TableNextRow();
 		UI::TableSetColumnIndex(0);
@@ -373,6 +375,21 @@ namespace Rift::UI
 			            | ImGuiColorEditFlags_AlphaPreviewHalf))
 			{
 				*color = Color{lColor};
+			}
+		});
+
+		UI::RegisterCustomInspection<Path>([](StringView label, void* data, Refl::Type* type) {
+			auto* path = reinterpret_cast<Path*>(data);
+			UI::TableNextRow();
+			UI::TableSetColumnIndex(0);
+			UI::AlignTextToFramePadding();
+			UI::Text(label);
+			UI::TableSetColumnIndex(1);
+			UI::SetNextItemWidth(Math::Min(300.f, UI::GetContentRegionAvail().x));
+			String str = Paths::ToString(*path);
+			if (UI::InputText("##value", str))
+			{
+				*path = Paths::FromString(str);
 			}
 		});
 	}
