@@ -2,7 +2,6 @@
 
 #include "Systems/EditorSystem.h"
 
-#include "AST/Filtering.h"
 #include "AST/Utils/TypeUtils.h"
 #include "Components/CModuleEditor.h"
 #include "Components/CTypeEditor.h"
@@ -24,6 +23,7 @@
 #include <Compiler/Compiler.h>
 #include <Containers/Array.h>
 #include <CppBackend.h>
+#include <ECS/Filtering.h>
 #include <Files/FileDialog.h>
 #include <IconsFontAwesome5.h>
 #include <LLVMBackend.h>
@@ -89,7 +89,7 @@ namespace Rift::EditorSystem
 		ast.OnAdd<CTypeEditor>().Bind([](auto& ast, auto ids) {
 			for (AST::Id id : ids)
 			{
-				OnTypeEditorOpen(ast, id);
+				OnTypeEditorOpen(static_cast<AST::Tree&>(ast), id);
 			}
 		});
 	}
@@ -274,7 +274,7 @@ namespace Rift::EditorSystem
 				{
 					TArray<TPair<Path, String>> fileDatas;
 
-					auto dirtyTypeIds = AST::ListAll<CType, CTypeEditor, CFileRef, CFileDirty>(ast);
+					auto dirtyTypeIds = ECS::ListAll<CType, CTypeEditor, CFileRef, CFileDirty>(ast);
 					for (AST::Id typeId : dirtyTypeIds)
 					{
 						auto& file     = ast.Get<CFileRef>(typeId);
@@ -283,7 +283,7 @@ namespace Rift::EditorSystem
 					}
 
 					auto dirtyModuleIds =
-					    AST::ListAll<CModule, CModuleEditor, CFileRef, CFileDirty>(ast);
+					    ECS::ListAll<CModule, CModuleEditor, CFileRef, CFileDirty>(ast);
 					for (AST::Id moduleId : dirtyModuleIds)
 					{
 						auto& file     = ast.Get<CFileRef>(moduleId);
@@ -364,7 +364,7 @@ namespace Rift::EditorSystem
 				{
 					editorData.layout.Reset();
 
-					for (AST::Id typeId : AST::ListAll<CTypeEditor>(ast))
+					for (AST::Id typeId : ECS::ListAll<CTypeEditor>(ast))
 					{
 						auto& editor = ast.Get<CTypeEditor>(typeId);
 						editor.layout.Reset();
@@ -400,7 +400,7 @@ namespace Rift::EditorSystem
 	{
 		TAccess<TWrite<CModuleEditor>, TWrite<CModule>, TWrite<CIdentifier>, CFileRef>
 		    moduleEditors{ast};
-		for (AST::Id moduleId : AST::ListAll<CModule, CModuleEditor, CFileRef>(moduleEditors))
+		for (AST::Id moduleId : ECS::ListAll<CModule, CModuleEditor, CFileRef>(moduleEditors))
 		{
 			ZoneScopedN("Draw Type");
 
@@ -483,7 +483,7 @@ namespace Rift::EditorSystem
 		ZoneScoped;
 
 		TAccess<TWrite<CTypeEditor>, CType, CFileRef> typeEditors{ast};
-		for (AST::Id typeId : AST::ListAll<CType, CTypeEditor, CFileRef>(typeEditors))
+		for (AST::Id typeId : ECS::ListAll<CType, CTypeEditor, CFileRef>(typeEditors))
 		{
 			ZoneScopedN("Draw Type");
 

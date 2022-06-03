@@ -205,7 +205,7 @@ namespace Rift
 		projectModuleId = Modules::GetProjectId(access);
 
 		// Create module folders
-		TArray<AST::Id> modules = AST::ListAll<CModule>(access);
+		TArray<AST::Id> modules = ECS::ListAll<CModule>(access);
 		TMap<AST::Id, Path> moduleFolders;
 		moduleFolders.Reserve(modules.Size());
 		for (AST::Id moduleId : modules)
@@ -250,7 +250,7 @@ namespace Rift
 		}
 
 		// Create items
-		for (AST::Id typeId : AST::ListAll<CType, CFileRef>(access))
+		for (AST::Id typeId : ECS::ListAll<CType, CFileRef>(access))
 		{
 			auto& file = access.Get<const CFileRef>(typeId);
 			if (!file.path.empty())

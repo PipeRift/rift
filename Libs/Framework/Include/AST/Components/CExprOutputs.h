@@ -1,11 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Access.h"
-#include "AST/Filtering.h"
-#include "AST/Types.h"
 #include "AST/Utils/Hierarchy.h"
 
+#include <ECS/Access.h>
+#include <ECS/Id.h>
 #include <Types/Struct.h>
 
 
@@ -26,7 +25,7 @@ namespace Rift
 
 		bool IsNone() const
 		{
-			return ::IsNone(nodeId) || ::IsNone(pinId);
+			return ECS::IsNone(nodeId) || ECS::IsNone(pinId);
 		}
 	};
 

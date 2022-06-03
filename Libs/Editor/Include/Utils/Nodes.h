@@ -1,7 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <AST/Types.h>
+#include <AST/Id.h>
 #include <Math/Color.h>
 #include <Math/Vector.h>
 #include <Misc/EnumFlags.h>

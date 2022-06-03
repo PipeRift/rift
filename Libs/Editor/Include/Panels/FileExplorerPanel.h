@@ -7,10 +7,11 @@
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CModule.h>
 #include <AST/Components/CType.h>
-#include <AST/Filtering.h>
 #include <AST/Tree.h>
 #include <Containers/Array.h>
+#include <ECS/Filtering.h>
 #include <Strings/String.h>
+
 
 
 namespace Rift

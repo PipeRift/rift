@@ -6,7 +6,6 @@
 #include <Context.h>
 
 // Benches
-#include "Access.bench.h"
 
 
 class NoFileLogContext : public Rift::Context
@@ -18,5 +17,5 @@ public:
 int main()
 {
 	Rift::InitializeContext<NoFileLogContext>();
-	RunAccessBenchmarks();
+	// Run benches
 }

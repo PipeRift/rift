@@ -3,7 +3,6 @@
 #include "AST/Utils/TypeUtils.h"
 
 #include "AST/Components/CDeclClass.h"
-#include "AST/Components/CDeclFunction.h"
 #include "AST/Components/CDeclFunctionInterface.h"
 #include "AST/Components/CDeclFunctionLibrary.h"
 #include "AST/Components/CDeclStruct.h"
@@ -14,7 +13,6 @@
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CExprType.h"
 #include "AST/Components/CFileRef.h"
-#include "AST/Components/CIdentifier.h"
 #include "AST/Components/CLiteralBool.h"
 #include "AST/Components/CLiteralFloating.h"
 #include "AST/Components/CLiteralIntegral.h"
@@ -183,7 +181,7 @@ namespace Rift::Types
 
 	AST::Id AddVariable(AST::TypeRef type, Name name)
 	{
-		AST::Tree& ast = type.GetAST();
+		AST::Tree& ast = type.GetContext();
 
 		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);
@@ -198,7 +196,7 @@ namespace Rift::Types
 
 	AST::Id AddFunction(AST::TypeRef type, Name name)
 	{
-		AST::Tree& ast = type.GetAST();
+		AST::Tree& ast = type.GetContext();
 
 		AST::Id id = ast.Create();
 		ast.Add<CIdentifier>(id, name);
@@ -214,7 +212,7 @@ namespace Rift::Types
 
 	AST::Id AddCall(AST::TypeRef type, AST::Id functionId)
 	{
-		AST::Tree& ast       = type.GetAST();
+		AST::Tree& ast       = type.GetContext();
 		const AST::Id callId = ast.Create();
 
 		auto& callExprId      = ast.Add<CExprCallId>(callId);
@@ -256,38 +254,9 @@ namespace Rift::Types
 		return id;
 	}
 
-	void GetCallArgs(AST::Tree& ast, TSpan<AST::Id> callIds, TArray<AST::Id>& inputArgIds,
-	    TArray<AST::Id>& outputArgIds, TArray<AST::Id>& otherIds)
-	{
-		auto exprInputs  = ast.Filter<CExprInputs>();
-		auto exprOutputs = ast.Filter<CExprOutputs>();
-
-		TArray<AST::Id> children;
-		for (AST::Id id : callIds)
-		{
-			AST::Hierarchy::GetChildren(ast, id, children);
-		}
-
-		for (AST::Id id : children)
-		{
-			if (exprInputs.Has(id))
-			{
-				inputArgIds.Add(id);
-			}
-			else if (exprOutputs.Has(id))
-			{
-				outputArgIds.Add(id);
-			}
-			else
-			{
-				otherIds.Add(id);
-			}
-		}
-	}
-
 	AST::Id AddIf(AST::TypeRef type)
 	{
-		AST::Tree& ast   = type.GetAST();
+		AST::Tree& ast   = type.GetContext();
 		const AST::Id id = ast.Create();
 		ast.Add<CStmtIf>(id);
 		ast.Add<CStmtInput>(id);
@@ -312,7 +281,7 @@ namespace Rift::Types
 
 	AST::Id AddReturn(AST::TypeRef type)
 	{
-		AST::Tree& ast         = type.GetAST();
+		AST::Tree& ast         = type.GetContext();
 		const AST::Id returnId = ast.Create();
 		ast.Add<CStmtReturn>(returnId);
 		ast.Add<CStmtInput>(returnId);
@@ -325,7 +294,7 @@ namespace Rift::Types
 
 	AST::Id AddLiteral(AST::TypeRef type, AST::Id literalTypeId)
 	{
-		AST::Tree& ast   = type.GetAST();
+		AST::Tree& ast   = type.GetContext();
 		const AST::Id id = ast.Create();
 		ast.Add<CExprType>(id, {literalTypeId});
 		ast.Add<CExprOutputs>(id).Add(id);
@@ -409,7 +378,7 @@ namespace Rift::Types
 
 	AST::Id AddDeclarationReference(AST::TypeRef type, AST::Id declId)
 	{
-		AST::Tree& ast   = type.GetAST();
+		AST::Tree& ast   = type.GetContext();
 		const AST::Id id = ast.Create();
 
 		ast.Add<CExprDeclRef>(id);
@@ -432,7 +401,7 @@ namespace Rift::Types
 
 	AST::Id AddUnaryOperator(AST::TypeRef type, UnaryOperatorType operatorType)
 	{
-		AST::Tree& ast   = type.GetAST();
+		AST::Tree& ast   = type.GetContext();
 		const AST::Id id = ast.Create();
 		ast.Add<CExprUnaryOperator>(id, {operatorType});
 		ast.Add<CExprInputs>(id).Add(id);
@@ -446,7 +415,7 @@ namespace Rift::Types
 
 	AST::Id AddBinaryOperator(AST::TypeRef type, BinaryOperatorType operatorType)
 	{
-		AST::Tree& ast   = type.GetAST();
+		AST::Tree& ast   = type.GetContext();
 		const AST::Id id = ast.Create();
 		ast.Add<CExprBinaryOperator>(id, {operatorType});
 		ast.Add<CExprOutputs>(id);
@@ -462,21 +431,20 @@ namespace Rift::Types
 		return id;
 	}
 
-	AST::Id FindFunctionByName(AST::Tree& ast, Name ownerName, Name functionName)
+	AST::Id FindFunctionByName(
+	    TAccessRef<CDeclFunction, CIdentifier, CParent> access, Name ownerName, Name functionName)
 	{
-		auto& types = ast.GetStatic<STypes>();
+		auto& types = access.GetContext().GetStatic<STypes>();
 		if (const AST::Id* typeId = types.typesByName.Find(ownerName))
 		{
-			if (const auto* children = AST::Hierarchy::GetChildren(ast, *typeId))
+			TArray<AST::Id> children;
+			AST::Hierarchy::GetChildren(access, *typeId, children);
+			ECS::ExcludeIfNot<CDeclFunction, CIdentifier>(access, children);
+			for (AST::Id childId : children)
 			{
-				auto functions = ast.Filter<CDeclFunction, CIdentifier>();
-				for (AST::Id childId : *children)
+				if (access.Get<const CIdentifier>(childId).name == functionName)
 				{
-					if (functions.Has(childId)
-					    && functions.Get<CIdentifier>(childId).name == functionName)
-					{
-						return childId;
-					}
+					return childId;
 				}
 			}
 		}

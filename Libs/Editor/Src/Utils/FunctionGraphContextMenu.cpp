@@ -257,7 +257,7 @@ namespace Rift::Graph
 				}
 			}
 		}
-		TArray<AST::Id> calls = AST::GetIf<CExprCall>(ast, nodeIds);
+		TArray<AST::Id> calls = ECS::GetIf<CExprCall>(ast, nodeIds);
 		if (!calls.IsEmpty() && UI::MenuItem("Refresh"))
 		{
 			ast.Add<CCallDirty>(calls);
@@ -318,10 +318,10 @@ namespace Rift::Graph
 		{
 			String makeStr{};
 			auto& typeList = ast.GetStatic<STypes>();
-			auto types     = ast.Filter<CType>();
+			TAccess<CType> typesAccess{ast};
 			for (const auto& it : typeList.typesByName)
 			{
-				if (auto* type = types.TryGet<CType>(it.second))
+				if (auto* type = typesAccess.TryGet<const CType>(it.second))
 				{
 					makeStr.clear();
 					Strings::FormatTo(makeStr, "Make {}", type->name);
@@ -339,7 +339,7 @@ namespace Rift::Graph
 		{
 			static String label;
 			TAccess<CDeclFunction, CIdentifier, CChild, CType> access{ast};
-			for (AST::Id functionId : AST::ListAll<CDeclFunction, CIdentifier>(access))
+			for (AST::Id functionId : ECS::ListAll<CDeclFunction, CIdentifier>(access))
 			{
 				Name name = access.Get<const CIdentifier>(functionId).name;
 				label.clear();
@@ -366,7 +366,7 @@ namespace Rift::Graph
 		{
 			static String label;
 			TAccess<CDeclVariable, CIdentifier, CChild, CType> access{ast};
-			for (AST::Id variableId : AST::ListAll<CDeclVariable, CIdentifier>(access))
+			for (AST::Id variableId : ECS::ListAll<CDeclVariable, CIdentifier>(access))
 			{
 				Name name = access.Get<const CIdentifier>(variableId).name;
 				label.clear();

@@ -1,14 +1,14 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Access.h"
 #include "AST/Components/CStmtInput.h"
 #include "AST/Components/CStmtOutputs.h"
+#include "AST/Id.h"
 #include "AST/Tree.h"
-#include "AST/Types.h"
 #include "AST/Utils/Statements.h"
 
 #include <Containers/Span.h>
+#include <ECS/Filtering.h>
 
 
 // NOTE: In statement graphs, the Link Id is the Input Node Id

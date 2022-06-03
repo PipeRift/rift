@@ -43,7 +43,7 @@ namespace Rift
 			return instance;
 		}
 
-		static AST::Tree& GetAST()
+		static AST::Tree& GetContext()
 		{
 			return Get().ast;
 		}

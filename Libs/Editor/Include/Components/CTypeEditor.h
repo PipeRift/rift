@@ -3,11 +3,10 @@
 
 #include "DockSpaceLayout.h"
 
-#include <AST/Types.h>
+#include <AST/Id.h>
 #include <Types/Struct.h>
 #include <UI/UI.h>
 #include <Utils/NodesInternal.h>
-
 
 
 namespace Rift

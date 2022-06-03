@@ -2,13 +2,14 @@
 
 #pragma once
 
-#include "AST/Access.h"
 #include "AST/Components/CChild.h"
+#include "AST/Components/CDeclFunction.h"
 #include "AST/Components/CExprBinaryOperator.h"
 #include "AST/Components/CExprInputs.h"
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CExprUnaryOperator.h"
 #include "AST/Components/CFileRef.h"
+#include "AST/Components/CIdentifier.h"
 #include "AST/Components/CParent.h"
 #include "AST/Components/CStmtInput.h"
 #include "AST/Components/CStmtOutputs.h"
@@ -17,6 +18,8 @@
 #include "AST/Components/Tags/CDirty.h"
 #include "AST/Tree.h"
 #include "AST/TypeRef.h"
+
+#include <ECS/Access.h>
 
 
 namespace Rift::Types
@@ -46,8 +49,6 @@ namespace Rift::Types
 	AST::Id AddCall(AST::TypeRef type, AST::Id targetFunctionId);
 	AST::Id AddFunctionInput(AST::Tree& ast, AST::Id functionId, Name name = Name::None());
 	AST::Id AddFunctionOutput(AST::Tree& ast, AST::Id functionId, Name name = Name::None());
-	void GetCallArgs(AST::Tree& ast, TSpan<AST::Id> callIds, TArray<AST::Id>& inputArgIds,
-	    TArray<AST::Id>& outputArgIds, TArray<AST::Id>& otherIds);
 
 	AST::Id AddIf(AST::TypeRef type);
 	AST::Id AddReturn(AST::TypeRef type);
@@ -57,7 +58,8 @@ namespace Rift::Types
 	AST::Id AddUnaryOperator(AST::TypeRef type, UnaryOperatorType operatorType);
 	AST::Id AddBinaryOperator(AST::TypeRef type, BinaryOperatorType operatorType);
 
-	AST::Id FindFunctionByName(AST::Tree& ast, Name ownerName, Name functionName);
+	AST::Id FindFunctionByName(
+	    TAccessRef<CDeclFunction, CIdentifier, CParent> access, Name ownerName, Name functionName);
 
 	using RemoveAccess = TAccess<TWrite<CChanged>, TWrite<CFileDirty>, TWrite<CStmtInput>,
 	    TWrite<CStmtOutputs>, TWrite<CParent>, TWrite<CChild>, CFileRef>;

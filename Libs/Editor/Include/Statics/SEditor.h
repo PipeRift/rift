@@ -1,7 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Types.h"
+#include "AST/Id.h"
 #include "DockSpaceLayout.h"
 #include "Panels/FileExplorerPanel.h"
 #include "Tools/ASTDebugger.h"
@@ -12,7 +12,6 @@
 #include <Memory/OwnPtr.h>
 #include <Types/Struct.h>
 #include <UI/UI.h>
-
 
 
 namespace Rift

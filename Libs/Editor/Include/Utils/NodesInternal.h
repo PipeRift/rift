@@ -6,7 +6,7 @@
 #include "Utils/NodesMiniMap.h"
 
 #include <assert.h>
-#include <AST/Types.h>
+#include <AST/Id.h>
 #include <Containers/Array.h>
 #include <Containers/BitArray.h>
 #include <limits.h>
@@ -100,7 +100,7 @@ namespace Rift::Nodes
 	public:
 		T& GetOrAdd(AST::Id id, bool* outAdded = nullptr)
 		{
-			const u32 index  = AST::GetIndex(id);
+			const u32 index  = ECS::GetIndex(id);
 			const bool added = frameIds.FindOrAddSorted(id).second;
 			if (added && !lastFrameIds.ContainsSorted(id))
 			{
@@ -122,7 +122,7 @@ namespace Rift::Nodes
 
 		T& Get(AST::Id id)
 		{
-			return *GetByIndex(AST::GetIndex(id));
+			return *GetByIndex(ECS::GetIndex(id));
 		}
 
 		const T& Get(AST::Id id) const
@@ -134,7 +134,7 @@ namespace Rift::Nodes
 		{
 			if (Contains(id))
 			{
-				return GetByIndex(AST::GetIndex(id));
+				return GetByIndex(ECS::GetIndex(id));
 			}
 			return nullptr;
 		}
@@ -220,7 +220,7 @@ namespace Rift::Nodes
 
 		void ClearDepthOrder()
 		{
-			depthOrder.RemoveIf([this](AST::Id id) {
+			depthOrder.ExcludeIf([this](AST::Id id) {
 				return TIndexedArray<T>::invalidIds.ContainsSorted(id);
 			});
 		}

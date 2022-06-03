@@ -7,7 +7,7 @@
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CParent.h>
-#include <AST/Filtering.h>
+#include <ECS/Filtering.h>
 #include <Math/Vector.h>
 #include <Memory/Arenas/BigBestFitArena.h>
 #include <Memory/Blocks/Block.h>

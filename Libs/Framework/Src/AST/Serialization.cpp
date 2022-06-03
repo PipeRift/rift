@@ -26,9 +26,9 @@
 #include "AST/Components/CStmtReturn.h"
 #include "AST/Components/Tags/CNotSerialized.h"
 #include "AST/Components/Views/CNodePosition.h"
-#include "AST/Filtering.h"
 #include "AST/Utils/Hierarchy.h"
 
+#include <ECS/Filtering.h>
 #include <Reflection/TypeName.h>
 
 
@@ -249,10 +249,10 @@ namespace Rift::AST
 
 	void WriteContext::RemoveIgnoredEntities(TArray<Id>& entities)
 	{
-		auto notSerialized = ast.Filter<CNotSerialized>();
+		TAccess<CNotSerialized> access{ast};
 		for (i32 i = 0; i < entities.Size(); ++i)
 		{
-			if (notSerialized.Has(entities[i]))
+			if (access.Has<CNotSerialized>(entities[i]))
 			{
 				entities.RemoveAtSwapUnsafe(i);
 				--i;

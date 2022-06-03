@@ -1,16 +1,12 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Access.h"
+#include "AST/Components/CChild.h"
+#include "AST/Components/CParent.h"
+#include "AST/Id.h"
 
 #include <Containers/Span.h>
-
-
-namespace Rift
-{
-	struct CParent;
-	struct CChild;
-}    // namespace Rift
+#include <ECS/Access.h>
 
 
 namespace Rift::AST::Hierarchy

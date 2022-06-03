@@ -1,6 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "AST/Types.h"
+#include "AST/Id.h"
 
 #include "AST/Serialization.h"
 
@@ -9,7 +9,7 @@
 
 namespace Rift::Serl
 {
-	void Read(Serl::ReadContext& ct, AST::Id& val)
+	void Read(ReadContext& ct, AST::Id& val)
 	{
 		auto* astCt = dynamic_cast<AST::ReadContext*>(&ct);
 		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTReadContext")) [[likely]]
@@ -28,7 +28,7 @@ namespace Rift::Serl
 		}
 	}
 
-	void Write(Serl::WriteContext& ct, AST::Id val)
+	void Write(WriteContext& ct, AST::Id val)
 	{
 		auto* astCt = dynamic_cast<AST::WriteContext*>(&ct);
 		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTWriteContext")) [[likely]]

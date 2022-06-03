@@ -5,7 +5,6 @@
 #include "AST/Components/CDeclClass.h"
 #include "AST/Components/CDeclFunctionLibrary.h"
 #include "AST/Components/CDeclStruct.h"
-#include "AST/Components/CFileRef.h"
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CModule.h"
 #include "AST/Components/CType.h"
@@ -88,7 +87,7 @@ namespace Rift::LoadSystem
 		TSet<Path> modulePaths;
 
 		TAccess<CModule, CFileRef> access{ast};
-		auto modules = AST::ListAll<CModule>(access);
+		auto modules = ECS::ListAll<CModule>(access);
 
 		modulePaths.Reserve(modules.Size());
 		for (AST::Id moduleId : modules)
@@ -117,14 +116,16 @@ namespace Rift::LoadSystem
 	{
 		ZoneScoped;
 
-		// Remove existing Modules
-		auto modulesView = ast.Filter<CModule, CFileRef>();
-		paths.RemoveIfSwap([&modulesView](const Path& path) {
+		TAccess<TWrite<CModule>, TWrite<CFileRef>, CProject, TWrite<CChild>, TWrite<CParent>>
+		    access{ast};
+
+		// Remove existing module paths
+		auto moduleIds = ECS::ListAll<CModule, CFileRef>(access);
+		paths.ExcludeIfSwap([&access, &moduleIds](const Path& path) {
 			bool moduleExists = false;
-			for (AST::Id otherId : modulesView)
+			for (AST::Id id : moduleIds)
 			{
-				auto& otherFile = modulesView.Get<CFileRef>(otherId);
-				if (path == otherFile.path)
+				if (path == access.Get<const CFileRef>(id).path)
 				{
 					moduleExists = true;
 					break;
@@ -133,20 +134,19 @@ namespace Rift::LoadSystem
 			return moduleExists;
 		});
 
-
 		ids.Resize(paths.Size());
-		ast.Create(ids);
+		access.GetContext().Create(ids);
 
 		for (i32 i = 0; i < ids.Size(); ++i)
 		{
 			AST::Id id = ids[i];
-			ast.Add<CModule>(id);
-			ast.Add<CFileRef>(id, Move(paths[i]));
+			access.Add<CModule>(id);
+			access.Add<CFileRef>(id, Move(paths[i]));
 		}
 
 		// Link modules to the project
-		const AST::Id projectId = Modules::GetProjectId(ast);
-		AST::Hierarchy::AddChildren(ast, projectId, ids);
+		const AST::Id projectId = Modules::GetProjectId(access);
+		AST::Hierarchy::AddChildren(access, projectId, ids);
 	}
 
 	void CreateTypesFromPaths(
@@ -163,7 +163,7 @@ namespace Rift::LoadSystem
 		// Remove existing types
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
-			modulePaths.paths.RemoveIfSwap([types, &modulePaths](const Path& path) {
+			modulePaths.paths.ExcludeIfSwap([types, &modulePaths](const Path& path) {
 				const Name pathName{Paths::ToString(path)};
 
 				if (!types->typesByPath.Contains(pathName))
@@ -200,16 +200,13 @@ namespace Rift::LoadSystem
 		}
 	}
 
-	void LoadFileStrings(AST::Tree& ast, TSpan<AST::Id> nodes, TArray<String>& strings)
+	void LoadFileStrings(TAccessRef<CFileRef> access, TSpan<AST::Id> nodes, TArray<String>& strings)
 	{
 		ZoneScoped;
-
 		strings.Resize(nodes.Size());
-
-		auto filesView = ast.Filter<CFileRef>();
 		for (i32 i = 0; i < nodes.Size(); ++i)
 		{
-			if (auto* file = filesView.TryGet<CFileRef>(nodes[i])) [[likely]]
+			if (auto* file = access.TryGet<const CFileRef>(nodes[i])) [[likely]]
 			{
 				if (!Files::LoadStringFile(file->path, strings[i], 4))
 				{

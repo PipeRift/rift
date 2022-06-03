@@ -2,7 +2,7 @@
 
 #include "AST/Utils/Statements.h"
 
-#include "AST/Types.h"
+#include "AST/Id.h"
 #include "AST/Utils/Hierarchy.h"
 
 

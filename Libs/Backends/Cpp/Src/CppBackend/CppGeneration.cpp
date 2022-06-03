@@ -15,11 +15,11 @@
 #include <AST/Components/CModule.h>
 #include <AST/Components/CParent.h>
 #include <AST/Components/CType.h>
-#include <AST/Filtering.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Context.h>
+#include <ECS/Filtering.h>
 #include <Files/Files.h>
 #include <Strings/String.h>
 
@@ -247,11 +247,11 @@ namespace Rift::Compiler::Cpp
 
 		TArray<AST::Id> classes, structs;
 		AST::Hierarchy::GetChildren(ast, moduleId, classes);
-		AST::RemoveIfNot<CType>(ast, classes);
+		ECS::ExcludeIfNot<CType>(ast, classes);
 		structs = classes;
 
-		AST::RemoveIfNot<CDeclClass>(ast, classes);
-		AST::RemoveIfNot<CDeclStruct>(ast, structs);
+		ECS::ExcludeIfNot<CDeclClass>(ast, classes);
+		ECS::ExcludeIfNot<CDeclStruct>(ast, structs);
 
 		Spacing(code);
 		Comment(code, "Forward declarations");
@@ -265,7 +265,7 @@ namespace Rift::Compiler::Cpp
 		TArray<AST::Id> functions;
 		// Module -> Types -> Functions = depth 2
 		AST::Hierarchy::GetChildrenDeep(ast, moduleId, functions, 2);
-		AST::RemoveIfNot<CIdentifier, CDeclFunction>(ast, functions);
+		ECS::ExcludeIfNot<CIdentifier, CDeclFunction>(ast, functions);
 
 		Spacing(code);
 		Comment(code, "Function Declarations");
@@ -301,7 +301,7 @@ namespace Rift::Compiler::Cpp
 
 		GenParameters(context.ast);
 
-		for (AST::Id moduleId : AST::ListAll<CModule>(context.ast))
+		for (AST::Id moduleId : ECS::ListAll<CModule>(context.ast))
 		{
 			GenerateModuleCode(context, moduleId, generatePath);
 		}

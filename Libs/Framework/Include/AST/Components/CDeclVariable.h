@@ -2,6 +2,7 @@
 #pragma once
 
 #include "AST/Components/CDeclaration.h"
+#include "AST/Id.h"
 #include "Reflection/ReflectionFlags.h"
 
 

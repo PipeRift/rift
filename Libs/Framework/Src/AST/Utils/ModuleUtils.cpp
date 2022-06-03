@@ -10,6 +10,7 @@
 #include "AST/Systems/TypeSystem.h"
 #include "AST/Utils/Paths.h"
 
+#include <ECS/Filtering.h>
 #include <Files/Files.h>
 #include <Files/Paths.h>
 #include <Serialization/Formats/JsonFormat.h>
@@ -117,7 +118,7 @@ namespace Rift::Modules
 
 	Id GetProjectId(TAccessRef<CProject> access)
 	{
-		return GetFirst<CProject>(access);
+		return ECS::GetFirst<CProject>(access);
 	}
 
 	Name GetProjectName(TAccessRef<CProject, CIdentifier, CFileRef> access)

@@ -2,7 +2,7 @@
 
 #include "Utils/Properties.h"
 
-#include "AST/Types.h"
+#include "AST/Id.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "UI/Style.h"
@@ -12,10 +12,10 @@
 #include "Utils/Nodes.h"
 #include "Utils/Widgets.h"
 
-#include <AST/Filtering.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/TypeUtils.h>
+#include <ECS/Filtering.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
 #include <Misc/EnumFlags.h>
@@ -38,7 +38,8 @@ namespace Rift
 
 		ImGui::PushID(identifier);
 
-		const Color color = Style::GetTypeColor(access.GetAST(), variableDecl->typeId);
+		const Color color =
+		    Style::GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), variableDecl->typeId);
 		static constexpr float frameHeight = 20.f;
 
 		UI::TableNextColumn();
@@ -165,7 +166,7 @@ namespace Rift
 			UI::Indent(10.f);
 			TArray<AST::Id> variableIds;
 			AST::Hierarchy::GetChildren(access, typeId, variableIds);
-			AST::RemoveIfNot<CDeclVariable>(access, variableIds);
+			ECS::ExcludeIfNot<CDeclVariable>(access, variableIds);
 
 			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
 			bool showTable = UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit);
@@ -190,7 +191,8 @@ namespace Rift
 			if (UI::Button(ICON_FA_PLUS "##Variable", ImVec2(-FLT_MIN, 0.0f)))
 			{
 				ScopedChange(transAccess, typeId);
-				Types::AddVariable({access.GetAST(), typeId}, "NewVariable");
+				Types::AddVariable(
+				    {static_cast<AST::Tree&>(access.GetContext()), typeId}, "NewVariable");
 			}
 			Style::PopStyleCompact();
 			UI::Unindent(10.f);
@@ -205,18 +207,14 @@ namespace Rift
 		                               | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
 		if (UI::CollapsingHeader("Functions", flags))
 		{
-			auto functionView = ast.Filter<CDeclFunction>();
 			UI::Indent(10.f);
 
-			if (auto* children = AST::Hierarchy::GetChildren(ast, typeId))
+			TArray<AST::Id> functionIds;
+			AST::Hierarchy::GetChildren(ast, typeId, functionIds);
+			ECS::ExcludeIfNot<CDeclFunction>(ast, functionIds);
+			for (AST::Id functionId : functionIds)
 			{
-				for (AST::Id child : *children)
-				{
-					if (functionView.Has(child))
-					{
-						DrawFunction(ast, editor, typeId, child);
-					}
-				}
+				DrawFunction(ast, editor, typeId, functionId);
 			}
 
 			Style::PushStyleCompact();

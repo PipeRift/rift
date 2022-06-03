@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <AST/Types.h>
+#include <AST/Id.h>
 #include <Math/Vector.h>
 #include <Platform/Platform.h>
 
