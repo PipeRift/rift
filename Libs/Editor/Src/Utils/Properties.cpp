@@ -148,12 +148,11 @@ namespace Rift
 
 		if (ImGui::BeginPopupContextItem())
 		{
+			Graph::DrawNodesContextMenu(ast, typeId, id);
 			if (UI::MenuItem("Show in Graph"))
 			{
 				Nodes::MoveToNode(id, v2{150.f, 150.f});
 			}
-			UI::Separator();
-			Graph::DrawNodesContextMenu(ast, typeId, id);
 			ImGui::EndPopup();
 		}
 	}

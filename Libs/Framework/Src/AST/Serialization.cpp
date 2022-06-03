@@ -147,10 +147,8 @@ namespace Rift::AST
 			BeginObject();
 			// TODO: Use reflection for this
 			ReadPool<CChild>(*this, ast);
-			ReadPool<CDeclClass>(*this, ast);
-			ReadPool<CDeclFunction>(*this, ast);
-			ReadPool<CDeclStruct>(*this, ast);
 			ReadPool<CDeclVariable>(*this, ast);
+			ReadPool<CDeclFunction>(*this, ast);
 			ReadPool<CExprBinaryOperator>(*this, ast);
 			ReadPool<CExprCall>(*this, ast);
 			ReadPool<CExprDeclRefId>(*this, ast);
@@ -204,8 +202,6 @@ namespace Rift::AST
 			BeginObject();
 			// TODO: Use reflection for this
 			WritePool<CChild>(*this, ast, treeEntities);
-			WritePool<CDeclStruct>(*this, ast, treeEntities);
-			WritePool<CDeclClass>(*this, ast, treeEntities);
 			WritePool<CDeclVariable>(*this, ast, treeEntities);
 			WritePool<CDeclFunction>(*this, ast, treeEntities);
 			WritePool<CExprBinaryOperator>(*this, ast, treeEntities);

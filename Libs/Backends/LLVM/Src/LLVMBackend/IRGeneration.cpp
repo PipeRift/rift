@@ -14,6 +14,7 @@
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprCall.h>
+#include <AST/Components/CExprInputs.h>
 #include <AST/Components/CExprOutputs.h>
 #include <AST/Components/CExprType.h>
 #include <AST/Components/CLiteralBool.h>
@@ -24,6 +25,7 @@
 #include <AST/Components/CStmtOutputs.h>
 #include <AST/Components/CStmtReturn.h>
 #include <AST/Components/CType.h>
+#include <AST/Components/Tags/CInvalid.h>
 #include <AST/Filtering.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
@@ -41,15 +43,16 @@ namespace Rift::Compiler::LLVM
 	using namespace llvm;
 
 
-	using BlockAccessRef = TAccessRef<CStmtOutput, CStmtOutputs, CStmtIf, CExprCallId, CIRFunction>;
+	using BlockAccessRef = TAccessRef<CStmtOutput, CStmtOutputs, CExprInputs, CStmtIf, CExprCallId,
+	    CIRFunction, CIRValue>;
 
 	// Forward declarations
 	void AddStmtBlock(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
 	    BlockAccessRef access, AST::Id firstStmtId, BasicBlock* block, const CIRFunction& function);
 	BasicBlock* AddIf(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
 	    BlockAccessRef access, AST::Id id, const CIRFunction& function);
-	void AddCall(Context& context, LLVMContext& llvm, IRBuilder<>& builder, const CExprCallId& call,
-	    BlockAccessRef access);
+	void AddCall(Context& context, LLVMContext& llvm, IRBuilder<>& builder, AST::Id id,
+	    const CExprCallId& call, BlockAccessRef access);
 
 
 	void BindNativeTypes(LLVMContext& llvm, TAccessRef<CType, TWrite<CIRType>> access)
@@ -116,7 +119,8 @@ namespace Rift::Compiler::LLVM
 	}
 
 	void DeclareFunctions(Context& context, LLVMContext& llvm, IRBuilder<>& builder,
-	    TAccessRef<TWrite<CIRFunction>, CIdentifier, CExprType, CExprOutputs, CIRType, CParent>
+	    TAccessRef<TWrite<CIRFunction>, CIdentifier, CExprType, CExprOutputs, CIRType, CParent,
+	        CInvalid>
 	        access,
 	    TSpan<AST::Id> ids, Module& irModule)
 	{
@@ -127,32 +131,40 @@ namespace Rift::Compiler::LLVM
 		{
 			auto& functionComp = access.Add<CIRFunction>(id);
 
-			// Gather arguments
-			AST::Hierarchy::GetChildren(access, id, inputIds);
-			AST::RemoveIfNot<CExprOutputs>(access, inputIds);
-			AST::RemoveIfNot<CExprType>(access, inputIds);
-			for (i32 i = 0; i < inputIds.Size(); ++i)
+			inputIds.Empty(false);
+			inputTypes.Empty(false);
+			if (auto* outputs = access.TryGet<const CExprOutputs>(id))
 			{
-				AST::Id inputId = inputIds[i];
-				AST::Id typeId  = access.Get<const CExprType>(inputId).id;
-				if (auto* irType = access.TryGet<const CIRType>(typeId))
+				for (i32 i = 0; i < outputs->pinIds.Size(); ++i)
 				{
-					inputTypes.Add(irType->instance);
-				}
-				else
-				{
-					const Name argName      = Names::GetName(access, inputId);
-					const Name functionName = Names::GetName(access, id);
-					context.AddError(Strings::Format(
-					    "Input '{}' in function '{}' has an invalid type", argName, functionName));
+					AST::Id inputId = outputs->pinIds[i];
+					if (access.Has<CInvalid>(inputId))
+					{
+						continue;
+					}
 
-					inputIds.RemoveAt(i, false);    // Remove input to keep ids stable with args
-					--i;
+					inputIds.Add(inputId);
+
+					AST::Id typeId = access.Get<const CExprType>(inputId).id;
+					auto* irType   = access.TryGet<const CIRType>(typeId);
+					if (irType && irType->instance)
+					{
+						inputTypes.Add(irType->instance);
+					}
+					else
+					{
+						const Name argName      = Names::GetName(access, inputId);
+						const Name functionName = Names::GetName(access, id);
+						context.AddError(Strings::Format(
+						    "Input '{}' in function '{}' has an invalid type. Using i32 instead.",
+						    argName, functionName));
+						inputTypes.Add(builder.getInt32Ty());
+					}
 				}
 			}
 
 			// Create function
-			const CIdentifier& ident = access.Get<const CIdentifier>(id);
+			auto& ident        = access.Get<const CIdentifier>(id);
 			auto* functionType = FunctionType::get(builder.getVoidTy(), ToLLVM(inputTypes), false);
 			functionComp.instance = Function::Create(
 			    functionType, Function::ExternalLinkage, ToLLVM(ident.name), &irModule);
@@ -188,7 +200,7 @@ namespace Rift::Compiler::LLVM
 		{
 			if (const auto* call = access.TryGet<const CExprCallId>(id))
 			{
-				AddCall(context, llvm, builder, *call, access);
+				AddCall(context, llvm, builder, id, *call, access);
 			}
 		}
 
@@ -229,8 +241,18 @@ namespace Rift::Compiler::LLVM
 		return contBlock;
 	}
 
-	void AddCall(Context& context, LLVMContext& llvm, IRBuilder<>& builder, const CExprCallId& call,
-	    BlockAccessRef access)
+	Value* AddExpr(
+	    Context& context, IRBuilder<>& builder, BlockAccessRef access, const OutputId& output)
+	{
+		if (auto* value = access.TryGet<const CIRValue>(output.pinId))
+		{
+			return value->instance;
+		}
+		return nullptr;
+	}
+
+	void AddCall(Context& context, LLVMContext& llvm, IRBuilder<>& builder, AST::Id id,
+	    const CExprCallId& call, BlockAccessRef access)
 	{
 		const AST::Id functionId = call.functionId;
 		if (!access.IsValid(functionId))
@@ -246,7 +268,18 @@ namespace Rift::Compiler::LLVM
 		}
 
 		TArray<Value*> args;
-		// TODO: Pass arguments
+		if (auto* inputs = access.TryGet<const CExprInputs>(id))
+		{
+			args.Reserve(inputs->linkedOutputs.Size());
+			for (i32 i = 0; i < inputs->linkedOutputs.Size(); ++i)
+			{
+				OutputId output = inputs->linkedOutputs[i];
+				if (!output.IsNone())
+				{
+					args.Add(AddExpr(context, builder, access, output));
+				}
+			}
+		}
 		builder.CreateCall(function->instance, ToLLVM(args));
 	}
 
@@ -328,9 +361,8 @@ namespace Rift::Compiler::LLVM
 		TArray<AST::Id> typeIds;
 		AST::Hierarchy::GetChildren(ast, moduleId, typeIds);
 		AST::RemoveIfNot<CType>(ast, typeIds);
-		TArray<AST::Id> classIds = typeIds, structIds = typeIds;
-		AST::RemoveIfNot<CDeclStruct>(ast, structIds);
-		AST::RemoveIfNot<CDeclClass>(ast, classIds);
+		TArray<AST::Id> structIds = AST::GetIf<CDeclStruct>(ast, typeIds);
+		TArray<AST::Id> classIds  = AST::GetIf<CDeclClass>(ast, typeIds);
 
 		DeclareStructs(llvm, ast, structIds, false);
 		DeclareStructs(llvm, ast, classIds, true);    // Declare classes

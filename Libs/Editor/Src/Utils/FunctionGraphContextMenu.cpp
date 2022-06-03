@@ -343,11 +343,11 @@ namespace Rift::Graph
 			{
 				Name name = access.Get<const CIdentifier>(functionId).name;
 				label.clear();
-				AST::Id typeId = AST::Hierarchy::GetParent(access, functionId);
-				if (!IsNone(typeId) && access.Has<CType>(typeId))
+				AST::Id funcTypeId = AST::Hierarchy::GetParent(access, functionId);
+				if (!IsNone(funcTypeId) && access.Has<CType>(funcTypeId))
 				{
 					Strings::FormatTo(
-					    label, "{}   ({})", name, access.Get<const CType>(typeId).name);
+					    label, "{}   ({})", name, access.Get<const CType>(funcTypeId).name);
 				}
 				else
 				{
