@@ -2,13 +2,14 @@
 
 #pragma once
 
-#include "AST/Access.h"
 #include "Components/CTypeEditor.h"
 
 #include <AST/Components/CExprBinaryOperator.h>
 #include <AST/Components/CExprUnaryOperator.h>
 #include <AST/Components/CType.h>
 #include <AST/Utils/TypeUtils.h>
+#include <ECS/Access.h>
+
 
 
 namespace Rift::Types

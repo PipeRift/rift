@@ -9,11 +9,12 @@
 #include <AST/Components/CDeclClass.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CModule.h>
-#include <AST/Filtering.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Context.h>
+#include <ECS/Filtering.h>
 #include <Files/Files.h>
 #include <Misc/DateTime.h>
+
 
 
 namespace Rift::Compiler
@@ -112,7 +113,7 @@ namespace Rift::Compiler
 		}
 
 		TAccess<CModule> modules{context.ast};
-		for (AST::Id moduleId : AST::ListAll<CModule>(modules))
+		for (AST::Id moduleId : ECS::ListAll<CModule>(modules))
 		{
 			Name name = Modules::GetModuleName(context.ast, moduleId);
 			if (!Files::Copy(cmakePath / name.ToString() / context.config.buildMode,

@@ -24,11 +24,11 @@ namespace Rift::AST
 			}
 		}
 
-		Tree& GetAST()
+		Tree& GetContext()
 		{
 			return ast;
 		}
-		const Tree& GetAST() const
+		const Tree& GetContext() const
 		{
 			return ast;
 		}

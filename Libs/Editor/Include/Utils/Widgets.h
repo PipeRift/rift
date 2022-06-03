@@ -6,9 +6,10 @@
 #include <AST/Components/CDeclNative.h>
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CType.h>
-#include <AST/Filtering.h>
 #include <AST/Tree.h>
+#include <ECS/Filtering.h>
 #include <Strings/StringView.h>
+
 
 
 namespace Rift::Editor

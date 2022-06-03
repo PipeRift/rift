@@ -1,10 +1,12 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "AST/Components/CFileRef.h"
 #include "AST/Tree.h"
 
 #include <Containers/Array.h>
 #include <Containers/Span.h>
+#include <ECS/Filtering.h>
 
 
 namespace Rift::AST
@@ -40,7 +42,8 @@ namespace Rift::LoadSystem
 	void CreateTypesFromPaths(
 	    AST::Tree& ast, TSpan<ModuleTypePaths> pathsByModule, TArray<AST::Id>& ids);
 
-	void LoadFileStrings(AST::Tree& ast, TSpan<AST::Id> nodes, TArray<String>& strings);
+	void LoadFileStrings(
+	    TAccessRef<CFileRef> access, TSpan<AST::Id> nodes, TArray<String>& strings);
 
 	void DeserializeModules(AST::Tree& ast, TSpan<AST::Id> moduleIds, TSpan<String> strings);
 	void DeserializeTypes(AST::Tree& ast, TSpan<AST::Id> typeIds, TSpan<String> strings);

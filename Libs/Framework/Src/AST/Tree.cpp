@@ -8,73 +8,41 @@
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
 
+#include <ECS/Filtering.h>
+
 
 namespace Rift::AST
 {
 	Tree::Tree()
 	{
 		SetupNativeTypes();
-		CachePools();
 	}
 
-	Tree::Tree(const Tree& other) noexcept
+	Tree::Tree(const Tree& other) noexcept : ECS::Context(other)
 	{
 		CopyFrom(other);
 	}
-	Tree::Tree(Tree&& other) noexcept
+	Tree::Tree(Tree&& other) noexcept : ECS::Context(Move(other))
 	{
 		MoveFrom(Move(other));
 	}
 	Tree& Tree::operator=(const Tree& other) noexcept
 	{
-		Reset();
+		ECS::Context::operator=(other);
 		CopyFrom(other);
 		return *this;
 	}
 	Tree& Tree::operator=(Tree&& other) noexcept
 	{
-		Reset();
+		ECS::Context::operator=(Move(other));
 		MoveFrom(Move(other));
 		return *this;
-	}
-
-	Id Tree::Create()
-	{
-		return idRegistry.Create();
-	}
-	void Tree::Create(TSpan<Id> ids)
-	{
-		idRegistry.Create(ids);
-	}
-
-	void Tree::Destroy(const Id id)
-	{
-		idRegistry.Destroy(id);
-		for (auto& pool : pools)
-		{
-			pool.GetPool()->Remove(id);
-		}
-	}
-
-	void Tree::Destroy(TSpan<const Id> ids)
-	{
-		idRegistry.Destroy(ids);
-		for (auto& pool : pools)
-		{
-			pool.GetPool()->Remove(ids);
-		}
-	}
-
-	Pool* Tree::GetPool(Refl::TypeId componentId) const
-	{
-		const i32 index = pools.FindSortedEqual(PoolInstance{componentId});
-		return index != NO_INDEX ? pools[index].GetPool() : nullptr;
 	}
 
 	void Tree::SetupNativeTypes()
 	{
 		// Remove any previous native types
-		Destroy(Filter<CDeclNative>().GetIds());
+		Destroy(ListAll<CDeclNative>(*this));
 
 		nativeTypes.boolId = Create();
 		Add<CDeclNative>(nativeTypes.boolId);
@@ -125,28 +93,8 @@ namespace Rift::AST
 		Add<CType>(nativeTypes.stringId, {"String"});
 	}
 
-	void Tree::CachePools()
-	{
-		AssurePool<CParent>();
-		AssurePool<CChild>();
-
-		parentView = MakeOwned<TFilter<FilterAccess::In<CParent>>>(Filter<CParent>());
-		childView  = MakeOwned<TFilter<FilterAccess::In<CChild>>>(Filter<CChild>());
-	}
-
 	void Tree::CopyFrom(const Tree& other)
 	{
-		// Copy entities
-		idRegistry = other.idRegistry;
-
-		// Copy component pools. Assume already sorted
-		for (const PoolInstance& otherInstance : other.pools)
-		{
-			PoolInstance instance{otherInstance};
-			instance.pool->TransferToTree(*this);
-			pools.Add(Move(instance));
-		}
-
 		// Copy non-transient unique components
 		// TODO: Use reflection for this
 		if (auto* modulesStatic = other.TryGetStatic<SModules>())
@@ -159,20 +107,10 @@ namespace Rift::AST
 		}
 
 		nativeTypes = other.nativeTypes;
-		CachePools();
 	}
 
 	void Tree::MoveFrom(Tree&& other)
 	{
-		idRegistry = Move(other.idRegistry);
-		pools      = Move(other.pools);
-		for (auto& instance : pools)
-		{
-			instance.pool->TransferToTree(*this);
-		}
-		statics     = Move(other.statics);
 		nativeTypes = other.nativeTypes;
-
-		CachePools();
 	}
 }    // namespace Rift::AST

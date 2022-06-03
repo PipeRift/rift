@@ -2,7 +2,7 @@
 #pragma once
 
 #include "AST/Components/CExpression.h"
-#include "AST/Types.h"
+#include "AST/Id.h"
 #include "Reflection/ReflectionFlags.h"
 
 #include <Serialization/ContextsFwd.h>

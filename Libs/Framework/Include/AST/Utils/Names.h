@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "AST/Access.h"
 #include "AST/Components/CIdentifier.h"
+
+#include <ECS/Access.h>
 
 
 namespace Rift::Names

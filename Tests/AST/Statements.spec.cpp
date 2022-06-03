@@ -1,6 +1,5 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include <AST/FilterAccess.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TypeUtils.h>

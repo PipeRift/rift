@@ -8,7 +8,7 @@ namespace Rift::Compiler
 	TArray<Refl::ClassType*> GetBackendTypes()
 	{
 		TArray<Refl::ClassType*> types = Backend::GetStaticType()->GetChildren();
-		types.RemoveIf([](Refl::ClassType* type) {
+		types.ExcludeIf([](Refl::ClassType* type) {
 			return !type || type->HasFlag(Class_Abstract);
 		});
 		return Move(types);

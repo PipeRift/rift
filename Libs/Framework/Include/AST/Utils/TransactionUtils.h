@@ -2,11 +2,12 @@
 
 #pragma once
 
-#include "AST/Access.h"
 #include "AST/Components/CChild.h"
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
+
+#include <ECS/Access.h>
 
 
 namespace Rift

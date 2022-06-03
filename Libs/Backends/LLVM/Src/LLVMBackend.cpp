@@ -6,7 +6,6 @@
 #include "LLVMBackend/IRGeneration.h"
 #include "LLVMBackend/LLVMHelpers.h"
 
-#include <AST/Filtering.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/IR/IRBuilder.h>
@@ -81,13 +80,13 @@ namespace Rift::Compiler
 			    targetTriple, "generic", "", options, llvm::Optional<llvm::Reloc::Model>());
 
 			// Emit LLVM IR to console
-			for (AST::Id moduleId : AST::ListAll<CIRModule>(context.ast))
+			for (AST::Id moduleId : ECS::ListAll<CIRModule>(context.ast))
 			{
 				const auto& irModule = context.ast.Get<const CIRModule>(moduleId).instance;
 				irModule->print(llvm::outs(), nullptr);
 			}
 
-			for (AST::Id moduleId : AST::ListAll<CIRModule>(context.ast))
+			for (AST::Id moduleId : ECS::ListAll<CIRModule>(context.ast))
 			{
 				LLVM::SaveModuleObject(context, moduleId, targetMachine, targetTriple);
 			}

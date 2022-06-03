@@ -2,10 +2,7 @@
 
 #include "AST/Utils/Hierarchy.h"
 
-#include "AST/Components/CChild.h"
-#include "AST/Components/CIdentifier.h"
-#include "AST/Components/CParent.h"
-#include "Misc/Checks.h"
+#include <Misc/Checks.h>
 
 
 namespace Rift::AST::Hierarchy
@@ -322,7 +319,7 @@ namespace Rift::AST::Hierarchy
 		RemoveChildren(access, nodes, true);
 
 		RemoveAllChildren(access, nodes);
-		access.GetAST().Destroy(nodes);
+		access.GetContext().Destroy(nodes);
 	}
 
 	void RemoveDeep(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TSpan<Id> nodes)
@@ -332,7 +329,7 @@ namespace Rift::AST::Hierarchy
 		TArray<Id> allNodes;
 		allNodes.Append(nodes);
 		GetChildrenDeep(access, nodes, allNodes);
-		access.GetAST().Destroy(allNodes);
+		access.GetContext().Destroy(allNodes);
 	}
 
 

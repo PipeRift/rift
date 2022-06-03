@@ -6,9 +6,9 @@
 #include "AST/Components/CIdentifier.h"
 #include "AST/Components/CModule.h"
 #include "AST/Components/CProject.h"
-#include "AST/Filtering.h"
 #include "AST/Tree.h"
 
+#include <ECS/Filtering.h>
 #include <Memory/OwnPtr.h>
 
 

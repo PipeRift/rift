@@ -8,24 +8,28 @@
 #include "AST/Components/CLiteralIntegral.h"
 #include "AST/Components/CLiteralString.h"
 #include "AST/Components/CType.h"
-#include "AST/Filtering.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Tree.h"
+
+#include <ECS/Filtering.h>
 
 
 namespace Rift::TypeSystem
 {
 	void Init(AST::Tree& ast)
 	{
+		TAccess<const CType> access{ast};
+
 		auto& types = ast.GetOrSetStatic<STypes>();
 		types.typesByName.Empty();
 
 		// Cache existing types
-		auto typesView = ast.Filter<const CType>();
-		types.typesByName.Reserve(u32(typesView.Size()));
-		for (AST::Id typeId : typesView)
+
+		auto typeIds = ECS::ListAll<CType>(access);
+		types.typesByName.Reserve(u32(typeIds.Size()));
+		for (AST::Id typeId : typeIds)
 		{
-			const auto& type = typesView.Get<const CType>(typeId);
+			const auto& type = access.Get<const CType>(typeId);
 			types.typesByName.Insert(type.name, typeId);
 		}
 
@@ -80,7 +84,7 @@ namespace Rift::TypeSystem
 
 	void PropagateVariableTypes(PropagateVariableTypesAccess access)
 	{
-		for (AST::Id id : AST::ListAll<CExprDeclRefId>(access))
+		for (AST::Id id : ECS::ListAll<CExprDeclRefId>(access))
 		{
 			const AST::Id declId = access.Get<const CExprDeclRefId>(id).declarationId;
 			if (access.IsValid(declId))
@@ -94,6 +98,6 @@ namespace Rift::TypeSystem
 	void PropagateExpressionTypes(AST::Tree& ast)
 	{
 		TArray<AST::Id> literals =
-		    AST::ListAny<CLiteralBool, CLiteralIntegral, CLiteralFloating, CLiteralString>(ast);
+		    ECS::ListAny<CLiteralBool, CLiteralIntegral, CLiteralFloating, CLiteralString>(ast);
 	}
 }    // namespace Rift::TypeSystem
