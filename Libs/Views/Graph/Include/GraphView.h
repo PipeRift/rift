@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Misc/EnumFlags.h"
+#include "Core/EnumFlags.h"
 
 #include <Compiler/Backend.h>
 #include <Plugin.h>

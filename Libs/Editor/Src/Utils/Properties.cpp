@@ -15,10 +15,10 @@
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/TypeUtils.h>
+#include <Core/EnumFlags.h>
 #include <ECS/Filtering.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
-#include <Misc/EnumFlags.h>
 #include <UI/UI.h>
 
 

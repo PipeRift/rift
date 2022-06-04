@@ -21,7 +21,7 @@
 #include <AST/Components/CType.h>
 #include <AST/Components/Tags/CDirty.h>
 #include <Compiler/Compiler.h>
-#include <Containers/Array.h>
+#include <Core/Array.h>
 #include <CppBackend.h>
 #include <ECS/Filtering.h>
 #include <Files/FileDialog.h>
@@ -256,8 +256,8 @@ namespace Rift::EditorSystem
 			{
 				if (UI::MenuItem("Open Project"))
 				{
-					const Path folder =
-					    Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
+					const Pipe::Path folder =
+					    Files::SelectFolderDialog("Select project folder", Pipe::GetCurrentPath());
 					if (Editor::Get().OpenProject(folder))
 					{
 						editorData.skipFrameAfterMenu = true;
@@ -390,7 +390,7 @@ namespace Rift::EditorSystem
 				ast.Remove<CFileDirty>(moduleId);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
-				    Strings::Format("Saved file {}", Paths::GetFilename(file.path))});
+				    Strings::Format("Saved file {}", Pipe::GetFilename(file.path))});
 			}
 			UI::EndMenuBar();
 		}
@@ -408,8 +408,8 @@ namespace Rift::EditorSystem
 			const auto& file   = moduleEditors.Get<const CFileRef>(moduleId);
 
 			bool isOpen               = true;
-			const String path         = Paths::ToString(file.path);
-			const StringView filename = Paths::GetFilename(path);
+			const String path         = Pipe::ToString(file.path);
+			const StringView filename = Pipe::GetFilename(path);
 			const StringView dirty    = ast.Has<CFileDirty>(moduleId) ? "*" : "";
 			const String windowName   = Strings::Format("{}{}###{}", filename, dirty, moduleId);
 
@@ -463,7 +463,7 @@ namespace Rift::EditorSystem
 				Types::Serialize(ast, typeId, fileData.second);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
-				    Strings::Format("Saved file {}", Paths::GetFilename(file.path))});
+				    Strings::Format("Saved file {}", Pipe::GetFilename(file.path))});
 
 				Files::SaveStringFile(fileData.first, fileData.second);
 				ast.Remove<CFileDirty>(typeId);
@@ -491,8 +491,8 @@ namespace Rift::EditorSystem
 			const auto& file = typeEditors.Get<const CFileRef>(typeId);
 
 			bool isOpen               = true;
-			const String path         = Paths::ToString(file.path);
-			const StringView filename = Paths::GetFilename(path);
+			const String path         = Pipe::ToString(file.path);
+			const StringView filename = Pipe::GetFilename(path);
 			const StringView dirty    = ast.Has<CFileDirty>(typeId) ? "*" : "";
 			const String windowName   = Strings::Format("{}{}###{}", filename, dirty, typeId);
 

@@ -33,7 +33,8 @@ namespace Rift
 
 			if (UI::Button("Open", v2{-FLT_MIN, 0.0f}))
 			{
-				Path folder = Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
+				Path folder =
+				    Files::SelectFolderDialog("Select project folder", Pipe::GetCurrentPath());
 				if (Editor::Get().OpenProject(folder))
 				{
 					UI::CloseCurrentPopup();
@@ -41,8 +42,7 @@ namespace Rift
 				else
 				{
 					UI::AddNotification({UI::ToastType::Error, 1.f,
-					    Strings::Format(
-					        "Failed to open project at '{}'", Paths::ToString(folder))});
+					    Strings::Format("Failed to open project at '{}'", Pipe::ToString(folder))});
 				}
 			}
 			UI::SetItemDefaultFocus();
@@ -95,13 +95,13 @@ namespace Rift
 			if (UI::Button("...", v2{24.f, 0.f}))
 			{
 				Path selectedFolder =
-				    Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
-				folder = Paths::ToString(selectedFolder);
+				    Files::SelectFolderDialog("Select project folder", Pipe::GetCurrentPath());
+				folder = Pipe::ToString(selectedFolder);
 			}
 
 			if (UI::Button("Create", v2{-FLT_MIN, 0.0f}))
 			{
-				if (Editor::Get().CreateProject(Paths::FromString(folder)))
+				if (Editor::Get().CreateProject(FromString(folder)))
 				{
 					folder = "";
 					UI::CloseCurrentPopup();

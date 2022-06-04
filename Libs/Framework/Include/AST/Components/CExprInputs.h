@@ -4,14 +4,14 @@
 #include "AST/Utils/Hierarchy.h"
 
 #include <ECS/Id.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
-	struct OutputId : public Struct
+	struct OutputId : public Pipe::Struct
 	{
-		STRUCT(OutputId, Struct)
+		STRUCT(OutputId, Pipe::Struct)
 
 		PROP(nodeId)
 		AST::Id nodeId = AST::NoId;
@@ -28,9 +28,9 @@ namespace Rift
 		}
 	};
 
-	struct CExprInputs : public Struct
+	struct CExprInputs : public Pipe::Struct
 	{
-		STRUCT(CExprInputs, Struct)
+		STRUCT(CExprInputs, Pipe::Struct)
 
 		PROP(linkedOutputs)
 		TArray<OutputId> linkedOutputs;

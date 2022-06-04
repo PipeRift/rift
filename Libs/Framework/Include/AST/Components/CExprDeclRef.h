@@ -6,6 +6,9 @@
 
 namespace Rift
 {
+	using namespace Pipe::Core;
+
+
 	struct CExprDeclRef : public CExpression
 	{
 		STRUCT(CExprDeclRef, CExpression)

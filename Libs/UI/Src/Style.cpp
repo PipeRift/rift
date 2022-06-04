@@ -6,18 +6,19 @@
 #include "UI/Paths.h"
 #include "UI/UIImgui.h"
 
-#include <Containers/Array.h>
+#include <Core/Array.h>
+#include <Core/Checks.h>
 #include <IconsFontAwesome5.h>
 #include <Log.h>
 #include <Math/Math.h>
-#include <Misc/Checks.h>
 #include <Templates/Tuples.h>
 
 
-using namespace Rift;
-
 namespace Rift::Style
 {
+	using namespace Pipe;
+
+
 	struct FontType
 	{
 		TArray<TPair<float, ImFont*>> sizes{};
@@ -55,7 +56,7 @@ namespace Rift::Style
 
 	struct FontDescriptor
 	{
-		std::array<FontType, Rift::Refl::GetEnumSize<FontMode>()> modes{};
+		std::array<FontType, GetEnumSize<FontMode>()> modes{};
 
 		FontType& operator[](FontMode mode)
 		{
@@ -67,18 +68,17 @@ namespace Rift::Style
 		}
 	};
 
-	static TMap<Rift::Name, FontDescriptor> gFonts{};
+	static TMap<Name, FontDescriptor> gFonts{};
 
 
 	ImFont* AddFont(Path file, float size, const ImFontConfig* fontConfig = nullptr,
 	    const ImWchar* glyphRanges = nullptr)
 	{
 		auto& io = ImGui::GetIO();
-		return io.Fonts->AddFontFromFileTTF(
-		    Paths::ToString(file).data(), size, fontConfig, glyphRanges);
+		return io.Fonts->AddFontFromFileTTF(ToString(file).data(), size, fontConfig, glyphRanges);
 	}
 
-	void AddTextFont(Name name, FontMode mode, float size, Path file)
+	void AddTextFont(Name name, FontMode mode, float size, Pipe::Path file)
 	{
 		FontDescriptor* font = gFonts.Find(name);
 		if (!font)
@@ -87,7 +87,7 @@ namespace Rift::Style
 			font = &gFonts[name];
 		}
 
-		ImFont* imFont = AddFont(Paths::ToString(file).data(), size);
+		ImFont* imFont = AddFont(ToString(file).data(), size);
 		(*font)[mode].Add(size, imFont);
 
 		// Add Font Awesome icons
@@ -105,7 +105,7 @@ namespace Rift::Style
 		auto& io = ImGui::GetIO();
 		io.Fonts->AddFontDefault();
 
-		auto resources = Paths::GetResourcesPath() / "Editor";
+		auto resources = Rift::Paths::GetResourcesPath() / "Editor";
 
 		// Work Sans
 		AddTextFont("WorkSans", FontMode::Bold, 14.f, resources / "Fonts/WorkSans-Bold.ttf");
@@ -130,13 +130,13 @@ namespace Rift::Style
 		io.Fonts->Build();
 	}
 
-	ImFont* FindFont(Rift::Name name, FontMode mode, float size)
+	ImFont* FindFont(Name name, FontMode mode, float size)
 	{
 		const FontDescriptor* const font = gFonts.Find(name);
 		return font ? (*font)[mode].Get(size) : nullptr;
 	}
 
-	void SetDefaultFont(Rift::Name name, FontMode mode, float size)
+	void SetDefaultFont(Name name, FontMode mode, float size)
 	{
 		ImFont* font = FindFont(name, mode, size);
 		if (!font && !name.IsNone())
@@ -146,7 +146,7 @@ namespace Rift::Style
 		ImGui::GetIO().FontDefault = font;
 	}
 
-	void PushFont(Rift::Name name, FontMode mode, float size)
+	void PushFont(Name name, FontMode mode, float size)
 	{
 		ImFont* font = FindFont(name, mode, size);
 		if (!font && !name.IsNone())

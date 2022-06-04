@@ -2,14 +2,14 @@
 #pragma once
 
 #include <llvm/IR/Instruction.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
-	struct CIRInstruction : public Struct
+	struct CIRInstruction : public Pipe::Struct
 	{
-		STRUCT(CIRInstruction, Struct)
+		STRUCT(CIRInstruction, Pipe::Struct)
 
 		llvm::Instruction* instance = nullptr;
 

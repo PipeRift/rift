@@ -1,13 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
-	struct CInvalid : public Struct
+	struct CInvalid : public Pipe::Struct
 	{
-		STRUCT(CInvalid, Struct)
+		STRUCT(CInvalid, Pipe::Struct)
 	};
 }    // namespace Rift

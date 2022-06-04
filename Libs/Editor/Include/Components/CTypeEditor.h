@@ -4,16 +4,16 @@
 #include "DockSpaceLayout.h"
 
 #include <AST/Id.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 #include <UI/UI.h>
 #include <Utils/NodesInternal.h>
 
 
 namespace Rift
 {
-	struct CTypeEditor : public Struct
+	struct CTypeEditor : public Pipe::Struct
 	{
-		STRUCT(CTypeEditor, Struct, Struct_NotSerialized)
+		STRUCT(CTypeEditor, Pipe::Struct, Pipe::Struct_NotSerialized)
 
 		static const Name rightNode;
 		static const Name centralNode;

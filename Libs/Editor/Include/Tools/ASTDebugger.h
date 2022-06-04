@@ -7,12 +7,12 @@
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CParent.h>
+#include <Core/Platform.h>
+#include <Core/StringView.h>
 #include <ECS/Filtering.h>
 #include <Math/Vector.h>
 #include <Memory/Arenas/BigBestFitArena.h>
 #include <Memory/Blocks/Block.h>
-#include <Platform/Platform.h>
-#include <Strings/StringView.h>
 #include <UI/UI.h>
 
 

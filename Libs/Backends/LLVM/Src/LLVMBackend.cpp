@@ -30,7 +30,7 @@ namespace Rift::Compiler
 			ZoneScoped;
 
 			const String filePath =
-			    Strings::Format("{}/{}.o", Paths::ToString(context.config.intermediatesPath),
+			    Strings::Format("{}/{}.o", Pipe::ToString(context.config.intermediatesPath),
 			        Modules::GetModuleName(context.ast, moduleId));
 			Log::Info("Creating object '{}'", filePath);
 

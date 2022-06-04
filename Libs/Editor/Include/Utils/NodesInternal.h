@@ -7,8 +7,8 @@
 
 #include <assert.h>
 #include <AST/Id.h>
-#include <Containers/Array.h>
-#include <Containers/BitArray.h>
+#include <Core/Array.h>
+#include <Core/BitArray.h>
 #include <limits.h>
 #include <Math/Vector.h>
 

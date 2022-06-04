@@ -8,14 +8,14 @@
 // Benches
 
 
-class NoFileLogContext : public Rift::Context
+class NoFileLogContext : public Pipe::Context
 {
 public:
-	NoFileLogContext() : Rift::Context(Rift::Path{}) {}
+	NoFileLogContext() : Pipe::Context(Pipe::Path{}) {}
 };
 
 int main()
 {
-	Rift::InitializeContext<NoFileLogContext>();
+	Pipe::InitializeContext<NoFileLogContext>();
 	// Run benches
 }

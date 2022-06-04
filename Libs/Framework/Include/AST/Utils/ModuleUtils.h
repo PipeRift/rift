@@ -19,6 +19,8 @@ namespace Rift
 
 namespace Rift::Modules
 {
+	using namespace Pipe::Core;
+	using namespace Pipe::Files;
 	using namespace AST;
 
 	static constexpr StringView moduleFile{"Module.rift"};

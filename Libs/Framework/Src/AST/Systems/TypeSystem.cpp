@@ -62,7 +62,7 @@ namespace Rift::TypeSystem
 				if (ast.template Has<CType>(id) && ast.template Has<CFileRef>(id))
 				{
 					const auto& file = ast.template Get<const CFileRef>(id);
-					const Name pathName{Paths::ToString(file.path)};
+					const Name pathName{ToString(file.path)};
 					types.typesByPath.Insert(pathName, id);
 				}
 			}
@@ -75,7 +75,7 @@ namespace Rift::TypeSystem
 				if (ast.template Has<CType>(id) && ast.template Has<CFileRef>(id))
 				{
 					const auto& file = ast.template Get<const CFileRef>(id);
-					const Name pathName{Paths::ToString(file.path)};
+					const Name pathName{ToString(file.path)};
 					types.typesByPath.Remove(pathName);
 				}
 			}

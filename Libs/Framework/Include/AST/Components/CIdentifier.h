@@ -1,12 +1,15 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Strings/Name.h>
-#include <Types/Struct.h>
+#include <Core/Name.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
+	using namespace Pipe;
+
+
 	struct CIdentifier : public Struct
 	{
 		STRUCT(CIdentifier, Struct)

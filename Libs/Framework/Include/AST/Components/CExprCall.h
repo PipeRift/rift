@@ -10,6 +10,9 @@
 
 namespace Rift
 {
+	using namespace Pipe::Core;
+
+
 	struct CExprCall : public CExpression
 	{
 		STRUCT(CExprCall, CExpression)
@@ -24,7 +27,7 @@ namespace Rift
 	// Data pointing to the id of the function from CExprCall's type and function names
 	struct CExprCallId : public CExpression
 	{
-		STRUCT(CExprCallId, CExpression, Struct_NotSerialized)
+		STRUCT(CExprCallId, CExpression, Pipe::Struct_NotSerialized)
 
 		// Id pointing to the function declaration
 		PROP(functionId)

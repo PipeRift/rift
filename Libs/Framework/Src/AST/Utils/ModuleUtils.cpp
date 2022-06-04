@@ -33,16 +33,16 @@ namespace Rift::Modules
 				error = "Path is not a rift module file or a folder";
 				return false;
 			}
-			path = Paths::ToAbsolute(path).parent_path();
+			path = ToAbsolutePath(path).parent_path();
 		}
 		else
 		{
-			path = Paths::ToAbsolute(path);
+			path = ToAbsolutePath(path);
 		}
 		return true;
 	}
 
-	bool CreateProject(Tree& ast, Path path)
+	bool CreateProject(Tree& ast, Pipe::Path path)
 	{
 		String error;
 		if (!ValidateProjectPath(path, error))
@@ -56,7 +56,7 @@ namespace Rift::Modules
 			Files::CreateFolder(path, true);
 		}
 
-		const Path filePath = path / moduleFile;
+		const Pipe::Path filePath = path / moduleFile;
 		if (Files::ExistsAsFile(filePath))
 		{
 			Log::Error("Can't create project: Folder already contains a '{}' file", moduleFile);
@@ -70,7 +70,7 @@ namespace Rift::Modules
 		return OpenProject(ast, path);
 	}
 
-	bool OpenProject(Tree& ast, Path path)
+	bool OpenProject(Tree& ast, Pipe::Path path)
 	{
 		String error;
 		if (!ValidateProjectPath(path, error))
@@ -85,7 +85,7 @@ namespace Rift::Modules
 			return false;
 		}
 
-		const Path filePath = path / moduleFile;
+		const Pipe::Path filePath = path / moduleFile;
 		if (!Files::ExistsAsFile(filePath))
 		{
 			Log::Error("Can't open project: Folder doesn't contain a '{}' file", moduleFile);
@@ -164,8 +164,8 @@ namespace Rift::Modules
 		if (file && !file->path.empty())
 		{
 			// Obtain name from project file name
-			const String fileName = Paths::ToString(file->path);
-			return {Paths::GetFilename(Paths::GetParent(fileName))};    // Folder name
+			const String fileName = Pipe::ToString(file->path);
+			return {GetFilename(GetParentPath(fileName))};    // Folder name
 		}
 		return {};
 	}
@@ -176,7 +176,7 @@ namespace Rift::Modules
 		{
 			return file->path.parent_path();
 		}
-		return Path{};
+		return Pipe::Path{};
 	}
 
 	void Serialize(AST::Tree& ast, AST::Id id, String& data)

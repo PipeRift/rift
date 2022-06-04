@@ -19,9 +19,9 @@
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Context.h>
+#include <Core/String.h>
 #include <ECS/Filtering.h>
 #include <Files/Files.h>
-#include <Strings/String.h>
 
 
 namespace Rift::Compiler::Cpp
@@ -224,16 +224,16 @@ namespace Rift::Compiler::Cpp
 	void GenParameters(TAccessRef<CExprType, CIdentifier, TWrite<CCppCodeGenFragment>> access) {}
 
 
-	void GenerateModuleCode(Context& context, AST::Id moduleId, const Path& codePath)
+	void GenerateModuleCode(Context& context, AST::Id moduleId, const Pipe::Path& codePath)
 	{
 		ZoneScopedC(0x459bd1);
 
 		auto& ast = context.ast;
 
-		const Name name        = Modules::GetModuleName(ast, moduleId);
-		const Path modulePath  = codePath / name.ToString();
-		const Path includePath = modulePath / "Include";
-		const Path sourcePath  = modulePath / "Src";
+		const Name name              = Modules::GetModuleName(ast, moduleId);
+		const Pipe::Path modulePath  = codePath / name.ToString();
+		const Pipe::Path includePath = modulePath / "Include";
+		const Pipe::Path sourcePath  = modulePath / "Src";
 		Files::CreateFolder(includePath, true);
 		Files::CreateFolder(sourcePath, true);
 
@@ -275,11 +275,11 @@ namespace Rift::Compiler::Cpp
 		Comment(code, "Function Definitions");
 		DefineFunctions(code, ast, moduleId, functions);
 
-		const Path headerFile = includePath / "code.h";
+		const Pipe::Path headerFile = includePath / "code.h";
 		if (!Files::SaveStringFile(headerFile, code))
 		{
 			context.AddError(Strings::Format(
-			    "Couldn't save generated header at '{}'", Paths::ToString(headerFile)));
+			    "Couldn't save generated header at '{}'", Pipe::ToString(headerFile)));
 		}
 
 		code = {};
@@ -291,11 +291,11 @@ namespace Rift::Compiler::Cpp
 		if (!Files::SaveStringFile(sourceFile, code))
 		{
 			context.AddError(Strings::Format(
-			    "Couldn't save generated source at '{}'", Paths::ToString(sourceFile)));
+			    "Couldn't save generated source at '{}'", Pipe::ToString(sourceFile)));
 		}
 	}
 
-	void GenerateCode(Context& context, const Path& generatePath)
+	void GenerateCode(Context& context, const Pipe::Path& generatePath)
 	{
 		ZoneScopedC(0x459bd1);
 

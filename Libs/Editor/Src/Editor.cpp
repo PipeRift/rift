@@ -46,7 +46,7 @@ namespace Rift
 		Log::Info("Editor is ready");
 
 		// Open a project if a path has been provided
-		OpenProject(Paths::FromString(projectPath), false);
+		OpenProject(FromString(projectPath), false);
 
 		while (!UI::WantsToClose())
 		{
@@ -101,12 +101,12 @@ namespace Rift
 		if (UI::GetWindow())
 		{
 			configFileChanged          = true;
-			configFile                 = Paths::ToString(path);
+			configFile                 = Pipe::ToString(path);
 			ImGui::GetIO().IniFilename = configFile.c_str();
 		}
 	}
 
-	bool Editor::CreateProject(const Path& path, bool closeFirst)
+	bool Editor::CreateProject(const Pipe::Path& path, bool closeFirst)
 	{
 		if (!closeFirst && Modules::HasProject(ast))
 		{
@@ -123,7 +123,7 @@ namespace Rift
 		return false;
 	}
 
-	bool Editor::OpenProject(const Path& path, bool closeFirst)
+	bool Editor::OpenProject(const Pipe::Path& path, bool closeFirst)
 	{
 		if (!closeFirst && Modules::HasProject(ast))
 		{

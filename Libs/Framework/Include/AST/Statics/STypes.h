@@ -3,14 +3,14 @@
 
 #include "AST/Id.h"
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
-	struct STypes : public Struct
+	struct STypes : public Pipe::Struct
 	{
-		STRUCT(STypes, Struct)
+		STRUCT(STypes, Pipe::Struct)
 
 		TMap<Name, AST::Id> typesByName;
 		TMap<Name, AST::Id> typesByPath;

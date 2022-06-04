@@ -15,9 +15,10 @@
 using namespace snowhouse;
 using namespace bandit;
 using namespace Rift;
+using namespace Pipe;
 using namespace std::chrono_literals;
 
-Path testProjectPath = Paths::GetCurrent() / "TestProject";
+Path testProjectPath = GetCurrentPath() / "TestProject";
 
 
 go_bandit([]() {

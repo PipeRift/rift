@@ -3,11 +3,13 @@
 #pragma once
 
 #include <Memory/OwnPtr.h>
-#include <Types/Class.h>
+#include <Reflection/Class.h>
 
 
 namespace Rift
 {
+	using namespace Pipe;
+
 	class Plugin : public Class
 	{
 		CLASS(Plugin, Class)

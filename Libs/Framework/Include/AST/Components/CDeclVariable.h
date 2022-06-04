@@ -12,7 +12,7 @@ namespace Rift
 	{
 		STRUCT(CDeclVariable, CDeclaration)
 
-		PROP(typeId, Prop_NotSerialized)
+		PROP(typeId, Pipe::Prop_NotSerialized)
 		AST::Id typeId = AST::NoId;
 	};
 }    // namespace Rift

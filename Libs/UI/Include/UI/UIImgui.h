@@ -1,31 +1,31 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include <Core/Platform.h>
+#include <Core/StringView.h>
 #include <Math/Color.h>
 #include <Math/Vector.h>
-#include <Platform/Platform.h>
-#include <Strings/StringView.h>
 
 
 #define IM_VEC2_CLASS_EXTRA                                      \
-	constexpr ImVec2(Rift::v2 other) : x(other.x), y(other.y) {} \
-	constexpr operator Rift::v2() const                          \
+	constexpr ImVec2(Pipe::v2 other) : x(other.x), y(other.y) {} \
+	constexpr operator Pipe::v2() const                          \
 	{                                                            \
-		return Rift::v2{x, y};                                   \
+		return Pipe::v2{x, y};                                   \
 	}
 
 #define IM_VEC4_CLASS_EXTRA                                                                     \
-	constexpr ImVec4(const Rift::LinearColor& other)                                            \
+	constexpr ImVec4(const Pipe::LinearColor& other)                                            \
 	    : x(other.r), y(other.g), z(other.b), w(other.a)                                        \
 	{}                                                                                          \
-	constexpr operator Rift::LinearColor() const                                                \
+	constexpr operator Pipe::LinearColor() const                                                \
 	{                                                                                           \
-		return Rift::LinearColor{x, y, z, w};                                                   \
+		return Pipe::LinearColor{x, y, z, w};                                                   \
 	}                                                                                           \
-	constexpr ImVec4(const Rift::v4& other) : x(other.x), y(other.y), z(other.z), w(other.w) {} \
-	constexpr operator Rift::v4() const                                                         \
+	constexpr ImVec4(const Pipe::v4& other) : x(other.x), y(other.y), z(other.z), w(other.w) {} \
+	constexpr operator Pipe::v4() const                                                         \
 	{                                                                                           \
-		return Rift::v4{x, y, z, w};                                                            \
+		return Pipe::v4{x, y, z, w};                                                            \
 	}
 
 
@@ -36,6 +36,7 @@
 
 namespace Rift::UI
 {
+	using namespace Pipe;
 	using namespace ImGui;
 
 	// Begin ImGui API override

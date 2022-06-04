@@ -1,14 +1,14 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
-	struct CCppCodeGenFragment : public Struct
+	struct CCppCodeGenFragment : public Pipe::Struct
 	{
-		STRUCT(CCppCodeGenFragment, Struct)
+		STRUCT(CCppCodeGenFragment, Pipe::Struct)
 
 		String code;
 	};

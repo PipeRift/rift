@@ -7,14 +7,14 @@
 #include <Serialization/Contexts.h>
 
 
-namespace Rift::Serl
+namespace Pipe::ECS
 {
-	void Read(ReadContext& ct, AST::Id& val)
+	void Read(Pipe::ReadContext& ct, Pipe::ECS::Id& val)
 	{
-		auto* astCt = dynamic_cast<AST::ReadContext*>(&ct);
+		auto* astCt = dynamic_cast<Rift::AST::ReadContext*>(&ct);
 		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTReadContext")) [[likely]]
 		{
-			i32 dataId;
+			Pipe::i32 dataId;
 			astCt->Serialize(dataId);
 
 			if (dataId >= 0) [[likely]]
@@ -23,17 +23,17 @@ namespace Rift::Serl
 			}
 			else
 			{
-				val = AST::NoId;
+				val = Pipe::ECS::NoId;
 			}
 		}
 	}
 
-	void Write(WriteContext& ct, AST::Id val)
+	void Write(Pipe::WriteContext& ct, Pipe::ECS::Id val)
 	{
-		auto* astCt = dynamic_cast<AST::WriteContext*>(&ct);
+		auto* astCt = dynamic_cast<Rift::AST::WriteContext*>(&ct);
 		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTWriteContext")) [[likely]]
 		{
-			const i32* dataId = astCt->GetIdToIndexes().Find(val);
+			const Pipe::i32* dataId = astCt->GetIdToIndexes().Find(val);
 			if (dataId) [[likely]]
 			{
 				astCt->Serialize(*dataId);
@@ -44,4 +44,4 @@ namespace Rift::Serl
 			}
 		}
 	}
-}    // namespace Rift::Serl
+}    // namespace Pipe::ECS

@@ -3,12 +3,15 @@
 #pragma once
 
 #include <AST/Id.h>
+#include <Core/Platform.h>
 #include <Math/Vector.h>
-#include <Platform/Platform.h>
 
 
 namespace Rift::Nodes
 {
+	using namespace Pipe;
+
+
 	struct EditorContext;
 
 	enum class MiniMapCorner : u8

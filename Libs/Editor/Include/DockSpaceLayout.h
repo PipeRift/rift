@@ -1,14 +1,16 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Containers/Map.h>
-#include <Events/Function.h>
-#include <Strings/Name.h>
+#include <Core/Function.h>
+#include <Core/Map.h>
+#include <Core/Name.h>
 #include <UI/UI.h>
 
 
 namespace Rift
 {
+	using namespace Pipe;
+
 	struct DockSpaceLayout
 	{
 		static const Name rootNodeId;

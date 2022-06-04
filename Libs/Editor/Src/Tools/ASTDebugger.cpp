@@ -211,9 +211,9 @@ namespace Rift
 		path.clear();
 		if (const auto* file = access.TryGet<const CFileRef>(nodeId))
 		{
-			path = Paths::ToString(file->path);
+			path = Pipe::ToString(file->path);
 
-			StringView filename = Paths::GetFilename(path);
+			StringView filename = Pipe::GetFilename(path);
 			Strings::FormatTo(name, name.empty() ? "file: {}" : " (file: {})", filename);
 		}
 

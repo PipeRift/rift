@@ -10,12 +10,16 @@
 
 #include <Files/FileWatcher.h>
 #include <Memory/OwnPtr.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 #include <UI/UI.h>
 
 
 namespace Rift
 {
+	using namespace Pipe::Core;
+	using namespace Pipe::Files;
+
+
 	struct SEditor : public Struct
 	{
 		STRUCT(SEditor, Struct)

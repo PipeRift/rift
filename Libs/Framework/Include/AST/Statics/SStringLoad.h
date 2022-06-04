@@ -3,15 +3,15 @@
 
 #include "AST/Id.h"
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
 	// Contains loaded string data from disk
-	struct SStringLoad : public Struct
+	struct SStringLoad : public Pipe::Struct
 	{
-		STRUCT(SStringLoad, Struct)
+		STRUCT(SStringLoad, Pipe::Struct)
 
 		// This buffers are always in sync with size
 		// They bind by array index an Id, path and loaded string

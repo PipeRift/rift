@@ -15,6 +15,9 @@ namespace Rift::AST
 
 namespace Rift::TypeSystem
 {
+	using namespace Pipe;
+
+
 	void Init(AST::Tree& ast);
 
 	using PropagateVariableTypesAccess =

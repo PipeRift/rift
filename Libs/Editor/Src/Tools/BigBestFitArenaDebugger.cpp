@@ -2,9 +2,9 @@
 
 #include "Tools/BigBestFitArenaDebugger.h"
 
+#include <Core/String.h>
 #include <Math/Math.h>
 #include <Memory/Arenas/GlobalArena.h>
-#include <Strings/String.h>
 #include <UI/UI.h>
 
 
@@ -17,7 +17,6 @@ namespace Rift
 	static constexpr Color gFreeColor{210, 56, 41};    // Red
 	static constexpr Color gUsedColor{56, 210, 41};    // Green
 
-	using namespace Memory;
 
 	void DrawMemoryRect(ImGuiWindow* window, const MemoryGrid& grid, ImRect box, v2_u32 min,
 	    v2_u32 max, const Color& color)
@@ -29,7 +28,7 @@ namespace Rift
 	}
 
 	i32 DrawMemoryBlock(StringView label, MemoryGrid& grid,
-	    const TArray<BigBestFitArena::Slot>& freeSlots, v2 graphSize = v2::Zero())
+	    const TArray<Memory::BigBestFitArena::Slot>& freeSlots, v2 graphSize = v2::Zero())
 	{
 		ImGuiContext& g     = *GImGui;
 		ImGuiWindow* window = UI::GetCurrentWindow();
@@ -132,7 +131,7 @@ namespace Rift
 		numRows     = u32(block->GetSize() / bytesPerRow);
 	}
 
-	void MemoryGrid::Draw(const TArray<BigBestFitArena::Slot>& freeSlots)
+	void MemoryGrid::Draw(const TArray<Memory::BigBestFitArena::Slot>& freeSlots)
 	{
 		String scaleStr      = Strings::ParseMemorySize(memoryScale);
 		u32 scaleMultiplier  = u32(Math::Log2(memoryScale));
@@ -150,7 +149,7 @@ namespace Rift
 	BigBestFitArenaDebugger::BigBestFitArenaDebugger()
 	{
 		// TODO: Remove this. Testing the debugger
-		auto& arena = GetGlobalArena();
+		auto& arena = Memory::GetGlobalArena();
 
 		void* a = arena.Allocate(120);
 		void* b = arena.Allocate(234);
@@ -171,7 +170,7 @@ namespace Rift
 	{
 		if (open)
 		{
-			auto& arena = GetGlobalArena();
+			auto& arena = Memory::GetGlobalArena();
 
 			UI::Begin("Memory", &open);
 

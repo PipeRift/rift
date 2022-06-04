@@ -7,7 +7,7 @@
 #include "AST/Tree.h"
 #include "AST/Utils/Statements.h"
 
-#include <Containers/Span.h>
+#include <Core/Span.h>
 #include <ECS/Filtering.h>
 
 

@@ -1,12 +1,15 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Misc/Guid.h>
-#include <Types/Struct.h>
+#include <Core/Guid.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
+	using namespace Pipe;
+
+
 	enum class Type : u8
 	{
 		None              = 0,

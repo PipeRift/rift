@@ -121,7 +121,7 @@ namespace Rift::LoadSystem
 
 		// Remove existing module paths
 		auto moduleIds = ECS::ListAll<CModule, CFileRef>(access);
-		paths.ExcludeIfSwap([&access, &moduleIds](const Path& path) {
+		paths.ExcludeIfSwap([&access, &moduleIds](const Pipe::Path& path) {
 			bool moduleExists = false;
 			for (AST::Id id : moduleIds)
 			{
@@ -163,8 +163,8 @@ namespace Rift::LoadSystem
 		// Remove existing types
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
-			modulePaths.paths.ExcludeIfSwap([types, &modulePaths](const Path& path) {
-				const Name pathName{Paths::ToString(path)};
+			modulePaths.paths.ExcludeIfSwap([types, &modulePaths](const Pipe::Path& path) {
+				const Name pathName{ToString(path)};
 
 				if (!types->typesByPath.Contains(pathName))
 				{
@@ -211,7 +211,7 @@ namespace Rift::LoadSystem
 				if (!Files::LoadStringFile(file->path, strings[i], 4))
 				{
 					Log::Error(
-					    "File could not be loaded from disk ({})", Paths::ToString(file->path));
+					    "File could not be loaded from disk ({})", Pipe::ToString(file->path));
 					continue;
 				}
 			}

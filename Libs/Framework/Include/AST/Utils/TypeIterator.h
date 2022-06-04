@@ -3,7 +3,7 @@
 
 #include "AST/Utils/Paths.h"
 
-#include <Containers/Set.h>
+#include <Core/Set.h>
 #include <Files/FormatFileIterator.h>
 
 
@@ -14,16 +14,16 @@ namespace Rift
 	public:
 		using FormatFileIterator<Files::RecursiveIterator>::FormatFileIterator;
 
-		explicit TypeIterator(const Path& path, const TSet<Path>* ignorePaths = nullptr)
+		explicit TypeIterator(const Pipe::Path& path, const TSet<Path>* ignorePaths = nullptr)
 		    : FormatFileIterator(Paths::typeExtension, path)
 		{}
 
-		const Path& operator*() const noexcept
+		const Pipe::Path& operator*() const noexcept
 		{
 			return fileIterator->path();
 		}
 
-		const Path* operator->() const noexcept
+		const Pipe::Path* operator->() const noexcept
 		{
 			return &operator*();
 		}

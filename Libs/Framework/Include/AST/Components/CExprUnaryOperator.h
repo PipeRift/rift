@@ -16,9 +16,12 @@ namespace Rift
 		Decrement,    // --
 		BitNot,       // ~
 	};
-	ENUM(UnaryOperatorType)
+}    // namespace Rift
+ENUM(Rift::UnaryOperatorType)
 
 
+namespace Rift
+{
 	struct CExprUnaryOperator : public CExpression
 	{
 		STRUCT(CExprUnaryOperator, CExpression)

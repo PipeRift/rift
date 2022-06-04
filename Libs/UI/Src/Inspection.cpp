@@ -386,10 +386,10 @@ namespace Rift::UI
 			UI::Text(label);
 			UI::TableSetColumnIndex(1);
 			UI::SetNextItemWidth(Math::Min(300.f, UI::GetContentRegionAvail().x));
-			String str = Paths::ToString(*path);
+			String str = ToString(*path);
 			if (UI::InputText("##value", str))
 			{
-				*path = Paths::FromString(str);
+				*path = FromString(str);
 			}
 		});
 	}

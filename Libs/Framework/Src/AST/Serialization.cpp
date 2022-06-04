@@ -92,7 +92,7 @@ namespace Rift::AST
 
 		// FIX: yyjson doesn't seem to take into account stringview length when generating text
 		// Temporarely fixed by caching component name keys
-		ct.PushAddFlags(Serl::WriteFlags_CacheStringKeys);
+		ct.PushAddFlags(Pipe::Serl::WriteFlags_CacheStringKeys);
 		if (ct.EnterNext(GetTypeName<T>(false)))
 		{
 			String key;

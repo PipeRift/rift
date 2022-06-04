@@ -2,14 +2,14 @@
 #pragma once
 
 #include <Math/Vector.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
-	struct CNodePosition : public Struct
+	struct CNodePosition : public Pipe::Struct
 	{
-		STRUCT(CNodePosition, Struct)
+		STRUCT(CNodePosition, Pipe::Struct)
 
 		PROP(position)
 		v2 position;
@@ -17,11 +17,11 @@ namespace Rift
 		CNodePosition() = default;
 		CNodePosition(v2 position) : position{position} {}
 	};
-	static void Read(Serl::ReadContext& ct, CNodePosition& val)
+	static void Read(Pipe::ReadContext& ct, CNodePosition& val)
 	{
 		ct.Serialize(val.position);
 	}
-	static void Write(Serl::WriteContext& ct, const CNodePosition& val)
+	static void Write(Pipe::WriteContext& ct, const CNodePosition& val)
 	{
 		ct.Serialize(val.position);
 	}

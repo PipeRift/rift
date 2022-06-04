@@ -13,5 +13,5 @@ namespace Rift::Compiler
 
 namespace Rift::Compiler::Cpp
 {
-	void GenerateCMake(Context& context, const Path& codePath);
+	void GenerateCMake(Context& context, const Pipe::Path& codePath);
 }    // namespace Rift::Compiler::Cpp

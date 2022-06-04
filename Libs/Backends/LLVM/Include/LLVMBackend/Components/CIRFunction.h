@@ -3,19 +3,19 @@
 
 #include <AST/Id.h>
 #include <llvm/IR/Function.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
-	struct CIRFunction : public Struct
+	struct CIRFunction : public Pipe::Struct
 	{
-		STRUCT(CIRFunction, Struct)
+		STRUCT(CIRFunction, Pipe::Struct)
 
 		llvm::Function* instance = nullptr;
 
-		TArray<llvm::Value*> inputs;
-		TArray<AST::Id> inputIds;
+		Pipe::TArray<llvm::Value*> inputs;
+		Pipe::TArray<AST::Id> inputIds;
 
 
 		CIRFunction() {}

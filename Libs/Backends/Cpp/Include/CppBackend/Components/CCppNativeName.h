@@ -1,14 +1,14 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
-	struct CCppNativeName : public Struct
+	struct CCppNativeName : public Pipe::Struct
 	{
-		STRUCT(CCppNativeName, Struct)
+		STRUCT(CCppNativeName, Pipe::Struct)
 
 		String codeName;
 

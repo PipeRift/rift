@@ -13,9 +13,9 @@
 #include "Utils/NodesInternal.h"
 #include "Utils/NodesMiniMap.h"
 
+#include <Core/Checks.h>
 #include <Log.h>
 #include <Math/Bezier.h>
-#include <Misc/Checks.h>
 
 #include <cassert>
 #include <climits>
@@ -67,7 +67,7 @@ namespace Rift::Nodes
 		float tStep        = 1.0f / (float)numSegments;
 		for (i32 i = 1; i <= numSegments; ++i)
 		{
-			v2 pCurrent = Bezier::EvaluateCubic(cb.p0, cb.p1, cb.p2, cb.p3, tStep * i);
+			v2 pCurrent = Pipe::EvaluateCubicBezier(cb.p0, cb.p1, cb.p2, cb.p3, tStep * i);
 			v2 pLine    = Vectors::ClosestPointInLine(pLast, pCurrent, p);
 			float dist  = (p - pLine).LengthSquared();
 			if (dist < pClosestDist)
@@ -162,14 +162,14 @@ namespace Rift::Nodes
 
 	bool RectangleOverlapsBezier(const Rect& rectangle, const CubicBezier& cubicBezier)
 	{
-		v2 current = Bezier::EvaluateCubic(
+		v2 current = Pipe::EvaluateCubicBezier(
 		    cubicBezier.p0, cubicBezier.p1, cubicBezier.p2, cubicBezier.p3, 0.f);
 
 		const float dt = 1.0f / cubicBezier.numSegments;
 		for (i32 s = 0; s < cubicBezier.numSegments; ++s)
 		{
-			const v2 next = Bezier::EvaluateCubic(cubicBezier.p0, cubicBezier.p1, cubicBezier.p2,
-			    cubicBezier.p3, float((s + 1) * dt));
+			const v2 next = Pipe::EvaluateCubicBezier(cubicBezier.p0, cubicBezier.p1,
+			    cubicBezier.p2, cubicBezier.p3, float((s + 1) * dt));
 			if (RectangleOverlapsLineSegment(rectangle, current, next))
 			{
 				return true;

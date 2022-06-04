@@ -28,8 +28,8 @@
 #include "AST/Utils/Statements.h"
 #include "AST/Utils/TransactionUtils.h"
 
+#include <Core/Checks.h>
 #include <Files/Files.h>
-#include <Misc/Checks.h>
 #include <Profiler.h>
 #include <Serialization/Formats/JsonFormat.h>
 
@@ -40,7 +40,7 @@ namespace Rift::Types
 	{
 		if (auto* fileRef = ast.TryGet<CFileRef>(id))
 		{
-			String fileName = Paths::GetFilename(fileRef->path);
+			String fileName = Pipe::GetFilename(fileRef->path);
 			fileName        = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
 			ast.Add<CType>(id, {Name{fileName}});
 		}
@@ -76,7 +76,7 @@ namespace Rift::Types
 		return Type::None;
 	}
 
-	AST::Id CreateType(AST::Tree& ast, Type type, Name name, const Path& path)
+	AST::Id CreateType(AST::Tree& ast, Type type, Name name, const Pipe::Path& path)
 	{
 		AST::Id id = ast.Create();
 		if (!name.IsNone())
@@ -140,11 +140,11 @@ namespace Rift::Types
 	}
 
 
-	AST::Id FindTypeByPath(AST::Tree& ast, const Path& path)
+	AST::Id FindTypeByPath(AST::Tree& ast, const Pipe::Path& path)
 	{
 		if (auto* types = ast.TryGetStatic<STypes>())
 		{
-			const Name pathName{Paths::ToString(path)};
+			const Name pathName{ToString(path)};
 			if (AST::Id* id = types->typesByPath.Find(pathName))
 			{
 				return *id;

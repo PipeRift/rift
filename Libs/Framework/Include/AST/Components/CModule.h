@@ -1,11 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
+	using namespace Pipe;
+
 	enum class ModuleTarget : u8
 	{
 		Executable,
@@ -13,20 +15,23 @@ namespace Rift
 		Static
 	};
 	// TODO: Simplify enum reflection so that ENUM() is not needed
-	ENUM(ModuleTarget)
 
 	enum class ModuleType : u8
 	{
 		Rift,
 		CBinding
 	};
-	// TODO: Simplify enum reflection so that ENUM() is not needed
-	ENUM(ModuleType)
+}    // namespace Rift
+// TODO: Simplify enum reflection so that ENUM() is not needed
+ENUM(Rift::ModuleTarget)
+ENUM(Rift::ModuleType)
 
 
-	struct CModule : public Struct
+namespace Rift
+{
+	struct CModule : public Pipe::Struct
 	{
-		STRUCT(CModule, Struct)
+		STRUCT(CModule, Pipe::Struct)
 
 		PROP(target)
 		ModuleTarget target = ModuleTarget::Executable;

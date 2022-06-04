@@ -3,8 +3,8 @@
 #include "UI/Widgets.h"
 
 #include <IconsFontAwesome5.h>
-#include <Misc/DateTime.h>
-#include <Misc/Timespan.h>
+#include <Math/DateTime.h>
+#include <Math/Timespan.h>
 
 
 namespace Rift::UI

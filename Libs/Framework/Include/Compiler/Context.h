@@ -6,23 +6,23 @@
 
 #include <Profiler.h>
 #include <Reflection/Reflection.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift::Compiler
 {
-	struct CompileError : public Struct
+	struct CompileError : public Pipe::Struct
 	{
-		STRUCT(CompileError, Struct)
+		STRUCT(CompileError, Pipe::Struct)
 
 		PROP(text)
 		String text;
 	};
 
 
-	struct Context : public Struct
+	struct Context : public Pipe::Struct
 	{
-		STRUCT(Context, Struct)
+		STRUCT(Context, Pipe::Struct)
 
 		AST::Tree& ast;
 		Config config;

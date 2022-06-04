@@ -3,15 +3,15 @@
 
 #include "AST/Id.h"
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
-	struct SModules : public Struct
+	struct SModules : public Pipe::Struct
 	{
-		STRUCT(SModules, Struct)
+		STRUCT(SModules, Pipe::Struct)
 
-		TMap<Name, AST::Id> modulesByPath;
+		Pipe::TMap<Pipe::Name, AST::Id> modulesByPath;
 	};
 }    // namespace Rift

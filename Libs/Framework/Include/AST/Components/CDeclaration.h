@@ -1,21 +1,21 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
-	struct CDeclaration : public Struct
+	struct CDeclaration : public Pipe::Struct
 	{
-		STRUCT(CDeclaration, Struct)
+		STRUCT(CDeclaration, Pipe::Struct)
 	};
 
 }    // namespace Rift
 
 namespace std
 {
-	template<Rift::Derived<Rift::CDeclaration> T>
+	template<Pipe::Derived<Rift::CDeclaration> T>
 	struct is_empty<T>
 	{
 		static constexpr bool value = false;

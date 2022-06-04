@@ -2,14 +2,14 @@
 #pragma once
 
 #include <llvm/IR/Type.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
-	struct CIRType : public Struct
+	struct CIRType : public Pipe::Struct
 	{
-		STRUCT(CIRType, Struct)
+		STRUCT(CIRType, Pipe::Struct)
 
 		llvm::Type* instance = nullptr;
 

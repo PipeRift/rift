@@ -2,9 +2,9 @@
 #pragma once
 
 #include <AST/Id.h>
+#include <Core/EnumFlags.h>
 #include <Math/Color.h>
 #include <Math/Vector.h>
-#include <Misc/EnumFlags.h>
 #include <UI/UIImgui.h>
 
 
@@ -17,7 +17,7 @@ struct ImGuiContext;
 
 namespace Rift::Nodes
 {
-	using namespace EnumOperators;
+	using namespace Pipe;
 
 
 	using Id = i32;

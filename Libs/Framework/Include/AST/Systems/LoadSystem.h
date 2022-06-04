@@ -4,8 +4,8 @@
 #include "AST/Components/CFileRef.h"
 #include "AST/Tree.h"
 
-#include <Containers/Array.h>
-#include <Containers/Span.h>
+#include <Core/Array.h>
+#include <Core/Span.h>
 #include <ECS/Filtering.h>
 
 
@@ -19,7 +19,7 @@ namespace Rift::LoadSystem
 	struct ModuleTypePaths
 	{
 		AST::Id moduleId;
-		TArray<Path> paths;    // Paths of module types
+		TArray<Path> paths;    // Pipe::Paths of module types
 		TArray<Name> pathNames;
 	};
 

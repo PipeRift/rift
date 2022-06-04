@@ -8,6 +8,9 @@
 
 namespace Rift
 {
+	using namespace Pipe;
+
+
 	enum class BinaryOperatorType : u8
 	{
 		// Mathematic
@@ -32,9 +35,12 @@ namespace Rift
 		BitOr,     // |
 		Xor        // ^
 	};
-	ENUM(BinaryOperatorType)
+}    // namespace Rift
+ENUM(Rift::BinaryOperatorType)
 
 
+namespace Rift
+{
 	struct CExprBinaryOperator : public CExpression
 	{
 		STRUCT(CExprBinaryOperator, CExpression)

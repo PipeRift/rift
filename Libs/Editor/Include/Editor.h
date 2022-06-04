@@ -3,12 +3,14 @@
 
 #include <AST/Tree.h>
 #include <Files/Paths.h>
-#include <Misc/Time.h>
+#include <Math/Time.h>
 #include <RiftContext.h>
 
 
 namespace Rift
 {
+	using namespace Pipe;
+
 	class Editor
 	{
 		FrameTime frameTime;

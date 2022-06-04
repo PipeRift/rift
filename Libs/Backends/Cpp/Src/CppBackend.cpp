@@ -13,8 +13,7 @@
 #include <Compiler/Context.h>
 #include <ECS/Filtering.h>
 #include <Files/Files.h>
-#include <Misc/DateTime.h>
-
+#include <Math/DateTime.h>
 
 
 namespace Rift::Compiler
@@ -38,7 +37,7 @@ namespace Rift::Compiler
 			ast.Add<CCppNativeName>(nativeTypes.stringId, {"std::string"});
 		}
 
-		void BuildCode(Context& context, const Path& codePath, const Path& cmakePath)
+		void BuildCode(Context& context, const Pipe::Path& codePath, const Pipe::Path& cmakePath)
 		{
 			ZoneScoped;
 			Files::CreateFolder(cmakePath, true);
@@ -46,7 +45,7 @@ namespace Rift::Compiler
 
 			Log::Info("Generating");
 			const String generate = Strings::Format(
-			    "cmake -S {} -B {}", Paths::ToString(codePath), Paths::ToString(cmakePath));
+			    "cmake -S {} -B {}", Pipe::ToString(codePath), Pipe::ToString(cmakePath));
 
 			if (std::system(generate.c_str()) > 0)
 			{
@@ -56,7 +55,7 @@ namespace Rift::Compiler
 
 			Log::Info("Building");
 			const String build = Strings::Format("cmake --build {} --config {}",
-			    Paths::ToString(cmakePath), context.config.buildMode);
+			    Pipe::ToString(cmakePath), context.config.buildMode);
 			if (std::system(build.c_str()) > 0)
 			{
 				context.AddError("C++ build failed");
@@ -71,7 +70,7 @@ namespace Rift::Compiler
 
 		DateTime startTime = DateTime::Now();
 
-		const Path& codePath = context.config.intermediatesPath / "Code";
+		const Pipe::Path& codePath = context.config.intermediatesPath / "Code";
 		Files::Delete(codePath, true, false);
 		Files::CreateFolder(codePath, true);
 
@@ -96,7 +95,7 @@ namespace Rift::Compiler
 
 
 		Log::Info("Building C++");
-		const Path cmakePath = context.config.intermediatesPath / "CMake";
+		const Pipe::Path cmakePath = context.config.intermediatesPath / "CMake";
 		Cpp::BuildCode(context, codePath, cmakePath);
 		if (context.HasErrors())
 		{

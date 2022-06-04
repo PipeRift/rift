@@ -4,7 +4,7 @@
 
 #include "Compiler/Context.h"
 
-#include <Types/Class.h>
+#include <Reflection/Class.h>
 
 
 namespace Rift::Compiler

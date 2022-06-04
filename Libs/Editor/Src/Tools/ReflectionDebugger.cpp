@@ -14,8 +14,8 @@
 
 namespace Rift
 {
-	using namespace EnumOperators;
-	using namespace Memory;
+	using namespace Pipe::Core::EnumOperators;
+	using namespace Pipe::Memory;
 
 
 	ReflectionDebugger::ReflectionDebugger() {}
@@ -27,16 +27,16 @@ namespace Rift
 			return;
 		}
 
-		const auto& registry = Refl::ReflectionRegistry::Get();
+		const auto& registry = ReflectionRegistry::Get();
 
 		UI::Begin("Reflection", &open);
 
 		if (UI::BeginPopup("Filter"))
 		{
-			UI::CheckboxFlags("Native", (u32*)&categoryFilter, u32(Refl::TypeCategory::Native));
-			UI::CheckboxFlags("Enum", (u32*)&categoryFilter, u32(Refl::TypeCategory::Enum));
-			UI::CheckboxFlags("Class", (u32*)&categoryFilter, u32(Refl::TypeCategory::Class));
-			UI::CheckboxFlags("Struct", (u32*)&categoryFilter, u32(Refl::TypeCategory::Struct));
+			UI::CheckboxFlags("Native", (u32*)&categoryFilter, u32(TypeCategory::Native));
+			UI::CheckboxFlags("Enum", (u32*)&categoryFilter, u32(TypeCategory::Enum));
+			UI::CheckboxFlags("Class", (u32*)&categoryFilter, u32(TypeCategory::Class));
+			UI::CheckboxFlags("Struct", (u32*)&categoryFilter, u32(TypeCategory::Struct));
 			UI::EndPopup();
 		}
 		if (UI::Button("Filter"))
@@ -70,7 +70,7 @@ namespace Rift
 		UI::End();
 	}
 
-	void ReflectionDebugger::DrawType(Refl::Type* type)
+	void ReflectionDebugger::DrawType(Type* type)
 	{
 		if (!HasAllFlags(categoryFilter, type->GetCategory()))
 		{
@@ -96,15 +96,15 @@ namespace Rift
 		UI::TableSetColumnIndex(1);    // Category
 		static String categories;
 		categories.clear();
-		GetEnumFlagName<Refl::TypeCategory>(type->GetCategory(), categories);
+		GetEnumFlagName<TypeCategory>(type->GetCategory(), categories);
 		UI::Text(categories);
 
 		UI::TableSetColumnIndex(2);    // Name
 		UI::Text(name);
 
-		if (const Refl::DataType* dataType = type->AsData())
+		if (const DataType* dataType = type->AsData())
 		{
-			if (const Refl::DataType* parent = dataType->GetParent())
+			if (const DataType* parent = dataType->GetParent())
 			{
 				UI::TableSetColumnIndex(3);    // Parent
 				UI::Text(parent->GetName());

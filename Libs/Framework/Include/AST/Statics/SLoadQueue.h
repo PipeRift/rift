@@ -3,15 +3,15 @@
 
 #include "AST/Id.h"
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
 	// Keeps a list of entities to load from disk
-	struct SLoadQueue : public Struct
+	struct SLoadQueue : public Pipe::Struct
 	{
-		STRUCT(SLoadQueue, Struct)
+		STRUCT(SLoadQueue, Pipe::Struct)
 
 		TArray<AST::Id> pendingSyncLoad;
 		TArray<AST::Id> pendingAsyncLoad;

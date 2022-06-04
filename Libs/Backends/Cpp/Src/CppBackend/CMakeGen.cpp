@@ -10,7 +10,6 @@
 #include <Files/Files.h>
 
 
-
 namespace Rift::Compiler::Cpp
 {
 	void SetProject(String& code, Context& context, Name name, StringView version)
@@ -65,7 +64,7 @@ namespace Rift::Compiler::Cpp
 	}
 
 	void GenerateCMakeModule(
-	    Context& context, AST::Id moduleId, CModule& module, const Path& codePath, Name name)
+	    Context& context, AST::Id moduleId, CModule& module, const Pipe::Path& codePath, Name name)
 	{
 		String code;
 		ModuleTarget target = module.target;
@@ -80,7 +79,7 @@ namespace Rift::Compiler::Cpp
 		Files::SaveStringFile(codePath / name.ToString() / "CMakelists.txt", code);
 	}
 
-	void GenerateCMake(Context& context, const Path& codePath)
+	void GenerateCMake(Context& context, const Pipe::Path& codePath)
 	{
 		String code;
 		Name projectName = Modules::GetProjectName(context.ast);

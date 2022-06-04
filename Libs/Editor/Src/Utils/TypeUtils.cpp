@@ -4,7 +4,7 @@
 
 #include "AST/Serialization.h"
 
-#include <Misc/Checks.h>
+#include <Core/Checks.h>
 
 
 namespace Rift::Types

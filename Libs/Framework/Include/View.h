@@ -3,15 +3,15 @@
 
 #include "AST/Components/CType.h"
 
-#include <Events/Function.h>
-#include <Types/Struct.h>
+#include <Core/Function.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
-	struct View : public Struct
+	struct View : public Pipe::Struct
 	{
-		STRUCT(View, Struct)
+		STRUCT(View, Pipe::Struct)
 
 		PROP(name)
 		Name name;

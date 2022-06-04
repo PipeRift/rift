@@ -3,22 +3,26 @@
 
 #include "AST/Components/CLiteral.h"
 
-#include <Misc/EnumFlags.h>
+#include <Core/EnumFlags.h>
 #include <Reflection/Reflection.h>
 
 
 namespace Rift
 {
-	using namespace Rift::EnumOperators;
+	using namespace Pipe;
+	using namespace Pipe::EnumOperators;
 
 	enum class FloatingType : u8
 	{
 		F32 = 32,
 		F64 = 64
 	};
-	ENUM(FloatingType)
+}    // namespace Rift
+ENUM(Rift::FloatingType)
 
 
+namespace Rift
+{
 	struct CLiteralFloating : public CLiteral
 	{
 		STRUCT(CLiteralFloating, CLiteral)

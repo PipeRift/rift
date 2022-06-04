@@ -5,14 +5,17 @@
 #include "AST/Tree.h"
 
 #include <Reflection/Reflection.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift::Compiler
 {
-	struct Config : public Struct
+	using namespace Pipe;
+
+
+	struct Config : public Pipe::Struct
 	{
-		STRUCT(Config, Struct)
+		STRUCT(Config, Pipe::Struct)
 
 		String buildMode{"Release"};
 

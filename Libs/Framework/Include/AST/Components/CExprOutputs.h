@@ -5,14 +5,14 @@
 
 #include <ECS/Access.h>
 #include <ECS/Id.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
 namespace Rift
 {
-	struct InputId : public Struct
+	struct InputId : public Pipe::Struct
 	{
-		STRUCT(InputId, Struct)
+		STRUCT(InputId, Pipe::Struct)
 
 		PROP(nodeId)
 		AST::Id nodeId = AST::NoId;
@@ -29,9 +29,9 @@ namespace Rift
 		}
 	};
 
-	struct CExprOutputs : public Struct
+	struct CExprOutputs : public Pipe::Struct
 	{
-		STRUCT(CExprOutputs, Struct)
+		STRUCT(CExprOutputs, Pipe::Struct)
 
 		PROP(pinIds)
 		TArray<AST::Id> pinIds;

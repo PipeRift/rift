@@ -16,6 +16,9 @@
 
 namespace Rift::UI
 {
+	using namespace Pipe;
+
+
 	// label, data, type
 	using CustomKeyValue = TFunction<void(StringView label, void*, Refl::Type*)>;
 
@@ -39,7 +42,7 @@ namespace Rift::UI
 		InspectProperties(data, type);
 	}
 	template<typename T>
-	inline void InspectStruct(T* data) requires(Derived<T, Struct>)
+	inline void InspectStruct(T* data) requires(Derived<T, Pipe::Struct>)
 	{
 		InspectStruct(data, T::GetStaticType());
 	}

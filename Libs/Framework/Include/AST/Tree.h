@@ -3,9 +3,9 @@
 
 #include "AST/Id.h"
 
+#include <Core/Name.h>
 #include <ECS/Context.h>
 #include <Memory/UniquePtr.h>
-#include <Strings/Name.h>
 
 
 namespace Rift::AST
@@ -26,7 +26,7 @@ namespace Rift::AST
 		AST::Id stringId = AST::NoId;
 	};
 
-	struct Tree : public ECS::Context
+	struct Tree : public Pipe::ECS::Context
 	{
 	private:
 		NativeTypeIds nativeTypes;
