@@ -6,8 +6,8 @@
 
 namespace rift
 {
-	struct CPendingLoad : public pipe::Struct
+	struct CPendingLoad : public p::Struct
 	{
-		STRUCT(CPendingLoad, pipe::Struct)
+		STRUCT(CPendingLoad, p::Struct)
 	};
 }    // namespace rift

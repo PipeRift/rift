@@ -12,5 +12,5 @@ namespace rift::Compiler
 
 namespace rift::Compiler::Cpp
 {
-	void GenerateCode(Context& context, const pipe::Path& generatePath);
+	void GenerateCode(Context& context, const p::Path& generatePath);
 }    // namespace rift::Compiler::Cpp

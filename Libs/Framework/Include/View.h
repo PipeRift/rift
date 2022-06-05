@@ -9,9 +9,9 @@
 
 namespace rift
 {
-	struct View : public pipe::Struct
+	struct View : public p::Struct
 	{
-		STRUCT(View, pipe::Struct)
+		STRUCT(View, p::Struct)
 
 		PROP(name)
 		Name name;

@@ -7,9 +7,9 @@
 
 namespace rift
 {
-	struct CIRInstruction : public pipe::Struct
+	struct CIRInstruction : public p::Struct
 	{
-		STRUCT(CIRInstruction, pipe::Struct)
+		STRUCT(CIRInstruction, p::Struct)
 
 		llvm::Instruction* instance = nullptr;
 

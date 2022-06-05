@@ -87,7 +87,7 @@ namespace rift::LoadSystem
 		TSet<Path> modulePaths;
 
 		TAccess<CModule, CFileRef> access{ast};
-		auto modules = ECS::ListAll<CModule>(access);
+		auto modules = ecs::ListAll<CModule>(access);
 
 		modulePaths.Reserve(modules.Size());
 		for (AST::Id moduleId : modules)
@@ -120,8 +120,8 @@ namespace rift::LoadSystem
 		    access{ast};
 
 		// Remove existing module paths
-		auto moduleIds = ECS::ListAll<CModule, CFileRef>(access);
-		paths.ExcludeIfSwap([&access, &moduleIds](const pipe::Path& path) {
+		auto moduleIds = ecs::ListAll<CModule, CFileRef>(access);
+		paths.ExcludeIfSwap([&access, &moduleIds](const p::Path& path) {
 			bool moduleExists = false;
 			for (AST::Id id : moduleIds)
 			{
@@ -163,7 +163,7 @@ namespace rift::LoadSystem
 		// Remove existing types
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
-			modulePaths.paths.ExcludeIfSwap([types, &modulePaths](const pipe::Path& path) {
+			modulePaths.paths.ExcludeIfSwap([types, &modulePaths](const p::Path& path) {
 				const Name pathName{ToString(path)};
 
 				if (!types->typesByPath.Contains(pathName))
@@ -208,10 +208,9 @@ namespace rift::LoadSystem
 		{
 			if (auto* file = access.TryGet<const CFileRef>(nodes[i])) [[likely]]
 			{
-				if (!Files::LoadStringFile(file->path, strings[i], 4))
+				if (!files::LoadStringFile(file->path, strings[i], 4))
 				{
-					Log::Error(
-					    "File could not be loaded from disk ({})", pipe::ToString(file->path));
+					Log::Error("File could not be loaded from disk ({})", p::ToString(file->path));
 					continue;
 				}
 			}

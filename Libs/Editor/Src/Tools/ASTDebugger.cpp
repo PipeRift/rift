@@ -76,7 +76,7 @@ namespace rift
 		if (auto* types = ast.TryGetStatic<STypes>())
 		{
 			UI::BeginChild("typesTableChild",
-			    ImVec2(0.f, Math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
+			    ImVec2(0.f, math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
 			if (UI::BeginTable("typesTable", 2, flags, ImVec2(0.f, UI::GetContentRegionAvail().y)))
 			{
 				UI::TableSetupColumn("Name");
@@ -152,16 +152,16 @@ namespace rift
 				TAccess<const CIdentifier, const CFileRef, const CParent, const CChild> access{ast};
 				if (showHierarchy && !filter.IsActive())
 				{
-					TArray<AST::Id> roots = ECS::ListAll<CParent>(access);
-					ECS::ExcludeIf<CChild>(access, roots);
+					TArray<AST::Id> roots = ecs::ListAll<CParent>(access);
+					ecs::ExcludeIf<CChild>(access, roots);
 					for (auto root : roots)
 					{
 						DrawNode(access, root, true);
 					}
 
-					TArray<AST::Id> orphans = ECS::ListAll<CIdentifier>(access);
-					ECS::ExcludeIf<CChild>(access, orphans);
-					ECS::ExcludeIf<CParent>(access, orphans);
+					TArray<AST::Id> orphans = ecs::ListAll<CIdentifier>(access);
+					ecs::ExcludeIf<CChild>(access, orphans);
+					ecs::ExcludeIf<CParent>(access, orphans);
 					for (auto orphan : orphans)
 					{
 						DrawNode(access, orphan, true);
@@ -191,13 +191,13 @@ namespace rift
 		{
 			idText = "No Id";
 		}
-		else if (auto version = ECS::GetVersion(nodeId); version > 0)
+		else if (auto version = ecs::GetVersion(nodeId); version > 0)
 		{
-			Strings::FormatTo(idText, "{} (v{})", ECS::GetIndex(nodeId), version);
+			Strings::FormatTo(idText, "{} (v{})", ecs::GetIndex(nodeId), version);
 		}
 		else
 		{
-			Strings::FormatTo(idText, "{}", ECS::GetIndex(nodeId));
+			Strings::FormatTo(idText, "{}", ecs::GetIndex(nodeId));
 		}
 
 		static String name;
@@ -211,9 +211,9 @@ namespace rift
 		path.clear();
 		if (const auto* file = access.TryGet<const CFileRef>(nodeId))
 		{
-			path = pipe::ToString(file->path);
+			path = p::ToString(file->path);
 
-			StringView filename = pipe::GetFilename(path);
+			StringView filename = p::GetFilename(path);
 			Strings::FormatTo(name, name.empty() ? "file: {}" : " (file: {})", filename);
 		}
 

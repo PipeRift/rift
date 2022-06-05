@@ -8,8 +8,8 @@ namespace rift
 {
 	// Mark an entity as not serialized.
 	// Will be entirely ignored by the serializer
-	struct CNotSerialized : public pipe::Struct
+	struct CNotSerialized : public p::Struct
 	{
-		STRUCT(CNotSerialized, pipe::Struct)
+		STRUCT(CNotSerialized, p::Struct)
 	};
 }    // namespace rift

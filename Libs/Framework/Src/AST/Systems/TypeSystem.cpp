@@ -25,7 +25,7 @@ namespace rift::TypeSystem
 
 		// Cache existing types
 
-		auto typeIds = ECS::ListAll<CType>(access);
+		auto typeIds = ecs::ListAll<CType>(access);
 		types.typesByName.Reserve(u32(typeIds.Size()));
 		for (AST::Id typeId : typeIds)
 		{
@@ -84,7 +84,7 @@ namespace rift::TypeSystem
 
 	void PropagateVariableTypes(PropagateVariableTypesAccess access)
 	{
-		for (AST::Id id : ECS::ListAll<CExprDeclRefId>(access))
+		for (AST::Id id : ecs::ListAll<CExprDeclRefId>(access))
 		{
 			const AST::Id declId = access.Get<const CExprDeclRefId>(id).declarationId;
 			if (access.IsValid(declId))
@@ -98,6 +98,6 @@ namespace rift::TypeSystem
 	void PropagateExpressionTypes(AST::Tree& ast)
 	{
 		TArray<AST::Id> literals =
-		    ECS::ListAny<CLiteralBool, CLiteralIntegral, CLiteralFloating, CLiteralString>(ast);
+		    ecs::ListAny<CLiteralBool, CLiteralIntegral, CLiteralFloating, CLiteralString>(ast);
 	}
 }    // namespace rift::TypeSystem

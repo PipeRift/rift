@@ -166,7 +166,7 @@ namespace rift
 			UI::Indent(10.f);
 			TArray<AST::Id> variableIds;
 			AST::Hierarchy::GetChildren(access, typeId, variableIds);
-			ECS::ExcludeIfNot<CDeclVariable>(access, variableIds);
+			ecs::ExcludeIfNot<CDeclVariable>(access, variableIds);
 
 			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
 			bool showTable = UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit);
@@ -211,7 +211,7 @@ namespace rift
 
 			TArray<AST::Id> functionIds;
 			AST::Hierarchy::GetChildren(ast, typeId, functionIds);
-			ECS::ExcludeIfNot<CDeclFunction>(ast, functionIds);
+			ecs::ExcludeIfNot<CDeclFunction>(ast, functionIds);
 			for (AST::Id functionId : functionIds)
 			{
 				DrawFunction(ast, editor, typeId, functionId);

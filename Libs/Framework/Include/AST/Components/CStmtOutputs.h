@@ -9,21 +9,21 @@
 
 namespace rift
 {
-	using namespace pipe;
+	using namespace p;
 
 
-	struct CStmtOutput : public pipe::Struct
+	struct CStmtOutput : public p::Struct
 	{
-		STRUCT(CStmtOutput, pipe::Struct)
+		STRUCT(CStmtOutput, p::Struct)
 
 		PROP(linkInputNode)
 		AST::Id linkInputNode = AST::NoId;
 	};
 
 
-	struct CStmtOutputs : public pipe::Struct
+	struct CStmtOutputs : public p::Struct
 	{
-		STRUCT(CStmtOutputs, pipe::Struct)
+		STRUCT(CStmtOutputs, p::Struct)
 
 		// Both arrays keep the same index to the input node and the output pin
 		PROP(pinIds)
@@ -33,7 +33,7 @@ namespace rift
 
 
 		CStmtOutputs() = default;
-		CStmtOutputs(pipe::TArray<AST::Id> pins)
+		CStmtOutputs(p::TArray<AST::Id> pins)
 		    : pinIds{Move(pins)}, linkInputNodes(pinIds.Size(), AST::NoId)
 		{}
 	};

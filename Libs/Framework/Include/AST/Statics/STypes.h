@@ -8,9 +8,9 @@
 
 namespace rift
 {
-	struct STypes : public pipe::Struct
+	struct STypes : public p::Struct
 	{
-		STRUCT(STypes, pipe::Struct)
+		STRUCT(STypes, p::Struct)
 
 		TMap<Name, AST::Id> typesByName;
 		TMap<Name, AST::Id> typesByPath;

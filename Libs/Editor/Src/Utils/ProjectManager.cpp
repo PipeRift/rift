@@ -17,8 +17,8 @@ namespace rift
 
 		v2 viewportSize = UI::GetMainViewport()->Size;
 		v2 modalSize    = v2{600.f, 400.f};
-		modalSize.x     = Math::Min(modalSize.x, viewportSize.x - 20.f);
-		modalSize.y     = Math::Min(modalSize.y, viewportSize.y - 20.f);
+		modalSize.x     = math::Min(modalSize.x, viewportSize.x - 20.f);
+		modalSize.y     = math::Min(modalSize.y, viewportSize.y - 20.f);
 
 		UI::SetNextWindowSize(modalSize, ImGuiCond_Always);
 
@@ -34,7 +34,7 @@ namespace rift
 			if (UI::Button("Open", v2{-FLT_MIN, 0.0f}))
 			{
 				Path folder =
-				    Files::SelectFolderDialog("Select project folder", pipe::GetCurrentPath());
+				    files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
 				if (Editor::Get().OpenProject(folder))
 				{
 					UI::CloseCurrentPopup();
@@ -42,7 +42,7 @@ namespace rift
 				else
 				{
 					UI::AddNotification({UI::ToastType::Error, 1.f,
-					    Strings::Format("Failed to open project at '{}'", pipe::ToString(folder))});
+					    Strings::Format("Failed to open project at '{}'", p::ToString(folder))});
 				}
 			}
 			UI::SetItemDefaultFocus();
@@ -95,8 +95,8 @@ namespace rift
 			if (UI::Button("...", v2{24.f, 0.f}))
 			{
 				Path selectedFolder =
-				    Files::SelectFolderDialog("Select project folder", pipe::GetCurrentPath());
-				folder = pipe::ToString(selectedFolder);
+				    files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
+				folder = p::ToString(selectedFolder);
 			}
 
 			if (UI::Button("Create", v2{-FLT_MIN, 0.0f}))

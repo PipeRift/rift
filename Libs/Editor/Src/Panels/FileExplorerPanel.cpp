@@ -38,7 +38,7 @@ namespace rift
 			if (!IsNone(typeId))
 			{
 				Types::OpenEditor(ast, typeId);
-				pendingOpenCreatedPath = pipe::Path{};
+				pendingOpenCreatedPath = p::Path{};
 			}
 		}
 
@@ -77,7 +77,7 @@ namespace rift
 		UI::BeginChild("Files");
 		if (UI::BeginPopupContextWindow())
 		{
-			String projectPath = pipe::ToString(Modules::GetProjectPath(ast));
+			String projectPath = p::ToString(Modules::GetProjectPath(ast));
 			DrawContextMenu(ast, projectPath, AST::NoId);
 			UI::EndPopup();
 		}
@@ -118,7 +118,7 @@ namespace rift
 			if (UI::MenuItem("Rename"))
 			{
 				renameId     = itemId;
-				renameBuffer = pipe::GetFilename(path);
+				renameBuffer = p::GetFilename(path);
 			}
 
 			if (isType && UI::MenuItem("Delete"))
@@ -163,7 +163,7 @@ namespace rift
 	void FileExplorerPanel::InsertItem(TMap<Name, Folder>& folders, const Item& item)
 	{
 		Name lastName         = item.path;
-		StringView parentPath = pipe::GetParentPath(item.path.ToString());
+		StringView parentPath = p::GetParentPath(item.path.ToString());
 		Name parentName{parentPath};
 
 		if (Folder* parent = folders.Find(parentName))
@@ -173,7 +173,7 @@ namespace rift
 		}
 		folders.Insert(parentName, Folder{{item}});
 
-		parentPath = pipe::GetParentPath(parentPath);
+		parentPath = p::GetParentPath(parentPath);
 		while (!parentPath.empty())
 		{
 			lastName   = parentName;
@@ -188,7 +188,7 @@ namespace rift
 			}
 			folders.Insert(parentName, Folder{{newItem}});
 
-			parentPath = pipe::GetParentPath(parentPath);
+			parentPath = p::GetParentPath(parentPath);
 		}
 	}
 
@@ -205,8 +205,8 @@ namespace rift
 		projectModuleId = Modules::GetProjectId(access);
 
 		// Create module folders
-		TArray<AST::Id> modules = ECS::ListAll<CModule>(access);
-		TMap<AST::Id, pipe::Path> moduleFolders;
+		TArray<AST::Id> modules = ecs::ListAll<CModule>(access);
+		TMap<AST::Id, p::Path> moduleFolders;
 		moduleFolders.Reserve(modules.Size());
 		for (AST::Id moduleId : modules)
 		{
@@ -220,14 +220,14 @@ namespace rift
 		// Create folders between modules
 		for (AST::Id oneId : modules)
 		{
-			bool insideOther       = false;
-			const pipe::Path& path = moduleFolders[oneId];
+			bool insideOther    = false;
+			const p::Path& path = moduleFolders[oneId];
 
 			for (AST::Id otherId : modules)
 			{
 				if (oneId != otherId)
 				{
-					const pipe::Path& otherPath = moduleFolders[otherId];
+					const p::Path& otherPath = moduleFolders[otherId];
 
 					if (Strings::Contains<Path::value_type>(path.native(),
 					        otherPath.native()))    // Is relative
@@ -241,7 +241,7 @@ namespace rift
 			if (insideOther)
 			{
 				// If a module is inside another, create the folders in between
-				InsertItem(folders, Item{oneId, pipe::ToString(path), true});
+				InsertItem(folders, Item{oneId, p::ToString(path), true});
 			}
 			else
 			{
@@ -250,12 +250,12 @@ namespace rift
 		}
 
 		// Create items
-		for (AST::Id typeId : ECS::ListAll<CType, CFileRef>(access))
+		for (AST::Id typeId : ecs::ListAll<CType, CFileRef>(access))
 		{
 			auto& file = access.Get<const CFileRef>(typeId);
 			if (!file.path.empty())
 			{
-				const String path = pipe::ToString(file.path);
+				const String path = p::ToString(file.path);
 				InsertItem(folders, Item{typeId, Name{path}});
 			}
 		}
@@ -276,7 +276,7 @@ namespace rift
 	void FileExplorerPanel::DrawItem(AST::Tree& ast, const Item& item)
 	{
 		const String path         = item.path.ToString();
-		const StringView fileName = pipe::GetFilename(path);
+		const StringView fileName = p::GetFilename(path);
 
 		if (Folder* folder = folders.Find(item.path))
 		{
@@ -388,7 +388,7 @@ namespace rift
 					Path destination = FromString(GetParentPath(path)) / renameBuffer;
 					destination.replace_extension("rf");
 					// FIX: Type caches dont detect renamed types. Should provide helpers for that
-					Files::Rename(FromString(path), destination);
+					files::Rename(FromString(path), destination);
 					renameBuffer     = "";
 					renameHasFocused = false;
 				}
@@ -429,9 +429,9 @@ namespace rift
 	void FileExplorerPanel::DrawTypeActions(AST::Id id, CType& type) {}
 
 	void FileExplorerPanel::CreateType(
-	    AST::Tree& ast, StringView title, Type category, pipe::Path folderPath)
+	    AST::Tree& ast, StringView title, Type category, p::Path folderPath)
 	{
-		const pipe::Path path = Files::SaveFileDialog(title, folderPath,
+		const p::Path path = files::SaveFileDialog(title, folderPath,
 		    {
 		        {"Rift Type", Strings::Format("*.{}", Paths::typeExtension)}
         },
@@ -441,7 +441,7 @@ namespace rift
 
 		String data;
 		Types::Serialize(ast, typeId, data);
-		Files::SaveStringFile(path, data);
+		files::SaveStringFile(path, data);
 
 		// Destroy the temporal type after saving it
 		ast.Destroy(typeId);

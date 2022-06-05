@@ -8,11 +8,11 @@
 
 namespace rift
 {
-	struct CExprType : public pipe::Struct
+	struct CExprType : public p::Struct
 	{
-		STRUCT(CExprType, pipe::Struct)
+		STRUCT(CExprType, p::Struct)
 
-		PROP(id, pipe::Prop_NotSerialized)
+		PROP(id, p::Prop_NotSerialized)
 		AST::Id id = AST::NoId;
 
 

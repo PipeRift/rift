@@ -26,7 +26,7 @@ namespace rift::AST
 		AST::Id stringId = AST::NoId;
 	};
 
-	struct Tree : public pipe::ECS::Context
+	struct Tree : public p::ecs::Context
 	{
 	private:
 		NativeTypeIds nativeTypes;

@@ -15,7 +15,7 @@ namespace rift::AST
 
 namespace rift::TypeSystem
 {
-	using namespace pipe;
+	using namespace p;
 
 
 	void Init(AST::Tree& ast);

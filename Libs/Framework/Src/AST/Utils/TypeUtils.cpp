@@ -40,7 +40,7 @@ namespace rift::Types
 	{
 		if (auto* fileRef = ast.TryGet<CFileRef>(id))
 		{
-			String fileName = pipe::GetFilename(fileRef->path);
+			String fileName = p::GetFilename(fileRef->path);
 			fileName        = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
 			ast.Add<CType>(id, {Name{fileName}});
 		}
@@ -76,7 +76,7 @@ namespace rift::Types
 		return Type::None;
 	}
 
-	AST::Id CreateType(AST::Tree& ast, Type type, Name name, const pipe::Path& path)
+	AST::Id CreateType(AST::Tree& ast, Type type, Name name, const p::Path& path)
 	{
 		AST::Id id = ast.Create();
 		if (!name.IsNone())
@@ -100,7 +100,7 @@ namespace rift::Types
 			{
 				if (const auto* file = access.TryGet<const CFileRef>(id))
 				{
-					Files::Delete(file->path, true, false);
+					files::Delete(file->path, true, false);
 				}
 			}
 		}
@@ -111,7 +111,7 @@ namespace rift::Types
 	{
 		ZoneScoped;
 
-		Serl::JsonFormatWriter writer{};
+		serl::JsonFormatWriter writer{};
 		AST::WriteContext ct{writer.GetContext(), ast, true};
 		ct.BeginObject();
 		ct.Next("type", GetCategory(ast, id));
@@ -123,7 +123,7 @@ namespace rift::Types
 	{
 		ZoneScoped;
 
-		Serl::JsonFormatReader reader{data};
+		serl::JsonFormatReader reader{data};
 		if (!reader.IsValid())
 		{
 			return;
@@ -140,7 +140,7 @@ namespace rift::Types
 	}
 
 
-	AST::Id FindTypeByPath(AST::Tree& ast, const pipe::Path& path)
+	AST::Id FindTypeByPath(AST::Tree& ast, const p::Path& path)
 	{
 		if (auto* types = ast.TryGetStatic<STypes>())
 		{
@@ -439,7 +439,7 @@ namespace rift::Types
 		{
 			TArray<AST::Id> children;
 			AST::Hierarchy::GetChildren(access, *typeId, children);
-			ECS::ExcludeIfNot<CDeclFunction, CIdentifier>(access, children);
+			ecs::ExcludeIfNot<CDeclFunction, CIdentifier>(access, children);
 			for (AST::Id childId : children)
 			{
 				if (access.Get<const CIdentifier>(childId).name == functionName)

@@ -9,21 +9,21 @@
 
 namespace rift
 {
-	class ModuleIterator : public FormatFileIterator<Files::RecursiveIterator>
+	class ModuleIterator : public FormatFileIterator<files::RecursiveIterator>
 	{
 	public:
-		using FormatFileIterator<Files::RecursiveIterator>::FormatFileIterator;
+		using FormatFileIterator<files::RecursiveIterator>::FormatFileIterator;
 
-		explicit ModuleIterator(const pipe::Path& path, const TSet<Path>* ignorePaths = nullptr)
+		explicit ModuleIterator(const p::Path& path, const TSet<Path>* ignorePaths = nullptr)
 		    : FormatFileIterator(Paths::moduleExtension, path)
 		{}
 
-		const pipe::Path& operator*() const noexcept
+		const p::Path& operator*() const noexcept
 		{
 			return fileIterator->path();
 		}
 
-		const pipe::Path* operator->() const noexcept
+		const p::Path* operator->() const noexcept
 		{
 			return &operator*();
 		}

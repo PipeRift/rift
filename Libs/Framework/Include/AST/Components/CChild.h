@@ -7,12 +7,12 @@
 
 namespace rift
 {
-	using namespace pipe;
+	using namespace p;
 
 
-	struct CChild : public pipe::Struct
+	struct CChild : public p::Struct
 	{
-		STRUCT(CChild, pipe::Struct)
+		STRUCT(CChild, p::Struct)
 
 		PROP(parent)
 		AST::Id parent = AST::NoId;

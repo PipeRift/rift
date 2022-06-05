@@ -11,18 +11,18 @@
 
 namespace rift::Compiler
 {
-	struct CompileError : public pipe::Struct
+	struct CompileError : public p::Struct
 	{
-		STRUCT(CompileError, pipe::Struct)
+		STRUCT(CompileError, p::Struct)
 
 		PROP(text)
 		String text;
 	};
 
 
-	struct Context : public pipe::Struct
+	struct Context : public p::Struct
 	{
-		STRUCT(Context, pipe::Struct)
+		STRUCT(Context, p::Struct)
 
 		AST::Tree& ast;
 		Config config;

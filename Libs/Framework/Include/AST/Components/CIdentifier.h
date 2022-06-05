@@ -7,7 +7,7 @@
 
 namespace rift
 {
-	using namespace pipe;
+	using namespace p;
 
 
 	struct CIdentifier : public Struct

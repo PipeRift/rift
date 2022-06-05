@@ -8,17 +8,17 @@
 
 namespace rift
 {
-	using namespace pipe;
+	using namespace p;
 
 
 	/**
 	 * This component points an AST node to a file.
-	 * Some examples are Class, pipe::Struct and Function Library declarations pointing to their
+	 * Some examples are Class, p::Struct and Function Library declarations pointing to their
 	 * files
 	 */
-	struct CFileRef : public pipe::Struct
+	struct CFileRef : public p::Struct
 	{
-		STRUCT(CFileRef, pipe::Struct, pipe::Struct_NotSerialized)
+		STRUCT(CFileRef, p::Struct, p::Struct_NotSerialized)
 
 		PROP(path)
 		Path path;

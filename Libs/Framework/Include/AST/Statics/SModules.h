@@ -8,10 +8,10 @@
 
 namespace rift
 {
-	struct SModules : public pipe::Struct
+	struct SModules : public p::Struct
 	{
-		STRUCT(SModules, pipe::Struct)
+		STRUCT(SModules, p::Struct)
 
-		pipe::TMap<pipe::Name, AST::Id> modulesByPath;
+		p::TMap<p::Name, AST::Id> modulesByPath;
 	};
 }    // namespace rift

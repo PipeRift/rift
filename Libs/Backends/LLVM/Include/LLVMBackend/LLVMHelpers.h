@@ -10,7 +10,7 @@
 
 namespace rift::Compiler::LLVM
 {
-	using namespace pipe::core;
+	using namespace p::core;
 
 	inline llvm::StringRef ToLLVM(StringView string)
 	{

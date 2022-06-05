@@ -11,9 +11,9 @@
 
 namespace rift
 {
-	struct CDeclRename : public pipe::Struct
+	struct CDeclRename : public p::Struct
 	{
-		STRUCT(CDeclRename, pipe::Struct, pipe::Struct_NotSerialized)
+		STRUCT(CDeclRename, p::Struct, p::Struct_NotSerialized)
 
 		// Renaming uses this buffer to temporarely store the name being edited
 		String buffer;

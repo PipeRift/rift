@@ -7,7 +7,7 @@
 
 namespace rift::Paths
 {
-	using namespace pipe;
+	using namespace p;
 
 
 	Path GetResourcesPath();

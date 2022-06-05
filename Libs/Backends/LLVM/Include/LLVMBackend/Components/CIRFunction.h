@@ -8,14 +8,14 @@
 
 namespace rift
 {
-	struct CIRFunction : public pipe::Struct
+	struct CIRFunction : public p::Struct
 	{
-		STRUCT(CIRFunction, pipe::Struct)
+		STRUCT(CIRFunction, p::Struct)
 
 		llvm::Function* instance = nullptr;
 
-		pipe::TArray<llvm::Value*> inputs;
-		pipe::TArray<AST::Id> inputIds;
+		p::TArray<llvm::Value*> inputs;
+		p::TArray<AST::Id> inputIds;
 
 
 		CIRFunction() {}

@@ -191,12 +191,12 @@ namespace rift::AST
 
 		[[nodiscard]] static auto Page(const AST::Id entt)
 		{
-			return static_cast<size_type>(ECS::GetIndex(entt) / sparsePage);
+			return static_cast<size_type>(ecs::GetIndex(entt) / sparsePage);
 		}
 
 		[[nodiscard]] static auto Offset(const AST::Id entt)
 		{
-			return static_cast<size_type>(ECS::GetIndex(entt) & (sparsePage - 1));
+			return static_cast<size_type>(ecs::GetIndex(entt) & (sparsePage - 1));
 		}
 
 		[[nodiscard]] auto AssurePage(const std::size_t idx)
@@ -287,7 +287,7 @@ namespace rift::AST
 		virtual void SwapAndPop(const AST::Id entt, [[maybe_unused]] void* ud)
 		{
 			auto& ref      = sparse[Page(entt)][Offset(entt)];
-			const auto pos = static_cast<size_type>(ECS::GetIndex(ref));
+			const auto pos = static_cast<size_type>(ecs::GetIndex(ref));
 			CheckMsg(packed[pos] == entt, "Invalid entity identifier");
 			auto& last = packed[--count];
 
@@ -307,7 +307,7 @@ namespace rift::AST
 		virtual void InPlacePop(const AST::Id entt, [[maybe_unused]] void* ud)
 		{
 			auto& ref      = sparse[Page(entt)][Offset(entt)];
-			const auto pos = static_cast<size_type>(ECS::GetIndex(ref));
+			const auto pos = static_cast<size_type>(ecs::GetIndex(ref));
 			CheckMsg(packed[pos] == entt, "Invalid entity identifier");
 
 			packed[pos] = std::exchange(
@@ -414,7 +414,7 @@ namespace rift::AST
 		 */
 		[[nodiscard]] size_type Slot() const
 		{
-			return freeList == AST::NoId ? count : static_cast<size_type>(ECS::GetIndex(freeList));
+			return freeList == AST::NoId ? count : static_cast<size_type>(ecs::GetIndex(freeList));
 		}
 
 		/**
@@ -580,7 +580,7 @@ namespace rift::AST
 		{
 			//  Testing versions permits to avoid accessing the packed array
 			const auto curr = Page(entt);
-			return ECS::GetVersion(entt) != ECS::GetVersion(AST::NoId)
+			return ecs::GetVersion(entt) != ecs::GetVersion(AST::NoId)
 			    && (curr < bucket && sparse[curr] && sparse[curr][Offset(entt)] != AST::NoId);
 		}
 
@@ -597,7 +597,7 @@ namespace rift::AST
 		[[nodiscard]] size_type Index(const entity_type entt) const
 		{
 			CheckMsg(Contains(entt), "Set does not contain entity");
-			return static_cast<size_type>(ECS::GetIndex(sparse[Page(entt)][Offset(entt)]));
+			return static_cast<size_type>(ecs::GetIndex(sparse[Page(entt)][Offset(entt)]));
 		}
 
 		/**
@@ -666,7 +666,7 @@ namespace rift::AST
 			else
 			{
 				CheckMsg(!Contains(entt), "Set already contains entity");
-				const auto pos = static_cast<size_type>(ECS::GetIndex(freeList));
+				const auto pos = static_cast<size_type>(ecs::GetIndex(freeList));
 				AssurePage(Page(entt))[Offset(entt)] =
 				    AST::MakeId(static_cast<typename traits_type::Entity>(pos));
 				freeList = std::exchange(packed[pos], entt);
@@ -771,13 +771,13 @@ namespace rift::AST
 		void Compact()
 		{
 			size_type next = count;
-			for (; next && ECS::GetVersion(packed[next - 1u]) == ECS::GetVersion(AST::NoId); --next)
+			for (; next && ecs::GetVersion(packed[next - 1u]) == ecs::GetVersion(AST::NoId); --next)
 			{}
 
 			for (auto* it = &freeList; *it != AST::NoId && next;
-			     it       = std::addressof(packed[ECS::GetIndex(*it)]))
+			     it       = std::addressof(packed[ecs::GetIndex(*it)]))
 			{
-				if (const size_type pos = ECS::GetIndex(*it); pos < next)
+				if (const size_type pos = ecs::GetIndex(*it); pos < next)
 				{
 					--next;
 					MoveAndPop(next, pos);
@@ -785,7 +785,7 @@ namespace rift::AST
 					sparse[Page(packed[pos])][Offset(packed[pos])] =
 					    AST::MakeId(static_cast<const typename traits_type::Entity>(pos));
 					*it = AST::MakeId(static_cast<typename traits_type::Entity>(next));
-					for (; next && ECS::GetVersion(packed[next - 1u]) == ECS::GetVersion(AST::NoId);
+					for (; next && ecs::GetVersion(packed[next - 1u]) == ecs::GetVersion(AST::NoId);
 					     --next)
 					{}
 				}
@@ -816,8 +816,8 @@ namespace rift::AST
 			auto& entt  = sparse[Page(lhs)][Offset(lhs)];
 			auto& other = sparse[Page(rhs)][Offset(rhs)];
 
-			const auto from = static_cast<size_type>(ECS::GetIndex(entt));
-			const auto to   = static_cast<size_type>(ECS::GetIndex(other));
+			const auto from = static_cast<size_type>(ecs::GetIndex(entt));
+			const auto to   = static_cast<size_type>(ecs::GetIndex(other));
 
 			// basic no-leak guarantee (with invalid state) if swapping throws
 			SwapAt(from, to);
@@ -945,7 +945,7 @@ namespace rift::AST
 		{
 			for (auto&& entity : *this)
 			{
-				if (ECS::GetVersion(entity) != ECS::GetVersion(AST::NoId))
+				if (ecs::GetVersion(entity) != ecs::GetVersion(AST::NoId))
 				{
 					InPlacePop(entity, ud);
 				}

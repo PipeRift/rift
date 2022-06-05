@@ -17,7 +17,7 @@ struct ImGuiContext;
 
 namespace rift::Nodes
 {
-	using namespace pipe;
+	using namespace p;
 
 
 	using Id = i32;

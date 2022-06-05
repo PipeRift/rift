@@ -9,8 +9,8 @@
 
 namespace rift
 {
-	using namespace pipe::core;
-	using namespace pipe::EnumOperators;
+	using namespace p::core;
+	using namespace p::EnumOperators;
 
 	enum class IntegralType : u8
 	{

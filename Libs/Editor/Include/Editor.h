@@ -9,7 +9,7 @@
 
 namespace rift
 {
-	using namespace pipe;
+	using namespace p;
 
 	class Editor
 	{

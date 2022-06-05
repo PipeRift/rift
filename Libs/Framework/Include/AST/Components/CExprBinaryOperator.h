@@ -8,7 +8,7 @@
 
 namespace rift
 {
-	using namespace pipe;
+	using namespace p;
 
 
 	enum class BinaryOperatorType : u8

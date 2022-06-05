@@ -9,9 +9,9 @@
 namespace rift
 {
 	// Contains loaded string data from disk
-	struct SStringLoad : public pipe::Struct
+	struct SStringLoad : public p::Struct
 	{
-		STRUCT(SStringLoad, pipe::Struct)
+		STRUCT(SStringLoad, p::Struct)
 
 		// This buffers are always in sync with size
 		// They bind by array index an Id, path and loaded string

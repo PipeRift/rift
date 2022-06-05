@@ -30,7 +30,7 @@ namespace rift::Compiler
 			ZoneScoped;
 
 			const String filePath =
-			    Strings::Format("{}/{}.o", pipe::ToString(context.config.intermediatesPath),
+			    Strings::Format("{}/{}.o", p::ToString(context.config.intermediatesPath),
 			        Modules::GetModuleName(context.ast, moduleId));
 			Log::Info("Creating object '{}'", filePath);
 
@@ -80,13 +80,13 @@ namespace rift::Compiler
 			    targetTriple, "generic", "", options, llvm::Optional<llvm::Reloc::Model>());
 
 			// Emit LLVM IR to console
-			for (AST::Id moduleId : ECS::ListAll<CIRModule>(context.ast))
+			for (AST::Id moduleId : ecs::ListAll<CIRModule>(context.ast))
 			{
 				const auto& irModule = context.ast.Get<const CIRModule>(moduleId).instance;
 				irModule->print(llvm::outs(), nullptr);
 			}
 
-			for (AST::Id moduleId : ECS::ListAll<CIRModule>(context.ast))
+			for (AST::Id moduleId : ecs::ListAll<CIRModule>(context.ast))
 			{
 				LLVM::SaveModuleObject(context, moduleId, targetMachine, targetTriple);
 			}

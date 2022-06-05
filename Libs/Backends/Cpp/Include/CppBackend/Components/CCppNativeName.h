@@ -6,9 +6,9 @@
 
 namespace rift
 {
-	struct CCppNativeName : public pipe::Struct
+	struct CCppNativeName : public p::Struct
 	{
-		STRUCT(CCppNativeName, pipe::Struct)
+		STRUCT(CCppNativeName, p::Struct)
 
 		String codeName;
 

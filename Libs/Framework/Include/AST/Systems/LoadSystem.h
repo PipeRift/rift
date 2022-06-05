@@ -19,7 +19,7 @@ namespace rift::LoadSystem
 	struct ModuleTypePaths
 	{
 		AST::Id moduleId;
-		TArray<Path> paths;    // pipe::Paths of module types
+		TArray<Path> paths;    // p::Paths of module types
 		TArray<Name> pathNames;
 	};
 

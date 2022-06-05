@@ -7,7 +7,7 @@
 
 namespace rift::Style
 {
-	using namespace pipe;
+	using namespace p;
 
 
 	constexpr LinearColor primaryColor = LinearColor::FromHEX(0xD6863B);
@@ -45,7 +45,7 @@ namespace rift::Style
 	}
 
 
-	enum class FontMode : pipe::u8
+	enum class FontMode : p::u8
 	{
 		None = 0,
 		Regular,
@@ -60,13 +60,13 @@ namespace rift::Style
 	// @param name of the font
 	// @param mode of the font. E.g: Bold
 	// @param size desired size of the font. If 0, first size available is used
-	void SetDefaultFont(pipe::Name name, FontMode mode = FontMode::Regular, float size = 0.f);
+	void SetDefaultFont(p::Name name, FontMode mode = FontMode::Regular, float size = 0.f);
 
 	// Pushes a font
 	// @param name of the font
 	// @param mode of the font. E.g: Bold
 	// @param size desired size of the font. If 0, first size available is used
-	void PushFont(pipe::Name name, FontMode mode = FontMode::Regular, float size = 0.f);
+	void PushFont(p::Name name, FontMode mode = FontMode::Regular, float size = 0.f);
 
 	void PopFont();
 
@@ -86,7 +86,7 @@ namespace rift::Style
 	void PushTextColor(LinearColor color);
 	void PopTextColor();
 
-	template<pipe::ColorMode mode>
+	template<p::ColorMode mode>
 	TColor<mode> Hovered(const TColor<mode>& color)
 	{
 		return color.Shade(0.1f);

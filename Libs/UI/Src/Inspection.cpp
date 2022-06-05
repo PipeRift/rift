@@ -385,7 +385,7 @@ namespace rift::UI
 			UI::AlignTextToFramePadding();
 			UI::Text(label);
 			UI::TableSetColumnIndex(1);
-			UI::SetNextItemWidth(Math::Min(300.f, UI::GetContentRegionAvail().x));
+			UI::SetNextItemWidth(math::Min(300.f, UI::GetContentRegionAvail().x));
 			String str = ToString(*path);
 			if (UI::InputText("##value", str))
 			{

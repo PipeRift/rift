@@ -7,7 +7,7 @@
 
 namespace rift::Paths
 {
-	static constexpr pipe::StringView moduleExtension = ".rift";
-	static constexpr pipe::StringView typeExtension   = ".rf";
-	static constexpr pipe::StringView configExtension = ".json";
+	static constexpr p::StringView moduleExtension = ".rift";
+	static constexpr p::StringView typeExtension   = ".rf";
+	static constexpr p::StringView configExtension = ".json";
 };    // namespace rift::Paths

@@ -51,7 +51,7 @@ namespace rift::AST
 
 				if (ct.EnterNext(key))
 				{
-					if constexpr (!IsEmpty<T>())
+					if constexpr (!IsEmpty<T>)
 					{
 						T& comp = access.template GetOrAdd<T>(node);
 						ct.Serialize(comp);
@@ -74,7 +74,7 @@ namespace rift::AST
 
 		if (auto* pool = access.template GetPool<const T>())
 		{
-			componentIds.ReserveMore(Math::Min(i32(pool->Size()), nodes.Size()));
+			componentIds.ReserveMore(math::Min(i32(pool->Size()), nodes.Size()));
 			for (i32 i = 0; i < nodes.Size(); ++i)
 			{
 				const Id id = nodes[i];
@@ -92,7 +92,7 @@ namespace rift::AST
 
 		// FIX: yyjson doesn't seem to take into account stringview length when generating text
 		// Temporarely fixed by caching component name keys
-		ct.PushAddFlags(pipe::Serl::WriteFlags_CacheStringKeys);
+		ct.PushAddFlags(p::serl::WriteFlags_CacheStringKeys);
 		if (ct.EnterNext(GetTypeName<T>(false)))
 		{
 			String key;
@@ -124,7 +124,7 @@ namespace rift::AST
 		Next("count", nodeCount);
 		ids.Resize(i32(nodeCount));
 		// Create or assign root ids
-		const i32 maxSize = Math::Min(entities.Size(), ids.Size());
+		const i32 maxSize = math::Min(entities.Size(), ids.Size());
 		for (i32 i = 0; i < maxSize; ++i)
 		{
 			const Id entity = entities[i];

@@ -8,8 +8,8 @@ namespace rift
 {
 	// Asigned to entities that have been modified during the last frame
 	// Gets cleared after one frame
-	struct CChanged : public pipe::Struct
+	struct CChanged : public p::Struct
 	{
-		STRUCT(CChanged, pipe::Struct, pipe::Struct_NotSerialized)
+		STRUCT(CChanged, p::Struct, p::Struct_NotSerialized)
 	};
 }    // namespace rift

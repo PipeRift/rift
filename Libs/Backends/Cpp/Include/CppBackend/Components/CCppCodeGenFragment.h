@@ -6,9 +6,9 @@
 
 namespace rift
 {
-	struct CCppCodeGenFragment : public pipe::Struct
+	struct CCppCodeGenFragment : public p::Struct
 	{
-		STRUCT(CCppCodeGenFragment, pipe::Struct)
+		STRUCT(CCppCodeGenFragment, p::Struct)
 
 		String code;
 	};

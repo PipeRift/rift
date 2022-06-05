@@ -16,7 +16,7 @@
 
 namespace rift::Style
 {
-	using namespace pipe;
+	using namespace p;
 
 
 	struct FontType
@@ -26,7 +26,7 @@ namespace rift::Style
 		void Add(float size, ImFont* imFont)
 		{
 			if (sizes.Contains([size](const auto& font) {
-				    return Math::NearlyEqual(font.first, size);
+				    return math::NearlyEqual(font.first, size);
 			    }))
 			{
 				Log::Error(
@@ -48,7 +48,7 @@ namespace rift::Style
 				return sizes.First().second;
 			}
 			const TPair<float, ImFont*>* foundFont = sizes.Find([desiredSize](const auto& font) {
-				return Math::NearlyEqual(font.first, desiredSize);
+				return math::NearlyEqual(font.first, desiredSize);
 			});
 			return foundFont ? foundFont->second : nullptr;
 		}
@@ -78,7 +78,7 @@ namespace rift::Style
 		return io.Fonts->AddFontFromFileTTF(ToString(file).data(), size, fontConfig, glyphRanges);
 	}
 
-	void AddTextFont(Name name, FontMode mode, float size, pipe::Path file)
+	void AddTextFont(Name name, FontMode mode, float size, p::Path file)
 	{
 		FontDescriptor* font = gFonts.Find(name);
 		if (!font)

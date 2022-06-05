@@ -48,8 +48,8 @@ namespace rift::Compiler
 		Log::Info("Building project '{}'", Modules::GetProjectName(context.ast));
 		// Clean build folders
 		Log::Info("Cleaning previous build");
-		Files::Delete(context.config.binariesPath, true, false);
-		Files::CreateFolder(context.config.binariesPath, true);
+		files::Delete(context.config.binariesPath, true, false);
+		files::CreateFolder(context.config.binariesPath, true);
 
 		backend->Build(context);
 	}

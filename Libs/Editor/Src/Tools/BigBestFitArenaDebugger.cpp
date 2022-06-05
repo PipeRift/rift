@@ -51,7 +51,7 @@ namespace rift
 		}
 
 		grid.UpdateGridScale(graphSize.x);
-		graphSize.y = Math::Max(graphSize.y, grid.GetHeight());
+		graphSize.y = math::Max(graphSize.y, grid.GetHeight());
 
 		const ImRect frameBox(window->DC.CursorPos, ImVec2(v2(window->DC.CursorPos) + graphSize));
 
@@ -85,7 +85,7 @@ namespace rift
 				const u32 startX        = grid.GetX(startOffset);
 				const u32 endX          = grid.GetX(endOffset);
 				const u32 startY        = grid.GetY(startOffset);
-				const u32 endY          = Math::Min(grid.GetY(endOffset), grid.numRows - 1);
+				const u32 endY          = math::Min(grid.GetY(endOffset), grid.numRows - 1);
 
 				// Draw incomplete rows
 				if (startY != endY)
@@ -134,11 +134,11 @@ namespace rift
 	void MemoryGrid::Draw(const TArray<Memory::BigBestFitArena::Slot>& freeSlots)
 	{
 		String scaleStr      = Strings::ParseMemorySize(memoryScale);
-		u32 scaleMultiplier  = u32(Math::Log2(memoryScale));
+		u32 scaleMultiplier  = u32(math::Log2(memoryScale));
 		static const u32 min = 2, max = 8;
 		UI::SliderScalar(
 		    "Scale", ImGuiDataType_U32, (void*)&scaleMultiplier, &min, &max, scaleStr.c_str());
-		memoryScale = Math::Pow(2, scaleMultiplier);
+		memoryScale = math::Pow(2, scaleMultiplier);
 
 		UI::BeginChild("##memoryblock", ImVec2(0.f, 450.f), false);
 		UI::SetNextItemWidth(-FLT_MIN);

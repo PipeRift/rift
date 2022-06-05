@@ -7,25 +7,24 @@
 #include <Math/Vector.h>
 
 
-#define IM_VEC2_CLASS_EXTRA                                      \
-	constexpr ImVec2(pipe::v2 other) : x(other.x), y(other.y) {} \
-	constexpr operator pipe::v2() const                          \
-	{                                                            \
-		return pipe::v2{x, y};                                   \
+#define IM_VEC2_CLASS_EXTRA                                   \
+	constexpr ImVec2(p::v2 other) : x(other.x), y(other.y) {} \
+	constexpr operator p::v2() const                          \
+	{                                                         \
+		return p::v2{x, y};                                   \
 	}
 
-#define IM_VEC4_CLASS_EXTRA                                                                     \
-	constexpr ImVec4(const pipe::LinearColor& other)                                            \
-	    : x(other.r), y(other.g), z(other.b), w(other.a)                                        \
-	{}                                                                                          \
-	constexpr operator pipe::LinearColor() const                                                \
-	{                                                                                           \
-		return pipe::LinearColor{x, y, z, w};                                                   \
-	}                                                                                           \
-	constexpr ImVec4(const pipe::v4& other) : x(other.x), y(other.y), z(other.z), w(other.w) {} \
-	constexpr operator pipe::v4() const                                                         \
-	{                                                                                           \
-		return pipe::v4{x, y, z, w};                                                            \
+#define IM_VEC4_CLASS_EXTRA                                                                        \
+	constexpr ImVec4(const p::LinearColor& other) : x(other.r), y(other.g), z(other.b), w(other.a) \
+	{}                                                                                             \
+	constexpr operator p::LinearColor() const                                                      \
+	{                                                                                              \
+		return p::LinearColor{x, y, z, w};                                                         \
+	}                                                                                              \
+	constexpr ImVec4(const p::v4& other) : x(other.x), y(other.y), z(other.z), w(other.w) {}       \
+	constexpr operator p::v4() const                                                               \
+	{                                                                                              \
+		return p::v4{x, y, z, w};                                                                  \
 	}
 
 
@@ -36,7 +35,7 @@
 
 namespace rift::UI
 {
-	using namespace pipe;
+	using namespace p;
 	using namespace ImGui;
 
 	// Begin ImGui API override

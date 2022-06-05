@@ -97,7 +97,7 @@ namespace rift::Compiler::LLVM
 			memberIds.Empty(false);
 			memberTypes.Empty(false);
 			AST::Hierarchy::GetChildren(access, id, memberIds);
-			ECS::ExcludeIfNot<CDeclVariable>(access, memberIds);
+			ecs::ExcludeIfNot<CDeclVariable>(access, memberIds);
 			for (AST::Id memberId : memberIds)
 			{
 				const auto& var = access.Get<const CDeclVariable>(memberId);
@@ -318,20 +318,20 @@ namespace rift::Compiler::LLVM
 	        TWrite<CIRValue>>
 	        access)
 	{
-		for (AST::Id id : ECS::ListAll<CLiteralBool>(access))
+		for (AST::Id id : ecs::ListAll<CLiteralBool>(access))
 		{
 			const auto& boolean = access.Get<const CLiteralBool>(id);
 			llvm::Value* value  = llvm::ConstantInt::get(llvm, llvm::APInt(1, boolean.value, true));
 			access.Add<CIRValue>(id, value);
 		}
-		for (AST::Id id : ECS::ListAll<CLiteralIntegral>(access))
+		for (AST::Id id : ecs::ListAll<CLiteralIntegral>(access))
 		{
 			const auto& integral = access.Get<const CLiteralIntegral>(id);
 			llvm::Value* value   = llvm::ConstantInt::get(
 			      llvm, llvm::APInt(integral.GetSize(), integral.value, integral.IsSigned()));
 			access.Add<CIRValue>(id, value);
 		}
-		for (AST::Id id : ECS::ListAll<CLiteralFloating>(access))
+		for (AST::Id id : ecs::ListAll<CLiteralFloating>(access))
 		{
 			const auto& floating = access.Get<const CLiteralFloating>(id);
 			llvm::Value* value =
@@ -340,7 +340,7 @@ namespace rift::Compiler::LLVM
 			                                                  : floating.value));
 			access.Add<CIRValue>(id, value);
 		}
-		for (AST::Id id : ECS::ListAll<CLiteralString>(access))
+		for (AST::Id id : ecs::ListAll<CLiteralString>(access))
 		{
 			const auto& string = access.Get<const CLiteralString>(id);
 			llvm::Value* value = llvm::ConstantDataArray::getString(llvm, ToLLVM(string.value));
@@ -363,16 +363,16 @@ namespace rift::Compiler::LLVM
 		// Filter all classIds and structIds
 		TArray<AST::Id> typeIds;
 		AST::Hierarchy::GetChildren(ast, moduleId, typeIds);
-		ECS::ExcludeIfNot<CType>(ast, typeIds);
-		TArray<AST::Id> structIds = ECS::GetIf<CDeclStruct>(ast, typeIds);
-		TArray<AST::Id> classIds  = ECS::GetIf<CDeclClass>(ast, typeIds);
+		ecs::ExcludeIfNot<CType>(ast, typeIds);
+		TArray<AST::Id> structIds = ecs::GetIf<CDeclStruct>(ast, typeIds);
+		TArray<AST::Id> classIds  = ecs::GetIf<CDeclClass>(ast, typeIds);
 
 		DeclareStructs(llvm, ast, structIds, false);
 		DeclareStructs(llvm, ast, classIds, true);    // Declare classes
 
 		TArray<AST::Id> functionIds;
 		AST::Hierarchy::GetChildren(ast, typeIds, functionIds);
-		ECS::ExcludeIfNot<CDeclFunction>(ast, functionIds);
+		ecs::ExcludeIfNot<CDeclFunction>(ast, functionIds);
 		DeclareFunctions(context, llvm, builder, ast, functionIds, irModule);
 
 		DefineStructs(context, llvm, ast, structIds, false);
@@ -385,12 +385,12 @@ namespace rift::Compiler::LLVM
 		BindNativeTypes(llvm, context.ast);
 		GenerateLiterals(llvm, context.ast);
 
-		for (AST::Id moduleId : ECS::ListAll<CModule>(context.ast))
+		for (AST::Id moduleId : ecs::ListAll<CModule>(context.ast))
 		{
 			GenerateIRModule(context, moduleId, llvm, builder);
 		}
 
-		for (AST::Id moduleId : ECS::ListAll<CModule, CIRModule>(context.ast))
+		for (AST::Id moduleId : ecs::ListAll<CModule, CIRModule>(context.ast))
 		{
 			const auto& mod = context.ast.Get<const CModule>(moduleId);
 			if (mod.target == ModuleTarget::Executable)

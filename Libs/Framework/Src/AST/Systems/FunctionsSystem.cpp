@@ -40,8 +40,8 @@ namespace rift::FunctionsSystem
 	void ResolveCallFunctionIds(
 	    TAccessRef<TWrite<CExprCallId>, CExprCall, CDeclFunction, CIdentifier, CParent> access)
 	{
-		auto callExprs = ECS::ListAny<CExprCall>(access);
-		ECS::ExcludeIf<CExprCallId>(access, callExprs);
+		auto callExprs = ecs::ListAny<CExprCall>(access);
+		ecs::ExcludeIf<CExprCallId>(access, callExprs);
 		for (AST::Id id : callExprs)
 		{
 			auto& call = access.Get<const CExprCall>(id);
@@ -62,8 +62,8 @@ namespace rift::FunctionsSystem
 			return;
 		}
 
-		TArray<AST::Id> callExprIds = ECS::ListAll<CExprCallId>(access);
-		ECS::ExcludeIf<CCallDirty>(access, callExprIds);
+		TArray<AST::Id> callExprIds = ecs::ListAll<CExprCallId>(access);
+		ecs::ExcludeIf<CCallDirty>(access, callExprIds);
 		for (AST::Id id : callExprIds)
 		{
 			const AST::Id functionId = access.Get<const CExprCallId>(id).functionId;
@@ -76,7 +76,7 @@ namespace rift::FunctionsSystem
 
 	void PushInvalidPinsBack(TAccessRef<TWrite<CExprInputs>, TWrite<CExprOutputs>, CInvalid> access)
 	{
-		for (AST::Id inputsId : ECS::ListAll<CExprInputs>(access))
+		for (AST::Id inputsId : ecs::ListAll<CExprInputs>(access))
 		{
 			auto& inputs  = access.Get<CExprInputs>(inputsId);
 			i32 validSize = inputs.pinIds.Size();
@@ -99,7 +99,7 @@ namespace rift::FunctionsSystem
 			}
 		}
 
-		for (AST::Id outputsId : ECS::ListAll<CExprOutputs>(access))
+		for (AST::Id outputsId : ecs::ListAll<CExprOutputs>(access))
 		{
 			auto& outputs = access.Get<CExprOutputs>(outputsId);
 			i32 validSize = outputs.pinIds.Size();
@@ -126,7 +126,7 @@ namespace rift::FunctionsSystem
 		TAccess<CCallDirty, CExprCallId, TWrite<CExprInputs>, TWrite<CExprOutputs>,
 		    TWrite<CInvalid>, TWrite<CExprType>, TWrite<CIdentifier>>
 		    access{ast};
-		for (AST::Id id : ECS::ListAll<CCallDirty, CExprCallId>(access))
+		for (AST::Id id : ecs::ListAll<CCallDirty, CExprCallId>(access))
 		{
 			const auto& call = access.Get<const CExprCallId>(id);
 			if (IsNone(call.functionId))
@@ -299,7 +299,7 @@ namespace rift::FunctionsSystem
 			return;
 		}
 
-		for (AST::Id id : ECS::ListAll<CExprInputs>(access))
+		for (AST::Id id : ecs::ListAll<CExprInputs>(access))
 		{
 			const auto& inputs = access.Get<const CExprInputs>(id);
 			for (i32 i = 0; i < inputs.pinIds.Size(); ++i)
@@ -329,8 +329,8 @@ namespace rift::FunctionsSystem
 			}
 		}
 
-		TArray<AST::Id> pinsToRemove = ECS::ListAll<CInvalid>(access);
-		ECS::ExcludeIf<CTmpInvalidKeep>(access, pinsToRemove);
+		TArray<AST::Id> pinsToRemove = ecs::ListAll<CInvalid>(access);
+		ecs::ExcludeIf<CTmpInvalidKeep>(access, pinsToRemove);
 		AST::Hierarchy::Remove(access, pinsToRemove);
 
 		access.GetPool<CTmpInvalidKeep>()->Reset();

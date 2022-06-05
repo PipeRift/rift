@@ -7,10 +7,10 @@
 
 namespace rift::AST
 {
-	using namespace pipe;
+	using namespace p;
 
 
-	class ReadContext : public pipe::ReadContext
+	class ReadContext : public p::ReadContext
 	{
 		Tree& ast;
 
@@ -20,11 +20,10 @@ namespace rift::AST
 
 
 	public:
-		ReadContext(const pipe::ReadContext& parent, Tree& ast)
-		    : Serl::ReadContext(parent), ast(ast)
+		ReadContext(const p::ReadContext& parent, Tree& ast) : serl::ReadContext(parent), ast(ast)
 		{}
 
-		void SerializeEntities(pipe::TArray<Id>& entities);
+		void SerializeEntities(p::TArray<Id>& entities);
 
 		void SerializeEntity(Id& entity)
 		{
@@ -40,7 +39,7 @@ namespace rift::AST
 	};
 
 
-	class WriteContext : public pipe::WriteContext
+	class WriteContext : public p::WriteContext
 	{
 		Tree& ast;
 		bool includeChildren;
@@ -51,8 +50,8 @@ namespace rift::AST
 
 
 	public:
-		WriteContext(const pipe::WriteContext& parent, Tree& ast, bool includeChildren = true)
-		    : Serl::WriteContext(parent), ast(ast), includeChildren{includeChildren}
+		WriteContext(const p::WriteContext& parent, Tree& ast, bool includeChildren = true)
+		    : serl::WriteContext(parent), ast(ast), includeChildren{includeChildren}
 		{}
 
 		void SerializeEntities(const TArray<Id>& entities, bool includeChildren = true);

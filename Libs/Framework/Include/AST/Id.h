@@ -10,14 +10,14 @@
 
 namespace rift::AST
 {
-	using namespace pipe;
+	using namespace p;
 
-	using Id          = ECS::Id;
-	constexpr Id NoId = ECS::NoId;
+	using Id          = ecs::Id;
+	constexpr Id NoId = ecs::NoId;
 }    // namespace rift::AST
 
-namespace pipe::ECS
+namespace p::ecs
 {
-	void Read(pipe::ReadContext& ct, pipe::ECS::Id& val);
-	void Write(pipe::WriteContext& ct, pipe::ECS::Id val);
-}    // namespace pipe::ECS
+	void Read(p::ReadContext& ct, p::ecs::Id& val);
+	void Write(p::WriteContext& ct, p::ecs::Id val);
+}    // namespace p::ecs

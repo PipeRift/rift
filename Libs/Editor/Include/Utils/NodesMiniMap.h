@@ -9,7 +9,7 @@
 
 namespace rift::Nodes
 {
-	using namespace pipe;
+	using namespace p;
 
 
 	struct EditorContext;

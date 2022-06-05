@@ -15,7 +15,7 @@
 using namespace snowhouse;
 using namespace bandit;
 using namespace rift;
-using namespace pipe;
+using namespace p;
 using namespace std::chrono_literals;
 
 Path testProjectPath = GetCurrentPath() / "TestProject";
@@ -24,20 +24,20 @@ Path testProjectPath = GetCurrentPath() / "TestProject";
 go_bandit([]() {
 	describe("Project", []() {
 		before_each([]() {
-			Files::Delete(testProjectPath, true, false);
+			files::Delete(testProjectPath, true, false);
 
-			if (!Files::ExistsAsFolder(testProjectPath))
+			if (!files::ExistsAsFolder(testProjectPath))
 			{
-				Files::CreateFolder(testProjectPath);
+				files::CreateFolder(testProjectPath);
 			}
 		});
 
 		after_each([]() {
-			Files::Delete(testProjectPath);
+			files::Delete(testProjectPath);
 		});
 
 		it("Can load empty descriptor", [&]() {
-			Files::SaveStringFile(testProjectPath / Modules::moduleFile, "{}");
+			files::SaveStringFile(testProjectPath / Modules::moduleFile, "{}");
 
 			AST::Tree ast;
 			bool result = Modules::OpenProject(ast, testProjectPath);
@@ -46,7 +46,7 @@ go_bandit([]() {
 		});
 
 		it("Project name equals the folder", [&]() {
-			Files::SaveStringFile(testProjectPath / Modules::moduleFile, "{}");
+			files::SaveStringFile(testProjectPath / Modules::moduleFile, "{}");
 
 			AST::Tree ast;
 			bool result = Modules::OpenProject(ast, testProjectPath);
@@ -60,7 +60,7 @@ go_bandit([]() {
 		// TODO: Fix module loading. They can't load from CFileRef pointing to the folder and not
 		// the file
 		it("Project name can be overriden", [&]() {
-			Files::SaveStringFile(
+			files::SaveStringFile(
 			    testProjectPath / Modules::moduleFile, "{\"name\": \"SomeProject\"}");
 
 			AST::Tree ast;

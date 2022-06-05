@@ -1,9 +1,9 @@
 
-set(RIFT_LLVM_PATH_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/Extern/rift-llvm/build/Release" CACHE STRING "Location of Rift LLVM installation to use on Release. CMake will try to find if this path is not set")
-set(RIFT_LLVM_PATH_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/Extern/rift-llvm/build/Debug" CACHE STRING "Location of Rift LLVM installation to use on Debug. CMake will try to find if this path is not set")
+set(RIFT_LLVM_PATH_RELEASE "" CACHE STRING "Location of Rift LLVM installation to use on Release. CMake will try to find if this path is not set")
+set(RIFT_LLVM_PATH_DEBUG "" CACHE STRING "Location of Rift LLVM installation to use on Debug. CMake will try to find if this path is not set")
 set(RIFT_LLVM_PATH_MINSIZEREL "" CACHE STRING "Location of Rift LLVM installation to use on MinSizeRel. CMake will try to find if this path is not set")
 set(RIFT_LLVM_PATH_RELWITHDEBINFO "" CACHE STRING "Location of Rift LLVM installation to use on RelWithDebInfo. CMake will try to find if this path is not set")
-set(RIFT_LLVM_PATH "" CACHE STRING "Location of an external LLVM installation to use. Used if RIFT_LLVM_PATH_{CONFIG} is not set")
+set(RIFT_LLVM_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Extern/rift-llvm/build" CACHE STRING "Location of an external LLVM installation to use. Used if RIFT_LLVM_PATH_{CONFIG} is not set")
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UPPER)
 if (RIFT_LLVM_PATH STREQUAL "" AND NOT ${RIFT_LLVM_PATH_${CMAKE_BUILD_TYPE_UPPER}} STREQUAL "")

@@ -257,7 +257,7 @@ namespace rift::Graph
 				}
 			}
 		}
-		TArray<AST::Id> calls = ECS::GetIf<CExprCall>(ast, nodeIds);
+		TArray<AST::Id> calls = ecs::GetIf<CExprCall>(ast, nodeIds);
 		if (!calls.IsEmpty() && UI::MenuItem("Refresh"))
 		{
 			ast.Add<CCallDirty>(calls);
@@ -339,7 +339,7 @@ namespace rift::Graph
 		{
 			static String label;
 			TAccess<CDeclFunction, CIdentifier, CChild, CType> access{ast};
-			for (AST::Id functionId : ECS::ListAll<CDeclFunction, CIdentifier>(access))
+			for (AST::Id functionId : ecs::ListAll<CDeclFunction, CIdentifier>(access))
 			{
 				Name name = access.Get<const CIdentifier>(functionId).name;
 				label.clear();
@@ -366,7 +366,7 @@ namespace rift::Graph
 		{
 			static String label;
 			TAccess<CDeclVariable, CIdentifier, CChild, CType> access{ast};
-			for (AST::Id variableId : ECS::ListAll<CDeclVariable, CIdentifier>(access))
+			for (AST::Id variableId : ecs::ListAll<CDeclVariable, CIdentifier>(access))
 			{
 				Name name = access.Get<const CIdentifier>(variableId).name;
 				label.clear();

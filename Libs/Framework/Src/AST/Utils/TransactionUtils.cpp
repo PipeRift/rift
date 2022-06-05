@@ -48,7 +48,7 @@ namespace rift::AST::Transactions
 		access.Add<CChanged>(parentIds);
 
 		// Transaction ids can also be files. FindParents doesn't consider them, so we merge it
-		ECS::ExcludeIfNot<CFileRef>(access, parentIds);
+		ecs::ExcludeIfNot<CFileRef>(access, parentIds);
 		if (!parentIds.IsEmpty())
 		{
 			access.Add<CFileDirty>(parentIds);

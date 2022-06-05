@@ -6,7 +6,7 @@
 
 namespace rift
 {
-	using namespace pipe;
+	using namespace p;
 
 	enum class ModuleTarget : u8
 	{
@@ -29,9 +29,9 @@ ENUM(rift::ModuleType)
 
 namespace rift
 {
-	struct CModule : public pipe::Struct
+	struct CModule : public p::Struct
 	{
-		STRUCT(CModule, pipe::Struct)
+		STRUCT(CModule, p::Struct)
 
 		PROP(target)
 		ModuleTarget target = ModuleTarget::Executable;

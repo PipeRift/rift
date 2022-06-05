@@ -22,7 +22,7 @@
 
 namespace rift::UI
 {
-	using namespace pipe::Math;
+	using namespace p::math;
 
 
 	static GLFWwindow* gWindow = nullptr;

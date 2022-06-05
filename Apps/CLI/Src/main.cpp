@@ -86,13 +86,13 @@ int main(int argc, char** argv)
 
 	ZoneScopedNC("CLI Execution", 0x459bd1);
 
-	const pipe::Path path = pipe::FromString(pathStr);
+	const p::Path path = p::FromString(pathStr);
 	AST::Tree ast;
 	Modules::OpenProject(ast, path);
 
 	if (!Modules::HasProject(ast))
 	{
-		Log::Error("Couldn't open project '{}'", pipe::ToString(path));
+		Log::Error("Couldn't open project '{}'", p::ToString(path));
 		return 1;
 	}
 

@@ -6,7 +6,7 @@ namespace rift::Paths
 {
 	Path GetResourcesPath()
 	{
-		static pipe::Path relativeResourcesPath{"./Resources"};
+		static p::Path relativeResourcesPath{"./Resources"};
 		return GetBasePath() / relativeResourcesPath;
 	}
 };    // namespace rift::Paths

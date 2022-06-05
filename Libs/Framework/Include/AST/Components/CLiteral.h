@@ -6,8 +6,8 @@
 
 namespace rift
 {
-	struct CLiteral : public pipe::Struct
+	struct CLiteral : public p::Struct
 	{
-		STRUCT(CLiteral, pipe::Struct)
+		STRUCT(CLiteral, p::Struct)
 	};
 }    // namespace rift

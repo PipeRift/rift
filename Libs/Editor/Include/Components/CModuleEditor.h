@@ -11,9 +11,9 @@
 
 namespace rift
 {
-	struct CModuleEditor : public pipe::Struct
+	struct CModuleEditor : public p::Struct
 	{
-		STRUCT(CModuleEditor, pipe::Struct, pipe::Struct_NotSerialized)
+		STRUCT(CModuleEditor, p::Struct, p::Struct_NotSerialized)
 
 		bool pendingFocus = false;
 	};

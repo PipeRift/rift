@@ -6,16 +6,16 @@
 
 namespace rift
 {
-	struct CDeclaration : public pipe::Struct
+	struct CDeclaration : public p::Struct
 	{
-		STRUCT(CDeclaration, pipe::Struct)
+		STRUCT(CDeclaration, p::Struct)
 	};
 
 }    // namespace rift
 
 namespace std
 {
-	template<pipe::Derived<rift::CDeclaration> T>
+	template<p::Derived<rift::CDeclaration> T>
 	struct is_empty<T>
 	{
 		static constexpr bool value = false;

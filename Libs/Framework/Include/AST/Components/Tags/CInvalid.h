@@ -6,8 +6,8 @@
 
 namespace rift
 {
-	struct CInvalid : public pipe::Struct
+	struct CInvalid : public p::Struct
 	{
-		STRUCT(CInvalid, pipe::Struct)
+		STRUCT(CInvalid, p::Struct)
 	};
 }    // namespace rift

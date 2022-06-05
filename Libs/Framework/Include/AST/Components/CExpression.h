@@ -6,8 +6,8 @@
 
 namespace rift
 {
-	struct CExpression : public pipe::Struct
+	struct CExpression : public p::Struct
 	{
-		STRUCT(CExpression, pipe::Struct)
+		STRUCT(CExpression, p::Struct)
 	};
 }    // namespace rift

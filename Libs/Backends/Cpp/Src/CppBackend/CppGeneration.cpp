@@ -224,18 +224,18 @@ namespace rift::Compiler::Cpp
 	void GenParameters(TAccessRef<CExprType, CIdentifier, TWrite<CCppCodeGenFragment>> access) {}
 
 
-	void GenerateModuleCode(Context& context, AST::Id moduleId, const pipe::Path& codePath)
+	void GenerateModuleCode(Context& context, AST::Id moduleId, const p::Path& codePath)
 	{
 		ZoneScopedC(0x459bd1);
 
 		auto& ast = context.ast;
 
-		const Name name              = Modules::GetModuleName(ast, moduleId);
-		const pipe::Path modulePath  = codePath / name.ToString();
-		const pipe::Path includePath = modulePath / "Include";
-		const pipe::Path sourcePath  = modulePath / "Src";
-		Files::CreateFolder(includePath, true);
-		Files::CreateFolder(sourcePath, true);
+		const Name name           = Modules::GetModuleName(ast, moduleId);
+		const p::Path modulePath  = codePath / name.ToString();
+		const p::Path includePath = modulePath / "Include";
+		const p::Path sourcePath  = modulePath / "Src";
+		files::CreateFolder(includePath, true);
+		files::CreateFolder(sourcePath, true);
 
 
 		String code;
@@ -247,11 +247,11 @@ namespace rift::Compiler::Cpp
 
 		TArray<AST::Id> classes, structs;
 		AST::Hierarchy::GetChildren(ast, moduleId, classes);
-		ECS::ExcludeIfNot<CType>(ast, classes);
+		ecs::ExcludeIfNot<CType>(ast, classes);
 		structs = classes;
 
-		ECS::ExcludeIfNot<CDeclClass>(ast, classes);
-		ECS::ExcludeIfNot<CDeclStruct>(ast, structs);
+		ecs::ExcludeIfNot<CDeclClass>(ast, classes);
+		ecs::ExcludeIfNot<CDeclStruct>(ast, structs);
 
 		Spacing(code);
 		Comment(code, "Forward declarations");
@@ -265,7 +265,7 @@ namespace rift::Compiler::Cpp
 		TArray<AST::Id> functions;
 		// Module -> Types -> Functions = depth 2
 		AST::Hierarchy::GetChildrenDeep(ast, moduleId, functions, 2);
-		ECS::ExcludeIfNot<CIdentifier, CDeclFunction>(ast, functions);
+		ecs::ExcludeIfNot<CIdentifier, CDeclFunction>(ast, functions);
 
 		Spacing(code);
 		Comment(code, "Function Declarations");
@@ -275,11 +275,11 @@ namespace rift::Compiler::Cpp
 		Comment(code, "Function Definitions");
 		DefineFunctions(code, ast, moduleId, functions);
 
-		const pipe::Path headerFile = includePath / "code.h";
-		if (!Files::SaveStringFile(headerFile, code))
+		const p::Path headerFile = includePath / "code.h";
+		if (!files::SaveStringFile(headerFile, code))
 		{
-			context.AddError(Strings::Format(
-			    "Couldn't save generated header at '{}'", pipe::ToString(headerFile)));
+			context.AddError(
+			    Strings::Format("Couldn't save generated header at '{}'", p::ToString(headerFile)));
 		}
 
 		code = {};
@@ -288,20 +288,20 @@ namespace rift::Compiler::Cpp
 		Spacing(code);
 
 		Path sourceFile = sourcePath / "code.cpp";
-		if (!Files::SaveStringFile(sourceFile, code))
+		if (!files::SaveStringFile(sourceFile, code))
 		{
-			context.AddError(Strings::Format(
-			    "Couldn't save generated source at '{}'", pipe::ToString(sourceFile)));
+			context.AddError(
+			    Strings::Format("Couldn't save generated source at '{}'", p::ToString(sourceFile)));
 		}
 	}
 
-	void GenerateCode(Context& context, const pipe::Path& generatePath)
+	void GenerateCode(Context& context, const p::Path& generatePath)
 	{
 		ZoneScopedC(0x459bd1);
 
 		GenParameters(context.ast);
 
-		for (AST::Id moduleId : ECS::ListAll<CModule>(context.ast))
+		for (AST::Id moduleId : ecs::ListAll<CModule>(context.ast))
 		{
 			GenerateModuleCode(context, moduleId, generatePath);
 		}

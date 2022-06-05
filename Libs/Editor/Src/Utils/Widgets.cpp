@@ -49,9 +49,9 @@ namespace rift::Editor
 			UI::SetNextItemWidth(-FLT_MIN);
 			filter.Draw("##Filter");
 
-			auto nativeIds = ECS::ListAll<CType, CDeclNative>(access);
-			auto structIds = ECS::ListAll<CType, CDeclStruct>(access);
-			auto classIds  = ECS::ListAll<CType, CDeclClass>(access);
+			auto nativeIds = ecs::ListAll<CType, CDeclNative>(access);
+			auto structIds = ecs::ListAll<CType, CDeclStruct>(access);
+			auto classIds  = ecs::ListAll<CType, CDeclClass>(access);
 			if (filter.IsActive())
 			{
 				if (UI::TreeNodeEx("Native##Filtered", ImGuiTreeNodeFlags_DefaultOpen))

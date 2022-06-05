@@ -6,8 +6,8 @@
 
 namespace rift
 {
-	struct CStmtIf : public pipe::Struct
+	struct CStmtIf : public p::Struct
 	{
-		STRUCT(CStmtIf, pipe::Struct)
+		STRUCT(CStmtIf, p::Struct)
 	};
 }    // namespace rift

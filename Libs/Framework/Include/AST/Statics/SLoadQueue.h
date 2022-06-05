@@ -9,9 +9,9 @@
 namespace rift
 {
 	// Keeps a list of entities to load from disk
-	struct SLoadQueue : public pipe::Struct
+	struct SLoadQueue : public p::Struct
 	{
-		STRUCT(SLoadQueue, pipe::Struct)
+		STRUCT(SLoadQueue, p::Struct)
 
 		TArray<AST::Id> pendingSyncLoad;
 		TArray<AST::Id> pendingAsyncLoad;

@@ -8,11 +8,11 @@
 
 namespace rift
 {
-	using namespace pipe;
+	using namespace p;
 
-	struct CParent : public pipe::Struct
+	struct CParent : public p::Struct
 	{
-		STRUCT(CParent, pipe::Struct)
+		STRUCT(CParent, p::Struct)
 
 		PROP(children)
 		TArray<AST::Id> children;

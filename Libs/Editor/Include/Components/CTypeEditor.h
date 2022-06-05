@@ -11,9 +11,9 @@
 
 namespace rift
 {
-	struct CTypeEditor : public pipe::Struct
+	struct CTypeEditor : public p::Struct
 	{
-		STRUCT(CTypeEditor, pipe::Struct, pipe::Struct_NotSerialized)
+		STRUCT(CTypeEditor, p::Struct, p::Struct_NotSerialized)
 
 		static const Name rightNode;
 		static const Name centralNode;

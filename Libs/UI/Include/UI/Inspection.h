@@ -16,7 +16,7 @@
 
 namespace rift::UI
 {
-	using namespace pipe;
+	using namespace p;
 
 
 	// label, data, type
@@ -42,7 +42,7 @@ namespace rift::UI
 		InspectProperties(data, type);
 	}
 	template<typename T>
-	inline void InspectStruct(T* data) requires(Derived<T, pipe::Struct>)
+	inline void InspectStruct(T* data) requires(Derived<T, p::Struct>)
 	{
 		InspectStruct(data, T::GetStaticType());
 	}

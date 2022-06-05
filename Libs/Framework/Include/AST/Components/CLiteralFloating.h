@@ -9,8 +9,8 @@
 
 namespace rift
 {
-	using namespace pipe;
-	using namespace pipe::EnumOperators;
+	using namespace p;
+	using namespace p::EnumOperators;
 
 	enum class FloatingType : u8
 	{

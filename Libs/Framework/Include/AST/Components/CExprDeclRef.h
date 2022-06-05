@@ -6,7 +6,7 @@
 
 namespace rift
 {
-	using namespace pipe::core;
+	using namespace p::core;
 
 
 	struct CExprDeclRef : public CExpression

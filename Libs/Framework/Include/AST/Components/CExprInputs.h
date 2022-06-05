@@ -9,9 +9,9 @@
 
 namespace rift
 {
-	struct OutputId : public pipe::Struct
+	struct OutputId : public p::Struct
 	{
-		STRUCT(OutputId, pipe::Struct)
+		STRUCT(OutputId, p::Struct)
 
 		PROP(nodeId)
 		AST::Id nodeId = AST::NoId;
@@ -24,13 +24,13 @@ namespace rift
 
 		bool IsNone() const
 		{
-			return ECS::IsNone(nodeId) || ECS::IsNone(pinId);
+			return ecs::IsNone(nodeId) || ecs::IsNone(pinId);
 		}
 	};
 
-	struct CExprInputs : public pipe::Struct
+	struct CExprInputs : public p::Struct
 	{
-		STRUCT(CExprInputs, pipe::Struct)
+		STRUCT(CExprInputs, p::Struct)
 
 		PROP(linkedOutputs)
 		TArray<OutputId> linkedOutputs;

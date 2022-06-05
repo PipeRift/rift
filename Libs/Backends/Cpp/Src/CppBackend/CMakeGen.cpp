@@ -64,7 +64,7 @@ namespace rift::Compiler::Cpp
 	}
 
 	void GenerateCMakeModule(
-	    Context& context, AST::Id moduleId, CModule& module, const pipe::Path& codePath, Name name)
+	    Context& context, AST::Id moduleId, CModule& module, const p::Path& codePath, Name name)
 	{
 		String code;
 		ModuleTarget target = module.target;
@@ -76,17 +76,17 @@ namespace rift::Compiler::Cpp
 		{
 			AddLibrary(code, context, target, name.ToString(), "20");
 		}
-		Files::SaveStringFile(codePath / name.ToString() / "CMakelists.txt", code);
+		files::SaveStringFile(codePath / name.ToString() / "CMakelists.txt", code);
 	}
 
-	void GenerateCMake(Context& context, const pipe::Path& codePath)
+	void GenerateCMake(Context& context, const p::Path& codePath)
 	{
 		String code;
 		Name projectName = Modules::GetProjectName(context.ast);
 		SetProject(code, context, projectName.ToString(), "0.1");
 
 		TAccess<TWrite<CModule>> modules{context.ast};
-		for (AST::Id moduleId : ECS::ListAll<CModule>(modules))
+		for (AST::Id moduleId : ecs::ListAll<CModule>(modules))
 		{
 			Name name = Modules::GetModuleName(context.ast, moduleId);
 			GenerateCMakeModule(context, moduleId, modules.Get<CModule>(moduleId), codePath, name);
@@ -94,6 +94,6 @@ namespace rift::Compiler::Cpp
 			AddSubdirectory(code, name.ToString());
 		}
 
-		Files::SaveStringFile(codePath / "CMakelists.txt", code);
+		files::SaveStringFile(codePath / "CMakelists.txt", code);
 	}
 }    // namespace rift::Compiler::Cpp

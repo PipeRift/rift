@@ -7,9 +7,9 @@
 
 namespace rift
 {
-	struct CIRValue : public pipe::Struct
+	struct CIRValue : public p::Struct
 	{
-		STRUCT(CIRValue, pipe::Struct)
+		STRUCT(CIRValue, p::Struct)
 
 		llvm::Value* instance = nullptr;
 

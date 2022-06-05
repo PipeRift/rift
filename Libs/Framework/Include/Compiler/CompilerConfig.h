@@ -10,12 +10,12 @@
 
 namespace rift::Compiler
 {
-	using namespace pipe;
+	using namespace p;
 
 
-	struct Config : public pipe::Struct
+	struct Config : public p::Struct
 	{
-		STRUCT(Config, pipe::Struct)
+		STRUCT(Config, p::Struct)
 
 		String buildMode{"Release"};
 

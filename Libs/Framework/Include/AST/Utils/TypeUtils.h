@@ -28,7 +28,7 @@ namespace rift::Types
 	Type GetCategory(AST::Tree& ast, AST::Id id);
 
 	AST::Id CreateType(
-	    AST::Tree& ast, Type type, Name name = Name::None(), const pipe::Path& path = {});
+	    AST::Tree& ast, Type type, Name name = Name::None(), const p::Path& path = {});
 
 	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access,
 	    TSpan<AST::Id> types, bool removeFromDisk = false);
@@ -36,7 +36,7 @@ namespace rift::Types
 	void Serialize(AST::Tree& ast, AST::Id id, String& data);
 	void Deserialize(AST::Tree& ast, AST::Id id, const String& data);
 
-	AST::Id FindTypeByPath(AST::Tree& ast, const pipe::Path& path);
+	AST::Id FindTypeByPath(AST::Tree& ast, const p::Path& path);
 	bool IsClass(const AST::Tree& ast, AST::Id typeId);
 	bool IsStruct(const AST::Tree& ast, AST::Id typeId);
 	bool IsFunctionLibrary(const AST::Tree& ast, AST::Id typeId);

@@ -95,7 +95,7 @@ namespace rift::Nodes
 		    ScreenToMiniMapPosition(editor, node.rect.max)};
 
 		// Round to near whole pixel value for corner-rounding to prevent visual glitches
-		const float miniMapNodeRounding = Math::Floor(node.LayoutStyle.CornerRounding * scaling);
+		const float miniMapNodeRounding = math::Floor(node.LayoutStyle.CornerRounding * scaling);
 
 		Color miniMapNodeBackground;
 		if (editor.clickInteraction.type == ClickInteractionType_None

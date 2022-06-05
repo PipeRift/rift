@@ -26,7 +26,7 @@ namespace rift
 	void RegisterKeyValueInspections()
 	{
 		UI::RegisterCustomInspection<AST::Id>([](StringView label, void* data, refl::Type* type) {
-			UI::DrawKeyValue(label, data, GetType<ECS::IdTraits<AST::Id>::Entity>());
+			UI::DrawKeyValue(label, data, GetType<ecs::IdTraits<AST::Id>::Entity>());
 		});
 	}
 
@@ -101,12 +101,12 @@ namespace rift
 		if (UI::GetWindow())
 		{
 			configFileChanged          = true;
-			configFile                 = pipe::ToString(path);
+			configFile                 = p::ToString(path);
 			ImGui::GetIO().IniFilename = configFile.c_str();
 		}
 	}
 
-	bool Editor::CreateProject(const pipe::Path& path, bool closeFirst)
+	bool Editor::CreateProject(const p::Path& path, bool closeFirst)
 	{
 		if (!closeFirst && Modules::HasProject(ast))
 		{
@@ -123,7 +123,7 @@ namespace rift
 		return false;
 	}
 
-	bool Editor::OpenProject(const pipe::Path& path, bool closeFirst)
+	bool Editor::OpenProject(const p::Path& path, bool closeFirst)
 	{
 		if (!closeFirst && Modules::HasProject(ast))
 		{
@@ -155,7 +155,7 @@ namespace rift
 				return;
 			}
 
-			if (Files::ExistsAsFile(configFile))
+			if (files::ExistsAsFile(configFile))
 			{
 				// FIX: Delay this until new frame (essentially, not while already drawing)
 				ImGui::LoadIniSettingsFromDisk(configFile.c_str());

@@ -12,9 +12,9 @@ namespace rift
 	// Dirty tags are cleaned manually by the respective systems. CChanged instead gets cleared
 	// after one frame
 	template<typename T>
-	struct TDirty : public pipe::Struct
+	struct TDirty : public p::Struct
 	{
-		STRUCT(TDirty<T>, pipe::Struct, pipe::Struct_NotSerialized)
+		STRUCT(TDirty<T>, p::Struct, p::Struct_NotSerialized)
 	};
 
 	using CDirty = TDirty<void>;

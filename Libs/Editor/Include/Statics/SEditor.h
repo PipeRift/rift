@@ -16,8 +16,8 @@
 
 namespace rift
 {
-	using namespace pipe::core;
-	using namespace pipe::Files;
+	using namespace p::core;
+	using namespace p::files;
 
 
 	struct SEditor : public Struct

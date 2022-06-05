@@ -4,7 +4,7 @@
 #include <CoreMinimal.h>
 
 
-struct EditorConfig : public pipe::Struct
+struct EditorConfig : public p::Struct
 {
-	STRUCT(EditorConfig, pipe::Struct)
+	STRUCT(EditorConfig, p::Struct)
 };

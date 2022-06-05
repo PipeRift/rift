@@ -7,14 +7,14 @@
 #include <Serialization/Contexts.h>
 
 
-namespace pipe::ECS
+namespace p::ecs
 {
-	void Read(pipe::ReadContext& ct, pipe::ECS::Id& val)
+	void Read(p::ReadContext& ct, p::ecs::Id& val)
 	{
 		auto* astCt = dynamic_cast<rift::AST::ReadContext*>(&ct);
 		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTReadContext")) [[likely]]
 		{
-			pipe::i32 dataId;
+			p::i32 dataId;
 			astCt->Serialize(dataId);
 
 			if (dataId >= 0) [[likely]]
@@ -23,17 +23,17 @@ namespace pipe::ECS
 			}
 			else
 			{
-				val = pipe::ECS::NoId;
+				val = p::ecs::NoId;
 			}
 		}
 	}
 
-	void Write(pipe::WriteContext& ct, pipe::ECS::Id val)
+	void Write(p::WriteContext& ct, p::ecs::Id val)
 	{
 		auto* astCt = dynamic_cast<rift::AST::WriteContext*>(&ct);
 		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTWriteContext")) [[likely]]
 		{
-			const pipe::i32* dataId = astCt->GetIdToIndexes().Find(val);
+			const p::i32* dataId = astCt->GetIdToIndexes().Find(val);
 			if (dataId) [[likely]]
 			{
 				astCt->Serialize(*dataId);
@@ -44,4 +44,4 @@ namespace pipe::ECS
 			}
 		}
 	}
-}    // namespace pipe::ECS
+}    // namespace p::ecs

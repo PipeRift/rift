@@ -14,8 +14,8 @@
 
 namespace rift
 {
-	using namespace pipe::core::EnumOperators;
-	using namespace pipe::Memory;
+	using namespace p::core::EnumOperators;
+	using namespace p::Memory;
 
 
 	ReflectionDebugger::ReflectionDebugger() {}

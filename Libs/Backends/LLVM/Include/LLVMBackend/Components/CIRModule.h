@@ -7,10 +7,10 @@
 
 namespace rift
 {
-	struct CIRModule : public pipe::Struct
+	struct CIRModule : public p::Struct
 	{
-		STRUCT(CIRModule, pipe::Struct)
+		STRUCT(CIRModule, p::Struct)
 
-		pipe::TOwnPtr<llvm::Module> instance;
+		p::TOwnPtr<llvm::Module> instance;
 	};
 }    // namespace rift
