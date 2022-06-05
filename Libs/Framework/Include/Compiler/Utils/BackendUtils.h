@@ -9,10 +9,10 @@
 #include <Reflection/ClassType.h>
 
 
-namespace Rift::Compiler
+namespace rift::Compiler
 {
-	TArray<Refl::ClassType*> GetBackendTypes();
+	TArray<refl::ClassType*> GetBackendTypes();
 	TArray<TOwnPtr<Backend>> CreateBackends();
 
-	TOwnPtr<Context> CreateBackend(Refl::ClassType* backendClass);
-}    // namespace Rift::Compiler
+	TOwnPtr<Context> CreateBackend(refl::ClassType* backendClass);
+}    // namespace rift::Compiler

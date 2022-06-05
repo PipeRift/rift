@@ -7,9 +7,9 @@
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 	struct DockSpaceLayout
 	{
@@ -75,4 +75,4 @@ namespace Rift
 			return idPtr ? *idPtr : 0;
 		}
 	};
-}    // namespace Rift
+}    // namespace rift

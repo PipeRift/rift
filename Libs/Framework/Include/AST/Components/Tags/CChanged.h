@@ -4,12 +4,12 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
 	// Asigned to entities that have been modified during the last frame
 	// Gets cleared after one frame
-	struct CChanged : public Pipe::Struct
+	struct CChanged : public pipe::Struct
 	{
-		STRUCT(CChanged, Pipe::Struct, Pipe::Struct_NotSerialized)
+		STRUCT(CChanged, pipe::Struct, pipe::Struct_NotSerialized)
 	};
-}    // namespace Rift
+}    // namespace rift

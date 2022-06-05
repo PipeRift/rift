@@ -6,12 +6,12 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct SModules : public Pipe::Struct
+	struct SModules : public pipe::Struct
 	{
-		STRUCT(SModules, Pipe::Struct)
+		STRUCT(SModules, pipe::Struct)
 
-		Pipe::TMap<Pipe::Name, AST::Id> modulesByPath;
+		pipe::TMap<pipe::Name, AST::Id> modulesByPath;
 	};
-}    // namespace Rift
+}    // namespace rift

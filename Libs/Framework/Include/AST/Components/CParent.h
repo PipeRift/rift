@@ -6,13 +6,13 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe;
+	using namespace pipe;
 
-	struct CParent : public Pipe::Struct
+	struct CParent : public pipe::Struct
 	{
-		STRUCT(CParent, Pipe::Struct)
+		STRUCT(CParent, pipe::Struct)
 
 		PROP(children)
 		TArray<AST::Id> children;
@@ -26,4 +26,4 @@ namespace Rift
 	{
 		ct.Serialize(val.children);
 	}
-}    // namespace Rift
+}    // namespace rift

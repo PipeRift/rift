@@ -5,11 +5,11 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CNodePosition : public Pipe::Struct
+	struct CNodePosition : public pipe::Struct
 	{
-		STRUCT(CNodePosition, Pipe::Struct)
+		STRUCT(CNodePosition, pipe::Struct)
 
 		PROP(position)
 		v2 position;
@@ -17,12 +17,12 @@ namespace Rift
 		CNodePosition() = default;
 		CNodePosition(v2 position) : position{position} {}
 	};
-	static void Read(Pipe::ReadContext& ct, CNodePosition& val)
+	static void Read(pipe::ReadContext& ct, CNodePosition& val)
 	{
 		ct.Serialize(val.position);
 	}
-	static void Write(Pipe::WriteContext& ct, const CNodePosition& val)
+	static void Write(pipe::WriteContext& ct, const CNodePosition& val)
 	{
 		ct.Serialize(val.position);
 	}
-}    // namespace Rift
+}    // namespace rift

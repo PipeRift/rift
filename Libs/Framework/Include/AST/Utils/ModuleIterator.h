@@ -7,23 +7,23 @@
 #include <Files/FormatFileIterator.h>
 
 
-namespace Rift
+namespace rift
 {
 	class ModuleIterator : public FormatFileIterator<Files::RecursiveIterator>
 	{
 	public:
 		using FormatFileIterator<Files::RecursiveIterator>::FormatFileIterator;
 
-		explicit ModuleIterator(const Pipe::Path& path, const TSet<Path>* ignorePaths = nullptr)
+		explicit ModuleIterator(const pipe::Path& path, const TSet<Path>* ignorePaths = nullptr)
 		    : FormatFileIterator(Paths::moduleExtension, path)
 		{}
 
-		const Pipe::Path& operator*() const noexcept
+		const pipe::Path& operator*() const noexcept
 		{
 			return fileIterator->path();
 		}
 
-		const Pipe::Path* operator->() const noexcept
+		const pipe::Path* operator->() const noexcept
 		{
 			return &operator*();
 		}
@@ -39,4 +39,4 @@ namespace Rift
 	{
 		return {};
 	}
-}    // namespace Rift
+}    // namespace rift

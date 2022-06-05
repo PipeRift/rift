@@ -8,7 +8,7 @@
 #include <Memory/UniquePtr.h>
 
 
-namespace Rift::AST
+namespace rift::AST
 {
 	struct NativeTypeIds
 	{
@@ -26,7 +26,7 @@ namespace Rift::AST
 		AST::Id stringId = AST::NoId;
 	};
 
-	struct Tree : public Pipe::ECS::Context
+	struct Tree : public pipe::ECS::Context
 	{
 	private:
 		NativeTypeIds nativeTypes;
@@ -51,4 +51,4 @@ namespace Rift::AST
 
 		void SetupNativeTypes();
 	};
-}    // namespace Rift::AST
+}    // namespace rift::AST

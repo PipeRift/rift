@@ -10,7 +10,7 @@
 #include <View.h>
 
 
-namespace Rift
+namespace rift
 {
 	using namespace EnumOperators;
 
@@ -29,4 +29,4 @@ namespace Rift
 
 		static void DrawEditor() {}
 	};
-}    // namespace Rift
+}    // namespace rift

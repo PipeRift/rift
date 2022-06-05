@@ -16,7 +16,7 @@
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
 	struct ASTDebugger
 	{
@@ -35,4 +35,4 @@ namespace Rift
 		using DrawNodeAccess = TAccessRef<const CIdentifier, const CFileRef, const CParent>;
 		void DrawNode(DrawNodeAccess access, AST::Id nodeId, bool showChildren);
 	};
-}    // namespace Rift
+}    // namespace rift

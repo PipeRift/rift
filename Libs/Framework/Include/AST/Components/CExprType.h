@@ -6,16 +6,16 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CExprType : public Pipe::Struct
+	struct CExprType : public pipe::Struct
 	{
-		STRUCT(CExprType, Pipe::Struct)
+		STRUCT(CExprType, pipe::Struct)
 
-		PROP(id, Pipe::Prop_NotSerialized)
+		PROP(id, pipe::Prop_NotSerialized)
 		AST::Id id = AST::NoId;
 
 
 		CExprType(AST::Id id = AST::NoId) : id{id} {}
 	};
-}    // namespace Rift
+}    // namespace rift

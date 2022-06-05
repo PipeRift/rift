@@ -7,14 +7,14 @@
 #include <Serialization/Contexts.h>
 
 
-namespace Pipe::ECS
+namespace pipe::ECS
 {
-	void Read(Pipe::ReadContext& ct, Pipe::ECS::Id& val)
+	void Read(pipe::ReadContext& ct, pipe::ECS::Id& val)
 	{
-		auto* astCt = dynamic_cast<Rift::AST::ReadContext*>(&ct);
+		auto* astCt = dynamic_cast<rift::AST::ReadContext*>(&ct);
 		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTReadContext")) [[likely]]
 		{
-			Pipe::i32 dataId;
+			pipe::i32 dataId;
 			astCt->Serialize(dataId);
 
 			if (dataId >= 0) [[likely]]
@@ -23,17 +23,17 @@ namespace Pipe::ECS
 			}
 			else
 			{
-				val = Pipe::ECS::NoId;
+				val = pipe::ECS::NoId;
 			}
 		}
 	}
 
-	void Write(Pipe::WriteContext& ct, Pipe::ECS::Id val)
+	void Write(pipe::WriteContext& ct, pipe::ECS::Id val)
 	{
-		auto* astCt = dynamic_cast<Rift::AST::WriteContext*>(&ct);
+		auto* astCt = dynamic_cast<rift::AST::WriteContext*>(&ct);
 		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTWriteContext")) [[likely]]
 		{
-			const Pipe::i32* dataId = astCt->GetIdToIndexes().Find(val);
+			const pipe::i32* dataId = astCt->GetIdToIndexes().Find(val);
 			if (dataId) [[likely]]
 			{
 				astCt->Serialize(*dataId);
@@ -44,4 +44,4 @@ namespace Pipe::ECS
 			}
 		}
 	}
-}    // namespace Pipe::ECS
+}    // namespace pipe::ECS

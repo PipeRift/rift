@@ -8,9 +8,9 @@
 #include <Serialization/ContextsFwd.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 
 
 	struct CExprCall : public CExpression
@@ -27,7 +27,7 @@ namespace Rift
 	// Data pointing to the id of the function from CExprCall's type and function names
 	struct CExprCallId : public CExpression
 	{
-		STRUCT(CExprCallId, CExpression, Pipe::Struct_NotSerialized)
+		STRUCT(CExprCallId, CExpression, pipe::Struct_NotSerialized)
 
 		// Id pointing to the function declaration
 		PROP(functionId)
@@ -36,4 +36,4 @@ namespace Rift
 
 		CExprCallId(AST::Id functionId = AST::NoId) : functionId{functionId} {}
 	};
-}    // namespace Rift
+}    // namespace rift

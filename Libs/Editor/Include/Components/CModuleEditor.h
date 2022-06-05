@@ -9,12 +9,12 @@
 #include <Utils/NodesInternal.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CModuleEditor : public Pipe::Struct
+	struct CModuleEditor : public pipe::Struct
 	{
-		STRUCT(CModuleEditor, Pipe::Struct, Pipe::Struct_NotSerialized)
+		STRUCT(CModuleEditor, pipe::Struct, pipe::Struct_NotSerialized)
 
 		bool pendingFocus = false;
 	};
-}    // namespace Rift
+}    // namespace rift

@@ -10,7 +10,7 @@
 #include <Utils/NodesMiniMap.h>
 
 
-namespace Rift
+namespace rift
 {
 	using namespace Nodes;
 
@@ -47,4 +47,4 @@ namespace Rift
 		}
 		UI::End();
 	}
-}    // namespace Rift
+}    // namespace rift

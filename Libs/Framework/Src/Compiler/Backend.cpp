@@ -3,5 +3,5 @@
 #include "Compiler/Context.h"
 
 
-namespace Rift::Compiler
-{}    // namespace Rift::Compiler
+namespace rift::Compiler
+{}    // namespace rift::Compiler

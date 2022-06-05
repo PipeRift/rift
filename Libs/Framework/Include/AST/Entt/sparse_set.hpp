@@ -22,7 +22,7 @@
 //#include "fwd.hpp"
 
 
-namespace Rift::AST
+namespace rift::AST
 {
 	enum class DeletionPolicy : u8
 	{
@@ -968,4 +968,4 @@ namespace Rift::AST
 	};
 
 
-}    // namespace Rift::AST
+}    // namespace rift::AST

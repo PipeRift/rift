@@ -8,16 +8,16 @@
 #include <Templates/TypeList.h>
 
 
-namespace Rift::AST
+namespace rift::AST
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 	using Id          = ECS::Id;
 	constexpr Id NoId = ECS::NoId;
-}    // namespace Rift::AST
+}    // namespace rift::AST
 
-namespace Pipe::ECS
+namespace pipe::ECS
 {
-	void Read(Pipe::ReadContext& ct, Pipe::ECS::Id& val);
-	void Write(Pipe::WriteContext& ct, Pipe::ECS::Id val);
-}    // namespace Pipe::ECS
+	void Read(pipe::ReadContext& ct, pipe::ECS::Id& val);
+	void Write(pipe::WriteContext& ct, pipe::ECS::Id val);
+}    // namespace pipe::ECS

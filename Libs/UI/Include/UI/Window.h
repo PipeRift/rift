@@ -10,7 +10,7 @@
 struct GLFWwindow;
 
 
-namespace Rift::UI
+namespace rift::UI
 {
 	bool Init();
 	void Shutdown();
@@ -22,4 +22,4 @@ namespace Rift::UI
 	bool WantsToClose();
 
 	GLFWwindow* GetWindow();
-};    // namespace Rift::UI
+};    // namespace rift::UI

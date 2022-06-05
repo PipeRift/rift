@@ -6,14 +6,14 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
 	// Keeps a list of entities to load from disk
-	struct SLoadQueue : public Pipe::Struct
+	struct SLoadQueue : public pipe::Struct
 	{
-		STRUCT(SLoadQueue, Pipe::Struct)
+		STRUCT(SLoadQueue, pipe::Struct)
 
 		TArray<AST::Id> pendingSyncLoad;
 		TArray<AST::Id> pendingAsyncLoad;
 	};
-}    // namespace Rift
+}    // namespace rift

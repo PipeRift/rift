@@ -9,7 +9,7 @@
 #include <ECS/Access.h>
 
 
-namespace Rift::AST::Hierarchy
+namespace rift::AST::Hierarchy
 {
 	// Link a list of nodes at the end of the parent children list
 	void AddChildren(
@@ -71,4 +71,4 @@ namespace Rift::AST::Hierarchy
 	 * @return true if an incorrect link was found
 	 */
 	bool ValidateParentLinks(TAccessRef<CChild, CParent> access, TSpan<Id> parents);
-}    // namespace Rift::AST::Hierarchy
+}    // namespace rift::AST::Hierarchy

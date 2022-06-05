@@ -14,10 +14,10 @@
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe::Core;
-	using namespace Pipe::Files;
+	using namespace pipe::core;
+	using namespace pipe::Files;
 
 
 	struct SEditor : public Struct
@@ -44,4 +44,4 @@ namespace Rift
 
 	inline const Name SEditor::leftNode{"leftNode"};
 	inline const Name SEditor::centralNode{"centralNode"};
-}    // namespace Rift
+}    // namespace rift

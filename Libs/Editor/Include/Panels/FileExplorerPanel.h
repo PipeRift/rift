@@ -13,7 +13,7 @@
 #include <ECS/Filtering.h>
 
 
-namespace Rift
+namespace rift
 {
 	// Forward declarations
 	class ProjectEditor;
@@ -79,7 +79,7 @@ namespace Rift
 		void DrawModuleActions(AST::Id id, struct CModule& module);
 		void DrawTypeActions(AST::Id id, struct CType& type);
 
-		void CreateType(AST::Tree& ast, StringView title, Type category, Pipe::Path path);
+		void CreateType(AST::Tree& ast, StringView title, Type category, pipe::Path path);
 	};
 
 
@@ -87,4 +87,4 @@ namespace Rift
 	{
 		return static_cast<u32>(filter);
 	}
-}    // namespace Rift
+}    // namespace rift

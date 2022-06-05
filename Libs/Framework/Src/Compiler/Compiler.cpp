@@ -13,7 +13,7 @@
 #include <Files/Files.h>
 
 
-namespace Rift::Compiler
+namespace rift::Compiler
 {
 	void Build(AST::Tree& ast, const Config& config, TPtr<Backend> backend)
 	{
@@ -53,4 +53,4 @@ namespace Rift::Compiler
 
 		backend->Build(context);
 	}
-}    // namespace Rift::Compiler
+}    // namespace rift::Compiler

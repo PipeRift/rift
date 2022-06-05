@@ -4,18 +4,18 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CDeclaration : public Pipe::Struct
+	struct CDeclaration : public pipe::Struct
 	{
-		STRUCT(CDeclaration, Pipe::Struct)
+		STRUCT(CDeclaration, pipe::Struct)
 	};
 
-}    // namespace Rift
+}    // namespace rift
 
 namespace std
 {
-	template<Pipe::Derived<Rift::CDeclaration> T>
+	template<pipe::Derived<rift::CDeclaration> T>
 	struct is_empty<T>
 	{
 		static constexpr bool value = false;

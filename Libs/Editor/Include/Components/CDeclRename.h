@@ -9,13 +9,13 @@
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CDeclRename : public Pipe::Struct
+	struct CDeclRename : public pipe::Struct
 	{
-		STRUCT(CDeclRename, Pipe::Struct, Pipe::Struct_NotSerialized)
+		STRUCT(CDeclRename, pipe::Struct, pipe::Struct_NotSerialized)
 
 		// Renaming uses this buffer to temporarely store the name being edited
 		String buffer;
 	};
-}    // namespace Rift
+}    // namespace rift

@@ -1,6 +1,6 @@
 
 add_executable(RiftEditorExe Src/main.cpp)
-add_executable(Rift::EditorExe ALIAS RiftEditorExe)
+add_executable(rift::EditorExe ALIAS RiftEditorExe)
 set_target_properties(RiftEditorExe PROPERTIES OUTPUT_NAME "RiftEditor")
 
 target_include_directories(RiftEditorExe PUBLIC Include)
@@ -9,10 +9,10 @@ target_sources(RiftEditorExe PRIVATE ${RiftEditor_SOURCE_FILES})
 rift_target_enable_CPP20(RiftEditorExe)
 set_target_properties (RiftEditorExe PROPERTIES FOLDER Rift/Executables)
 target_link_libraries(RiftEditorExe PUBLIC
-    Rift::Editor
-    Rift::Backend::LLVM
-    Rift::Backend::Cpp
-    Rift::View::Graph
+    rift::Editor
+    rift::Backend::LLVM
+    rift::Backend::Cpp
+    rift::View::Graph
 )
 rift_target_define_platform(RiftEditorExe)
 rift_target_shared_output_directory(RiftEditorExe)

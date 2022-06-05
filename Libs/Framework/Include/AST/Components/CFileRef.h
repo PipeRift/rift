@@ -6,19 +6,19 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 
 	/**
 	 * This component points an AST node to a file.
-	 * Some examples are Class, Pipe::Struct and Function Library declarations pointing to their
+	 * Some examples are Class, pipe::Struct and Function Library declarations pointing to their
 	 * files
 	 */
-	struct CFileRef : public Pipe::Struct
+	struct CFileRef : public pipe::Struct
 	{
-		STRUCT(CFileRef, Pipe::Struct, Pipe::Struct_NotSerialized)
+		STRUCT(CFileRef, pipe::Struct, pipe::Struct_NotSerialized)
 
 		PROP(path)
 		Path path;
@@ -27,4 +27,4 @@ namespace Rift
 		CFileRef() {}
 		CFileRef(Path path) : path(path) {}
 	};
-}    // namespace Rift
+}    // namespace rift

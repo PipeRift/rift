@@ -6,9 +6,9 @@
 #include <Reflection/Class.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 	class Plugin : public Class
 	{
@@ -17,4 +17,4 @@ namespace Rift
 	public:
 		virtual void Register(TPtr<struct RiftContext> context) = 0;
 	};
-}    // namespace Rift
+}    // namespace rift

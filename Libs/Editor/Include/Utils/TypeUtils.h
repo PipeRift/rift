@@ -11,8 +11,7 @@
 #include <ECS/Access.h>
 
 
-
-namespace Rift::Types
+namespace rift::Types
 {
 	void OpenEditor(TAccessRef<TWrite<CTypeEditor>, CType> access, AST::Id id);
 	void CloseEditor(TAccessRef<TWrite<CTypeEditor>, CType> access, AST::Id id);
@@ -95,4 +94,4 @@ namespace Rift::Types
 		}
 		return "";
 	}
-}    // namespace Rift::Types
+}    // namespace rift::Types

@@ -4,10 +4,10 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CPendingLoad : public Pipe::Struct
+	struct CPendingLoad : public pipe::Struct
 	{
-		STRUCT(CPendingLoad, Pipe::Struct)
+		STRUCT(CPendingLoad, pipe::Struct)
 	};
-}    // namespace Rift
+}    // namespace rift

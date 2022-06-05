@@ -2,11 +2,11 @@
 
 #include "UI/Paths.h"
 
-namespace Rift::Paths
+namespace rift::Paths
 {
 	Path GetResourcesPath()
 	{
-		static Pipe::Path relativeResourcesPath{"./Resources"};
+		static pipe::Path relativeResourcesPath{"./Resources"};
 		return GetBasePath() / relativeResourcesPath;
 	}
-};    // namespace Rift::Paths
+};    // namespace rift::Paths

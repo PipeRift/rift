@@ -27,7 +27,7 @@
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
 	void FileExplorerPanel::Draw(AST::Tree& ast)
 	{
@@ -38,7 +38,7 @@ namespace Rift
 			if (!IsNone(typeId))
 			{
 				Types::OpenEditor(ast, typeId);
-				pendingOpenCreatedPath = Pipe::Path{};
+				pendingOpenCreatedPath = pipe::Path{};
 			}
 		}
 
@@ -77,7 +77,7 @@ namespace Rift
 		UI::BeginChild("Files");
 		if (UI::BeginPopupContextWindow())
 		{
-			String projectPath = Pipe::ToString(Modules::GetProjectPath(ast));
+			String projectPath = pipe::ToString(Modules::GetProjectPath(ast));
 			DrawContextMenu(ast, projectPath, AST::NoId);
 			UI::EndPopup();
 		}
@@ -118,7 +118,7 @@ namespace Rift
 			if (UI::MenuItem("Rename"))
 			{
 				renameId     = itemId;
-				renameBuffer = Pipe::GetFilename(path);
+				renameBuffer = pipe::GetFilename(path);
 			}
 
 			if (isType && UI::MenuItem("Delete"))
@@ -163,7 +163,7 @@ namespace Rift
 	void FileExplorerPanel::InsertItem(TMap<Name, Folder>& folders, const Item& item)
 	{
 		Name lastName         = item.path;
-		StringView parentPath = Pipe::GetParentPath(item.path.ToString());
+		StringView parentPath = pipe::GetParentPath(item.path.ToString());
 		Name parentName{parentPath};
 
 		if (Folder* parent = folders.Find(parentName))
@@ -173,7 +173,7 @@ namespace Rift
 		}
 		folders.Insert(parentName, Folder{{item}});
 
-		parentPath = Pipe::GetParentPath(parentPath);
+		parentPath = pipe::GetParentPath(parentPath);
 		while (!parentPath.empty())
 		{
 			lastName   = parentName;
@@ -188,7 +188,7 @@ namespace Rift
 			}
 			folders.Insert(parentName, Folder{{newItem}});
 
-			parentPath = Pipe::GetParentPath(parentPath);
+			parentPath = pipe::GetParentPath(parentPath);
 		}
 	}
 
@@ -206,7 +206,7 @@ namespace Rift
 
 		// Create module folders
 		TArray<AST::Id> modules = ECS::ListAll<CModule>(access);
-		TMap<AST::Id, Pipe::Path> moduleFolders;
+		TMap<AST::Id, pipe::Path> moduleFolders;
 		moduleFolders.Reserve(modules.Size());
 		for (AST::Id moduleId : modules)
 		{
@@ -221,13 +221,13 @@ namespace Rift
 		for (AST::Id oneId : modules)
 		{
 			bool insideOther       = false;
-			const Pipe::Path& path = moduleFolders[oneId];
+			const pipe::Path& path = moduleFolders[oneId];
 
 			for (AST::Id otherId : modules)
 			{
 				if (oneId != otherId)
 				{
-					const Pipe::Path& otherPath = moduleFolders[otherId];
+					const pipe::Path& otherPath = moduleFolders[otherId];
 
 					if (Strings::Contains<Path::value_type>(path.native(),
 					        otherPath.native()))    // Is relative
@@ -241,7 +241,7 @@ namespace Rift
 			if (insideOther)
 			{
 				// If a module is inside another, create the folders in between
-				InsertItem(folders, Item{oneId, Pipe::ToString(path), true});
+				InsertItem(folders, Item{oneId, pipe::ToString(path), true});
 			}
 			else
 			{
@@ -255,7 +255,7 @@ namespace Rift
 			auto& file = access.Get<const CFileRef>(typeId);
 			if (!file.path.empty())
 			{
-				const String path = Pipe::ToString(file.path);
+				const String path = pipe::ToString(file.path);
 				InsertItem(folders, Item{typeId, Name{path}});
 			}
 		}
@@ -276,7 +276,7 @@ namespace Rift
 	void FileExplorerPanel::DrawItem(AST::Tree& ast, const Item& item)
 	{
 		const String path         = item.path.ToString();
-		const StringView fileName = Pipe::GetFilename(path);
+		const StringView fileName = pipe::GetFilename(path);
 
 		if (Folder* folder = folders.Find(item.path))
 		{
@@ -429,9 +429,9 @@ namespace Rift
 	void FileExplorerPanel::DrawTypeActions(AST::Id id, CType& type) {}
 
 	void FileExplorerPanel::CreateType(
-	    AST::Tree& ast, StringView title, Type category, Pipe::Path folderPath)
+	    AST::Tree& ast, StringView title, Type category, pipe::Path folderPath)
 	{
-		const Pipe::Path path = Files::SaveFileDialog(title, folderPath,
+		const pipe::Path path = Files::SaveFileDialog(title, folderPath,
 		    {
 		        {"Rift Type", Strings::Format("*.{}", Paths::typeExtension)}
         },
@@ -449,4 +449,4 @@ namespace Rift
 		// Mark path to be opened later once the type has loaded
 		pendingOpenCreatedPath = path;
 	}
-}    // namespace Rift
+}    // namespace rift

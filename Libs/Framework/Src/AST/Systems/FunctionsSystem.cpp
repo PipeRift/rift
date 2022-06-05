@@ -13,7 +13,7 @@
 #include <ECS/Filtering.h>
 
 
-namespace Rift::FunctionsSystem
+namespace rift::FunctionsSystem
 {
 	struct CallToSync
 	{
@@ -340,4 +340,4 @@ namespace Rift::FunctionsSystem
 	{
 		ast.AssurePool<CCallDirty>().Reset();
 	}
-}    // namespace Rift::FunctionsSystem
+}    // namespace rift::FunctionsSystem

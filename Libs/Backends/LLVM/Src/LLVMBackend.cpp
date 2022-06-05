@@ -20,7 +20,7 @@
 #include <llvm/Target/TargetOptions.h>
 
 
-namespace Rift::Compiler
+namespace rift::Compiler
 {
 	namespace LLVM
 	{
@@ -30,7 +30,7 @@ namespace Rift::Compiler
 			ZoneScoped;
 
 			const String filePath =
-			    Strings::Format("{}/{}.o", Pipe::ToString(context.config.intermediatesPath),
+			    Strings::Format("{}/{}.o", pipe::ToString(context.config.intermediatesPath),
 			        Modules::GetModuleName(context.ast, moduleId));
 			Log::Info("Creating object '{}'", filePath);
 
@@ -106,4 +106,4 @@ namespace Rift::Compiler
 		Log::Info("Build IR");
 		LLVM::CompileIR(context, llvm, builder);
 	}
-}    // namespace Rift::Compiler
+}    // namespace rift::Compiler

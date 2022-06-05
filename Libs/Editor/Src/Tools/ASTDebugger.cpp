@@ -12,7 +12,7 @@
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
 	using namespace Memory;
 
@@ -29,10 +29,10 @@ namespace Rift
 			return;
 		}
 
-		const auto& registry = Refl::ReflectionRegistry::Get();
+		const auto& registry = refl::ReflectionRegistry::Get();
 		for (const auto& poolInstance : ast.GetPools())
 		{
-			Refl::Type* type = registry.FindType(poolInstance.componentId);
+			refl::Type* type = registry.FindType(poolInstance.componentId);
 			if (!type || !poolInstance.GetPool()->Has(entityId))
 			{
 				continue;
@@ -50,7 +50,7 @@ namespace Rift
 			if (UI::CollapsingHeader(typeName.c_str(), flags))
 			{
 				UI::Indent();
-				Refl::DataType* dataType = type->AsData();
+				refl::DataType* dataType = type->AsData();
 				if (data && dataType && UI::BeginInspector("EntityInspector"))
 				{
 					UI::InspectProperties(data, dataType);
@@ -211,9 +211,9 @@ namespace Rift
 		path.clear();
 		if (const auto* file = access.TryGet<const CFileRef>(nodeId))
 		{
-			path = Pipe::ToString(file->path);
+			path = pipe::ToString(file->path);
 
-			StringView filename = Pipe::GetFilename(path);
+			StringView filename = pipe::GetFilename(path);
 			Strings::FormatTo(name, name.empty() ? "file: {}" : " (file: {})", filename);
 		}
 
@@ -288,4 +288,4 @@ namespace Rift
 			UI::TreePop();
 		}
 	}
-}    // namespace Rift
+}    // namespace rift

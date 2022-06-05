@@ -8,9 +8,9 @@
 #include <llvm/ADT/StringRef.h>
 
 
-namespace Rift::Compiler::LLVM
+namespace rift::Compiler::LLVM
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 
 	inline llvm::StringRef ToLLVM(StringView string)
 	{
@@ -30,4 +30,4 @@ namespace Rift::Compiler::LLVM
 	{
 		return {array.Data(), sizet(array.Size())};
 	}
-}    // namespace Rift::Compiler::LLVM
+}    // namespace rift::Compiler::LLVM

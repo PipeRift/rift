@@ -12,10 +12,10 @@
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe::Core::EnumOperators;
-	using namespace Pipe::Memory;
+	using namespace pipe::core::EnumOperators;
+	using namespace pipe::Memory;
 
 
 	ReflectionDebugger::ReflectionDebugger() {}
@@ -111,4 +111,4 @@ namespace Rift
 			}
 		}
 	}
-}    // namespace Rift
+}    // namespace rift

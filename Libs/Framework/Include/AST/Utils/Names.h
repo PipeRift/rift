@@ -7,11 +7,11 @@
 #include <ECS/Access.h>
 
 
-namespace Rift::Names
+namespace rift::Names
 {
 	Name GetName(TAccessRef<CIdentifier> access, AST::Id id)
 	{
 		auto* identifier = access.TryGet<const CIdentifier>(id);
 		return identifier ? identifier->name : Name::None();
 	}
-};    // namespace Rift::Names
+};    // namespace rift::Names

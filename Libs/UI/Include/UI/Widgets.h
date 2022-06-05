@@ -6,7 +6,7 @@
 #include "UI/UIImgui.h"
 
 
-namespace Rift::UI
+namespace rift::UI
 {
 	/**
 	 * Tracks an animation from a texture.
@@ -101,4 +101,4 @@ namespace Rift::UI
 
 	void HelpTooltip(StringView text, float delay = 1.f);
 	void HelpMarker(StringView text);
-}    // namespace Rift::UI
+}    // namespace rift::UI

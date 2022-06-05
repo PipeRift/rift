@@ -6,18 +6,18 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CIRFunction : public Pipe::Struct
+	struct CIRFunction : public pipe::Struct
 	{
-		STRUCT(CIRFunction, Pipe::Struct)
+		STRUCT(CIRFunction, pipe::Struct)
 
 		llvm::Function* instance = nullptr;
 
-		Pipe::TArray<llvm::Value*> inputs;
-		Pipe::TArray<AST::Id> inputIds;
+		pipe::TArray<llvm::Value*> inputs;
+		pipe::TArray<AST::Id> inputIds;
 
 
 		CIRFunction() {}
 	};
-}    // namespace Rift
+}    // namespace rift

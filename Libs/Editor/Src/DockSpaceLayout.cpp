@@ -7,7 +7,7 @@
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
 	const Name DockSpaceLayout::rootNodeId{"root"};
 
@@ -103,4 +103,4 @@ namespace Rift
 		}
 		ImGui::DockBuilderFinish(dockSpaceID);
 	}
-}    // namespace Rift
+}    // namespace rift

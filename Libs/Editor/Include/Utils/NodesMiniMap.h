@@ -7,9 +7,9 @@
 #include <Math/Vector.h>
 
 
-namespace Rift::Nodes
+namespace rift::Nodes
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 
 	struct EditorContext;
@@ -55,4 +55,4 @@ namespace Rift::Nodes
 	    MiniMapCorner corner                                           = MiniMapCorner::TopLeft,
 	    MiniMap::NodeHoveringCallback nodeHoveringCallback             = nullptr,
 	    MiniMap::NodeHoveringCallbackUserData nodeHoveringCallbackData = nullptr);
-}    // namespace Rift::Nodes
+}    // namespace rift::Nodes

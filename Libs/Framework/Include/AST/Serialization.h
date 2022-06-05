@@ -5,12 +5,12 @@
 #include "Serialization/Contexts.h"
 
 
-namespace Rift::AST
+namespace rift::AST
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 
-	class ReadContext : public Pipe::ReadContext
+	class ReadContext : public pipe::ReadContext
 	{
 		Tree& ast;
 
@@ -20,11 +20,11 @@ namespace Rift::AST
 
 
 	public:
-		ReadContext(const Pipe::ReadContext& parent, Tree& ast)
+		ReadContext(const pipe::ReadContext& parent, Tree& ast)
 		    : Serl::ReadContext(parent), ast(ast)
 		{}
 
-		void SerializeEntities(Pipe::TArray<Id>& entities);
+		void SerializeEntities(pipe::TArray<Id>& entities);
 
 		void SerializeEntity(Id& entity)
 		{
@@ -40,7 +40,7 @@ namespace Rift::AST
 	};
 
 
-	class WriteContext : public Pipe::WriteContext
+	class WriteContext : public pipe::WriteContext
 	{
 		Tree& ast;
 		bool includeChildren;
@@ -51,7 +51,7 @@ namespace Rift::AST
 
 
 	public:
-		WriteContext(const Pipe::WriteContext& parent, Tree& ast, bool includeChildren = true)
+		WriteContext(const pipe::WriteContext& parent, Tree& ast, bool includeChildren = true)
 		    : Serl::WriteContext(parent), ast(ast), includeChildren{includeChildren}
 		{}
 
@@ -71,4 +71,4 @@ namespace Rift::AST
 		void RetrieveHierarchy(const TArray<Id>& roots, TArray<Id>& children);
 		void RemoveIgnoredEntities(TArray<Id>& entities);
 	};
-}    // namespace Rift::AST
+}    // namespace rift::AST

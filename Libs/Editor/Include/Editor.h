@@ -7,9 +7,9 @@
 #include <RiftContext.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 	class Editor
 	{
@@ -58,4 +58,4 @@ namespace Rift
 	protected:
 		void UpdateConfig();
 	};
-}    // namespace Rift
+}    // namespace rift

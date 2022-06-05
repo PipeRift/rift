@@ -5,12 +5,12 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CIRModule : public Pipe::Struct
+	struct CIRModule : public pipe::Struct
 	{
-		STRUCT(CIRModule, Pipe::Struct)
+		STRUCT(CIRModule, pipe::Struct)
 
-		Pipe::TOwnPtr<llvm::Module> instance;
+		pipe::TOwnPtr<llvm::Module> instance;
 	};
-}    // namespace Rift
+}    // namespace rift

@@ -7,21 +7,21 @@
 #include <Reflection/Reflection.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe;
-	using namespace Pipe::EnumOperators;
+	using namespace pipe;
+	using namespace pipe::EnumOperators;
 
 	enum class FloatingType : u8
 	{
 		F32 = 32,
 		F64 = 64
 	};
-}    // namespace Rift
-ENUM(Rift::FloatingType)
+}    // namespace rift
+ENUM(rift::FloatingType)
 
 
-namespace Rift
+namespace rift
 {
 	struct CLiteralFloating : public CLiteral
 	{
@@ -40,4 +40,4 @@ namespace Rift
 			return *type;
 		}
 	};
-}    // namespace Rift
+}    // namespace rift

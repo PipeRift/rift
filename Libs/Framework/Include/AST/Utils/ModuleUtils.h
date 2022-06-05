@@ -12,15 +12,15 @@
 #include <Memory/OwnPtr.h>
 
 
-namespace Rift
+namespace rift
 {
 	struct CModule;
 }
 
-namespace Rift::Modules
+namespace rift::Modules
 {
-	using namespace Pipe::Core;
-	using namespace Pipe::Files;
+	using namespace pipe::core;
+	using namespace pipe::Files;
 	using namespace AST;
 
 	static constexpr StringView moduleFile{"Module.rift"};
@@ -45,4 +45,4 @@ namespace Rift::Modules
 
 	void Serialize(AST::Tree& ast, AST::Id id, String& data);
 	void Deserialize(AST::Tree& ast, AST::Id id, const String& data);
-}    // namespace Rift::Modules
+}    // namespace rift::Modules

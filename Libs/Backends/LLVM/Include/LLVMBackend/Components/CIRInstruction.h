@@ -5,15 +5,15 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CIRInstruction : public Pipe::Struct
+	struct CIRInstruction : public pipe::Struct
 	{
-		STRUCT(CIRInstruction, Pipe::Struct)
+		STRUCT(CIRInstruction, pipe::Struct)
 
 		llvm::Instruction* instance = nullptr;
 
 
 		CIRInstruction(llvm::Instruction* instance) : instance(instance) {}
 	};
-}    // namespace Rift
+}    // namespace rift

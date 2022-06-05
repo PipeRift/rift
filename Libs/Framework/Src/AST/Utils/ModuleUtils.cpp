@@ -16,7 +16,7 @@
 #include <Serialization/Formats/JsonFormat.h>
 
 
-namespace Rift::Modules
+namespace rift::Modules
 {
 	bool ValidateProjectPath(Path& path, String& error)
 	{
@@ -42,7 +42,7 @@ namespace Rift::Modules
 		return true;
 	}
 
-	bool CreateProject(Tree& ast, Pipe::Path path)
+	bool CreateProject(Tree& ast, pipe::Path path)
 	{
 		String error;
 		if (!ValidateProjectPath(path, error))
@@ -56,7 +56,7 @@ namespace Rift::Modules
 			Files::CreateFolder(path, true);
 		}
 
-		const Pipe::Path filePath = path / moduleFile;
+		const pipe::Path filePath = path / moduleFile;
 		if (Files::ExistsAsFile(filePath))
 		{
 			Log::Error("Can't create project: Folder already contains a '{}' file", moduleFile);
@@ -70,7 +70,7 @@ namespace Rift::Modules
 		return OpenProject(ast, path);
 	}
 
-	bool OpenProject(Tree& ast, Pipe::Path path)
+	bool OpenProject(Tree& ast, pipe::Path path)
 	{
 		String error;
 		if (!ValidateProjectPath(path, error))
@@ -85,7 +85,7 @@ namespace Rift::Modules
 			return false;
 		}
 
-		const Pipe::Path filePath = path / moduleFile;
+		const pipe::Path filePath = path / moduleFile;
 		if (!Files::ExistsAsFile(filePath))
 		{
 			Log::Error("Can't open project: Folder doesn't contain a '{}' file", moduleFile);
@@ -164,7 +164,7 @@ namespace Rift::Modules
 		if (file && !file->path.empty())
 		{
 			// Obtain name from project file name
-			const String fileName = Pipe::ToString(file->path);
+			const String fileName = pipe::ToString(file->path);
 			return {GetFilename(GetParentPath(fileName))};    // Folder name
 		}
 		return {};
@@ -176,7 +176,7 @@ namespace Rift::Modules
 		{
 			return file->path.parent_path();
 		}
-		return Pipe::Path{};
+		return pipe::Path{};
 	}
 
 	void Serialize(AST::Tree& ast, AST::Id id, String& data)
@@ -214,4 +214,4 @@ namespace Rift::Modules
 		ast.GetOrAdd<CIdentifier>(id).SerializeReflection(common);
 		ast.GetOrAdd<CModule>(id).SerializeReflection(common);
 	}
-}    // namespace Rift::Modules
+}    // namespace rift::Modules

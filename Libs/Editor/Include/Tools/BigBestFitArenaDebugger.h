@@ -8,9 +8,9 @@
 #include <Memory/Blocks/Block.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 	struct MemoryGrid
 	{
@@ -20,14 +20,14 @@ namespace Rift
 		u32 numColumns                   = 0;
 		u32 bytesPerRow                  = 0;
 		u32 numRows                      = 0;
-		const Pipe::Memory::Block* block = nullptr;
+		const pipe::Memory::Block* block = nullptr;
 
 
 		MemoryGrid() = default;
 
 		void UpdateGridScale(float availableWidth);
 
-		void Draw(const TArray<Pipe::Memory::BigBestFitArena::Slot>& freeSlots);
+		void Draw(const TArray<pipe::Memory::BigBestFitArena::Slot>& freeSlots);
 
 		float GetHeight()
 		{
@@ -60,4 +60,4 @@ namespace Rift
 		BigBestFitArenaDebugger();
 		void Draw();
 	};
-}    // namespace Rift
+}    // namespace rift

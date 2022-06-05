@@ -26,7 +26,7 @@
 #include <UI/UI.h>
 
 
-namespace Rift::Graph
+namespace rift::Graph
 {
 	void SetPositionAndConnect(AST::Tree& ast, AST::Id id, v2 position)
 	{
@@ -393,7 +393,7 @@ namespace Rift::Graph
 		{
 			static String name;
 			// Unary operators
-			for (auto type : Refl::GetEnumValues<UnaryOperatorType>())
+			for (auto type : refl::GetEnumValues<UnaryOperatorType>())
 			{
 				name.clear();
 				StringView shortName = Types::GetUnaryOperatorName(type);
@@ -406,7 +406,7 @@ namespace Rift::Graph
 				}
 			}
 			// Binary operators
-			for (auto type : Refl::GetEnumValues<BinaryOperatorType>())
+			for (auto type : refl::GetEnumValues<BinaryOperatorType>())
 			{
 				name.clear();
 				StringView shortName = Types::GetBinaryOperatorName(type);
@@ -459,4 +459,4 @@ namespace Rift::Graph
 			UI::EndPopup();
 		}
 	}
-}    // namespace Rift::Graph
+}    // namespace rift::Graph

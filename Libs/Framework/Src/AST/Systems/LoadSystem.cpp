@@ -23,7 +23,7 @@
 #include <Serialization/Formats/JsonFormat.h>
 
 
-namespace Rift::LoadSystem
+namespace rift::LoadSystem
 {
 	void Init(AST::Tree& ast)
 	{
@@ -121,7 +121,7 @@ namespace Rift::LoadSystem
 
 		// Remove existing module paths
 		auto moduleIds = ECS::ListAll<CModule, CFileRef>(access);
-		paths.ExcludeIfSwap([&access, &moduleIds](const Pipe::Path& path) {
+		paths.ExcludeIfSwap([&access, &moduleIds](const pipe::Path& path) {
 			bool moduleExists = false;
 			for (AST::Id id : moduleIds)
 			{
@@ -163,7 +163,7 @@ namespace Rift::LoadSystem
 		// Remove existing types
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
-			modulePaths.paths.ExcludeIfSwap([types, &modulePaths](const Pipe::Path& path) {
+			modulePaths.paths.ExcludeIfSwap([types, &modulePaths](const pipe::Path& path) {
 				const Name pathName{ToString(path)};
 
 				if (!types->typesByPath.Contains(pathName))
@@ -211,7 +211,7 @@ namespace Rift::LoadSystem
 				if (!Files::LoadStringFile(file->path, strings[i], 4))
 				{
 					Log::Error(
-					    "File could not be loaded from disk ({})", Pipe::ToString(file->path));
+					    "File could not be loaded from disk ({})", pipe::ToString(file->path));
 					continue;
 				}
 			}
@@ -239,4 +239,4 @@ namespace Rift::LoadSystem
 			Types::Deserialize(ast, typeIds[i], strings[i]);
 		}
 	}
-}    // namespace Rift::LoadSystem
+}    // namespace rift::LoadSystem

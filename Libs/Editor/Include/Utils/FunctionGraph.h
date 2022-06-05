@@ -8,12 +8,12 @@
 #include <Math/Vector.h>
 
 
-namespace Rift
+namespace rift
 {
 	struct DockSpaceLayout;
 }
 
-namespace Rift::Graph
+namespace rift::Graph
 {
 	struct Settings
 	{
@@ -58,4 +58,4 @@ namespace Rift::Graph
 	v2 GetNodePosition(AST::Id id);
 
 	void SnapNodeDimensionsToGrid();
-}    // namespace Rift::Graph
+}    // namespace rift::Graph

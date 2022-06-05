@@ -4,12 +4,12 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
 	// Mark an entity as not serialized.
 	// Will be entirely ignored by the serializer
-	struct CNotSerialized : public Pipe::Struct
+	struct CNotSerialized : public pipe::Struct
 	{
-		STRUCT(CNotSerialized, Pipe::Struct)
+		STRUCT(CNotSerialized, pipe::Struct)
 	};
-}    // namespace Rift
+}    // namespace rift

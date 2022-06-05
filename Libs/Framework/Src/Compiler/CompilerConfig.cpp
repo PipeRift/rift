@@ -4,7 +4,7 @@
 #include "Compiler/Context.h"
 
 
-namespace Rift::Compiler
+namespace rift::Compiler
 {
 	void Config::Init(AST::Tree& ast)
 	{
@@ -12,4 +12,4 @@ namespace Rift::Compiler
 		intermediatesPath = buildPath / "Intermediates";
 		binariesPath      = buildPath / buildMode;
 	}
-}    // namespace Rift::Compiler
+}    // namespace rift::Compiler

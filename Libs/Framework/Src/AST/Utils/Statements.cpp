@@ -6,7 +6,7 @@
 #include "AST/Utils/Hierarchy.h"
 
 
-namespace Rift::AST::Statements
+namespace rift::AST::Statements
 {
 	bool CanConnect(const Tree& ast, Id outputNode, Id outputPin, Id inputNode)
 	{
@@ -226,4 +226,4 @@ namespace Rift::AST::Statements
 			splitStmtId = id;
 		}
 	}
-}    // namespace Rift::AST::Statements
+}    // namespace rift::AST::Statements

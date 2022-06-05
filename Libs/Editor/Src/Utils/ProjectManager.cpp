@@ -8,7 +8,7 @@
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
 	void DrawProjectManager(AST::Tree& ast)
 	{
@@ -34,7 +34,7 @@ namespace Rift
 			if (UI::Button("Open", v2{-FLT_MIN, 0.0f}))
 			{
 				Path folder =
-				    Files::SelectFolderDialog("Select project folder", Pipe::GetCurrentPath());
+				    Files::SelectFolderDialog("Select project folder", pipe::GetCurrentPath());
 				if (Editor::Get().OpenProject(folder))
 				{
 					UI::CloseCurrentPopup();
@@ -42,7 +42,7 @@ namespace Rift
 				else
 				{
 					UI::AddNotification({UI::ToastType::Error, 1.f,
-					    Strings::Format("Failed to open project at '{}'", Pipe::ToString(folder))});
+					    Strings::Format("Failed to open project at '{}'", pipe::ToString(folder))});
 				}
 			}
 			UI::SetItemDefaultFocus();
@@ -95,8 +95,8 @@ namespace Rift
 			if (UI::Button("...", v2{24.f, 0.f}))
 			{
 				Path selectedFolder =
-				    Files::SelectFolderDialog("Select project folder", Pipe::GetCurrentPath());
-				folder = Pipe::ToString(selectedFolder);
+				    Files::SelectFolderDialog("Select project folder", pipe::GetCurrentPath());
+				folder = pipe::ToString(selectedFolder);
 			}
 
 			if (UI::Button("Create", v2{-FLT_MIN, 0.0f}))
@@ -121,4 +121,4 @@ namespace Rift
 	{
 		UI::OpenPopup("Project Manager");
 	}
-}    // namespace Rift
+}    // namespace rift

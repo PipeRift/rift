@@ -7,7 +7,7 @@
 #include <Math/Timespan.h>
 
 
-namespace Rift::UI
+namespace rift::UI
 {
 	void AnimatedSprite::SetAnimation(u32 id)
 	{
@@ -215,4 +215,4 @@ namespace Rift::UI
 		ImGui::TextDisabled(ICON_FA_QUESTION_CIRCLE);
 		HelpTooltip(text, 0.f);
 	}
-}    // namespace Rift::UI
+}    // namespace rift::UI

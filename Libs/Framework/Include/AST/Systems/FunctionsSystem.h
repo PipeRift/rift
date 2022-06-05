@@ -13,12 +13,12 @@
 #include <Core/Span.h>
 
 
-namespace Rift::AST
+namespace rift::AST
 {
 	struct Tree;
 }
 
-namespace Rift::FunctionsSystem
+namespace rift::FunctionsSystem
 {
 	struct CTmpInvalidKeep
 	{};
@@ -34,4 +34,4 @@ namespace Rift::FunctionsSystem
 	    TAccessRef<CInvalid, CExprInputs, TWrite<CTmpInvalidKeep>, TWrite<CChild>, TWrite<CParent>>;
 	void RemoveInvalidDisconnectedArgs(InvalidDisconnectedPinAccess access);
 	void ClearAddedTags(AST::Tree& ast);
-}    // namespace Rift::FunctionsSystem
+}    // namespace rift::FunctionsSystem

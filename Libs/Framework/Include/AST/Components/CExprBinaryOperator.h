@@ -6,9 +6,9 @@
 #include <AST/Components/CExpression.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 
 	enum class BinaryOperatorType : u8
@@ -35,11 +35,11 @@ namespace Rift
 		BitOr,     // |
 		Xor        // ^
 	};
-}    // namespace Rift
-ENUM(Rift::BinaryOperatorType)
+}    // namespace rift
+ENUM(rift::BinaryOperatorType)
 
 
-namespace Rift
+namespace rift
 {
 	struct CExprBinaryOperator : public CExpression
 	{
@@ -52,4 +52,4 @@ namespace Rift
 		CExprBinaryOperator() = default;
 		CExprBinaryOperator(BinaryOperatorType type) : type{type} {}
 	};
-}    // namespace Rift
+}    // namespace rift

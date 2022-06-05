@@ -9,7 +9,7 @@
 #include <Math/Vector.h>
 
 
-namespace Rift::Nodes
+namespace rift::Nodes
 {
 	bool MiniMap::IsActive() const
 	{
@@ -263,4 +263,4 @@ namespace Rift::Nodes
 		// correctly relative to their respective nodes. Hence, we must store some of
 		// of the state for the mini map in gNodes for the actual drawing/updating
 	}
-}    // namespace Rift::Nodes
+}    // namespace rift::Nodes

@@ -7,11 +7,11 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct OutputId : public Pipe::Struct
+	struct OutputId : public pipe::Struct
 	{
-		STRUCT(OutputId, Pipe::Struct)
+		STRUCT(OutputId, pipe::Struct)
 
 		PROP(nodeId)
 		AST::Id nodeId = AST::NoId;
@@ -28,9 +28,9 @@ namespace Rift
 		}
 	};
 
-	struct CExprInputs : public Pipe::Struct
+	struct CExprInputs : public pipe::Struct
 	{
-		STRUCT(CExprInputs, Pipe::Struct)
+		STRUCT(CExprInputs, pipe::Struct)
 
 		PROP(linkedOutputs)
 		TArray<OutputId> linkedOutputs;
@@ -66,4 +66,4 @@ namespace Rift
 			pinIds.Resize(count, AST::NoId);
 		}
 	};
-}    // namespace Rift
+}    // namespace rift

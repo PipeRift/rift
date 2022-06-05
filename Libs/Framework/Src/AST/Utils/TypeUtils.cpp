@@ -34,13 +34,13 @@
 #include <Serialization/Formats/JsonFormat.h>
 
 
-namespace Rift::Types
+namespace rift::Types
 {
 	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, Type category)
 	{
 		if (auto* fileRef = ast.TryGet<CFileRef>(id))
 		{
-			String fileName = Pipe::GetFilename(fileRef->path);
+			String fileName = pipe::GetFilename(fileRef->path);
 			fileName        = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
 			ast.Add<CType>(id, {Name{fileName}});
 		}
@@ -76,7 +76,7 @@ namespace Rift::Types
 		return Type::None;
 	}
 
-	AST::Id CreateType(AST::Tree& ast, Type type, Name name, const Pipe::Path& path)
+	AST::Id CreateType(AST::Tree& ast, Type type, Name name, const pipe::Path& path)
 	{
 		AST::Id id = ast.Create();
 		if (!name.IsNone())
@@ -140,7 +140,7 @@ namespace Rift::Types
 	}
 
 
-	AST::Id FindTypeByPath(AST::Tree& ast, const Pipe::Path& path)
+	AST::Id FindTypeByPath(AST::Tree& ast, const pipe::Path& path)
 	{
 		if (auto* types = ast.TryGetStatic<STypes>())
 		{
@@ -456,4 +456,4 @@ namespace Rift::Types
 		ScopedChange(access, ids);
 		AST::Hierarchy::RemoveDeep(access, ids);
 	}
-}    // namespace Rift::Types
+}    // namespace rift::Types

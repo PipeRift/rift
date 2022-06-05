@@ -13,7 +13,7 @@
 
 
 // NOTE: In expression graphs, the Link Id is the Input Pin Id
-namespace Rift::AST::Expressions
+namespace rift::AST::Expressions
 {
 	bool CanConnect(TAccessRef<CExprInputs, CExprOutputs> access, OutputId output, InputId input);
 
@@ -35,4 +35,4 @@ namespace Rift::AST::Expressions
 
 	InputId InputFromPinId(TAccessRef<CExprInputs, CChild> access, AST::Id pinId);
 	OutputId OutputFromPinId(TAccessRef<CExprOutputs, CChild> access, AST::Id pinId);
-}    // namespace Rift::AST::Expressions
+}    // namespace rift::AST::Expressions

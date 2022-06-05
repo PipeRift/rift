@@ -7,7 +7,7 @@
 #include <Reflection/Class.h>
 
 
-namespace Rift::Compiler
+namespace rift::Compiler
 {
 	class Backend : public Class
 	{
@@ -25,4 +25,4 @@ namespace Rift::Compiler
 			    GetName().ToString());
 		}
 	};
-}    // namespace Rift::Compiler
+}    // namespace rift::Compiler

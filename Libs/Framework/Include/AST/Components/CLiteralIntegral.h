@@ -7,10 +7,10 @@
 #include <Reflection/Reflection.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe::Core;
-	using namespace Pipe::EnumOperators;
+	using namespace pipe::core;
+	using namespace pipe::EnumOperators;
 
 	enum class IntegralType : u8
 	{
@@ -24,11 +24,11 @@ namespace Rift
 		U32      = S32 | Unsigned,
 		U64      = S64 | Unsigned
 	};
-}    // namespace Rift
-ENUM(Rift::IntegralType)
+}    // namespace rift
+ENUM(rift::IntegralType)
 
 
-namespace Rift
+namespace rift
 {
 	struct CLiteralIntegral : public CLiteral
 	{
@@ -53,4 +53,4 @@ namespace Rift
 			return *size;
 		}
 	};
-}    // namespace Rift
+}    // namespace rift

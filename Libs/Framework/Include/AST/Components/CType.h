@@ -5,9 +5,9 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 
 	enum class Type : u8
@@ -32,4 +32,4 @@ namespace Rift
 
 		CType(Name name = {}) : name(name) {}
 	};
-}    // namespace Rift
+}    // namespace rift

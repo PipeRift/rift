@@ -7,7 +7,7 @@
 #include <Core/String.h>
 
 
-namespace Rift::UI
+namespace rift::UI
 {
 	enum class ToastType : u8
 	{
@@ -29,4 +29,4 @@ namespace Rift::UI
 	void AddNotification(Toast toast);
 
 	void DrawNotifications();
-}    // namespace Rift::UI
+}    // namespace rift::UI

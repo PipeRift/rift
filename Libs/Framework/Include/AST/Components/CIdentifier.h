@@ -5,9 +5,9 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 
 	struct CIdentifier : public Struct
@@ -30,4 +30,4 @@ namespace Rift
 			return name == other;
 		}
 	};
-}    // namespace Rift
+}    // namespace rift

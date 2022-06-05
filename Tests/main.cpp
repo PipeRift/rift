@@ -3,16 +3,16 @@
 #include <Context.h>
 
 
-class NoFileLogContext : public Pipe::Context
+class NoFileLogContext : public pipe::Context
 {
 public:
-	NoFileLogContext() : Pipe::Context(Pipe::Path{}) {}
+	NoFileLogContext() : pipe::Context(pipe::Path{}) {}
 };
 
 
 int main(int argc, char* argv[])
 {
-	Pipe::InitializeContext<NoFileLogContext>();
+	pipe::InitializeContext<NoFileLogContext>();
 	int result = bandit::run(argc, argv);
-	Pipe::ShutdownContext();
+	pipe::ShutdownContext();
 }

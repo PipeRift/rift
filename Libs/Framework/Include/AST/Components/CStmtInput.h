@@ -6,9 +6,9 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 	struct CStmtInput : public Struct
 	{
@@ -26,4 +26,4 @@ namespace Rift
 	{
 		ct.Serialize(val.linkOutputNode);
 	}
-}    // namespace Rift
+}    // namespace rift

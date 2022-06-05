@@ -11,11 +11,10 @@
 #include <ECS/Filtering.h>
 
 
-
-namespace Rift::Editor
+namespace rift::Editor
 {
 	bool TypeCombo(TAccessRef<CType, CDeclNative, CDeclStruct, CDeclClass> access, StringView label,
 	    AST::Id& selectedTypeId);
 
 	bool InputLiteralValue(AST::Tree& ast, StringView label, AST::Id literalId);
-}    // namespace Rift::Editor
+}    // namespace rift::Editor

@@ -5,14 +5,14 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 
-	struct CChild : public Pipe::Struct
+	struct CChild : public pipe::Struct
 	{
-		STRUCT(CChild, Pipe::Struct)
+		STRUCT(CChild, pipe::Struct)
 
 		PROP(parent)
 		AST::Id parent = AST::NoId;
@@ -30,4 +30,4 @@ namespace Rift
 	{
 		ct.Serialize(val.parent);
 	}
-}    // namespace Rift
+}    // namespace rift

@@ -4,14 +4,14 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CCppNativeName : public Pipe::Struct
+	struct CCppNativeName : public pipe::Struct
 	{
-		STRUCT(CCppNativeName, Pipe::Struct)
+		STRUCT(CCppNativeName, pipe::Struct)
 
 		String codeName;
 
 		CCppNativeName(String codeName) : codeName(codeName) {}
 	};
-}    // namespace Rift
+}    // namespace rift

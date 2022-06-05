@@ -20,9 +20,9 @@
 #include <Profiler.h>
 
 
-namespace Rift::UI
+namespace rift::UI
 {
-	using namespace Pipe::Math;
+	using namespace pipe::Math;
 
 
 	static GLFWwindow* gWindow = nullptr;
@@ -168,4 +168,4 @@ namespace Rift::UI
 	{
 		return gWindow;
 	}
-}    // namespace Rift::UI
+}    // namespace rift::UI

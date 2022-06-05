@@ -22,7 +22,7 @@
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
 	using namespace EnumOperators;
 
@@ -264,4 +264,4 @@ namespace Rift
 			}
 		}
 	}
-}    // namespace Rift
+}    // namespace rift

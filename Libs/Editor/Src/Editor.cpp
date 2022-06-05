@@ -21,11 +21,11 @@
 #include <UI/Window.h>
 
 
-namespace Rift
+namespace rift
 {
 	void RegisterKeyValueInspections()
 	{
-		UI::RegisterCustomInspection<AST::Id>([](StringView label, void* data, Refl::Type* type) {
+		UI::RegisterCustomInspection<AST::Id>([](StringView label, void* data, refl::Type* type) {
 			UI::DrawKeyValue(label, data, GetType<ECS::IdTraits<AST::Id>::Entity>());
 		});
 	}
@@ -36,7 +36,7 @@ namespace Rift
 
 		// Setup window
 		Log::Info("Initializing editor...");
-		if (!Rift::UI::Init())
+		if (!rift::UI::Init())
 		{
 			Log::Error("Failed to initialize editor");
 			return 1;
@@ -101,12 +101,12 @@ namespace Rift
 		if (UI::GetWindow())
 		{
 			configFileChanged          = true;
-			configFile                 = Pipe::ToString(path);
+			configFile                 = pipe::ToString(path);
 			ImGui::GetIO().IniFilename = configFile.c_str();
 		}
 	}
 
-	bool Editor::CreateProject(const Pipe::Path& path, bool closeFirst)
+	bool Editor::CreateProject(const pipe::Path& path, bool closeFirst)
 	{
 		if (!closeFirst && Modules::HasProject(ast))
 		{
@@ -123,7 +123,7 @@ namespace Rift
 		return false;
 	}
 
-	bool Editor::OpenProject(const Pipe::Path& path, bool closeFirst)
+	bool Editor::OpenProject(const pipe::Path& path, bool closeFirst)
 	{
 		if (!closeFirst && Modules::HasProject(ast))
 		{
@@ -142,7 +142,7 @@ namespace Rift
 
 	void Editor::Close()
 	{
-		Rift::UI::Close();
+		rift::UI::Close();
 	}
 
 	void Editor::UpdateConfig()
@@ -167,4 +167,4 @@ namespace Rift
 			configFileChanged = false;
 		}
 	}
-}    // namespace Rift
+}    // namespace rift

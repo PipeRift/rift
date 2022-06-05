@@ -3,5 +3,5 @@
 #include "RiftContext.h"
 
 
-namespace Rift
-{};    // namespace Rift
+namespace rift
+{};    // namespace rift

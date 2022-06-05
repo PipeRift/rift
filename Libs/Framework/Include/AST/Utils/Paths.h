@@ -5,9 +5,9 @@
 #include <Core/StringView.h>
 
 
-namespace Rift::Paths
+namespace rift::Paths
 {
-	static constexpr Pipe::StringView moduleExtension = ".rift";
-	static constexpr Pipe::StringView typeExtension   = ".rf";
-	static constexpr Pipe::StringView configExtension = ".json";
-};    // namespace Rift::Paths
+	static constexpr pipe::StringView moduleExtension = ".rift";
+	static constexpr pipe::StringView typeExtension   = ".rf";
+	static constexpr pipe::StringView configExtension = ".json";
+};    // namespace rift::Paths

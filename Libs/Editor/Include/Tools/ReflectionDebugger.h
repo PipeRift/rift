@@ -6,10 +6,10 @@
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe::Serl;
-	using namespace Pipe::Refl;
+	using namespace pipe::Serl;
+	using namespace pipe::refl;
 
 
 	struct ReflectionDebugger
@@ -28,4 +28,4 @@ namespace Rift
 	private:
 		void DrawType(Type* type);
 	};
-}    // namespace Rift
+}    // namespace rift

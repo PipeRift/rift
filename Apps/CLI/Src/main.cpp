@@ -19,10 +19,10 @@
 #include <CLI/CLI.hpp>
 
 
-using namespace Rift;
+using namespace rift;
 
 
-namespace Rift
+namespace rift
 {
 	void AddBackendOption(
 	    CLI::App& app, const TArray<TOwnPtr<Compiler::Backend>>& backends, String& selected)
@@ -61,7 +61,7 @@ namespace Rift
 		}
 		return {};
 	}
-}    // namespace Rift
+}    // namespace rift
 
 int main(int argc, char** argv)
 {
@@ -86,13 +86,13 @@ int main(int argc, char** argv)
 
 	ZoneScopedNC("CLI Execution", 0x459bd1);
 
-	const Pipe::Path path = Pipe::FromString(pathStr);
+	const pipe::Path path = pipe::FromString(pathStr);
 	AST::Tree ast;
 	Modules::OpenProject(ast, path);
 
 	if (!Modules::HasProject(ast))
 	{
-		Log::Error("Couldn't open project '{}'", Pipe::ToString(path));
+		Log::Error("Couldn't open project '{}'", pipe::ToString(path));
 		return 1;
 	}
 

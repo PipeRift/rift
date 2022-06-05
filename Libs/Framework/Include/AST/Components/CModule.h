@@ -4,9 +4,9 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 	enum class ModuleTarget : u8
 	{
@@ -21,17 +21,17 @@ namespace Rift
 		Rift,
 		CBinding
 	};
-}    // namespace Rift
+}    // namespace rift
 // TODO: Simplify enum reflection so that ENUM() is not needed
-ENUM(Rift::ModuleTarget)
-ENUM(Rift::ModuleType)
+ENUM(rift::ModuleTarget)
+ENUM(rift::ModuleType)
 
 
-namespace Rift
+namespace rift
 {
-	struct CModule : public Pipe::Struct
+	struct CModule : public pipe::Struct
 	{
-		STRUCT(CModule, Pipe::Struct)
+		STRUCT(CModule, pipe::Struct)
 
 		PROP(target)
 		ModuleTarget target = ModuleTarget::Executable;
@@ -48,4 +48,4 @@ namespace Rift
 
 		CModule() {}
 	};
-}    // namespace Rift
+}    // namespace rift

@@ -4,12 +4,12 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CCppCodeGenFragment : public Pipe::Struct
+	struct CCppCodeGenFragment : public pipe::Struct
 	{
-		STRUCT(CCppCodeGenFragment, Pipe::Struct)
+		STRUCT(CCppCodeGenFragment, pipe::Struct)
 
 		String code;
 	};
-}    // namespace Rift
+}    // namespace rift

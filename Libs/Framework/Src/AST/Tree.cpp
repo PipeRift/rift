@@ -11,7 +11,7 @@
 #include <ECS/Filtering.h>
 
 
-namespace Rift::AST
+namespace rift::AST
 {
 	Tree::Tree()
 	{
@@ -113,4 +113,4 @@ namespace Rift::AST
 	{
 		nativeTypes = other.nativeTypes;
 	}
-}    // namespace Rift::AST
+}    // namespace rift::AST

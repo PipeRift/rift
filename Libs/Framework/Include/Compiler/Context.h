@@ -9,20 +9,20 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift::Compiler
+namespace rift::Compiler
 {
-	struct CompileError : public Pipe::Struct
+	struct CompileError : public pipe::Struct
 	{
-		STRUCT(CompileError, Pipe::Struct)
+		STRUCT(CompileError, pipe::Struct)
 
 		PROP(text)
 		String text;
 	};
 
 
-	struct Context : public Pipe::Struct
+	struct Context : public pipe::Struct
 	{
-		STRUCT(Context, Pipe::Struct)
+		STRUCT(Context, pipe::Struct)
 
 		AST::Tree& ast;
 		Config config;
@@ -39,4 +39,4 @@ namespace Rift::Compiler
 			return errors.Size() > 0;
 		}
 	};
-}    // namespace Rift::Compiler
+}    // namespace rift::Compiler

@@ -4,9 +4,9 @@
 [submodule "Extern/imgui"]
 	path = Extern/imgui
 	url = https://github.com/ocornut/imgui.git
-[submodule "Libs/Core"]
-	path = Libs/Core
-	url = https://github.com/PipeRift/rift-core.git
+[submodule "Libs/Pipe"]
+	path = Libs/Pipe
+	url = https://github.com/PipeRift/pipe.git
 [submodule "Extern/glfw"]
 	path = Extern/glfw
 	url = https://github.com/glfw/glfw.git

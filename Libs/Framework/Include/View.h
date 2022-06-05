@@ -7,11 +7,11 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct View : public Pipe::Struct
+	struct View : public pipe::Struct
 	{
-		STRUCT(View, Pipe::Struct)
+		STRUCT(View, pipe::Struct)
 
 		PROP(name)
 		Name name;
@@ -20,4 +20,4 @@ namespace Rift
 
 		TFunction<void()> onDrawEditor;
 	};
-}    // namespace Rift
+}    // namespace rift

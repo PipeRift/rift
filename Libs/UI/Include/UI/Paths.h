@@ -5,10 +5,10 @@
 #include <Files/Paths.h>
 
 
-namespace Rift::Paths
+namespace rift::Paths
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 
 	Path GetResourcesPath();
-};    // namespace Rift::Paths
+};    // namespace rift::Paths

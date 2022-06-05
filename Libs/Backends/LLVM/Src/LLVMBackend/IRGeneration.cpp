@@ -39,7 +39,7 @@
 #include <llvm/IR/Verifier.h>
 
 
-namespace Rift::Compiler::LLVM
+namespace rift::Compiler::LLVM
 {
 	using BlockAccessRef = TAccessRef<CStmtOutput, CStmtOutputs, CExprInputs, CStmtIf, CExprCallId,
 	    CIRFunction, CIRValue>;
@@ -400,4 +400,4 @@ namespace Rift::Compiler::LLVM
 			}
 		}
 	}
-}    // namespace Rift::Compiler::LLVM
+}    // namespace rift::Compiler::LLVM

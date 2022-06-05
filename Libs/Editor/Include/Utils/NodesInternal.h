@@ -20,7 +20,7 @@
 // [SECTION] global and editor context structs
 // [SECTION] object pool implementation
 
-namespace Rift::Nodes
+namespace rift::Nodes
 {
 	struct Context;
 
@@ -575,4 +575,4 @@ namespace Rift::Nodes
 		const int index = ObjectPoolFindOrCreateIndex(objects, id);
 		return objects.Pool[index];
 	}
-}    // namespace Rift::Nodes
+}    // namespace rift::Nodes

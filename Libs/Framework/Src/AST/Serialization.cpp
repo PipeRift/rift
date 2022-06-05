@@ -32,7 +32,7 @@
 #include <Reflection/TypeName.h>
 
 
-namespace Rift::AST
+namespace rift::AST
 {
 	template<typename T>
 	void ReadPool(ReadContext& ct, TAccessRef<TWrite<T>> access)
@@ -92,7 +92,7 @@ namespace Rift::AST
 
 		// FIX: yyjson doesn't seem to take into account stringview length when generating text
 		// Temporarely fixed by caching component name keys
-		ct.PushAddFlags(Pipe::Serl::WriteFlags_CacheStringKeys);
+		ct.PushAddFlags(pipe::Serl::WriteFlags_CacheStringKeys);
 		if (ct.EnterNext(GetTypeName<T>(false)))
 		{
 			String key;
@@ -260,4 +260,4 @@ namespace Rift::AST
 		}
 		entities.Shrink();
 	}
-}    // namespace Rift::AST
+}    // namespace rift::AST

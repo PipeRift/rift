@@ -7,14 +7,14 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
 	// Dirty tags are cleaned manually by the respective systems. CChanged instead gets cleared
 	// after one frame
 	template<typename T>
-	struct TDirty : public Pipe::Struct
+	struct TDirty : public pipe::Struct
 	{
-		STRUCT(TDirty<T>, Pipe::Struct, Pipe::Struct_NotSerialized)
+		STRUCT(TDirty<T>, pipe::Struct, pipe::Struct_NotSerialized)
 	};
 
 	using CDirty = TDirty<void>;
@@ -24,4 +24,4 @@ namespace Rift
 
 	// Marks a type as dirty, meaning is has been modified
 	using CCallDirty = TDirty<CExprCallId>;
-}    // namespace Rift
+}    // namespace rift

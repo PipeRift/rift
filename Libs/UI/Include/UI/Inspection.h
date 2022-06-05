@@ -14,39 +14,39 @@
 #include <Reflection/StructType.h>
 
 
-namespace Rift::UI
+namespace rift::UI
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 
 	// label, data, type
-	using CustomKeyValue = TFunction<void(StringView label, void*, Refl::Type*)>;
+	using CustomKeyValue = TFunction<void(StringView label, void*, refl::Type*)>;
 
 
-	void RegisterCustomInspection(Refl::Type* typeId, const CustomKeyValue& custom);
+	void RegisterCustomInspection(refl::Type* typeId, const CustomKeyValue& custom);
 	template<typename T>
 	void RegisterCustomInspection(const CustomKeyValue& custom)
 	{
 		RegisterCustomInspection(GetType<T>(), custom);
 	}
 
-	void DrawEnumValue(void* data, Refl::EnumType* type);
-	void DrawNativeValue(void* data, Refl::NativeType* type);
-	void DrawKeyValue(StringView label, void* data, Refl::Type* type);
+	void DrawEnumValue(void* data, refl::EnumType* type);
+	void DrawNativeValue(void* data, refl::NativeType* type);
+	void DrawKeyValue(StringView label, void* data, refl::Type* type);
 
-	void InspectProperty(const Refl::PropertyHandle& property);
-	void InspectProperties(void* container, Refl::DataType* type);
+	void InspectProperty(const refl::PropertyHandle& property);
+	void InspectProperties(void* container, refl::DataType* type);
 
-	inline void InspectStruct(Struct* data, Refl::StructType* type)
+	inline void InspectStruct(Struct* data, refl::StructType* type)
 	{
 		InspectProperties(data, type);
 	}
 	template<typename T>
-	inline void InspectStruct(T* data) requires(Derived<T, Pipe::Struct>)
+	inline void InspectStruct(T* data) requires(Derived<T, pipe::Struct>)
 	{
 		InspectStruct(data, T::GetStaticType());
 	}
-	inline void InspectClass(Class* data, Refl::ClassType* type)
+	inline void InspectClass(Class* data, refl::ClassType* type)
 	{
 		InspectProperties(data, type);
 	}
@@ -58,4 +58,4 @@ namespace Rift::UI
 	void EndInspector();
 
 	void RegisterCoreKeyValueInspections();
-}    // namespace Rift::UI
+}    // namespace rift::UI

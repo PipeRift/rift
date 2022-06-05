@@ -16,7 +16,7 @@
 #include <Math/DateTime.h>
 
 
-namespace Rift::Compiler
+namespace rift::Compiler
 {
 	namespace Cpp
 	{
@@ -37,7 +37,7 @@ namespace Rift::Compiler
 			ast.Add<CCppNativeName>(nativeTypes.stringId, {"std::string"});
 		}
 
-		void BuildCode(Context& context, const Pipe::Path& codePath, const Pipe::Path& cmakePath)
+		void BuildCode(Context& context, const pipe::Path& codePath, const pipe::Path& cmakePath)
 		{
 			ZoneScoped;
 			Files::CreateFolder(cmakePath, true);
@@ -45,7 +45,7 @@ namespace Rift::Compiler
 
 			Log::Info("Generating");
 			const String generate = Strings::Format(
-			    "cmake -S {} -B {}", Pipe::ToString(codePath), Pipe::ToString(cmakePath));
+			    "cmake -S {} -B {}", pipe::ToString(codePath), pipe::ToString(cmakePath));
 
 			if (std::system(generate.c_str()) > 0)
 			{
@@ -55,7 +55,7 @@ namespace Rift::Compiler
 
 			Log::Info("Building");
 			const String build = Strings::Format("cmake --build {} --config {}",
-			    Pipe::ToString(cmakePath), context.config.buildMode);
+			    pipe::ToString(cmakePath), context.config.buildMode);
 			if (std::system(build.c_str()) > 0)
 			{
 				context.AddError("C++ build failed");
@@ -70,7 +70,7 @@ namespace Rift::Compiler
 
 		DateTime startTime = DateTime::Now();
 
-		const Pipe::Path& codePath = context.config.intermediatesPath / "Code";
+		const pipe::Path& codePath = context.config.intermediatesPath / "Code";
 		Files::Delete(codePath, true, false);
 		Files::CreateFolder(codePath, true);
 
@@ -95,7 +95,7 @@ namespace Rift::Compiler
 
 
 		Log::Info("Building C++");
-		const Pipe::Path cmakePath = context.config.intermediatesPath / "CMake";
+		const pipe::Path cmakePath = context.config.intermediatesPath / "CMake";
 		Cpp::BuildCode(context, codePath, cmakePath);
 		if (context.HasErrors())
 		{
@@ -125,4 +125,4 @@ namespace Rift::Compiler
 		const float duration = (DateTime::Now() - startTime).GetTotalSeconds();
 		Log::Info("Build complete ({:.2f}s)", duration);
 	}
-}    // namespace Rift::Compiler
+}    // namespace rift::Compiler

@@ -4,10 +4,10 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CStmtIf : public Pipe::Struct
+	struct CStmtIf : public pipe::Struct
 	{
-		STRUCT(CStmtIf, Pipe::Struct)
+		STRUCT(CStmtIf, pipe::Struct)
 	};
-}    // namespace Rift
+}    // namespace rift

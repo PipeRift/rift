@@ -41,7 +41,7 @@
 #include <Utils/NodesMiniMap.h>
 
 
-namespace Rift::Graph
+namespace rift::Graph
 {
 	static CNodePosition* currentNodeTransform = nullptr;
 
@@ -346,7 +346,7 @@ namespace Rift::Graph
 				name = identifier->name;
 			}
 
-			Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
+			Style::PushNodeBackgroundColor(rift::Style::GetNeutralColor(0));
 			Style::PushNodeTitleColor(Style::functionColor);
 			BeginNode(access, functionId);
 			{
@@ -379,7 +379,7 @@ namespace Rift::Graph
 	        access,
 	    AST::Id id)
 	{
-		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
+		Style::PushNodeBackgroundColor(rift::Style::GetNeutralColor(0));
 		Style::PushNodeTitleColor(Style::returnColor);
 		BeginNode(access, id);
 		{
@@ -420,7 +420,7 @@ namespace Rift::Graph
 					ownerName = call->ownerName.ToString().c_str();
 				}
 
-				Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
+				Style::PushNodeBackgroundColor(rift::Style::GetNeutralColor(0));
 				Style::PushNodeTitleColor(Style::callColor);
 				BeginNode(access, id);
 				{
@@ -437,9 +437,9 @@ namespace Rift::Graph
 						UI::TextUnformatted(functionName.data());
 						if (!ownerName.empty())
 						{
-							// Rift::Style::PushTextColor(Rift::Style::whiteTextColor.Shade(0.3f));
+							// rift::Style::PushTextColor(rift::Style::whiteTextColor.Shade(0.3f));
 							// UI::Text(ownerName.data());
-							// Rift::Style::PopTextColor();
+							// rift::Style::PopTextColor();
 						}
 						UI::EndGroup();
 
@@ -933,4 +933,4 @@ namespace Rift::Graph
 		const v2 pos = Nodes::GetNodeGridSpacePos(id);
 		return v2{pos.x * settings.GetInvGridSize(), pos.y * settings.GetInvGridSize()}.Floor();
 	}
-}    // namespace Rift::Graph
+}    // namespace rift::Graph

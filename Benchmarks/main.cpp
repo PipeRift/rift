@@ -8,14 +8,14 @@
 // Benches
 
 
-class NoFileLogContext : public Pipe::Context
+class NoFileLogContext : public pipe::Context
 {
 public:
-	NoFileLogContext() : Pipe::Context(Pipe::Path{}) {}
+	NoFileLogContext() : pipe::Context(pipe::Path{}) {}
 };
 
 int main()
 {
-	Pipe::InitializeContext<NoFileLogContext>();
+	pipe::InitializeContext<NoFileLogContext>();
 	// Run benches
 }

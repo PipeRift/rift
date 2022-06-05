@@ -8,24 +8,24 @@
 
 
 #define IM_VEC2_CLASS_EXTRA                                      \
-	constexpr ImVec2(Pipe::v2 other) : x(other.x), y(other.y) {} \
-	constexpr operator Pipe::v2() const                          \
+	constexpr ImVec2(pipe::v2 other) : x(other.x), y(other.y) {} \
+	constexpr operator pipe::v2() const                          \
 	{                                                            \
-		return Pipe::v2{x, y};                                   \
+		return pipe::v2{x, y};                                   \
 	}
 
 #define IM_VEC4_CLASS_EXTRA                                                                     \
-	constexpr ImVec4(const Pipe::LinearColor& other)                                            \
+	constexpr ImVec4(const pipe::LinearColor& other)                                            \
 	    : x(other.r), y(other.g), z(other.b), w(other.a)                                        \
 	{}                                                                                          \
-	constexpr operator Pipe::LinearColor() const                                                \
+	constexpr operator pipe::LinearColor() const                                                \
 	{                                                                                           \
-		return Pipe::LinearColor{x, y, z, w};                                                   \
+		return pipe::LinearColor{x, y, z, w};                                                   \
 	}                                                                                           \
-	constexpr ImVec4(const Pipe::v4& other) : x(other.x), y(other.y), z(other.z), w(other.w) {} \
-	constexpr operator Pipe::v4() const                                                         \
+	constexpr ImVec4(const pipe::v4& other) : x(other.x), y(other.y), z(other.z), w(other.w) {} \
+	constexpr operator pipe::v4() const                                                         \
 	{                                                                                           \
-		return Pipe::v4{x, y, z, w};                                                            \
+		return pipe::v4{x, y, z, w};                                                            \
 	}
 
 
@@ -34,9 +34,9 @@
 #include <imgui_internal.h>
 
 
-namespace Rift::UI
+namespace rift::UI
 {
-	using namespace Pipe;
+	using namespace pipe;
 	using namespace ImGui;
 
 	// Begin ImGui API override
@@ -137,4 +137,4 @@ namespace Rift::UI
 		TextColoredUnformatted(color, text.data(), text.data() + text.size());
 	}
 
-}    // namespace Rift::UI
+}    // namespace rift::UI

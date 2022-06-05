@@ -9,17 +9,17 @@
 #include <ECS/Filtering.h>
 
 
-namespace Rift::AST
+namespace rift::AST
 {
 	struct Tree;
 }
 
-namespace Rift::LoadSystem
+namespace rift::LoadSystem
 {
 	struct ModuleTypePaths
 	{
 		AST::Id moduleId;
-		TArray<Path> paths;    // Pipe::Paths of module types
+		TArray<Path> paths;    // pipe::Paths of module types
 		TArray<Name> pathNames;
 	};
 
@@ -48,4 +48,4 @@ namespace Rift::LoadSystem
 	void DeserializeModules(AST::Tree& ast, TSpan<AST::Id> moduleIds, TSpan<String> strings);
 	void DeserializeTypes(AST::Tree& ast, TSpan<AST::Id> typeIds, TSpan<String> strings);
 
-}    // namespace Rift::LoadSystem
+}    // namespace rift::LoadSystem

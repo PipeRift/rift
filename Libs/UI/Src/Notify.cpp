@@ -15,7 +15,7 @@
 #define NOTIFY_USE_SEPARATOR
 
 
-namespace Rift::UI
+namespace rift::UI
 {
 	struct Notification
 	{
@@ -240,4 +240,4 @@ namespace Rift::UI
 		ImGui::PopStyleVar(1);
 		ImGui::PopStyleColor(1);
 	}
-}    // namespace Rift::UI
+}    // namespace rift::UI

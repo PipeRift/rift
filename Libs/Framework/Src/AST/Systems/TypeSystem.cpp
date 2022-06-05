@@ -14,7 +14,7 @@
 #include <ECS/Filtering.h>
 
 
-namespace Rift::TypeSystem
+namespace rift::TypeSystem
 {
 	void Init(AST::Tree& ast)
 	{
@@ -100,4 +100,4 @@ namespace Rift::TypeSystem
 		TArray<AST::Id> literals =
 		    ECS::ListAny<CLiteralBool, CLiteralIntegral, CLiteralFloating, CLiteralString>(ast);
 	}
-}    // namespace Rift::TypeSystem
+}    // namespace rift::TypeSystem

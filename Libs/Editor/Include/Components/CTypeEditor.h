@@ -9,11 +9,11 @@
 #include <Utils/NodesInternal.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CTypeEditor : public Pipe::Struct
+	struct CTypeEditor : public pipe::Struct
 	{
-		STRUCT(CTypeEditor, Pipe::Struct, Pipe::Struct_NotSerialized)
+		STRUCT(CTypeEditor, pipe::Struct, pipe::Struct_NotSerialized)
 
 		static const Name rightNode;
 		static const Name centralNode;
@@ -31,4 +31,4 @@ namespace Rift
 
 	inline const Name CTypeEditor::rightNode{"rightNode"};
 	inline const Name CTypeEditor::centralNode{"centralNode"};
-}    // namespace Rift
+}    // namespace rift

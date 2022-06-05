@@ -7,23 +7,23 @@
 #include <Serialization/Contexts.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 
-	struct CStmtOutput : public Pipe::Struct
+	struct CStmtOutput : public pipe::Struct
 	{
-		STRUCT(CStmtOutput, Pipe::Struct)
+		STRUCT(CStmtOutput, pipe::Struct)
 
 		PROP(linkInputNode)
 		AST::Id linkInputNode = AST::NoId;
 	};
 
 
-	struct CStmtOutputs : public Pipe::Struct
+	struct CStmtOutputs : public pipe::Struct
 	{
-		STRUCT(CStmtOutputs, Pipe::Struct)
+		STRUCT(CStmtOutputs, pipe::Struct)
 
 		// Both arrays keep the same index to the input node and the output pin
 		PROP(pinIds)
@@ -33,7 +33,7 @@ namespace Rift
 
 
 		CStmtOutputs() = default;
-		CStmtOutputs(Pipe::TArray<AST::Id> pins)
+		CStmtOutputs(pipe::TArray<AST::Id> pins)
 		    : pinIds{Move(pins)}, linkInputNodes(pinIds.Size(), AST::NoId)
 		{}
 	};
@@ -46,4 +46,4 @@ namespace Rift
 	{
 		ct.Serialize(val.linkInputNode);
 	}
-}    // namespace Rift
+}    // namespace rift

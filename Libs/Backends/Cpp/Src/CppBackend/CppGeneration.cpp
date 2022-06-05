@@ -24,7 +24,7 @@
 #include <Files/Files.h>
 
 
-namespace Rift::Compiler::Cpp
+namespace rift::Compiler::Cpp
 {
 	void Spacing(String& code)
 	{
@@ -224,16 +224,16 @@ namespace Rift::Compiler::Cpp
 	void GenParameters(TAccessRef<CExprType, CIdentifier, TWrite<CCppCodeGenFragment>> access) {}
 
 
-	void GenerateModuleCode(Context& context, AST::Id moduleId, const Pipe::Path& codePath)
+	void GenerateModuleCode(Context& context, AST::Id moduleId, const pipe::Path& codePath)
 	{
 		ZoneScopedC(0x459bd1);
 
 		auto& ast = context.ast;
 
 		const Name name              = Modules::GetModuleName(ast, moduleId);
-		const Pipe::Path modulePath  = codePath / name.ToString();
-		const Pipe::Path includePath = modulePath / "Include";
-		const Pipe::Path sourcePath  = modulePath / "Src";
+		const pipe::Path modulePath  = codePath / name.ToString();
+		const pipe::Path includePath = modulePath / "Include";
+		const pipe::Path sourcePath  = modulePath / "Src";
 		Files::CreateFolder(includePath, true);
 		Files::CreateFolder(sourcePath, true);
 
@@ -275,11 +275,11 @@ namespace Rift::Compiler::Cpp
 		Comment(code, "Function Definitions");
 		DefineFunctions(code, ast, moduleId, functions);
 
-		const Pipe::Path headerFile = includePath / "code.h";
+		const pipe::Path headerFile = includePath / "code.h";
 		if (!Files::SaveStringFile(headerFile, code))
 		{
 			context.AddError(Strings::Format(
-			    "Couldn't save generated header at '{}'", Pipe::ToString(headerFile)));
+			    "Couldn't save generated header at '{}'", pipe::ToString(headerFile)));
 		}
 
 		code = {};
@@ -291,11 +291,11 @@ namespace Rift::Compiler::Cpp
 		if (!Files::SaveStringFile(sourceFile, code))
 		{
 			context.AddError(Strings::Format(
-			    "Couldn't save generated source at '{}'", Pipe::ToString(sourceFile)));
+			    "Couldn't save generated source at '{}'", pipe::ToString(sourceFile)));
 		}
 	}
 
-	void GenerateCode(Context& context, const Pipe::Path& generatePath)
+	void GenerateCode(Context& context, const pipe::Path& generatePath)
 	{
 		ZoneScopedC(0x459bd1);
 
@@ -306,4 +306,4 @@ namespace Rift::Compiler::Cpp
 			GenerateModuleCode(context, moduleId, generatePath);
 		}
 	}
-}    // namespace Rift::Compiler::Cpp
+}    // namespace rift::Compiler::Cpp

@@ -14,9 +14,9 @@
 #include <Templates/Tuples.h>
 
 
-namespace Rift::Style
+namespace rift::Style
 {
-	using namespace Pipe;
+	using namespace pipe;
 
 
 	struct FontType
@@ -78,7 +78,7 @@ namespace Rift::Style
 		return io.Fonts->AddFontFromFileTTF(ToString(file).data(), size, fontConfig, glyphRanges);
 	}
 
-	void AddTextFont(Name name, FontMode mode, float size, Pipe::Path file)
+	void AddTextFont(Name name, FontMode mode, float size, pipe::Path file)
 	{
 		FontDescriptor* font = gFonts.Find(name);
 		if (!font)
@@ -105,7 +105,7 @@ namespace Rift::Style
 		auto& io = ImGui::GetIO();
 		io.Fonts->AddFontDefault();
 
-		auto resources = Rift::Paths::GetResourcesPath() / "Editor";
+		auto resources = rift::Paths::GetResourcesPath() / "Editor";
 
 		// Work Sans
 		AddTextFont("WorkSans", FontMode::Bold, 14.f, resources / "Fonts/WorkSans-Bold.ttf");
@@ -152,7 +152,7 @@ namespace Rift::Style
 		if (!font && !name.IsNone())
 		{
 			Log::Error("Tried to push inexistent font '{}' (mode: {}, size: {})", name,
-			    Refl::GetEnumName(mode), size);
+			    refl::GetEnumName(mode), size);
 		}
 		ImGui::PushFont(font);
 	}
@@ -283,4 +283,4 @@ namespace Rift::Style
 	{
 		UI::PopStyleColor(2);
 	}
-}    // namespace Rift::Style
+}    // namespace rift::Style

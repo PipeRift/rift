@@ -8,11 +8,11 @@
 #include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct InputId : public Pipe::Struct
+	struct InputId : public pipe::Struct
 	{
-		STRUCT(InputId, Pipe::Struct)
+		STRUCT(InputId, pipe::Struct)
 
 		PROP(nodeId)
 		AST::Id nodeId = AST::NoId;
@@ -29,9 +29,9 @@ namespace Rift
 		}
 	};
 
-	struct CExprOutputs : public Pipe::Struct
+	struct CExprOutputs : public pipe::Struct
 	{
-		STRUCT(CExprOutputs, Pipe::Struct)
+		STRUCT(CExprOutputs, pipe::Struct)
 
 		PROP(pinIds)
 		TArray<AST::Id> pinIds;
@@ -61,4 +61,4 @@ namespace Rift
 			return *this;
 		}
 	};
-}    // namespace Rift
+}    // namespace rift

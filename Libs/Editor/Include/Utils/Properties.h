@@ -18,7 +18,7 @@
 #include <ECS/Filtering.h>
 
 
-namespace Rift
+namespace rift
 {
 	struct CTypeEditor;
 
@@ -43,4 +43,4 @@ namespace Rift
 	void DrawFunctions(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId);
 
 	void DrawProperties(AST::Tree& ast, AST::Id typeId);
-}    // namespace Rift
+}    // namespace rift

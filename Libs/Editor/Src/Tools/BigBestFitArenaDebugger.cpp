@@ -12,7 +12,7 @@
 #include <imgui_internal.h>
 
 
-namespace Rift
+namespace rift
 {
 	static constexpr Color gFreeColor{210, 56, 41};    // Red
 	static constexpr Color gUsedColor{56, 210, 41};    // Green
@@ -214,4 +214,4 @@ namespace Rift
 			UI::End();
 		}
 	}
-}    // namespace Rift
+}    // namespace rift

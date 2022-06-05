@@ -12,7 +12,7 @@
 
 
 // NOTE: In statement graphs, the Link Id is the Input Node Id
-namespace Rift::AST::Statements
+namespace rift::AST::Statements
 {
 	bool CanConnect(const Tree& ast, Id outputNode, Id outputPin, Id inputNode);
 
@@ -55,4 +55,4 @@ namespace Rift::AST::Statements
 
 	void GetChain(TAccessRef<CStmtOutput, CStmtOutputs> access, Id firstStmtId, TArray<Id>& stmtIds,
 	    Id& splitStmtId);
-}    // namespace Rift::AST::Statements
+}    // namespace rift::AST::Statements

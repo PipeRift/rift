@@ -14,8 +14,8 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
-using namespace Pipe;
+using namespace rift;
+using namespace pipe;
 using namespace std::chrono_literals;
 
 Path testProjectPath = GetCurrentPath() / "TestProject";
