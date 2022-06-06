@@ -75,7 +75,7 @@ namespace rift::EditorSystem
 
 			builder.GetNodeLocalFlags(CTypeEditor::rightNode) |= ImGuiDockNodeFlags_AutoHideTabBar;
 			builder.GetNodeLocalFlags(CTypeEditor::centralNode) |=
-			    ImGuiDockNodeFlags_CentralNode | ImGuiDockNodeFlags_AutoHideTabBar;
+			    ImGuiDockNodeFlags_CentralNode | i32(ImGuiDockNodeFlags_AutoHideTabBar);
 		});
 
 		// TODO: Reseting until we are able to know if the layout was saved before. Reset if it

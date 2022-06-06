@@ -12,9 +12,6 @@
 
 namespace rift
 {
-	using namespace EnumOperators;
-
-
 	class GraphViewPlugin : public Plugin
 	{
 		CLASS(GraphViewPlugin, Plugin)

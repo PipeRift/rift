@@ -9,6 +9,7 @@
 #include <AST/Id.h>
 #include <Core/Array.h>
 #include <Core/BitArray.h>
+#include <Core/EnumFlags.h>
 #include <limits.h>
 #include <Math/Vector.h>
 
@@ -22,7 +23,7 @@
 
 namespace rift::Nodes
 {
-	using namespace p::EnumOperators;
+	// using namespace p::EnumOperators;
 
 	struct Context;
 
@@ -41,6 +42,7 @@ namespace rift::Nodes
 		Node   = 1 << 1,
 		Pin    = 1 << 2
 	};
+	DEFINE_FLAG_OPERATORS(Scope)
 
 	enum UIState_
 	{

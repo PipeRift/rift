@@ -14,7 +14,7 @@
 
 namespace rift
 {
-	using namespace p::core::EnumOperators;
+	//using namespace p::core::EnumOperators;
 	using namespace p::Memory;
 
 

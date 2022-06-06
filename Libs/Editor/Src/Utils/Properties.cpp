@@ -24,7 +24,7 @@
 
 namespace rift
 {
-	using namespace EnumOperators;
+	//using namespace EnumOperators;
 
 
 	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, AST::Id variableId)

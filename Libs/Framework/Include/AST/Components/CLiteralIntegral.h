@@ -10,7 +10,7 @@
 namespace rift
 {
 	using namespace p::core;
-	using namespace p::EnumOperators;
+	//using namespace p::EnumOperators;
 
 	enum class IntegralType : u8
 	{
@@ -50,7 +50,7 @@ namespace rift
 		{
 			IntegralType size = type;
 			RemoveFlags(size, IntegralType::Unsigned);
-			return *size;
+			return static_cast<UnderlyingType<IntegralType>>(size);
 		}
 	};
 }    // namespace rift

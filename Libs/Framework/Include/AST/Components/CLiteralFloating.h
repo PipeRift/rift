@@ -10,7 +10,7 @@
 namespace rift
 {
 	using namespace p;
-	using namespace p::EnumOperators;
+	//using namespace p::EnumOperators;
 
 	enum class FloatingType : u8
 	{
@@ -37,7 +37,7 @@ namespace rift
 
 		u8 GetSize() const
 		{
-			return *type;
+			return static_cast<UnderlyingType<FloatingType>>(type);
 		}
 	};
 }    // namespace rift
