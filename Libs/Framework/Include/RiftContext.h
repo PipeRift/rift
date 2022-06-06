@@ -3,9 +3,10 @@
 #pragma once
 
 #include "Plugin.h"
+#include "Tasks.h"
 #include "View.h"
 
-#include <Context.h>
+#include <Core/Context.h>
 
 
 namespace rift
@@ -20,8 +21,8 @@ namespace rift
 
 	protected:
 		TArray<TOwnPtr<Plugin>> plugins;
-
 		TArray<View> views;
+		TaskSystem tasks;
 
 
 	public:
@@ -35,6 +36,11 @@ namespace rift
 		void AddView(T view)
 		{
 			views.Add(Move(view));
+		}
+
+		TaskSystem& GetTasks()
+		{
+			return tasks;
 		}
 	};
 }    // namespace rift

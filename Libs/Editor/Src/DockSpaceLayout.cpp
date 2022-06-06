@@ -2,9 +2,10 @@
 
 #include "DockSpaceLayout.h"
 
+#include <Core/Log.h>
 #include <imgui_internal.h>
-#include <Log.h>
 #include <UI/UI.h>
+
 
 
 namespace rift

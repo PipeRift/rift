@@ -14,10 +14,10 @@
 // OpenGL loader
 #include <GL/gl3w.h>
 // Include glfw3.h after our OpenGL definitions
+#include <Core/Log.h>
+#include <Core/Profiler.h>
 #include <GLFW/glfw3.h>
-#include <Log.h>
 #include <Math/Color.h>
-#include <Profiler.h>
 
 
 namespace rift::UI

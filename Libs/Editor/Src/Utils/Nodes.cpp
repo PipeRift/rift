@@ -14,7 +14,7 @@
 #include "Utils/NodesMiniMap.h"
 
 #include <Core/Checks.h>
-#include <Log.h>
+#include <Core/Log.h>
 #include <Math/Bezier.h>
 
 #include <cassert>

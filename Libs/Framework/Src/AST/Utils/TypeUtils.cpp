@@ -29,9 +29,10 @@
 #include "AST/Utils/TransactionUtils.h"
 
 #include <Core/Checks.h>
+#include <Core/Profiler.h>
 #include <Files/Files.h>
-#include <Profiler.h>
 #include <Serialization/Formats/JsonFormat.h>
+
 
 
 namespace rift::Types

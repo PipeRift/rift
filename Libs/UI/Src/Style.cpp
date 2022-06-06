@@ -8,10 +8,10 @@
 
 #include <Core/Array.h>
 #include <Core/Checks.h>
+#include <Core/Log.h>
+#include <Core/Tuples.h>
 #include <IconsFontAwesome5.h>
-#include <Log.h>
 #include <Math/Math.h>
-#include <Templates/Tuples.h>
 
 
 namespace rift::Style

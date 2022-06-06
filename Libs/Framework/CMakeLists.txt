@@ -11,6 +11,7 @@ rift_target_define_platform(Rift)
 rift_target_shared_output_directory(Rift)
 target_link_libraries(Rift PUBLIC
     Pipe
+    Taskflow
 )
 
 install(TARGETS Rift
