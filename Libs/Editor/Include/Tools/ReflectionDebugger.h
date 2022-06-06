@@ -8,8 +8,7 @@
 
 namespace rift
 {
-	using namespace p::serl;
-	using namespace p::refl;
+	using namespace p;
 
 
 	struct ReflectionDebugger

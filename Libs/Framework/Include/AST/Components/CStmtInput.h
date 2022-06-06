@@ -18,11 +18,11 @@ namespace rift
 		AST::Id linkOutputNode = AST::NoId;
 	};
 
-	static void Read(ReadContext& ct, CStmtInput& val)
+	static void Read(Reader& ct, CStmtInput& val)
 	{
 		ct.Serialize(val.linkOutputNode);
 	}
-	static void Write(WriteContext& ct, const CStmtInput& val)
+	static void Write(Writer& ct, const CStmtInput& val)
 	{
 		ct.Serialize(val.linkOutputNode);
 	}

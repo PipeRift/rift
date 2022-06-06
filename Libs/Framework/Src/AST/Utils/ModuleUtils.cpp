@@ -63,7 +63,7 @@ namespace rift::Modules
 			return false;
 		}
 
-		serl::JsonFormatWriter writer{};
+		JsonFormatWriter writer{};
 		writer.GetContext().BeginObject();
 		files::SaveStringFile(filePath, writer.ToString());
 
@@ -183,10 +183,10 @@ namespace rift::Modules
 	{
 		ZoneScoped;
 
-		serl::JsonFormatWriter writer{};
-		AST::WriteContext ct{writer.GetContext(), ast, true};
+		JsonFormatWriter writer{};
+		AST::Writer ct{writer.GetContext(), ast, true};
 		ct.BeginObject();
-		serl::CommonContext common{ct};
+		ReadWriter common{ct};
 		if (auto* ident = ast.TryGet<CIdentifier>(id))
 		{
 			ident->SerializeReflection(common);
@@ -202,15 +202,15 @@ namespace rift::Modules
 	{
 		ZoneScoped;
 
-		serl::JsonFormatReader reader{data};
+		JsonFormatReader reader{data};
 		if (!reader.IsValid())
 		{
 			return;
 		}
 
-		AST::ReadContext ct{reader, ast};
+		AST::Reader ct{reader, ast};
 		ct.BeginObject();
-		serl::CommonContext common{ct};
+		p::ReadWriter common{ct};
 		ast.GetOrAdd<CIdentifier>(id).SerializeReflection(common);
 		ast.GetOrAdd<CModule>(id).SerializeReflection(common);
 	}

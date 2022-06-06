@@ -20,24 +20,24 @@ namespace rift::UI
 
 
 	// label, data, type
-	using CustomKeyValue = TFunction<void(StringView label, void*, refl::Type*)>;
+	using CustomKeyValue = TFunction<void(StringView label, void*, Type*)>;
 
 
-	void RegisterCustomInspection(refl::Type* typeId, const CustomKeyValue& custom);
+	void RegisterCustomInspection(Type* typeId, const CustomKeyValue& custom);
 	template<typename T>
 	void RegisterCustomInspection(const CustomKeyValue& custom)
 	{
 		RegisterCustomInspection(GetType<T>(), custom);
 	}
 
-	void DrawEnumValue(void* data, refl::EnumType* type);
-	void DrawNativeValue(void* data, refl::NativeType* type);
-	void DrawKeyValue(StringView label, void* data, refl::Type* type);
+	void DrawEnumValue(void* data, EnumType* type);
+	void DrawNativeValue(void* data, NativeType* type);
+	void DrawKeyValue(StringView label, void* data, Type* type);
 
-	void InspectProperty(const refl::PropertyHandle& property);
-	void InspectProperties(void* container, refl::DataType* type);
+	void InspectProperty(const PropertyHandle& property);
+	void InspectProperties(void* container, DataType* type);
 
-	inline void InspectStruct(Struct* data, refl::StructType* type)
+	inline void InspectStruct(Struct* data, StructType* type)
 	{
 		InspectProperties(data, type);
 	}
@@ -46,7 +46,7 @@ namespace rift::UI
 	{
 		InspectStruct(data, T::GetStaticType());
 	}
-	inline void InspectClass(Class* data, refl::ClassType* type)
+	inline void InspectClass(Class* data, ClassType* type)
 	{
 		InspectProperties(data, type);
 	}

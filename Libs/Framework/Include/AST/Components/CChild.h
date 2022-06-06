@@ -22,11 +22,11 @@ namespace rift
 		CChild(AST::Id parent) : parent(parent) {}
 	};
 
-	static void Read(ReadContext& ct, CChild& val)
+	static void Read(Reader& ct, CChild& val)
 	{
 		ct.Serialize(val.parent);
 	}
-	static void Write(WriteContext& ct, const CChild& val)
+	static void Write(Writer& ct, const CChild& val)
 	{
 		ct.Serialize(val.parent);
 	}

@@ -36,7 +36,7 @@
 
 namespace rift::Types
 {
-	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, Type category)
+	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, RiftType category)
 	{
 		if (auto* fileRef = ast.TryGet<CFileRef>(id))
 		{
@@ -47,36 +47,36 @@ namespace rift::Types
 
 		switch (category)
 		{
-			case Type::Class: ast.Add<CDeclClass>(id); break;
-			case Type::Struct: ast.Add<CDeclStruct>(id); break;
-			case Type::FunctionLibrary: ast.Add<CDeclFunctionLibrary>(id); break;
-			case Type::FunctionInterface: ast.Add<CDeclFunctionInterface>(id); break;
+			case RiftType::Class: ast.Add<CDeclClass>(id); break;
+			case RiftType::Struct: ast.Add<CDeclStruct>(id); break;
+			case RiftType::FunctionLibrary: ast.Add<CDeclFunctionLibrary>(id); break;
+			case RiftType::FunctionInterface: ast.Add<CDeclFunctionInterface>(id); break;
 			default: break;
 		}
 	}
 
-	Type GetCategory(AST::Tree& ast, AST::Id id)
+	RiftType GetCategory(AST::Tree& ast, AST::Id id)
 	{
 		if (ast.Has<CDeclStruct>(id))
 		{
-			return Type::Struct;
+			return RiftType::Struct;
 		}
 		else if (ast.Has<CDeclClass>(id))
 		{
-			return Type::Class;
+			return RiftType::Class;
 		}
 		else if (ast.Has<CDeclFunctionLibrary>(id))
 		{
-			return Type::FunctionLibrary;
+			return RiftType::FunctionLibrary;
 		}
 		else if (ast.Has<CDeclFunctionInterface>(id))
 		{
-			return Type::FunctionInterface;
+			return RiftType::FunctionInterface;
 		}
-		return Type::None;
+		return RiftType::None;
 	}
 
-	AST::Id CreateType(AST::Tree& ast, Type type, Name name, const p::Path& path)
+	AST::Id CreateType(AST::Tree& ast, RiftType type, Name name, const p::Path& path)
 	{
 		AST::Id id = ast.Create();
 		if (!name.IsNone())
@@ -111,8 +111,8 @@ namespace rift::Types
 	{
 		ZoneScoped;
 
-		serl::JsonFormatWriter writer{};
-		AST::WriteContext ct{writer.GetContext(), ast, true};
+		JsonFormatWriter writer{};
+		AST::Writer ct{writer.GetContext(), ast, true};
 		ct.BeginObject();
 		ct.Next("type", GetCategory(ast, id));
 		ct.SerializeEntity(id);
@@ -123,16 +123,16 @@ namespace rift::Types
 	{
 		ZoneScoped;
 
-		serl::JsonFormatReader reader{data};
+		JsonFormatReader reader{data};
 		if (!reader.IsValid())
 		{
 			return;
 		}
 
-		AST::ReadContext ct{reader, ast};
+		AST::Reader ct{reader, ast};
 		ct.BeginObject();
 
-		Type category = Type::None;
+		RiftType category = RiftType::None;
 		ct.Next("type", category);
 		Types::InitTypeFromCategory(ast, id, category);
 

@@ -22,15 +22,17 @@
 
 namespace rift::Nodes
 {
+	using namespace p::EnumOperators;
+
 	struct Context;
 
 	extern Context* gNodes;
 
 	// [SECTION] internal enums
 
-	using UIState              = int;
-	using ClickInteractionType = int;
-	using LinkCreationType     = int;
+	using UIState              = i32;
+	using ClickInteractionType = i32;
+	using LinkCreationType     = i32;
 
 	enum class Scope : u8
 	{

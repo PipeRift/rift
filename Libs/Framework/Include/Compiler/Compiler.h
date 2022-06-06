@@ -10,7 +10,7 @@ namespace rift::Compiler
 {
 	void Build(AST::Tree& tree, const Config& config, TPtr<Backend> backend);
 
-	inline void Build(AST::Tree& ast, const Config& config, refl::ClassType* backendType)
+	inline void Build(AST::Tree& ast, const Config& config, ClassType* backendType)
 	{
 		if (backendType)
 		{

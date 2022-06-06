@@ -393,7 +393,7 @@ namespace rift::Graph
 		{
 			static String name;
 			// Unary operators
-			for (auto type : refl::GetEnumValues<UnaryOperatorType>())
+			for (auto type : GetEnumValues<UnaryOperatorType>())
 			{
 				name.clear();
 				StringView shortName = Types::GetUnaryOperatorName(type);
@@ -406,7 +406,7 @@ namespace rift::Graph
 				}
 			}
 			// Binary operators
-			for (auto type : refl::GetEnumValues<BinaryOperatorType>())
+			for (auto type : GetEnumValues<BinaryOperatorType>())
 			{
 				name.clear();
 				StringView shortName = Types::GetBinaryOperatorName(type);

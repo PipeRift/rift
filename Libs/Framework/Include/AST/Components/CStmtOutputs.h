@@ -4,7 +4,7 @@
 #include "AST/Id.h"
 
 #include <Reflection/Struct.h>
-#include <Serialization/Contexts.h>
+#include <Serialization/Serialization.h>
 
 
 namespace rift
@@ -38,11 +38,11 @@ namespace rift
 		{}
 	};
 
-	static void Read(ReadContext& ct, CStmtOutput& val)
+	static void Read(Reader& ct, CStmtOutput& val)
 	{
 		ct.Serialize(val.linkInputNode);
 	}
-	static void Write(WriteContext& ct, const CStmtOutput& val)
+	static void Write(Writer& ct, const CStmtOutput& val)
 	{
 		ct.Serialize(val.linkInputNode);
 	}

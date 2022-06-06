@@ -2,7 +2,7 @@
 #pragma once
 
 #include "AST/Tree.h"
-#include "Serialization/Contexts.h"
+#include "Serialization/Serialization.h"
 
 
 namespace rift::AST
@@ -10,7 +10,7 @@ namespace rift::AST
 	using namespace p;
 
 
-	class ReadContext : public p::ReadContext
+	class Reader : public p::Reader
 	{
 		Tree& ast;
 
@@ -20,8 +20,7 @@ namespace rift::AST
 
 
 	public:
-		ReadContext(const p::ReadContext& parent, Tree& ast) : serl::ReadContext(parent), ast(ast)
-		{}
+		Reader(const p::Reader& parent, Tree& ast) : p::Reader(parent), ast(ast) {}
 
 		void SerializeEntities(p::TArray<Id>& entities);
 
@@ -39,7 +38,7 @@ namespace rift::AST
 	};
 
 
-	class WriteContext : public p::WriteContext
+	class Writer : public p::Writer
 	{
 		Tree& ast;
 		bool includeChildren;
@@ -50,8 +49,8 @@ namespace rift::AST
 
 
 	public:
-		WriteContext(const p::WriteContext& parent, Tree& ast, bool includeChildren = true)
-		    : serl::WriteContext(parent), ast(ast), includeChildren{includeChildren}
+		Writer(const p::Writer& parent, Tree& ast, bool includeChildren = true)
+		    : p::Writer(parent), ast(ast), includeChildren{includeChildren}
 		{}
 
 		void SerializeEntities(const TArray<Id>& entities, bool includeChildren = true);

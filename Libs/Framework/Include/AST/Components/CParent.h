@@ -18,11 +18,11 @@ namespace rift
 		TArray<AST::Id> children;
 	};
 
-	static void Read(ReadContext& ct, CParent& val)
+	static void Read(Reader& ct, CParent& val)
 	{
 		ct.Serialize(val.children);
 	}
-	static void Write(WriteContext& ct, const CParent& val)
+	static void Write(Writer& ct, const CParent& val)
 	{
 		ct.Serialize(val.children);
 	}

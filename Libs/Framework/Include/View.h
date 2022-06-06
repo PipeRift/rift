@@ -16,7 +16,7 @@ namespace rift
 		PROP(name)
 		Name name;
 
-		Type supportedTypes = Type::None;
+		RiftType supportedTypes = RiftType::None;
 
 		TFunction<void()> onDrawEditor;
 	};

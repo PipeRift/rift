@@ -24,11 +24,11 @@
 
 namespace rift::Types
 {
-	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, Type category);
-	Type GetCategory(AST::Tree& ast, AST::Id id);
+	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, RiftType category);
+	RiftType GetCategory(AST::Tree& ast, AST::Id id);
 
 	AST::Id CreateType(
-	    AST::Tree& ast, Type type, Name name = Name::None(), const p::Path& path = {});
+	    AST::Tree& ast, RiftType type, Name name = Name::None(), const p::Path& path = {});
 
 	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access,
 	    TSpan<AST::Id> types, bool removeFromDisk = false);

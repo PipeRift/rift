@@ -152,7 +152,7 @@ namespace rift::Style
 		if (!font && !name.IsNone())
 		{
 			Log::Error("Tried to push inexistent font '{}' (mode: {}, size: {})", name,
-			    refl::GetEnumName(mode), size);
+			    GetEnumName(mode), size);
 		}
 		ImGui::PushFont(font);
 	}

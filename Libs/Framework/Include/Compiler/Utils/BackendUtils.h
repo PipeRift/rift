@@ -11,8 +11,8 @@
 
 namespace rift::Compiler
 {
-	TArray<refl::ClassType*> GetBackendTypes();
+	TArray<ClassType*> GetBackendTypes();
 	TArray<TOwnPtr<Backend>> CreateBackends();
 
-	TOwnPtr<Context> CreateBackend(refl::ClassType* backendClass);
+	TOwnPtr<Context> CreateBackend(ClassType* backendClass);
 }    // namespace rift::Compiler

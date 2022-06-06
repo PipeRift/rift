@@ -35,7 +35,7 @@
 namespace rift::AST
 {
 	template<typename T>
-	void ReadPool(ReadContext& ct, TAccessRef<TWrite<T>> access)
+	void ReadPool(Reader& ct, TAccessRef<TWrite<T>> access)
 	{
 		if (ct.EnterNext(GetTypeName<T>(false)))
 		{
@@ -68,7 +68,7 @@ namespace rift::AST
 	}
 
 	template<typename T>
-	void WritePool(WriteContext& ct, TAccessRef<T> access, const TArray<Id>& nodes)
+	void WritePool(Writer& ct, TAccessRef<T> access, const TArray<Id>& nodes)
 	{
 		TArray<TPair<i32, Id>> componentIds;
 
@@ -92,7 +92,7 @@ namespace rift::AST
 
 		// FIX: yyjson doesn't seem to take into account stringview length when generating text
 		// Temporarely fixed by caching component name keys
-		ct.PushAddFlags(p::serl::WriteFlags_CacheStringKeys);
+		ct.PushAddFlags(p::WriteFlags_CacheStringKeys);
 		if (ct.EnterNext(GetTypeName<T>(false)))
 		{
 			String key;
@@ -116,7 +116,7 @@ namespace rift::AST
 		ct.PopFlags();
 	}
 
-	void ReadContext::SerializeEntities(TArray<Id>& entities)
+	void Reader::SerializeEntities(TArray<Id>& entities)
 	{
 		TArray<Id> parents;
 		Hierarchy::GetParents(ast, entities, parents);
@@ -176,7 +176,7 @@ namespace rift::AST
 		Hierarchy::FixParentLinks(ast, parents);
 	}
 
-	void WriteContext::SerializeEntities(const TArray<Id>& entities, bool includeChildren)
+	void Writer::SerializeEntities(const TArray<Id>& entities, bool includeChildren)
 	{
 		TArray<Id> treeEntities;
 		if (includeChildren)
@@ -229,7 +229,7 @@ namespace rift::AST
 		}
 	}
 
-	void WriteContext::RetrieveHierarchy(const TArray<Id>& roots, TArray<Id>& children)
+	void Writer::RetrieveHierarchy(const TArray<Id>& roots, TArray<Id>& children)
 	{
 		children.Append(roots);
 		if (includeChildren)
@@ -247,7 +247,7 @@ namespace rift::AST
 		}
 	}
 
-	void WriteContext::RemoveIgnoredEntities(TArray<Id>& entities)
+	void Writer::RemoveIgnoredEntities(TArray<Id>& entities)
 	{
 		TAccess<CNotSerialized> access{ast};
 		for (i32 i = 0; i < entities.Size(); ++i)

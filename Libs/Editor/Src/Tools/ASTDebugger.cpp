@@ -29,10 +29,10 @@ namespace rift
 			return;
 		}
 
-		const auto& registry = refl::ReflectionRegistry::Get();
+		const auto& registry = ReflectionRegistry::Get();
 		for (const auto& poolInstance : ast.GetPools())
 		{
-			refl::Type* type = registry.FindType(poolInstance.componentId);
+			Type* type = registry.FindType(poolInstance.componentId);
 			if (!type || !poolInstance.GetPool()->Has(entityId))
 			{
 				continue;
@@ -50,7 +50,7 @@ namespace rift
 			if (UI::CollapsingHeader(typeName.c_str(), flags))
 			{
 				UI::Indent();
-				refl::DataType* dataType = type->AsData();
+				DataType* dataType = type->AsData();
 				if (data && dataType && UI::BeginInspector("EntityInspector"))
 				{
 					UI::InspectProperties(data, dataType);

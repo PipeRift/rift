@@ -17,11 +17,11 @@ namespace rift
 		CNodePosition() = default;
 		CNodePosition(v2 position) : position{position} {}
 	};
-	static void Read(p::ReadContext& ct, CNodePosition& val)
+	static void Read(p::Reader& ct, CNodePosition& val)
 	{
 		ct.Serialize(val.position);
 	}
-	static void Write(p::WriteContext& ct, const CNodePosition& val)
+	static void Write(p::Writer& ct, const CNodePosition& val)
 	{
 		ct.Serialize(val.position);
 	}

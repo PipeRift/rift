@@ -4,15 +4,15 @@
 
 #include "AST/Serialization.h"
 
-#include <Serialization/Contexts.h>
+#include <Serialization/Serialization.h>
 
 
 namespace p::ecs
 {
-	void Read(p::ReadContext& ct, p::ecs::Id& val)
+	void Read(p::Reader& ct, p::ecs::Id& val)
 	{
-		auto* astCt = dynamic_cast<rift::AST::ReadContext*>(&ct);
-		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTReadContext")) [[likely]]
+		auto* astCt = dynamic_cast<rift::AST::Reader*>(&ct);
+		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTReader")) [[likely]]
 		{
 			p::i32 dataId;
 			astCt->Serialize(dataId);
@@ -28,10 +28,10 @@ namespace p::ecs
 		}
 	}
 
-	void Write(p::WriteContext& ct, p::ecs::Id val)
+	void Write(p::Writer& ct, p::ecs::Id val)
 	{
-		auto* astCt = dynamic_cast<rift::AST::WriteContext*>(&ct);
-		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTWriteContext")) [[likely]]
+		auto* astCt = dynamic_cast<rift::AST::Writer*>(&ct);
+		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTWriter")) [[likely]]
 		{
 			const p::i32* dataId = astCt->GetIdToIndexes().Find(val);
 			if (dataId) [[likely]]

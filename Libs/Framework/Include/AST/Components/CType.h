@@ -10,7 +10,7 @@ namespace rift
 	using namespace p;
 
 
-	enum class Type : u8
+	enum class RiftType : u8
 	{
 		None              = 0,
 		Class             = 1 << 0,

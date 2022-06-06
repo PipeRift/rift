@@ -5,7 +5,7 @@
 #include "AST/Id.h"
 #include "Reflection/ReflectionFlags.h"
 
-#include <Serialization/ContextsFwd.h>
+#include <Serialization/SerializationFwd.h>
 
 
 namespace rift

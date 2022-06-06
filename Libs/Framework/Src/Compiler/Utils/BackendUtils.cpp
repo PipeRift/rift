@@ -5,10 +5,10 @@
 
 namespace rift::Compiler
 {
-	TArray<refl::ClassType*> GetBackendTypes()
+	TArray<ClassType*> GetBackendTypes()
 	{
-		TArray<refl::ClassType*> types = Backend::GetStaticType()->GetChildren();
-		types.ExcludeIf([](refl::ClassType* type) {
+		TArray<ClassType*> types = Backend::GetStaticType()->GetChildren();
+		types.ExcludeIf([](ClassType* type) {
 			return !type || type->HasFlag(Class_Abstract);
 		});
 		return Move(types);

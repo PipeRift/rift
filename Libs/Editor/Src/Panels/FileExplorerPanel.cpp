@@ -135,20 +135,21 @@ namespace rift
 			{
 				if (UI::MenuItem("Class"))
 				{
-					CreateType(ast, "Create Class file", Type::Class, path);
+					CreateType(ast, "Create Class file", RiftType::Class, path);
 				}
 				if (UI::MenuItem("Struct"))
 				{
-					CreateType(ast, "Create Struct file", Type::Struct, path);
+					CreateType(ast, "Create Struct file", RiftType::Struct, path);
 				}
 				if (UI::MenuItem("Function Library"))
 				{
-					CreateType(ast, "Create Function Library file", Type::FunctionLibrary, path);
+					CreateType(
+					    ast, "Create Function Library file", RiftType::FunctionLibrary, path);
 				}
 				if (UI::MenuItem("Function Interface"))
 				{
 					CreateType(
-					    ast, "Create Function Interface file", Type::FunctionInterface, path);
+					    ast, "Create Function Interface file", RiftType::FunctionInterface, path);
 				}
 				UI::EndMenu();
 			}
@@ -429,7 +430,7 @@ namespace rift
 	void FileExplorerPanel::DrawTypeActions(AST::Id id, CType& type) {}
 
 	void FileExplorerPanel::CreateType(
-	    AST::Tree& ast, StringView title, Type category, p::Path folderPath)
+	    AST::Tree& ast, StringView title, RiftType category, p::Path folderPath)
 	{
 		const p::Path path = files::SaveFileDialog(title, folderPath,
 		    {

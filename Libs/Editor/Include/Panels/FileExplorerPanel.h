@@ -79,7 +79,7 @@ namespace rift
 		void DrawModuleActions(AST::Id id, struct CModule& module);
 		void DrawTypeActions(AST::Id id, struct CType& type);
 
-		void CreateType(AST::Tree& ast, StringView title, Type category, p::Path path);
+		void CreateType(AST::Tree& ast, StringView title, RiftType category, p::Path path);
 	};
 
 
