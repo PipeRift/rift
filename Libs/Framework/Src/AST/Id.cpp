@@ -9,12 +9,12 @@
 
 namespace p::ecs
 {
-	void Read(p::Reader& ct, p::ecs::Id& val)
+	void Read(Reader& ct, Id& val)
 	{
 		auto* astCt = dynamic_cast<rift::AST::Reader*>(&ct);
 		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTReader")) [[likely]]
 		{
-			p::i32 dataId;
+			i32 dataId;
 			astCt->Serialize(dataId);
 
 			if (dataId >= 0) [[likely]]
@@ -23,17 +23,17 @@ namespace p::ecs
 			}
 			else
 			{
-				val = p::ecs::NoId;
+				val = NoId;
 			}
 		}
 	}
 
-	void Write(p::Writer& ct, p::ecs::Id val)
+	void Write(Writer& ct, Id val)
 	{
 		auto* astCt = dynamic_cast<rift::AST::Writer*>(&ct);
 		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTWriter")) [[likely]]
 		{
-			const p::i32* dataId = astCt->GetIdToIndexes().Find(val);
+			const i32* dataId = astCt->GetIdToIndexes().Find(val);
 			if (dataId) [[likely]]
 			{
 				astCt->Serialize(*dataId);
