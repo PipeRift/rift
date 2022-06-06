@@ -4,10 +4,10 @@
 #include "AST/Components/CType.h"
 #include "AST/Tree.h"
 
-#include <Misc/Checks.h>
+#include <Core/Checks.h>
 
 
-namespace Rift::AST
+namespace rift::AST
 {
 	struct TypeRef
 	{
@@ -53,4 +53,4 @@ namespace Rift::AST
 			return IsValid();
 		}
 	};
-}    // namespace Rift::AST
+}    // namespace rift::AST

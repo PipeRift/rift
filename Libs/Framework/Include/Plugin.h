@@ -3,11 +3,13 @@
 #pragma once
 
 #include <Memory/OwnPtr.h>
-#include <Types/Class.h>
+#include <Reflection/Class.h>
 
 
-namespace Rift
+namespace rift
 {
+	using namespace p;
+
 	class Plugin : public Class
 	{
 		CLASS(Plugin, Class)
@@ -15,4 +17,4 @@ namespace Rift
 	public:
 		virtual void Register(TPtr<struct RiftContext> context) = 0;
 	};
-}    // namespace Rift
+}    // namespace rift

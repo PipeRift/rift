@@ -1,21 +1,21 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CDeclaration : public Struct
+	struct CDeclaration : public p::Struct
 	{
-		STRUCT(CDeclaration, Struct)
+		STRUCT(CDeclaration, p::Struct)
 	};
 
-}    // namespace Rift
+}    // namespace rift
 
 namespace std
 {
-	template<Rift::Derived<Rift::CDeclaration> T>
+	template<p::Derived<rift::CDeclaration> T>
 	struct is_empty<T>
 	{
 		static constexpr bool value = false;

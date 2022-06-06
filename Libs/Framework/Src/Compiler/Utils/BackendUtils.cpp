@@ -3,12 +3,12 @@
 #include "Compiler/Utils/BackendUtils.h"
 
 
-namespace Rift::Compiler
+namespace rift::Compiler
 {
-	TArray<Refl::ClassType*> GetBackendTypes()
+	TArray<ClassType*> GetBackendTypes()
 	{
-		TArray<Refl::ClassType*> types = Backend::GetStaticType()->GetChildren();
-		types.ExcludeIf([](Refl::ClassType* type) {
+		TArray<ClassType*> types = Backend::GetStaticType()->GetChildren();
+		types.ExcludeIf([](ClassType* type) {
 			return !type || type->HasFlag(Class_Abstract);
 		});
 		return Move(types);
@@ -26,4 +26,4 @@ namespace Rift::Compiler
 		}
 		return Move(backends);
 	}
-}    // namespace Rift::Compiler
+}    // namespace rift::Compiler

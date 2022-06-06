@@ -16,7 +16,7 @@
 #include <Serialization/Formats/JsonFormat.h>
 
 
-namespace Rift::Modules
+namespace rift::Modules
 {
 	bool ValidateProjectPath(Path& path, String& error)
 	{
@@ -26,23 +26,23 @@ namespace Rift::Modules
 			return false;
 		}
 
-		if (Files::IsFile(path))
+		if (files::IsFile(path))
 		{
 			if (path.filename() != moduleFile)
 			{
 				error = "Path is not a rift module file or a folder";
 				return false;
 			}
-			path = Paths::ToAbsolute(path).parent_path();
+			path = ToAbsolutePath(path).parent_path();
 		}
 		else
 		{
-			path = Paths::ToAbsolute(path);
+			path = ToAbsolutePath(path);
 		}
 		return true;
 	}
 
-	bool CreateProject(Tree& ast, Path path)
+	bool CreateProject(Tree& ast, p::Path path)
 	{
 		String error;
 		if (!ValidateProjectPath(path, error))
@@ -51,26 +51,26 @@ namespace Rift::Modules
 			return false;
 		}
 
-		if (!Files::ExistsAsFolder(path))
+		if (!files::ExistsAsFolder(path))
 		{
-			Files::CreateFolder(path, true);
+			files::CreateFolder(path, true);
 		}
 
-		const Path filePath = path / moduleFile;
-		if (Files::ExistsAsFile(filePath))
+		const p::Path filePath = path / moduleFile;
+		if (files::ExistsAsFile(filePath))
 		{
 			Log::Error("Can't create project: Folder already contains a '{}' file", moduleFile);
 			return false;
 		}
 
-		Serl::JsonFormatWriter writer{};
+		JsonFormatWriter writer{};
 		writer.GetContext().BeginObject();
-		Files::SaveStringFile(filePath, writer.ToString());
+		files::SaveStringFile(filePath, writer.ToString());
 
 		return OpenProject(ast, path);
 	}
 
-	bool OpenProject(Tree& ast, Path path)
+	bool OpenProject(Tree& ast, p::Path path)
 	{
 		String error;
 		if (!ValidateProjectPath(path, error))
@@ -79,14 +79,14 @@ namespace Rift::Modules
 			return false;
 		}
 
-		if (!Files::ExistsAsFolder(path))
+		if (!files::ExistsAsFolder(path))
 		{
 			Log::Error("Can't open project: Folder doesn't exist");
 			return false;
 		}
 
-		const Path filePath = path / moduleFile;
-		if (!Files::ExistsAsFile(filePath))
+		const p::Path filePath = path / moduleFile;
+		if (!files::ExistsAsFile(filePath))
 		{
 			Log::Error("Can't open project: Folder doesn't contain a '{}' file", moduleFile);
 			return false;
@@ -118,7 +118,7 @@ namespace Rift::Modules
 
 	Id GetProjectId(TAccessRef<CProject> access)
 	{
-		return ECS::GetFirst<CProject>(access);
+		return ecs::GetFirst<CProject>(access);
 	}
 
 	Name GetProjectName(TAccessRef<CProject, CIdentifier, CFileRef> access)
@@ -164,8 +164,8 @@ namespace Rift::Modules
 		if (file && !file->path.empty())
 		{
 			// Obtain name from project file name
-			const String fileName = Paths::ToString(file->path);
-			return {Paths::GetFilename(Paths::GetParent(fileName))};    // Folder name
+			const String fileName = p::ToString(file->path);
+			return {GetFilename(GetParentPath(fileName))};    // Folder name
 		}
 		return {};
 	}
@@ -176,17 +176,17 @@ namespace Rift::Modules
 		{
 			return file->path.parent_path();
 		}
-		return Path{};
+		return p::Path{};
 	}
 
 	void Serialize(AST::Tree& ast, AST::Id id, String& data)
 	{
 		ZoneScoped;
 
-		Serl::JsonFormatWriter writer{};
-		AST::WriteContext ct{writer.GetContext(), ast, true};
+		JsonFormatWriter writer{};
+		AST::Writer ct{writer.GetContext(), ast, true};
 		ct.BeginObject();
-		Serl::CommonContext common{ct};
+		ReadWriter common{ct};
 		if (auto* ident = ast.TryGet<CIdentifier>(id))
 		{
 			ident->SerializeReflection(common);
@@ -202,16 +202,16 @@ namespace Rift::Modules
 	{
 		ZoneScoped;
 
-		Serl::JsonFormatReader reader{data};
+		JsonFormatReader reader{data};
 		if (!reader.IsValid())
 		{
 			return;
 		}
 
-		AST::ReadContext ct{reader, ast};
+		AST::Reader ct{reader, ast};
 		ct.BeginObject();
-		Serl::CommonContext common{ct};
+		p::ReadWriter common{ct};
 		ast.GetOrAdd<CIdentifier>(id).SerializeReflection(common);
 		ast.GetOrAdd<CModule>(id).SerializeReflection(common);
 	}
-}    // namespace Rift::Modules
+}    // namespace rift::Modules

@@ -1,15 +1,15 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
 	// Asigned to entities that have been modified during the last frame
 	// Gets cleared after one frame
-	struct CChanged : public Struct
+	struct CChanged : public p::Struct
 	{
-		STRUCT(CChanged, Struct, Struct_NotSerialized)
+		STRUCT(CChanged, p::Struct, p::Struct_NotSerialized)
 	};
-}    // namespace Rift
+}    // namespace rift

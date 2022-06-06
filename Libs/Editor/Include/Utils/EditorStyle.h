@@ -8,7 +8,7 @@
 #include <UI/Style.h>
 
 
-namespace Rift::Style
+namespace rift::Style
 {
 	constexpr Color selectedColor{Color::FromHEX(0xdba43f)};
 	constexpr Color executionColor{Color::FromHEX(0xdbdbdb)};
@@ -53,4 +53,4 @@ namespace Rift::Style
 
 	void PushNodeBackgroundColor(Color color);
 	void PopNodeBackgroundColor();
-}    // namespace Rift::Style
+}    // namespace rift::Style

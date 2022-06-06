@@ -2,15 +2,15 @@
 #pragma once
 
 #include <llvm/IR/Module.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CIRModule : public Struct
+	struct CIRModule : public p::Struct
 	{
-		STRUCT(CIRModule, Struct)
+		STRUCT(CIRModule, p::Struct)
 
-		TOwnPtr<llvm::Module> instance;
+		p::TOwnPtr<llvm::Module> instance;
 	};
-}    // namespace Rift
+}    // namespace rift

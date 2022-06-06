@@ -5,12 +5,12 @@
 #include <llvm/IR/LLVMContext.h>
 
 
-namespace Rift::Compiler
+namespace rift::Compiler
 {
 	struct Context;
 }
 
-namespace Rift::Compiler::LLVM
+namespace rift::Compiler::LLVM
 {
 	void GenerateIR(Context& context, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder);
 }

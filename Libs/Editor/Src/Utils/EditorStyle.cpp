@@ -6,8 +6,7 @@
 #include <Utils/Nodes.h>
 
 
-
-namespace Rift::Style
+namespace rift::Style
 {
 	const Color GetTypeColor(const AST::Tree& ast, AST::Id id)
 	{
@@ -64,4 +63,4 @@ namespace Rift::Style
 	{
 		Nodes::PopStyleColor(3);
 	}
-}    // namespace Rift::Style
+}    // namespace rift::Style

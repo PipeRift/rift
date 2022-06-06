@@ -2,9 +2,9 @@
 
 #include "Tools/BigBestFitArenaDebugger.h"
 
+#include <Core/String.h>
 #include <Math/Math.h>
 #include <Memory/Arenas/GlobalArena.h>
-#include <Strings/String.h>
 #include <UI/UI.h>
 
 
@@ -12,12 +12,11 @@
 #include <imgui_internal.h>
 
 
-namespace Rift
+namespace rift
 {
 	static constexpr Color gFreeColor{210, 56, 41};    // Red
 	static constexpr Color gUsedColor{56, 210, 41};    // Green
 
-	using namespace Memory;
 
 	void DrawMemoryRect(ImGuiWindow* window, const MemoryGrid& grid, ImRect box, v2_u32 min,
 	    v2_u32 max, const Color& color)
@@ -29,7 +28,7 @@ namespace Rift
 	}
 
 	i32 DrawMemoryBlock(StringView label, MemoryGrid& grid,
-	    const TArray<BigBestFitArena::Slot>& freeSlots, v2 graphSize = v2::Zero())
+	    const TArray<Memory::BigBestFitArena::Slot>& freeSlots, v2 graphSize = v2::Zero())
 	{
 		ImGuiContext& g     = *GImGui;
 		ImGuiWindow* window = UI::GetCurrentWindow();
@@ -52,7 +51,7 @@ namespace Rift
 		}
 
 		grid.UpdateGridScale(graphSize.x);
-		graphSize.y = Math::Max(graphSize.y, grid.GetHeight());
+		graphSize.y = math::Max(graphSize.y, grid.GetHeight());
 
 		const ImRect frameBox(window->DC.CursorPos, ImVec2(v2(window->DC.CursorPos) + graphSize));
 
@@ -86,7 +85,7 @@ namespace Rift
 				const u32 startX        = grid.GetX(startOffset);
 				const u32 endX          = grid.GetX(endOffset);
 				const u32 startY        = grid.GetY(startOffset);
-				const u32 endY          = Math::Min(grid.GetY(endOffset), grid.numRows - 1);
+				const u32 endY          = math::Min(grid.GetY(endOffset), grid.numRows - 1);
 
 				// Draw incomplete rows
 				if (startY != endY)
@@ -132,14 +131,14 @@ namespace Rift
 		numRows     = u32(block->GetSize() / bytesPerRow);
 	}
 
-	void MemoryGrid::Draw(const TArray<BigBestFitArena::Slot>& freeSlots)
+	void MemoryGrid::Draw(const TArray<Memory::BigBestFitArena::Slot>& freeSlots)
 	{
 		String scaleStr      = Strings::ParseMemorySize(memoryScale);
-		u32 scaleMultiplier  = u32(Math::Log2(memoryScale));
+		u32 scaleMultiplier  = u32(math::Log2(memoryScale));
 		static const u32 min = 2, max = 8;
 		UI::SliderScalar(
 		    "Scale", ImGuiDataType_U32, (void*)&scaleMultiplier, &min, &max, scaleStr.c_str());
-		memoryScale = Math::Pow(2, scaleMultiplier);
+		memoryScale = math::Pow(2, scaleMultiplier);
 
 		UI::BeginChild("##memoryblock", ImVec2(0.f, 450.f), false);
 		UI::SetNextItemWidth(-FLT_MIN);
@@ -150,7 +149,7 @@ namespace Rift
 	BigBestFitArenaDebugger::BigBestFitArenaDebugger()
 	{
 		// TODO: Remove this. Testing the debugger
-		auto& arena = GetGlobalArena();
+		auto& arena = Memory::GetGlobalArena();
 
 		void* a = arena.Allocate(120);
 		void* b = arena.Allocate(234);
@@ -171,7 +170,7 @@ namespace Rift
 	{
 		if (open)
 		{
-			auto& arena = GetGlobalArena();
+			auto& arena = Memory::GetGlobalArena();
 
 			UI::Begin("Memory", &open);
 
@@ -215,4 +214,4 @@ namespace Rift
 			UI::End();
 		}
 	}
-}    // namespace Rift
+}    // namespace rift

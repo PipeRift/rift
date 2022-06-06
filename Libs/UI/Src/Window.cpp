@@ -20,8 +20,11 @@
 #include <Profiler.h>
 
 
-namespace Rift::UI
+namespace rift::UI
 {
+	using namespace p::math;
+
+
 	static GLFWwindow* gWindow = nullptr;
 
 	void OnGl3WError(int error, const char* description)
@@ -88,7 +91,7 @@ namespace Rift::UI
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
-		// Setup Platform/Renderer backends
+		// Setup Core/Renderer backends
 		ImGui_ImplGlfw_InitForOpenGL(gWindow, true);
 		ImGui_ImplOpenGL3_Init(glslVersion);
 
@@ -131,7 +134,7 @@ namespace Rift::UI
 		glfwGetFramebufferSize(gWindow, &displayW, &displayH);
 		glViewport(0, 0, displayW, displayH);
 
-		static constexpr Rift::LinearColor clearColor{0.1f, 0.1f, 0.1f, 1.00f};
+		static constexpr LinearColor clearColor{0.1f, 0.1f, 0.1f, 1.00f};
 		glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 		glClear(GL_COLOR_BUFFER_BIT);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -165,4 +168,4 @@ namespace Rift::UI
 	{
 		return gWindow;
 	}
-}    // namespace Rift::UI
+}    // namespace rift::UI

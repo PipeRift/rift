@@ -4,5 +4,5 @@
 #include "AST/Serialization.h"
 
 
-namespace Rift
-{}    // namespace Rift
+namespace rift
+{}    // namespace rift

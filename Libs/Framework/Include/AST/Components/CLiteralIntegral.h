@@ -3,13 +3,14 @@
 
 #include "AST/Components/CLiteral.h"
 
-#include <Misc/EnumFlags.h>
+#include <Core/EnumFlags.h>
 #include <Reflection/Reflection.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Rift::EnumOperators;
+	using namespace p::core;
+	//using namespace p::EnumOperators;
 
 	enum class IntegralType : u8
 	{
@@ -23,9 +24,12 @@ namespace Rift
 		U32      = S32 | Unsigned,
 		U64      = S64 | Unsigned
 	};
-	ENUM(IntegralType)
+}    // namespace rift
+ENUM(rift::IntegralType)
 
 
+namespace rift
+{
 	struct CLiteralIntegral : public CLiteral
 	{
 		STRUCT(CLiteralIntegral, CLiteral)
@@ -46,7 +50,7 @@ namespace Rift
 		{
 			IntegralType size = type;
 			RemoveFlags(size, IntegralType::Unsigned);
-			return *size;
+			return static_cast<UnderlyingType<IntegralType>>(size);
 		}
 	};
-}    // namespace Rift
+}    // namespace rift

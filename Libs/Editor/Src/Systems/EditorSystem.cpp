@@ -21,7 +21,7 @@
 #include <AST/Components/CType.h>
 #include <AST/Components/Tags/CDirty.h>
 #include <Compiler/Compiler.h>
-#include <Containers/Array.h>
+#include <Core/Array.h>
 #include <CppBackend.h>
 #include <ECS/Filtering.h>
 #include <Files/FileDialog.h>
@@ -33,7 +33,7 @@
 #include <UI/UI.h>
 
 
-namespace Rift::EditorSystem
+namespace rift::EditorSystem
 {
 	void OnProjectEditorOpen(AST::Tree& ast)
 	{
@@ -75,7 +75,7 @@ namespace Rift::EditorSystem
 
 			builder.GetNodeLocalFlags(CTypeEditor::rightNode) |= ImGuiDockNodeFlags_AutoHideTabBar;
 			builder.GetNodeLocalFlags(CTypeEditor::centralNode) |=
-			    ImGuiDockNodeFlags_CentralNode | ImGuiDockNodeFlags_AutoHideTabBar;
+			    ImGuiDockNodeFlags_CentralNode | i32(ImGuiDockNodeFlags_AutoHideTabBar);
 		});
 
 		// TODO: Reseting until we are able to know if the layout was saved before. Reset if it
@@ -256,8 +256,8 @@ namespace Rift::EditorSystem
 			{
 				if (UI::MenuItem("Open Project"))
 				{
-					const Path folder =
-					    Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
+					const p::Path folder =
+					    files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
 					if (Editor::Get().OpenProject(folder))
 					{
 						editorData.skipFrameAfterMenu = true;
@@ -274,7 +274,7 @@ namespace Rift::EditorSystem
 				{
 					TArray<TPair<Path, String>> fileDatas;
 
-					auto dirtyTypeIds = ECS::ListAll<CType, CTypeEditor, CFileRef, CFileDirty>(ast);
+					auto dirtyTypeIds = ecs::ListAll<CType, CTypeEditor, CFileRef, CFileDirty>(ast);
 					for (AST::Id typeId : dirtyTypeIds)
 					{
 						auto& file     = ast.Get<CFileRef>(typeId);
@@ -283,7 +283,7 @@ namespace Rift::EditorSystem
 					}
 
 					auto dirtyModuleIds =
-					    ECS::ListAll<CModule, CModuleEditor, CFileRef, CFileDirty>(ast);
+					    ecs::ListAll<CModule, CModuleEditor, CFileRef, CFileDirty>(ast);
 					for (AST::Id moduleId : dirtyModuleIds)
 					{
 						auto& file     = ast.Get<CFileRef>(moduleId);
@@ -293,7 +293,7 @@ namespace Rift::EditorSystem
 
 					for (auto& fileData : fileDatas)
 					{
-						Files::SaveStringFile(fileData.first, fileData.second);
+						files::SaveStringFile(fileData.first, fileData.second);
 					}
 
 					ast.Remove<CFileDirty>(dirtyTypeIds);
@@ -364,7 +364,7 @@ namespace Rift::EditorSystem
 				{
 					editorData.layout.Reset();
 
-					for (AST::Id typeId : ECS::ListAll<CTypeEditor>(ast))
+					for (AST::Id typeId : ecs::ListAll<CTypeEditor>(ast))
 					{
 						auto& editor = ast.Get<CTypeEditor>(typeId);
 						editor.layout.Reset();
@@ -386,11 +386,11 @@ namespace Rift::EditorSystem
 				TPair<Path, String> fileData{file.path, ""};
 				Modules::Serialize(ast, moduleId, fileData.second);
 
-				Files::SaveStringFile(fileData.first, fileData.second);
+				files::SaveStringFile(fileData.first, fileData.second);
 				ast.Remove<CFileDirty>(moduleId);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
-				    Strings::Format("Saved file {}", Paths::GetFilename(file.path))});
+				    Strings::Format("Saved file {}", p::GetFilename(file.path))});
 			}
 			UI::EndMenuBar();
 		}
@@ -400,7 +400,7 @@ namespace Rift::EditorSystem
 	{
 		TAccess<TWrite<CModuleEditor>, TWrite<CModule>, TWrite<CIdentifier>, CFileRef>
 		    moduleEditors{ast};
-		for (AST::Id moduleId : ECS::ListAll<CModule, CModuleEditor, CFileRef>(moduleEditors))
+		for (AST::Id moduleId : ecs::ListAll<CModule, CModuleEditor, CFileRef>(moduleEditors))
 		{
 			ZoneScopedN("Draw Type");
 
@@ -408,8 +408,8 @@ namespace Rift::EditorSystem
 			const auto& file   = moduleEditors.Get<const CFileRef>(moduleId);
 
 			bool isOpen               = true;
-			const String path         = Paths::ToString(file.path);
-			const StringView filename = Paths::GetFilename(path);
+			const String path         = p::ToString(file.path);
+			const StringView filename = p::GetFilename(path);
 			const StringView dirty    = ast.Has<CFileDirty>(moduleId) ? "*" : "";
 			const String windowName   = Strings::Format("{}{}###{}", filename, dirty, moduleId);
 
@@ -463,9 +463,9 @@ namespace Rift::EditorSystem
 				Types::Serialize(ast, typeId, fileData.second);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
-				    Strings::Format("Saved file {}", Paths::GetFilename(file.path))});
+				    Strings::Format("Saved file {}", p::GetFilename(file.path))});
 
-				Files::SaveStringFile(fileData.first, fileData.second);
+				files::SaveStringFile(fileData.first, fileData.second);
 				ast.Remove<CFileDirty>(typeId);
 			}
 			if (UI::BeginMenu("View"))
@@ -483,7 +483,7 @@ namespace Rift::EditorSystem
 		ZoneScoped;
 
 		TAccess<TWrite<CTypeEditor>, CType, CFileRef> typeEditors{ast};
-		for (AST::Id typeId : ECS::ListAll<CType, CTypeEditor, CFileRef>(typeEditors))
+		for (AST::Id typeId : ecs::ListAll<CType, CTypeEditor, CFileRef>(typeEditors))
 		{
 			ZoneScopedN("Draw Type");
 
@@ -491,8 +491,8 @@ namespace Rift::EditorSystem
 			const auto& file = typeEditors.Get<const CFileRef>(typeId);
 
 			bool isOpen               = true;
-			const String path         = Paths::ToString(file.path);
-			const StringView filename = Paths::GetFilename(path);
+			const String path         = p::ToString(file.path);
+			const StringView filename = p::GetFilename(path);
 			const StringView dirty    = ast.Has<CFileDirty>(typeId) ? "*" : "";
 			const String windowName   = Strings::Format("{}{}###{}", filename, dirty, typeId);
 
@@ -540,4 +540,4 @@ namespace Rift::EditorSystem
 			}
 		}
 	}
-}    // namespace Rift::EditorSystem
+}    // namespace rift::EditorSystem

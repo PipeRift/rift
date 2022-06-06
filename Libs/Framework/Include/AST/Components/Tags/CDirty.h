@@ -4,17 +4,17 @@
 #include "AST/Components/CExprCall.h"
 #include "AST/Components/CFileRef.h"
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
 	// Dirty tags are cleaned manually by the respective systems. CChanged instead gets cleared
 	// after one frame
 	template<typename T>
-	struct TDirty : public Struct
+	struct TDirty : public p::Struct
 	{
-		STRUCT(TDirty<T>, Struct, Struct_NotSerialized)
+		STRUCT(TDirty<T>, p::Struct, p::Struct_NotSerialized)
 	};
 
 	using CDirty = TDirty<void>;
@@ -24,4 +24,4 @@ namespace Rift
 
 	// Marks a type as dirty, meaning is has been modified
 	using CCallDirty = TDirty<CExprCallId>;
-}    // namespace Rift
+}    // namespace rift

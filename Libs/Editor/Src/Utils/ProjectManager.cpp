@@ -8,7 +8,7 @@
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
 	void DrawProjectManager(AST::Tree& ast)
 	{
@@ -17,8 +17,8 @@ namespace Rift
 
 		v2 viewportSize = UI::GetMainViewport()->Size;
 		v2 modalSize    = v2{600.f, 400.f};
-		modalSize.x     = Math::Min(modalSize.x, viewportSize.x - 20.f);
-		modalSize.y     = Math::Min(modalSize.y, viewportSize.y - 20.f);
+		modalSize.x     = math::Min(modalSize.x, viewportSize.x - 20.f);
+		modalSize.y     = math::Min(modalSize.y, viewportSize.y - 20.f);
 
 		UI::SetNextWindowSize(modalSize, ImGuiCond_Always);
 
@@ -33,7 +33,8 @@ namespace Rift
 
 			if (UI::Button("Open", v2{-FLT_MIN, 0.0f}))
 			{
-				Path folder = Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
+				Path folder =
+				    files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
 				if (Editor::Get().OpenProject(folder))
 				{
 					UI::CloseCurrentPopup();
@@ -41,8 +42,7 @@ namespace Rift
 				else
 				{
 					UI::AddNotification({UI::ToastType::Error, 1.f,
-					    Strings::Format(
-					        "Failed to open project at '{}'", Paths::ToString(folder))});
+					    Strings::Format("Failed to open project at '{}'", p::ToString(folder))});
 				}
 			}
 			UI::SetItemDefaultFocus();
@@ -95,13 +95,13 @@ namespace Rift
 			if (UI::Button("...", v2{24.f, 0.f}))
 			{
 				Path selectedFolder =
-				    Dialogs::SelectFolder("Select project folder", Paths::GetCurrent());
-				folder = Paths::ToString(selectedFolder);
+				    files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
+				folder = p::ToString(selectedFolder);
 			}
 
 			if (UI::Button("Create", v2{-FLT_MIN, 0.0f}))
 			{
-				if (Editor::Get().CreateProject(Paths::FromString(folder)))
+				if (Editor::Get().CreateProject(FromString(folder)))
 				{
 					folder = "";
 					UI::CloseCurrentPopup();
@@ -121,4 +121,4 @@ namespace Rift
 	{
 		UI::OpenPopup("Project Manager");
 	}
-}    // namespace Rift
+}    // namespace rift

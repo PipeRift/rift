@@ -12,7 +12,7 @@
 #include <iostream>
 
 
-using namespace Rift;
+using namespace rift;
 
 
 #ifndef RUN_AS_CLI

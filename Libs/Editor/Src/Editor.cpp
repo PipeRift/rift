@@ -21,12 +21,12 @@
 #include <UI/Window.h>
 
 
-namespace Rift
+namespace rift
 {
 	void RegisterKeyValueInspections()
 	{
-		UI::RegisterCustomInspection<AST::Id>([](StringView label, void* data, Refl::Type* type) {
-			UI::DrawKeyValue(label, data, GetType<ECS::IdTraits<AST::Id>::Entity>());
+		UI::RegisterCustomInspection<AST::Id>([](StringView label, void* data, Type* type) {
+			UI::DrawKeyValue(label, data, GetType<ecs::IdTraits<AST::Id>::Entity>());
 		});
 	}
 
@@ -36,7 +36,7 @@ namespace Rift
 
 		// Setup window
 		Log::Info("Initializing editor...");
-		if (!Rift::UI::Init())
+		if (!rift::UI::Init())
 		{
 			Log::Error("Failed to initialize editor");
 			return 1;
@@ -46,7 +46,7 @@ namespace Rift
 		Log::Info("Editor is ready");
 
 		// Open a project if a path has been provided
-		OpenProject(Paths::FromString(projectPath), false);
+		OpenProject(FromString(projectPath), false);
 
 		while (!UI::WantsToClose())
 		{
@@ -101,12 +101,12 @@ namespace Rift
 		if (UI::GetWindow())
 		{
 			configFileChanged          = true;
-			configFile                 = Paths::ToString(path);
+			configFile                 = p::ToString(path);
 			ImGui::GetIO().IniFilename = configFile.c_str();
 		}
 	}
 
-	bool Editor::CreateProject(const Path& path, bool closeFirst)
+	bool Editor::CreateProject(const p::Path& path, bool closeFirst)
 	{
 		if (!closeFirst && Modules::HasProject(ast))
 		{
@@ -123,7 +123,7 @@ namespace Rift
 		return false;
 	}
 
-	bool Editor::OpenProject(const Path& path, bool closeFirst)
+	bool Editor::OpenProject(const p::Path& path, bool closeFirst)
 	{
 		if (!closeFirst && Modules::HasProject(ast))
 		{
@@ -142,7 +142,7 @@ namespace Rift
 
 	void Editor::Close()
 	{
-		Rift::UI::Close();
+		rift::UI::Close();
 	}
 
 	void Editor::UpdateConfig()
@@ -155,7 +155,7 @@ namespace Rift
 				return;
 			}
 
-			if (Files::ExistsAsFile(configFile))
+			if (files::ExistsAsFile(configFile))
 			{
 				// FIX: Delay this until new frame (essentially, not while already drawing)
 				ImGui::LoadIniSettingsFromDisk(configFile.c_str());
@@ -167,4 +167,4 @@ namespace Rift
 			configFileChanged = false;
 		}
 	}
-}    // namespace Rift
+}    // namespace rift

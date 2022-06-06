@@ -6,15 +6,18 @@
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
+	using namespace p;
+
+
 	struct ReflectionDebugger
 	{
 		bool open = false;
 
-		Refl::Type* selectedType = nullptr;
+		Type* selectedType = nullptr;
 		ImGuiTextFilter filter;
-		Refl::TypeCategory categoryFilter = Refl::TypeCategory::All;
+		TypeCategory categoryFilter = TypeCategory::All;
 
 
 		ReflectionDebugger();
@@ -22,6 +25,6 @@ namespace Rift
 		void Draw();
 
 	private:
-		void DrawType(Refl::Type* type);
+		void DrawType(Type* type);
 	};
-}    // namespace Rift
+}    // namespace rift

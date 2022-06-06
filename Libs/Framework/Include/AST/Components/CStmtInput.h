@@ -3,11 +3,13 @@
 
 #include "AST/Id.h"
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
+	using namespace p;
+
 	struct CStmtInput : public Struct
 	{
 		STRUCT(CStmtInput, Struct)
@@ -15,12 +17,13 @@ namespace Rift
 		PROP(linkOutputNode)
 		AST::Id linkOutputNode = AST::NoId;
 	};
-	static void Read(Serl::ReadContext& ct, CStmtInput& val)
+
+	static void Read(Reader& ct, CStmtInput& val)
 	{
 		ct.Serialize(val.linkOutputNode);
 	}
-	static void Write(Serl::WriteContext& ct, const CStmtInput& val)
+	static void Write(Writer& ct, const CStmtInput& val)
 	{
 		ct.Serialize(val.linkOutputNode);
 	}
-}    // namespace Rift
+}    // namespace rift

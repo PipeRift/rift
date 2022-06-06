@@ -5,11 +5,11 @@
 #include "AST/Components/Tags/CChanged.h"
 
 
-namespace Rift::TransactionSystem
+namespace rift::TransactionSystem
 {
 	void Init(AST::Tree& ast) {}
 	void ClearTags(AST::Tree& ast)
 	{
 		ast.AssurePool<CChanged>().Reset();
 	}
-}    // namespace Rift::TransactionSystem
+}    // namespace rift::TransactionSystem

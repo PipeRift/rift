@@ -28,55 +28,55 @@
 #include "AST/Utils/Statements.h"
 #include "AST/Utils/TransactionUtils.h"
 
+#include <Core/Checks.h>
 #include <Files/Files.h>
-#include <Misc/Checks.h>
 #include <Profiler.h>
 #include <Serialization/Formats/JsonFormat.h>
 
 
-namespace Rift::Types
+namespace rift::Types
 {
-	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, Type category)
+	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, RiftType category)
 	{
 		if (auto* fileRef = ast.TryGet<CFileRef>(id))
 		{
-			String fileName = Paths::GetFilename(fileRef->path);
+			String fileName = p::GetFilename(fileRef->path);
 			fileName        = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
 			ast.Add<CType>(id, {Name{fileName}});
 		}
 
 		switch (category)
 		{
-			case Type::Class: ast.Add<CDeclClass>(id); break;
-			case Type::Struct: ast.Add<CDeclStruct>(id); break;
-			case Type::FunctionLibrary: ast.Add<CDeclFunctionLibrary>(id); break;
-			case Type::FunctionInterface: ast.Add<CDeclFunctionInterface>(id); break;
+			case RiftType::Class: ast.Add<CDeclClass>(id); break;
+			case RiftType::Struct: ast.Add<CDeclStruct>(id); break;
+			case RiftType::FunctionLibrary: ast.Add<CDeclFunctionLibrary>(id); break;
+			case RiftType::FunctionInterface: ast.Add<CDeclFunctionInterface>(id); break;
 			default: break;
 		}
 	}
 
-	Type GetCategory(AST::Tree& ast, AST::Id id)
+	RiftType GetCategory(AST::Tree& ast, AST::Id id)
 	{
 		if (ast.Has<CDeclStruct>(id))
 		{
-			return Type::Struct;
+			return RiftType::Struct;
 		}
 		else if (ast.Has<CDeclClass>(id))
 		{
-			return Type::Class;
+			return RiftType::Class;
 		}
 		else if (ast.Has<CDeclFunctionLibrary>(id))
 		{
-			return Type::FunctionLibrary;
+			return RiftType::FunctionLibrary;
 		}
 		else if (ast.Has<CDeclFunctionInterface>(id))
 		{
-			return Type::FunctionInterface;
+			return RiftType::FunctionInterface;
 		}
-		return Type::None;
+		return RiftType::None;
 	}
 
-	AST::Id CreateType(AST::Tree& ast, Type type, Name name, const Path& path)
+	AST::Id CreateType(AST::Tree& ast, RiftType type, Name name, const p::Path& path)
 	{
 		AST::Id id = ast.Create();
 		if (!name.IsNone())
@@ -100,7 +100,7 @@ namespace Rift::Types
 			{
 				if (const auto* file = access.TryGet<const CFileRef>(id))
 				{
-					Files::Delete(file->path, true, false);
+					files::Delete(file->path, true, false);
 				}
 			}
 		}
@@ -111,8 +111,8 @@ namespace Rift::Types
 	{
 		ZoneScoped;
 
-		Serl::JsonFormatWriter writer{};
-		AST::WriteContext ct{writer.GetContext(), ast, true};
+		JsonFormatWriter writer{};
+		AST::Writer ct{writer.GetContext(), ast, true};
 		ct.BeginObject();
 		ct.Next("type", GetCategory(ast, id));
 		ct.SerializeEntity(id);
@@ -123,16 +123,16 @@ namespace Rift::Types
 	{
 		ZoneScoped;
 
-		Serl::JsonFormatReader reader{data};
+		JsonFormatReader reader{data};
 		if (!reader.IsValid())
 		{
 			return;
 		}
 
-		AST::ReadContext ct{reader, ast};
+		AST::Reader ct{reader, ast};
 		ct.BeginObject();
 
-		Type category = Type::None;
+		RiftType category = RiftType::None;
 		ct.Next("type", category);
 		Types::InitTypeFromCategory(ast, id, category);
 
@@ -140,11 +140,11 @@ namespace Rift::Types
 	}
 
 
-	AST::Id FindTypeByPath(AST::Tree& ast, const Path& path)
+	AST::Id FindTypeByPath(AST::Tree& ast, const p::Path& path)
 	{
 		if (auto* types = ast.TryGetStatic<STypes>())
 		{
-			const Name pathName{Paths::ToString(path)};
+			const Name pathName{ToString(path)};
 			if (AST::Id* id = types->typesByPath.Find(pathName))
 			{
 				return *id;
@@ -439,7 +439,7 @@ namespace Rift::Types
 		{
 			TArray<AST::Id> children;
 			AST::Hierarchy::GetChildren(access, *typeId, children);
-			ECS::ExcludeIfNot<CDeclFunction, CIdentifier>(access, children);
+			ecs::ExcludeIfNot<CDeclFunction, CIdentifier>(access, children);
 			for (AST::Id childId : children)
 			{
 				if (access.Get<const CIdentifier>(childId).name == functionName)
@@ -456,4 +456,4 @@ namespace Rift::Types
 		ScopedChange(access, ids);
 		AST::Hierarchy::RemoveDeep(access, ids);
 	}
-}    // namespace Rift::Types
+}    // namespace rift::Types

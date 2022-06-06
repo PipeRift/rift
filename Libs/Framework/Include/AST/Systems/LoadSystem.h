@@ -4,22 +4,22 @@
 #include "AST/Components/CFileRef.h"
 #include "AST/Tree.h"
 
-#include <Containers/Array.h>
-#include <Containers/Span.h>
+#include <Core/Array.h>
+#include <Core/Span.h>
 #include <ECS/Filtering.h>
 
 
-namespace Rift::AST
+namespace rift::AST
 {
 	struct Tree;
 }
 
-namespace Rift::LoadSystem
+namespace rift::LoadSystem
 {
 	struct ModuleTypePaths
 	{
 		AST::Id moduleId;
-		TArray<Path> paths;    // Paths of module types
+		TArray<Path> paths;    // p::Paths of module types
 		TArray<Name> pathNames;
 	};
 
@@ -48,4 +48,4 @@ namespace Rift::LoadSystem
 	void DeserializeModules(AST::Tree& ast, TSpan<AST::Id> moduleIds, TSpan<String> strings);
 	void DeserializeTypes(AST::Tree& ast, TSpan<AST::Id> typeIds, TSpan<String> strings);
 
-}    // namespace Rift::LoadSystem
+}    // namespace rift::LoadSystem

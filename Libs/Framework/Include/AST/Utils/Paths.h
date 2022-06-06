@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include <Files/Paths.h>
+#include <Core/StringView.h>
 
 
-namespace Rift::Paths
+namespace rift::Paths
 {
-	static constexpr StringView moduleExtension = ".rift";
-	static constexpr StringView typeExtension   = ".rf";
-	static constexpr StringView configExtension = ".json";
-};    // namespace Rift::Paths
+	static constexpr p::StringView moduleExtension = ".rift";
+	static constexpr p::StringView typeExtension   = ".rf";
+	static constexpr p::StringView configExtension = ".json";
+};    // namespace rift::Paths

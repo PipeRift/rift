@@ -4,8 +4,11 @@
 #include "AST/Components/CExpression.h"
 
 
-namespace Rift
+namespace rift
 {
+	using namespace p::core;
+
+
 	struct CExprDeclRef : public CExpression
 	{
 		STRUCT(CExprDeclRef, CExpression)
@@ -24,4 +27,4 @@ namespace Rift
 		PROP(declarationId)
 		AST::Id declarationId;
 	};
-}    // namespace Rift
+}    // namespace rift

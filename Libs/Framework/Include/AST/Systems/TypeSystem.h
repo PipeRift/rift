@@ -8,17 +8,20 @@
 #include <ECS/Access.h>
 
 
-namespace Rift::AST
+namespace rift::AST
 {
 	struct Tree;
 }
 
-namespace Rift::TypeSystem
+namespace rift::TypeSystem
 {
+	using namespace p;
+
+
 	void Init(AST::Tree& ast);
 
 	using PropagateVariableTypesAccess =
 	    TAccessRef<CExprDeclRefId, CDeclVariable, TWrite<CExprType>>;
 	void PropagateVariableTypes(PropagateVariableTypesAccess access);
 	void PropagateExpressionTypes(AST::Tree& ast);
-}    // namespace Rift::TypeSystem
+}    // namespace rift::TypeSystem

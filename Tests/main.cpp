@@ -1,18 +1,18 @@
 
-#include <Context.h>
 #include <bandit/bandit.h>
+#include <Context.h>
 
 
-class NoFileLogContext : public Rift::Context
+class NoFileLogContext : public p::Context
 {
 public:
-	NoFileLogContext() : Rift::Context(Rift::Path{}) {}
+	NoFileLogContext() : p::Context(p::Path{}) {}
 };
 
 
 int main(int argc, char* argv[])
 {
-	Rift::InitializeContext<NoFileLogContext>();
+	p::InitializeContext<NoFileLogContext>();
 	int result = bandit::run(argc, argv);
-	Rift::ShutdownContext();
+	p::ShutdownContext();
 }

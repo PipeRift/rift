@@ -6,13 +6,13 @@
 #include "Reflection/ReflectionFlags.h"
 
 
-namespace Rift
+namespace rift
 {
 	struct CDeclVariable : public CDeclaration
 	{
 		STRUCT(CDeclVariable, CDeclaration)
 
-		PROP(typeId, Prop_NotSerialized)
+		PROP(typeId, p::Prop_NotSerialized)
 		AST::Id typeId = AST::NoId;
 	};
-}    // namespace Rift
+}    // namespace rift

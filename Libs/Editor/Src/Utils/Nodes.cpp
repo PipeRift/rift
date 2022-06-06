@@ -13,9 +13,9 @@
 #include "Utils/NodesInternal.h"
 #include "Utils/NodesMiniMap.h"
 
+#include <Core/Checks.h>
 #include <Log.h>
 #include <Math/Bezier.h>
-#include <Misc/Checks.h>
 
 #include <cassert>
 #include <climits>
@@ -24,7 +24,7 @@
 #include <new>
 
 
-namespace Rift::Nodes
+namespace rift::Nodes
 {
 	Context* gNodes = nullptr;
 
@@ -67,7 +67,7 @@ namespace Rift::Nodes
 		float tStep        = 1.0f / (float)numSegments;
 		for (i32 i = 1; i <= numSegments; ++i)
 		{
-			v2 pCurrent = Bezier::EvaluateCubic(cb.p0, cb.p1, cb.p2, cb.p3, tStep * i);
+			v2 pCurrent = p::EvaluateCubicBezier(cb.p0, cb.p1, cb.p2, cb.p3, tStep * i);
 			v2 pLine    = Vectors::ClosestPointInLine(pLast, pCurrent, p);
 			float dist  = (p - pLine).LengthSquared();
 			if (dist < pClosestDist)
@@ -89,8 +89,8 @@ namespace Rift::Nodes
 
 	Rect GetContainingRectForCubicBezier(const CubicBezier& cb)
 	{
-		const v2 min = v2(Math::Min(cb.p0.x, cb.p3.x), Math::Min(cb.p0.y, cb.p3.y));
-		const v2 max = v2(Math::Max(cb.p0.x, cb.p3.x), Math::Max(cb.p0.y, cb.p3.y));
+		const v2 min = v2(math::Min(cb.p0.x, cb.p3.x), math::Min(cb.p0.y, cb.p3.y));
+		const v2 max = v2(math::Max(cb.p0.x, cb.p3.x), math::Max(cb.p0.y, cb.p3.y));
 
 		const float hoverDistance = gNodes->style.LinkHoverDistance;
 
@@ -162,13 +162,13 @@ namespace Rift::Nodes
 
 	bool RectangleOverlapsBezier(const Rect& rectangle, const CubicBezier& cubicBezier)
 	{
-		v2 current = Bezier::EvaluateCubic(
+		v2 current = p::EvaluateCubicBezier(
 		    cubicBezier.p0, cubicBezier.p1, cubicBezier.p2, cubicBezier.p3, 0.f);
 
 		const float dt = 1.0f / cubicBezier.numSegments;
 		for (i32 s = 0; s < cubicBezier.numSegments; ++s)
 		{
-			const v2 next = Bezier::EvaluateCubic(cubicBezier.p0, cubicBezier.p1, cubicBezier.p2,
+			const v2 next = p::EvaluateCubicBezier(cubicBezier.p0, cubicBezier.p1, cubicBezier.p2,
 			    cubicBezier.p3, float((s + 1) * dt));
 			if (RectangleOverlapsLineSegment(rectangle, current, next))
 			{
@@ -394,7 +394,7 @@ namespace Rift::Nodes
 	void DrawListAddNode(AST::Id nodeId)
 	{
 		gNodes->NodeIdxToSubmissionIdx.SetInt(
-		    static_cast<ImGuiID>(ECS::GetIndex(nodeId)), gNodes->nodeSubmissionOrder.Size);
+		    static_cast<ImGuiID>(ecs::GetIndex(nodeId)), gNodes->nodeSubmissionOrder.Size);
 		gNodes->nodeSubmissionOrder.push_back(nodeId);
 		ImDrawListGrowChannels(gNodes->CanvasDrawList, 2);
 	}
@@ -434,7 +434,7 @@ namespace Rift::Nodes
 	void DrawListActivateNodeBackground(AST::Id nodeId)
 	{
 		const i32 submissionIdx =
-		    gNodes->NodeIdxToSubmissionIdx.GetInt(static_cast<ImGuiID>(ECS::GetIndex(nodeId)), -1);
+		    gNodes->NodeIdxToSubmissionIdx.GetInt(static_cast<ImGuiID>(ecs::GetIndex(nodeId)), -1);
 		// There is a discrepancy in the submitted node count and the rendered node count! Did
 		// you call one of the following functions
 		// * MoveToNode
@@ -2092,7 +2092,7 @@ namespace Rift::Nodes
 		DrawListAddNode(nodeId);
 		DrawListActivateCurrentNodeForeground();
 
-		ImGui::PushID(ECS::GetIndex(nodeId));
+		ImGui::PushID(ecs::GetIndex(nodeId));
 		ImGui::BeginGroup();
 	}
 
@@ -2671,4 +2671,4 @@ namespace Rift::Nodes
 
 		return linkDestroyed;
 	}
-}    // namespace Rift::Nodes
+}    // namespace rift::Nodes

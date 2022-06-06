@@ -2,18 +2,18 @@
 #pragma once
 
 #include <llvm/IR/Value.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CIRValue : public Struct
+	struct CIRValue : public p::Struct
 	{
-		STRUCT(CIRValue, Struct)
+		STRUCT(CIRValue, p::Struct)
 
 		llvm::Value* instance = nullptr;
 
 
 		CIRValue(llvm::Value* instance) : instance(instance) {}
 	};
-}    // namespace Rift
+}    // namespace rift

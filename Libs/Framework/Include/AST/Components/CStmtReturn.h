@@ -4,7 +4,7 @@
 #include "AST/Components/CExpression.h"
 
 
-namespace Rift
+namespace rift
 {
 	/** Represents a return expression of a function
 	 * Return arguments are dynamically populated depending on the function this expression is
@@ -14,4 +14,4 @@ namespace Rift
 	{
 		STRUCT(CStmtReturn, CExpression)
 	};
-}    // namespace Rift
+}    // namespace rift

@@ -6,10 +6,10 @@
 #include <AST/Tree.h>
 
 
-namespace Rift
+namespace rift
 {
 	struct CDeclClass : public CDeclRecord
 	{
 		STRUCT(CDeclClass, CDeclRecord)
 	};
-}    // namespace Rift
+}    // namespace rift

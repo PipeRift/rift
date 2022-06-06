@@ -4,10 +4,10 @@
 #include "Lang/Expression.h"
 
 
-namespace Rift
+namespace rift
 {
 	struct Operator : public Expression
 	{
 		STRUCT(Operator, Expression)
 	};
-}    // namespace Rift
+}    // namespace rift

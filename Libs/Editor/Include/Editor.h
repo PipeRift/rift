@@ -3,12 +3,14 @@
 
 #include <AST/Tree.h>
 #include <Files/Paths.h>
-#include <Misc/Time.h>
+#include <Math/FrameTime.h>
 #include <RiftContext.h>
 
 
-namespace Rift
+namespace rift
 {
+	using namespace p;
+
 	class Editor
 	{
 		FrameTime frameTime;
@@ -56,4 +58,4 @@ namespace Rift
 	protected:
 		void UpdateConfig();
 	};
-}    // namespace Rift
+}    // namespace rift

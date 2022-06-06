@@ -10,12 +10,16 @@
 
 #include <Files/FileWatcher.h>
 #include <Memory/OwnPtr.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
+	using namespace p::core;
+	using namespace p::files;
+
+
 	struct SEditor : public Struct
 	{
 		STRUCT(SEditor, Struct)
@@ -40,4 +44,4 @@ namespace Rift
 
 	inline const Name SEditor::leftNode{"leftNode"};
 	inline const Name SEditor::centralNode{"centralNode"};
-}    // namespace Rift
+}    // namespace rift

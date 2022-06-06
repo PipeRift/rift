@@ -4,17 +4,17 @@
 #include "DockSpaceLayout.h"
 
 #include <AST/Id.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 #include <UI/UI.h>
 #include <Utils/NodesInternal.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CModuleEditor : public Struct
+	struct CModuleEditor : public p::Struct
 	{
-		STRUCT(CModuleEditor, Struct, Struct_NotSerialized)
+		STRUCT(CModuleEditor, p::Struct, p::Struct_NotSerialized)
 
 		bool pendingFocus = false;
 	};
-}    // namespace Rift
+}    // namespace rift

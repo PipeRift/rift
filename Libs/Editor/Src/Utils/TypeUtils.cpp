@@ -4,10 +4,10 @@
 
 #include "AST/Serialization.h"
 
-#include <Misc/Checks.h>
+#include <Core/Checks.h>
 
 
-namespace Rift::Types
+namespace rift::Types
 {
 	void OpenEditor(TAccessRef<TWrite<CTypeEditor>, CType> access, AST::Id id)
 	{
@@ -32,4 +32,4 @@ namespace Rift::Types
 	{
 		return access.Has<CTypeEditor>(id);
 	}
-}    // namespace Rift::Types
+}    // namespace rift::Types

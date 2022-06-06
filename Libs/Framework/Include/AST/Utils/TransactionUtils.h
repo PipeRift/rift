@@ -10,7 +10,7 @@
 #include <ECS/Access.h>
 
 
-namespace Rift
+namespace rift
 {
 	using TransactionAccess = TAccess<TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef>;
 
@@ -35,7 +35,7 @@ namespace Rift
 		bool PreChange(const TransactionAccess& access, TSpan<const Id> entityIds);
 		void PostChange();
 	}    // namespace AST::Transactions
-}    // namespace Rift
+}    // namespace rift
 
 #define ScopedChange(access, entityIds) \
-	Rift::AST::Transactions::ScopedTransaction _transaction{access, entityIds};
+	rift::AST::Transactions::ScopedTransaction _transaction{access, entityIds};

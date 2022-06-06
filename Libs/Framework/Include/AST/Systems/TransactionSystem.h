@@ -3,18 +3,18 @@
 
 #include "AST/Tree.h"
 
-#include <Containers/Array.h>
-#include <Containers/Span.h>
+#include <Core/Array.h>
+#include <Core/Span.h>
 
 
-namespace Rift::AST
+namespace rift::AST
 {
 	struct Tree;
 }
 
-namespace Rift::TransactionSystem
+namespace rift::TransactionSystem
 {
 	void Init(AST::Tree& ast);
 
 	void ClearTags(AST::Tree& ast);
-}    // namespace Rift::TransactionSystem
+}    // namespace rift::TransactionSystem

@@ -32,10 +32,10 @@
 #include <Reflection/TypeName.h>
 
 
-namespace Rift::AST
+namespace rift::AST
 {
 	template<typename T>
-	void ReadPool(ReadContext& ct, TAccessRef<TWrite<T>> access)
+	void ReadPool(Reader& ct, TAccessRef<TWrite<T>> access)
 	{
 		if (ct.EnterNext(GetTypeName<T>(false)))
 		{
@@ -51,7 +51,7 @@ namespace Rift::AST
 
 				if (ct.EnterNext(key))
 				{
-					if constexpr (!IsEmpty<T>())
+					if constexpr (!IsEmpty<T>)
 					{
 						T& comp = access.template GetOrAdd<T>(node);
 						ct.Serialize(comp);
@@ -68,13 +68,13 @@ namespace Rift::AST
 	}
 
 	template<typename T>
-	void WritePool(WriteContext& ct, TAccessRef<T> access, const TArray<Id>& nodes)
+	void WritePool(Writer& ct, TAccessRef<T> access, const TArray<Id>& nodes)
 	{
 		TArray<TPair<i32, Id>> componentIds;
 
 		if (auto* pool = access.template GetPool<const T>())
 		{
-			componentIds.ReserveMore(Math::Min(i32(pool->Size()), nodes.Size()));
+			componentIds.ReserveMore(math::Min(i32(pool->Size()), nodes.Size()));
 			for (i32 i = 0; i < nodes.Size(); ++i)
 			{
 				const Id id = nodes[i];
@@ -92,7 +92,7 @@ namespace Rift::AST
 
 		// FIX: yyjson doesn't seem to take into account stringview length when generating text
 		// Temporarely fixed by caching component name keys
-		ct.PushAddFlags(Serl::WriteFlags_CacheStringKeys);
+		ct.PushAddFlags(p::WriteFlags_CacheStringKeys);
 		if (ct.EnterNext(GetTypeName<T>(false)))
 		{
 			String key;
@@ -116,7 +116,7 @@ namespace Rift::AST
 		ct.PopFlags();
 	}
 
-	void ReadContext::SerializeEntities(TArray<Id>& entities)
+	void Reader::SerializeEntities(TArray<Id>& entities)
 	{
 		TArray<Id> parents;
 		Hierarchy::GetParents(ast, entities, parents);
@@ -124,7 +124,7 @@ namespace Rift::AST
 		Next("count", nodeCount);
 		ids.Resize(i32(nodeCount));
 		// Create or assign root ids
-		const i32 maxSize = Math::Min(entities.Size(), ids.Size());
+		const i32 maxSize = math::Min(entities.Size(), ids.Size());
 		for (i32 i = 0; i < maxSize; ++i)
 		{
 			const Id entity = entities[i];
@@ -176,7 +176,7 @@ namespace Rift::AST
 		Hierarchy::FixParentLinks(ast, parents);
 	}
 
-	void WriteContext::SerializeEntities(const TArray<Id>& entities, bool includeChildren)
+	void Writer::SerializeEntities(const TArray<Id>& entities, bool includeChildren)
 	{
 		TArray<Id> treeEntities;
 		if (includeChildren)
@@ -229,7 +229,7 @@ namespace Rift::AST
 		}
 	}
 
-	void WriteContext::RetrieveHierarchy(const TArray<Id>& roots, TArray<Id>& children)
+	void Writer::RetrieveHierarchy(const TArray<Id>& roots, TArray<Id>& children)
 	{
 		children.Append(roots);
 		if (includeChildren)
@@ -247,7 +247,7 @@ namespace Rift::AST
 		}
 	}
 
-	void WriteContext::RemoveIgnoredEntities(TArray<Id>& entities)
+	void Writer::RemoveIgnoredEntities(TArray<Id>& entities)
 	{
 		TAccess<CNotSerialized> access{ast};
 		for (i32 i = 0; i < entities.Size(); ++i)
@@ -260,4 +260,4 @@ namespace Rift::AST
 		}
 		entities.Shrink();
 	}
-}    // namespace Rift::AST
+}    // namespace rift::AST

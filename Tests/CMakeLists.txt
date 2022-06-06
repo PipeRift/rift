@@ -2,7 +2,7 @@
 file(GLOB_RECURSE TESTS_SOURCE_FILES CONFIGURE_DEPENDS *.cpp *.h)
 
 add_executable(RiftTests ${TESTS_SOURCE_FILES})
-add_executable(Rift::Tests ALIAS RiftTests)
+add_executable(rift::Tests ALIAS RiftTests)
 target_include_directories(RiftTests PUBLIC .)
 rift_target_enable_CPP20(RiftTests)
 set_target_properties (RiftTests PROPERTIES FOLDER Rift)

@@ -14,7 +14,7 @@
 #include <ECS/Filtering.h>
 
 
-namespace Rift::TypeSystem
+namespace rift::TypeSystem
 {
 	void Init(AST::Tree& ast)
 	{
@@ -25,7 +25,7 @@ namespace Rift::TypeSystem
 
 		// Cache existing types
 
-		auto typeIds = ECS::ListAll<CType>(access);
+		auto typeIds = ecs::ListAll<CType>(access);
 		types.typesByName.Reserve(u32(typeIds.Size()));
 		for (AST::Id typeId : typeIds)
 		{
@@ -62,7 +62,7 @@ namespace Rift::TypeSystem
 				if (ast.template Has<CType>(id) && ast.template Has<CFileRef>(id))
 				{
 					const auto& file = ast.template Get<const CFileRef>(id);
-					const Name pathName{Paths::ToString(file.path)};
+					const Name pathName{ToString(file.path)};
 					types.typesByPath.Insert(pathName, id);
 				}
 			}
@@ -75,7 +75,7 @@ namespace Rift::TypeSystem
 				if (ast.template Has<CType>(id) && ast.template Has<CFileRef>(id))
 				{
 					const auto& file = ast.template Get<const CFileRef>(id);
-					const Name pathName{Paths::ToString(file.path)};
+					const Name pathName{ToString(file.path)};
 					types.typesByPath.Remove(pathName);
 				}
 			}
@@ -84,7 +84,7 @@ namespace Rift::TypeSystem
 
 	void PropagateVariableTypes(PropagateVariableTypesAccess access)
 	{
-		for (AST::Id id : ECS::ListAll<CExprDeclRefId>(access))
+		for (AST::Id id : ecs::ListAll<CExprDeclRefId>(access))
 		{
 			const AST::Id declId = access.Get<const CExprDeclRefId>(id).declarationId;
 			if (access.IsValid(declId))
@@ -98,6 +98,6 @@ namespace Rift::TypeSystem
 	void PropagateExpressionTypes(AST::Tree& ast)
 	{
 		TArray<AST::Id> literals =
-		    ECS::ListAny<CLiteralBool, CLiteralIntegral, CLiteralFloating, CLiteralString>(ast);
+		    ecs::ListAny<CLiteralBool, CLiteralIntegral, CLiteralFloating, CLiteralString>(ast);
 	}
-}    // namespace Rift::TypeSystem
+}    // namespace rift::TypeSystem

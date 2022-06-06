@@ -2,15 +2,15 @@
 
 #pragma once
 
-#include <Events/Function.h>
-#include <Platform/Platform.h>
-#include <Strings/Name.h>
+#include <Core/Function.h>
+#include <Core/Name.h>
+#include <Core/Platform.h>
 
 
 struct GLFWwindow;
 
 
-namespace Rift::UI
+namespace rift::UI
 {
 	bool Init();
 	void Shutdown();
@@ -22,4 +22,4 @@ namespace Rift::UI
 	bool WantsToClose();
 
 	GLFWwindow* GetWindow();
-};    // namespace Rift::UI
+};    // namespace rift::UI

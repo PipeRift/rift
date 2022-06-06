@@ -5,11 +5,14 @@
 #include "AST/Id.h"
 #include "Reflection/ReflectionFlags.h"
 
-#include <Serialization/ContextsFwd.h>
+#include <Serialization/SerializationFwd.h>
 
 
-namespace Rift
+namespace rift
 {
+	using namespace p::core;
+
+
 	struct CExprCall : public CExpression
 	{
 		STRUCT(CExprCall, CExpression)
@@ -24,7 +27,7 @@ namespace Rift
 	// Data pointing to the id of the function from CExprCall's type and function names
 	struct CExprCallId : public CExpression
 	{
-		STRUCT(CExprCallId, CExpression, Struct_NotSerialized)
+		STRUCT(CExprCallId, CExpression, p::Struct_NotSerialized)
 
 		// Id pointing to the function declaration
 		PROP(functionId)
@@ -33,4 +36,4 @@ namespace Rift
 
 		CExprCallId(AST::Id functionId = AST::NoId) : functionId{functionId} {}
 	};
-}    // namespace Rift
+}    // namespace rift

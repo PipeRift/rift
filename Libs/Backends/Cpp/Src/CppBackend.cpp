@@ -13,11 +13,10 @@
 #include <Compiler/Context.h>
 #include <ECS/Filtering.h>
 #include <Files/Files.h>
-#include <Misc/DateTime.h>
+#include <Math/DateTime.h>
 
 
-
-namespace Rift::Compiler
+namespace rift::Compiler
 {
 	namespace Cpp
 	{
@@ -38,15 +37,15 @@ namespace Rift::Compiler
 			ast.Add<CCppNativeName>(nativeTypes.stringId, {"std::string"});
 		}
 
-		void BuildCode(Context& context, const Path& codePath, const Path& cmakePath)
+		void BuildCode(Context& context, const p::Path& codePath, const p::Path& cmakePath)
 		{
 			ZoneScoped;
-			Files::CreateFolder(cmakePath, true);
+			files::CreateFolder(cmakePath, true);
 
 
 			Log::Info("Generating");
-			const String generate = Strings::Format(
-			    "cmake -S {} -B {}", Paths::ToString(codePath), Paths::ToString(cmakePath));
+			const String generate =
+			    Strings::Format("cmake -S {} -B {}", p::ToString(codePath), p::ToString(cmakePath));
 
 			if (std::system(generate.c_str()) > 0)
 			{
@@ -55,8 +54,8 @@ namespace Rift::Compiler
 			}
 
 			Log::Info("Building");
-			const String build = Strings::Format("cmake --build {} --config {}",
-			    Paths::ToString(cmakePath), context.config.buildMode);
+			const String build = Strings::Format(
+			    "cmake --build {} --config {}", p::ToString(cmakePath), context.config.buildMode);
 			if (std::system(build.c_str()) > 0)
 			{
 				context.AddError("C++ build failed");
@@ -71,9 +70,9 @@ namespace Rift::Compiler
 
 		DateTime startTime = DateTime::Now();
 
-		const Path& codePath = context.config.intermediatesPath / "Code";
-		Files::Delete(codePath, true, false);
-		Files::CreateFolder(codePath, true);
+		const p::Path& codePath = context.config.intermediatesPath / "Code";
+		files::Delete(codePath, true, false);
+		files::CreateFolder(codePath, true);
 
 		Cpp::AssignNativeTypeNames(context.ast);
 
@@ -96,7 +95,7 @@ namespace Rift::Compiler
 
 
 		Log::Info("Building C++");
-		const Path cmakePath = context.config.intermediatesPath / "CMake";
+		const p::Path cmakePath = context.config.intermediatesPath / "CMake";
 		Cpp::BuildCode(context, codePath, cmakePath);
 		if (context.HasErrors())
 		{
@@ -106,17 +105,17 @@ namespace Rift::Compiler
 
 
 		// Copy code & binaries
-		if (!Files::Copy(codePath, context.config.binariesPath))
+		if (!files::Copy(codePath, context.config.binariesPath))
 		{
 			context.AddError("Failed to copy code");
 			return;
 		}
 
 		TAccess<CModule> modules{context.ast};
-		for (AST::Id moduleId : ECS::ListAll<CModule>(modules))
+		for (AST::Id moduleId : ecs::ListAll<CModule>(modules))
 		{
 			Name name = Modules::GetModuleName(context.ast, moduleId);
-			if (!Files::Copy(cmakePath / name.ToString() / context.config.buildMode,
+			if (!files::Copy(cmakePath / name.ToString() / context.config.buildMode,
 			        context.config.binariesPath / name.ToString() / "Bin"))
 			{
 				context.AddError("Failed to copy binaries");
@@ -126,4 +125,4 @@ namespace Rift::Compiler
 		const float duration = (DateTime::Now() - startTime).GetTotalSeconds();
 		Log::Info("Build complete ({:.2f}s)", duration);
 	}
-}    // namespace Rift::Compiler
+}    // namespace rift::Compiler

@@ -9,14 +9,14 @@
 #include <Reflection/StructType.h>
 
 
-namespace Rift::UI
+namespace rift::UI
 {
 	static const char* gCurrentInspector = nullptr;
 
-	static TMap<Refl::Type*, CustomKeyValue> gCustomKeyValues;
+	static TMap<Type*, CustomKeyValue> gCustomKeyValues;
 
 
-	void RegisterCustomInspection(Refl::Type* typeId, const CustomKeyValue& custom)
+	void RegisterCustomInspection(Type* typeId, const CustomKeyValue& custom)
 	{
 		if (custom)
 		{
@@ -24,7 +24,7 @@ namespace Rift::UI
 		}
 	}
 
-	void DrawEnumValue(void* data, Refl::EnumType* type)
+	void DrawEnumValue(void* data, EnumType* type)
 	{
 		static String label;
 		label.clear();
@@ -52,7 +52,7 @@ namespace Rift::UI
 		}
 	}
 
-	void DrawNativeValue(void* data, Refl::NativeType* type)
+	void DrawNativeValue(void* data, NativeType* type)
 	{
 		static String label;
 		label.clear();
@@ -113,7 +113,7 @@ namespace Rift::UI
 		}
 	}
 
-	void DrawKeyValue(StringView label, void* data, Refl::Type* type)
+	void DrawKeyValue(StringView label, void* data, Type* type)
 	{
 		UI::TableNextRow();
 		UI::TableSetColumnIndex(0);
@@ -130,7 +130,7 @@ namespace Rift::UI
 		}
 	}
 
-	void DrawArrayValue(bool open, const Refl::ArrayProperty& property, void* instance)
+	void DrawArrayValue(bool open, const ArrayProperty& property, void* instance)
 	{
 		UI::Text(Strings::Format("{} items", property.GetSize(instance)));
 		if (open)    // NOTE: Prevents buttons from being affected by indent
@@ -155,7 +155,7 @@ namespace Rift::UI
 		}
 	}
 
-	void DrawArrayItemButtons(const Refl::ArrayProperty& property, void* instance, i32 index)
+	void DrawArrayItemButtons(const ArrayProperty& property, void* instance, i32 index)
 	{
 		UI::SameLine(ImGui::GetContentRegionAvailWidth() - 20.f);
 		Style::PushStyleCompact();
@@ -169,7 +169,7 @@ namespace Rift::UI
 		Style::PopStyleCompact();
 	}
 
-	void InspectArrayProperty(const Refl::ArrayProperty& property, void* instance)
+	void InspectArrayProperty(const ArrayProperty& property, void* instance)
 	{
 		UI::TableNextRow();
 		UI::TableSetColumnIndex(0);
@@ -228,7 +228,7 @@ namespace Rift::UI
 		}
 	}
 
-	void InspectProperty(const Refl::PropertyHandle& handle)
+	void InspectProperty(const PropertyHandle& handle)
 	{
 		auto* type = handle.GetType();
 		if (!type)
@@ -263,7 +263,7 @@ namespace Rift::UI
 		UI::PopID();
 	}
 
-	void InspectProperties(void* container, Refl::DataType* type)
+	void InspectProperties(void* container, DataType* type)
 	{
 		if (!EnsureMsg(gCurrentInspector,
 		        "Make sure to call Begin/EndInspector around reflection widgets."))
@@ -273,11 +273,11 @@ namespace Rift::UI
 
 		UI::PushID(container);
 
-		TArray<Refl::Property*> properties;
+		TArray<Property*> properties;
 		type->GetProperties(properties);
 		for (auto* prop : properties)
 		{
-			InspectProperty(Refl::PropertyHandle{*prop, container});
+			InspectProperty(PropertyHandle{*prop, container});
 		}
 
 		UI::PopID();
@@ -350,13 +350,12 @@ namespace Rift::UI
 
 	void RegisterCoreKeyValueInspections()
 	{
-		UI::RegisterCustomInspection<LinearColor>(
-		    [](StringView label, void* data, Refl::Type* type) {
+		UI::RegisterCustomInspection<LinearColor>([](StringView label, void* data, Type* type) {
 			DrawColorKeyValue(label, *reinterpret_cast<LinearColor*>(data),
 			    ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaPreviewHalf);
 		});
 
-		UI::RegisterCustomInspection<HSVColor>([](StringView label, void* data, Refl::Type* type) {
+		UI::RegisterCustomInspection<HSVColor>([](StringView label, void* data, Type* type) {
 			auto* color = reinterpret_cast<HSVColor*>(data);
 			LinearColor lColor{*color};
 			if (DrawColorKeyValue(label, lColor,
@@ -367,7 +366,7 @@ namespace Rift::UI
 			}
 		});
 
-		UI::RegisterCustomInspection<Color>([](StringView label, void* data, Refl::Type* type) {
+		UI::RegisterCustomInspection<Color>([](StringView label, void* data, Type* type) {
 			auto* color = reinterpret_cast<Color*>(data);
 			LinearColor lColor{*color};
 			if (DrawColorKeyValue(label, lColor,
@@ -378,19 +377,19 @@ namespace Rift::UI
 			}
 		});
 
-		UI::RegisterCustomInspection<Path>([](StringView label, void* data, Refl::Type* type) {
+		UI::RegisterCustomInspection<Path>([](StringView label, void* data, Type* type) {
 			auto* path = reinterpret_cast<Path*>(data);
 			UI::TableNextRow();
 			UI::TableSetColumnIndex(0);
 			UI::AlignTextToFramePadding();
 			UI::Text(label);
 			UI::TableSetColumnIndex(1);
-			UI::SetNextItemWidth(Math::Min(300.f, UI::GetContentRegionAvail().x));
-			String str = Paths::ToString(*path);
+			UI::SetNextItemWidth(math::Min(300.f, UI::GetContentRegionAvail().x));
+			String str = ToString(*path);
 			if (UI::InputText("##value", str))
 			{
-				*path = Paths::FromString(str);
+				*path = FromString(str);
 			}
 		});
 	}
-}    // namespace Rift::UI
+}    // namespace rift::UI

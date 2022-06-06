@@ -9,7 +9,7 @@
 #include <Math/Vector.h>
 
 
-namespace Rift::Nodes
+namespace rift::Nodes
 {
 	bool MiniMap::IsActive() const
 	{
@@ -95,7 +95,7 @@ namespace Rift::Nodes
 		    ScreenToMiniMapPosition(editor, node.rect.max)};
 
 		// Round to near whole pixel value for corner-rounding to prevent visual glitches
-		const float miniMapNodeRounding = Math::Floor(node.LayoutStyle.CornerRounding * scaling);
+		const float miniMapNodeRounding = math::Floor(node.LayoutStyle.CornerRounding * scaling);
 
 		Color miniMapNodeBackground;
 		if (editor.clickInteraction.type == ClickInteractionType_None
@@ -263,4 +263,4 @@ namespace Rift::Nodes
 		// correctly relative to their respective nodes. Hence, we must store some of
 		// of the state for the mini map in gNodes for the actual drawing/updating
 	}
-}    // namespace Rift::Nodes
+}    // namespace rift::Nodes

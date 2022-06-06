@@ -3,7 +3,7 @@
 #include "Compiler/Context.h"
 
 
-namespace Rift::Compiler
+namespace rift::Compiler
 {
 	void Context::AddError(StringView str)
 	{
@@ -12,4 +12,4 @@ namespace Rift::Compiler
 		newError.text = str;
 		errors.Add(newError);
 	}
-}    // namespace Rift::Compiler
+}    // namespace rift::Compiler

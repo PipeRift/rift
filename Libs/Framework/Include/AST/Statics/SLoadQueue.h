@@ -3,17 +3,17 @@
 
 #include "AST/Id.h"
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
 	// Keeps a list of entities to load from disk
-	struct SLoadQueue : public Struct
+	struct SLoadQueue : public p::Struct
 	{
-		STRUCT(SLoadQueue, Struct)
+		STRUCT(SLoadQueue, p::Struct)
 
 		TArray<AST::Id> pendingSyncLoad;
 		TArray<AST::Id> pendingAsyncLoad;
 	};
-}    // namespace Rift
+}    // namespace rift

@@ -7,15 +7,14 @@
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CType.h>
 #include <AST/Tree.h>
+#include <Core/StringView.h>
 #include <ECS/Filtering.h>
-#include <Strings/StringView.h>
 
 
-
-namespace Rift::Editor
+namespace rift::Editor
 {
 	bool TypeCombo(TAccessRef<CType, CDeclNative, CDeclStruct, CDeclClass> access, StringView label,
 	    AST::Id& selectedTypeId);
 
 	bool InputLiteralValue(AST::Tree& ast, StringView label, AST::Id literalId);
-}    // namespace Rift::Editor
+}    // namespace rift::Editor

@@ -4,16 +4,16 @@
 #include "DockSpaceLayout.h"
 
 #include <AST/Id.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 #include <UI/UI.h>
 #include <Utils/NodesInternal.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CTypeEditor : public Struct
+	struct CTypeEditor : public p::Struct
 	{
-		STRUCT(CTypeEditor, Struct, Struct_NotSerialized)
+		STRUCT(CTypeEditor, p::Struct, p::Struct_NotSerialized)
 
 		static const Name rightNode;
 		static const Name centralNode;
@@ -31,4 +31,4 @@ namespace Rift
 
 	inline const Name CTypeEditor::rightNode{"rightNode"};
 	inline const Name CTypeEditor::centralNode{"centralNode"};
-}    // namespace Rift
+}    // namespace rift

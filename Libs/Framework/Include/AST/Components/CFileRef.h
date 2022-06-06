@@ -3,18 +3,22 @@
 
 #include <AST/Tree.h>
 #include <Files/Paths.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
+	using namespace p;
+
+
 	/**
 	 * This component points an AST node to a file.
-	 * Some examples are Class, Struct and Function Library declarations pointing to their files
+	 * Some examples are Class, p::Struct and Function Library declarations pointing to their
+	 * files
 	 */
-	struct CFileRef : public Struct
+	struct CFileRef : public p::Struct
 	{
-		STRUCT(CFileRef, Struct, Struct_NotSerialized)
+		STRUCT(CFileRef, p::Struct, p::Struct_NotSerialized)
 
 		PROP(path)
 		Path path;
@@ -23,4 +27,4 @@ namespace Rift
 		CFileRef() {}
 		CFileRef(Path path) : path(path) {}
 	};
-}    // namespace Rift
+}    // namespace rift

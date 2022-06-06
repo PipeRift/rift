@@ -2,13 +2,13 @@
 #pragma once
 
 
-namespace Rift::AST
+namespace rift::AST
 {
 	struct Tree;
 }
 
-namespace Rift::OptimizationSystem
+namespace rift::OptimizationSystem
 {
 	void PruneDisconnectedStatements(AST::Tree& ast);
 	void PruneDisconnectedExpressions(AST::Tree& ast);
-}    // namespace Rift::OptimizationSystem
+}    // namespace rift::OptimizationSystem

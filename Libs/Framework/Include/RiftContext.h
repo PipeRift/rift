@@ -8,7 +8,7 @@
 #include <Context.h>
 
 
-namespace Rift
+namespace rift
 {
 	/**
 	 * A solution represents an open project and all its build dependencies.
@@ -37,4 +37,4 @@ namespace Rift
 			views.Add(Move(view));
 		}
 	};
-}    // namespace Rift
+}    // namespace rift

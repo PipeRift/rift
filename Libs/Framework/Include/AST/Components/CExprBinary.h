@@ -4,7 +4,7 @@
 #include "AST/Components/CLiteral.h"
 
 
-namespace Rift
+namespace rift
 {
 	struct CLiteralU32 : public CLiteral
 	{
@@ -13,4 +13,4 @@ namespace Rift
 		PROP(value)
 		u32 value = 0;
 	};
-}    // namespace Rift
+}    // namespace rift

@@ -41,7 +41,7 @@
 #include <Utils/NodesMiniMap.h>
 
 
-namespace Rift::Graph
+namespace rift::Graph
 {
 	static CNodePosition* currentNodeTransform = nullptr;
 
@@ -242,7 +242,7 @@ namespace Rift::Graph
 		{
 			Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
 			PushInnerNodeStyle();
-			UI::SetNextItemWidth(Math::Max(settings.GetGridSize() * 4.f, 30.f));
+			UI::SetNextItemWidth(math::Max(settings.GetGridSize() * 4.f, 30.f));
 			switch (value.type)
 			{
 				case IntegralType::S8:
@@ -291,7 +291,7 @@ namespace Rift::Graph
 		{
 			Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
 			PushInnerNodeStyle();
-			UI::SetNextItemWidth(Math::Max(settings.GetGridSize() * 4.f, 30.f));
+			UI::SetNextItemWidth(math::Max(settings.GetGridSize() * 4.f, 30.f));
 			if (isDouble)
 			{
 				UI::InputFloat("##value", reinterpret_cast<float*>(&value.value));
@@ -323,7 +323,7 @@ namespace Rift::Graph
 			ImGuiStyle& style     = ImGui::GetStyle();
 			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
 			const v2 minSize{settings.GetGridSize() * 4.f, settings.GetGridSize()};
-			const v2 size{Math::Max(minSize.x, textSize.x), Math::Max(minSize.y, textSize.y)};
+			const v2 size{math::Max(minSize.x, textSize.x), math::Max(minSize.y, textSize.y)};
 			UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
 			PopInnerNodeStyle();
 			Nodes::EndOutput();
@@ -346,7 +346,7 @@ namespace Rift::Graph
 				name = identifier->name;
 			}
 
-			Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
+			Style::PushNodeBackgroundColor(rift::Style::GetNeutralColor(0));
 			Style::PushNodeTitleColor(Style::functionColor);
 			BeginNode(access, functionId);
 			{
@@ -379,7 +379,7 @@ namespace Rift::Graph
 	        access,
 	    AST::Id id)
 	{
-		Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
+		Style::PushNodeBackgroundColor(rift::Style::GetNeutralColor(0));
 		Style::PushNodeTitleColor(Style::returnColor);
 		BeginNode(access, id);
 		{
@@ -420,7 +420,7 @@ namespace Rift::Graph
 					ownerName = call->ownerName.ToString().c_str();
 				}
 
-				Style::PushNodeBackgroundColor(Rift::Style::GetNeutralColor(0));
+				Style::PushNodeBackgroundColor(rift::Style::GetNeutralColor(0));
 				Style::PushNodeTitleColor(Style::callColor);
 				BeginNode(access, id);
 				{
@@ -437,9 +437,9 @@ namespace Rift::Graph
 						UI::TextUnformatted(functionName.data());
 						if (!ownerName.empty())
 						{
-							// Rift::Style::PushTextColor(Rift::Style::whiteTextColor.Shade(0.3f));
+							// rift::Style::PushTextColor(rift::Style::whiteTextColor.Shade(0.3f));
 							// UI::Text(ownerName.data());
-							// Rift::Style::PopTextColor();
+							// rift::Style::PopTextColor();
 						}
 						UI::EndGroup();
 
@@ -539,22 +539,22 @@ namespace Rift::Graph
 
 	void DrawLiterals(AST::Tree& ast, const TArray<AST::Id>& children)
 	{
-		for (AST::Id id : ECS::GetIf<CLiteralBool>(ast, children))
+		for (AST::Id id : ecs::GetIf<CLiteralBool>(ast, children))
 		{
 			DrawLiteralBool(ast, id, ast.Get<CLiteralBool>(id).value);
 		}
 
-		for (AST::Id id : ECS::GetIf<CLiteralIntegral>(ast, children))
+		for (AST::Id id : ecs::GetIf<CLiteralIntegral>(ast, children))
 		{
 			DrawLiteralIntegral(ast, id, ast.Get<CLiteralIntegral>(id));
 		}
 
-		for (AST::Id id : ECS::GetIf<CLiteralFloating>(ast, children))
+		for (AST::Id id : ecs::GetIf<CLiteralFloating>(ast, children))
 		{
 			DrawLiteralFloating(ast, id, ast.Get<CLiteralFloating>(id));
 		}
 
-		for (AST::Id id : ECS::GetIf<CLiteralString>(ast, children))
+		for (AST::Id id : ecs::GetIf<CLiteralString>(ast, children))
 		{
 			DrawLiteralString(ast, id, ast.Get<CLiteralString>(id).value);
 		}
@@ -563,7 +563,7 @@ namespace Rift::Graph
 	void DrawVariableRefs(AST::Tree& ast, const TArray<AST::Id>& children)
 	{
 		String name;
-		for (AST::Id id : ECS::GetIf<CExprDeclRefId>(ast, children))
+		for (AST::Id id : ecs::GetIf<CExprDeclRefId>(ast, children))
 		{
 			AST::Id variableId = ast.Get<const CExprDeclRefId>(id).declarationId;
 
@@ -601,7 +601,7 @@ namespace Rift::Graph
 	{
 		Style::PushNodeBackgroundColor(Style::GetNeutralColor(0));
 		Style::PushNodeTitleColor(Style::flowColor);
-		for (AST::Id id : ECS::GetIf<CStmtIf, CExprInputs, CStmtOutputs>(access, children))
+		for (AST::Id id : ecs::GetIf<CStmtIf, CExprInputs, CStmtOutputs>(access, children))
 		{
 			BeginNode(access, id);
 			{
@@ -668,7 +668,7 @@ namespace Rift::Graph
 	                            access,
 	    const TArray<AST::Id>& children)
 	{
-		for (AST::Id id : ECS::GetIf<CExprUnaryOperator>(access, children))
+		for (AST::Id id : ecs::GetIf<CExprUnaryOperator>(access, children))
 		{
 			static constexpr Color color = Style::GetNeutralColor(0);
 
@@ -705,7 +705,7 @@ namespace Rift::Graph
 	    const TArray<AST::Id>& children)
 	{
 		TArray<AST::Id> pinIds;
-		for (AST::Id id : ECS::GetIf<CExprBinaryOperator>(access, children))
+		for (AST::Id id : ecs::GetIf<CExprBinaryOperator>(access, children))
 		{
 			static constexpr Color color = Style::GetNeutralColor(0);
 
@@ -798,7 +798,7 @@ namespace Rift::Graph
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 1.5f);
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
 
-		for (AST::Id nodeId : ECS::GetIf<CExprInputs>(access, children))
+		for (AST::Id nodeId : ecs::GetIf<CExprInputs>(access, children))
 		{
 			const auto& inputs = access.Get<const CExprInputs>(nodeId);
 			if (!EnsureMsg(inputs.pinIds.Size() == inputs.linkedOutputs.Size(),
@@ -868,7 +868,7 @@ namespace Rift::Graph
 			AST::Hierarchy::GetChildren(ast, typeId, children);
 
 			// Nodes
-			DrawFunctionDecls(ast, ECS::GetIf<CDeclFunction>(ast, children));
+			DrawFunctionDecls(ast, ecs::GetIf<CDeclFunction>(ast, children));
 			DrawReturns(ast, children);
 			DrawCalls(ast, typeId, children);
 			DrawLiterals(ast, children);
@@ -933,4 +933,4 @@ namespace Rift::Graph
 		const v2 pos = Nodes::GetNodeGridSpacePos(id);
 		return v2{pos.x * settings.GetInvGridSize(), pos.y * settings.GetInvGridSize()}.Floor();
 	}
-}    // namespace Rift::Graph
+}    // namespace rift::Graph

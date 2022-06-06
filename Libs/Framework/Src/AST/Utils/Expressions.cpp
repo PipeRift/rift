@@ -6,7 +6,7 @@
 #include "AST/Utils/Hierarchy.h"
 
 
-namespace Rift::AST::Expressions
+namespace rift::AST::Expressions
 {
 	bool WouldLoop(
 	    TAccessRef<CExprInputs, CExprOutputs> access, AST::Id outputNodeId, AST::Id inputNodeId)
@@ -163,4 +163,4 @@ namespace Rift::AST::Expressions
 		}
 		return output;
 	}
-}    // namespace Rift::AST::Expressions
+}    // namespace rift::AST::Expressions

@@ -4,14 +4,14 @@
 #include "AST/Utils/Hierarchy.h"
 
 #include <ECS/Id.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct OutputId : public Struct
+	struct OutputId : public p::Struct
 	{
-		STRUCT(OutputId, Struct)
+		STRUCT(OutputId, p::Struct)
 
 		PROP(nodeId)
 		AST::Id nodeId = AST::NoId;
@@ -24,13 +24,13 @@ namespace Rift
 
 		bool IsNone() const
 		{
-			return ECS::IsNone(nodeId) || ECS::IsNone(pinId);
+			return ecs::IsNone(nodeId) || ecs::IsNone(pinId);
 		}
 	};
 
-	struct CExprInputs : public Struct
+	struct CExprInputs : public p::Struct
 	{
-		STRUCT(CExprInputs, Struct)
+		STRUCT(CExprInputs, p::Struct)
 
 		PROP(linkedOutputs)
 		TArray<OutputId> linkedOutputs;
@@ -66,4 +66,4 @@ namespace Rift
 			pinIds.Resize(count, AST::NoId);
 		}
 	};
-}    // namespace Rift
+}    // namespace rift

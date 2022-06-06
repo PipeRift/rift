@@ -3,12 +3,15 @@
 #pragma once
 
 #include <AST/Id.h>
+#include <Core/Platform.h>
 #include <Math/Vector.h>
-#include <Platform/Platform.h>
 
 
-namespace Rift::Nodes
+namespace rift::Nodes
 {
+	using namespace p;
+
+
 	struct EditorContext;
 
 	enum class MiniMapCorner : u8
@@ -52,4 +55,4 @@ namespace Rift::Nodes
 	    MiniMapCorner corner                                           = MiniMapCorner::TopLeft,
 	    MiniMap::NodeHoveringCallback nodeHoveringCallback             = nullptr,
 	    MiniMap::NodeHoveringCallbackUserData nodeHoveringCallbackData = nullptr);
-}    // namespace Rift::Nodes
+}    // namespace rift::Nodes

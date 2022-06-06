@@ -4,10 +4,10 @@
 #include "AST/Tree.h"
 
 
-namespace Rift::AST
+namespace rift::AST
 {
 	struct TypeId
 	{
 		TypeId(Id id) {}
 	};
-}    // namespace Rift::AST
+}    // namespace rift::AST

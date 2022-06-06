@@ -1,13 +1,16 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Misc/Guid.h>
-#include <Types/Struct.h>
+#include <Core/Guid.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	enum class Type : u8
+	using namespace p;
+
+
+	enum class RiftType : u8
 	{
 		None              = 0,
 		Class             = 1 << 0,
@@ -15,6 +18,7 @@ namespace Rift
 		FunctionLibrary   = 1 << 2,
 		FunctionInterface = 1 << 3
 	};
+	DEFINE_FLAG_OPERATORS(RiftType)
 
 
 	struct CType : public Struct
@@ -29,4 +33,4 @@ namespace Rift
 
 		CType(Name name = {}) : name(name) {}
 	};
-}    // namespace Rift
+}    // namespace rift

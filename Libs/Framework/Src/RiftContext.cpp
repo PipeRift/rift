@@ -2,8 +2,6 @@
 
 #include "RiftContext.h"
 
-#include "Files/FileWatcher.h"
 
-
-namespace Rift
-{};    // namespace Rift
+namespace rift
+{};    // namespace rift

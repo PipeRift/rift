@@ -1,7 +1,7 @@
 
 
 add_library(RiftUI STATIC)
-add_library(Rift::UI ALIAS RiftUI)
+add_library(rift::UI ALIAS RiftUI)
 target_include_directories(RiftUI PUBLIC Include)
 file(GLOB_RECURSE UI_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
 target_sources(RiftUI PRIVATE ${UI_SOURCE_FILES})
@@ -11,7 +11,7 @@ rift_target_define_platform(RiftUI)
 rift_target_shared_output_directory(RiftUI)
 target_compile_definitions(RiftUI PRIVATE NOMINMAX)
 target_link_libraries(RiftUI PUBLIC
-    Rift::Core
+    Pipe
     glfw
     gl3w
     imgui

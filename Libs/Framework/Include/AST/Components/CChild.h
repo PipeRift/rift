@@ -2,14 +2,17 @@
 #pragma once
 
 #include <AST/Id.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CChild : public Struct
+	using namespace p;
+
+
+	struct CChild : public p::Struct
 	{
-		STRUCT(CChild, Struct)
+		STRUCT(CChild, p::Struct)
 
 		PROP(parent)
 		AST::Id parent = AST::NoId;
@@ -18,12 +21,13 @@ namespace Rift
 		CChild() = default;
 		CChild(AST::Id parent) : parent(parent) {}
 	};
-	static void Read(Serl::ReadContext& ct, CChild& val)
+
+	static void Read(Reader& ct, CChild& val)
 	{
 		ct.Serialize(val.parent);
 	}
-	static void Write(Serl::WriteContext& ct, const CChild& val)
+	static void Write(Writer& ct, const CChild& val)
 	{
 		ct.Serialize(val.parent);
 	}
-}    // namespace Rift
+}    // namespace rift

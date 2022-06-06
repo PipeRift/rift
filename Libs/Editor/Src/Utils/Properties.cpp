@@ -15,16 +15,16 @@
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/TypeUtils.h>
+#include <Core/EnumFlags.h>
 #include <ECS/Filtering.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
-#include <Misc/EnumFlags.h>
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace EnumOperators;
+	//using namespace EnumOperators;
 
 
 	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, AST::Id variableId)
@@ -166,7 +166,7 @@ namespace Rift
 			UI::Indent(10.f);
 			TArray<AST::Id> variableIds;
 			AST::Hierarchy::GetChildren(access, typeId, variableIds);
-			ECS::ExcludeIfNot<CDeclVariable>(access, variableIds);
+			ecs::ExcludeIfNot<CDeclVariable>(access, variableIds);
 
 			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
 			bool showTable = UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit);
@@ -211,7 +211,7 @@ namespace Rift
 
 			TArray<AST::Id> functionIds;
 			AST::Hierarchy::GetChildren(ast, typeId, functionIds);
-			ECS::ExcludeIfNot<CDeclFunction>(ast, functionIds);
+			ecs::ExcludeIfNot<CDeclFunction>(ast, functionIds);
 			for (AST::Id functionId : functionIds)
 			{
 				DrawFunction(ast, editor, typeId, functionId);
@@ -264,4 +264,4 @@ namespace Rift
 			}
 		}
 	}
-}    // namespace Rift
+}    // namespace rift

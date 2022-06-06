@@ -1,13 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CExpression : public Struct
+	struct CExpression : public p::Struct
 	{
-		STRUCT(CExpression, Struct)
+		STRUCT(CExpression, p::Struct)
 	};
-}    // namespace Rift
+}    // namespace rift

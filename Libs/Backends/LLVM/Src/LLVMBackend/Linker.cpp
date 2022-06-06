@@ -5,5 +5,5 @@
 #include <llvm/Linker/Linker.h>
 
 
-namespace Rift::Compiler::LLVM
-{}    // namespace Rift::Compiler::LLVM
+namespace rift::Compiler::LLVM
+{}    // namespace rift::Compiler::LLVM

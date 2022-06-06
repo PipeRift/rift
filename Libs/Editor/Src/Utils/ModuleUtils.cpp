@@ -4,10 +4,10 @@
 
 #include "AST/Serialization.h"
 
-#include <Misc/Checks.h>
+#include <Core/Checks.h>
 
 
-namespace Rift::Modules
+namespace rift::Modules
 {
 	void OpenEditor(TAccessRef<TWrite<CModuleEditor>, CModule> access, AST::Id id)
 	{
@@ -32,4 +32,4 @@ namespace Rift::Modules
 	{
 		return access.Has<CModuleEditor>(id);
 	}
-}    // namespace Rift::Modules
+}    // namespace rift::Modules

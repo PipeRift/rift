@@ -3,19 +3,19 @@
 
 #include "AST/Id.h"
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CExprType : public Struct
+	struct CExprType : public p::Struct
 	{
-		STRUCT(CExprType, Struct)
+		STRUCT(CExprType, p::Struct)
 
-		PROP(id, Prop_NotSerialized)
+		PROP(id, p::Prop_NotSerialized)
 		AST::Id id = AST::NoId;
 
 
 		CExprType(AST::Id id = AST::NoId) : id{id} {}
 	};
-}    // namespace Rift
+}    // namespace rift

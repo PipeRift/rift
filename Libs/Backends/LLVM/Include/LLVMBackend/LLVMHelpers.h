@@ -1,15 +1,17 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Containers/Array.h>
+#include <Core/Array.h>
+#include <Core/Name.h>
+#include <Core/String.h>
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/StringRef.h>
-#include <Strings/Name.h>
-#include <Strings/String.h>
 
 
-namespace Rift::Compiler::LLVM
+namespace rift::Compiler::LLVM
 {
+	using namespace p::core;
+
 	inline llvm::StringRef ToLLVM(StringView string)
 	{
 		return {string.data(), string.size()};
@@ -28,4 +30,4 @@ namespace Rift::Compiler::LLVM
 	{
 		return {array.Data(), sizet(array.Size())};
 	}
-}    // namespace Rift::Compiler::LLVM
+}    // namespace rift::Compiler::LLVM

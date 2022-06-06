@@ -5,17 +5,17 @@
 #include "DockSpaceLayout.h"
 #include "NodeGraph/NodeGraphPanel.h"
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 #include <UI/UI.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CDeclRename : public Struct
+	struct CDeclRename : public p::Struct
 	{
-		STRUCT(CDeclRename, Struct, Struct_NotSerialized)
+		STRUCT(CDeclRename, p::Struct, p::Struct_NotSerialized)
 
 		// Renaming uses this buffer to temporarely store the name being edited
 		String buffer;
 	};
-}    // namespace Rift
+}    // namespace rift

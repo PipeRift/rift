@@ -7,8 +7,9 @@
 
 #include <assert.h>
 #include <AST/Id.h>
-#include <Containers/Array.h>
-#include <Containers/BitArray.h>
+#include <Core/Array.h>
+#include <Core/BitArray.h>
+#include <Core/EnumFlags.h>
 #include <limits.h>
 #include <Math/Vector.h>
 
@@ -20,17 +21,19 @@
 // [SECTION] global and editor context structs
 // [SECTION] object pool implementation
 
-namespace Rift::Nodes
+namespace rift::Nodes
 {
+	// using namespace p::EnumOperators;
+
 	struct Context;
 
 	extern Context* gNodes;
 
 	// [SECTION] internal enums
 
-	using UIState              = int;
-	using ClickInteractionType = int;
-	using LinkCreationType     = int;
+	using UIState              = i32;
+	using ClickInteractionType = i32;
+	using LinkCreationType     = i32;
 
 	enum class Scope : u8
 	{
@@ -39,6 +42,7 @@ namespace Rift::Nodes
 		Node   = 1 << 1,
 		Pin    = 1 << 2
 	};
+	DEFINE_FLAG_OPERATORS(Scope)
 
 	enum UIState_
 	{
@@ -100,7 +104,7 @@ namespace Rift::Nodes
 	public:
 		T& GetOrAdd(AST::Id id, bool* outAdded = nullptr)
 		{
-			const u32 index  = ECS::GetIndex(id);
+			const u32 index  = ecs::GetIndex(id);
 			const bool added = frameIds.FindOrAddSorted(id).second;
 			if (added && !lastFrameIds.ContainsSorted(id))
 			{
@@ -122,7 +126,7 @@ namespace Rift::Nodes
 
 		T& Get(AST::Id id)
 		{
-			return *GetByIndex(ECS::GetIndex(id));
+			return *GetByIndex(ecs::GetIndex(id));
 		}
 
 		const T& Get(AST::Id id) const
@@ -134,7 +138,7 @@ namespace Rift::Nodes
 		{
 			if (Contains(id))
 			{
-				return GetByIndex(ECS::GetIndex(id));
+				return GetByIndex(ecs::GetIndex(id));
 			}
 			return nullptr;
 		}
@@ -575,4 +579,4 @@ namespace Rift::Nodes
 		const int index = ObjectPoolFindOrCreateIndex(objects, id);
 		return objects.Pool[index];
 	}
-}    // namespace Rift::Nodes
+}    // namespace rift::Nodes

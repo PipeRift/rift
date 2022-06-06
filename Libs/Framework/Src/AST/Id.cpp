@@ -4,15 +4,15 @@
 
 #include "AST/Serialization.h"
 
-#include <Serialization/Contexts.h>
+#include <Serialization/Serialization.h>
 
 
-namespace Rift::Serl
+namespace p::ecs
 {
-	void Read(ReadContext& ct, AST::Id& val)
+	void Read(Reader& ct, Id& val)
 	{
-		auto* astCt = dynamic_cast<AST::ReadContext*>(&ct);
-		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTReadContext")) [[likely]]
+		auto* astCt = dynamic_cast<rift::AST::Reader*>(&ct);
+		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTReader")) [[likely]]
 		{
 			i32 dataId;
 			astCt->Serialize(dataId);
@@ -23,15 +23,15 @@ namespace Rift::Serl
 			}
 			else
 			{
-				val = AST::NoId;
+				val = NoId;
 			}
 		}
 	}
 
-	void Write(WriteContext& ct, AST::Id val)
+	void Write(Writer& ct, Id val)
 	{
-		auto* astCt = dynamic_cast<AST::WriteContext*>(&ct);
-		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTWriteContext")) [[likely]]
+		auto* astCt = dynamic_cast<rift::AST::Writer*>(&ct);
+		if (EnsureMsg(astCt, "Serializing an AST::Id without an ASTWriter")) [[likely]]
 		{
 			const i32* dataId = astCt->GetIdToIndexes().Find(val);
 			if (dataId) [[likely]]
@@ -44,4 +44,4 @@ namespace Rift::Serl
 			}
 		}
 	}
-}    // namespace Rift::Serl
+}    // namespace p::ecs

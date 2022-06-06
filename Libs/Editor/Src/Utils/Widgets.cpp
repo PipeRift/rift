@@ -5,7 +5,7 @@
 #include <UI/UI.h>
 
 
-namespace Rift::Editor
+namespace rift::Editor
 {
 	void ListTypesFromFilter(TAccessRef<CType> access, TArray<AST::Id> typeIds, AST::Id& selectedId,
 	    ImGuiTextFilter& searchFilter)
@@ -49,9 +49,9 @@ namespace Rift::Editor
 			UI::SetNextItemWidth(-FLT_MIN);
 			filter.Draw("##Filter");
 
-			auto nativeIds = ECS::ListAll<CType, CDeclNative>(access);
-			auto structIds = ECS::ListAll<CType, CDeclStruct>(access);
-			auto classIds  = ECS::ListAll<CType, CDeclClass>(access);
+			auto nativeIds = ecs::ListAll<CType, CDeclNative>(access);
+			auto structIds = ecs::ListAll<CType, CDeclStruct>(access);
+			auto classIds  = ecs::ListAll<CType, CDeclClass>(access);
 			if (filter.IsActive())
 			{
 				if (UI::TreeNodeEx("Native##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
@@ -97,4 +97,4 @@ namespace Rift::Editor
 	{
 		return false;
 	}
-}    // namespace Rift::Editor
+}    // namespace rift::Editor

@@ -2,10 +2,10 @@
 
 #include "AST/Utils/Hierarchy.h"
 
-#include <Misc/Checks.h>
+#include <Core/Checks.h>
 
 
-namespace Rift::AST::Hierarchy
+namespace rift::AST::Hierarchy
 {
 	void RemoveChildFromCParent(TAccessRef<TWrite<CParent>> access, Id parent, Id child)
 	{
@@ -379,4 +379,4 @@ namespace Rift::AST::Hierarchy
 		}
 		return true;
 	}
-}    // namespace Rift::AST::Hierarchy
+}    // namespace rift::AST::Hierarchy

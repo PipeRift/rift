@@ -5,14 +5,14 @@
 
 #include <ECS/Access.h>
 #include <ECS/Id.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct InputId : public Struct
+	struct InputId : public p::Struct
 	{
-		STRUCT(InputId, Struct)
+		STRUCT(InputId, p::Struct)
 
 		PROP(nodeId)
 		AST::Id nodeId = AST::NoId;
@@ -25,13 +25,13 @@ namespace Rift
 
 		bool IsNone() const
 		{
-			return ECS::IsNone(nodeId) || ECS::IsNone(pinId);
+			return ecs::IsNone(nodeId) || ecs::IsNone(pinId);
 		}
 	};
 
-	struct CExprOutputs : public Struct
+	struct CExprOutputs : public p::Struct
 	{
-		STRUCT(CExprOutputs, Struct)
+		STRUCT(CExprOutputs, p::Struct)
 
 		PROP(pinIds)
 		TArray<AST::Id> pinIds;
@@ -61,4 +61,4 @@ namespace Rift
 			return *this;
 		}
 	};
-}    // namespace Rift
+}    // namespace rift

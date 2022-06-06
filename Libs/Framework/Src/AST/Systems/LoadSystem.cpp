@@ -23,7 +23,7 @@
 #include <Serialization/Formats/JsonFormat.h>
 
 
-namespace Rift::LoadSystem
+namespace rift::LoadSystem
 {
 	void Init(AST::Tree& ast)
 	{
@@ -87,7 +87,7 @@ namespace Rift::LoadSystem
 		TSet<Path> modulePaths;
 
 		TAccess<CModule, CFileRef> access{ast};
-		auto modules = ECS::ListAll<CModule>(access);
+		auto modules = ecs::ListAll<CModule>(access);
 
 		modulePaths.Reserve(modules.Size());
 		for (AST::Id moduleId : modules)
@@ -120,8 +120,8 @@ namespace Rift::LoadSystem
 		    access{ast};
 
 		// Remove existing module paths
-		auto moduleIds = ECS::ListAll<CModule, CFileRef>(access);
-		paths.ExcludeIfSwap([&access, &moduleIds](const Path& path) {
+		auto moduleIds = ecs::ListAll<CModule, CFileRef>(access);
+		paths.ExcludeIfSwap([&access, &moduleIds](const p::Path& path) {
 			bool moduleExists = false;
 			for (AST::Id id : moduleIds)
 			{
@@ -163,8 +163,8 @@ namespace Rift::LoadSystem
 		// Remove existing types
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
-			modulePaths.paths.ExcludeIfSwap([types, &modulePaths](const Path& path) {
-				const Name pathName{Paths::ToString(path)};
+			modulePaths.paths.ExcludeIfSwap([types, &modulePaths](const p::Path& path) {
+				const Name pathName{ToString(path)};
 
 				if (!types->typesByPath.Contains(pathName))
 				{
@@ -208,10 +208,9 @@ namespace Rift::LoadSystem
 		{
 			if (auto* file = access.TryGet<const CFileRef>(nodes[i])) [[likely]]
 			{
-				if (!Files::LoadStringFile(file->path, strings[i], 4))
+				if (!files::LoadStringFile(file->path, strings[i], 4))
 				{
-					Log::Error(
-					    "File could not be loaded from disk ({})", Paths::ToString(file->path));
+					Log::Error("File could not be loaded from disk ({})", p::ToString(file->path));
 					continue;
 				}
 			}
@@ -239,4 +238,4 @@ namespace Rift::LoadSystem
 			Types::Deserialize(ast, typeIds[i], strings[i]);
 		}
 	}
-}    // namespace Rift::LoadSystem
+}    // namespace rift::LoadSystem

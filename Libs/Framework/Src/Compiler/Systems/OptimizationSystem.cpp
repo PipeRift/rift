@@ -5,7 +5,7 @@
 #include "AST/Utils/Hierarchy.h"
 
 
-namespace Rift::OptimizationSystem
+namespace rift::OptimizationSystem
 {
 	void PruneDisconnectedStatements(AST::Tree& ast)
 	{
@@ -16,4 +16,4 @@ namespace Rift::OptimizationSystem
 	{
 		// TODO
 	}
-}    // namespace Rift::OptimizationSystem
+}    // namespace rift::OptimizationSystem

@@ -3,22 +3,26 @@
 
 #include "AST/Components/CLiteral.h"
 
-#include <Misc/EnumFlags.h>
+#include <Core/EnumFlags.h>
 #include <Reflection/Reflection.h>
 
 
-namespace Rift
+namespace rift
 {
-	using namespace Rift::EnumOperators;
+	using namespace p;
+	//using namespace p::EnumOperators;
 
 	enum class FloatingType : u8
 	{
 		F32 = 32,
 		F64 = 64
 	};
-	ENUM(FloatingType)
+}    // namespace rift
+ENUM(rift::FloatingType)
 
 
+namespace rift
+{
 	struct CLiteralFloating : public CLiteral
 	{
 		STRUCT(CLiteralFloating, CLiteral)
@@ -33,7 +37,7 @@ namespace Rift
 
 		u8 GetSize() const
 		{
-			return *type;
+			return static_cast<UnderlyingType<FloatingType>>(type);
 		}
 	};
-}    // namespace Rift
+}    // namespace rift

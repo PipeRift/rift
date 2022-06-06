@@ -6,11 +6,11 @@
 #include "Compiler/CompilerConfig.h"
 
 
-namespace Rift::Compiler
+namespace rift::Compiler
 {
 	void Build(AST::Tree& tree, const Config& config, TPtr<Backend> backend);
 
-	inline void Build(AST::Tree& ast, const Config& config, Refl::ClassType* backendType)
+	inline void Build(AST::Tree& ast, const Config& config, ClassType* backendType)
 	{
 		if (backendType)
 		{
@@ -24,4 +24,4 @@ namespace Rift::Compiler
 	{
 		Build(ast, config, T::GetStaticType());
 	}
-}    // namespace Rift::Compiler
+}    // namespace rift::Compiler

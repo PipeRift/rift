@@ -3,21 +3,21 @@
 
 #include <AST/Id.h>
 #include <llvm/IR/Function.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CIRFunction : public Struct
+	struct CIRFunction : public p::Struct
 	{
-		STRUCT(CIRFunction, Struct)
+		STRUCT(CIRFunction, p::Struct)
 
 		llvm::Function* instance = nullptr;
 
-		TArray<llvm::Value*> inputs;
-		TArray<AST::Id> inputIds;
+		p::TArray<llvm::Value*> inputs;
+		p::TArray<AST::Id> inputIds;
 
 
 		CIRFunction() {}
 	};
-}    // namespace Rift
+}    // namespace rift

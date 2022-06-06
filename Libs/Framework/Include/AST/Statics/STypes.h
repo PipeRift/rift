@@ -3,16 +3,16 @@
 
 #include "AST/Id.h"
 
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct STypes : public Struct
+	struct STypes : public p::Struct
 	{
-		STRUCT(STypes, Struct)
+		STRUCT(STypes, p::Struct)
 
 		TMap<Name, AST::Id> typesByName;
 		TMap<Name, AST::Id> typesByPath;
 	};
-}    // namespace Rift
+}    // namespace rift

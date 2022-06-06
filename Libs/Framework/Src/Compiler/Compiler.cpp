@@ -1,4 +1,5 @@
 // Copyright 2015-2022 Piperift - All rights reserved
+
 #include "Compiler/Compiler.h"
 
 #include "AST/Statics/SModules.h"
@@ -12,7 +13,7 @@
 #include <Files/Files.h>
 
 
-namespace Rift::Compiler
+namespace rift::Compiler
 {
 	void Build(AST::Tree& ast, const Config& config, TPtr<Backend> backend)
 	{
@@ -47,9 +48,9 @@ namespace Rift::Compiler
 		Log::Info("Building project '{}'", Modules::GetProjectName(context.ast));
 		// Clean build folders
 		Log::Info("Cleaning previous build");
-		Files::Delete(context.config.binariesPath, true, false);
-		Files::CreateFolder(context.config.binariesPath, true);
+		files::Delete(context.config.binariesPath, true, false);
+		files::CreateFolder(context.config.binariesPath, true);
 
 		backend->Build(context);
 	}
-}    // namespace Rift::Compiler
+}    // namespace rift::Compiler

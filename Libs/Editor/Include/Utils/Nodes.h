@@ -2,9 +2,9 @@
 #pragma once
 
 #include <AST/Id.h>
+#include <Core/EnumFlags.h>
 #include <Math/Color.h>
 #include <Math/Vector.h>
-#include <Misc/EnumFlags.h>
 #include <UI/UIImgui.h>
 
 
@@ -15,9 +15,9 @@
 struct ImGuiContext;
 
 
-namespace Rift::Nodes
+namespace rift::Nodes
 {
-	using namespace EnumOperators;
+	using namespace p;
 
 
 	using Id = i32;
@@ -456,4 +456,4 @@ namespace Rift::Nodes
 	// Was an existing link detached from a pin by the user? The detached link's id is assigned
 	// to the output argument linkId.
 	bool IsLinkDestroyed(Id& linkId);
-}    // namespace Rift::Nodes
+}    // namespace rift::Nodes

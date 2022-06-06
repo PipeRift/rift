@@ -3,33 +3,27 @@
 
 #include "AST/Id.h"
 
-#include <Serialization/Contexts.h>
-#include <Types/Struct.h>
+#include <Reflection/Struct.h>
+#include <Serialization/Serialization.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct CStmtOutput : public Struct
+	using namespace p;
+
+
+	struct CStmtOutput : public p::Struct
 	{
-		STRUCT(CStmtOutput, Struct)
+		STRUCT(CStmtOutput, p::Struct)
 
 		PROP(linkInputNode)
 		AST::Id linkInputNode = AST::NoId;
 	};
 
-	static void Read(Serl::ReadContext& ct, CStmtOutput& val)
-	{
-		ct.Serialize(val.linkInputNode);
-	}
-	static void Write(Serl::WriteContext& ct, const CStmtOutput& val)
-	{
-		ct.Serialize(val.linkInputNode);
-	}
 
-
-	struct CStmtOutputs : public Struct
+	struct CStmtOutputs : public p::Struct
 	{
-		STRUCT(CStmtOutputs, Struct)
+		STRUCT(CStmtOutputs, p::Struct)
 
 		// Both arrays keep the same index to the input node and the output pin
 		PROP(pinIds)
@@ -39,8 +33,17 @@ namespace Rift
 
 
 		CStmtOutputs() = default;
-		CStmtOutputs(TArray<AST::Id> pins)
+		CStmtOutputs(p::TArray<AST::Id> pins)
 		    : pinIds{Move(pins)}, linkInputNodes(pinIds.Size(), AST::NoId)
 		{}
 	};
-}    // namespace Rift
+
+	static void Read(Reader& ct, CStmtOutput& val)
+	{
+		ct.Serialize(val.linkInputNode);
+	}
+	static void Write(Writer& ct, const CStmtOutput& val)
+	{
+		ct.Serialize(val.linkInputNode);
+	}
+}    // namespace rift

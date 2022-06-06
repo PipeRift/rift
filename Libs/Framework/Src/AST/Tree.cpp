@@ -11,30 +11,30 @@
 #include <ECS/Filtering.h>
 
 
-namespace Rift::AST
+namespace rift::AST
 {
 	Tree::Tree()
 	{
 		SetupNativeTypes();
 	}
 
-	Tree::Tree(const Tree& other) noexcept : ECS::Context(other)
+	Tree::Tree(const Tree& other) noexcept : ecs::Context(other)
 	{
 		CopyFrom(other);
 	}
-	Tree::Tree(Tree&& other) noexcept : ECS::Context(Move(other))
+	Tree::Tree(Tree&& other) noexcept : ecs::Context(Move(other))
 	{
 		MoveFrom(Move(other));
 	}
 	Tree& Tree::operator=(const Tree& other) noexcept
 	{
-		ECS::Context::operator=(other);
+		ecs::Context::operator=(other);
 		CopyFrom(other);
 		return *this;
 	}
 	Tree& Tree::operator=(Tree&& other) noexcept
 	{
-		ECS::Context::operator=(Move(other));
+		ecs::Context::operator=(Move(other));
 		MoveFrom(Move(other));
 		return *this;
 	}
@@ -113,4 +113,4 @@ namespace Rift::AST
 	{
 		nativeTypes = other.nativeTypes;
 	}
-}    // namespace Rift::AST
+}    // namespace rift::AST

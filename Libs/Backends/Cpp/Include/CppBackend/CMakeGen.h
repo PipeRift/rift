@@ -6,12 +6,12 @@
 #include <Files/Paths.h>
 
 
-namespace Rift::Compiler
+namespace rift::Compiler
 {
 	struct Context;
 }
 
-namespace Rift::Compiler::Cpp
+namespace rift::Compiler::Cpp
 {
-	void GenerateCMake(Context& context, const Path& codePath);
-}    // namespace Rift::Compiler::Cpp
+	void GenerateCMake(Context& context, const p::Path& codePath);
+}    // namespace rift::Compiler::Cpp

@@ -1,31 +1,30 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include <Core/Platform.h>
+#include <Core/StringView.h>
 #include <Math/Color.h>
 #include <Math/Vector.h>
-#include <Platform/Platform.h>
-#include <Strings/StringView.h>
 
 
-#define IM_VEC2_CLASS_EXTRA                                      \
-	constexpr ImVec2(Rift::v2 other) : x(other.x), y(other.y) {} \
-	constexpr operator Rift::v2() const                          \
-	{                                                            \
-		return Rift::v2{x, y};                                   \
+#define IM_VEC2_CLASS_EXTRA                                   \
+	constexpr ImVec2(p::v2 other) : x(other.x), y(other.y) {} \
+	constexpr operator p::v2() const                          \
+	{                                                         \
+		return p::v2{x, y};                                   \
 	}
 
-#define IM_VEC4_CLASS_EXTRA                                                                     \
-	constexpr ImVec4(const Rift::LinearColor& other)                                            \
-	    : x(other.r), y(other.g), z(other.b), w(other.a)                                        \
-	{}                                                                                          \
-	constexpr operator Rift::LinearColor() const                                                \
-	{                                                                                           \
-		return Rift::LinearColor{x, y, z, w};                                                   \
-	}                                                                                           \
-	constexpr ImVec4(const Rift::v4& other) : x(other.x), y(other.y), z(other.z), w(other.w) {} \
-	constexpr operator Rift::v4() const                                                         \
-	{                                                                                           \
-		return Rift::v4{x, y, z, w};                                                            \
+#define IM_VEC4_CLASS_EXTRA                                                                        \
+	constexpr ImVec4(const p::LinearColor& other) : x(other.r), y(other.g), z(other.b), w(other.a) \
+	{}                                                                                             \
+	constexpr operator p::LinearColor() const                                                      \
+	{                                                                                              \
+		return p::LinearColor{x, y, z, w};                                                         \
+	}                                                                                              \
+	constexpr ImVec4(const p::v4& other) : x(other.x), y(other.y), z(other.z), w(other.w) {}       \
+	constexpr operator p::v4() const                                                               \
+	{                                                                                              \
+		return p::v4{x, y, z, w};                                                                  \
 	}
 
 
@@ -34,8 +33,9 @@
 #include <imgui_internal.h>
 
 
-namespace Rift::UI
+namespace rift::UI
 {
+	using namespace p;
 	using namespace ImGui;
 
 	// Begin ImGui API override
@@ -136,4 +136,4 @@ namespace Rift::UI
 		TextColoredUnformatted(color, text.data(), text.data() + text.size());
 	}
 
-}    // namespace Rift::UI
+}    // namespace rift::UI

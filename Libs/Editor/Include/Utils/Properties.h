@@ -14,11 +14,11 @@
 #include <AST/Components/CType.h>
 #include <AST/Tree.h>
 #include <AST/Utils/TransactionUtils.h>
+#include <Core/StringView.h>
 #include <ECS/Filtering.h>
-#include <Strings/StringView.h>
 
 
-namespace Rift
+namespace rift
 {
 	struct CTypeEditor;
 
@@ -43,4 +43,4 @@ namespace Rift
 	void DrawFunctions(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId);
 
 	void DrawProperties(AST::Tree& ast, AST::Id typeId);
-}    // namespace Rift
+}    // namespace rift

@@ -2,12 +2,15 @@
 #pragma once
 
 #include "AST/Tree.h"
-#include "Serialization/Contexts.h"
+#include "Serialization/Serialization.h"
 
 
-namespace Rift::AST
+namespace rift::AST
 {
-	class ReadContext : public Serl::ReadContext
+	using namespace p;
+
+
+	class Reader : public p::Reader
 	{
 		Tree& ast;
 
@@ -17,11 +20,9 @@ namespace Rift::AST
 
 
 	public:
-		ReadContext(const Serl::ReadContext& parent, Tree& ast)
-		    : Serl::ReadContext(parent), ast(ast)
-		{}
+		Reader(const p::Reader& parent, Tree& ast) : p::Reader(parent), ast(ast) {}
 
-		void SerializeEntities(TArray<Id>& entities);
+		void SerializeEntities(p::TArray<Id>& entities);
 
 		void SerializeEntity(Id& entity)
 		{
@@ -37,7 +38,7 @@ namespace Rift::AST
 	};
 
 
-	class WriteContext : public Serl::WriteContext
+	class Writer : public p::Writer
 	{
 		Tree& ast;
 		bool includeChildren;
@@ -48,8 +49,8 @@ namespace Rift::AST
 
 
 	public:
-		WriteContext(const Serl::WriteContext& parent, Tree& ast, bool includeChildren = true)
-		    : Serl::WriteContext(parent), ast(ast), includeChildren{includeChildren}
+		Writer(const p::Writer& parent, Tree& ast, bool includeChildren = true)
+		    : p::Writer(parent), ast(ast), includeChildren{includeChildren}
 		{}
 
 		void SerializeEntities(const TArray<Id>& entities, bool includeChildren = true);
@@ -68,4 +69,4 @@ namespace Rift::AST
 		void RetrieveHierarchy(const TArray<Id>& roots, TArray<Id>& children);
 		void RemoveIgnoredEntities(TArray<Id>& entities);
 	};
-}    // namespace Rift::AST
+}    // namespace rift::AST

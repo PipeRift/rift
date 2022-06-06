@@ -12,7 +12,11 @@
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
+#if LLVM_VERSION_MAJOR >= 14
 #include <llvm/MC/TargetRegistry.h>
+#else
+#include <llvm/Support/TargetRegistry.h>
+#endif
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Host.h>
 #include <llvm/Support/TargetSelect.h>
@@ -20,7 +24,7 @@
 #include <llvm/Target/TargetOptions.h>
 
 
-namespace Rift::Compiler
+namespace rift::Compiler
 {
 	namespace LLVM
 	{
@@ -30,7 +34,7 @@ namespace Rift::Compiler
 			ZoneScoped;
 
 			const String filePath =
-			    Strings::Format("{}/{}.o", Paths::ToString(context.config.intermediatesPath),
+			    Strings::Format("{}/{}.o", p::ToString(context.config.intermediatesPath),
 			        Modules::GetModuleName(context.ast, moduleId));
 			Log::Info("Creating object '{}'", filePath);
 
@@ -80,13 +84,13 @@ namespace Rift::Compiler
 			    targetTriple, "generic", "", options, llvm::Optional<llvm::Reloc::Model>());
 
 			// Emit LLVM IR to console
-			for (AST::Id moduleId : ECS::ListAll<CIRModule>(context.ast))
+			for (AST::Id moduleId : ecs::ListAll<CIRModule>(context.ast))
 			{
 				const auto& irModule = context.ast.Get<const CIRModule>(moduleId).instance;
 				irModule->print(llvm::outs(), nullptr);
 			}
 
-			for (AST::Id moduleId : ECS::ListAll<CIRModule>(context.ast))
+			for (AST::Id moduleId : ecs::ListAll<CIRModule>(context.ast))
 			{
 				LLVM::SaveModuleObject(context, moduleId, targetMachine, targetTriple);
 			}
@@ -106,4 +110,4 @@ namespace Rift::Compiler
 		Log::Info("Build IR");
 		LLVM::CompileIR(context, llvm, builder);
 	}
-}    // namespace Rift::Compiler
+}    // namespace rift::Compiler

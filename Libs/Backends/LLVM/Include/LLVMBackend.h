@@ -6,7 +6,7 @@
 #include <RiftContext.h>
 
 
-namespace Rift
+namespace rift
 {
 	class LLVMBackendPlugin : public Plugin
 	{
@@ -32,4 +32,4 @@ namespace Rift
 			void Build(Context& context) override;
 		};
 	}    // namespace Compiler
-}    // namespace Rift
+}    // namespace rift

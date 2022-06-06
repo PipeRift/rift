@@ -1,21 +1,23 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include <Core/Platform.h>
 #include <ECS/Id.h>
-#include <Platform/Platform.h>
 #include <Reflection/Builders/NativeTypeBuilder.h>
-#include <Serialization/ContextsFwd.h>
+#include <Serialization/SerializationFwd.h>
 #include <Templates/TypeList.h>
 
 
-namespace Rift::AST
+namespace rift::AST
 {
-	using Id          = ECS::Id;
-	constexpr Id NoId = ECS::NoId;
-}    // namespace Rift::AST
+	using namespace p;
 
-namespace Rift::Serl
+	using Id          = ecs::Id;
+	constexpr Id NoId = ecs::NoId;
+}    // namespace rift::AST
+
+namespace p::ecs
 {
-	void Read(ReadContext& ct, AST::Id& val);
-	void Write(WriteContext& ct, AST::Id val);
-}    // namespace Rift::Serl
+	void Read(p::Reader& ct, p::ecs::Id& val);
+	void Write(p::Writer& ct, p::ecs::Id val);
+}    // namespace p::ecs

@@ -6,7 +6,7 @@
 #include <AST/Components/CExpression.h>
 
 
-namespace Rift
+namespace rift
 {
 	enum class UnaryOperatorType : u8
 	{
@@ -16,9 +16,12 @@ namespace Rift
 		Decrement,    // --
 		BitNot,       // ~
 	};
-	ENUM(UnaryOperatorType)
+}    // namespace rift
+ENUM(rift::UnaryOperatorType)
 
 
+namespace rift
+{
 	struct CExprUnaryOperator : public CExpression
 	{
 		STRUCT(CExprUnaryOperator, CExpression)
@@ -30,4 +33,4 @@ namespace Rift
 		CExprUnaryOperator() = default;
 		CExprUnaryOperator(UnaryOperatorType type) : type{type} {}
 	};
-}    // namespace Rift
+}    // namespace rift

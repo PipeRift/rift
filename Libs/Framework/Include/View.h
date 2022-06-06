@@ -3,21 +3,21 @@
 
 #include "AST/Components/CType.h"
 
-#include <Events/Function.h>
-#include <Types/Struct.h>
+#include <Core/Function.h>
+#include <Reflection/Struct.h>
 
 
-namespace Rift
+namespace rift
 {
-	struct View : public Struct
+	struct View : public p::Struct
 	{
-		STRUCT(View, Struct)
+		STRUCT(View, p::Struct)
 
 		PROP(name)
 		Name name;
 
-		Type supportedTypes = Type::None;
+		RiftType supportedTypes = RiftType::None;
 
 		TFunction<void()> onDrawEditor;
 	};
-}    // namespace Rift
+}    // namespace rift

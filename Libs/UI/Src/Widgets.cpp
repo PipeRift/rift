@@ -3,15 +3,15 @@
 #include "UI/Widgets.h"
 
 #include <IconsFontAwesome5.h>
-#include <Misc/DateTime.h>
-#include <Misc/Timespan.h>
+#include <Math/DateTime.h>
+#include <Math/Timespan.h>
 
 
-namespace Rift::UI
+namespace rift::UI
 {
 	void AnimatedSprite::SetAnimation(u32 id)
 	{
-		currentFrame              = {0, Math::Clamp(id, 0u, u32(numFrames.Size() - 1))};
+		currentFrame              = {0, math::Clamp(id, 0u, u32(numFrames.Size() - 1))};
 		currentFrameRemainingTime = rate;
 	}
 
@@ -127,7 +127,7 @@ namespace Rift::UI
 		const float minX = window->ParentWorkRect.Min.x;
 		const float maxX = window->ParentWorkRect.Max.x;
 
-		const ImVec2 size{Math::Max(desiredSize.x, maxX - minX), desiredSize.y};
+		const ImVec2 size{math::Max(desiredSize.x, maxX - minX), desiredSize.y};
 		ImRect bb{minX, pos.y, minX + size.x, pos.y + size.y};
 
 		if (addhalfItemSpacing)
@@ -215,4 +215,4 @@ namespace Rift::UI
 		ImGui::TextDisabled(ICON_FA_QUESTION_CIRCLE);
 		HelpTooltip(text, 0.f);
 	}
-}    // namespace Rift::UI
+}    // namespace rift::UI
