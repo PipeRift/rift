@@ -4,9 +4,9 @@
 
 #include "RiftContext.h"
 
-#include <Core/Profiler.h>
-#include <Core/String.h>
-#include <Math/Math.h>
+#include <PCore/Profiler.h>
+#include <PCore/String.h>
+#include <PMath/Math.h>
 
 #include <chrono>
 #include <common/TracySystem.hpp>

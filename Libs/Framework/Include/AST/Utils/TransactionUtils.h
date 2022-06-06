@@ -7,7 +7,7 @@
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 
-#include <ECS/Access.h>
+#include <PECS/Access.h>
 
 
 namespace rift

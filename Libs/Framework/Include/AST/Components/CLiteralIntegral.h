@@ -3,14 +3,14 @@
 
 #include "AST/Components/CLiteral.h"
 
-#include <Core/EnumFlags.h>
-#include <Reflection/Reflection.h>
+#include <PCore/EnumFlags.h>
+#include <PRefl/Reflection.h>
 
 
 namespace rift
 {
 	using namespace p::core;
-	//using namespace p::EnumOperators;
+	// using namespace p::EnumOperators;
 
 	enum class IntegralType : u8
 	{

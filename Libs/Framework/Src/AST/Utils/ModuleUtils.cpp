@@ -10,10 +10,11 @@
 #include "AST/Systems/TypeSystem.h"
 #include "AST/Utils/Paths.h"
 
-#include <ECS/Filtering.h>
-#include <Files/Files.h>
-#include <Files/Paths.h>
-#include <Serialization/Formats/JsonFormat.h>
+#include <PECS/Filtering.h>
+#include <PFiles/Files.h>
+#include <PFiles/Paths.h>
+#include <PSerl/Formats/JsonFormat.h>
+
 
 
 namespace rift::Modules

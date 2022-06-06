@@ -3,7 +3,7 @@
 #pragma once
 
 #include <Memory/OwnPtr.h>
-#include <Reflection/Class.h>
+#include <PRefl/Class.h>
 
 
 namespace rift

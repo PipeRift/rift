@@ -2,8 +2,8 @@
 #pragma once
 
 #include <AST/Tree.h>
-#include <Files/Paths.h>
-#include <Reflection/Struct.h>
+#include <PFiles/Paths.h>
+#include <PRefl/Struct.h>
 
 
 namespace rift

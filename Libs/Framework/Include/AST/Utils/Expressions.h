@@ -8,8 +8,8 @@
 #include "AST/Tree.h"
 #include "AST/Utils/Expressions.h"
 
-#include <Core/Span.h>
-#include <ECS/Filtering.h>
+#include <PCore/Span.h>
+#include <PECS/Filtering.h>
 
 
 // NOTE: In expression graphs, the Link Id is the Input Pin Id

@@ -11,7 +11,7 @@
 #include "AST/Statics/STypes.h"
 #include "AST/Tree.h"
 
-#include <ECS/Filtering.h>
+#include <PECS/Filtering.h>
 
 
 namespace rift::TypeSystem

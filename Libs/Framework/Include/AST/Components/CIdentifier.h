@@ -1,8 +1,8 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Core/Name.h>
-#include <Reflection/Struct.h>
+#include <PCore/Name.h>
+#include <PRefl/Struct.h>
 
 
 namespace rift

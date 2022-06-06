@@ -4,9 +4,9 @@
 
 #include "Compiler/CompilerConfig.h"
 
-#include <Core/Profiler.h>
-#include <Reflection/Reflection.h>
-#include <Reflection/Struct.h>
+#include <PCore/Profiler.h>
+#include <PRefl/Reflection.h>
+#include <PRefl/Struct.h>
 
 
 namespace rift::Compiler

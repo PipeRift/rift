@@ -3,7 +3,7 @@
 
 #include "AST/Id.h"
 
-#include <Reflection/Struct.h>
+#include <PRefl/Struct.h>
 
 
 namespace rift

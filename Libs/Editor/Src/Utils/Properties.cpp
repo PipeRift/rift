@@ -15,16 +15,16 @@
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/TypeUtils.h>
-#include <Core/EnumFlags.h>
-#include <ECS/Filtering.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
+#include <PCore/EnumFlags.h>
+#include <PECS/Filtering.h>
 #include <UI/UI.h>
 
 
 namespace rift
 {
-	//using namespace EnumOperators;
+	// using namespace EnumOperators;
 
 
 	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, AST::Id variableId)

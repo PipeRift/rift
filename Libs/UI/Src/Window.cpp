@@ -14,10 +14,10 @@
 // OpenGL loader
 #include <GL/gl3w.h>
 // Include glfw3.h after our OpenGL definitions
-#include <Core/Log.h>
-#include <Core/Profiler.h>
 #include <GLFW/glfw3.h>
-#include <Math/Color.h>
+#include <PCore/Log.h>
+#include <PCore/Profiler.h>
+#include <PMath/Color.h>
 
 
 namespace rift::UI
@@ -91,7 +91,7 @@ namespace rift::UI
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
-		// Setup Core/Renderer backends
+		// Setup PCore/Renderer backends
 		ImGui_ImplGlfw_InitForOpenGL(gWindow, true);
 		ImGui_ImplOpenGL3_Init(glslVersion);
 

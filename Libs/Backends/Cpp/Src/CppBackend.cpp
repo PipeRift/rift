@@ -11,9 +11,10 @@
 #include <AST/Components/CModule.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Context.h>
-#include <ECS/Filtering.h>
-#include <Files/Files.h>
-#include <Math/DateTime.h>
+#include <PECS/Filtering.h>
+#include <PFiles/Files.h>
+#include <PMath/DateTime.h>
+
 
 
 namespace rift::Compiler

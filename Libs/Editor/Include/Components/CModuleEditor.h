@@ -4,7 +4,7 @@
 #include "DockSpaceLayout.h"
 
 #include <AST/Id.h>
-#include <Reflection/Struct.h>
+#include <PRefl/Struct.h>
 #include <UI/UI.h>
 #include <Utils/NodesInternal.h>
 

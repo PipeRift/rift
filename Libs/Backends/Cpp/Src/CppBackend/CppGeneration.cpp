@@ -19,9 +19,10 @@
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Context.h>
-#include <Core/String.h>
-#include <ECS/Filtering.h>
-#include <Files/Files.h>
+#include <PCore/String.h>
+#include <PECS/Filtering.h>
+#include <PFiles/Files.h>
+
 
 
 namespace rift::Compiler::Cpp

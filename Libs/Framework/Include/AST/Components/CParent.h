@@ -2,8 +2,8 @@
 #pragma once
 
 #include <AST/Id.h>
-#include <Core/Array.h>
-#include <Reflection/Struct.h>
+#include <PCore/Array.h>
+#include <PRefl/Struct.h>
 
 
 namespace rift

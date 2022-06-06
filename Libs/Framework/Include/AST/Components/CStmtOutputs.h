@@ -3,8 +3,8 @@
 
 #include "AST/Id.h"
 
-#include <Reflection/Struct.h>
-#include <Serialization/Serialization.h>
+#include <PRefl/Struct.h>
+#include <PSerl/Serialization.h>
 
 
 namespace rift

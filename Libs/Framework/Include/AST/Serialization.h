@@ -2,7 +2,8 @@
 #pragma once
 
 #include "AST/Tree.h"
-#include "Serialization/Serialization.h"
+
+#include <PSerl/Serialization.h>
 
 
 namespace rift::AST

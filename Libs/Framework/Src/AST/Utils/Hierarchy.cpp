@@ -2,7 +2,7 @@
 
 #include "AST/Utils/Hierarchy.h"
 
-#include <Core/Checks.h>
+#include <PCore/Checks.h>
 
 
 namespace rift::AST::Hierarchy

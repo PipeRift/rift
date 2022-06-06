@@ -1,8 +1,8 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Core/Platform.h>
-#include <Math/Color.h>
+#include <PCore/Platform.h>
+#include <PMath/Color.h>
 
 
 namespace rift::Style

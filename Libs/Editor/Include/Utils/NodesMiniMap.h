@@ -3,8 +3,8 @@
 #pragma once
 
 #include <AST/Id.h>
-#include <Core/Platform.h>
-#include <Math/Vector.h>
+#include <PCore/Platform.h>
+#include <PMath/Vector.h>
 
 
 namespace rift::Nodes

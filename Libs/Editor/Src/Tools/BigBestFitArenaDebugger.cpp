@@ -2,9 +2,9 @@
 
 #include "Tools/BigBestFitArenaDebugger.h"
 
-#include <Core/String.h>
-#include <Math/Math.h>
 #include <Memory/Arenas/GlobalArena.h>
+#include <PCore/String.h>
+#include <PMath/Math.h>
 #include <UI/UI.h>
 
 

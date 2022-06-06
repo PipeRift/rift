@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <Core/StringView.h>
+#include <PCore/StringView.h>
 
 
 namespace rift::Paths

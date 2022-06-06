@@ -2,7 +2,7 @@
 #pragma once
 
 #include <llvm/IR/Value.h>
-#include <Reflection/Struct.h>
+#include <PRefl/Struct.h>
 
 
 namespace rift

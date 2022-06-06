@@ -1,9 +1,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Core/Function.h>
-#include <Core/Map.h>
-#include <Core/Name.h>
+#include <PCore/Function.h>
+#include <PCore/Map.h>
+#include <PCore/Name.h>
 #include <UI/UI.h>
 
 

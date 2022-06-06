@@ -3,9 +3,9 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Compiler/Utils/BackendUtils.h>
-#include <Core/Context.h>
-#include <Core/Profiler.h>
-#include <Files/Paths.h>
+#include <PCore/Context.h>
+#include <PCore/Profiler.h>
+#include <PFiles/Paths.h>
 #include <RiftContext.h>
 
 

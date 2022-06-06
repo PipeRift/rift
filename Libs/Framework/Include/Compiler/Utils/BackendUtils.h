@@ -6,7 +6,7 @@
 #include "Compiler/Context.h"
 
 #include <Memory/OwnPtr.h>
-#include <Reflection/ClassType.h>
+#include <PRefl/ClassType.h>
 
 
 namespace rift::Compiler

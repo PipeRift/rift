@@ -6,7 +6,7 @@
 #include "Tasks.h"
 #include "View.h"
 
-#include <Core/Context.h>
+#include <PCore/Context.h>
 
 
 namespace rift

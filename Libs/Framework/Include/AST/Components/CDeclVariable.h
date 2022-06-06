@@ -3,7 +3,7 @@
 
 #include "AST/Components/CDeclaration.h"
 #include "AST/Id.h"
-#include "Reflection/ReflectionFlags.h"
+#include "PRefl/ReflectionFlags.h"
 
 
 namespace rift

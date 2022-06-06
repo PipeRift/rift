@@ -7,8 +7,8 @@
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CType.h>
 #include <AST/Tree.h>
-#include <Core/StringView.h>
-#include <ECS/Filtering.h>
+#include <PCore/StringView.h>
+#include <PECS/Filtering.h>
 
 
 namespace rift::Editor

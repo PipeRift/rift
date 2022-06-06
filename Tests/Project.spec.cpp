@@ -3,10 +3,10 @@
 #include <AST/Systems/LoadSystem.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <bandit/bandit.h>
-#include <Core/Context.h>
-#include <Files/Files.h>
-#include <Files/Paths.h>
 #include <Memory/OwnPtr.h>
+#include <PCore/Context.h>
+#include <PFiles/Files.h>
+#include <PFiles/Paths.h>
 
 #include <chrono>
 #include <thread>

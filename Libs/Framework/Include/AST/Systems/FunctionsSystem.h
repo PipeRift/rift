@@ -9,8 +9,8 @@
 #include "AST/Components/Tags/CInvalid.h"
 #include "AST/Tree.h"
 
-#include <Core/Array.h>
-#include <Core/Span.h>
+#include <PCore/Array.h>
+#include <PCore/Span.h>
 
 
 namespace rift::AST

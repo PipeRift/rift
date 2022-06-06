@@ -6,7 +6,7 @@
 
 #include "AST/Id.h"
 
-#include <Core/Checks.h>
+#include <PCore/Checks.h>
 
 #include <cstddef>
 #include <iterator>

@@ -4,7 +4,7 @@
 #include "AST/Components/CExprCall.h"
 #include "AST/Components/CFileRef.h"
 
-#include <Reflection/Struct.h>
+#include <PRefl/Struct.h>
 
 
 namespace rift

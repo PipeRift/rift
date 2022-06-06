@@ -8,8 +8,9 @@
 #include "AST/Components/CProject.h"
 #include "AST/Tree.h"
 
-#include <ECS/Filtering.h>
 #include <Memory/OwnPtr.h>
+#include <PECS/Filtering.h>
+
 
 
 namespace rift

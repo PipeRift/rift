@@ -8,9 +8,9 @@
 #include <AST/Components/CModule.h>
 #include <AST/Components/CType.h>
 #include <AST/Tree.h>
-#include <Core/Array.h>
-#include <Core/String.h>
-#include <ECS/Filtering.h>
+#include <PCore/Array.h>
+#include <PCore/String.h>
+#include <PECS/Filtering.h>
 
 
 namespace rift
