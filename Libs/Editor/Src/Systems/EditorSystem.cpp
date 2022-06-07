@@ -8,7 +8,6 @@
 #include "DockSpaceLayout.h"
 #include "Editor.h"
 #include "imgui_internal.h"
-#include "PFiles/Paths.h"
 #include "Statics/SEditor.h"
 #include "Utils/FunctionGraph.h"
 #include "Utils/ModuleUtils.h"
@@ -24,14 +23,14 @@
 #include <CppBackend.h>
 #include <IconsFontAwesome5.h>
 #include <LLVMBackend.h>
-#include <PCore/Array.h>
-#include <PECS/Filtering.h>
-#include <PFiles/FileDialog.h>
+#include <Pipe/Core/Array.h>
+#include <Pipe/ECS/Filtering.h>
+#include <Pipe/Files/FileDialog.h>
+#include <Pipe/Files/Paths.h>
 #include <RiftContext.h>
 #include <UI/Inspection.h>
 #include <UI/Notify.h>
 #include <UI/UI.h>
-
 
 
 namespace rift::EditorSystem

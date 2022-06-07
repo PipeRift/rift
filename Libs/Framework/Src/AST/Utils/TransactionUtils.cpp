@@ -5,7 +5,7 @@
 #include "AST/Components/CType.h"
 #include "AST/Utils/Hierarchy.h"
 
-#include <PECS/Filtering.h>
+#include <Pipe/ECS/Filtering.h>
 
 
 namespace rift::AST::Transactions

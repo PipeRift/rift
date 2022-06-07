@@ -2,7 +2,7 @@
 #pragma once
 
 #include <AST/Tree.h>
-#include <PECS/Id.h>
+#include <Pipe/ECS/Id.h>
 
 
 namespace rift::Graph

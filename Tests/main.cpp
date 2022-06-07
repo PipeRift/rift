@@ -1,6 +1,6 @@
 
 #include <bandit/bandit.h>
-#include <PCore/Context.h>
+#include <Pipe/Core/Context.h>
 
 
 class NoFileLogContext : public p::Context

@@ -2,8 +2,8 @@
 #pragma once
 
 #include <AST/Tree.h>
-#include <PFiles/Paths.h>
-#include <PMath/FrameTime.h>
+#include <Pipe/Files/Paths.h>
+#include <Pipe/Math/FrameTime.h>
 #include <RiftContext.h>
 
 

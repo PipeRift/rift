@@ -5,8 +5,8 @@
 #include "AST/Components/CParent.h"
 #include "AST/Id.h"
 
-#include <PCore/Span.h>
-#include <PECS/Access.h>
+#include <Pipe/Core/Span.h>
+#include <Pipe/ECS/Access.h>
 
 
 namespace rift::AST::Hierarchy

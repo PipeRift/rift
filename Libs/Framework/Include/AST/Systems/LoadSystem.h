@@ -4,9 +4,9 @@
 #include "AST/Components/CFileRef.h"
 #include "AST/Tree.h"
 
-#include <PCore/Array.h>
-#include <PCore/Span.h>
-#include <PECS/Filtering.h>
+#include <Pipe/Core/Array.h>
+#include <Pipe/Core/Span.h>
+#include <Pipe/ECS/Filtering.h>
 
 
 namespace rift::AST

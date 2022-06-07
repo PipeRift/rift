@@ -3,7 +3,7 @@
 #pragma once
 
 #include <AST/Id.h>
-#include <PFiles/Paths.h>
+#include <Pipe/Files/Paths.h>
 
 
 namespace rift::Compiler

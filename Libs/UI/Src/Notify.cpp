@@ -2,14 +2,14 @@
 
 #include "UI/Notify.h"
 
-#include "PMath/DateTime.h"
-#include "PMath/Timespan.h"
 #include "UI/Style.h"
 #include "UI/UIImgui.h"
 
 #include <IconsFontAwesome5.h>
-#include <PCore/String.h>
-#include <PMath/Vector.h>
+#include <Pipe/Core/String.h>
+#include <Pipe/Math/DateTime.h>
+#include <Pipe/Math/Timespan.h>
+#include <Pipe/Math/Vector.h>
 
 
 #define NOTIFY_USE_SEPARATOR

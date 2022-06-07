@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include <PCore/Function.h>
-#include <PCore/Name.h>
-#include <PCore/Platform.h>
+#include <Pipe/Core/Function.h>
+#include <Pipe/Core/Name.h>
+#include <Pipe/Core/Platform.h>
 
 
 struct GLFWwindow;

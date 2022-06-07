@@ -8,7 +8,7 @@
 #include <AST/Components/CExprUnaryOperator.h>
 #include <AST/Components/CType.h>
 #include <AST/Utils/TypeUtils.h>
-#include <PECS/Access.h>
+#include <Pipe/ECS/Access.h>
 
 
 namespace rift::Types

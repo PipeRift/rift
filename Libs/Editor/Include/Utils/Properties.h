@@ -14,8 +14,8 @@
 #include <AST/Components/CType.h>
 #include <AST/Tree.h>
 #include <AST/Utils/TransactionUtils.h>
-#include <PCore/StringView.h>
-#include <PECS/Filtering.h>
+#include <Pipe/Core/StringView.h>
+#include <Pipe/ECS/Filtering.h>
 
 
 namespace rift

@@ -10,7 +10,7 @@
 #include "AST/Utils/Hierarchy.h"
 #include "AST/Utils/TypeUtils.h"
 
-#include <PECS/Filtering.h>
+#include <Pipe/ECS/Filtering.h>
 
 
 namespace rift::FunctionsSystem

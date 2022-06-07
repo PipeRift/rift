@@ -34,12 +34,11 @@
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <GLFW/glfw3.h>
-#include <PECS/Filtering.h>
+#include <Pipe/ECS/Filtering.h>
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
 #include <Utils/NodesInternal.h>
 #include <Utils/NodesMiniMap.h>
-
 
 
 namespace rift::Graph

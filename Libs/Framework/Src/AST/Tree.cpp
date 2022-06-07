@@ -8,7 +8,7 @@
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
 
-#include <PECS/Filtering.h>
+#include <Pipe/ECS/Filtering.h>
 
 
 namespace rift::AST

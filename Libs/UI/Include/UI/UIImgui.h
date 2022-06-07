@@ -1,10 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <PCore/Platform.h>
-#include <PCore/StringView.h>
-#include <PMath/Color.h>
-#include <PMath/Vector.h>
+#include <Pipe/Core/Platform.h>
+#include <Pipe/Core/StringView.h>
+#include <Pipe/Math/Color.h>
+#include <Pipe/Math/Vector.h>
 
 
 #define IM_VEC2_CLASS_EXTRA                                   \

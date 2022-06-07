@@ -13,9 +13,9 @@
 #include "Utils/NodesInternal.h"
 #include "Utils/NodesMiniMap.h"
 
-#include <PCore/Checks.h>
-#include <PCore/Log.h>
-#include <PMath/Bezier.h>
+#include <Pipe/Core/Checks.h>
+#include <Pipe/Core/Log.h>
+#include <Pipe/Math/Bezier.h>
 
 #include <cassert>
 #include <climits>

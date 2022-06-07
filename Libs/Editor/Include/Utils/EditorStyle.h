@@ -3,8 +3,8 @@
 #pragma once
 
 #include <AST/Tree.h>
-#include <PMath/Color.h>
-#include <PRefl/TypeId.h>
+#include <Pipe/Math/Color.h>
+#include <Pipe/Reflect/TypeId.h>
 #include <UI/Style.h>
 
 

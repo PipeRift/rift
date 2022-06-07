@@ -3,8 +3,8 @@
 
 #include "AST/Components/CLiteral.h"
 
-#include <PCore/EnumFlags.h>
-#include <PRefl/Reflection.h>
+#include <Pipe/Core/EnumFlags.h>
+#include <Pipe/Reflect/Reflection.h>
 
 
 namespace rift

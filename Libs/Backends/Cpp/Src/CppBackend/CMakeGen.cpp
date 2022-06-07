@@ -6,8 +6,8 @@
 
 #include <AST/Components/CModule.h>
 #include <AST/Utils/ModuleUtils.h>
-#include <PECS/Filtering.h>
-#include <PFiles/Files.h>
+#include <Pipe/ECS/Filtering.h>
+#include <Pipe/Files/Files.h>
 
 
 namespace rift::Compiler::Cpp

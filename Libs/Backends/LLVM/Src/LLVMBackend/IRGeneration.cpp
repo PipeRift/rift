@@ -36,8 +36,7 @@
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Verifier.h>
-#include <PECS/Filtering.h>
-
+#include <Pipe/ECS/Filtering.h>
 
 
 namespace rift::Compiler::LLVM

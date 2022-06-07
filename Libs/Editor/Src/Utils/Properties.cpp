@@ -17,8 +17,8 @@
 #include <AST/Utils/TypeUtils.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
-#include <PCore/EnumFlags.h>
-#include <PECS/Filtering.h>
+#include <Pipe/Core/EnumFlags.h>
+#include <Pipe/ECS/Filtering.h>
 #include <UI/UI.h>
 
 

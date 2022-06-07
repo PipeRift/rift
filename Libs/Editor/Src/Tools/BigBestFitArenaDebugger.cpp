@@ -2,10 +2,11 @@
 
 #include "Tools/BigBestFitArenaDebugger.h"
 
-#include <Memory/Arenas/GlobalArena.h>
-#include <PCore/String.h>
-#include <PMath/Math.h>
+#include <Pipe/Core/String.h>
+#include <Pipe/Math/Math.h>
+#include <Pipe/Memory/Arenas/GlobalArena.h>
 #include <UI/UI.h>
+
 
 
 // External

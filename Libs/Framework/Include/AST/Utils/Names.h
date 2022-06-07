@@ -4,7 +4,7 @@
 
 #include "AST/Components/CIdentifier.h"
 
-#include <PECS/Access.h>
+#include <Pipe/ECS/Access.h>
 
 
 namespace rift::Names

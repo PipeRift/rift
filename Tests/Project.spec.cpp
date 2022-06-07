@@ -3,13 +3,14 @@
 #include <AST/Systems/LoadSystem.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <bandit/bandit.h>
-#include <Memory/OwnPtr.h>
-#include <PCore/Context.h>
-#include <PFiles/Files.h>
-#include <PFiles/Paths.h>
+#include <Pipe/Core/Context.h>
+#include <Pipe/Files/Files.h>
+#include <Pipe/Files/Paths.h>
+#include <Pipe/Memory/OwnPtr.h>
 
 #include <chrono>
 #include <thread>
+
 
 
 using namespace snowhouse;

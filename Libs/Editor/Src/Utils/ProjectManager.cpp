@@ -3,7 +3,7 @@
 #include "Editor.h"
 #include "Utils/Properties.h"
 
-#include <PFiles/FileDialog.h>
+#include <Pipe/Files/FileDialog.h>
 #include <UI/Notify.h>
 #include <UI/UI.h>
 

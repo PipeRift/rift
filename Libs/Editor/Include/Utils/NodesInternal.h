@@ -8,10 +8,10 @@
 #include <assert.h>
 #include <AST/Id.h>
 #include <limits.h>
-#include <PCore/Array.h>
-#include <PCore/BitArray.h>
-#include <PCore/EnumFlags.h>
-#include <PMath/Vector.h>
+#include <Pipe/Core/Array.h>
+#include <Pipe/Core/BitArray.h>
+#include <Pipe/Core/EnumFlags.h>
+#include <Pipe/Math/Vector.h>
 
 
 // the structure of this file:

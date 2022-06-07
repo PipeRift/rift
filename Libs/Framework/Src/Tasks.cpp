@@ -4,15 +4,14 @@
 
 #include "RiftContext.h"
 
-#include <PCore/Profiler.h>
-#include <PCore/String.h>
-#include <PMath/Math.h>
+#include <Pipe/Core/Profiler.h>
+#include <Pipe/Core/String.h>
+#include <Pipe/Math/Math.h>
 
 #include <chrono>
 #include <common/TracySystem.hpp>
 #include <condition_variable>
 #include <mutex>
-
 
 
 namespace rift

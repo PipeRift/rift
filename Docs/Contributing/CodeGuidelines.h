@@ -5,7 +5,6 @@
 
 // [header.guard] include guard
 #pragma once
-
 // [basic.language] Use US English for all names and comments
 //  BAD  -> Color SpecialisedColour;
 //  GOOD -> Color SpecializedColor;

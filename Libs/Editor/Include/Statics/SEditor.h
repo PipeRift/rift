@@ -8,11 +8,10 @@
 #include "Tools/GraphPlayground.h"
 #include "Tools/ReflectionDebugger.h"
 
-#include <Memory/OwnPtr.h>
-#include <PFiles/FileWatcher.h>
-#include <PRefl/Struct.h>
+#include <Pipe/Files/FileWatcher.h>
+#include <Pipe/Memory/OwnPtr.h>
+#include <Pipe/Reflect/Struct.h>
 #include <UI/UI.h>
-
 
 
 namespace rift

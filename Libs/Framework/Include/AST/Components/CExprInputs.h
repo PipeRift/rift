@@ -3,8 +3,8 @@
 
 #include "AST/Utils/Hierarchy.h"
 
-#include <PECS/Id.h>
-#include <PRefl/Struct.h>
+#include <Pipe/ECS/Id.h>
+#include <Pipe/Reflect/Struct.h>
 
 
 namespace rift

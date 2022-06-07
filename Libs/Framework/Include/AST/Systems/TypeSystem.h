@@ -5,7 +5,7 @@
 #include "AST/Components/CExprDeclRef.h"
 #include "AST/Components/CExprType.h"
 
-#include <PECS/Access.h>
+#include <Pipe/ECS/Access.h>
 
 
 namespace rift::AST

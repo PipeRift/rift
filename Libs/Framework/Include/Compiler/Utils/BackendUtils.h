@@ -5,8 +5,8 @@
 #include "Compiler/Backend.h"
 #include "Compiler/Context.h"
 
-#include <Memory/OwnPtr.h>
-#include <PRefl/ClassType.h>
+#include <Pipe/Memory/OwnPtr.h>
+#include <Pipe/Reflect/ClassType.h>
 
 
 namespace rift::Compiler

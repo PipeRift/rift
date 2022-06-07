@@ -4,7 +4,7 @@
 #include "AST/Components/CType.h"
 #include "AST/Tree.h"
 
-#include <PCore/Checks.h>
+#include <Pipe/Core/Checks.h>
 
 
 namespace rift::AST

@@ -19,7 +19,7 @@
 #include "AST/Tree.h"
 #include "AST/TypeRef.h"
 
-#include <PECS/Access.h>
+#include <Pipe/ECS/Access.h>
 
 
 namespace rift::Types

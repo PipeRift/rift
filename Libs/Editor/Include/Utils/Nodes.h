@@ -2,9 +2,9 @@
 #pragma once
 
 #include <AST/Id.h>
-#include <PCore/EnumFlags.h>
-#include <PMath/Color.h>
-#include <PMath/Vector.h>
+#include <Pipe/Core/EnumFlags.h>
+#include <Pipe/Math/Color.h>
+#include <Pipe/Math/Vector.h>
 #include <UI/UIImgui.h>
 
 

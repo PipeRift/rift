@@ -7,14 +7,13 @@
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CParent.h>
-#include <Memory/Arenas/BigBestFitArena.h>
-#include <Memory/Blocks/Block.h>
-#include <PCore/Platform.h>
-#include <PCore/StringView.h>
-#include <PECS/Filtering.h>
-#include <PMath/Vector.h>
+#include <Pipe/Core/Platform.h>
+#include <Pipe/Core/StringView.h>
+#include <Pipe/ECS/Filtering.h>
+#include <Pipe/Math/Vector.h>
+#include <Pipe/Memory/Arenas/BigBestFitArena.h>
+#include <Pipe/Memory/Blocks/Block.h>
 #include <UI/UI.h>
-
 
 
 namespace rift
