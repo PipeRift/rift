@@ -7,7 +7,6 @@
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "Editor.h"
-#include "Files/Paths.h"
 #include "imgui_internal.h"
 #include "Statics/SEditor.h"
 #include "Utils/FunctionGraph.h"
@@ -21,12 +20,13 @@
 #include <AST/Components/CType.h>
 #include <AST/Components/Tags/CDirty.h>
 #include <Compiler/Compiler.h>
-#include <Core/Array.h>
 #include <CppBackend.h>
-#include <ECS/Filtering.h>
-#include <Files/FileDialog.h>
 #include <IconsFontAwesome5.h>
 #include <LLVMBackend.h>
+#include <Pipe/Core/Array.h>
+#include <Pipe/ECS/Filtering.h>
+#include <Pipe/Files/FileDialog.h>
+#include <Pipe/Files/Paths.h>
 #include <RiftContext.h>
 #include <UI/Inspection.h>
 #include <UI/Notify.h>

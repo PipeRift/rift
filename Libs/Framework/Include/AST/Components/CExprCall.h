@@ -3,9 +3,9 @@
 
 #include "AST/Components/CExpression.h"
 #include "AST/Id.h"
-#include "Reflection/ReflectionFlags.h"
 
-#include <Serialization/SerializationFwd.h>
+#include <Pipe/Reflect/ReflectionFlags.h>
+#include <Pipe/Serialize/SerializationFwd.h>
 
 
 namespace rift

@@ -3,8 +3,8 @@
 
 #include "AST/Utils/Paths.h"
 
-#include <Core/Set.h>
-#include <Files/FormatFileIterator.h>
+#include <Pipe/Core/Set.h>
+#include <Pipe/Files/FormatFileIterator.h>
 
 
 namespace rift

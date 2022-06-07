@@ -3,9 +3,9 @@
 
 #include "AST/Utils/Hierarchy.h"
 
-#include <ECS/Access.h>
-#include <ECS/Id.h>
-#include <Reflection/Struct.h>
+#include <Pipe/ECS/Access.h>
+#include <Pipe/ECS/Id.h>
+#include <Pipe/Reflect/Struct.h>
 
 
 namespace rift

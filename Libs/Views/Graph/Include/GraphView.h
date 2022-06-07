@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include "Core/EnumFlags.h"
-
 #include <Compiler/Backend.h>
+#include <Pipe/Core/EnumFlags.h>
 #include <Plugin.h>
 #include <RiftContext.h>
 #include <View.h>

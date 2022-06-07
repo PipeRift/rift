@@ -2,16 +2,16 @@
 
 #include "UI/Style.h"
 
-#include "Files/Paths.h"
 #include "UI/Paths.h"
 #include "UI/UIImgui.h"
 
-#include <Core/Array.h>
-#include <Core/Checks.h>
 #include <IconsFontAwesome5.h>
-#include <Log.h>
-#include <Math/Math.h>
-#include <Templates/Tuples.h>
+#include <Pipe/Core/Array.h>
+#include <Pipe/Core/Checks.h>
+#include <Pipe/Core/Log.h>
+#include <Pipe/Core/Tuples.h>
+#include <Pipe/Files/Paths.h>
+#include <Pipe/Math/Math.h>
 
 
 namespace rift::Style

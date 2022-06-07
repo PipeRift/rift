@@ -2,11 +2,11 @@
 
 #include "UI/Inspection.h"
 
-#include <Files/Paths.h>
-#include <Files/STDFileSystem.h>
 #include <IconsFontAwesome5.h>
-#include <Reflection/GetType.h>
-#include <Reflection/StructType.h>
+#include <Pipe/Files/Paths.h>
+#include <Pipe/Files/STDFileSystem.h>
+#include <Pipe/Reflect/GetType.h>
+#include <Pipe/Reflect/StructType.h>
 
 
 namespace rift::UI

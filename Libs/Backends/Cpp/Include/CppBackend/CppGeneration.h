@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <Files/Paths.h>
+#include <Pipe/Files/Paths.h>
 
 
 namespace rift::Compiler

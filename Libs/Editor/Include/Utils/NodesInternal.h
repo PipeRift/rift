@@ -7,11 +7,11 @@
 
 #include <assert.h>
 #include <AST/Id.h>
-#include <Core/Array.h>
-#include <Core/BitArray.h>
-#include <Core/EnumFlags.h>
 #include <limits.h>
-#include <Math/Vector.h>
+#include <Pipe/Core/Array.h>
+#include <Pipe/Core/BitArray.h>
+#include <Pipe/Core/EnumFlags.h>
+#include <Pipe/Math/Vector.h>
 
 
 // the structure of this file:

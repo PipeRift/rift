@@ -4,7 +4,7 @@
 
 #include "AST/Serialization.h"
 
-#include <Core/Checks.h>
+#include <Pipe/Core/Checks.h>
 
 
 namespace rift::Modules

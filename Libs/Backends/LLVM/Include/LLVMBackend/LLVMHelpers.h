@@ -1,11 +1,11 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Core/Array.h>
-#include <Core/Name.h>
-#include <Core/String.h>
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/StringRef.h>
+#include <Pipe/Core/Array.h>
+#include <Pipe/Core/Name.h>
+#include <Pipe/Core/String.h>
 
 
 namespace rift::Compiler::LLVM

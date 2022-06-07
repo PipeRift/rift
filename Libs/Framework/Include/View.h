@@ -3,8 +3,8 @@
 
 #include "AST/Components/CType.h"
 
-#include <Core/Function.h>
-#include <Reflection/Struct.h>
+#include <Pipe/Core/Function.h>
+#include <Pipe/Reflect/Struct.h>
 
 
 namespace rift

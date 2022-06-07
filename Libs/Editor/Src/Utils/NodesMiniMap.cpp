@@ -5,8 +5,8 @@
 #include "Utils/Nodes.h"
 #include "Utils/NodesInternal.h"
 
-#include <Math/Math.h>
-#include <Math/Vector.h>
+#include <Pipe/Math/Math.h>
+#include <Pipe/Math/Vector.h>
 
 
 namespace rift::Nodes

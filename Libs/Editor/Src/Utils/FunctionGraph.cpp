@@ -33,8 +33,8 @@
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
-#include <ECS/Filtering.h>
 #include <GLFW/glfw3.h>
+#include <Pipe/ECS/Filtering.h>
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
 #include <Utils/NodesInternal.h>

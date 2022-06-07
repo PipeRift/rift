@@ -28,8 +28,8 @@
 #include "AST/Components/Views/CNodePosition.h"
 #include "AST/Utils/Hierarchy.h"
 
-#include <ECS/Filtering.h>
-#include <Reflection/TypeName.h>
+#include <Pipe/ECS/Filtering.h>
+#include <Pipe/Reflect/TypeName.h>
 
 
 namespace rift::AST

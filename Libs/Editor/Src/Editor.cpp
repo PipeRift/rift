@@ -13,9 +13,9 @@
 #include <AST/Systems/TransactionSystem.h>
 #include <AST/Systems/TypeSystem.h>
 #include <AST/Utils/ModuleUtils.h>
-#include <Files/Files.h>
-#include <Log.h>
-#include <Profiler.h>
+#include <Pipe/Core/Log.h>
+#include <Pipe/Core/Profiler.h>
+#include <Pipe/Files/Files.h>
 #include <RiftContext.h>
 #include <UI/Inspection.h>
 #include <UI/Window.h>

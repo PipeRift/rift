@@ -2,11 +2,7 @@
 
 #include "Panels/FileExplorerPanel.h"
 
-#include "Core/StringView.h"
 #include "Editor.h"
-#include "Files/Files.h"
-#include "Files/Paths.h"
-#include "Files/STDFileSystem.h"
 #include "Statics/SEditor.h"
 #include "UI/Widgets.h"
 #include "Utils/ModuleUtils.h"
@@ -16,12 +12,16 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/Paths.h>
 #include <AST/Utils/TypeUtils.h>
-#include <Core/FixedString.h>
-#include <Core/PlatformProcess.h>
-#include <Files/FileDialog.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
 #include <imgui_internal.h>
+#include <Pipe/Core/FixedString.h>
+#include <Pipe/Core/PlatformProcess.h>
+#include <Pipe/Core/StringView.h>
+#include <Pipe/Files/FileDialog.h>
+#include <Pipe/Files/Files.h>
+#include <Pipe/Files/Paths.h>
+#include <Pipe/Files/STDFileSystem.h>
 #include <RiftContext.h>
 #include <UI/Style.h>
 #include <UI/UI.h>

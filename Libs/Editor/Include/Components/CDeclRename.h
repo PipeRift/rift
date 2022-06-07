@@ -5,7 +5,7 @@
 #include "DockSpaceLayout.h"
 #include "NodeGraph/NodeGraphPanel.h"
 
-#include <Reflection/Struct.h>
+#include <Pipe/Reflect/Struct.h>
 #include <UI/UI.h>
 
 

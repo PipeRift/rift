@@ -19,8 +19,8 @@
 #include "AST/Utils/TypeUtils.h"
 
 #include <AST/Utils/Hierarchy.h>
-#include <Files/Files.h>
-#include <Serialization/Formats/JsonFormat.h>
+#include <Pipe/Files/Files.h>
+#include <Pipe/Serialize/Formats/JsonFormat.h>
 
 
 namespace rift::LoadSystem

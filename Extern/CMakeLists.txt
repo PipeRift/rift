@@ -40,17 +40,7 @@ add_library(IconFontCppHeaders INTERFACE)
 target_include_directories(IconFontCppHeaders INTERFACE IconFontCppHeaders)
 
 
-# LLVM
-set(RIFT_LLVM_PATH "" CACHE STRING "Location of an external LLVM installation to use. CMake will try to find if this path is not set")
-if (NOT RIFT_LLVM_PATH STREQUAL "")
-    message(STATUS "Provided LLVM installation: ${RIFT_LLVM_PATH}")
-    set(LLVM_DIR "${RIFT_LLVM_PATH}/lib/cmake/llvm")
-endif()
-find_package(LLVM CONFIG REQUIRED)
-message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
-message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-
-message(STATUS "LLVM_INCLUDE_DIRS: ${LLVM_INCLUDE_DIRS}")
-message(STATUS "LLVM_DEFINITIONS: ${LLVM_DEFINITIONS}")
-
-llvm_map_components_to_libnames(llvm_libs Support Core IRReader)
+set(TF_BUILD_TESTS OFF CACHE BOOL "Enables builds of tests")
+set(TF_BUILD_EXAMPLES OFF CACHE BOOL "Enables builds of examples")
+add_subdirectory(taskflow)
+rift_target_disable_all_warnings(Taskflow INTERFACE)

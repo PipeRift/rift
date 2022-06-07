@@ -8,9 +8,9 @@
 #include "Tools/GraphPlayground.h"
 #include "Tools/ReflectionDebugger.h"
 
-#include <Files/FileWatcher.h>
-#include <Memory/OwnPtr.h>
-#include <Reflection/Struct.h>
+#include <Pipe/Files/FileWatcher.h>
+#include <Pipe/Memory/OwnPtr.h>
+#include <Pipe/Reflect/Struct.h>
 #include <UI/UI.h>
 
 

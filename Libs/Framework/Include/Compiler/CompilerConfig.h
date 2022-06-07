@@ -4,8 +4,8 @@
 
 #include "AST/Tree.h"
 
-#include <Reflection/Reflection.h>
-#include <Reflection/Struct.h>
+#include <Pipe/Reflect/Reflection.h>
+#include <Pipe/Reflect/Struct.h>
 
 
 namespace rift::Compiler

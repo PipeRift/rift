@@ -3,9 +3,9 @@
 
 #include "AST/Id.h"
 
-#include <Core/Name.h>
-#include <ECS/Context.h>
-#include <Memory/UniquePtr.h>
+#include <Pipe/Core/Name.h>
+#include <Pipe/ECS/Context.h>
+#include <Pipe/Memory/UniquePtr.h>
 
 
 namespace rift::AST

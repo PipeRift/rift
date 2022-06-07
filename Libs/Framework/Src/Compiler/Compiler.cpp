@@ -10,7 +10,7 @@
 #include "Compiler/Systems/OptimizationSystem.h"
 #include "RiftContext.h"
 
-#include <Files/Files.h>
+#include <Pipe/Files/Files.h>
 
 
 namespace rift::Compiler

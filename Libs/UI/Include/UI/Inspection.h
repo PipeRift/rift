@@ -6,12 +6,12 @@
 #include "UI/UIImgui.h"
 #include "UI/Widgets.h"
 
-#include <Reflection/ClassType.h>
-#include <Reflection/EnumType.h>
-#include <Reflection/GetType.h>
-#include <Reflection/Handles/PropertyHandle.h>
-#include <Reflection/NativeType.h>
-#include <Reflection/StructType.h>
+#include <Pipe/Reflect/ClassType.h>
+#include <Pipe/Reflect/EnumType.h>
+#include <Pipe/Reflect/GetType.h>
+#include <Pipe/Reflect/Handles/PropertyHandle.h>
+#include <Pipe/Reflect/NativeType.h>
+#include <Pipe/Reflect/StructType.h>
 
 
 namespace rift::UI

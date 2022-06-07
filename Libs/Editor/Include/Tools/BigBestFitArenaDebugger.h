@@ -1,11 +1,11 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Core/Platform.h>
-#include <Core/StringView.h>
-#include <Math/Vector.h>
-#include <Memory/Arenas/BigBestFitArena.h>
-#include <Memory/Blocks/Block.h>
+#include <Pipe/Core/Platform.h>
+#include <Pipe/Core/StringView.h>
+#include <Pipe/Math/Vector.h>
+#include <Pipe/Memory/Arenas/BigBestFitArena.h>
+#include <Pipe/Memory/Blocks/Block.h>
 
 
 namespace rift

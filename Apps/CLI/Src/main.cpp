@@ -3,10 +3,11 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Compiler/Utils/BackendUtils.h>
-#include <Context.h>
-#include <Files/Paths.h>
-#include <Profiler.h>
+#include <Pipe/Core/Context.h>
+#include <Pipe/Core/Profiler.h>
+#include <Pipe/Files/Paths.h>
 #include <RiftContext.h>
+
 
 // Backends
 #include <CppBackend.h>

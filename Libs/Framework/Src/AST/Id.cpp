@@ -4,7 +4,7 @@
 
 #include "AST/Serialization.h"
 
-#include <Serialization/Serialization.h>
+#include <Pipe/Serialize/Serialization.h>
 
 
 namespace p::ecs

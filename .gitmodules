@@ -13,3 +13,6 @@
 [submodule "Extern/IconFontCppHeaders"]
 	path = Extern/IconFontCppHeaders
 	url = https://github.com/juliettef/IconFontCppHeaders.git
+[submodule "Extern/taskflow"]
+	path = Extern/taskflow
+	url = https://github.com/taskflow/taskflow.git

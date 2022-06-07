@@ -7,14 +7,14 @@
 #include <AST/Tree.h>
 #include <AST/Utils/Paths.h>
 #include <IconsFontAwesome5.h>
-#include <Reflection/Registry.h>
+#include <Pipe/Reflect/Registry.h>
 #include <UI/Inspection.h>
 #include <UI/UI.h>
 
 
 namespace rift
 {
-	//using namespace p::core::EnumOperators;
+	// using namespace p::core::EnumOperators;
 	using namespace p::Memory;
 
 

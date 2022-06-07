@@ -1,11 +1,11 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Core/Platform.h>
-#include <ECS/Id.h>
-#include <Reflection/Builders/NativeTypeBuilder.h>
-#include <Serialization/SerializationFwd.h>
-#include <Templates/TypeList.h>
+#include <Pipe/Core/Platform.h>
+#include <Pipe/Core/TypeList.h>
+#include <Pipe/ECS/Id.h>
+#include <Pipe/Reflect/Builders/NativeTypeBuilder.h>
+#include <Pipe/Serialize/SerializationFwd.h>
 
 
 namespace rift::AST
