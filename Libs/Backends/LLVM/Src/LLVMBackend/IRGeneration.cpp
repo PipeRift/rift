@@ -215,15 +215,33 @@ namespace rift::Compiler::LLVM
 		// TODO: Resolve continuation block and generate it
 	}
 
+	llvm::Value* AddExpr(
+	    Context& context, llvm::IRBuilder<>& builder, BlockAccessRef access, const OutputId& output)
+	{
+		const auto* value =
+		    !IsNone(output.pinId) ? access.TryGet<const CIRValue>(output.pinId) : nullptr;
+		if (value)
+		{
+			return value->instance;
+		}
+		return nullptr;
+	}
+
 	llvm::BasicBlock* AddIf(Context& context, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder,
 	    BlockAccessRef access, AST::Id id, const CIRFunction& function)
 	{
 		const auto& outputs      = access.Get<const CStmtOutputs>(id);
 		const auto& connectedIds = outputs.linkInputNodes;
 		Check(connectedIds.Size() == 2);
+		const auto& exprInputs = access.Get<const CExprInputs>(id);
+		Check(exprInputs.linkedOutputs.Size() == 1);
 
-		// Temporarily using value false until we have expressions
-		llvm::Value* condV = llvm::ConstantInt::get(llvm, llvm::APInt(1, false, true));
+		llvm::Value* condV = AddExpr(context, builder, access, exprInputs.linkedOutputs.First());
+		if (!condV)
+		{
+			// Assign false by default
+			condV = llvm::ConstantInt::get(llvm, llvm::APInt(1, false, true));
+		}
 
 		auto* thenBlock = llvm::BasicBlock::Create(llvm, "then");
 		auto* elseBlock = llvm::BasicBlock::Create(llvm, "else");
@@ -240,16 +258,6 @@ namespace rift::Compiler::LLVM
 
 		function.instance->getBasicBlockList().push_back(contBlock);
 		return contBlock;
-	}
-
-	llvm::Value* AddExpr(
-	    Context& context, llvm::IRBuilder<>& builder, BlockAccessRef access, const OutputId& output)
-	{
-		if (auto* value = access.TryGet<const CIRValue>(output.pinId))
-		{
-			return value->instance;
-		}
-		return nullptr;
 	}
 
 	void AddCall(Context& context, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder, AST::Id id,
