@@ -47,5 +47,5 @@ target_compile_definitions(RiftLLVM INTERFACE ${LLVM_DEFINITIONS_LIST}  -DNOMINM
 #if(COMPILER_CLANG)
     #target_compile_options(RiftLLVM INTERFACE -fms-compatibility-version=14.20)
 #endif()
-# rift_target_disable_all_warnings(LLVM INTERFACE)
+# pipe_target_disable_all_warnings(LLVM INTERFACE)
 
