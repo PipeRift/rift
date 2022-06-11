@@ -6,7 +6,7 @@ set_target_properties(RiftEditorExe PROPERTIES OUTPUT_NAME "RiftEditor")
 target_include_directories(RiftEditorExe PUBLIC Include)
 file(GLOB_RECURSE RiftEditor_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
 target_sources(RiftEditorExe PRIVATE ${RiftEditor_SOURCE_FILES})
-rift_target_enable_CPP20(RiftEditorExe)
+pipe_target_enable_CPP20(RiftEditorExe)
 set_target_properties (RiftEditorExe PROPERTIES FOLDER Rift/Executables)
 target_link_libraries(RiftEditorExe PUBLIC
     rift::Editor
@@ -14,8 +14,8 @@ target_link_libraries(RiftEditorExe PUBLIC
     rift::Backend::Cpp
     rift::View::Graph
 )
-rift_target_define_platform(RiftEditorExe)
-rift_target_shared_output_directory(RiftEditorExe)
+pipe_target_define_platform(RiftEditorExe)
+pipe_target_shared_output_directory(RiftEditorExe)
 
 set_icon(RiftEditorExe ../../Resources/Icon.ico)
 

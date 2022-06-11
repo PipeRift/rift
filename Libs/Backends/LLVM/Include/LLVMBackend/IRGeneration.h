@@ -12,5 +12,13 @@ namespace rift::Compiler
 
 namespace rift::Compiler::LLVM
 {
+	struct ModuleIRGen
+	{
+		Context& compiler;
+		llvm::Module& module;
+		llvm::LLVMContext& llvm;
+		llvm::IRBuilder<>& builder;
+	};
+
 	void GenerateIR(Context& context, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder);
-}
+}    // namespace rift::Compiler::LLVM

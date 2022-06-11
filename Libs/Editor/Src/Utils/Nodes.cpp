@@ -95,8 +95,8 @@ namespace rift::Nodes
 		const float hoverDistance = gNodes->style.LinkHoverDistance;
 
 		Rect rect(min, max);
-		rect.Add(cb.p1);
-		rect.Add(cb.p2);
+		rect.Merge(cb.p1);
+		rect.Merge(cb.p2);
 		rect.Expand(v2{hoverDistance, hoverDistance});
 
 		return rect;
@@ -2111,8 +2111,8 @@ namespace rift::Nodes
 		node.rect      = GetItemRect();
 		node.rect.Expand(node.LayoutStyle.Padding);
 
-		editor.gridContentBounds.Add(node.Origin);
-		editor.gridContentBounds.Add(node.Origin + node.rect.GetSize());
+		editor.gridContentBounds.Merge(node.Origin);
+		editor.gridContentBounds.Merge(node.Origin + node.rect.GetSize());
 
 		if (node.rect.Contains(gNodes->mousePosition))
 		{

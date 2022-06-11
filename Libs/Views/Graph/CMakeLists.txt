@@ -5,10 +5,10 @@ add_library(RiftViewGraph STATIC)
 add_library(rift::View::Graph ALIAS RiftViewGraph)
 target_include_directories(RiftViewGraph PUBLIC Include)
 target_sources(RiftViewGraph PRIVATE ${VIEW_NODES_SOURCE_FILES})
-rift_target_enable_CPP20(RiftViewGraph)
+pipe_target_enable_CPP20(RiftViewGraph)
 set_target_properties (RiftViewGraph PROPERTIES FOLDER Rift)
-rift_target_define_platform(RiftViewGraph)
-rift_target_shared_output_directory(RiftViewGraph)
+pipe_target_define_platform(RiftViewGraph)
+pipe_target_shared_output_directory(RiftViewGraph)
 target_link_libraries(RiftViewGraph PUBLIC
     rift::Rift
 )
