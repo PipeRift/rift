@@ -224,7 +224,7 @@ namespace rift::Nodes
 
 		void ClearDepthOrder()
 		{
-			depthOrder.ExcludeIf([this](AST::Id id) {
+			depthOrder.RemoveIf([this](AST::Id id) {
 				return TIndexedArray<T>::invalidIds.ContainsSorted(id);
 			});
 		}

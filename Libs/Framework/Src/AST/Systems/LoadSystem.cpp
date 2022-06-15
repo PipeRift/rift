@@ -121,7 +121,7 @@ namespace rift::LoadSystem
 
 		// Remove existing module paths
 		auto moduleIds = ecs::ListAll<CModule, CFileRef>(access);
-		paths.ExcludeIfSwap([&access, &moduleIds](const p::Path& path) {
+		paths.RemoveIfSwap([&access, &moduleIds](const p::Path& path) {
 			bool moduleExists = false;
 			for (AST::Id id : moduleIds)
 			{
@@ -163,7 +163,7 @@ namespace rift::LoadSystem
 		// Remove existing types
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
-			modulePaths.paths.ExcludeIfSwap([types, &modulePaths](const p::Path& path) {
+			modulePaths.paths.RemoveIfSwap([types, &modulePaths](const p::Path& path) {
 				const Name pathName{ToString(path)};
 
 				if (!types->typesByPath.Contains(pathName))
