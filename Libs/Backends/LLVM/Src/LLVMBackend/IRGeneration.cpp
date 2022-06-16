@@ -11,6 +11,8 @@
 
 #include <AST/Components/CDeclClass.h>
 #include <AST/Components/CDeclFunction.h>
+#include <AST/Components/CDeclFunctionInterface.h>
+#include <AST/Components/CDeclFunctionLibrary.h>
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprCall.h>
@@ -69,8 +71,8 @@ namespace rift::Compiler::LLVM
 		// access.Add<CIRType>(nativeTypes.stringId, {});
 	}
 
-	void DeclareStructs(ModuleIRGen& gen, TAccessRef<CType, TWrite<CIRType>> access,
-	    TSpan<AST::Id> ids, bool areClasses)
+	void DeclareStructs(
+	    ModuleIRGen& gen, TAccessRef<CType, TWrite<CIRType>> access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
 		for (AST::Id id : ids)
@@ -81,8 +83,7 @@ namespace rift::Compiler::LLVM
 	}
 
 	void DefineStructs(ModuleIRGen& gen,
-	    TAccessRef<CIRType, CParent, CIdentifier, CDeclVariable> access, TSpan<AST::Id> ids,
-	    bool areClasses)
+	    TAccessRef<CIRType, CParent, CIdentifier, CDeclVariable> access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
 		TArray<AST::Id> memberIds;
@@ -360,23 +361,28 @@ namespace rift::Compiler::LLVM
 
 		ModuleIRGen gen{context, irModule, llvm, builder};
 
-		// Filter all classes and structs
+		// Filter all module rift types
 		TArray<AST::Id> typeIds;
 		AST::Hierarchy::GetChildren(ast, moduleId, typeIds);
 		ecs::ExcludeIfNot<CType>(ast, typeIds);
-		TArray<AST::Id> structIds = ecs::GetIf<CDeclStruct>(ast, typeIds);
-		TArray<AST::Id> classIds  = ecs::GetIf<CDeclClass>(ast, typeIds);
+		TArray<AST::Id> structIds            = ecs::GetIf<CDeclStruct>(ast, typeIds);
+		TArray<AST::Id> classIds             = ecs::GetIf<CDeclClass>(ast, typeIds);
+		TArray<AST::Id> functionLibraryIds   = ecs::GetIf<CDeclFunctionLibrary>(ast, typeIds);
+		TArray<AST::Id> functionInterfaceIds = ecs::GetIf<CDeclFunctionInterface>(ast, typeIds);
 
-		DeclareStructs(gen, ast, structIds, false);
-		DeclareStructs(gen, ast, classIds, true);    // Declare classes
+		DeclareStructs(gen, ast, structIds);
+		DeclareStructs(gen, ast, classIds);
 
 		TArray<AST::Id> functionIds;
-		AST::Hierarchy::GetChildren(ast, typeIds, functionIds);
+		AST::Hierarchy::GetChildren(ast, classIds, functionIds);
+		AST::Hierarchy::GetChildren(ast, functionLibraryIds, functionIds);
+		AST::Hierarchy::GetChildren(ast, functionInterfaceIds, functionIds);
 		ecs::ExcludeIfNot<CDeclFunction>(ast, functionIds);
 		DeclareFunctions(gen, ast, functionIds);
 
-		DefineStructs(gen, ast, structIds, false);
-		DefineStructs(gen, ast, classIds, true);    // Define classes
+		DefineStructs(gen, ast, structIds);
+		DefineStructs(gen, ast, classIds);
+
 		DefineFunctions(gen, ast, functionIds);
 
 		const auto& mod = context.ast.Get<const CModule>(moduleId);

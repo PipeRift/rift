@@ -237,6 +237,7 @@ namespace rift::Graph
 	void DrawNodesContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> nodeIds)
 	{
 		Check(!nodeIds.IsEmpty());
+		const bool canEditBody = Types::CanEditFunctionBodies(ast, typeId);
 
 		AST::Id firstNodeId = nodeIds[0];
 
@@ -245,7 +246,7 @@ namespace rift::Graph
 			EditFunction(ast, typeId, nodeIds[0]);
 			UI::Separator();
 
-			if (UI::MenuItem("Add return node"))
+			if (canEditBody && UI::MenuItem("Add return node"))
 			{
 				AST::Id newId = Types::AddReturn({ast, typeId});
 				if (!IsNone(newId))
@@ -263,7 +264,7 @@ namespace rift::Graph
 			ast.Add<CCallDirty>(calls);
 		}
 
-		if (UI::MenuItem("Delete"))
+		if (canEditBody && UI::MenuItem("Delete"))
 		{
 			Types::RemoveNodes(ast, nodeIds);
 		}
@@ -272,10 +273,11 @@ namespace rift::Graph
 	void DrawLinksContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> linkIds)
 	{
 		Check(!linkIds.IsEmpty());
+		const bool canEditBody = Types::CanEditFunctionBodies(ast, typeId);
 
 		AST::Id firstLinkId = linkIds[0];
 
-		if (UI::MenuItem("Delete"))
+		if (canEditBody && UI::MenuItem("Delete"))
 		{
 			for (AST::Id linkId : linkIds)
 			{
@@ -289,6 +291,7 @@ namespace rift::Graph
 	void DrawGraphContextMenu(AST::Tree& ast, AST::Id typeId)
 	{
 		static ImGuiTextFilter filter;
+		const bool canEditBody = Types::CanEditFunctionBodies(ast, typeId);
 
 		if (UI::IsWindowAppearing())
 		{
@@ -298,6 +301,11 @@ namespace rift::Graph
 		filter.Draw("##Filter");
 		const v2 clickPos = UI::GetMousePosOnOpeningCurrentPopup();
 		const v2 gridPos  = settings.GetGridPosition(clickPos).Floor();
+
+		if (!canEditBody)
+		{
+			return;
+		}
 
 		if (ContextTreeNode("Flow", filter))
 		{

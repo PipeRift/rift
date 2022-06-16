@@ -224,7 +224,7 @@ namespace rift::Nodes
 
 		void ClearDepthOrder()
 		{
-			depthOrder.ExcludeIf([this](AST::Id id) {
+			depthOrder.RemoveIf([this](AST::Id id) {
 				return TIndexedArray<T>::invalidIds.ContainsSorted(id);
 			});
 		}
@@ -416,6 +416,8 @@ namespace rift::Nodes
 
 		MiniMap miniMap;
 
+		bool canCreateLinks = true;
+
 
 		ObjectPool<PinData>& GetPinPool(PinType type)
 		{
@@ -507,6 +509,8 @@ namespace rift::Nodes
 		bool altMouseDragging;
 		float altMouseScrollDelta;
 		bool multipleSelectModifier;
+
+		bool canCreateLinks = true;
 	};
 
 

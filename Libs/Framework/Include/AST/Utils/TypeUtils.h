@@ -42,6 +42,7 @@ namespace rift::Types
 	bool IsFunctionLibrary(const AST::Tree& ast, AST::Id typeId);
 	bool CanContainVariables(const AST::Tree& ast, AST::Id typeId);
 	bool CanContainFunctions(const AST::Tree& ast, AST::Id typeId);
+	bool CanEditFunctionBodies(const AST::Tree& ast, AST::Id typeId);
 
 
 	AST::Id AddVariable(AST::TypeRef type, Name name);

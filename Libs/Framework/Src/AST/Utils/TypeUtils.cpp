@@ -175,6 +175,11 @@ namespace rift::Types
 
 	bool CanContainFunctions(const AST::Tree& ast, AST::Id typeId)
 	{
+		return ast.HasAny<CDeclClass, CDeclFunctionLibrary, CDeclFunctionInterface>(typeId);
+	}
+
+	bool CanEditFunctionBodies(const AST::Tree& ast, AST::Id typeId)
+	{
 		return ast.HasAny<CDeclClass, CDeclFunctionLibrary>(typeId);
 	}
 
