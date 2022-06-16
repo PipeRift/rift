@@ -4,6 +4,7 @@
 
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
+#include "Pipe/Core/Context.h"
 #include "Utils/EditorStyle.h"
 #include "Utils/FunctionGraphContextMenu.h"
 #include "Utils/TypeUtils.h"
@@ -855,6 +856,7 @@ namespace rift::Graph
 		UI::Begin(graphId.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
 		{
 			Nodes::SetEditorContext(&typeEditor.nodesEditor);
+			Nodes::GetCurrentContext()->canCreateLinks = Types::CanEditFunctionBodies(ast, typeId);
 			Nodes::BeginNodeEditor();
 			PushNodeStyle();
 

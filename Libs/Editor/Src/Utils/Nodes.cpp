@@ -613,6 +613,11 @@ namespace rift::Nodes
 
 	void BeginLinkCreation(EditorContext& editor, PinIdx hoveredPinIdx)
 	{
+		if (!gNodes->canCreateLinks)
+		{
+			return;
+		}
+
 		editor.clickInteraction.type = ClickInteractionType_LinkCreation;
 
 		const bool pinIsOutput = hoveredPinIdx.type == PinType::Output;
@@ -979,7 +984,8 @@ namespace rift::Nodes
 		{
 			// Avoid send IsLinkCreated() events every frame if the snap link is not
 			// saved (only applies for EnableLinkCreationOnSnap)
-			if (!gNodes->leftMouseReleased && endIdx == gNodes->HoveredPinIdx)
+			if (!gNodes->leftMouseReleased && endIdx == gNodes->HoveredPinIdx
+			    && !gNodes->canCreateLinks)
 			{
 				return;
 			}
