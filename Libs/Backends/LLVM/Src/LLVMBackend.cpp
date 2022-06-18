@@ -12,10 +12,11 @@
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
+#include <Pipe/Files/Files.h>
 #if LLVM_VERSION_MAJOR >= 14
-#include <llvm/MC/TargetRegistry.h>
+#	include <llvm/MC/TargetRegistry.h>
 #else
-#include <llvm/Support/TargetRegistry.h>
+#	include <llvm/Support/TargetRegistry.h>
 #endif
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Host.h>
@@ -33,9 +34,12 @@ namespace rift::Compiler
 		{
 			ZoneScoped;
 
-			const String filePath =
-			    Strings::Format("{}/{}.o", p::ToString(context.config.intermediatesPath),
-			        Modules::GetModuleName(context.ast, moduleId));
+			p::String intermediatesPath = p::ToString(context.config.intermediatesPath);
+			// files::Delete(intermediatesPath, true, false);
+			files::CreateFolder(intermediatesPath, true);
+
+			const String filePath = Strings::Format(
+			    "{}/{}.o", intermediatesPath, Modules::GetModuleName(context.ast, moduleId));
 			Log::Info("Creating object '{}'", filePath);
 
 			const auto& irModule = context.ast.Get<const CIRModule>(moduleId).instance;

@@ -297,6 +297,9 @@ namespace rift::Compiler::LLVM
 			const auto& output = access.Get<const CStmtOutput>(id);
 			AddStmtBlock(gen, access, output.linkInputNode, block, irFunction);
 
+			// Generate default return
+			gen.builder.CreateRet(nullptr);
+
 			verifyFunction(*irFunction.instance);
 		}
 	}
