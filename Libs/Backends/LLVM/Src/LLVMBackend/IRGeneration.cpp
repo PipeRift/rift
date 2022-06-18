@@ -44,7 +44,7 @@
 namespace rift::Compiler::LLVM
 {
 	using BlockAccessRef = TAccessRef<CStmtOutput, CStmtOutputs, CExprInputs, CStmtIf, CExprCallId,
-	    CIRFunction, CIRValue>;
+	    CIRFunction, CIRValue, CIdentifier>;
 
 	// Forward declarations
 	void AddStmtBlock(ModuleIRGen& gen, BlockAccessRef access, AST::Id firstStmtId,
@@ -266,7 +266,9 @@ namespace rift::Compiler::LLVM
 		const auto* function = access.TryGet<const CIRFunction>(functionId);
 		if (!Ensure(function))
 		{
-			gen.compiler.AddError("Call to an invalid function");
+			const auto* ident = access.TryGet<const CIdentifier>(functionId);
+			gen.compiler.AddError(
+			    Strings::Format("Call to an invalid function: '{}'", ident ? ident->name : ""));
 			return;
 		}
 
