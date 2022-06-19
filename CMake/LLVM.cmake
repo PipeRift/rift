@@ -49,3 +49,14 @@ target_compile_definitions(RiftLLVM INTERFACE ${LLVM_DEFINITIONS_LIST}  -DNOMINM
 #endif()
 # pipe_target_disable_all_warnings(LLVM INTERFACE)
 
+# Copy LLVM linker
+if (PLATFORM_WINDOWS)
+    set(RIFT_LLVM_LINKER ${RIFT_LLVM_PATH}/${CMAKE_BUILD_TYPE}/bin/lld-link.exe)
+elseif(PLATFORM_LINUX)
+    set(RIFT_LLVM_LINKER ${RIFT_LLVM_PATH}/${CMAKE_BUILD_TYPE}/bin/ld.lld)
+elseif(PLATFORM_MACOS)
+    set(RIFT_LLVM_LINKER ${RIFT_LLVM_PATH}/${CMAKE_BUILD_TYPE}/bin/ld64.lld)
+endif()
+
+file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/Bin/llvm)
+file(COPY ${RIFT_LLVM_LINKER} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Bin/llvm)

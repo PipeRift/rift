@@ -12,5 +12,7 @@ namespace rift
 		STRUCT(CIRModule, p::Struct)
 
 		p::TOwnPtr<llvm::Module> instance;
+
+		p::String objectFile;
 	};
 }    // namespace rift

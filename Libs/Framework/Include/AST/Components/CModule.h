@@ -1,6 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include <Pipe/Files/Paths.h>
 #include <Pipe/Reflect/Struct.h>
 
 

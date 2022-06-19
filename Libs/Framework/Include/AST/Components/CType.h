@@ -18,7 +18,7 @@ namespace rift
 		FunctionLibrary   = 1 << 2,
 		FunctionInterface = 1 << 3
 	};
-	DEFINE_FLAG_OPERATORS(RiftType)
+	PIPE_DEFINE_FLAG_OPERATORS(RiftType)
 
 
 	struct CType : public Struct
