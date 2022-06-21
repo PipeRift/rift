@@ -4,7 +4,6 @@
 
 #include "LLVMBackend/Components/CIRModule.h"
 #include "Pipe/Core/String.h"
-#include "subprocessh/subprocess.h"
 
 #include <AST/Components/CIdentifier.h>
 #include <AST/Components/CModule.h>
@@ -55,21 +54,15 @@ namespace rift::Compiler::LLVM
 				command.Add(outParam.data());
 
 				Log::Info("Linking '{}' from '{}'", p::ToString(filePath), irModule.objectFile);
-				p::CreateSubprocess(command, subprocess);
-				subprocess_join(&subprocess.process, nullptr);
-				FILE* out = subprocess_stdout(&subprocess.process);
+				p::CreateProcess(command, &subprocess, SubprocessOptions::CombinedOutErr);
+				p::WaitProcess(&subprocess, nullptr);
+				FILE* out = p::GetProcessCout(&subprocess);
 				char buffer[1024];
 				while (fgets(buffer, sizeof(buffer), out) != nullptr)
 				{
 					Log::Info(buffer);
 				}
-				FILE* err = subprocess_stderr(&subprocess.process);
-				char buffer2[1024];
-				while (fgets(buffer2, sizeof(buffer2), err) != nullptr)
-				{
-					Log::Info(buffer2);
-				}
-				subprocess_destroy(&subprocess.process);
+				p::DestroyProcess(&subprocess);
 			}
 		}
 	}
