@@ -26,10 +26,8 @@ namespace rift::Compiler::LLVM
 			auto& irModule     = context.ast.Get<CIRModule>(moduleId);
 			if (p::files::Exists(irModule.objectFile))
 			{
-				// TODO: Write this subprocess API propertly
-				p::Subprocess subprocess;
 				// TODO: Use path of rift provided linker
-				TArray<const char*> command{"lld-link"};
+				TArray<StringView> command{"lld-link"};
 				const char* extension = nullptr;
 				switch (module.target)
 				{
@@ -54,15 +52,8 @@ namespace rift::Compiler::LLVM
 				command.Add(outParam.data());
 
 				Log::Info("Linking '{}' from '{}'", p::ToString(filePath), irModule.objectFile);
-				p::CreateProcess(command, &subprocess, SubprocessOptions::CombinedOutErr);
-				p::WaitProcess(&subprocess, nullptr);
-				FILE* out = p::GetProcessCout(&subprocess);
-				char buffer[1024];
-				while (fgets(buffer, sizeof(buffer), out) != nullptr)
-				{
-					Log::Info(buffer);
-				}
-				p::DestroyProcess(&subprocess);
+				p::RunProcess(command,
+				    SubprocessOptions::TerminateIfDestroyed | SubprocessOptions::CombinedOutErr);
 			}
 		}
 	}

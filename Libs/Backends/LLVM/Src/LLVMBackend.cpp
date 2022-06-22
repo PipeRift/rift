@@ -121,5 +121,14 @@ namespace rift::Compiler
 
 		Log::Info("Linking");
 		LLVM::Link(context);
+
+		if (!context.HasErrors())
+		{
+			Log::Info("Build complete.");
+		}
+		else
+		{
+			Log::Info("Build failed: {} errors", context.GetErrors().Size());
+		}
 	}
 }    // namespace rift::Compiler

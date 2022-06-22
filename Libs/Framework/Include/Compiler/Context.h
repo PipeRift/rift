@@ -34,6 +34,10 @@ namespace rift::Compiler
 
 		// Errors
 		void AddError(StringView str);
+		const TArray<CompileError>& GetErrors() const
+		{
+			return errors;
+		}
 		bool HasErrors() const
 		{
 			return errors.Size() > 0;
