@@ -27,7 +27,7 @@ namespace rift::Compiler::LLVM
 			if (p::files::Exists(irModule.objectFile))
 			{
 				// TODO: Use path of rift provided linker
-				TArray<StringView> command{"lld-link"};
+				TArray<const char*> command{"lld-link"};
 				const char* extension = nullptr;
 				switch (module.target)
 				{

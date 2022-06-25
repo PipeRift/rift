@@ -5,6 +5,7 @@
 #include "AST/Id.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
+#include "imgui.h"
 #include "UI/Style.h"
 #include "UI/Widgets.h"
 #include "Utils/EditorStyle.h"
@@ -29,9 +30,14 @@ namespace rift
 
 	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, AST::Id variableId)
 	{
-		CIdentifier* identifier = access.TryGet<CIdentifier>(variableId);
-		auto* variableDecl      = access.TryGet<CDeclVariable>(variableId);
+		auto* identifier   = access.TryGet<CIdentifier>(variableId);
+		auto* variableDecl = access.TryGet<CDeclVariable>(variableId);
 		if (!identifier || !variableDecl)
+		{
+			return;
+		}
+		String name = identifier->name.ToString();
+		if (!editor.propertiesFilter.PassFilter(name.data(), name.data() + name.size()))
 		{
 			return;
 		}
@@ -96,7 +102,6 @@ namespace rift
 		static String nameId;
 		nameId.clear();
 		Strings::FormatTo(nameId, " ##name_{}", variableId);
-		String name = identifier->name.ToString();
 		if (UI::MutableText(nameId, name,
 		        ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 		{
@@ -126,19 +131,23 @@ namespace rift
 
 	void DrawFunction(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId, AST::Id id)
 	{
-		CIdentifier* identifier = ast.TryGet<CIdentifier>(id);
+		auto* identifier = ast.TryGet<CIdentifier>(id);
 		if (!identifier)
 		{
 			return;
 		}
+		String name = identifier->name.ToString();
+		if (!editor.propertiesFilter.PassFilter(name.data(), name.data() + name.size()))
+		{
+			return;
+		}
 
-		String functionName = identifier->name.ToString();
 
 		Style::PushHeaderColor(Style::callColor);
 		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
 		static String headerId;
 		headerId.clear();
-		Strings::FormatTo(headerId, "{}###{}", functionName, id);
+		Strings::FormatTo(headerId, "{}###{}", name, id);
 		UI::CollapsingHeader(headerId.c_str(), ImGuiTreeNodeFlags_Leaf);
 		if (UI::IsItemHovered() && UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 		{
@@ -236,6 +245,9 @@ namespace rift
 		const String windowName = Strings::Format("Properties##{}", typeId);
 		if (UI::Begin(windowName.c_str()))
 		{
+			UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
+			editor.propertiesFilter.Draw("##filter");
+
 			if (Types::CanContainVariables(ast, typeId))
 			{
 				DrawVariables(ast, ast, editor, typeId);
