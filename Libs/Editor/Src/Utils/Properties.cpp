@@ -142,7 +142,6 @@ namespace rift
 			return;
 		}
 
-
 		Style::PushHeaderColor(Style::callColor);
 		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
 		static String headerId;
