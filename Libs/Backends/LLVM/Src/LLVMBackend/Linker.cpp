@@ -26,8 +26,7 @@ namespace rift::Compiler::LLVM
 			auto& irModule     = context.ast.Get<CIRModule>(moduleId);
 			if (p::files::Exists(irModule.objectFile))
 			{
-				// TODO: Use path of rift provided linker
-				TArray<const char*> command{"lld-link"};
+				TArray<const char*> command{RIFT_LLVM_LINKER};
 				const char* extension = nullptr;
 				switch (module.target)
 				{
