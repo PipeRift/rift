@@ -4,7 +4,9 @@
 
 #include "LLVMBackend/Components/CIRModule.h"
 #include "LLVMBackend/IRGeneration.h"
+#include "LLVMBackend/Linker.h"
 #include "LLVMBackend/LLVMHelpers.h"
+#include "Pipe/Core/Log.h"
 
 #include <AST/Utils/ModuleUtils.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
@@ -13,6 +15,7 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <Pipe/Files/Files.h>
+
 #if LLVM_VERSION_MAJOR >= 14
 #	include <llvm/MC/TargetRegistry.h>
 #else
@@ -38,21 +41,22 @@ namespace rift::Compiler
 			// files::Delete(intermediatesPath, true, false);
 			files::CreateFolder(intermediatesPath, true);
 
-			const String filePath = Strings::Format(
+
+			auto& irModule      = context.ast.Get<CIRModule>(moduleId);
+			irModule.objectFile = Strings::Format(
 			    "{}/{}.o", intermediatesPath, Modules::GetModuleName(context.ast, moduleId));
-			Log::Info("Creating object '{}'", filePath);
+			Log::Info("Creating object '{}'", irModule.objectFile);
 
-			const auto& irModule = context.ast.Get<const CIRModule>(moduleId).instance;
-
-			irModule->setTargetTriple(ToLLVM(targetTriple));
-			irModule->setDataLayout(targetMachine->createDataLayout());
+			irModule.instance->setTargetTriple(ToLLVM(targetTriple));
+			irModule.instance->setDataLayout(targetMachine->createDataLayout());
 
 			std::error_code ec;
-			llvm::raw_fd_ostream file(ToLLVM(filePath), ec, llvm::sys::fs::OF_None);
+			llvm::raw_fd_ostream file(ToLLVM(irModule.objectFile), ec, llvm::sys::fs::OF_None);
 			if (ec)
 			{
 				context.AddError(
 				    Strings::Format("Could not open new object file: {}", ec.message()));
+				irModule.objectFile = {};    // File not saved
 				return;
 			}
 
@@ -60,10 +64,11 @@ namespace rift::Compiler
 			if (targetMachine->addPassesToEmitFile(pm, file, nullptr, llvm::CGFT_ObjectFile))
 			{
 				context.AddError("Target machine can't emit a file of this type");
+				irModule.objectFile = {};    // File not saved
 				return;
 			}
 
-			pm.run(*irModule.Get());
+			pm.run(*irModule.instance.Get());
 			file.flush();
 		}
 
@@ -113,5 +118,17 @@ namespace rift::Compiler
 
 		Log::Info("Build IR");
 		LLVM::CompileIR(context, llvm, builder);
+
+		Log::Info("Linking");
+		LLVM::Link(context);
+
+		if (!context.HasErrors())
+		{
+			Log::Info("Build complete.");
+		}
+		else
+		{
+			Log::Info("Build failed: {} errors", context.GetErrors().Size());
+		}
 	}
 }    // namespace rift::Compiler

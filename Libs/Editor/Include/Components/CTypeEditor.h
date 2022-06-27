@@ -27,6 +27,7 @@ namespace rift
 		AST::Id pendingDeletePropertyId = AST::NoId;
 
 		Nodes::EditorContext nodesEditor;
+		ImGuiTextFilter propertiesFilter;
 	};
 
 	inline const Name CTypeEditor::rightNode{"rightNode"};

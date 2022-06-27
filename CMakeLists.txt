@@ -41,7 +41,7 @@ add_subdirectory(Libs)
 add_subdirectory(Apps/CLI)
 add_subdirectory(Apps/Editor)
 
-# Resources folder
+# Copy Resources folder
 file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/Bin/Resources)
 file(COPY Resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Bin)
 

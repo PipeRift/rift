@@ -42,7 +42,7 @@ namespace rift::Nodes
 		Node   = 1 << 1,
 		Pin    = 1 << 2
 	};
-	DEFINE_FLAG_OPERATORS(Scope)
+	PIPE_DEFINE_FLAG_OPERATORS(Scope)
 
 	enum UIState_
 	{
