@@ -1,6 +1,6 @@
 
 set(RIFT_DEFAULT_TO_INTERNAL_LLVM ${PLATFORM_WINDOWS} CACHE STRING "If true, use internal llvm build path. Default: true in Windows, false in Linux")
-set(RIFT_INTERNAL_LLVM_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Extern/rift-llvm/build")
+set(RIFT_INTERNAL_LLVM_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Extern/rift-llvm")
 
 set(RIFT_LLVM_PATH_RELEASE "" CACHE STRING "Location of Rift LLVM installation to use on Release. CMake will try to find if this path is not set")
 set(RIFT_LLVM_PATH_DEBUG "" CACHE STRING "Location of Rift LLVM installation to use on Debug. CMake will try to find if this path is not set")
@@ -19,7 +19,7 @@ endif()
 if (NOT RIFT_LLVM_PATH STREQUAL "")
     message(STATUS "Provided explicit LLVM path: ${RIFT_LLVM_PATH}")
 elseif (RIFT_DEFAULT_TO_INTERNAL_LLVM AND NOT RIFT_INTERNAL_LLVM_PATH STREQUAL "")
-    set(RIFT_LLVM_PATH ${RIFT_INTERNAL_LLVM_PATH})
+    set(RIFT_LLVM_PATH ${RIFT_INTERNAL_LLVM_PATH}/build/${CMAKE_BUILD_TYPE})
     message(STATUS "Provided internal LLVM path: ${RIFT_LLVM_PATH}")
 else()
     message(STATUS "LLVM path not provided. Will be searched in the system")
@@ -51,11 +51,11 @@ target_compile_definitions(RiftLLVM INTERFACE ${LLVM_DEFINITIONS_LIST}  -DNOMINM
 
 # Copy LLVM linker
 if (PLATFORM_WINDOWS)
-    set(RIFT_LLVM_LINKER ${RIFT_LLVM_PATH}/${CMAKE_BUILD_TYPE}/bin/lld-link.exe)
+    set(RIFT_LLVM_LINKER ${RIFT_LLVM_PATH}/bin/lld-link.exe)
 elseif(PLATFORM_LINUX)
-    set(RIFT_LLVM_LINKER ${RIFT_LLVM_PATH}/${CMAKE_BUILD_TYPE}/bin/ld.lld)
+    set(RIFT_LLVM_LINKER ${RIFT_LLVM_PATH}/bin/ld.lld)
 elseif(PLATFORM_MACOS)
-    set(RIFT_LLVM_LINKER ${RIFT_LLVM_PATH}/${CMAKE_BUILD_TYPE}/bin/ld64.lld)
+    set(RIFT_LLVM_LINKER ${RIFT_LLVM_PATH}/bin/ld64.lld)
 endif()
 
 file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/Bin/llvm)
