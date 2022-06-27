@@ -17,7 +17,7 @@
 
 namespace rift::Compiler::LLVM
 {
-	static void Link(Context& context)
+	void Link(Context& context)
 	{
 		for (AST::Id moduleId : ecs::ListAll<CModule, CIRModule>(context.ast))
 		{
