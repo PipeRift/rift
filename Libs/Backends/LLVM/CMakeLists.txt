@@ -14,7 +14,7 @@ target_link_libraries(RiftBackendLLVM PUBLIC rift::Rift)
 
 target_link_libraries(RiftBackendLLVM PRIVATE RiftLLVM)
 
-target_compile_definitions(RiftBackendLLVM PRIVATE RIFT_LLVM_LINKER="${RIFT_LLVM_LINKER}")
+target_compile_definitions(RiftBackendLLVM PRIVATE RIFT_LLVM_LINKER="${RIFT_LLVM_LINKER}" RIFT_LLVM_LINKER_PATH="${RIFT_LLVM_LINKER_PATH}")
 
 install(TARGETS RiftBackendLLVM
     EXPORT RiftTargets
