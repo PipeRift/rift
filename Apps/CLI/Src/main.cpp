@@ -87,7 +87,7 @@ int main(int argc, char** argv)
 
 	ZoneScopedNC("CLI Execution", 0x459bd1);
 
-	const p::Path path = p::FromString(pathStr);
+	const p::Path path = p::ToPath(pathStr);
 	AST::Tree ast;
 	Modules::OpenProject(ast, path);
 

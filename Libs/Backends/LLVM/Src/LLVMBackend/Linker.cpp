@@ -3,6 +3,7 @@
 #include "LLVMBackend/Linker.h"
 
 #include "LLVMBackend/Components/CIRModule.h"
+#include "Pipe/Core/PlatformProcess.h"
 #include "Pipe/Core/String.h"
 
 #include <AST/Components/CIdentifier.h>
@@ -26,7 +27,13 @@ namespace rift::Compiler::LLVM
 			auto& irModule     = context.ast.Get<CIRModule>(moduleId);
 			if (p::files::Exists(irModule.objectFile))
 			{
-				TArray<const char*> command{RIFT_LLVM_LINKER};
+				TArray<const char*> command;
+
+				String linkerPath{PlatformProcess::GetExecutablePath()};
+				linkerPath.append("/");
+				linkerPath.append(RIFT_LLVM_LINKER_PATH);
+				command.Add(linkerPath.c_str());
+
 				const char* extension = nullptr;
 				switch (module.target)
 				{

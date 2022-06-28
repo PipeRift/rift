@@ -131,7 +131,7 @@ namespace rift
 
 		if (!isType)
 		{
-			if (UI::BeginMenu("Create"))
+			if (UI::BeginMenu("Create type"))
 			{
 				if (UI::MenuItem("Class"))
 				{
@@ -152,6 +152,11 @@ namespace rift
 					    ast, "Create Function Interface file", RiftType::FunctionInterface, path);
 				}
 				UI::EndMenu();
+			}
+
+			if (UI::MenuItem("Create folder"))
+			{
+				p::CreateFolder(p::ToPath(path) / "NewFolder");
 			}
 		}
 
@@ -386,10 +391,10 @@ namespace rift
 				if (UI::IsItemDeactivatedAfterEdit())
 				{
 					renameId         = AST::NoId;
-					Path destination = FromString(GetParentPath(path)) / renameBuffer;
+					Path destination = p::ToPath(GetParentPath(path)) / renameBuffer;
 					destination.replace_extension("rf");
 					// FIX: Type caches dont detect renamed types. Should provide helpers for that
-					files::Rename(FromString(path), destination);
+					files::Rename(p::ToPath(path), destination);
 					renameBuffer     = "";
 					renameHasFocused = false;
 				}

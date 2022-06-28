@@ -101,7 +101,7 @@ namespace rift
 
 			if (UI::Button("Create", v2{-FLT_MIN, 0.0f}))
 			{
-				if (Editor::Get().CreateProject(FromString(folder)))
+				if (Editor::Get().CreateProject(p::ToPath(folder)))
 				{
 					folder = "";
 					UI::CloseCurrentPopup();
