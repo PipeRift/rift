@@ -46,7 +46,7 @@ namespace rift
 		Log::Info("Editor is ready");
 
 		// Open a project if a path has been provided
-		OpenProject(FromString(projectPath), false);
+		OpenProject(p::ToPath(projectPath), false);
 
 		while (!UI::WantsToClose())
 		{
