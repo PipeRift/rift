@@ -2,6 +2,7 @@
 
 #include "Utils/FunctionGraphContextMenu.h"
 
+#include "AST/Utils/TypeUtils.h"
 #include "UI/Style.h"
 #include "UI/Widgets.h"
 #include "Utils/EditorStyle.h"
@@ -174,8 +175,18 @@ namespace rift::Graph
 		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
 		if (UI::InputText("##name", functionName, ImGuiInputTextFlags_AutoSelectAll))
 		{
-			ScopedChange(ast, id);
-			identifier->name = Name{functionName};
+			ecs::Id sameNameFuncId = Types::FindFunctionByName(ast, typeId, Name{functionName});
+			if (!IsNone(sameNameFuncId) && id != sameNameFuncId)
+			{
+				Style::PushTextColor(LinearColor::Red());
+				UI::SetTooltip("This name is in use by another function in this type");
+				Style::PopTextColor();
+			}
+			else
+			{
+				ScopedChange(ast, id);
+				identifier->name = Name{functionName};
+			}
 		}
 		UI::Spacing();
 
