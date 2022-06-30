@@ -1,6 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Utils/Properties.h"
+#include "Utils/ElementsPanel.h"
 
 #include "AST/Id.h"
 #include "Components/CTypeEditor.h"
@@ -27,7 +27,6 @@ namespace rift
 {
 	// using namespace EnumOperators;
 
-
 	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, AST::Id variableId)
 	{
 		auto* identifier   = access.TryGet<CIdentifier>(variableId);
@@ -37,7 +36,7 @@ namespace rift
 			return;
 		}
 		String name = identifier->name.ToString();
-		if (!editor.propertiesFilter.PassFilter(name.data(), name.data() + name.size()))
+		if (!editor.elementsFilter.PassFilter(name.data(), name.data() + name.size()))
 		{
 			return;
 		}
@@ -137,7 +136,7 @@ namespace rift
 			return;
 		}
 		String name = identifier->name.ToString();
-		if (!editor.propertiesFilter.PassFilter(name.data(), name.data() + name.size()))
+		if (!editor.elementsFilter.PassFilter(name.data(), name.data() + name.size()))
 		{
 			return;
 		}
@@ -237,15 +236,20 @@ namespace rift
 		}
 	}
 
-	void DrawProperties(AST::Tree& ast, AST::Id typeId)
+	void DrawElementsPanel(AST::Tree& ast, AST::Id typeId)
 	{
 		auto& editor = ast.Get<CTypeEditor>(typeId);
 
-		const String windowName = Strings::Format("Properties##{}", typeId);
-		if (UI::Begin(windowName.c_str()))
+		if (!editor.showElements)
+		{
+			return;
+		}
+
+		const String windowName = Strings::Format("Elements##{}", typeId);
+		if (UI::Begin(windowName.c_str(), &editor.showElements))
 		{
 			UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
-			editor.propertiesFilter.Draw("##filter");
+			editor.elementsFilter.Draw("##filter");
 
 			if (Types::CanContainVariables(ast, typeId))
 			{

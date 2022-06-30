@@ -847,13 +847,18 @@ namespace rift::Graph
 
 	void DrawTypeGraph(AST::Tree& ast, AST::Id typeId, CTypeEditor& typeEditor)
 	{
-		typeEditor.layout.BindNextWindowToNode(CTypeEditor::centralNode, ImGuiCond_Appearing);
+		if (!typeEditor.showGraph)
+		{
+			return;
+		}
+
 		static String graphId;
 		graphId.clear();
 		Strings::FormatTo(graphId, "Graph##{}", typeId);
 
 		bool wantsToOpenContextMenu = false;
-		UI::Begin(graphId.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
+		typeEditor.layout.BindNextWindowToNode(CTypeEditor::centralNode, ImGuiCond_Appearing);
+		if (UI::Begin(graphId.c_str(), &typeEditor.showGraph, ImGuiWindowFlags_NoCollapse))
 		{
 			Nodes::SetEditorContext(&typeEditor.nodesEditor);
 			Nodes::GetCurrentContext()->canCreateLinks = Types::CanEditFunctionBodies(ast, typeId);
@@ -920,8 +925,8 @@ namespace rift::Graph
 				ImGui::OpenPopup("ContextMenu", ImGuiPopupFlags_AnyPopup);
 			}
 			DrawContextMenu(ast, typeId, hoveredNodeId, hoveredLinkId);
-			UI::End();
 		}
+		UI::End();
 	}
 
 	void SetNodePosition(AST::Id id, v2 position)

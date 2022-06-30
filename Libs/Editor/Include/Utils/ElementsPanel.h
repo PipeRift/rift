@@ -38,9 +38,5 @@ namespace rift
 	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, AST::Id variableId);
 	void DrawFunction(AST::Tree& ast, CTypeEditor& editor, AST::Id functionId);
 
-	void DrawVariables(TVariableAccessRef access, TransactionAccess transAccess,
-	    CTypeEditor& editor, AST::Id typeId);
-	void DrawFunctions(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId);
-
-	void DrawProperties(AST::Tree& ast, AST::Id typeId);
+	void DrawElementsPanel(AST::Tree& ast, AST::Id typeId);
 }    // namespace rift
