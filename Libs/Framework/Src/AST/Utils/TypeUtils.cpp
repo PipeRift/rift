@@ -442,8 +442,18 @@ namespace rift::Types
 		auto& types = access.GetContext().GetStatic<STypes>();
 		if (const AST::Id* typeId = types.typesByName.Find(ownerName))
 		{
+			return FindFunctionByName(access, *typeId, functionName);
+		}
+		return AST::NoId;
+	}
+
+	AST::Id FindFunctionByName(
+	    TAccessRef<CDeclFunction, CIdentifier, CParent> access, AST::Id ownerId, Name functionName)
+	{
+		if (!IsNone(ownerId))
+		{
 			TArray<AST::Id> children;
-			AST::Hierarchy::GetChildren(access, *typeId, children);
+			AST::Hierarchy::GetChildren(access, ownerId, children);
 			ecs::ExcludeIfNot<CDeclFunction, CIdentifier>(access, children);
 			for (AST::Id childId : children)
 			{

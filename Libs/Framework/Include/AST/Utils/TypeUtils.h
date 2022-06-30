@@ -62,6 +62,8 @@ namespace rift::Types
 
 	AST::Id FindFunctionByName(
 	    TAccessRef<CDeclFunction, CIdentifier, CParent> access, Name ownerName, Name functionName);
+	AST::Id FindFunctionByName(
+	    TAccessRef<CDeclFunction, CIdentifier, CParent> access, AST::Id ownerId, Name functionName);
 
 	using RemoveAccess = TAccess<TWrite<CChanged>, TWrite<CFileDirty>, TWrite<CStmtInput>,
 	    TWrite<CStmtOutputs>, TWrite<CParent>, TWrite<CChild>, CFileRef>;
