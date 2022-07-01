@@ -4,6 +4,7 @@
 
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
+#include "imgui.h"
 #include "Pipe/Core/Context.h"
 #include "Utils/EditorStyle.h"
 #include "Utils/FunctionGraphContextMenu.h"
@@ -916,15 +917,22 @@ namespace rift::Graph
 				    ast, AST::Expressions::InputFromPinId(ast, AST::Id(linkId)));
 			}
 
-			static AST::Id hoveredNodeId = AST::NoId;
-			static AST::Id hoveredLinkId = AST::NoId;
+			AST::Id hoveredNodeId = Nodes::GetHoveredNode();
+			if (!IsNone(hoveredNodeId) && Nodes::IsNodeSelected(hoveredNodeId)
+			    && UI::IsMouseClicked(ImGuiMouseButton_Left))
+			{
+				typeEditor.selectedPropertyId = Nodes::GetHoveredNode();
+			}
+
+			static AST::Id contextHoveredNodeId = AST::NoId;
+			static AST::Id contextHoveredLinkId = AST::NoId;
 			if (wantsToOpenContextMenu)
 			{
-				hoveredNodeId = Nodes::GetHoveredNode();
-				hoveredLinkId = Nodes::GetHoveredLink();
+				contextHoveredNodeId = Nodes::GetHoveredNode();
+				contextHoveredLinkId = Nodes::GetHoveredLink();
 				ImGui::OpenPopup("ContextMenu", ImGuiPopupFlags_AnyPopup);
 			}
-			DrawContextMenu(ast, typeId, hoveredNodeId, hoveredLinkId);
+			DrawContextMenu(ast, typeId, contextHoveredNodeId, contextHoveredLinkId);
 		}
 		UI::End();
 	}

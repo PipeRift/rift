@@ -24,6 +24,168 @@
 
 namespace rift
 {
+	void EditFunctionPin(AST::Tree& ast, AST::Id typeId, AST::Id id)
+	{
+		auto* identifier = ast.TryGet<CIdentifier>(id);
+		auto* type       = ast.TryGet<CExprType>(id);
+		if (!identifier || !type)
+		{
+			return;
+		}
+
+		bool removePin = false;
+		bool hovered   = false;
+
+		static String labelId;
+		static String popupName;
+		popupName.clear();
+		Strings::FormatTo(popupName, "##PinContextMenu_{}", id);
+
+
+		UI::TableNextRow();
+		const Color color = Style::GetTypeColor(ast, type->id);
+		UI::TableSetBgColor(ImGuiTableBgTarget_RowBg0, color.DWColor());
+
+		UI::TableNextColumn();    // Name
+		labelId.clear();
+		Strings::FormatTo(labelId, "##Name_{}", id);
+		String name = identifier->name.ToString();
+		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
+		if (UI::MutableText(labelId, name, ImGuiInputTextFlags_AutoSelectAll))
+		{
+			ScopedChange(ast, id);
+			identifier->name = Name{name};
+		}
+		if (UI::IsItemHovered())
+		{
+			hovered = true;
+		}
+
+		UI::TableNextColumn();    // Type
+		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
+		labelId.clear();
+		Strings::FormatTo(labelId, "##Type_{}", id);
+		AST::Id selectedTypeId = type->id;
+		UI::SetNextItemWidth(-FLT_MIN);
+		if (Editor::TypeCombo(ast, labelId, selectedTypeId))
+		{
+			ScopedChange(ast, id);
+			type->id = selectedTypeId;
+		}
+		UI::PopStyleVar();
+		if (UI::IsItemHovered())
+		{
+			hovered = true;
+		}
+
+		if (hovered)
+		{
+			if (UI::IsKeyReleased(GLFW_KEY_DELETE))
+			{
+				removePin = true;
+			}
+			else if (UI::IsMouseReleased(ImGuiMouseButton_Right))
+			{
+				UI::OpenPopup(popupName.c_str());
+			}
+		}
+		if (UI::BeginPopup(popupName.c_str()))
+		{
+			if (UI::MenuItem("Delete"))
+			{
+				removePin = true;
+			}
+			UI::EndPopup();
+		}
+		if (removePin)
+		{
+			AST::Expressions::RemoveInputPin(ast, AST::Expressions::InputFromPinId(ast, id));
+			AST::Expressions::RemoveOutputPin(ast, AST::Expressions::OutputFromPinId(ast, id));
+		}
+	}
+
+	void DrawFunction(AST::Tree& ast, AST::Id typeId, AST::Id id)
+	{
+		auto* identifier = ast.TryGet<CIdentifier>(id);
+		if (!identifier)
+		{
+			return;
+		}
+
+		String functionName = identifier->name.ToString();
+		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
+		if (UI::InputText("##name", functionName, ImGuiInputTextFlags_AutoSelectAll))
+		{
+			ecs::Id sameNameFuncId = Types::FindFunctionByName(ast, typeId, Name{functionName});
+			if (!IsNone(sameNameFuncId) && id != sameNameFuncId)
+			{
+				Style::PushTextColor(LinearColor::Red());
+				UI::SetTooltip("This name is in use by another function in this type");
+				Style::PopTextColor();
+			}
+			else
+			{
+				ScopedChange(ast, id);
+				identifier->name = Name{functionName};
+			}
+		}
+		UI::Spacing();
+
+		UI::Text("Inputs");
+		if (UI::BeginTable("##fields", 2, ImGuiTableFlags_SizingFixedFit, {200.f, 0.f}))
+		{
+			UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 0.9f);
+			UI::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch, 1.f);
+			if (const auto* exprOutputs = ast.TryGet<const CExprOutputs>(id))
+			{
+				for (AST::Id pinId : exprOutputs->pinIds)
+				{
+					EditFunctionPin(ast, id, pinId);
+				}
+			}
+			UI::EndTable();
+		}
+		Style::PushStyleCompact();
+		UI::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, {0.5f, 0.5f});
+		UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
+		if (UI::Selectable(ICON_FA_PLUS "##AddInput"))
+		{
+			ScopedChange(ast, id);
+			Types::AddFunctionInput(ast, id);
+		}
+		UI::HelpTooltip("Adds a new input parameter to a function");
+		UI::PopStyleVar();
+		Style::PopStyleCompact();
+		UI::Spacing();
+
+		UI::Text("Outputs");
+		if (UI::BeginTable("##fields", 2, ImGuiTableFlags_SizingFixedFit, {200.f, 0.f}))
+		{
+			UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 0.9f);
+			UI::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch, 1.f);
+			if (const auto* exprInputs = ast.TryGet<const CExprInputs>(id))
+			{
+				for (AST::Id pinId : exprInputs->pinIds)
+				{
+					EditFunctionPin(ast, id, pinId);
+				}
+			}
+			UI::EndTable();
+		}
+		Style::PushStyleCompact();
+		UI::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+		UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
+		if (UI::Selectable(ICON_FA_PLUS "##AddOutput"))
+		{
+			ScopedChange(ast, id);
+			Types::AddFunctionOutput(ast, id);
+		}
+		UI::HelpTooltip("Adds a new output parameter to a function");
+		UI::PopStyleVar();
+		Style::PopStyleCompact();
+		UI::Spacing();
+	}
+
 	void DrawDetailsPanel(AST::Tree& ast, AST::Id typeId)
 	{
 		auto& editor = ast.Get<CTypeEditor>(typeId);
@@ -34,7 +196,19 @@ namespace rift
 		}
 
 		const String windowName = Strings::Format("Details##{}", typeId);
-		if (UI::Begin(windowName.c_str(), &editor.showDetails)) {}
+		if (UI::Begin(windowName.c_str(), &editor.showDetails))
+		{
+			if (IsNone(editor.selectedPropertyId))
+			{
+				UI::End();
+				return;
+			}
+
+			if (ast.Has<CDeclFunction>(editor.selectedPropertyId))
+			{
+				DrawFunction(ast, typeId, editor.selectedPropertyId);
+			}
+		}
 		UI::End();
 	}
 }    // namespace rift
