@@ -1,7 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include "Editor.h"
-#include "Utils/Properties.h"
+#include "Utils/ElementsPanel.h"
 
 #include <Pipe/Files/FileDialog.h>
 #include <UI/Notify.h>

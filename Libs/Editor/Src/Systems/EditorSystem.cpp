@@ -7,12 +7,14 @@
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "Editor.h"
+#include "imgui.h"
 #include "imgui_internal.h"
 #include "Statics/SEditor.h"
+#include "Utils/DetailsPanel.h"
+#include "Utils/ElementsPanel.h"
 #include "Utils/FunctionGraph.h"
 #include "Utils/ModuleUtils.h"
 #include "Utils/ProjectManager.h"
-#include "Utils/Properties.h"
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CFileRef.h>
@@ -62,18 +64,21 @@ namespace rift::EditorSystem
 	{
 		auto& typeEditor = ast.Get<CTypeEditor>(typeId);
 		typeEditor.layout.OnBuild([](auto& builder) {
-			// =================================== //
-			//                           |         //
-			//                           |         //
-			//          Central          |  Right  //
-			//          (Graph)          |(Details)//
-			//                           |         //
-			//                           |         //
-			// =================================== //
-			builder.Split(builder.GetRootNode(), ImGuiDir_Right, 0.2f, CTypeEditor::rightNode,
-			    CTypeEditor::centralNode);
+			// ==================================== //
+			//                           |          //
+			//                           | Elements //
+			//            Graph          |          //
+			//                           |----------//
+			//                           | Details  //
+			//                           |          //
+			// ==================================== //
+			Name rightNode{"rightNode"};
+			builder.Split(
+			    builder.GetRootNode(), ImGuiDir_Right, 0.25f, rightNode, CTypeEditor::centralNode);
 
-			builder.GetNodeLocalFlags(CTypeEditor::rightNode) |= ImGuiDockNodeFlags_AutoHideTabBar;
+			builder.Split(rightNode, ImGuiDir_Up, 0.4f, CTypeEditor::rightTopNode,
+			    CTypeEditor::rightBottomNode);
+
 			builder.GetNodeLocalFlags(CTypeEditor::centralNode) |=
 			    ImGuiDockNodeFlags_CentralNode | i32(ImGuiDockNodeFlags_AutoHideTabBar);
 		});
@@ -454,6 +459,7 @@ namespace rift::EditorSystem
 
 	void DrawTypeMenuBar(AST::Tree& ast, AST::Id typeId)
 	{
+		auto& typeEditor = ast.Get<CTypeEditor>(typeId);
 		if (UI::BeginMenuBar())
 		{
 			if (UI::MenuItem(ICON_FA_SAVE, "CTRL+S"))
@@ -470,8 +476,12 @@ namespace rift::EditorSystem
 			}
 			if (UI::BeginMenu("View"))
 			{
-				if (Types::CanContainFunctions(ast, typeId) && UI::MenuItem("Graph")) {}
-				if (UI::MenuItem("Properties")) {}
+				if (Types::CanContainFunctions(ast, typeId))
+				{
+					UI::MenuItem("Graph", nullptr, &typeEditor.showGraph);
+				}
+				UI::MenuItem("Elements", nullptr, &typeEditor.showElements);
+				UI::MenuItem("Details", nullptr, &typeEditor.showDetails);
 				UI::EndMenu();
 			}
 			UI::EndMenuBar();
@@ -482,13 +492,13 @@ namespace rift::EditorSystem
 	{
 		ZoneScoped;
 
-		TAccess<TWrite<CTypeEditor>, CType, CFileRef> typeEditors{ast};
-		for (AST::Id typeId : ecs::ListAll<CType, CTypeEditor, CFileRef>(typeEditors))
+		TAccess<TWrite<CTypeEditor>, CType, CFileRef> access{ast};
+		for (AST::Id typeId : ecs::ListAll<CType, CTypeEditor, CFileRef>(access))
 		{
 			ZoneScopedN("Draw Type");
 
-			auto& typeEditor = typeEditors.Get<CTypeEditor>(typeId);
-			const auto& file = typeEditors.Get<const CFileRef>(typeId);
+			auto& typeEditor = access.Get<CTypeEditor>(typeId);
+			const auto& file = access.Get<const CFileRef>(typeId);
 
 			bool isOpen               = true;
 			const String path         = p::ToString(file.path);
@@ -518,15 +528,21 @@ namespace rift::EditorSystem
 				if (Types::CanContainFunctions(ast, typeId))
 				{
 					Graph::DrawTypeGraph(ast, typeId, typeEditor);
-				}
 
-				Name propertiesNode = CTypeEditor::rightNode;
-				if (!Types::CanContainFunctions(ast, typeId))
-				{
-					propertiesNode = DockSpaceLayout::rootNodeId;
+					typeEditor.layout.BindNextWindowToNode(
+					    CTypeEditor::rightBottomNode, ImGuiCond_Appearing);
+					DrawDetailsPanel(ast, typeId);
+
+					typeEditor.layout.BindNextWindowToNode(
+					    CTypeEditor::rightTopNode, ImGuiCond_Appearing);
+					DrawElementsPanel(ast, typeId);
 				}
-				typeEditor.layout.BindNextWindowToNode(propertiesNode, ImGuiCond_Appearing);
-				DrawProperties(ast, typeId);
+				else
+				{
+					typeEditor.layout.BindNextWindowToNode(
+					    DockSpaceLayout::rootNodeId, ImGuiCond_Appearing);
+					DrawElementsPanel(ast, typeId);
+				}
 			}
 			else
 			{
