@@ -146,10 +146,17 @@ namespace rift
 		static String headerId;
 		headerId.clear();
 		Strings::FormatTo(headerId, "{}###{}", name, id);
-		UI::CollapsingHeader(headerId.c_str(), ImGuiTreeNodeFlags_Leaf);
+
+		const bool selected = editor.selectedPropertyId == id;
+		UI::CollapsingHeader(headerId.c_str(),
+		    (selected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf);
 		if (UI::IsItemHovered() && UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 		{
 			Nodes::MoveToNode(id, v2{150.f, 150.f});
+		}
+		else if (UI::IsItemClicked())
+		{
+			editor.selectedPropertyId = id;
 		}
 		UI::PopStyleVar();
 		Style::PopHeaderColor();
