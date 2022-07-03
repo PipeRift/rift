@@ -5,7 +5,7 @@
 
 #include <AST/Components/CChild.h>
 #include <AST/Components/CFileRef.h>
-#include <AST/Components/CIdentifier.h>
+#include <AST/Components/CNamespace.h>
 #include <AST/Components/CParent.h>
 #include <Pipe/Core/Platform.h>
 #include <Pipe/Core/StringView.h>
@@ -32,7 +32,7 @@ namespace rift
 		void Draw(AST::Tree& ast);
 
 	private:
-		using DrawNodeAccess = TAccessRef<const CIdentifier, const CFileRef, const CParent>;
+		using DrawNodeAccess = TAccessRef<const CNamespace, const CFileRef, const CParent>;
 		void DrawNode(DrawNodeAccess access, AST::Id nodeId, bool showChildren);
 	};
 }    // namespace rift

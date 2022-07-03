@@ -2,14 +2,14 @@
 
 #include "AST/Utils/Namespaces.h"
 
-#include "AST/Components/CIdentifier.h"
+#include "AST/Components/CNamespace.h"
 #include "AST/Utils/Hierarchy.h"
 
 
 namespace rift::AST
 {
 	bool GetRelativeNamespace(
-	    TAccessRef<CIdentifier, CChild> access, Id id, p::String& ns, Id relativeParentId)
+	    TAccessRef<CNamespace, CChild> access, Id id, p::String& ns, Id relativeParentId)
 	{
 		if (IsNone(relativeParentId))
 		{
@@ -25,7 +25,7 @@ namespace rift::AST
 		}
 	}
 
-	void GetFullNamespace(TAccessRef<CIdentifier, CChild> access, Id id, p::String& ns)
+	void GetFullNamespace(TAccessRef<CNamespace, CChild> access, Id id, p::String& ns)
 	{
 		ns.clear();
 
@@ -40,7 +40,7 @@ namespace rift::AST
 		for (i32 i = idChain.Size() - 1; i >= 0; --i)
 		{
 			const Id id = idChain[i];
-			if (auto* ident = access.TryGet<const CIdentifier>(id))
+			if (auto* ident = access.TryGet<const CNamespace>(id))
 			{
 				ns.append(ident->name.ToString());
 			}
@@ -56,7 +56,7 @@ namespace rift::AST
 		}
 	}
 
-	bool GetName(TAccessRef<CIdentifier, CChild> access, Id id, p::String& name,
+	bool GetName(TAccessRef<CNamespace, CChild> access, Id id, p::String& name,
 	    bool includeNamespace, bool relativeNamespace)
 	{
 		GetFullNamespace(access, id, name);

@@ -6,14 +6,15 @@
 #include "Pipe/Core/PlatformProcess.h"
 #include "Pipe/Core/String.h"
 
-#include <AST/Components/CIdentifier.h>
 #include <AST/Components/CModule.h>
+#include <AST/Components/CNamespace.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Pipe/Core/Subprocess.h>
 #include <Pipe/ECS/Filtering.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Reflect/EnumType.h>
+
 
 
 namespace rift::Compiler::LLVM

@@ -4,13 +4,14 @@
 #include "AST/Components/CProject.h"
 
 #include <AST/Components/CFileRef.h>
-#include <AST/Components/CIdentifier.h>
 #include <AST/Components/CModule.h>
+#include <AST/Components/CNamespace.h>
 #include <AST/Components/CType.h>
 #include <AST/Tree.h>
 #include <Pipe/Core/Array.h>
 #include <Pipe/Core/String.h>
 #include <Pipe/ECS/Filtering.h>
+
 
 
 namespace rift

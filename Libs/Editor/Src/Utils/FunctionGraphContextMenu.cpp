@@ -14,7 +14,7 @@
 #include <AST/Components/CDeclFunction.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprType.h>
-#include <AST/Components/CIdentifier.h>
+#include <AST/Components/CNamespace.h>
 #include <AST/Components/CType.h>
 #include <AST/Components/Views/CNodePosition.h>
 #include <AST/Statics/STypes.h>
@@ -192,10 +192,10 @@ namespace rift::Graph
 		if (ContextTreeNode("Functions", filter))
 		{
 			static String label;
-			TAccess<CDeclFunction, CIdentifier, CChild, CType> access{ast};
-			for (AST::Id functionId : ecs::ListAll<CDeclFunction, CIdentifier>(access))
+			TAccess<CDeclFunction, CNamespace, CChild, CType> access{ast};
+			for (AST::Id functionId : ecs::ListAll<CDeclFunction, CNamespace>(access))
 			{
-				Name name = access.Get<const CIdentifier>(functionId).name;
+				Name name = access.Get<const CNamespace>(functionId).name;
 				label.clear();
 				AST::Id funcTypeId = AST::Hierarchy::GetParent(access, functionId);
 				if (!IsNone(funcTypeId) && access.Has<CType>(funcTypeId))
@@ -219,10 +219,10 @@ namespace rift::Graph
 		if (ContextTreeNode("Variables", filter))
 		{
 			static String label;
-			TAccess<CDeclVariable, CIdentifier, CChild, CType> access{ast};
-			for (AST::Id variableId : ecs::ListAll<CDeclVariable, CIdentifier>(access))
+			TAccess<CDeclVariable, CNamespace, CChild, CType> access{ast};
+			for (AST::Id variableId : ecs::ListAll<CDeclVariable, CNamespace>(access))
 			{
-				Name name = access.Get<const CIdentifier>(variableId).name;
+				Name name = access.Get<const CNamespace>(variableId).name;
 				label.clear();
 				AST::Id typeId = AST::Hierarchy::GetParent(access, variableId);
 				if (!IsNone(typeId) && access.Has<CType>(typeId))

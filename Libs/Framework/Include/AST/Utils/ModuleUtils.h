@@ -3,13 +3,14 @@
 #pragma once
 
 #include "AST/Components/CFileRef.h"
-#include "AST/Components/CIdentifier.h"
 #include "AST/Components/CModule.h"
+#include "AST/Components/CNamespace.h"
 #include "AST/Components/CProject.h"
 #include "AST/Tree.h"
 
 #include <Pipe/ECS/Filtering.h>
 #include <Pipe/Memory/OwnPtr.h>
+
 
 
 namespace rift
@@ -31,14 +32,14 @@ namespace rift::Modules
 
 	Id GetProjectId(TAccessRef<CProject> access);
 
-	Name GetProjectName(TAccessRef<CProject, CIdentifier, CFileRef> access);
+	Name GetProjectName(TAccessRef<CProject, CNamespace, CFileRef> access);
 	Path GetProjectPath(TAccessRef<CFileRef, CProject> access);
 	CModule* GetProjectModule(TAccessRef<CProject, TWrite<CModule>> access);
 
 	bool HasProject(Tree& ast);
 
 	// Resolve a module's name
-	Name GetModuleName(TAccessRef<CIdentifier, CFileRef> access, Id moduleId);
+	Name GetModuleName(TAccessRef<CNamespace, CFileRef> access, Id moduleId);
 
 	// Resolve a module's name
 	Path GetModulePath(TAccessRef<CFileRef> access, Id moduleId);

@@ -7,13 +7,14 @@
 #include "CppBackend/CppGeneration.h"
 
 #include <AST/Components/CDeclClass.h>
-#include <AST/Components/CIdentifier.h>
 #include <AST/Components/CModule.h>
+#include <AST/Components/CNamespace.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Context.h>
 #include <Pipe/ECS/Filtering.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Math/DateTime.h>
+
 
 
 namespace rift::Compiler

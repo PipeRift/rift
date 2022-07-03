@@ -9,7 +9,7 @@
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CExprUnaryOperator.h"
 #include "AST/Components/CFileRef.h"
-#include "AST/Components/CIdentifier.h"
+#include "AST/Components/CNamespace.h"
 #include "AST/Components/CParent.h"
 #include "AST/Components/CStmtInput.h"
 #include "AST/Components/CStmtOutputs.h"
@@ -61,9 +61,9 @@ namespace rift::Types
 	AST::Id AddBinaryOperator(AST::TypeRef type, BinaryOperatorType operatorType);
 
 	AST::Id FindFunctionByName(
-	    TAccessRef<CDeclFunction, CIdentifier, CParent> access, Name ownerName, Name functionName);
+	    TAccessRef<CDeclFunction, CNamespace, CParent> access, Name ownerName, Name functionName);
 	AST::Id FindFunctionByName(
-	    TAccessRef<CDeclFunction, CIdentifier, CParent> access, AST::Id ownerId, Name functionName);
+	    TAccessRef<CDeclFunction, CNamespace, CParent> access, AST::Id ownerId, Name functionName);
 
 	using RemoveAccess = TAccess<TWrite<CChanged>, TWrite<CFileDirty>, TWrite<CStmtInput>,
 	    TWrite<CStmtOutputs>, TWrite<CParent>, TWrite<CChild>, CFileRef>;

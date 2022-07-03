@@ -26,7 +26,7 @@ namespace rift
 {
 	void EditFunctionPin(AST::Tree& ast, AST::Id typeId, AST::Id id)
 	{
-		auto* identifier = ast.TryGet<CIdentifier>(id);
+		auto* identifier = ast.TryGet<CNamespace>(id);
 		auto* type       = ast.TryGet<CExprType>(id);
 		if (!identifier || !type)
 		{
@@ -106,7 +106,7 @@ namespace rift
 
 	void DrawFunction(AST::Tree& ast, AST::Id typeId, AST::Id id)
 	{
-		auto* identifier = ast.TryGet<CIdentifier>(id);
+		auto* identifier = ast.TryGet<CNamespace>(id);
 		if (!identifier)
 		{
 			return;

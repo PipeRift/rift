@@ -3,7 +3,7 @@
 #include "AST/Tree.h"
 
 #include "AST/Components/CDeclNative.h"
-#include "AST/Components/CIdentifier.h"
+#include "AST/Components/CNamespace.h"
 #include "AST/Components/CType.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"

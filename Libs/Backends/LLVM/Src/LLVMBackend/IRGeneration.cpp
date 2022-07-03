@@ -44,7 +44,7 @@
 namespace rift::Compiler::LLVM
 {
 	using BlockAccessRef = TAccessRef<CStmtOutput, CStmtOutputs, CExprInputs, CStmtIf, CExprCallId,
-	    CIRFunction, CIRValue, CIdentifier>;
+	    CIRFunction, CIRValue, CNamespace>;
 
 	// Forward declarations
 	void AddStmtBlock(ModuleIRGen& gen, BlockAccessRef access, AST::Id firstStmtId,
@@ -83,7 +83,7 @@ namespace rift::Compiler::LLVM
 	}
 
 	void DefineStructs(ModuleIRGen& gen,
-	    TAccessRef<CIRType, CParent, CIdentifier, CDeclVariable> access, TSpan<AST::Id> ids)
+	    TAccessRef<CIRType, CParent, CNamespace, CDeclVariable> access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
 		TArray<AST::Id> memberIds;
@@ -116,7 +116,7 @@ namespace rift::Compiler::LLVM
 		}
 	}
 
-	using DeclareFunctionAccess = TAccessRef<TWrite<CIRFunction>, CIdentifier, CExprType,
+	using DeclareFunctionAccess = TAccessRef<TWrite<CIRFunction>, CNamespace, CExprType,
 	    CExprOutputs, CIRType, CParent, CInvalid>;
 	void DeclareFunctions(ModuleIRGen& gen, DeclareFunctionAccess access, TSpan<AST::Id> ids)
 	{
@@ -160,7 +160,7 @@ namespace rift::Compiler::LLVM
 			}
 
 			// Create function
-			auto& ident = access.Get<const CIdentifier>(id);
+			auto& ident = access.Get<const CNamespace>(id);
 			auto* functionType =
 			    llvm::FunctionType::get(gen.builder.getVoidTy(), ToLLVM(inputTypes), false);
 			functionComp.instance = llvm::Function::Create(
@@ -266,7 +266,7 @@ namespace rift::Compiler::LLVM
 		const auto* function = access.TryGet<const CIRFunction>(functionId);
 		if (!Ensure(function))
 		{
-			const auto* ident = access.TryGet<const CIdentifier>(functionId);
+			const auto* ident = access.TryGet<const CNamespace>(functionId);
 			gen.compiler.AddError(
 			    Strings::Format("Call to an invalid function: '{}'", ident ? ident->name : ""));
 			return;

@@ -149,7 +149,7 @@ namespace rift
 				    ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultHide, 1.2f);
 				UI::TableHeadersRow();
 
-				TAccess<const CIdentifier, const CFileRef, const CParent, const CChild> access{ast};
+				TAccess<const CNamespace, const CFileRef, const CParent, const CChild> access{ast};
 				if (showHierarchy && !filter.IsActive())
 				{
 					TArray<AST::Id> roots = ecs::ListAll<CParent>(access);
@@ -159,7 +159,7 @@ namespace rift
 						DrawNode(access, root, true);
 					}
 
-					TArray<AST::Id> orphans = ecs::ListAll<CIdentifier>(access);
+					TArray<AST::Id> orphans = ecs::ListAll<CNamespace>(access);
 					ecs::ExcludeIf<CChild>(access, orphans);
 					ecs::ExcludeIf<CParent>(access, orphans);
 					for (auto orphan : orphans)
@@ -202,7 +202,7 @@ namespace rift
 
 		static String name;
 		name.clear();
-		if (const auto* id = access.TryGet<const CIdentifier>(nodeId))
+		if (const auto* id = access.TryGet<const CNamespace>(nodeId))
 		{
 			name = id->name.ToString();
 		}

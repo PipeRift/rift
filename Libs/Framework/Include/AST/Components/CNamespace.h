@@ -7,25 +7,22 @@
 
 namespace rift
 {
-	using namespace p;
-
-
-	struct CIdentifier : public Struct
+	struct CNamespace : public p::Struct
 	{
-		STRUCT(CIdentifier, Struct)
+		STRUCT(CNamespace, p::Struct)
 
 		PROP(name);
-		Name name;
+		p::Name name;
 
 
-		CIdentifier() = default;
-		CIdentifier(Name name) : name(name) {}
+		CNamespace() = default;
+		CNamespace(p::Name name) : name(name) {}
 
-		bool operator==(const CIdentifier& other) const
+		bool operator==(const CNamespace& other) const
 		{
 			return name == other.name;
 		}
-		bool operator==(Name other) const
+		bool operator==(p::Name other) const
 		{
 			return name == other;
 		}

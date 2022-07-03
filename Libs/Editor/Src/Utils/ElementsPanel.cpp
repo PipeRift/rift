@@ -29,7 +29,7 @@ namespace rift
 
 	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, AST::Id variableId)
 	{
-		auto* identifier   = access.TryGet<CIdentifier>(variableId);
+		auto* identifier   = access.TryGet<CNamespace>(variableId);
 		auto* variableDecl = access.TryGet<CDeclVariable>(variableId);
 		if (!identifier || !variableDecl)
 		{
@@ -130,7 +130,7 @@ namespace rift
 
 	void DrawFunction(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId, AST::Id id)
 	{
-		auto* identifier = ast.TryGet<CIdentifier>(id);
+		auto* identifier = ast.TryGet<CNamespace>(id);
 		if (!identifier)
 		{
 			return;

@@ -71,7 +71,7 @@
                 "y": 2.0
             }
         },
-        "CIdentifier": {
+        "CNamespace": {
             "3": {
                 "name": "SayHi"
             },
