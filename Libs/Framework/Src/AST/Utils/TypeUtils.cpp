@@ -44,6 +44,10 @@ namespace rift::Types
 			fileName        = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
 			ast.Add<CType>(id, {Name{fileName}});
 		}
+		else
+		{
+			ast.Add<CType>(id);
+		}
 
 		switch (category)
 		{
