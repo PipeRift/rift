@@ -17,6 +17,7 @@
 #include "AST/Components/CLiteralFloating.h"
 #include "AST/Components/CLiteralIntegral.h"
 #include "AST/Components/CLiteralString.h"
+#include "AST/Components/CNamespace.h"
 #include "AST/Components/CStmtIf.h"
 #include "AST/Components/CStmtInput.h"
 #include "AST/Components/CStmtOutputs.h"
@@ -42,12 +43,10 @@ namespace rift::Types
 		{
 			String fileName = p::GetFilename(fileRef->path);
 			fileName        = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
-			ast.Add<CType>(id, {Name{fileName}});
+			ast.Add<CNamespace>(id, {Name{fileName}});
 		}
-		else
-		{
-			ast.Add<CType>(id);
-		}
+
+		ast.Add<CType>(id);
 
 		switch (category)
 		{
@@ -83,15 +82,16 @@ namespace rift::Types
 	AST::Id CreateType(AST::Tree& ast, RiftType type, Name name, const p::Path& path)
 	{
 		AST::Id id = ast.Create();
-		if (!name.IsNone())
-		{
-			ast.Add<CNamespace>(id, name);
-		}
 		if (!path.empty())
 		{
 			ast.Add<CFileRef>(id, path);
 		}
 		InitTypeFromCategory(ast, id, type);
+
+		if (!name.IsNone() && !ast.Has<CNamespace>(id))
+		{
+			ast.Add<CNamespace>(id, name);
+		}
 		return id;
 	}
 
@@ -233,7 +233,7 @@ namespace rift::Types
 		const AST::Id typeId = AST::Hierarchy::GetParent(ast, functionId);
 		if (!IsNone(typeId))
 		{
-			callExpr.ownerName = ast.Get<CType>(typeId).name;
+			callExpr.ownerName = ast.Get<const CNamespace>(typeId).name;
 		}
 
 		if (type)
@@ -396,7 +396,7 @@ namespace rift::Types
 		const AST::Id typeId = AST::Hierarchy::GetParent(ast, declId);
 		Check(!IsNone(typeId));
 		auto& declRefExpr           = ast.Add<CExprDeclRef>(id);
-		declRefExpr.ownerName       = ast.Get<CType>(typeId).name;
+		declRefExpr.ownerName       = ast.Get<CNamespace>(typeId).name;
 		declRefExpr.name            = ast.Get<CNamespace>(declId).name;
 		auto& declRefExprId         = ast.Add<CExprDeclRefId>(id);
 		declRefExprId.declarationId = declId;

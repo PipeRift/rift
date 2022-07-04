@@ -45,52 +45,52 @@ namespace rift::AST
 		Destroy(ListAll<CDeclNative>(*this));
 
 		nativeTypes.boolId = Create();
-		Add<CDeclNative>(nativeTypes.boolId);
-		Add<CType>(nativeTypes.boolId, {"Bool"});
+		Add<CType, CDeclNative>(nativeTypes.boolId);
+		Add<CNamespace>(nativeTypes.boolId, {"Bool"});
 
 		nativeTypes.floatId = Create();
-		Add<CDeclNative>(nativeTypes.floatId);
-		Add<CType>(nativeTypes.floatId, {"Float"});
+		Add<CType, CDeclNative>(nativeTypes.floatId);
+		Add<CNamespace>(nativeTypes.floatId, {"Float"});
 
 		nativeTypes.doubleId = Create();
-		Add<CDeclNative>(nativeTypes.doubleId);
-		Add<CType>(nativeTypes.doubleId, {"Double"});
+		Add<CType, CDeclNative>(nativeTypes.doubleId);
+		Add<CNamespace>(nativeTypes.doubleId, {"Double"});
 
 		nativeTypes.u8Id = Create();
-		Add<CDeclNative>(nativeTypes.u8Id);
-		Add<CType>(nativeTypes.u8Id, {"U8"});
+		Add<CType, CDeclNative>(nativeTypes.u8Id);
+		Add<CNamespace>(nativeTypes.u8Id, {"U8"});
 
 		nativeTypes.i8Id = Create();
-		Add<CDeclNative>(nativeTypes.i8Id);
-		Add<CType>(nativeTypes.i8Id, {"I8"});
+		Add<CType, CDeclNative>(nativeTypes.i8Id);
+		Add<CNamespace>(nativeTypes.i8Id, {"I8"});
 
 		nativeTypes.u16Id = Create();
-		Add<CDeclNative>(nativeTypes.u16Id);
-		Add<CType>(nativeTypes.u16Id, {"U16"});
+		Add<CType, CDeclNative>(nativeTypes.u16Id);
+		Add<CNamespace>(nativeTypes.u16Id, {"U16"});
 
 		nativeTypes.i16Id = Create();
-		Add<CDeclNative>(nativeTypes.i16Id);
-		Add<CType>(nativeTypes.i16Id, {"I16"});
+		Add<CType, CDeclNative>(nativeTypes.i16Id);
+		Add<CNamespace>(nativeTypes.i16Id, {"I16"});
 
 		nativeTypes.u32Id = Create();
-		Add<CDeclNative>(nativeTypes.u32Id);
-		Add<CType>(nativeTypes.u32Id, {"U32"});
+		Add<CType, CDeclNative>(nativeTypes.u32Id);
+		Add<CNamespace>(nativeTypes.u32Id, {"U32"});
 
 		nativeTypes.i32Id = Create();
-		Add<CDeclNative>(nativeTypes.i32Id);
-		Add<CType>(nativeTypes.i32Id, {"I32"});
+		Add<CType, CDeclNative>(nativeTypes.i32Id);
+		Add<CNamespace>(nativeTypes.i32Id, {"I32"});
 
 		nativeTypes.u64Id = Create();
-		Add<CDeclNative>(nativeTypes.u64Id);
-		Add<CType>(nativeTypes.u64Id, {"U64"});
+		Add<CType, CDeclNative>(nativeTypes.u64Id);
+		Add<CNamespace>(nativeTypes.u64Id, {"U64"});
 
 		nativeTypes.i64Id = Create();
-		Add<CDeclNative>(nativeTypes.i64Id);
-		Add<CType>(nativeTypes.i64Id, {"I64"});
+		Add<CType, CDeclNative>(nativeTypes.i64Id);
+		Add<CNamespace>(nativeTypes.i64Id, {"I64"});
 
 		nativeTypes.stringId = Create();
-		Add<CDeclNative>(nativeTypes.stringId);
-		Add<CType>(nativeTypes.stringId, {"String"});
+		Add<CType, CDeclNative>(nativeTypes.stringId);
+		Add<CNamespace>(nativeTypes.stringId, {"String"});
 	}
 
 	void Tree::CopyFrom(const Tree& other)

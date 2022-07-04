@@ -72,12 +72,12 @@ namespace rift::Compiler::LLVM
 	}
 
 	void DeclareStructs(
-	    ModuleIRGen& gen, TAccessRef<CType, TWrite<CIRType>> access, TSpan<AST::Id> ids)
+	    ModuleIRGen& gen, TAccessRef<CType, CNamespace, TWrite<CIRType>> access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
 		for (AST::Id id : ids)
 		{
-			const Name name = access.Get<const CType>(id).name;
+			const Name name = access.Get<const CNamespace>(id).name;
 			access.Add(id, CIRType{llvm::StructType::create(gen.llvm, ToLLVM(name))});
 		}
 	}

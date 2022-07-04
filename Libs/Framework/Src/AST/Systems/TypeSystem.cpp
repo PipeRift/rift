@@ -7,6 +7,7 @@
 #include "AST/Components/CLiteralFloating.h"
 #include "AST/Components/CLiteralIntegral.h"
 #include "AST/Components/CLiteralString.h"
+#include "AST/Components/CNamespace.h"
 #include "AST/Components/CType.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Tree.h"
@@ -18,18 +19,18 @@ namespace rift::TypeSystem
 {
 	void Init(AST::Tree& ast)
 	{
-		TAccess<const CType> access{ast};
+		TAccess<CType, CNamespace> access{ast};
 
 		auto& types = ast.GetOrSetStatic<STypes>();
 		types.typesByName.Empty();
 
 		// Cache existing types
 
-		auto typeIds = ecs::ListAll<CType>(access);
+		auto typeIds = ecs::ListAll<CType, CNamespace>(access);
 		types.typesByName.Reserve(u32(typeIds.Size()));
 		for (AST::Id typeId : typeIds)
 		{
-			const auto& type = access.Get<const CType>(typeId);
+			const auto& type = access.Get<const CNamespace>(typeId);
 			types.typesByName.Insert(type.name, typeId);
 		}
 
@@ -37,7 +38,7 @@ namespace rift::TypeSystem
 			auto& types = ast.template GetOrSetStatic<STypes>();
 			for (AST::Id id : ids)
 			{
-				if (const auto* type = ast.template TryGet<const CType>(id))
+				if (const auto* type = ast.template TryGet<const CNamespace>(id))
 				{
 					types.typesByName.Insert(type->name, id);
 				}
@@ -48,7 +49,7 @@ namespace rift::TypeSystem
 			auto& types = ast.template GetOrSetStatic<STypes>();
 			for (AST::Id id : ids)
 			{
-				if (const auto* type = ast.template TryGet<const CType>(id))
+				if (const auto* type = ast.template TryGet<const CNamespace>(id))
 				{
 					types.typesByName.Remove(type->name);
 				}

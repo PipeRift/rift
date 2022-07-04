@@ -416,7 +416,7 @@ namespace rift::Graph
 			{
 				StringView functionName = call->functionName.ToString().c_str();
 				StringView ownerName;
-				if (access.Get<const CType>(typeId).name
+				if (access.Get<const CNamespace>(typeId).name
 				    != call->ownerName)    // If not the same type
 				{
 					ownerName = call->ownerName.ToString().c_str();

@@ -172,13 +172,13 @@ namespace rift::Graph
 		{
 			String makeStr{};
 			auto& typeList = ast.GetStatic<STypes>();
-			TAccess<CType> typesAccess{ast};
+			TAccess<CType, CNamespace> typesAccess{ast};
 			for (const auto& it : typeList.typesByName)
 			{
-				if (auto* type = typesAccess.TryGet<const CType>(it.second))
+				if (auto* ns = typesAccess.TryGet<const CNamespace>(it.second))
 				{
 					makeStr.clear();
-					Strings::FormatTo(makeStr, "Make {}", type->name);
+					Strings::FormatTo(makeStr, "Make {}", ns->name);
 					if (ContextItem(makeStr, filter))
 					{
 						AST::Id newId = Types::AddLiteral({ast, typeId}, it.second);
@@ -198,10 +198,10 @@ namespace rift::Graph
 				Name name = access.Get<const CNamespace>(functionId).name;
 				label.clear();
 				AST::Id funcTypeId = AST::Hierarchy::GetParent(access, functionId);
-				if (!IsNone(funcTypeId) && access.Has<CType>(funcTypeId))
+				if (!IsNone(funcTypeId) && access.Has<CType, CNamespace>(funcTypeId))
 				{
 					Strings::FormatTo(
-					    label, "{}   ({})", name, access.Get<const CType>(funcTypeId).name);
+					    label, "{}   ({})", name, access.Get<const CNamespace>(funcTypeId).name);
 				}
 				else
 				{
@@ -225,10 +225,10 @@ namespace rift::Graph
 				Name name = access.Get<const CNamespace>(variableId).name;
 				label.clear();
 				AST::Id typeId = AST::Hierarchy::GetParent(access, variableId);
-				if (!IsNone(typeId) && access.Has<CType>(typeId))
+				if (!IsNone(typeId) && access.Has<CType, CNamespace>(typeId))
 				{
 					Strings::FormatTo(
-					    label, "{}   ({})", name, access.Get<const CType>(typeId).name);
+					    label, "{}   ({})", name, access.Get<const CNamespace>(typeId).name);
 				}
 				else
 				{

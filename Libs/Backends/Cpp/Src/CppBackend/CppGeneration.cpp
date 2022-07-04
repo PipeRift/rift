@@ -127,19 +127,19 @@ namespace rift::Compiler::Cpp
 		}
 	}
 
-	void ForwardDeclareTypes(String& code, TAccessRef<CType> types, AST::Id moduleId,
+	void ForwardDeclareTypes(String& code, TAccessRef<CNamespace> access, AST::Id moduleId,
 	    const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
 		for (AST::Id entity : structs)
 		{
-			const auto& type = types.Get<const CType>(entity);
-			ForwardDeclareStruct(code, type.name.ToString());
+			const auto& ns = access.Get<const CNamespace>(entity);
+			ForwardDeclareStruct(code, ns.name.ToString());
 		}
 
 		for (AST::Id entity : classes)
 		{
-			const auto& type = types.Get<const CType>(entity);
-			ForwardDeclareStruct(code, type.name.ToString());
+			const auto& ns = access.Get<const CNamespace>(entity);
+			ForwardDeclareStruct(code, ns.name.ToString());
 		}
 	}
 
@@ -164,23 +164,23 @@ namespace rift::Compiler::Cpp
 	{
 		for (AST::Id entity : structs)
 		{
-			const auto& type = access.Get<const CType>(entity);
-			DeclareStruct(code, type.name.ToString(), {}, [&access, entity](String& innerCode) {
+			const auto& ns = access.Get<const CNamespace>(entity);
+			DeclareStruct(code, ns.name.ToString(), {}, [&access, entity](String& innerCode) {
 				AddTypeVariables(innerCode, access, entity);
 			});
 		}
 
 		for (AST::Id entity : classes)
 		{
-			const auto& type = access.Get<const CType>(entity);
-			DeclareStruct(code, type.name.ToString(), {}, [&access, entity](String& innerCode) {
+			const auto& ns = access.Get<const CNamespace>(entity);
+			DeclareStruct(code, ns.name.ToString(), {}, [&access, entity](String& innerCode) {
 				AddTypeVariables(innerCode, access, entity);
 			});
 		}
 	}
 
 
-	void DeclareFunctions(String& code, TAccessRef<CNamespace, CType, CDeclClass, CChild> access,
+	void DeclareFunctions(String& code, TAccessRef<CType, CNamespace, CDeclClass, CChild> access,
 	    AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
 		for (AST::Id entity : functions)
@@ -189,9 +189,9 @@ namespace rift::Compiler::Cpp
 			AST::Id parentId = AST::Hierarchy::GetParent(access, entity);
 			if (!IsNone(parentId))
 			{
-				if (auto* type = access.TryGet<const CType>(parentId))
+				if (auto* ns = access.TryGet<const CNamespace>(parentId))
 				{
-					ownerName = type->name.ToString();
+					ownerName = ns->name.ToString();
 				}
 			}
 
@@ -210,9 +210,9 @@ namespace rift::Compiler::Cpp
 			AST::Id parentId = AST::Hierarchy::GetParent(access, entity);
 			if (!IsNone(parentId))
 			{
-				if (const auto* type = access.TryGet<const CType>(parentId))
+				if (const auto* ns = access.TryGet<const CNamespace>(parentId))
 				{
-					ownerName = type->name.ToString();
+					ownerName = ns->name.ToString();
 				}
 			}
 
@@ -247,7 +247,7 @@ namespace rift::Compiler::Cpp
 
 		TArray<AST::Id> classes, structs;
 		AST::Hierarchy::GetChildren(ast, moduleId, classes);
-		ecs::ExcludeIfNot<CType>(ast, classes);
+		ecs::ExcludeIfNot<CType, CNamespace>(ast, classes);
 		structs = classes;
 
 		ecs::ExcludeIfNot<CDeclClass>(ast, classes);
