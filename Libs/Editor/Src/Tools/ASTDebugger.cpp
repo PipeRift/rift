@@ -153,7 +153,7 @@ namespace rift
 				    ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultHide, 1.2f);
 				UI::TableHeadersRow();
 
-				TAccess<const CNamespace, const CFileRef, const CParent, const CChild> access{ast};
+				DrawNodeAccess access{ast};
 				if (showHierarchy && !filter.IsActive())
 				{
 					TArray<AST::Id> roots = ecs::ListAll<CParent>(access);
@@ -286,7 +286,7 @@ namespace rift
 		if (ImGui::TableNextColumn())
 		{
 			static String ns;
-			AST::GetFullNamespace(access, nodeId, ns);
+			AST::GetNamespace(access, nodeId, ns);
 			UI::Text(ns);
 		}
 
