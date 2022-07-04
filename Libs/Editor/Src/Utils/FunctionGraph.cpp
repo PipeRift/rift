@@ -43,7 +43,6 @@
 #include <Utils/NodesMiniMap.h>
 
 
-
 namespace rift::Graph
 {
 	static CNodePosition* currentNodeTransform = nullptr;
@@ -107,8 +106,8 @@ namespace rift::Graph
 			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
 
 			Nodes::BeginInput(i32(pinId), Nodes::PinShape_CircleFilled);
-			auto* identifier = access.TryGet<const CNamespace>(pinId);
-			UI::Text(identifier ? identifier->name.ToString() : "none");
+			auto* ns = access.TryGet<const CNamespace>(pinId);
+			UI::Text(ns ? ns->name.ToString() : "none");
 			Nodes::EndInput();
 
 			Nodes::PopStyleColor(2);
@@ -147,8 +146,8 @@ namespace rift::Graph
 			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
 
 			Nodes::BeginOutput(i32(pinId), Nodes::PinShape_CircleFilled);
-			auto* identifier = access.TryGet<const CNamespace>(pinId);
-			UI::Text(identifier ? identifier->name.ToString() : "none");
+			auto* ns = access.TryGet<const CNamespace>(pinId);
+			UI::Text(ns ? ns->name.ToString() : "none");
 			Nodes::EndOutput();
 
 			Nodes::PopStyleColor(2);
@@ -344,9 +343,9 @@ namespace rift::Graph
 		for (AST::Id functionId : functionDecls)
 		{
 			Name name;
-			if (auto* identifier = access.TryGet<const CNamespace>(functionId))
+			if (auto* ns = access.TryGet<const CNamespace>(functionId))
 			{
-				name = identifier->name;
+				name = ns->name;
 			}
 
 			Style::PushNodeBackgroundColor(rift::Style::GetNeutralColor(0));

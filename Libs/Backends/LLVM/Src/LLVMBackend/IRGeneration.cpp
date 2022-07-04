@@ -160,11 +160,11 @@ namespace rift::Compiler::LLVM
 			}
 
 			// Create function
-			auto& ident = access.Get<const CNamespace>(id);
+			auto& ns = access.Get<const CNamespace>(id);
 			auto* functionType =
 			    llvm::FunctionType::get(gen.builder.getVoidTy(), ToLLVM(inputTypes), false);
 			functionComp.instance = llvm::Function::Create(
-			    functionType, llvm::Function::ExternalLinkage, ToLLVM(ident.name), &gen.module);
+			    functionType, llvm::Function::ExternalLinkage, ToLLVM(ns.name), &gen.module);
 
 			// Set argument names
 			i32 i            = 0;
@@ -266,9 +266,9 @@ namespace rift::Compiler::LLVM
 		const auto* function = access.TryGet<const CIRFunction>(functionId);
 		if (!Ensure(function))
 		{
-			const auto* ident = access.TryGet<const CNamespace>(functionId);
+			const auto* ns = access.TryGet<const CNamespace>(functionId);
 			gen.compiler.AddError(
-			    Strings::Format("Call to an invalid function: '{}'", ident ? ident->name : ""));
+			    Strings::Format("Call to an invalid function: '{}'", ns ? ns->name : ""));
 			return;
 		}
 

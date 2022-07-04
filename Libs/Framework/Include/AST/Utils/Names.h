@@ -11,7 +11,7 @@ namespace rift::Names
 {
 	Name GetName(TAccessRef<CNamespace> access, AST::Id id)
 	{
-		auto* identifier = access.TryGet<const CNamespace>(id);
-		return identifier ? identifier->name : Name::None();
+		auto* ns = access.TryGet<const CNamespace>(id);
+		return ns ? ns->name : Name::None();
 	}
 };    // namespace rift::Names

@@ -26,9 +26,9 @@ namespace rift
 {
 	void EditFunctionPin(AST::Tree& ast, AST::Id typeId, AST::Id id)
 	{
-		auto* identifier = ast.TryGet<CNamespace>(id);
-		auto* type       = ast.TryGet<CExprType>(id);
-		if (!identifier || !type)
+		auto* ns   = ast.TryGet<CNamespace>(id);
+		auto* type = ast.TryGet<CExprType>(id);
+		if (!ns || !type)
 		{
 			return;
 		}
@@ -49,12 +49,12 @@ namespace rift
 		UI::TableNextColumn();    // Name
 		labelId.clear();
 		Strings::FormatTo(labelId, "##Name_{}", id);
-		String name = identifier->name.ToString();
+		String name = ns->name.ToString();
 		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
 		if (UI::MutableText(labelId, name, ImGuiInputTextFlags_AutoSelectAll))
 		{
 			ScopedChange(ast, id);
-			identifier->name = Name{name};
+			ns->name = Name{name};
 		}
 		if (UI::IsItemHovered())
 		{
@@ -106,13 +106,13 @@ namespace rift
 
 	void DrawFunction(AST::Tree& ast, AST::Id typeId, AST::Id id)
 	{
-		auto* identifier = ast.TryGet<CNamespace>(id);
-		if (!identifier)
+		auto* ns = ast.TryGet<CNamespace>(id);
+		if (!ns)
 		{
 			return;
 		}
 
-		String functionName = identifier->name.ToString();
+		String functionName = ns->name.ToString();
 		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
 		if (UI::InputText("##name", functionName, ImGuiInputTextFlags_AutoSelectAll))
 		{
@@ -126,7 +126,7 @@ namespace rift
 			else
 			{
 				ScopedChange(ast, id);
-				identifier->name = Name{functionName};
+				ns->name = Name{functionName};
 			}
 		}
 		UI::Spacing();

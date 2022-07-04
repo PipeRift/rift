@@ -32,7 +32,7 @@ namespace rift
 		void Draw(AST::Tree& ast);
 
 	private:
-		using DrawNodeAccess = TAccessRef<const CNamespace, const CFileRef, const CParent>;
+		using DrawNodeAccess = TAccessRef<CNamespace, CFileRef, CParent, CChild>;
 		void DrawNode(DrawNodeAccess access, AST::Id nodeId, bool showChildren);
 	};
 }    // namespace rift

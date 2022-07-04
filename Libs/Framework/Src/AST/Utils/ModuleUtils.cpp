@@ -154,10 +154,10 @@ namespace rift::Modules
 			return {};
 		}
 
-		const auto* identifier = access.TryGet<const CNamespace>(moduleId);
-		if (identifier && !identifier->name.IsNone())
+		const auto* ns = access.TryGet<const CNamespace>(moduleId);
+		if (ns && !ns->name.IsNone())
 		{
-			return identifier->name;
+			return ns->name;
 		}
 
 		const auto* file = access.TryGet<const CFileRef>(moduleId);
@@ -187,9 +187,9 @@ namespace rift::Modules
 		AST::Writer ct{writer.GetContext(), ast, true};
 		ct.BeginObject();
 		ReadWriter common{ct};
-		if (auto* ident = ast.TryGet<CNamespace>(id))
+		if (auto* ns = ast.TryGet<CNamespace>(id))
 		{
-			ident->SerializeReflection(common);
+			ns->SerializeReflection(common);
 		}
 		if (auto* module = ast.TryGet<CModule>(id))
 		{

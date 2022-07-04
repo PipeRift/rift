@@ -24,7 +24,6 @@
 #include <Pipe/Files/Files.h>
 
 
-
 namespace rift::Compiler::Cpp
 {
 	void Spacing(String& code)
@@ -153,8 +152,8 @@ namespace rift::Compiler::Cpp
 			{
 				if (access.Has<const CNamespace, const CDeclVariable>(entity))
 				{
-					auto& identifier = access.Get<const CNamespace>(entity);
-					AddVariable(code, "bool", identifier.name.ToString(), "false");
+					auto& ns = access.Get<const CNamespace>(entity);
+					AddVariable(code, "bool", ns.name.ToString(), "false");
 				}
 			}
 		}
@@ -196,8 +195,8 @@ namespace rift::Compiler::Cpp
 				}
 			}
 
-			const auto& identifier = access.Get<const CNamespace>(entity);
-			DeclareFunction(code, identifier.name.ToString(), ownerName);
+			const auto& ns = access.Get<const CNamespace>(entity);
+			DeclareFunction(code, ns.name.ToString(), ownerName);
 		}
 	}
 
@@ -217,8 +216,8 @@ namespace rift::Compiler::Cpp
 				}
 			}
 
-			const auto& identifier = access.Get<const CNamespace>(entity);
-			DefineFunction(code, identifier.name.ToString(), ownerName);
+			const auto& ns = access.Get<const CNamespace>(entity);
+			DefineFunction(code, ns.name.ToString(), ownerName);
 		}
 	}
 
