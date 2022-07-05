@@ -9,7 +9,7 @@
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprType.h>
-#include <AST/Components/CIdentifier.h>
+#include <AST/Components/CNamespace.h>
 #include <AST/Components/CParent.h>
 #include <AST/Components/CType.h>
 #include <AST/Tree.h>

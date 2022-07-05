@@ -14,11 +14,11 @@
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CExprType.h"
 #include "AST/Components/CExprUnaryOperator.h"
-#include "AST/Components/CIdentifier.h"
 #include "AST/Components/CLiteralBool.h"
 #include "AST/Components/CLiteralFloating.h"
 #include "AST/Components/CLiteralIntegral.h"
 #include "AST/Components/CLiteralString.h"
+#include "AST/Components/CNamespace.h"
 #include "AST/Components/CParent.h"
 #include "AST/Components/CStmtIf.h"
 #include "AST/Components/CStmtInput.h"
@@ -30,6 +30,7 @@
 
 #include <Pipe/ECS/Filtering.h>
 #include <Pipe/Reflect/TypeName.h>
+
 
 
 namespace rift::AST
@@ -158,7 +159,7 @@ namespace rift::AST
 			ReadPool<CStmtReturn>(*this, ast);
 			ReadPool<CExprType>(*this, ast);
 			ReadPool<CExprUnaryOperator>(*this, ast);
-			ReadPool<CIdentifier>(*this, ast);
+			ReadPool<CNamespace>(*this, ast);
 			ReadPool<CNodePosition>(*this, ast);
 			ReadPool<CParent>(*this, ast);
 			ReadPool<CLiteralBool>(*this, ast);
@@ -214,7 +215,7 @@ namespace rift::AST
 			WritePool<CExprType>(*this, ast, treeEntities);
 			WritePool<CExprUnaryOperator>(*this, ast, treeEntities);
 			WritePool<CNodePosition>(*this, ast, treeEntities);
-			WritePool<CIdentifier>(*this, ast, treeEntities);
+			WritePool<CNamespace>(*this, ast, treeEntities);
 			WritePool<CParent>(*this, ast, treeEntities);
 			WritePool<CLiteralBool>(*this, ast, treeEntities);
 			WritePool<CLiteralFloating>(*this, ast, treeEntities);

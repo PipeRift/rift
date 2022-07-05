@@ -17,6 +17,7 @@
 #include "AST/Components/CLiteralFloating.h"
 #include "AST/Components/CLiteralIntegral.h"
 #include "AST/Components/CLiteralString.h"
+#include "AST/Components/CNamespace.h"
 #include "AST/Components/CStmtIf.h"
 #include "AST/Components/CStmtInput.h"
 #include "AST/Components/CStmtOutputs.h"
@@ -42,8 +43,10 @@ namespace rift::Types
 		{
 			String fileName = p::GetFilename(fileRef->path);
 			fileName        = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
-			ast.Add<CType>(id, {Name{fileName}});
+			ast.Add<CNamespace>(id, {Name{fileName}});
 		}
+
+		ast.Add<CType>(id);
 
 		switch (category)
 		{
@@ -79,15 +82,16 @@ namespace rift::Types
 	AST::Id CreateType(AST::Tree& ast, RiftType type, Name name, const p::Path& path)
 	{
 		AST::Id id = ast.Create();
-		if (!name.IsNone())
-		{
-			ast.Add<CIdentifier>(id, name);
-		}
 		if (!path.empty())
 		{
 			ast.Add<CFileRef>(id, path);
 		}
 		InitTypeFromCategory(ast, id, type);
+
+		if (!name.IsNone() && !ast.Has<CNamespace>(id))
+		{
+			ast.Add<CNamespace>(id, name);
+		}
 		return id;
 	}
 
@@ -189,7 +193,7 @@ namespace rift::Types
 		AST::Tree& ast = type.GetContext();
 
 		AST::Id id = ast.Create();
-		ast.Add<CIdentifier>(id, name);
+		ast.Add<CNamespace>(id, name);
 		ast.Add<CDeclVariable, CParent>(id);
 
 		if (type)
@@ -204,7 +208,7 @@ namespace rift::Types
 		AST::Tree& ast = type.GetContext();
 
 		AST::Id id = ast.Create();
-		ast.Add<CIdentifier>(id, name);
+		ast.Add<CNamespace>(id, name);
 		ast.Add<CDeclFunction, CParent>(id);
 		ast.Add<CStmtOutput>(id);
 
@@ -223,13 +227,13 @@ namespace rift::Types
 		auto& callExprId      = ast.Add<CExprCallId>(callId);
 		callExprId.functionId = functionId;
 		auto& callExpr        = ast.Add<CExprCall>(callId);
-		callExpr.functionName = ast.Get<CIdentifier>(functionId).name;
+		callExpr.functionName = ast.Get<CNamespace>(functionId).name;
 		ast.Add<CStmtInput, CStmtOutput, CExprOutputs, CExprInputs>(callId);
 
 		const AST::Id typeId = AST::Hierarchy::GetParent(ast, functionId);
 		if (!IsNone(typeId))
 		{
-			callExpr.ownerName = ast.Get<CType>(typeId).name;
+			callExpr.ownerName = ast.Get<const CNamespace>(typeId).name;
 		}
 
 		if (type)
@@ -242,7 +246,7 @@ namespace rift::Types
 	AST::Id AddFunctionInput(AST::Tree& ast, AST::Id functionId, Name name)
 	{
 		AST::Id id = ast.Create();
-		ast.Add<CIdentifier>(id, name);
+		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprType>(id);
 		AST::Hierarchy::AddChildren(ast, functionId, id);
 		ast.GetOrAdd<CExprOutputs>(functionId).Add(id);
@@ -252,7 +256,7 @@ namespace rift::Types
 	AST::Id AddFunctionOutput(AST::Tree& ast, AST::Id functionId, Name name)
 	{
 		AST::Id id = ast.Create();
-		ast.Add<CIdentifier>(id, name);
+		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprType>(id);
 		AST::Hierarchy::AddChildren(ast, functionId, id);
 		ast.GetOrAdd<CExprInputs>(functionId).Add(id);
@@ -392,8 +396,8 @@ namespace rift::Types
 		const AST::Id typeId = AST::Hierarchy::GetParent(ast, declId);
 		Check(!IsNone(typeId));
 		auto& declRefExpr           = ast.Add<CExprDeclRef>(id);
-		declRefExpr.ownerName       = ast.Get<CType>(typeId).name;
-		declRefExpr.name            = ast.Get<CIdentifier>(declId).name;
+		declRefExpr.ownerName       = ast.Get<CNamespace>(typeId).name;
+		declRefExpr.name            = ast.Get<CNamespace>(declId).name;
 		auto& declRefExprId         = ast.Add<CExprDeclRefId>(id);
 		declRefExprId.declarationId = declId;
 
@@ -437,7 +441,7 @@ namespace rift::Types
 	}
 
 	AST::Id FindFunctionByName(
-	    TAccessRef<CDeclFunction, CIdentifier, CParent> access, Name ownerName, Name functionName)
+	    TAccessRef<CDeclFunction, CNamespace, CParent> access, Name ownerName, Name functionName)
 	{
 		auto& types = access.GetContext().GetStatic<STypes>();
 		if (const AST::Id* typeId = types.typesByName.Find(ownerName))
@@ -448,16 +452,16 @@ namespace rift::Types
 	}
 
 	AST::Id FindFunctionByName(
-	    TAccessRef<CDeclFunction, CIdentifier, CParent> access, AST::Id ownerId, Name functionName)
+	    TAccessRef<CDeclFunction, CNamespace, CParent> access, AST::Id ownerId, Name functionName)
 	{
 		if (!IsNone(ownerId))
 		{
 			TArray<AST::Id> children;
 			AST::Hierarchy::GetChildren(access, ownerId, children);
-			ecs::ExcludeIfNot<CDeclFunction, CIdentifier>(access, children);
+			ecs::ExcludeIfNot<CDeclFunction, CNamespace>(access, children);
 			for (AST::Id childId : children)
 			{
-				if (access.Get<const CIdentifier>(childId).name == functionName)
+				if (access.Get<const CNamespace>(childId).name == functionName)
 				{
 					return childId;
 				}

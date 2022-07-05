@@ -11,8 +11,8 @@
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprType.h>
-#include <AST/Components/CIdentifier.h>
 #include <AST/Components/CModule.h>
+#include <AST/Components/CNamespace.h>
 #include <AST/Components/CParent.h>
 #include <AST/Components/CType.h>
 #include <AST/Tree.h>
@@ -127,60 +127,60 @@ namespace rift::Compiler::Cpp
 		}
 	}
 
-	void ForwardDeclareTypes(String& code, TAccessRef<CType> types, AST::Id moduleId,
+	void ForwardDeclareTypes(String& code, TAccessRef<CNamespace> access, AST::Id moduleId,
 	    const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
 		for (AST::Id entity : structs)
 		{
-			const auto& type = types.Get<const CType>(entity);
-			ForwardDeclareStruct(code, type.name.ToString());
+			const auto& ns = access.Get<const CNamespace>(entity);
+			ForwardDeclareStruct(code, ns.name.ToString());
 		}
 
 		for (AST::Id entity : classes)
 		{
-			const auto& type = types.Get<const CType>(entity);
-			ForwardDeclareStruct(code, type.name.ToString());
+			const auto& ns = access.Get<const CNamespace>(entity);
+			ForwardDeclareStruct(code, ns.name.ToString());
 		}
 	}
 
 	void AddTypeVariables(
-	    String& code, TAccessRef<CIdentifier, CDeclVariable, CParent> access, AST::Id owner)
+	    String& code, TAccessRef<CNamespace, CDeclVariable, CParent> access, AST::Id owner)
 	{
 		if (const auto* parent = access.TryGet<const CParent>(owner))
 		{
 			for (AST::Id entity : parent->children)
 			{
-				if (access.Has<const CIdentifier, const CDeclVariable>(entity))
+				if (access.Has<const CNamespace, const CDeclVariable>(entity))
 				{
-					auto& identifier = access.Get<const CIdentifier>(entity);
-					AddVariable(code, "bool", identifier.name.ToString(), "false");
+					auto& ns = access.Get<const CNamespace>(entity);
+					AddVariable(code, "bool", ns.name.ToString(), "false");
 				}
 			}
 		}
 	}
 
-	void DeclareTypes(String& code, TAccessRef<CType, CIdentifier, CDeclVariable, CParent> access,
+	void DeclareTypes(String& code, TAccessRef<CType, CNamespace, CDeclVariable, CParent> access,
 	    AST::Id moduleId, const TArray<AST::Id>& structs, const TArray<AST::Id>& classes)
 	{
 		for (AST::Id entity : structs)
 		{
-			const auto& type = access.Get<const CType>(entity);
-			DeclareStruct(code, type.name.ToString(), {}, [&access, entity](String& innerCode) {
+			const auto& ns = access.Get<const CNamespace>(entity);
+			DeclareStruct(code, ns.name.ToString(), {}, [&access, entity](String& innerCode) {
 				AddTypeVariables(innerCode, access, entity);
 			});
 		}
 
 		for (AST::Id entity : classes)
 		{
-			const auto& type = access.Get<const CType>(entity);
-			DeclareStruct(code, type.name.ToString(), {}, [&access, entity](String& innerCode) {
+			const auto& ns = access.Get<const CNamespace>(entity);
+			DeclareStruct(code, ns.name.ToString(), {}, [&access, entity](String& innerCode) {
 				AddTypeVariables(innerCode, access, entity);
 			});
 		}
 	}
 
 
-	void DeclareFunctions(String& code, TAccessRef<CIdentifier, CType, CDeclClass, CChild> access,
+	void DeclareFunctions(String& code, TAccessRef<CType, CNamespace, CDeclClass, CChild> access,
 	    AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
 		for (AST::Id entity : functions)
@@ -189,19 +189,19 @@ namespace rift::Compiler::Cpp
 			AST::Id parentId = AST::Hierarchy::GetParent(access, entity);
 			if (!IsNone(parentId))
 			{
-				if (auto* type = access.TryGet<const CType>(parentId))
+				if (auto* ns = access.TryGet<const CNamespace>(parentId))
 				{
-					ownerName = type->name.ToString();
+					ownerName = ns->name.ToString();
 				}
 			}
 
-			const auto& identifier = access.Get<const CIdentifier>(entity);
-			DeclareFunction(code, identifier.name.ToString(), ownerName);
+			const auto& ns = access.Get<const CNamespace>(entity);
+			DeclareFunction(code, ns.name.ToString(), ownerName);
 		}
 	}
 
 
-	void DefineFunctions(String& code, TAccessRef<CIdentifier, CType, CDeclClass, CChild> access,
+	void DefineFunctions(String& code, TAccessRef<CNamespace, CType, CDeclClass, CChild> access,
 	    AST::Id moduleId, const TArray<AST::Id>& functions)
 	{
 		for (AST::Id entity : functions)
@@ -210,18 +210,18 @@ namespace rift::Compiler::Cpp
 			AST::Id parentId = AST::Hierarchy::GetParent(access, entity);
 			if (!IsNone(parentId))
 			{
-				if (const auto* type = access.TryGet<const CType>(parentId))
+				if (const auto* ns = access.TryGet<const CNamespace>(parentId))
 				{
-					ownerName = type->name.ToString();
+					ownerName = ns->name.ToString();
 				}
 			}
 
-			const auto& identifier = access.Get<const CIdentifier>(entity);
-			DefineFunction(code, identifier.name.ToString(), ownerName);
+			const auto& ns = access.Get<const CNamespace>(entity);
+			DefineFunction(code, ns.name.ToString(), ownerName);
 		}
 	}
 
-	void GenParameters(TAccessRef<CExprType, CIdentifier, TWrite<CCppCodeGenFragment>> access) {}
+	void GenParameters(TAccessRef<CExprType, CNamespace, TWrite<CCppCodeGenFragment>> access) {}
 
 
 	void GenerateModuleCode(Context& context, AST::Id moduleId, const p::Path& codePath)
@@ -247,7 +247,7 @@ namespace rift::Compiler::Cpp
 
 		TArray<AST::Id> classes, structs;
 		AST::Hierarchy::GetChildren(ast, moduleId, classes);
-		ecs::ExcludeIfNot<CType>(ast, classes);
+		ecs::ExcludeIfNot<CType, CNamespace>(ast, classes);
 		structs = classes;
 
 		ecs::ExcludeIfNot<CDeclClass>(ast, classes);
@@ -265,7 +265,7 @@ namespace rift::Compiler::Cpp
 		TArray<AST::Id> functions;
 		// Module -> Types -> Functions = depth 2
 		AST::Hierarchy::GetChildrenDeep(ast, moduleId, functions, 2);
-		ecs::ExcludeIfNot<CIdentifier, CDeclFunction>(ast, functions);
+		ecs::ExcludeIfNot<CNamespace, CDeclFunction>(ast, functions);
 
 		Spacing(code);
 		Comment(code, "Function Declarations");

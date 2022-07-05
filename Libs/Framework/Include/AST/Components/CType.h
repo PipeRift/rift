@@ -24,13 +24,5 @@ namespace rift
 	struct CType : public Struct
 	{
 		STRUCT(CType, Struct)
-
-		PROP(name)
-		Name name;
-
-		PROP(view)
-		Name view;
-
-		CType(Name name = {}) : name(name) {}
 	};
 }    // namespace rift

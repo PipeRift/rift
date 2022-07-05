@@ -29,19 +29,19 @@ namespace rift
 
 	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, AST::Id variableId)
 	{
-		auto* identifier   = access.TryGet<CIdentifier>(variableId);
+		auto* ns           = access.TryGet<CNamespace>(variableId);
 		auto* variableDecl = access.TryGet<CDeclVariable>(variableId);
-		if (!identifier || !variableDecl)
+		if (!ns || !variableDecl)
 		{
 			return;
 		}
-		String name = identifier->name.ToString();
+		String name = ns->name.ToString();
 		if (!editor.elementsFilter.PassFilter(name.data(), name.data() + name.size()))
 		{
 			return;
 		}
 
-		ImGui::PushID(identifier);
+		ImGui::PushID(ns);
 
 		const Color color =
 		    Style::GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), variableDecl->typeId);
@@ -104,7 +104,7 @@ namespace rift
 		if (UI::MutableText(nameId, name,
 		        ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 		{
-			identifier->name = Name{name};
+			ns->name = Name{name};
 		}
 
 		UI::TableNextColumn();
@@ -130,12 +130,12 @@ namespace rift
 
 	void DrawFunction(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId, AST::Id id)
 	{
-		auto* identifier = ast.TryGet<CIdentifier>(id);
-		if (!identifier)
+		auto* ns = ast.TryGet<CNamespace>(id);
+		if (!ns)
 		{
 			return;
 		}
-		String name = identifier->name.ToString();
+		String name = ns->name.ToString();
 		if (!editor.elementsFilter.PassFilter(name.data(), name.data() + name.size()))
 		{
 			return;

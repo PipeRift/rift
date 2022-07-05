@@ -38,7 +38,7 @@ namespace rift::FunctionsSystem
 	}
 
 	void ResolveCallFunctionIds(
-	    TAccessRef<TWrite<CExprCallId>, CExprCall, CDeclFunction, CIdentifier, CParent> access)
+	    TAccessRef<TWrite<CExprCallId>, CExprCall, CDeclFunction, CNamespace, CParent> access)
 	{
 		auto callExprs = ecs::ListAny<CExprCall>(access);
 		ecs::ExcludeIf<CExprCallId>(access, callExprs);
@@ -124,7 +124,7 @@ namespace rift::FunctionsSystem
 	{
 		TArray<CallToSync> calls;
 		TAccess<CCallDirty, CExprCallId, TWrite<CExprInputs>, TWrite<CExprOutputs>,
-		    TWrite<CInvalid>, TWrite<CExprType>, TWrite<CIdentifier>>
+		    TWrite<CInvalid>, TWrite<CExprType>, TWrite<CNamespace>>
 		    access{ast};
 		for (AST::Id id : ecs::ListAll<CCallDirty, CExprCallId>(access))
 		{
@@ -159,7 +159,7 @@ namespace rift::FunctionsSystem
 					break;
 				}
 
-				const auto* name = access.TryGet<const CIdentifier>(pinId);
+				const auto* name = access.TryGet<const CNamespace>(pinId);
 				if (!name)
 				{
 					continue;
@@ -168,7 +168,7 @@ namespace rift::FunctionsSystem
 				if (i >= callOutputs.pinIds.Size())
 				{
 					AST::Id id = ast.Create();
-					access.Add<CIdentifier>(id, *name);
+					access.Add<CNamespace>(id, *name);
 					AST::Hierarchy::AddChildren(ast, call.id, id);
 					callOutputs.Add(id);
 				}
@@ -179,7 +179,7 @@ namespace rift::FunctionsSystem
 					while (callPinIdx < callOutputs.pinIds.Size())
 					{
 						const AST::Id outputPinId = callOutputs.pinIds[callPinIdx];
-						const auto* callPinName   = access.TryGet<const CIdentifier>(outputPinId);
+						const auto* callPinName   = access.TryGet<const CNamespace>(outputPinId);
 						if (callPinName && *callPinName == *name)
 							break;    // Found existing pin
 						++callPinIdx;
@@ -187,7 +187,7 @@ namespace rift::FunctionsSystem
 					if (callPinIdx == callOutputs.pinIds.Size())    // Pin not found, insert it
 					{
 						AST::Id id = ast.Create();
-						access.Add<CIdentifier>(id, *name);
+						access.Add<CNamespace>(id, *name);
 						AST::Hierarchy::AddChildren(ast, call.id, id);
 						callOutputs.Insert(i, id);
 					}
@@ -231,7 +231,7 @@ namespace rift::FunctionsSystem
 					break;
 				}
 
-				const auto* name = access.TryGet<const CIdentifier>(pinId);
+				const auto* name = access.TryGet<const CNamespace>(pinId);
 				if (!name)
 				{
 					continue;
@@ -240,7 +240,7 @@ namespace rift::FunctionsSystem
 				if (i >= callInputs.pinIds.Size())
 				{
 					AST::Id id = ast.Create();
-					access.Add<CIdentifier>(id, *name);
+					access.Add<CNamespace>(id, *name);
 					AST::Hierarchy::AddChildren(ast, call.id, id);
 					callInputs.Add(id);
 				}
@@ -251,7 +251,7 @@ namespace rift::FunctionsSystem
 					while (callPinIdx < callInputs.pinIds.Size())
 					{
 						const AST::Id pinId     = callInputs.pinIds[callPinIdx];
-						const auto* callPinName = access.TryGet<const CIdentifier>(pinId);
+						const auto* callPinName = access.TryGet<const CNamespace>(pinId);
 						if (callPinName && *callPinName == *name)
 							break;    // Found existing pin
 						++callPinIdx;
@@ -259,7 +259,7 @@ namespace rift::FunctionsSystem
 					if (callPinIdx == callInputs.pinIds.Size())    // Pin not found, insert it
 					{
 						AST::Id id = ast.Create();
-						access.Add<CIdentifier>(id, *name);
+						access.Add<CNamespace>(id, *name);
 						AST::Hierarchy::AddChildren(ast, call.id, id);
 						callInputs.Insert(i, id);
 					}

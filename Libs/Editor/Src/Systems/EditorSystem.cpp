@@ -403,8 +403,8 @@ namespace rift::EditorSystem
 
 	void DrawModules(AST::Tree& ast, SEditor& editor)
 	{
-		TAccess<TWrite<CModuleEditor>, TWrite<CModule>, TWrite<CIdentifier>, CFileRef>
-		    moduleEditors{ast};
+		TAccess<TWrite<CModuleEditor>, TWrite<CModule>, TWrite<CNamespace>, CFileRef> moduleEditors{
+		    ast};
 		for (AST::Id moduleId : ecs::ListAll<CModule, CModuleEditor, CFileRef>(moduleEditors))
 		{
 			ZoneScopedN("Draw Type");
@@ -437,8 +437,8 @@ namespace rift::EditorSystem
 
 				if (UI::BeginInspector("ModuleInspector"))
 				{
-					auto& ident = moduleEditors.GetOrAdd<CIdentifier>(moduleId);
-					UI::InspectStruct(&ident);
+					auto& ns = moduleEditors.GetOrAdd<CNamespace>(moduleId);
+					UI::InspectStruct(&ns);
 					auto& module = moduleEditors.Get<CModule>(moduleId);
 					UI::InspectStruct(&module);
 					UI::EndInspector();

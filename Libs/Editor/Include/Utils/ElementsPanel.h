@@ -9,7 +9,7 @@
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprType.h>
-#include <AST/Components/CIdentifier.h>
+#include <AST/Components/CNamespace.h>
 #include <AST/Components/CParent.h>
 #include <AST/Components/CType.h>
 #include <AST/Tree.h>
@@ -29,7 +29,7 @@ namespace rift
 		HideValue = 1 << 0
 	};
 
-	using TVariableAccessRef = TAccessRef<TWrite<CDeclVariable>, TWrite<CIdentifier>, CType,
+	using TVariableAccessRef = TAccessRef<TWrite<CDeclVariable>, TWrite<CNamespace>, CType,
 	    CDeclNative, CDeclStruct, CDeclClass, CParent>;
 
 	void DrawField(AST::Tree& ast, CTypeEditor& editor, AST::Id functionId, AST::Id fieldId,

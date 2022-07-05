@@ -2,6 +2,8 @@
 
 #include "Tools/ASTDebugger.h"
 
+#include "AST/Utils/Namespaces.h"
+
 #include <AST/Components/CStmtOutputs.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Tree.h>
@@ -137,7 +139,7 @@ namespace rift
 			                             | ImGuiTableFlags_Hideable
 			                             | ImGuiTableFlags_SizingStretchProp;
 			ImGui::BeginChild("nodesTableChild", {0.f, UI::GetContentRegionAvail().y - 20.f});
-			if (UI::BeginTable("nodesTable", 4, flags))
+			if (UI::BeginTable("nodesTable", 5, flags))
 			{
 				UI::TableSetupColumn("", ImGuiTableColumnFlags_IndentDisable
 				                             | ImGuiTableColumnFlags_WidthFixed
@@ -147,9 +149,11 @@ namespace rift
 				UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 1.f);
 				UI::TableSetupColumn("Path",
 				    ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultHide, 1.2f);
+				UI::TableSetupColumn("Namespace",
+				    ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultHide, 1.2f);
 				UI::TableHeadersRow();
 
-				TAccess<const CIdentifier, const CFileRef, const CParent, const CChild> access{ast};
+				DrawNodeAccess access{ast};
 				if (showHierarchy && !filter.IsActive())
 				{
 					TArray<AST::Id> roots = ecs::ListAll<CParent>(access);
@@ -159,7 +163,7 @@ namespace rift
 						DrawNode(access, root, true);
 					}
 
-					TArray<AST::Id> orphans = ecs::ListAll<CIdentifier>(access);
+					TArray<AST::Id> orphans = ecs::ListAll<CNamespace>(access);
 					ecs::ExcludeIf<CChild>(access, orphans);
 					ecs::ExcludeIf<CParent>(access, orphans);
 					for (auto orphan : orphans)
@@ -202,7 +206,7 @@ namespace rift
 
 		static String name;
 		name.clear();
-		if (const auto* id = access.TryGet<const CIdentifier>(nodeId))
+		if (const auto* id = access.TryGet<const CNamespace>(nodeId))
 		{
 			name = id->name.ToString();
 		}
@@ -272,10 +276,19 @@ namespace rift
 		UI::Text(name);
 
 
-		ImGui::TableNextColumn();
-		Style::PushFont("WorkSans", Style::FontMode::Italic);
-		UI::Text(path);
-		Style::PopFont();
+		if (ImGui::TableNextColumn())
+		{
+			Style::PushFont("WorkSans", Style::FontMode::Italic);
+			UI::Text(path);
+			Style::PopFont();
+		}
+
+		if (ImGui::TableNextColumn())
+		{
+			static String ns;
+			AST::GetNamespace(access, nodeId, ns);
+			UI::Text(ns);
+		}
 
 
 		if (hasChildren && open)

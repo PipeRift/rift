@@ -121,7 +121,7 @@ namespace rift::Modules
 		return ecs::GetFirst<CProject>(access);
 	}
 
-	Name GetProjectName(TAccessRef<CProject, CIdentifier, CFileRef> access)
+	Name GetProjectName(TAccessRef<CProject, CNamespace, CFileRef> access)
 	{
 		Id moduleId = GetProjectId(access);
 		return GetModuleName(access, moduleId);
@@ -147,17 +147,17 @@ namespace rift::Modules
 		return GetProjectId(ast) != NoId;
 	}
 
-	Name GetModuleName(TAccessRef<CIdentifier, CFileRef> access, Id moduleId)
+	Name GetModuleName(TAccessRef<CNamespace, CFileRef> access, Id moduleId)
 	{
 		if (!access.IsValid(moduleId))
 		{
 			return {};
 		}
 
-		const auto* identifier = access.TryGet<const CIdentifier>(moduleId);
-		if (identifier && !identifier->name.IsNone())
+		const auto* ns = access.TryGet<const CNamespace>(moduleId);
+		if (ns && !ns->name.IsNone())
 		{
-			return identifier->name;
+			return ns->name;
 		}
 
 		const auto* file = access.TryGet<const CFileRef>(moduleId);
@@ -187,9 +187,9 @@ namespace rift::Modules
 		AST::Writer ct{writer.GetContext(), ast, true};
 		ct.BeginObject();
 		ReadWriter common{ct};
-		if (auto* ident = ast.TryGet<CIdentifier>(id))
+		if (auto* ns = ast.TryGet<CNamespace>(id))
 		{
-			ident->SerializeReflection(common);
+			ns->SerializeReflection(common);
 		}
 		if (auto* module = ast.TryGet<CModule>(id))
 		{
@@ -211,7 +211,7 @@ namespace rift::Modules
 		AST::Reader ct{reader, ast};
 		ct.BeginObject();
 		p::ReadWriter common{ct};
-		ast.GetOrAdd<CIdentifier>(id).SerializeReflection(common);
+		ast.GetOrAdd<CNamespace>(id).SerializeReflection(common);
 		ast.GetOrAdd<CModule>(id).SerializeReflection(common);
 	}
 }    // namespace rift::Modules

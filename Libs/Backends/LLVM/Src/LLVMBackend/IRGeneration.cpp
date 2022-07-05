@@ -31,7 +31,7 @@
 #include <AST/Id.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
-#include <AST/Utils/Names.h>
+#include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Statements.h>
 #include <Compiler/Compiler.h>
 #include <llvm/ADT/APInt.h>
@@ -44,7 +44,7 @@
 namespace rift::Compiler::LLVM
 {
 	using BlockAccessRef = TAccessRef<CStmtOutput, CStmtOutputs, CExprInputs, CStmtIf, CExprCallId,
-	    CIRFunction, CIRValue, CIdentifier>;
+	    CIRFunction, CIRValue, CNamespace>;
 
 	// Forward declarations
 	void AddStmtBlock(ModuleIRGen& gen, BlockAccessRef access, AST::Id firstStmtId,
@@ -71,19 +71,19 @@ namespace rift::Compiler::LLVM
 		// access.Add<CIRType>(nativeTypes.stringId, {});
 	}
 
-	void DeclareStructs(
-	    ModuleIRGen& gen, TAccessRef<CType, TWrite<CIRType>> access, TSpan<AST::Id> ids)
+	void DeclareStructs(ModuleIRGen& gen,
+	    TAccessRef<CType, CNamespace, TWrite<CIRType>, CChild, CModule> access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
 		for (AST::Id id : ids)
 		{
-			const Name name = access.Get<const CType>(id).name;
+			p::String name = AST::GetFullName(access, id);
 			access.Add(id, CIRType{llvm::StructType::create(gen.llvm, ToLLVM(name))});
 		}
 	}
 
 	void DefineStructs(ModuleIRGen& gen,
-	    TAccessRef<CIRType, CParent, CIdentifier, CDeclVariable> access, TSpan<AST::Id> ids)
+	    TAccessRef<CIRType, CParent, CNamespace, CDeclVariable> access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
 		TArray<AST::Id> memberIds;
@@ -106,8 +106,8 @@ namespace rift::Compiler::LLVM
 				}
 				else
 				{
-					const Name memberName = Names::GetName(access, memberId);
-					const Name typeName   = Names::GetName(access, id);
+					const Name memberName = AST::GetName(access, memberId);
+					const Name typeName   = AST::GetName(access, id);
 					gen.compiler.AddError(Strings::Format(
 					    "Variable '{}' in struct '{}' has an invalid type", memberName, typeName));
 				}
@@ -116,8 +116,8 @@ namespace rift::Compiler::LLVM
 		}
 	}
 
-	using DeclareFunctionAccess = TAccessRef<TWrite<CIRFunction>, CIdentifier, CExprType,
-	    CExprOutputs, CIRType, CParent, CInvalid>;
+	using DeclareFunctionAccess = TAccessRef<TWrite<CIRFunction>, CNamespace, CExprType,
+	    CExprOutputs, CIRType, CParent, CChild, CInvalid, CModule>;
 	void DeclareFunctions(ModuleIRGen& gen, DeclareFunctionAccess access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
@@ -149,8 +149,8 @@ namespace rift::Compiler::LLVM
 					}
 					else
 					{
-						const Name argName      = Names::GetName(access, inputId);
-						const Name functionName = Names::GetName(access, id);
+						const Name argName      = AST::GetName(access, inputId);
+						const Name functionName = AST::GetFullName(access, id);
 						gen.compiler.AddError(Strings::Format(
 						    "Input '{}' in function '{}' has an invalid type. Using i32 instead.",
 						    argName, functionName));
@@ -160,18 +160,18 @@ namespace rift::Compiler::LLVM
 			}
 
 			// Create function
-			auto& ident = access.Get<const CIdentifier>(id);
+			p::String name = AST::GetFullNameChecked(access, id);
 			auto* functionType =
 			    llvm::FunctionType::get(gen.builder.getVoidTy(), ToLLVM(inputTypes), false);
 			functionComp.instance = llvm::Function::Create(
-			    functionType, llvm::Function::ExternalLinkage, ToLLVM(ident.name), &gen.module);
+			    functionType, llvm::Function::ExternalLinkage, ToLLVM(name), &gen.module);
 
 			// Set argument names
 			i32 i            = 0;
 			const auto& args = functionComp.instance->args();
 			for (auto& arg : args)
 			{
-				Name name = Names::GetName(access, inputIds[i++]);
+				Name name = AST::GetName(access, inputIds[i++]);
 				arg.setName(ToLLVM(name));
 			}
 
@@ -266,9 +266,8 @@ namespace rift::Compiler::LLVM
 		const auto* function = access.TryGet<const CIRFunction>(functionId);
 		if (!Ensure(function))
 		{
-			const auto* ident = access.TryGet<const CIdentifier>(functionId);
-			gen.compiler.AddError(
-			    Strings::Format("Call to an invalid function: '{}'", ident ? ident->name : ""));
+			gen.compiler.AddError(Strings::Format(
+			    "Call to an invalid function: '{}'", AST::GetName(access, functionId)));
 			return;
 		}
 

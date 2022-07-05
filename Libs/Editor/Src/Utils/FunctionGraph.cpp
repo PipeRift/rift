@@ -19,11 +19,11 @@
 #include <AST/Components/CExprOutputs.h>
 #include <AST/Components/CExprType.h>
 #include <AST/Components/CExprUnaryOperator.h>
-#include <AST/Components/CIdentifier.h>
 #include <AST/Components/CLiteralBool.h>
 #include <AST/Components/CLiteralFloating.h>
 #include <AST/Components/CLiteralIntegral.h>
 #include <AST/Components/CLiteralString.h>
+#include <AST/Components/CNamespace.h>
 #include <AST/Components/CStmtIf.h>
 #include <AST/Components/CStmtInput.h>
 #include <AST/Components/CStmtOutputs.h>
@@ -79,7 +79,7 @@ namespace rift::Graph
 		return Nodes::ScreenToGridPosition(screenPosition) * GetInvGridSize();
 	}
 
-	void DrawInputs(TAccessRef<CInvalid, CExprType, CIdentifier> access, const CExprInputs& inputs)
+	void DrawInputs(TAccessRef<CInvalid, CExprType, CNamespace> access, const CExprInputs& inputs)
 	{
 		for (AST::Id pinId : inputs.pinIds)
 		{
@@ -106,8 +106,8 @@ namespace rift::Graph
 			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
 
 			Nodes::BeginInput(i32(pinId), Nodes::PinShape_CircleFilled);
-			auto* identifier = access.TryGet<const CIdentifier>(pinId);
-			UI::Text(identifier ? identifier->name.ToString() : "none");
+			auto* ns = access.TryGet<const CNamespace>(pinId);
+			UI::Text(ns ? ns->name.ToString() : "none");
 			Nodes::EndInput();
 
 			Nodes::PopStyleColor(2);
@@ -119,7 +119,7 @@ namespace rift::Graph
 	}
 
 	void DrawOutputs(
-	    TAccessRef<CInvalid, CExprType, CIdentifier> access, const CExprOutputs& outputs)
+	    TAccessRef<CInvalid, CExprType, CNamespace> access, const CExprOutputs& outputs)
 	{
 		for (AST::Id pinId : outputs.pinIds)
 		{
@@ -146,8 +146,8 @@ namespace rift::Graph
 			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
 
 			Nodes::BeginOutput(i32(pinId), Nodes::PinShape_CircleFilled);
-			auto* identifier = access.TryGet<const CIdentifier>(pinId);
-			UI::Text(identifier ? identifier->name.ToString() : "none");
+			auto* ns = access.TryGet<const CNamespace>(pinId);
+			UI::Text(ns ? ns->name.ToString() : "none");
 			Nodes::EndOutput();
 
 			Nodes::PopStyleColor(2);
@@ -336,16 +336,16 @@ namespace rift::Graph
 		Style::PopNodeBackgroundColor();
 	}
 
-	using FunctionDeclsAccess = TAccessRef<CExprOutputs, CInvalid, CExprType, CIdentifier,
+	using FunctionDeclsAccess = TAccessRef<CExprOutputs, CInvalid, CExprType, CNamespace,
 	    TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef, TWrite<CNodePosition>>;
 	void DrawFunctionDecls(FunctionDeclsAccess access, const TArray<AST::Id>& functionDecls)
 	{
 		for (AST::Id functionId : functionDecls)
 		{
 			Name name;
-			if (auto* identifier = access.TryGet<const CIdentifier>(functionId))
+			if (auto* ns = access.TryGet<const CNamespace>(functionId))
 			{
-				name = identifier->name;
+				name = ns->name;
 			}
 
 			Style::PushNodeBackgroundColor(rift::Style::GetNeutralColor(0));
@@ -407,7 +407,7 @@ namespace rift::Graph
 
 	using CallsAccess =
 	    TAccessRef<TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef, CExprCall, CExprInputs,
-	        CExprOutputs, CIdentifier, CExprType, CInvalid, TWrite<CNodePosition>, CType>;
+	        CExprOutputs, CNamespace, CExprType, CInvalid, TWrite<CNodePosition>, CType>;
 	void DrawCalls(CallsAccess access, AST::Id typeId, const TArray<AST::Id>& childrenIds)
 	{
 		for (AST::Id id : childrenIds)
@@ -416,7 +416,7 @@ namespace rift::Graph
 			{
 				StringView functionName = call->functionName.ToString().c_str();
 				StringView ownerName;
-				if (access.Get<const CType>(typeId).name
+				if (access.Get<const CNamespace>(typeId).name
 				    != call->ownerName)    // If not the same type
 				{
 					ownerName = call->ownerName.ToString().c_str();
@@ -582,9 +582,9 @@ namespace rift::Graph
 				Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
 				PushInnerNodeStyle();
 				StringView name = "Invalid";
-				if (ast.IsValid(variableId) && ast.Has<CIdentifier>(variableId))
+				if (ast.IsValid(variableId) && ast.Has<CNamespace>(variableId))
 				{
-					name = ast.Get<const CIdentifier>(variableId).name.ToString();
+					name = ast.Get<const CNamespace>(variableId).name.ToString();
 				}
 				UI::Text(name);
 				PopInnerNodeStyle();
