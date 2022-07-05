@@ -12,12 +12,15 @@
 
 namespace rift::AST
 {
-	Name GetName(TAccessRef<CNamespace, CChild> access, Id id);
-	p::String&& GetFullName(
-	    TAccessRef<CNamespace, CChild> access, Id id, bool relativeNamespace = false);
-
 	void GetNamespace(TAccessRef<CNamespace, CChild> access, Id id, p::String& ns);
 	void GetLocalNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id, p::String& ns);
+
+	Name GetName(TAccessRef<CNamespace> access, Id id);
+	Name GetNameChecked(TAccessRef<CNamespace> access, Id id);
+	p::String GetFullName(
+	    TAccessRef<CNamespace, CChild, CModule> access, Id id, bool localNamespace = false);
+	p::String GetFullNameChecked(
+	    TAccessRef<CNamespace, CChild, CModule> access, Id id, bool localNamespace = false);
 
 	bool ExistsNamespace(p::String ns);
 	bool IsUniqueNamespace(p::String ns);

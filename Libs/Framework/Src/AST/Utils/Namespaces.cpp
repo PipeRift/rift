@@ -56,24 +56,52 @@ namespace rift::AST
 		}
 	}
 
-	Name GetName(TAccessRef<CNamespace, CChild> access, Id id)
+	Name GetName(TAccessRef<CNamespace> access, Id id)
 	{
-		if (auto* ns = access.TryGet<const CNamespace>(id))
-		{
-			return ns->name;
-		}
-		return Name::None();
+		auto* ns = access.TryGet<const CNamespace>(id);
+		return ns ? ns->name : Name::None();
+	}
+	Name GetNameChecked(TAccessRef<CNamespace> access, Id id)
+	{
+		return access.Get<const CNamespace>(id).name;
 	}
 
-	p::String&& GetFullName(TAccessRef<CNamespace, CChild> access, Id id, bool relativeNamespace)
+	p::String GetFullName(
+	    TAccessRef<CNamespace, CChild, CModule> access, Id id, bool localNamespace)
 	{
 		p::String name;
-		GetNamespace(access, id, name);
+		if (localNamespace)
+		{
+			GetLocalNamespace(access, id, name);
+		}
+		else
+		{
+			GetNamespace(access, id, name);
+		}
 		if (!name.empty())
 		{
 			name.push_back('.');
 		}
 		name.append(GetName(access, id).ToString());
+		return Move(name);
+	}
+	p::String GetFullNameChecked(
+	    TAccessRef<CNamespace, CChild, CModule> access, Id id, bool localNamespace)
+	{
+		p::String name;
+		if (localNamespace)
+		{
+			GetLocalNamespace(access, id, name);
+		}
+		else
+		{
+			GetNamespace(access, id, name);
+		}
+		if (!name.empty())
+		{
+			name.push_back('.');
+		}
+		name.append(GetNameChecked(access, id).ToString());
 		return Move(name);
 	}
 }    // namespace rift::AST
