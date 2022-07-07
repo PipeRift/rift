@@ -285,9 +285,7 @@ namespace rift
 
 		if (ImGui::TableNextColumn())
 		{
-			static String ns;
-			AST::GetNamespace(access, nodeId, ns);
-			UI::Text(ns);
+			UI::Text(AST::GetNamespace(access, nodeId).ToString());
 		}
 
 

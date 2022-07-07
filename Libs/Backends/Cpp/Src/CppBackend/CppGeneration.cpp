@@ -2,6 +2,7 @@
 
 #include "CppBackend/CppGeneration.h"
 
+#include "AST/Utils/Namespaces.h"
 #include "CppBackend.h"
 #include "CppBackend/Components/CCppCodeGenFragment.h"
 
@@ -180,23 +181,14 @@ namespace rift::Compiler::Cpp
 	}
 
 
-	void DeclareFunctions(String& code, TAccessRef<CType, CNamespace, CDeclClass, CChild> access,
-	    AST::Id moduleId, const TArray<AST::Id>& functions)
+	void DeclareFunctions(String& code,
+	    TAccessRef<CType, CNamespace, CDeclClass, CChild, CModule> access, AST::Id moduleId,
+	    const TArray<AST::Id>& functions)
 	{
 		for (AST::Id entity : functions)
 		{
-			StringView ownerName;
-			AST::Id parentId = AST::Hierarchy::GetParent(access, entity);
-			if (!IsNone(parentId))
-			{
-				if (auto* ns = access.TryGet<const CNamespace>(parentId))
-				{
-					ownerName = ns->name.ToString();
-				}
-			}
-
-			const auto& ns = access.Get<const CNamespace>(entity);
-			DeclareFunction(code, ns.name.ToString(), ownerName);
+			AST::Namespace ns = AST::GetNamespace(access, entity);
+			DeclareFunction(code, AST::GetNameChecked(access, entity).ToString(), ns.ToString());
 		}
 	}
 

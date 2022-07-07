@@ -46,7 +46,7 @@ namespace rift::FunctionsSystem
 		{
 			auto& call = access.Get<const CExprCall>(id);
 			AST::Id functionId =
-			    Types::FindFunctionByName(access, call.ownerName, call.functionName);
+			    Types::FindFunctionByName(access, call.nameSpace, call.functionName);
 			if (!IsNone(functionId))
 			{
 				access.Add(id, CExprCallId{functionId});

@@ -414,13 +414,7 @@ namespace rift::Graph
 		{
 			if (auto* call = access.TryGet<const CExprCall>(id))
 			{
-				StringView functionName = call->functionName.ToString().c_str();
-				StringView ownerName;
-				if (access.Get<const CNamespace>(typeId).name
-				    != call->ownerName)    // If not the same type
-				{
-					ownerName = call->ownerName.ToString().c_str();
-				}
+				StringView functionName = call->functionName.ToString();
 
 				Style::PushNodeBackgroundColor(rift::Style::GetNeutralColor(0));
 				Style::PushNodeTitleColor(Style::callColor);
@@ -437,12 +431,6 @@ namespace rift::Graph
 
 						UI::BeginGroup();
 						UI::TextUnformatted(functionName.data());
-						if (!ownerName.empty())
-						{
-							// rift::Style::PushTextColor(rift::Style::whiteTextColor.Shade(0.3f));
-							// UI::Text(ownerName.data());
-							// rift::Style::PopTextColor();
-						}
 						UI::EndGroup();
 
 						UI::SameLine();

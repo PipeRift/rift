@@ -17,8 +17,8 @@ namespace rift
 	{
 		STRUCT(CExprCall, CExpression)
 
-		PROP(ownerName)
-		Name ownerName;
+		PROP(nameSpace)
+		Name nameSpace;
 
 		PROP(functionName)
 		Name functionName;

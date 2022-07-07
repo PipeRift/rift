@@ -233,7 +233,7 @@ namespace rift::Types
 		const AST::Id typeId = AST::Hierarchy::GetParent(ast, functionId);
 		if (!IsNone(typeId))
 		{
-			callExpr.ownerName = ast.Get<const CNamespace>(typeId).name;
+			callExpr.nameSpace = ast.Get<const CNamespace>(typeId).name;
 		}
 
 		if (type)
