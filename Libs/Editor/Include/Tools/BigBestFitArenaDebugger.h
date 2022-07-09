@@ -4,8 +4,8 @@
 #include <Pipe/Core/Platform.h>
 #include <Pipe/Core/StringView.h>
 #include <Pipe/Math/Vector.h>
-#include <Pipe/Memory/Arenas/BigBestFitArena.h>
-#include <Pipe/Memory/Blocks/Block.h>
+#include <Pipe/Memory/BigBestFitArena.h>
+#include <Pipe/Memory/Block.h>
 
 
 namespace rift
@@ -27,7 +27,7 @@ namespace rift
 
 		void UpdateGridScale(float availableWidth);
 
-		void Draw(const TArray<p::Memory::BigBestFitArena::Slot>& freeSlots);
+		void Draw(const TArray<p::BigBestFitArena::Slot>& freeSlots);
 
 		float GetHeight()
 		{
@@ -45,7 +45,7 @@ namespace rift
 		}
 		sizet GetOffset(u8* ptr)
 		{
-			return ptr - static_cast<const u8*>(block->GetData());
+			return ptr - static_cast<const u8*>(block->data);
 		}
 	};
 

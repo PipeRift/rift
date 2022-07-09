@@ -4,9 +4,8 @@
 
 #include <Pipe/Core/String.h>
 #include <Pipe/Math/Math.h>
-#include <Pipe/Memory/Arenas/GlobalArena.h>
+#include <Pipe/Memory/Alloc.h>
 #include <UI/UI.h>
-
 
 
 // External
@@ -29,7 +28,7 @@ namespace rift
 	}
 
 	i32 DrawMemoryBlock(StringView label, MemoryGrid& grid,
-	    const TArray<Memory::BigBestFitArena::Slot>& freeSlots, v2 graphSize = v2::Zero())
+	    const TArray<BigBestFitArena::Slot>& freeSlots, v2 graphSize = v2::Zero())
 	{
 		ImGuiContext& g     = *GImGui;
 		ImGuiWindow* window = UI::GetCurrentWindow();
@@ -75,7 +74,7 @@ namespace rift
 			DrawMemoryRect(window, grid, frameBox, {0, 0}, {grid.numColumns - 1, grid.numRows - 2},
 			    gUsedColor);
 			DrawMemoryRect(window, grid, frameBox, {0, grid.numRows - 1},
-			    {grid.GetX(grid.block->GetSize()), grid.numRows - 1}, gUsedColor);
+			    {grid.GetX(grid.block->size), grid.numRows - 1}, gUsedColor);
 
 			DrawMemoryRect(window, grid, frameBox, {0, 0}, {0, 0}, gFreeColor);
 
@@ -129,10 +128,10 @@ namespace rift
 	{
 		numColumns  = u32(availableWidth / unitSize.x);
 		bytesPerRow = memoryScale * numColumns;
-		numRows     = u32(block->GetSize() / bytesPerRow);
+		numRows     = u32(block->size / bytesPerRow);
 	}
 
-	void MemoryGrid::Draw(const TArray<Memory::BigBestFitArena::Slot>& freeSlots)
+	void MemoryGrid::Draw(const TArray<BigBestFitArena::Slot>& freeSlots)
 	{
 		String scaleStr      = Strings::ParseMemorySize(memoryScale);
 		u32 scaleMultiplier  = u32(math::Log2(memoryScale));
@@ -150,68 +149,69 @@ namespace rift
 	BigBestFitArenaDebugger::BigBestFitArenaDebugger()
 	{
 		// TODO: Remove this. Testing the debugger
-		auto& arena = Memory::GetGlobalArena();
+		if (auto* arena = dynamic_cast<BigBestFitArena*>(GetCurrentArena()))
+		{
+			void* a = arena->Alloc(120);
+			void* b = arena->Alloc(234);
+			void* c = arena->Alloc(68);
+			void* d = arena->Alloc(234);
+			void* e = arena->Alloc(1522);
+			void* f = arena->Alloc(344);
+			void* g = arena->Alloc(33445);
 
-		void* a = arena.Allocate(120);
-		void* b = arena.Allocate(234);
-		void* c = arena.Allocate(68);
-		void* d = arena.Allocate(234);
-		void* e = arena.Allocate(1522);
-		void* f = arena.Allocate(344);
-		void* g = arena.Allocate(33445);
+			arena->Free(a, 120);
+			arena->Free(c, 68);
+			arena->Free(e, 1522);
 
-		arena.Free(a, 120);
-		arena.Free(c, 68);
-		arena.Free(e, 1522);
-
-		void* h = arena.Allocate(894345, 64);
+			void* h = arena->Alloc(894345, 64);
+		}
 	}
 
 	void BigBestFitArenaDebugger::Draw()
 	{
 		if (open)
 		{
-			auto& arena = Memory::GetGlobalArena();
-
+			auto* arena = dynamic_cast<BigBestFitArena*>(GetCurrentArena());
 			UI::Begin("Memory", &open);
+			if (arena)
+			{
+				String size = Strings::ParseMemorySize(arena->GetBlock().size);
+				String used = Strings::ParseMemorySize(arena->GetUsedSize());
+				String free = Strings::ParseMemorySize(arena->GetFreeSize());
 
-			String size = Strings::ParseMemorySize(arena.GetBlock().GetSize());
-			String used = Strings::ParseMemorySize(arena.GetUsedSize());
-			String free = Strings::ParseMemorySize(arena.GetFreeSize());
+				{    // Progress bar
+					const float usedPct = float(arena->GetUsedSize()) / arena->GetBlock().size;
 
-			{    // Progress bar
-				const float usedPct = float(arena.GetUsedSize()) / arena.GetBlock().GetSize();
+					static const LinearColor lowMemoryColor  = LinearColor::FromRGB(56, 210, 41);
+					static const LinearColor highMemoryColor = LinearColor::FromRGB(210, 56, 41);
+					const LinearColor color =
+					    LinearColor::LerpUsingHSV(lowMemoryColor, highMemoryColor, usedPct);
+					UI::PushStyleColor(ImGuiCol_PlotHistogram, color);
+					UI::PushStyleColor(ImGuiCol_FrameBg, color.Desaturate(0.4f));
 
-				static const LinearColor lowMemoryColor  = LinearColor::FromRGB(56, 210, 41);
-				static const LinearColor highMemoryColor = LinearColor::FromRGB(210, 56, 41);
-				const LinearColor color =
-				    LinearColor::LerpUsingHSV(lowMemoryColor, highMemoryColor, usedPct);
-				UI::PushStyleColor(ImGuiCol_PlotHistogram, color);
-				UI::PushStyleColor(ImGuiCol_FrameBg, color.Desaturate(0.4f));
+					UI::PushItemWidth(-FLT_MIN);
+					UI::ProgressBar(usedPct, ImVec2(0.f, 0.0f), "");
 
-				UI::PushItemWidth(-FLT_MIN);
-				UI::ProgressBar(usedPct, ImVec2(0.f, 0.0f), "");
+					const String usedPctLabel =
+					    Strings::Format("{:.0f}%% used ({})", usedPct * 100.f, used);
+					const float pctFontSize = (UI::GetFontSize() * usedPctLabel.size()) / 2.f;
+					UI::SameLine(UI::GetWindowContentRegionWidth() / 2 - pctFontSize / 2,
+					    UI::GetStyle().ItemInnerSpacing.x / 2);
+					UI::Text(usedPctLabel);
 
-				const String usedPctLabel =
-				    Strings::Format("{:.0f}%% used ({})", usedPct * 100.f, used);
-				const float pctFontSize = (UI::GetFontSize() * usedPctLabel.size()) / 2.f;
-				UI::SameLine(UI::GetWindowContentRegionWidth() / 2 - pctFontSize / 2,
-				    UI::GetStyle().ItemInnerSpacing.x / 2);
-				UI::Text(usedPctLabel);
+					UI::SetItemAllowOverlap();
+					const float usedFontSize = (UI::GetFontSize() * size.size()) / 2.f;
+					UI::SameLine(UI::GetWindowContentRegionWidth() - usedFontSize);
+					UI::Text(size);
 
-				UI::SetItemAllowOverlap();
-				const float usedFontSize = (UI::GetFontSize() * size.size()) / 2.f;
-				UI::SameLine(UI::GetWindowContentRegionWidth() - usedFontSize);
-				UI::Text(size);
+					UI::PopStyleColor(2);
+				}
 
-				UI::PopStyleColor(2);
+				UI::Separator();
+
+				blockGrid.block = &arena->GetBlock();
+				blockGrid.Draw(arena->GetFreeSlots());
 			}
-
-			UI::Separator();
-
-			blockGrid.block = &arena.GetBlock();
-			blockGrid.Draw(arena.GetFreeSlots());
-
 			UI::End();
 		}
 	}

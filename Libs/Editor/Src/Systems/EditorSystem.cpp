@@ -247,6 +247,7 @@ namespace rift::EditorSystem
 
 		editor.reflectionDebugger.Draw();
 		editor.astDebugger.Draw(ast);
+		editor.memoryDebugger.Draw();
 		editor.fileExplorer.Draw(ast);
 		editor.graphPlayground.Draw(ast, editor.layout);
 
@@ -357,6 +358,7 @@ namespace rift::EditorSystem
 				{
 					UI::MenuItem("Reflection", nullptr, &editorData.reflectionDebugger.open);
 					UI::MenuItem("Abstract Syntax Tree", nullptr, &editorData.astDebugger.open);
+					UI::MenuItem("Memory", nullptr, &editorData.memoryDebugger.open);
 					UI::MenuItem("Graph Playground", nullptr, &editorData.graphPlayground.open);
 					UI::EndMenu();
 				}

@@ -6,6 +6,7 @@
 #include "Panels/FileExplorerPanel.h"
 #include "Tools/ASTDebugger.h"
 #include "Tools/GraphPlayground.h"
+#include "Tools/MemoryDebugger.h"
 #include "Tools/ReflectionDebugger.h"
 
 #include <Pipe/Files/FileWatcher.h>
@@ -37,6 +38,7 @@ namespace rift
 
 		ReflectionDebugger reflectionDebugger;
 		ASTDebugger astDebugger;
+		MemoryDebugger memoryDebugger;
 		GraphPlayground graphPlayground;
 
 		bool skipFrameAfterMenu = false;

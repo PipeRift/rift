@@ -21,7 +21,7 @@
         },
         "CExprCall": {
             "4": {
-                "ownerName": "Utils",
+                "nameSpace": "none",
                 "functionName": "Print"
             }
         },
@@ -72,6 +72,9 @@
             }
         },
         "CNamespace": {
+            "0": {
+                "name": "Welcome"
+            },
             "3": {
                 "name": "SayHi"
             },
