@@ -149,7 +149,7 @@ namespace rift
 	BigBestFitArenaDebugger::BigBestFitArenaDebugger()
 	{
 		// TODO: Remove this. Testing the debugger
-		if (auto* arena = dynamic_cast<BigBestFitArena*>(GetCurrentArena()))
+		if (auto* arena = dynamic_cast<BigBestFitArena*>(&GetCurrentArena()))
 		{
 			void* a = arena->Alloc(120);
 			void* b = arena->Alloc(234);
@@ -171,7 +171,7 @@ namespace rift
 	{
 		if (open)
 		{
-			auto* arena = dynamic_cast<BigBestFitArena*>(GetCurrentArena());
+			auto* arena = dynamic_cast<BigBestFitArena*>(&GetCurrentArena());
 			UI::Begin("Memory", &open);
 			if (arena)
 			{

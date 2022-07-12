@@ -3,18 +3,13 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Compiler/Utils/BackendUtils.h>
+#include <CppBackend.h>
+#include <GraphView.h>
+#include <LLVMBackend.h>
 #include <Pipe/Core/Context.h>
 #include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Paths.h>
 #include <RiftContext.h>
-
-
-// Backends
-#include <CppBackend.h>
-#include <LLVMBackend.h>
-
-// Views
-#include <GraphView.h>
 
 #include <chrono>
 #include <CLI/CLI.hpp>

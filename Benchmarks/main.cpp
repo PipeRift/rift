@@ -18,4 +18,5 @@ int main()
 {
 	p::InitializeContext<NoFileLogContext>();
 	// Run benches
+	p::ShutdownContext();
 }

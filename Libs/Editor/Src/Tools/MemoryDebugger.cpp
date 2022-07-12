@@ -7,6 +7,7 @@
 #include <Pipe/Memory/Alloc.h>
 #include <Pipe/Memory/MemoryStats.h>
 #include <UI/UI.h>
+#include <UI/UIImgui.h>
 
 
 // External
@@ -30,8 +31,44 @@ namespace rift
 
 		if (UI::Begin("Memory", &open))
 		{
+			String label;
 			auto* stats = GetHeapStats();
 			UI::Text(Strings::Format("Used: {}", Strings::ParseMemorySize(stats->used)));
+
+			if (UI::BeginChild("Allocations"))
+			{
+				const sizet shown = math::Min(10000, stats->allocations.Size());
+				for (i32 i = 0; i < shown; ++i)
+				{
+					const auto& allocation = stats->allocations[i];
+					label.clear();
+					Strings::FormatTo(label, "{}", allocation.ptr);
+					if (UI::TreeNodeEx(label.c_str()))
+					{
+						label.clear();
+						Strings::FormatTo(label, "Address: {}, Size: {}", allocation.ptr,
+						    Strings::ParseMemorySize(allocation.size));
+						UI::Text(label.c_str());
+
+#if PIPE_ENABLE_ALLOCATION_STACKS
+						UI::Text("Stack trace:");
+						const auto& stack = stats->allocationStacks[i];
+						backward::TraceResolver tr;
+						tr.load_stacktrace(stack);
+						for (sizet i = 0; i < stack.size(); ++i)
+						{
+							backward::ResolvedTrace trace = tr.resolve(stack[i]);
+							label.clear();
+							Strings::FormatTo(label, "#{} {} {} [{}]", i, trace.object_filename,
+							    trace.object_function, trace.addr);
+							UI::Text(label);
+						}
+#endif
+						UI::TreePop();
+					}
+				}
+			}
+			UI::EndChild();
 		}
 		UI::End();
 	}

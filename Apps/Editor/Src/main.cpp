@@ -1,13 +1,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Editor.h"
-
-// Backends
 #include <CppBackend.h>
-#include <LLVMBackend.h>
-
-// Views
+#include <Editor.h>
 #include <GraphView.h>
+#include <LLVMBackend.h>
 
 #include <iostream>
 
