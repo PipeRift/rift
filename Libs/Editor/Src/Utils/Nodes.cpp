@@ -18,8 +18,6 @@
 #include <Pipe/Math/Bezier.h>
 
 #include <cassert>
-#include <climits>
-#include <cmath>
 #include <cstring>    // strlen, strncmp
 #include <new>
 

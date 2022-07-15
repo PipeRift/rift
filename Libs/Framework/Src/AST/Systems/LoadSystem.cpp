@@ -23,7 +23,6 @@
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
 
-
 namespace rift::LoadSystem
 {
 	void Init(AST::Tree& ast)

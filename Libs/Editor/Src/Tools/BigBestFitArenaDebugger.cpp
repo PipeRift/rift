@@ -80,8 +80,8 @@ namespace rift
 
 			for (auto& slot : freeSlots)
 			{
-				const sizet startOffset = grid.GetOffset(slot.start);
-				const sizet endOffset   = grid.GetOffset(slot.end);
+				const sizet startOffset = sizet(slot.offset);
+				const sizet endOffset   = sizet(slot.offset + slot.size);
 				const u32 startX        = grid.GetX(startOffset);
 				const u32 endX          = grid.GetX(endOffset);
 				const u32 startY        = grid.GetY(startOffset);
