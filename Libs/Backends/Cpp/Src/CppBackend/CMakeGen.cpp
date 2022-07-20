@@ -10,9 +10,9 @@
 #include <Pipe/Files/Files.h>
 
 
-namespace rift::Compiler::Cpp
+namespace rift::compiler::Cpp
 {
-	void SetProject(String& code, Context& context, Name name, StringView version)
+	void SetProject(String& code, Compiler& compiler, Name name, StringView version)
 	{
 		Strings::FormatTo(code,
 		    "cmake_minimum_required (VERSION 3.12)\n"
@@ -26,7 +26,7 @@ namespace rift::Compiler::Cpp
 	}
 
 	void AddLibrary(
-	    String& code, Context& context, ModuleTarget type, Name name, StringView cppVersion)
+	    String& code, Compiler& compiler, ModuleTarget type, Name name, StringView cppVersion)
 	{
 		StringView targetType;
 		switch (type)
@@ -36,7 +36,7 @@ namespace rift::Compiler::Cpp
 			// case ModuleTarget::Interface:
 			// targetType = "INTERFACE";
 			// break;
-			default: context.AddError("Failed to add CMake library. Invalid ModuleTarget"); return;
+			default: compiler.AddError("Failed to add CMake library. Invalid ModuleTarget"); return;
 		}
 
 		Strings::FormatTo(code,
@@ -51,7 +51,7 @@ namespace rift::Compiler::Cpp
 		    fmt::arg("ModuleName", name));
 	}
 
-	void AddExecutable(String& code, Context& context, Name name, StringView cppVersion)
+	void AddExecutable(String& code, Compiler& compiler, Name name, StringView cppVersion)
 	{
 		Strings::FormatTo(code,
 		    "add_executable({ModuleName})\n"
@@ -64,36 +64,36 @@ namespace rift::Compiler::Cpp
 	}
 
 	void GenerateCMakeModule(
-	    Context& context, AST::Id moduleId, CModule& module, const p::Path& codePath, Name name)
+	    Compiler& compiler, AST::Id moduleId, CModule& module, const p::Path& codePath, Name name)
 	{
 		String code;
 		ModuleTarget target = module.target;
 		if (target == ModuleTarget::Executable)
 		{
-			AddExecutable(code, context, name.ToString(), "20");
+			AddExecutable(code, compiler, name.ToString(), "20");
 		}
 		else
 		{
-			AddLibrary(code, context, target, name.ToString(), "20");
+			AddLibrary(code, compiler, target, name.ToString(), "20");
 		}
 		files::SaveStringFile(codePath / name.ToString() / "CMakelists.txt", code);
 	}
 
-	void GenerateCMake(Context& context, const p::Path& codePath)
+	void GenerateCMake(Compiler& compiler, const p::Path& codePath)
 	{
 		String code;
-		Name projectName = Modules::GetProjectName(context.ast);
-		SetProject(code, context, projectName.ToString(), "0.1");
+		Name projectName = Modules::GetProjectName(compiler.ast);
+		SetProject(code, compiler, projectName.ToString(), "0.1");
 
-		TAccess<TWrite<CModule>> modules{context.ast};
+		TAccess<TWrite<CModule>> modules{compiler.ast};
 		for (AST::Id moduleId : ecs::ListAll<CModule>(modules))
 		{
-			Name name = Modules::GetModuleName(context.ast, moduleId);
-			GenerateCMakeModule(context, moduleId, modules.Get<CModule>(moduleId), codePath, name);
+			Name name = Modules::GetModuleName(compiler.ast, moduleId);
+			GenerateCMakeModule(compiler, moduleId, modules.Get<CModule>(moduleId), codePath, name);
 
 			AddSubdirectory(code, name.ToString());
 		}
 
 		files::SaveStringFile(codePath / "CMakelists.txt", code);
 	}
-}    // namespace rift::Compiler::Cpp
+}    // namespace rift::compiler::Cpp

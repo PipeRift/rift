@@ -3,15 +3,11 @@
 #pragma once
 
 #include <AST/Id.h>
+#include <Compiler/Compiler.h>
 #include <Pipe/Files/Paths.h>
 
 
-namespace rift::Compiler
+namespace rift::compiler::Cpp
 {
-	struct Context;
-}
-
-namespace rift::Compiler::Cpp
-{
-	void GenerateCMake(Context& context, const p::Path& codePath);
-}    // namespace rift::Compiler::Cpp
+	void GenerateCMake(Compiler& compiler, const p::Path& codePath);
+}    // namespace rift::compiler::Cpp

@@ -5,7 +5,6 @@
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "imgui.h"
-#include "Pipe/Core/Context.h"
 #include "Utils/EditorStyle.h"
 #include "Utils/FunctionGraphContextMenu.h"
 #include "Utils/TypeUtils.h"

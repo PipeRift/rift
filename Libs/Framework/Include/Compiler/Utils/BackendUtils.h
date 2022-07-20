@@ -3,16 +3,14 @@
 #pragma once
 
 #include "Compiler/Backend.h"
-#include "Compiler/Context.h"
+#include "Compiler/Compiler.h"
 
 #include <Pipe/Memory/OwnPtr.h>
 #include <Pipe/Reflect/ClassType.h>
 
 
-namespace rift::Compiler
+namespace rift::compiler
 {
 	TArray<ClassType*> GetBackendTypes();
 	TArray<TOwnPtr<Backend>> CreateBackends();
-
-	TOwnPtr<Context> CreateBackend(ClassType* backendClass);
-}    // namespace rift::Compiler
+}    // namespace rift::compiler

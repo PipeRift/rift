@@ -15,6 +15,6 @@ namespace rift
 		CLASS(Plugin, Class)
 
 	public:
-		virtual void Register(TPtr<struct RiftContext> context) = 0;
+		virtual void Register(TPtr<struct Rift> rift) = 0;
 	};
 }    // namespace rift

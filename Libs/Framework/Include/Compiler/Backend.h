@@ -2,12 +2,13 @@
 
 #pragma once
 
-#include "Compiler/Context.h"
+#include "Compiler/Compiler.h"
 
 #include <Pipe/Reflect/Class.h>
+#include <Rift.h>
 
 
-namespace rift::Compiler
+namespace rift::compiler
 {
 	class Backend : public Class
 	{
@@ -19,10 +20,10 @@ namespace rift::Compiler
 			return Name::None();
 		}
 
-		virtual void Build(Context& context)
+		virtual void Build(Compiler& compiler)
 		{
 			CheckMsg(false, "Backend '{}' tried to run but Build() is not implemented.",
 			    GetName().ToString());
 		}
 	};
-}    // namespace rift::Compiler
+}    // namespace rift::compiler

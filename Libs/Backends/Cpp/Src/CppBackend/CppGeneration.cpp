@@ -19,13 +19,13 @@
 #include <AST/Tree.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
-#include <Compiler/Context.h>
+#include <Compiler/Compiler.h>
 #include <Pipe/Core/String.h>
 #include <Pipe/ECS/Filtering.h>
 #include <Pipe/Files/Files.h>
 
 
-namespace rift::Compiler::Cpp
+namespace rift::compiler::Cpp
 {
 	void Spacing(String& code)
 	{
@@ -216,11 +216,11 @@ namespace rift::Compiler::Cpp
 	void GenParameters(TAccessRef<CExprType, CNamespace, TWrite<CCppCodeGenFragment>> access) {}
 
 
-	void GenerateModuleCode(Context& context, AST::Id moduleId, const p::Path& codePath)
+	void GenerateModuleCode(Compiler& compiler, AST::Id moduleId, const p::Path& codePath)
 	{
 		ZoneScopedC(0x459bd1);
 
-		auto& ast = context.ast;
+		auto& ast = compiler.ast;
 
 		const Name name           = Modules::GetModuleName(ast, moduleId);
 		const p::Path modulePath  = codePath / name.ToString();
@@ -270,7 +270,7 @@ namespace rift::Compiler::Cpp
 		const p::Path headerFile = includePath / "code.h";
 		if (!files::SaveStringFile(headerFile, code))
 		{
-			context.AddError(
+			compiler.AddError(
 			    Strings::Format("Couldn't save generated header at '{}'", p::ToString(headerFile)));
 		}
 
@@ -282,20 +282,20 @@ namespace rift::Compiler::Cpp
 		Path sourceFile = sourcePath / "code.cpp";
 		if (!files::SaveStringFile(sourceFile, code))
 		{
-			context.AddError(
+			compiler.AddError(
 			    Strings::Format("Couldn't save generated source at '{}'", p::ToString(sourceFile)));
 		}
 	}
 
-	void GenerateCode(Context& context, const p::Path& generatePath)
+	void GenerateCode(Compiler& compiler, const p::Path& generatePath)
 	{
 		ZoneScopedC(0x459bd1);
 
-		GenParameters(context.ast);
+		GenParameters(compiler.ast);
 
-		for (AST::Id moduleId : ecs::ListAll<CModule>(context.ast))
+		for (AST::Id moduleId : ecs::ListAll<CModule>(compiler.ast))
 		{
-			GenerateModuleCode(context, moduleId, generatePath);
+			GenerateModuleCode(compiler, moduleId, generatePath);
 		}
 	}
-}    // namespace rift::Compiler::Cpp
+}    // namespace rift::compiler::Cpp

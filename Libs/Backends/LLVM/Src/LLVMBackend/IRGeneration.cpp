@@ -41,7 +41,7 @@
 #include <Pipe/ECS/Filtering.h>
 
 
-namespace rift::Compiler::LLVM
+namespace rift::compiler::LLVM
 {
 	using BlockAccessRef = TAccessRef<CStmtOutput, CStmtOutputs, CExprInputs, CStmtIf, CExprCallId,
 	    CIRFunction, CIRValue, CNamespace>;
@@ -352,18 +352,18 @@ namespace rift::Compiler::LLVM
 	}
 
 	void GenerateIRModule(
-	    Context& context, AST::Id moduleId, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
+	    Compiler& compiler, AST::Id moduleId, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
 	{
 		ZoneScoped;
-		auto& ast = context.ast;
+		auto& ast = compiler.ast;
 
-		const Name name = Modules::GetModuleName(context.ast, moduleId);
+		const Name name = Modules::GetModuleName(compiler.ast, moduleId);
 
-		CIRModule& module      = context.ast.Add<CIRModule>(moduleId);
+		CIRModule& module      = compiler.ast.Add<CIRModule>(moduleId);
 		module.instance        = Move(MakeOwned<llvm::Module>(ToLLVM(name), llvm));
 		llvm::Module& irModule = *module.instance.Get();
 
-		ModuleIRGen gen{context, irModule, llvm, builder};
+		ModuleIRGen gen{compiler, irModule, llvm, builder};
 
 		// Filter all module rift types
 		TArray<AST::Id> typeIds;
@@ -389,21 +389,21 @@ namespace rift::Compiler::LLVM
 
 		DefineFunctions(gen, ast, functionIds);
 
-		const auto& mod = context.ast.Get<const CModule>(moduleId);
+		const auto& mod = compiler.ast.Get<const CModule>(moduleId);
 		if (mod.target == ModuleTarget::Executable)
 		{
 			CreateMain(gen);
 		}
 	}
 
-	void GenerateIR(Context& context, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
+	void GenerateIR(Compiler& compiler, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
 	{
-		BindNativeTypes(llvm, context.ast);
-		GenerateLiterals(llvm, context.ast);
+		BindNativeTypes(llvm, compiler.ast);
+		GenerateLiterals(llvm, compiler.ast);
 
-		for (AST::Id moduleId : ecs::ListAll<CModule>(context.ast))
+		for (AST::Id moduleId : ecs::ListAll<CModule>(compiler.ast))
 		{
-			GenerateIRModule(context, moduleId, llvm, builder);
+			GenerateIRModule(compiler, moduleId, llvm, builder);
 		}
 	}
-}    // namespace rift::Compiler::LLVM
+}    // namespace rift::compiler::LLVM

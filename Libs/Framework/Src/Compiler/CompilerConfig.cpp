@@ -1,10 +1,11 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "AST/Utils/ModuleUtils.h"
-#include "Compiler/Context.h"
+#include "Compiler/CompilerConfig.h"
+
+#include <AST/Utils/ModuleUtils.h>
 
 
-namespace rift::Compiler
+namespace rift::compiler
 {
 	void Config::Init(AST::Tree& ast)
 	{
@@ -12,4 +13,4 @@ namespace rift::Compiler
 		intermediatesPath = buildPath / "Intermediates";
 		binariesPath      = buildPath / buildMode;
 	}
-}    // namespace rift::Compiler
+}    // namespace rift::compiler

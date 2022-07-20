@@ -3,7 +3,7 @@
 
 #include <Compiler/Backend.h>
 #include <Plugin.h>
-#include <RiftContext.h>
+#include <Rift.h>
 
 
 namespace rift
@@ -13,11 +13,11 @@ namespace rift
 		CLASS(LLVMBackendPlugin, Plugin)
 
 	public:
-		void Register(TPtr<RiftContext> context) override {}
+		void Register(TPtr<Rift> rift) override {}
 	};
 
 
-	namespace Compiler
+	namespace compiler
 	{
 		class LLVMBackend : public Backend
 		{
@@ -29,7 +29,7 @@ namespace rift
 				return "LLVM";
 			}
 
-			void Build(Context& context) override;
+			void Build(Compiler& compiler) override;
 		};
-	}    // namespace Compiler
+	}    // namespace compiler
 }    // namespace rift

@@ -8,7 +8,7 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift::Compiler
+namespace rift::compiler
 {
 	using namespace p;
 
@@ -26,4 +26,4 @@ namespace rift::Compiler
 
 		void Init(AST::Tree& ast);
 	};
-}    // namespace rift::Compiler
+}    // namespace rift::compiler

@@ -5,20 +5,20 @@
 #include <llvm/IR/LLVMContext.h>
 
 
-namespace rift::Compiler
+namespace rift::compiler
 {
-	struct Context;
+	struct Compiler;
 }
 
-namespace rift::Compiler::LLVM
+namespace rift::compiler::LLVM
 {
 	struct ModuleIRGen
 	{
-		Context& compiler;
+		Compiler& compiler;
 		llvm::Module& module;
 		llvm::LLVMContext& llvm;
 		llvm::IRBuilder<>& builder;
 	};
 
-	void GenerateIR(Context& context, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder);
-}    // namespace rift::Compiler::LLVM
+	void GenerateIR(Compiler& compiler, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder);
+}    // namespace rift::compiler::LLVM

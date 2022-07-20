@@ -28,23 +28,23 @@
 #include <llvm/Target/TargetOptions.h>
 
 
-namespace rift::Compiler
+namespace rift::compiler
 {
 	namespace LLVM
 	{
-		void SaveModuleObject(Context& context, AST::Id moduleId,
+		void SaveModuleObject(Compiler& compiler, AST::Id moduleId,
 		    llvm::TargetMachine* targetMachine, StringView targetTriple)
 		{
 			ZoneScoped;
 
-			p::String intermediatesPath = p::ToString(context.config.intermediatesPath);
+			p::String intermediatesPath = p::ToString(compiler.config.intermediatesPath);
 			// files::Delete(intermediatesPath, true, false);
 			files::CreateFolder(intermediatesPath, true);
 
 
-			auto& irModule      = context.ast.Get<CIRModule>(moduleId);
+			auto& irModule      = compiler.ast.Get<CIRModule>(moduleId);
 			irModule.objectFile = Strings::Format(
-			    "{}/{}.o", intermediatesPath, Modules::GetModuleName(context.ast, moduleId));
+			    "{}/{}.o", intermediatesPath, Modules::GetModuleName(compiler.ast, moduleId));
 			Log::Info("Creating object '{}'", irModule.objectFile);
 
 			irModule.instance->setTargetTriple(ToLLVM(targetTriple));
@@ -54,7 +54,7 @@ namespace rift::Compiler
 			llvm::raw_fd_ostream file(ToLLVM(irModule.objectFile), ec, llvm::sys::fs::OF_None);
 			if (ec)
 			{
-				context.AddError(
+				compiler.AddError(
 				    Strings::Format("Could not open new object file: {}", ec.message()));
 				irModule.objectFile = {};    // File not saved
 				return;
@@ -63,7 +63,7 @@ namespace rift::Compiler
 			llvm::legacy::PassManager pm;
 			if (targetMachine->addPassesToEmitFile(pm, file, nullptr, llvm::CGFT_ObjectFile))
 			{
-				context.AddError("Target machine can't emit a file of this type");
+				compiler.AddError("Target machine can't emit a file of this type");
 				irModule.objectFile = {};    // File not saved
 				return;
 			}
@@ -72,7 +72,7 @@ namespace rift::Compiler
 			file.flush();
 		}
 
-		void CompileIR(Context& context, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
+		void CompileIR(Compiler& compiler, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
 		{
 			ZoneScoped;
 			llvm::InitializeNativeTarget();
@@ -84,7 +84,7 @@ namespace rift::Compiler
 			const llvm::Target* target = llvm::TargetRegistry::lookupTarget(targetTriple, error);
 			if (!target)
 			{
-				context.AddError(error);
+				compiler.AddError(error);
 				return;
 			}
 
@@ -93,20 +93,20 @@ namespace rift::Compiler
 			    targetTriple, "generic", "", options, llvm::Optional<llvm::Reloc::Model>());
 
 			// Emit LLVM IR to console
-			for (AST::Id moduleId : ecs::ListAll<CIRModule>(context.ast))
+			for (AST::Id moduleId : ecs::ListAll<CIRModule>(compiler.ast))
 			{
-				const auto& irModule = context.ast.Get<const CIRModule>(moduleId).instance;
+				const auto& irModule = compiler.ast.Get<const CIRModule>(moduleId).instance;
 				irModule->print(llvm::outs(), nullptr);
 			}
 
-			for (AST::Id moduleId : ecs::ListAll<CIRModule>(context.ast))
+			for (AST::Id moduleId : ecs::ListAll<CIRModule>(compiler.ast))
 			{
-				LLVM::SaveModuleObject(context, moduleId, targetMachine, targetTriple);
+				LLVM::SaveModuleObject(compiler, moduleId, targetMachine, targetTriple);
 			}
 		}
 	}    // namespace LLVM
 
-	void LLVMBackend::Build(Context& context)
+	void LLVMBackend::Build(Compiler& compiler)
 	{
 		ZoneScopedN("Backend: LLVM");
 
@@ -114,21 +114,21 @@ namespace rift::Compiler
 		llvm::IRBuilder<> builder(llvm);
 
 		Log::Info("Generating LLVM IR");
-		LLVM::GenerateIR(context, llvm, builder);
+		LLVM::GenerateIR(compiler, llvm, builder);
 
 		Log::Info("Build IR");
-		LLVM::CompileIR(context, llvm, builder);
+		LLVM::CompileIR(compiler, llvm, builder);
 
 		Log::Info("Linking");
-		LLVM::Link(context);
+		LLVM::Link(compiler);
 
-		if (!context.HasErrors())
+		if (!compiler.HasErrors())
 		{
 			Log::Info("Build complete.");
 		}
 		else
 		{
-			Log::Info("Build failed: {} errors", context.GetErrors().Size());
+			Log::Info("Build failed: {} errors", compiler.GetErrors().Size());
 		}
 	}
-}    // namespace rift::Compiler
+}    // namespace rift::compiler
