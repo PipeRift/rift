@@ -704,7 +704,7 @@ namespace rift::Graph
 
 			BeginNode(access, id);
 			{
-				pinIds.Empty(false);
+				pinIds.Clear(false);
 				AST::Hierarchy::GetChildren(access, id, pinIds);
 				if (!Ensure(pinIds.Size() >= 2))
 				{

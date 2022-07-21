@@ -22,7 +22,7 @@ namespace rift::TypeSystem
 		TAccess<CType, CNamespace> access{ast};
 
 		auto& types = ast.GetOrSetStatic<STypes>();
-		types.typesByName.Empty();
+		types.typesByName.Clear();
 
 		// Cache existing types
 

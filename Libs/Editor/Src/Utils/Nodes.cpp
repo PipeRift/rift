@@ -559,7 +559,7 @@ namespace rift::Nodes
 		{
 			editor.selectedLinkIndices.clear();
 			if (!gNodes->multipleSelectModifier)
-				editor.selectedNodeIds.Empty();
+				editor.selectedNodeIds.Clear();
 			editor.selectedNodeIds.Add(nodeId);
 
 			// Ensure that individually selected nodes get rendered on top
@@ -593,7 +593,7 @@ namespace rift::Nodes
 		editor.clickInteraction.type = ClickInteractionType_Link;
 		// When a link is selected, clear all other selections, and insert the link
 		// as the sole selection.
-		editor.selectedNodeIds.Empty();
+		editor.selectedNodeIds.Clear();
 		editor.selectedLinkIndices.clear();
 		editor.selectedLinkIndices.push_back(linkIdx);
 	}
@@ -718,7 +718,7 @@ namespace rift::Nodes
 
 		// Update node selection
 
-		editor.selectedNodeIds.Empty();
+		editor.selectedNodeIds.Clear();
 
 		// Test for overlap against node rectangles
 
@@ -2468,7 +2468,7 @@ namespace rift::Nodes
 	void ClearNodeSelection()
 	{
 		EditorContext& editor = GetEditorContext();
-		editor.selectedNodeIds.Empty();
+		editor.selectedNodeIds.Clear();
 	}
 
 	void ClearNodeSelection(AST::Id nodeId)

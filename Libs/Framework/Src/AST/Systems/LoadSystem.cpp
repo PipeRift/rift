@@ -67,7 +67,7 @@ namespace rift::LoadSystem
 	{
 		ZoneScoped;
 
-		paths.Empty();
+		paths.Clear();
 
 		AST::Id projectId = Modules::GetProjectId(ast);
 		auto& projectFile = ast.Get<CFileRef>(projectId);
@@ -81,7 +81,7 @@ namespace rift::LoadSystem
 	{
 		ZoneScoped;
 
-		pathsByModule.Empty(false);
+		pathsByModule.Clear(false);
 
 		// Cache module paths in a Set
 		TSet<Path> modulePaths;

@@ -203,7 +203,7 @@ namespace rift
 		ZoneScoped;
 		dirty = false;
 
-		folders.Empty();
+		folders.Clear();
 
 		// Set root folder (not displayed)
 		folders.InsertDefaulted(Name::None());

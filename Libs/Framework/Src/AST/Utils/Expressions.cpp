@@ -34,7 +34,7 @@ namespace rift::AST::Expressions
 				}
 			}
 			currentNodeIds = nextNodeIds;
-			nextNodeIds.Empty(false);
+			nextNodeIds.Clear(false);
 		}
 		return false;
 	}

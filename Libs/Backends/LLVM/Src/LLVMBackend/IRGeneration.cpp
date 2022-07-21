@@ -93,8 +93,8 @@ namespace rift::compiler::LLVM
 			auto* irStruct = static_cast<llvm::StructType*>(access.Get<const CIRType>(id).instance);
 
 			// Add members
-			memberIds.Empty(false);
-			memberTypes.Empty(false);
+			memberIds.Clear(false);
+			memberTypes.Clear(false);
 			AST::Hierarchy::GetChildren(access, id, memberIds);
 			ecs::ExcludeIfNot<CDeclVariable>(access, memberIds);
 			for (AST::Id memberId : memberIds)
@@ -127,8 +127,8 @@ namespace rift::compiler::LLVM
 		{
 			auto& functionComp = access.Add<CIRFunction>(id);
 
-			inputIds.Empty(false);
-			inputTypes.Empty(false);
+			inputIds.Clear(false);
+			inputTypes.Clear(false);
 			if (auto* outputs = access.TryGet<const CExprOutputs>(id))
 			{
 				for (i32 i = 0; i < outputs->pinIds.Size(); ++i)
@@ -178,8 +178,8 @@ namespace rift::compiler::LLVM
 			// Cache final inputs
 			functionComp.inputs   = {args.begin(), args.end()};
 			functionComp.inputIds = inputIds;
-			inputIds.Empty(false);
-			inputTypes.Empty(false);
+			inputIds.Clear(false);
+			inputTypes.Clear(false);
 		}
 	}
 
