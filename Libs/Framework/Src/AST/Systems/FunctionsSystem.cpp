@@ -333,11 +333,11 @@ namespace rift::FunctionsSystem
 		ecs::ExcludeIf<CTmpInvalidKeep>(access, pinsToRemove);
 		AST::Hierarchy::Remove(access, pinsToRemove);
 
-		access.GetPool<CTmpInvalidKeep>()->Reset();
+		access.GetPool<CTmpInvalidKeep>()->Clear();
 	}
 
 	void ClearAddedTags(AST::Tree& ast)
 	{
-		ast.AssurePool<CCallDirty>().Reset();
+		ast.AssurePool<CCallDirty>().Clear();
 	}
 }    // namespace rift::FunctionsSystem
