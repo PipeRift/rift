@@ -48,9 +48,5 @@ namespace rift
 
 
 		CModule() {}
-		~CModule()
-		{
-			bool a;
-		}
 	};
 }    // namespace rift
