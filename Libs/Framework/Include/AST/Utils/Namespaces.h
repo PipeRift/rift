@@ -17,8 +17,10 @@ namespace rift::AST
 {
 	using LocalNamespace = p::YesNo;
 
-	struct Namespace
+	struct Namespace : public Struct
 	{
+		STRUCT(Namespace, Struct)
+
 		static constexpr i32 scopeCount = 8;
 		Name scopes[scopeCount];    // TODO: Implement Inline arrays
 
@@ -61,6 +63,11 @@ namespace rift::AST
 		{
 			return Equals(other);
 		}
+		Name operator[](i32 index) const
+		{
+			Check(index >= 0 && index < scopeCount);
+			return scopes[index];
+		}
 		operator bool() const
 		{
 			return IsEmpty();
@@ -86,6 +93,15 @@ namespace rift::AST
 
 
 	Namespace GetNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id);
+	/**
+	 * Find an id from a given namespace
+	 * @param access access to the needed components
+	 * @param ns namespace to find the id to
+	 * @param rootIds entity ids. If nullptr, roots are resolved from ecs context.
+	 * @return Id found or NoId
+	 */
+	Id FindIdFromNamespace(TAccessRef<CNamespace, CChild, CParent> access, const Namespace& ns,
+	    const TArray<Id>* rootIds = nullptr);
 
 	Name GetName(TAccessRef<CNamespace> access, Id id);
 	Name GetNameChecked(TAccessRef<CNamespace> access, Id id);
@@ -93,4 +109,8 @@ namespace rift::AST
 	    LocalNamespace localNamespace = LocalNamespace::No);
 	p::String GetFullNameChecked(TAccessRef<CNamespace, CChild, CModule> access, Id id,
 	    LocalNamespace localNamespace = LocalNamespace::No);
+
+
+	void Read(Reader& ct, Namespace& val);
+	void Write(Writer& ct, const Namespace& val);
 }    // namespace rift::AST

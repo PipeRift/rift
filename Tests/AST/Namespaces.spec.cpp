@@ -26,7 +26,7 @@ go_bandit([]() {
 			AST::Id classBId    = Types::CreateType(ast, RiftType::Class, "TestClass");
 			AST::Id functionBId = Types::AddFunction({ast, classBId}, "TestFunction");
 			p::String nsB       = AST::GetNamespace(ast, functionBId).ToString();
-			AssertThat(nsB.c_str(), Equals("TestClass"));
+			AssertThat(nsB.c_str(), Equals("@TestClass"));
 
 			AST::Id parentC = ast.Create();
 			ast.Add<CModule>(parentC);
@@ -35,7 +35,7 @@ go_bandit([]() {
 			AST::Hierarchy::AddChildren(ast, parentC, classCId);
 			AST::Id functionCId = Types::AddFunction({ast, classCId}, "TestFunction");
 			p::String nsC       = AST::GetNamespace(ast, functionCId).ToString();
-			AssertThat(nsC.c_str(), Equals("SomeScope.TestClass"));
+			AssertThat(nsC.c_str(), Equals("@SomeScope.TestClass"));
 		});
 
 		it("Can get local namespaces", [&]() {
@@ -91,6 +91,32 @@ go_bandit([]() {
 				AssertThat(name.ToString().c_str(), Equals(ns2.scopes[i].ToString().c_str()));
 				++i;
 			}
+		});
+
+		it("Can find id from namespace", [&]() {
+			AST::Tree ast;
+			AST::Id parent = ast.Create();
+			ast.Add<CModule>(parent);
+			ast.Add(parent, CNamespace{"A"});
+
+			AST::Id classId = Types::CreateType(ast, RiftType::Class, "B");
+			AST::Hierarchy::AddChildren(ast, parent, classId);
+
+			AST::Id class2Id = Types::CreateType(ast, RiftType::Class, "B2");
+			AST::Hierarchy::AddChildren(ast, parent, class2Id);
+
+			AST::Id functionId  = Types::AddFunction({ast, classId}, "C");
+			AST::Id function2Id = Types::AddFunction({ast, classId}, "C2");
+
+
+			AssertThat(AST::FindIdFromNamespace(ast, {"A"}), Equals(parent));
+			AssertThat(AST::FindIdFromNamespace(ast, {"A", "B"}), Equals(classId));
+			AssertThat(AST::FindIdFromNamespace(ast, {"A", "B2"}), Equals(class2Id));
+			AssertThat(AST::FindIdFromNamespace(ast, {"A", "B", "C"}), Equals(functionId));
+			AssertThat(AST::FindIdFromNamespace(ast, {"A", "B", "C2"}), Equals(function2Id));
+
+			AssertThat(AST::FindIdFromNamespace(ast, {"N"}), Equals(AST::NoId));
+			AssertThat(AST::FindIdFromNamespace(ast, {"A", "N"}), Equals(AST::NoId));
 		});
 	});
 });

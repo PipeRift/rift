@@ -3,6 +3,7 @@
 #include "AST/Utils/Hierarchy.h"
 
 #include <Pipe/Core/Checks.h>
+#include <Pipe/ECS/Filtering.h>
 
 
 namespace rift::AST::Hierarchy
@@ -378,5 +379,11 @@ namespace rift::AST::Hierarchy
 			}
 		}
 		return true;
+	}
+
+	void GetRoots(TAccessRef<CChild, CParent> access, TArray<Id>& outRoots)
+	{
+		outRoots = ecs::ListAll<CParent>(access);
+		ecs::ExcludeIf<CChild>(access, outRoots);
 	}
 }    // namespace rift::AST::Hierarchy

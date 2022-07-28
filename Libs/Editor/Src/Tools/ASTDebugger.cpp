@@ -2,11 +2,11 @@
 
 #include "Tools/ASTDebugger.h"
 
-#include "AST/Utils/Namespaces.h"
-
 #include <AST/Components/CStmtOutputs.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Tree.h>
+#include <AST/Utils/Hierarchy.h>
+#include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Paths.h>
 #include <IconsFontAwesome5.h>
 #include <Pipe/Reflect/Registry.h>
@@ -156,8 +156,8 @@ namespace rift
 				DrawNodeAccess access{ast};
 				if (showHierarchy && !filter.IsActive())
 				{
-					TArray<AST::Id> roots = ecs::ListAll<CParent>(access);
-					ecs::ExcludeIf<CChild>(access, roots);
+					TArray<AST::Id> roots;
+					AST::Hierarchy::GetRoots(access, roots);
 					for (auto root : roots)
 					{
 						DrawNode(access, root, true);
