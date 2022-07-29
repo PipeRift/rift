@@ -94,15 +94,6 @@ namespace rift::AST
 		void Write(p::Writer& ct) const;
 	};
 
-	template<>
-	struct TFlags<Namespace> : public DefaultTFlags
-	{
-		enum
-		{
-			HasMemberSerialize = true
-		};
-	};
-
 
 	Namespace GetNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id);
 	Namespace GetParentNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id);
@@ -122,3 +113,16 @@ namespace rift::AST
 	p::String GetFullName(TAccessRef<CNamespace, CChild, CModule> access, Id id,
 	    LocalNamespace localNamespace = LocalNamespace::No);
 }    // namespace rift::AST
+
+
+namespace p
+{
+	template<>
+	struct TFlags<rift::AST::Namespace> : public DefaultTFlags
+	{
+		enum
+		{
+			HasMemberSerialize = true
+		};
+	};
+}    // namespace p
