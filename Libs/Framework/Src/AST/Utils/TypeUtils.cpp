@@ -25,6 +25,7 @@
 #include "AST/Serialization.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Utils/Hierarchy.h"
+#include "AST/Utils/Namespaces.h"
 #include "AST/Utils/Paths.h"
 #include "AST/Utils/Statements.h"
 #include "AST/Utils/TransactionUtils.h"
@@ -224,17 +225,12 @@ namespace rift::Types
 		AST::Tree& ast       = type.GetContext();
 		const AST::Id callId = ast.Create();
 
+		ast.Add<CStmtInput, CStmtOutput, CExprOutputs, CExprInputs>(callId);
+
 		auto& callExprId      = ast.Add<CExprCallId>(callId);
 		callExprId.functionId = functionId;
 		auto& callExpr        = ast.Add<CExprCall>(callId);
-		callExpr.functionName = ast.Get<CNamespace>(functionId).name;
-		ast.Add<CStmtInput, CStmtOutput, CExprOutputs, CExprInputs>(callId);
-
-		const AST::Id typeId = AST::Hierarchy::GetParent(ast, functionId);
-		if (!IsNone(typeId))
-		{
-			callExpr.nameSpace = ast.Get<const CNamespace>(typeId).name;
-		}
+		callExpr.function     = AST::GetNamespace(ast, functionId);
 
 		if (type)
 		{

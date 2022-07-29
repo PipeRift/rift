@@ -413,7 +413,7 @@ namespace rift::Graph
 		{
 			if (auto* call = access.TryGet<const CExprCall>(id))
 			{
-				StringView functionName = call->functionName.ToString();
+				StringView functionName = call->function.Last().ToString();
 
 				Style::PushNodeBackgroundColor(rift::Style::GetNeutralColor(0));
 				Style::PushNodeTitleColor(Style::callColor);

@@ -87,16 +87,9 @@ namespace rift::compiler::Cpp
 		}
 	}
 
-	void DeclareFunction(String& code, StringView name, StringView owner = {})
+	void DeclareFunction(String& code, StringView name)
 	{
-		if (owner.empty())
-		{
-			Strings::FormatTo(code, "void {}();\n", name);
-		}
-		else
-		{
-			Strings::FormatTo(code, "void {}_{}({}& self);\n", owner, name, owner);
-		}
+		Strings::FormatTo(code, "void {}();\n", name);
 	}
 
 	void DefineFunction(String& code, StringView name, StringView owner = {},
@@ -187,8 +180,7 @@ namespace rift::compiler::Cpp
 	{
 		for (AST::Id entity : functions)
 		{
-			AST::Namespace ns = AST::GetNamespace(access, entity);
-			DeclareFunction(code, AST::GetNameChecked(access, entity).ToString(), ns.ToString());
+			DeclareFunction(code, AST::GetNamespace(access, entity).ToString());
 		}
 	}
 

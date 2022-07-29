@@ -43,21 +43,21 @@ namespace rift::AST
 		i32 Size() const;
 		bool Contains(const Namespace& other) const;
 		p::String ToString(LocalNamespace isLocal = LocalNamespace::No) const;
-		Name& GetFirstScope()
+		Name& First()
 		{
 			return scopes[0];
 		}
-		Name GetFirstScope() const
+		Name First() const
 		{
 			return scopes[0];
 		}
-		Name& GetLastScope()
+		Name& Last()
 		{
-			return scopes[scopeCount - 1];
+			return scopes[Size() - 1];
 		}
-		Name GetLastScope() const
+		Name Last() const
 		{
-			return scopes[scopeCount - 1];
+			return scopes[Size() - 1];
 		}
 		bool operator==(const Namespace& other) const
 		{
@@ -89,10 +89,24 @@ namespace rift::AST
 		{
 			return scopes + Size();
 		}
+
+		void Read(p::Reader& ct);
+		void Write(p::Writer& ct) const;
+	};
+
+	template<>
+	struct TFlags<Namespace> : public DefaultTFlags
+	{
+		enum
+		{
+			HasMemberSerialize = true
+		};
 	};
 
 
 	Namespace GetNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id);
+	Namespace GetParentNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id);
+
 	/**
 	 * Find an id from a given namespace
 	 * @param access access to the needed components
@@ -104,13 +118,7 @@ namespace rift::AST
 	    const TArray<Id>* rootIds = nullptr);
 
 	Name GetName(TAccessRef<CNamespace> access, Id id);
-	Name GetNameChecked(TAccessRef<CNamespace> access, Id id);
+	Name GetNameUnsafe(TAccessRef<CNamespace> access, Id id);
 	p::String GetFullName(TAccessRef<CNamespace, CChild, CModule> access, Id id,
 	    LocalNamespace localNamespace = LocalNamespace::No);
-	p::String GetFullNameChecked(TAccessRef<CNamespace, CChild, CModule> access, Id id,
-	    LocalNamespace localNamespace = LocalNamespace::No);
-
-
-	void Read(Reader& ct, Namespace& val);
-	void Write(Writer& ct, const Namespace& val);
 }    // namespace rift::AST

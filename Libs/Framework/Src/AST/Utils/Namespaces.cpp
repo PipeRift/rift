@@ -31,7 +31,7 @@ namespace rift::AST
 
 	bool Namespace::IsEmpty() const
 	{
-		return GetFirstScope().IsNone();
+		return First().IsNone();
 	}
 
 	i32 Namespace::Size() const
@@ -75,21 +75,42 @@ namespace rift::AST
 		return Move(ns);
 	}
 
+	void Namespace::Read(p::Reader& ct)
+	{
+		u32 size = 0;
+		ct.BeginArray(size);
+		size = p::math::Min(size, u32(Namespace::scopeCount));
+		for (u32 i = 0; i < size; ++i)
+		{
+			ct.Next(scopes[i]);
+		}
+	}
+
+	void Namespace::Write(p::Writer& ct) const
+	{
+		u32 size = Size();
+		ct.BeginArray(size);
+		for (u32 i = 0; i < size; ++i)
+		{
+			ct.Next(scopes[i]);
+		}
+	}
+
+
 	Namespace GetNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id)
 	{
 		Namespace ns;
 		TArray<Id> idChain;
 		idChain.Reserve(Namespace::scopeCount);
 
-		Id currentId = AST::Hierarchy::GetParent(access, id);
-		while (!IsNone(currentId))
+		while (!IsNone(id))
 		{
-			idChain.Add(currentId);
-			if (access.Has<CModule>(currentId))
+			idChain.Add(id);
+			if (access.Has<CModule>(id))
 			{
 				break;
 			}
-			currentId = AST::Hierarchy::GetParent(access, currentId);
+			id = AST::Hierarchy::GetParent(access, id);
 		}
 
 		i32 i, scopeIndex = 0;
@@ -100,6 +121,15 @@ namespace rift::AST
 		}
 		CheckMsg(i < 0, "Not enough scopes to cover this namespace");
 		return ns;
+	}
+
+	Namespace GetParentNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id)
+	{
+		if (!IsNone(id))
+		{
+			return GetNamespace(access, Hierarchy::GetParent(access, id));
+		}
+		return {};
 	}
 
 	Id FindIdFromNamespace(TAccessRef<CNamespace, CChild, CParent> access, const Namespace& ns,
@@ -154,7 +184,7 @@ namespace rift::AST
 		auto* ns = access.TryGet<const CNamespace>(id);
 		return ns ? ns->name : Name::None();
 	}
-	Name GetNameChecked(TAccessRef<CNamespace> access, Id id)
+	Name GetNameUnsafe(TAccessRef<CNamespace> access, Id id)
 	{
 		return access.Get<const CNamespace>(id).name;
 	}
@@ -162,47 +192,7 @@ namespace rift::AST
 	p::String GetFullName(
 	    TAccessRef<CNamespace, CChild, CModule> access, Id id, LocalNamespace localNamespace)
 	{
-		Namespace ns   = GetNamespace(access, id);
-		p::String name = ns.ToString(localNamespace);
-		if (!name.empty())
-		{
-			name.push_back('.');
-		}
-		name.append(GetName(access, id).ToString());
-		return Move(name);
-	}
-	p::String GetFullNameChecked(
-	    TAccessRef<CNamespace, CChild, CModule> access, Id id, LocalNamespace localNamespace)
-	{
-		Namespace ns   = GetNamespace(access, id);
-		p::String name = ns.ToString(localNamespace);
-		if (!name.empty())
-		{
-			name.push_back('.');
-		}
-		name.append(GetNameChecked(access, id).ToString());
-		return Move(name);
+		return GetNamespace(access, id).ToString(localNamespace);
 	}
 
-	void Read(Reader& ct, Namespace& val)
-	{
-		u32 size = 0;
-		ct.BeginArray(size);
-		size = p::math::Min(size, u32(Namespace::scopeCount));
-		for (u32 i = 0; i < size; ++i)
-		{
-			ct.Next(val.scopes[i]);
-		}
-		ct.Leave();
-	}
-	void Write(Writer& ct, const Namespace& val)
-	{
-		u32 size = val.Size();
-		ct.BeginArray(size);
-		for (u32 i = 0; i < size; ++i)
-		{
-			ct.Next(val.scopes[i]);
-		}
-		ct.Leave();
-	}
 }    // namespace rift::AST

@@ -20,13 +20,16 @@ go_bandit([]() {
 			AST::Tree ast;
 
 			AST::Id functionId = Types::AddFunction({ast, AST::NoId}, "TestFunction");
-			p::String ns       = AST::GetNamespace(ast, functionId).ToString();
-			AssertThat(ns.c_str(), Equals(""));
+			AssertThat(
+			    AST::GetNamespace(ast, functionId).ToString().c_str(), Equals("@TestFunction"));
+			AssertThat(AST::GetParentNamespace(ast, functionId).ToString().c_str(), Equals(""));
 
 			AST::Id classBId    = Types::CreateType(ast, RiftType::Class, "TestClass");
 			AST::Id functionBId = Types::AddFunction({ast, classBId}, "TestFunction");
-			p::String nsB       = AST::GetNamespace(ast, functionBId).ToString();
-			AssertThat(nsB.c_str(), Equals("@TestClass"));
+			AssertThat(AST::GetNamespace(ast, functionBId).ToString().c_str(),
+			    Equals("@TestClass.TestFunction"));
+			AssertThat(
+			    AST::GetParentNamespace(ast, functionBId).ToString().c_str(), Equals("@TestClass"));
 
 			AST::Id parentC = ast.Create();
 			ast.Add<CModule>(parentC);
@@ -34,8 +37,10 @@ go_bandit([]() {
 			AST::Id classCId = Types::CreateType(ast, RiftType::Class, "TestClass");
 			AST::Hierarchy::AddChildren(ast, parentC, classCId);
 			AST::Id functionCId = Types::AddFunction({ast, classCId}, "TestFunction");
-			p::String nsC       = AST::GetNamespace(ast, functionCId).ToString();
-			AssertThat(nsC.c_str(), Equals("@SomeScope.TestClass"));
+			AssertThat(AST::GetNamespace(ast, functionCId).ToString().c_str(),
+			    Equals("@SomeScope.TestClass.TestFunction"));
+			AssertThat(AST::GetParentNamespace(ast, functionCId).ToString().c_str(),
+			    Equals("@SomeScope.TestClass"));
 		});
 
 		it("Can get local namespaces", [&]() {
@@ -48,7 +53,7 @@ go_bandit([]() {
 			AST::Hierarchy::AddChildren(ast, parent, classId);
 			AST::Id functionId = Types::AddFunction({ast, classId}, "TestFunction");
 			p::String ns = AST::GetNamespace(ast, functionId).ToString(AST::LocalNamespace::Yes);
-			AssertThat(ns.c_str(), Equals("TestClass"));
+			AssertThat(ns.c_str(), Equals("TestClass.TestFunction"));
 		});
 
 		it("Can initialize", [&]() {

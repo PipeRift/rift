@@ -25,7 +25,8 @@ namespace rift::FunctionsSystem
 
 	void Init(AST::Tree& ast);
 	void ResolveCallFunctionIds(
-	    TAccessRef<TWrite<CExprCallId>, CExprCall, CDeclFunction, CNamespace, CParent> access);
+	    TAccessRef<TWrite<CExprCallId>, CExprCall, CDeclFunction, CNamespace, CParent, CChild>
+	        access);
 	void PushInvalidPinsBack(
 	    TAccessRef<TWrite<CExprInputs>, TWrite<CExprOutputs>, CInvalid> access);
 	void PropagateDirtyIntoCalls(AST::Tree& ast);

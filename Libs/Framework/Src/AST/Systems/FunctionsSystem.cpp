@@ -8,6 +8,7 @@
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 #include "AST/Utils/Hierarchy.h"
+#include "AST/Utils/Namespaces.h"
 #include "AST/Utils/TypeUtils.h"
 
 #include <Pipe/ECS/Filtering.h>
@@ -38,15 +39,15 @@ namespace rift::FunctionsSystem
 	}
 
 	void ResolveCallFunctionIds(
-	    TAccessRef<TWrite<CExprCallId>, CExprCall, CDeclFunction, CNamespace, CParent> access)
+	    TAccessRef<TWrite<CExprCallId>, CExprCall, CDeclFunction, CNamespace, CParent, CChild>
+	        access)
 	{
-		auto callExprs = ecs::ListAny<CExprCall>(access);
+		auto callExprs = ecs::ListAll<CExprCall>(access);
 		ecs::ExcludeIf<CExprCallId>(access, callExprs);
 		for (AST::Id id : callExprs)
 		{
-			auto& call = access.Get<const CExprCall>(id);
-			AST::Id functionId =
-			    Types::FindFunctionByName(access, call.nameSpace, call.functionName);
+			auto& call               = access.Get<const CExprCall>(id);
+			const AST::Id functionId = AST::FindIdFromNamespace(access, call.function);
 			if (!IsNone(functionId))
 			{
 				access.Add(id, CExprCallId{functionId});

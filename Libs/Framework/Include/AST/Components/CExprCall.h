@@ -3,6 +3,7 @@
 
 #include "AST/Components/CExpression.h"
 #include "AST/Id.h"
+#include "AST/Utils/Namespaces.h"
 
 #include <Pipe/Reflect/ReflectionFlags.h>
 #include <Pipe/Serialize/SerializationFwd.h>
@@ -17,12 +18,19 @@ namespace rift
 	{
 		STRUCT(CExprCall, CExpression)
 
-		PROP(nameSpace)
-		Name nameSpace;
-
-		PROP(functionName)
-		Name functionName;
+		PROP(function)
+		AST::Namespace function;
 	};
+
+	static void Read(Reader& ct, CExprCall& val)
+	{
+		ct.Serialize(val.function);
+	}
+	static void Write(Writer& ct, const CExprCall& val)
+	{
+		ct.Serialize(val.function);
+	}
+
 
 	// Data pointing to the id of the function from CExprCall's type and function names
 	struct CExprCallId : public CExpression

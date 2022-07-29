@@ -160,7 +160,7 @@ namespace rift::compiler::LLVM
 			}
 
 			// Create function
-			p::String name = AST::GetFullNameChecked(access, id);
+			p::String name = AST::GetFullName(access, id);
 			auto* functionType =
 			    llvm::FunctionType::get(gen.builder.getVoidTy(), ToLLVM(inputTypes), false);
 			functionComp.instance = llvm::Function::Create(
