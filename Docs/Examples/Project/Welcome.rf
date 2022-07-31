@@ -22,7 +22,7 @@
         },
         "CExprType": {
             "2": [
-                "I64"
+                "String"
             ]
         },
         "CNodePosition": {

@@ -40,7 +40,7 @@ namespace rift::Style
 		}
 		else if constexpr (IsSame<T, String>)
 		{
-			return Color::FromHEX(0xD44BFA);
+			return Color::FromHEX(0xBC40F9);
 		}
 		return Color::Gray();
 	};
