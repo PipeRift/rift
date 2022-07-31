@@ -32,7 +32,6 @@
 #include <Pipe/Reflect/TypeName.h>
 
 
-
 namespace rift::AST
 {
 	template<typename T>

@@ -5,12 +5,12 @@
 #include <Pipe/Files/Paths.h>
 
 
-namespace rift::Compiler
+namespace rift::compiler
 {
-	struct Context;
+	struct Compiler;
 }
 
-namespace rift::Compiler::Cpp
+namespace rift::compiler::Cpp
 {
-	void GenerateCode(Context& context, const p::Path& generatePath);
-}    // namespace rift::Compiler::Cpp
+	void GenerateCode(Compiler& compiler, const p::Path& generatePath);
+}    // namespace rift::compiler::Cpp

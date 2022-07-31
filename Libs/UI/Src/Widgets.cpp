@@ -158,8 +158,6 @@ namespace rift::UI
 		{
 			UI::PushStyleColor(ImGuiCol_FrameBg, LinearColor::Transparent());
 		}
-		else
-		{}
 
 		const bool valueChanged = UI::InputText(label.data(), text, flags);
 		if (!isEditing)

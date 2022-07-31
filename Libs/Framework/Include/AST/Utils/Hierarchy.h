@@ -71,4 +71,6 @@ namespace rift::AST::Hierarchy
 	 * @return true if an incorrect link was found
 	 */
 	bool ValidateParentLinks(TAccessRef<CChild, CParent> access, TSpan<Id> parents);
+
+	void GetRoots(TAccessRef<CChild, CParent> access, TArray<Id>& outRoots);
 }    // namespace rift::AST::Hierarchy

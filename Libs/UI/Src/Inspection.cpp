@@ -146,7 +146,7 @@ namespace rift::UI
 		UI::SameLine();
 		if (UI::Button(ICON_FA_TRASH_ALT "##Empty", v2(16.f, 18.f)))
 		{
-			property.Empty(instance);
+			property.Clear(instance);
 		}
 		Style::PopStyleCompact();
 		if (open)

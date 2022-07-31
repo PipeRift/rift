@@ -41,7 +41,7 @@
 #include <Pipe/ECS/Filtering.h>
 
 
-namespace rift::Compiler::LLVM
+namespace rift::compiler::LLVM
 {
 	using BlockAccessRef = TAccessRef<CStmtOutput, CStmtOutputs, CExprInputs, CStmtIf, CExprCallId,
 	    CIRFunction, CIRValue, CNamespace>;
@@ -93,8 +93,8 @@ namespace rift::Compiler::LLVM
 			auto* irStruct = static_cast<llvm::StructType*>(access.Get<const CIRType>(id).instance);
 
 			// Add members
-			memberIds.Empty(false);
-			memberTypes.Empty(false);
+			memberIds.Clear(false);
+			memberTypes.Clear(false);
 			AST::Hierarchy::GetChildren(access, id, memberIds);
 			ecs::ExcludeIfNot<CDeclVariable>(access, memberIds);
 			for (AST::Id memberId : memberIds)
@@ -116,7 +116,7 @@ namespace rift::Compiler::LLVM
 		}
 	}
 
-	using DeclareFunctionAccess = TAccessRef<TWrite<CIRFunction>, CNamespace, CExprType,
+	using DeclareFunctionAccess = TAccessRef<TWrite<CIRFunction>, CNamespace, CExprTypeId,
 	    CExprOutputs, CIRType, CParent, CChild, CInvalid, CModule>;
 	void DeclareFunctions(ModuleIRGen& gen, DeclareFunctionAccess access, TSpan<AST::Id> ids)
 	{
@@ -127,8 +127,8 @@ namespace rift::Compiler::LLVM
 		{
 			auto& functionComp = access.Add<CIRFunction>(id);
 
-			inputIds.Empty(false);
-			inputTypes.Empty(false);
+			inputIds.Clear(false);
+			inputTypes.Clear(false);
 			if (auto* outputs = access.TryGet<const CExprOutputs>(id))
 			{
 				for (i32 i = 0; i < outputs->pinIds.Size(); ++i)
@@ -141,7 +141,7 @@ namespace rift::Compiler::LLVM
 
 					inputIds.Add(inputId);
 
-					AST::Id typeId = access.Get<const CExprType>(inputId).id;
+					AST::Id typeId = access.Get<const CExprTypeId>(inputId).id;
 					auto* irType   = access.TryGet<const CIRType>(typeId);
 					if (irType && irType->instance)
 					{
@@ -160,7 +160,7 @@ namespace rift::Compiler::LLVM
 			}
 
 			// Create function
-			p::String name = AST::GetFullNameChecked(access, id);
+			p::String name = AST::GetFullName(access, id);
 			auto* functionType =
 			    llvm::FunctionType::get(gen.builder.getVoidTy(), ToLLVM(inputTypes), false);
 			functionComp.instance = llvm::Function::Create(
@@ -178,8 +178,8 @@ namespace rift::Compiler::LLVM
 			// Cache final inputs
 			functionComp.inputs   = {args.begin(), args.end()};
 			functionComp.inputIds = inputIds;
-			inputIds.Empty(false);
-			inputTypes.Empty(false);
+			inputIds.Clear(false);
+			inputTypes.Clear(false);
 		}
 	}
 
@@ -352,18 +352,18 @@ namespace rift::Compiler::LLVM
 	}
 
 	void GenerateIRModule(
-	    Context& context, AST::Id moduleId, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
+	    Compiler& compiler, AST::Id moduleId, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
 	{
 		ZoneScoped;
-		auto& ast = context.ast;
+		auto& ast = compiler.ast;
 
-		const Name name = Modules::GetModuleName(context.ast, moduleId);
+		const Name name = Modules::GetModuleName(compiler.ast, moduleId);
 
-		CIRModule& module      = context.ast.Add<CIRModule>(moduleId);
+		CIRModule& module      = compiler.ast.Add<CIRModule>(moduleId);
 		module.instance        = Move(MakeOwned<llvm::Module>(ToLLVM(name), llvm));
 		llvm::Module& irModule = *module.instance.Get();
 
-		ModuleIRGen gen{context, irModule, llvm, builder};
+		ModuleIRGen gen{compiler, irModule, llvm, builder};
 
 		// Filter all module rift types
 		TArray<AST::Id> typeIds;
@@ -389,21 +389,21 @@ namespace rift::Compiler::LLVM
 
 		DefineFunctions(gen, ast, functionIds);
 
-		const auto& mod = context.ast.Get<const CModule>(moduleId);
+		const auto& mod = compiler.ast.Get<const CModule>(moduleId);
 		if (mod.target == ModuleTarget::Executable)
 		{
 			CreateMain(gen);
 		}
 	}
 
-	void GenerateIR(Context& context, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
+	void GenerateIR(Compiler& compiler, llvm::LLVMContext& llvm, llvm::IRBuilder<>& builder)
 	{
-		BindNativeTypes(llvm, context.ast);
-		GenerateLiterals(llvm, context.ast);
+		BindNativeTypes(llvm, compiler.ast);
+		GenerateLiterals(llvm, compiler.ast);
 
-		for (AST::Id moduleId : ecs::ListAll<CModule>(context.ast))
+		for (AST::Id moduleId : ecs::ListAll<CModule>(compiler.ast))
 		{
-			GenerateIRModule(context, moduleId, llvm, builder);
+			GenerateIRModule(compiler, moduleId, llvm, builder);
 		}
 	}
-}    // namespace rift::Compiler::LLVM
+}    // namespace rift::compiler::LLVM

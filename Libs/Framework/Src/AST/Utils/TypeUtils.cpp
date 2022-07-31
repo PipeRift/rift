@@ -25,6 +25,7 @@
 #include "AST/Serialization.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Utils/Hierarchy.h"
+#include "AST/Utils/Namespaces.h"
 #include "AST/Utils/Paths.h"
 #include "AST/Utils/Statements.h"
 #include "AST/Utils/TransactionUtils.h"
@@ -221,32 +222,26 @@ namespace rift::Types
 
 	AST::Id AddCall(AST::TypeRef type, AST::Id functionId)
 	{
-		AST::Tree& ast       = type.GetContext();
-		const AST::Id callId = ast.Create();
+		AST::Tree& ast   = type.GetContext();
+		const AST::Id id = ast.Create();
 
-		auto& callExprId      = ast.Add<CExprCallId>(callId);
-		callExprId.functionId = functionId;
-		auto& callExpr        = ast.Add<CExprCall>(callId);
-		callExpr.functionName = ast.Get<CNamespace>(functionId).name;
-		ast.Add<CStmtInput, CStmtOutput, CExprOutputs, CExprInputs>(callId);
+		ast.Add<CStmtInput, CStmtOutput, CExprOutputs, CExprInputs>(id);
 
-		const AST::Id typeId = AST::Hierarchy::GetParent(ast, functionId);
-		if (!IsNone(typeId))
-		{
-			callExpr.ownerName = ast.Get<const CNamespace>(typeId).name;
-		}
+		ast.Add<CExprCallId>(id, {functionId});
+		ast.Add<CExprCall>(id).function = AST::GetNamespace(ast, functionId);
 
 		if (type)
 		{
-			AST::Hierarchy::AddChildren(ast, type.GetId(), callId);
+			AST::Hierarchy::AddChildren(ast, type.GetId(), id);
 		}
-		return callId;
+		return id;
 	}
 
 	AST::Id AddFunctionInput(AST::Tree& ast, AST::Id functionId, Name name)
 	{
 		AST::Id id = ast.Create();
 		ast.Add<CNamespace>(id, name);
+		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
 		AST::Hierarchy::AddChildren(ast, functionId, id);
 		ast.GetOrAdd<CExprOutputs>(functionId).Add(id);
@@ -257,6 +252,7 @@ namespace rift::Types
 	{
 		AST::Id id = ast.Create();
 		ast.Add<CNamespace>(id, name);
+		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
 		AST::Hierarchy::AddChildren(ast, functionId, id);
 		ast.GetOrAdd<CExprInputs>(functionId).Add(id);
@@ -272,7 +268,8 @@ namespace rift::Types
 
 		// Bool input
 		const AST::Id valueId = ast.Create();
-		ast.Add<CExprType>(valueId, {ast.GetNativeTypes().boolId});
+		ast.Add<CExprTypeId>(valueId, {ast.GetNativeTypes().boolId});
+		ast.Add<CExprType>(id).type = AST::GetNamespace(ast, ast.GetNativeTypes().boolId);
 		AST::Hierarchy::AddChildren(ast, id, valueId);
 		ast.Add<CExprInputs>(id).Add(valueId);
 
@@ -305,7 +302,8 @@ namespace rift::Types
 	{
 		AST::Tree& ast   = type.GetContext();
 		const AST::Id id = ast.Create();
-		ast.Add<CExprType>(id, {literalTypeId});
+		ast.Add<CExprTypeId>(id, {literalTypeId});
+		ast.Add<CExprType>(id).type = AST::GetNamespace(ast, literalTypeId);
 		ast.Add<CExprOutputs>(id).Add(id);
 
 		bool created        = false;

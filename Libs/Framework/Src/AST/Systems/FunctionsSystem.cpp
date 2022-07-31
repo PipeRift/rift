@@ -8,6 +8,7 @@
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 #include "AST/Utils/Hierarchy.h"
+#include "AST/Utils/Namespaces.h"
 #include "AST/Utils/TypeUtils.h"
 
 #include <Pipe/ECS/Filtering.h>
@@ -38,15 +39,15 @@ namespace rift::FunctionsSystem
 	}
 
 	void ResolveCallFunctionIds(
-	    TAccessRef<TWrite<CExprCallId>, CExprCall, CDeclFunction, CNamespace, CParent> access)
+	    TAccessRef<TWrite<CExprCallId>, CExprCall, CDeclFunction, CNamespace, CParent, CChild>
+	        access)
 	{
-		auto callExprs = ecs::ListAny<CExprCall>(access);
+		auto callExprs = ecs::ListAll<CExprCall>(access);
 		ecs::ExcludeIf<CExprCallId>(access, callExprs);
 		for (AST::Id id : callExprs)
 		{
-			auto& call = access.Get<const CExprCall>(id);
-			AST::Id functionId =
-			    Types::FindFunctionByName(access, call.ownerName, call.functionName);
+			auto& call               = access.Get<const CExprCall>(id);
+			const AST::Id functionId = AST::FindIdFromNamespace(access, call.function);
 			if (!IsNone(functionId))
 			{
 				access.Add(id, CExprCallId{functionId});
@@ -124,7 +125,7 @@ namespace rift::FunctionsSystem
 	{
 		TArray<CallToSync> calls;
 		TAccess<CCallDirty, CExprCallId, TWrite<CExprInputs>, TWrite<CExprOutputs>,
-		    TWrite<CInvalid>, TWrite<CExprType>, TWrite<CNamespace>>
+		    TWrite<CInvalid>, TWrite<CExprTypeId>, TWrite<CNamespace>>
 		    access{ast};
 		for (AST::Id id : ecs::ListAll<CCallDirty, CExprCallId>(access))
 		{
@@ -198,9 +199,9 @@ namespace rift::FunctionsSystem
 					}
 				}
 
-				const auto* pinType     = access.TryGet<const CExprType>(pinId);
+				const auto* pinType     = access.TryGet<const CExprTypeId>(pinId);
 				const AST::Id pinTypeId = pinType ? pinType->id : AST::NoId;
-				access.Add<CExprType>(callOutputs.pinIds[i], {pinTypeId});
+				access.Add<CExprTypeId>(callOutputs.pinIds[i], {pinTypeId});
 			}
 
 			// Mark as invalid all after N function params, and valid those before
@@ -270,9 +271,9 @@ namespace rift::FunctionsSystem
 					}
 				}
 
-				const auto* pinType     = access.TryGet<const CExprType>(pinId);
+				const auto* pinType     = access.TryGet<const CExprTypeId>(pinId);
 				const AST::Id pinTypeId = pinType ? pinType->id : AST::NoId;
-				access.Add<CExprType>(callInputs.pinIds[i], {pinTypeId});
+				access.Add<CExprTypeId>(callInputs.pinIds[i], {pinTypeId});
 			}
 
 			// Mark as invalid all after N function params, and valid those before
@@ -333,11 +334,11 @@ namespace rift::FunctionsSystem
 		ecs::ExcludeIf<CTmpInvalidKeep>(access, pinsToRemove);
 		AST::Hierarchy::Remove(access, pinsToRemove);
 
-		access.GetPool<CTmpInvalidKeep>()->Reset();
+		access.GetPool<CTmpInvalidKeep>()->Clear();
 	}
 
 	void ClearAddedTags(AST::Tree& ast)
 	{
-		ast.AssurePool<CCallDirty>().Reset();
+		ast.AssurePool<CCallDirty>().Clear();
 	}
 }    // namespace rift::FunctionsSystem

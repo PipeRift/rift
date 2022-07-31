@@ -3,6 +3,7 @@
 #include "AST/Utils/Hierarchy.h"
 
 #include <Pipe/Core/Checks.h>
+#include <Pipe/ECS/Filtering.h>
 
 
 namespace rift::AST::Hierarchy
@@ -148,7 +149,7 @@ namespace rift::AST::Hierarchy
 					{
 						access.Get<CChild>(parent).parent = AST::NoId;
 					}
-					cParent->children.Empty();
+					cParent->children.Clear();
 				}
 			});
 		}
@@ -230,7 +231,7 @@ namespace rift::AST::Hierarchy
 
 	void GetParents(TAccessRef<CChild> access, TSpan<const Id> children, TArray<Id>& outParents)
 	{
-		outParents.Empty(false);
+		outParents.Clear(false);
 		for (Id childId : children)
 		{
 			const auto* child = access.TryGet<const CChild>(childId);
@@ -242,7 +243,7 @@ namespace rift::AST::Hierarchy
 	}
 	void GetAllParents(TAccessRef<CChild> access, Id node, TArray<Id>& outParents)
 	{
-		outParents.Empty(false);
+		outParents.Clear(false);
 
 		TArray<Id> children{node};
 		TArray<Id> parents;
@@ -252,13 +253,13 @@ namespace rift::AST::Hierarchy
 			GetParents(access, children, parents);
 			outParents.Append(parents);
 			Swap(children, parents);
-			parents.Empty(false);
+			parents.Clear(false);
 		}
 	}
 	void GetAllParents(
 	    TAccessRef<CChild> access, TSpan<const Id> childrenIds, TArray<Id>& outParents)
 	{
-		outParents.Empty(false);
+		outParents.Clear(false);
 
 		TArray<Id> children{childrenIds.begin(), childrenIds.Size()};
 		TArray<Id> parents;
@@ -268,7 +269,7 @@ namespace rift::AST::Hierarchy
 			GetParents(access, children, parents);
 			outParents.Append(parents);
 			Swap(children, parents);
-			parents.Empty(false);
+			parents.Clear(false);
 		}
 	}
 
@@ -288,7 +289,7 @@ namespace rift::AST::Hierarchy
 	void FindParents(TAccessRef<CChild> access, TSpan<const Id> childrenIds, TArray<Id>& outParents,
 	    const TFunction<bool(AST::Id)>& callback)
 	{
-		outParents.Empty(false);
+		outParents.Clear(false);
 
 		TArray<Id> children{childrenIds.begin(), childrenIds.Size()};
 		TArray<Id> parents;
@@ -310,7 +311,7 @@ namespace rift::AST::Hierarchy
 				}
 			}
 			Swap(children, parents);
-			parents.Empty(false);
+			parents.Clear(false);
 		}
 	}
 
@@ -378,5 +379,11 @@ namespace rift::AST::Hierarchy
 			}
 		}
 		return true;
+	}
+
+	void GetRoots(TAccessRef<CChild, CParent> access, TArray<Id>& outRoots)
+	{
+		outRoots = ecs::ListAll<CParent>(access);
+		ecs::ExcludeIf<CChild>(access, outRoots);
 	}
 }    // namespace rift::AST::Hierarchy

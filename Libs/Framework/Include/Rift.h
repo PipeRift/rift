@@ -6,18 +6,14 @@
 #include "Tasks.h"
 #include "View.h"
 
-#include <Pipe/Core/Context.h>
+#include <Pipe/Reflect/Class.h>
 
 
 namespace rift
 {
-	/**
-	 * A solution represents an open project and all its build dependencies.
-	 */
-	// NOTE: Should this be removed?
-	class RiftContext : public Context
+	class Rift : public Class
 	{
-		CLASS(RiftContext, Context)
+		CLASS(Rift, Class)
 
 	protected:
 		TArray<TOwnPtr<Plugin>> plugins;

@@ -22,7 +22,7 @@
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Files/STDFileSystem.h>
-#include <RiftContext.h>
+#include <Rift.h>
 #include <UI/Style.h>
 #include <UI/UI.h>
 
@@ -203,7 +203,7 @@ namespace rift
 		ZoneScoped;
 		dirty = false;
 
-		folders.Empty();
+		folders.Clear();
 
 		// Set root folder (not displayed)
 		folders.InsertDefaulted(Name::None());

@@ -8,7 +8,7 @@
 #include <Pipe/Core/String.h>
 
 
-namespace rift::Compiler::LLVM
+namespace rift::compiler::LLVM
 {
 	using namespace p::core;
 
@@ -30,4 +30,4 @@ namespace rift::Compiler::LLVM
 	{
 		return {array.Data(), sizet(array.Size())};
 	}
-}    // namespace rift::Compiler::LLVM
+}    // namespace rift::compiler::LLVM

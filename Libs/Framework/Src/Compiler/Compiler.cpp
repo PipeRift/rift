@@ -2,28 +2,35 @@
 
 #include "Compiler/Compiler.h"
 
-#include "AST/Statics/SModules.h"
 #include "AST/Systems/LoadSystem.h"
 #include "AST/Systems/TypeSystem.h"
 #include "AST/Utils/ModuleUtils.h"
-#include "Compiler/Context.h"
+#include "Compiler/Backend.h"
 #include "Compiler/Systems/OptimizationSystem.h"
-#include "RiftContext.h"
+#include "Rift.h"
 
 #include <Pipe/Files/Files.h>
 
 
-namespace rift::Compiler
+namespace rift::compiler
 {
+	void Compiler::AddError(StringView str)
+	{
+		Log::Error(str);
+		CompileError newError{};
+		newError.text = str;
+		errors.Add(newError);
+	}
+
+
 	void Build(AST::Tree& ast, const Config& config, TPtr<Backend> backend)
 	{
 		ZoneScoped;
-
-		Context context{ast, config};
+		Compiler compiler{ast, config};
 
 		if (!backend)
 		{
-			context.AddError("Invalid backend.");
+			compiler.AddError("Invalid backend.");
 			return;
 		}
 
@@ -35,7 +42,7 @@ namespace rift::Compiler
 				Log::Error("No existing project to build.");
 				return;
 			}
-			context.config.Init(ast);
+			compiler.config.Init(ast);
 
 			Log::Info("Loading files");
 			LoadSystem::Run(ast);
@@ -45,12 +52,21 @@ namespace rift::Compiler
 			TypeSystem::PropagateExpressionTypes(ast);
 		}
 
-		Log::Info("Building project '{}'", Modules::GetProjectName(context.ast));
+		Log::Info("Building project '{}'", Modules::GetProjectName(compiler.ast));
 		// Clean build folders
 		Log::Info("Cleaning previous build");
-		files::Delete(context.config.binariesPath, true, false);
-		files::CreateFolder(context.config.binariesPath, true);
+		files::Delete(compiler.config.binariesPath, true, false);
+		files::CreateFolder(compiler.config.binariesPath, true);
 
-		backend->Build(context);
+		backend->Build(compiler);
 	}
-}    // namespace rift::Compiler
+
+	void Build(AST::Tree& ast, const Config& config, ClassType* backendType)
+	{
+		if (backendType)
+		{
+			TOwnPtr<Backend> backend = MakeOwned<Backend>(backendType);
+			Build(ast, config, backend);
+		}
+	}
+}    // namespace rift::compiler

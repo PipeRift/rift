@@ -2,7 +2,7 @@
 
 #include "Tasks.h"
 
-#include "RiftContext.h"
+#include "Rift.h"
 
 #include <Pipe/Core/Profiler.h>
 #include <Pipe/Core/String.h>
@@ -59,10 +59,5 @@ namespace rift
 		CheckMsg(false, "Requested an invalid pool");
 		static ThreadPool invalidPool{0};
 		return invalidPool;
-	}
-
-	TaskSystem& TaskSystem::Get()
-	{
-		return p::GetContext<RiftContext>()->GetTasks();
 	}
 }    // namespace rift

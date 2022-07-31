@@ -1,13 +1,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Editor.h"
-
-// Backends
 #include <CppBackend.h>
-#include <LLVMBackend.h>
-
-// Views
+#include <Editor.h>
 #include <GraphView.h>
+#include <LLVMBackend.h>
 
 #include <iostream>
 
@@ -21,13 +17,16 @@ using namespace rift;
 
 int RunEditor(StringView projectPath)
 {
-	auto context = InitializeContext<RiftContext>();
-	context->AddPlugin<LLVMBackendPlugin>();
-	context->AddPlugin<CPPBackendPlugin>();
+	p::Log::Init("Saved/Logs");
+	TOwnPtr<rift::Rift> rift = MakeOwned<rift::Rift>();
+	rift->AddPlugin<LLVMBackendPlugin>();
+	rift->AddPlugin<CPPBackendPlugin>();
 
-	context->AddPlugin<GraphViewPlugin>();
+	rift->AddPlugin<GraphViewPlugin>();
 
-	return Editor::Get().Run(context, projectPath);
+	const int result = Editor::Get().Run(rift, projectPath);
+	p::Log::Shutdown();
+	return result;
 }
 
 #if PLATFORM_WINDOWS && !RUN_AS_CLI

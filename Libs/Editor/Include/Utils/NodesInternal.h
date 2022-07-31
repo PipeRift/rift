@@ -159,7 +159,7 @@ namespace rift::Nodes
 
 		void CacheInvalidIds()
 		{
-			invalidIds.Empty(false);
+			invalidIds.Clear(false);
 			for (AST::Id id : lastFrameIds)
 			{
 				if (!frameIds.ContainsSorted(id))

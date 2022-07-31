@@ -29,7 +29,7 @@
 #include <Pipe/ECS/Filtering.h>
 #include <Pipe/Files/FileDialog.h>
 #include <Pipe/Files/Paths.h>
-#include <RiftContext.h>
+#include <Rift.h>
 #include <UI/Inspection.h>
 #include <UI/Notify.h>
 #include <UI/UI.h>
@@ -247,6 +247,7 @@ namespace rift::EditorSystem
 
 		editor.reflectionDebugger.Draw();
 		editor.astDebugger.Draw(ast);
+		editor.memoryDebugger.Draw();
 		editor.fileExplorer.Draw(ast);
 		editor.graphPlayground.Draw(ast, editor.layout);
 
@@ -316,14 +317,14 @@ namespace rift::EditorSystem
 				if (UI::MenuItem("Build current"))
 				{
 					AST::Tree compileAST{ast};    // Intentional copy
-					Compiler::Config config;
-					Compiler::Build<Compiler::LLVMBackend>(compileAST, config);
+					compiler::Config config;
+					compiler::Build<compiler::LLVMBackend>(compileAST, config);
 				}
 				if (UI::MenuItem("Build all"))
 				{
 					AST::Tree compileAST{ast};    // Intentional copy
-					Compiler::Config config;
-					Compiler::Build<Compiler::LLVMBackend>(compileAST, config);
+					compiler::Config config;
+					compiler::Build<compiler::LLVMBackend>(compileAST, config);
 				}
 				UI::EndMenu();
 			}
@@ -357,6 +358,7 @@ namespace rift::EditorSystem
 				{
 					UI::MenuItem("Reflection", nullptr, &editorData.reflectionDebugger.open);
 					UI::MenuItem("Abstract Syntax Tree", nullptr, &editorData.astDebugger.open);
+					UI::MenuItem("Memory", nullptr, &editorData.memoryDebugger.open);
 					UI::MenuItem("Graph Playground", nullptr, &editorData.graphPlayground.open);
 					UI::EndMenu();
 				}

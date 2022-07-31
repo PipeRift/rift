@@ -10,14 +10,13 @@
 #include <AST/Components/CModule.h>
 #include <AST/Components/CNamespace.h>
 #include <AST/Utils/ModuleUtils.h>
-#include <Compiler/Context.h>
+#include <Compiler/Compiler.h>
 #include <Pipe/ECS/Filtering.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Math/DateTime.h>
 
 
-
-namespace rift::Compiler
+namespace rift::compiler
 {
 	namespace Cpp
 	{
@@ -38,7 +37,7 @@ namespace rift::Compiler
 			ast.Add<CCppNativeName>(nativeTypes.stringId, {"std::string"});
 		}
 
-		void BuildCode(Context& context, const p::Path& codePath, const p::Path& cmakePath)
+		void BuildCode(Compiler& compiler, const p::Path& codePath, const p::Path& cmakePath)
 		{
 			ZoneScoped;
 			files::CreateFolder(cmakePath, true);
@@ -50,80 +49,80 @@ namespace rift::Compiler
 
 			if (std::system(generate.c_str()) > 0)
 			{
-				context.AddError("Failed to generate cmake code");
+				compiler.AddError("Failed to generate cmake code");
 				return;
 			}
 
 			Log::Info("Building");
 			const String build = Strings::Format(
-			    "cmake --build {} --config {}", p::ToString(cmakePath), context.config.buildMode);
+			    "cmake --build {} --config {}", p::ToString(cmakePath), compiler.config.buildMode);
 			if (std::system(build.c_str()) > 0)
 			{
-				context.AddError("C++ build failed");
+				compiler.AddError("C++ build failed");
 				return;
 			}
 		}
 	}    // namespace Cpp
 
-	void CppBackend::Build(Context& context)
+	void CppBackend::Build(Compiler& compiler)
 	{
 		ZoneScopedN("Backend: Cpp");
 
 		DateTime startTime = DateTime::Now();
 
-		const p::Path& codePath = context.config.intermediatesPath / "Code";
+		const p::Path& codePath = compiler.config.intermediatesPath / "Code";
 		files::Delete(codePath, true, false);
 		files::CreateFolder(codePath, true);
 
-		Cpp::AssignNativeTypeNames(context.ast);
+		Cpp::AssignNativeTypeNames(compiler.ast);
 
 		Log::Info("Generating C++");
-		Cpp::GenerateCode(context, codePath);
-		if (context.HasErrors())
+		Cpp::GenerateCode(compiler, codePath);
+		if (compiler.HasErrors())
 		{
-			context.AddError("Failed to generate C++ code");
+			compiler.AddError("Failed to generate C++ code");
 			return;
 		}
 
 
 		Log::Info("Generating CMake");
-		Cpp::GenerateCMake(context, codePath);
-		if (context.HasErrors())
+		Cpp::GenerateCMake(compiler, codePath);
+		if (compiler.HasErrors())
 		{
-			context.AddError("Failed to generate cmake files");
+			compiler.AddError("Failed to generate cmake files");
 			return;
 		}
 
 
 		Log::Info("Building C++");
-		const p::Path cmakePath = context.config.intermediatesPath / "CMake";
-		Cpp::BuildCode(context, codePath, cmakePath);
-		if (context.HasErrors())
+		const p::Path cmakePath = compiler.config.intermediatesPath / "CMake";
+		Cpp::BuildCode(compiler, codePath, cmakePath);
+		if (compiler.HasErrors())
 		{
-			context.AddError("Compilation failed while building C++ code");
+			compiler.AddError("Compilation failed while building C++ code");
 			return;
 		}
 
 
 		// Copy code & binaries
-		if (!files::Copy(codePath, context.config.binariesPath))
+		if (!files::Copy(codePath, compiler.config.binariesPath))
 		{
-			context.AddError("Failed to copy code");
+			compiler.AddError("Failed to copy code");
 			return;
 		}
 
-		TAccess<CModule> modules{context.ast};
+		TAccess<CModule> modules{compiler.ast};
 		for (AST::Id moduleId : ecs::ListAll<CModule>(modules))
 		{
-			Name name = Modules::GetModuleName(context.ast, moduleId);
-			if (!files::Copy(cmakePath / name.ToString() / context.config.buildMode,
-			        context.config.binariesPath / name.ToString() / "Bin"))
+			Name name = Modules::GetModuleName(compiler.ast, moduleId);
+			if (!files::Copy(cmakePath / name.ToString() / compiler.config.buildMode,
+			        compiler.config.binariesPath / name.ToString() / "Bin"))
 			{
-				context.AddError("Failed to copy binaries");
+				compiler.AddError("Failed to copy binaries");
 			}
 		}
 
 		const float duration = (DateTime::Now() - startTime).GetTotalSeconds();
 		Log::Info("Build complete ({:.2f}s)", duration);
 	}
-}    // namespace rift::Compiler
+}    // namespace rift::compiler

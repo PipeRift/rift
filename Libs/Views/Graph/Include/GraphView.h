@@ -5,7 +5,7 @@
 #include <Compiler/Backend.h>
 #include <Pipe/Core/EnumFlags.h>
 #include <Plugin.h>
-#include <RiftContext.h>
+#include <Rift.h>
 #include <View.h>
 
 
@@ -16,9 +16,9 @@ namespace rift
 		CLASS(GraphViewPlugin, Plugin)
 
 	public:
-		void Register(TPtr<RiftContext> context) override
+		void Register(TPtr<Rift> rift) override
 		{
-			context->AddView(View{.name = "Graph",
+			rift->AddView(View{.name = "Graph",
 			    .supportedTypes =
 			        RiftType::Class | RiftType::FunctionLibrary | RiftType::FunctionInterface,
 			    .onDrawEditor = &GraphViewPlugin::DrawEditor});

@@ -16,7 +16,7 @@
 #include <Pipe/Core/Log.h>
 #include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Files.h>
-#include <RiftContext.h>
+#include <Rift.h>
 #include <UI/Inspection.h>
 #include <UI/Window.h>
 
@@ -30,7 +30,7 @@ namespace rift
 		});
 	}
 
-	int Editor::Run(TPtr<RiftContext> context, StringView projectPath)
+	int Editor::Run(TPtr<Rift> rift, StringView projectPath)
 	{
 		FileWatcher::StartAsync();
 
@@ -64,7 +64,6 @@ namespace rift
 
 		Graph::Shutdown();
 		UI::Shutdown();
-		ShutdownContext();
 		return 0;
 	}
 
@@ -82,6 +81,7 @@ namespace rift
 
 			LoadSystem::Run(ast);
 			FunctionsSystem::ResolveCallFunctionIds(ast);
+			TypeSystem::ResolveExprTypeIds(ast);
 			TypeSystem::PropagateVariableTypes(ast);
 			TypeSystem::PropagateExpressionTypes(ast);
 

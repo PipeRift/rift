@@ -53,7 +53,5 @@ namespace rift
 		{
 			return static_cast<p::u32>(workerPool.num_workers());
 		}
-
-		static TaskSystem& Get();
 	};
 }    // namespace rift

@@ -3,18 +3,12 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Compiler/Utils/BackendUtils.h>
-#include <Pipe/Core/Context.h>
+#include <CppBackend.h>
+#include <GraphView.h>
+#include <LLVMBackend.h>
 #include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Paths.h>
-#include <RiftContext.h>
-
-
-// Backends
-#include <CppBackend.h>
-#include <LLVMBackend.h>
-
-// Views
-#include <GraphView.h>
+#include <Rift.h>
 
 #include <chrono>
 #include <CLI/CLI.hpp>
@@ -26,7 +20,7 @@ using namespace rift;
 namespace rift
 {
 	void AddBackendOption(
-	    CLI::App& app, const TArray<TOwnPtr<Compiler::Backend>>& backends, String& selected)
+	    CLI::App& app, const TArray<TOwnPtr<compiler::Backend>>& backends, String& selected)
 	{
 		String desc = "Backend to build with. Available: ";
 		if (!backends.IsEmpty())
@@ -50,10 +44,10 @@ namespace rift
 		app.add_option("-b,--backend", selected, stdDesc, true);
 	}
 
-	TPtr<Compiler::Backend> FindBackendByName(
-	    const TArray<TOwnPtr<Compiler::Backend>>& backends, Name name)
+	TPtr<compiler::Backend> FindBackendByName(
+	    const TArray<TOwnPtr<compiler::Backend>>& backends, Name name)
 	{
-		TOwnPtr<Compiler::Backend>* backend = backends.Find([name](const auto& backend) {
+		TOwnPtr<compiler::Backend>* backend = backends.Find([name](const auto& backend) {
 			return backend->GetName() == name;
 		});
 		if (backend)
@@ -64,13 +58,15 @@ namespace rift
 	}
 }    // namespace rift
 
+
 int main(int argc, char** argv)
 {
-	auto context = InitializeContext<RiftContext>();
-	context->AddPlugin<LLVMBackendPlugin>();
-	context->AddPlugin<CPPBackendPlugin>();
+	p::Log::Init("Saved/Logs");
+	TOwnPtr<Rift> rift = MakeOwned<Rift>();
+	rift->AddPlugin<LLVMBackendPlugin>();
+	rift->AddPlugin<CPPBackendPlugin>();
 
-	context->AddPlugin<GraphViewPlugin>();
+	rift->AddPlugin<GraphViewPlugin>();
 
 	CLI::App app{"Rift compiler"};
 	String pathStr;
@@ -78,12 +74,12 @@ int main(int argc, char** argv)
 
 
 	String selectedBackendStr;
-	auto availableBackends = Compiler::CreateBackends();
+	auto availableBackends = compiler::CreateBackends();
 	AddBackendOption(app, availableBackends, selectedBackendStr);
 
 	CLI11_PARSE(app, argc, argv);
 
-	TPtr<Compiler::Backend> backend = FindBackendByName(availableBackends, selectedBackendStr);
+	TPtr<compiler::Backend> backend = FindBackendByName(availableBackends, selectedBackendStr);
 
 	ZoneScopedNC("CLI Execution", 0x459bd1);
 
@@ -97,14 +93,15 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	Compiler::Config config;
-	Compiler::Build(ast, config, backend);
+	compiler::Config config;
+	compiler::Build(ast, config, backend);
 
 	while (true)
 	{
 		// Live for a second to let the profiler connect. Temporal
 		std::this_thread::sleep_for(std::chrono::seconds(3));
 	}
-	ShutdownContext();
+
+	Log::Shutdown();
 	return 0;
 }

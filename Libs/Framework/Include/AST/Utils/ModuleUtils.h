@@ -12,7 +12,6 @@
 #include <Pipe/Memory/OwnPtr.h>
 
 
-
 namespace rift
 {
 	struct CModule;

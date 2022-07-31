@@ -16,16 +16,15 @@
 #include <Pipe/Reflect/EnumType.h>
 
 
-
-namespace rift::Compiler::LLVM
+namespace rift::compiler::LLVM
 {
-	void Link(Context& context)
+	void Link(Compiler& compiler)
 	{
-		for (AST::Id moduleId : ecs::ListAll<CModule, CIRModule>(context.ast))
+		for (AST::Id moduleId : ecs::ListAll<CModule, CIRModule>(compiler.ast))
 		{
-			p::Name moduleName = Modules::GetModuleName(context.ast, moduleId);
-			const auto& module = context.ast.Get<const CModule>(moduleId);
-			auto& irModule     = context.ast.Get<CIRModule>(moduleId);
+			p::Name moduleName = Modules::GetModuleName(compiler.ast, moduleId);
+			const auto& module = compiler.ast.Get<const CModule>(moduleId);
+			auto& irModule     = compiler.ast.Get<CIRModule>(moduleId);
 			if (p::files::Exists(irModule.objectFile))
 			{
 				TArray<const char*> command;
@@ -54,7 +53,7 @@ namespace rift::Compiler::LLVM
 				command.Add(irModule.objectFile.data());
 
 				p::Path filePath =
-				    context.config.binariesPath / Strings::Format("{}.{}", moduleName, extension);
+				    compiler.config.binariesPath / Strings::Format("{}.{}", moduleName, extension);
 				String outParam = Strings::Format("/out:{}", p::ToString(filePath));
 				command.Add(outParam.data());
 
@@ -64,4 +63,4 @@ namespace rift::Compiler::LLVM
 			}
 		}
 	}
-}    // namespace rift::Compiler::LLVM
+}    // namespace rift::compiler::LLVM
