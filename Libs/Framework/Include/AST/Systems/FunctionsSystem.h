@@ -29,6 +29,8 @@ namespace rift::FunctionsSystem
 	        access);
 	void PushInvalidPinsBack(
 	    TAccessRef<TWrite<CExprInputs>, TWrite<CExprOutputs>, CInvalid> access);
+
+	// Marks calls referencing dirty functions as dirty theirselfs
 	void PropagateDirtyIntoCalls(AST::Tree& ast);
 	void SyncCallPinsFromFunction(AST::Tree& ast);
 	using InvalidDisconnectedPinAccess =

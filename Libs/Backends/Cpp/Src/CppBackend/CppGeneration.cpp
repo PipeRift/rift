@@ -205,7 +205,7 @@ namespace rift::compiler::Cpp
 		}
 	}
 
-	void GenParameters(TAccessRef<CExprType, CNamespace, TWrite<CCppCodeGenFragment>> access) {}
+	void GenParameters(TAccessRef<CExprTypeId, CNamespace, TWrite<CCppCodeGenFragment>> access) {}
 
 
 	void GenerateModuleCode(Compiler& compiler, AST::Id moduleId, const p::Path& codePath)

@@ -125,7 +125,7 @@ namespace rift::FunctionsSystem
 	{
 		TArray<CallToSync> calls;
 		TAccess<CCallDirty, CExprCallId, TWrite<CExprInputs>, TWrite<CExprOutputs>,
-		    TWrite<CInvalid>, TWrite<CExprType>, TWrite<CNamespace>>
+		    TWrite<CInvalid>, TWrite<CExprTypeId>, TWrite<CNamespace>>
 		    access{ast};
 		for (AST::Id id : ecs::ListAll<CCallDirty, CExprCallId>(access))
 		{
@@ -199,9 +199,9 @@ namespace rift::FunctionsSystem
 					}
 				}
 
-				const auto* pinType     = access.TryGet<const CExprType>(pinId);
+				const auto* pinType     = access.TryGet<const CExprTypeId>(pinId);
 				const AST::Id pinTypeId = pinType ? pinType->id : AST::NoId;
-				access.Add<CExprType>(callOutputs.pinIds[i], {pinTypeId});
+				access.Add<CExprTypeId>(callOutputs.pinIds[i], {pinTypeId});
 			}
 
 			// Mark as invalid all after N function params, and valid those before
@@ -271,9 +271,9 @@ namespace rift::FunctionsSystem
 					}
 				}
 
-				const auto* pinType     = access.TryGet<const CExprType>(pinId);
+				const auto* pinType     = access.TryGet<const CExprTypeId>(pinId);
 				const AST::Id pinTypeId = pinType ? pinType->id : AST::NoId;
-				access.Add<CExprType>(callInputs.pinIds[i], {pinTypeId});
+				access.Add<CExprTypeId>(callInputs.pinIds[i], {pinTypeId});
 			}
 
 			// Mark as invalid all after N function params, and valid those before

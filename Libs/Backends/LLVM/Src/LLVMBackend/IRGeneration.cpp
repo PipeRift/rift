@@ -116,7 +116,7 @@ namespace rift::compiler::LLVM
 		}
 	}
 
-	using DeclareFunctionAccess = TAccessRef<TWrite<CIRFunction>, CNamespace, CExprType,
+	using DeclareFunctionAccess = TAccessRef<TWrite<CIRFunction>, CNamespace, CExprTypeId,
 	    CExprOutputs, CIRType, CParent, CChild, CInvalid, CModule>;
 	void DeclareFunctions(ModuleIRGen& gen, DeclareFunctionAccess access, TSpan<AST::Id> ids)
 	{
@@ -141,7 +141,7 @@ namespace rift::compiler::LLVM
 
 					inputIds.Add(inputId);
 
-					AST::Id typeId = access.Get<const CExprType>(inputId).id;
+					AST::Id typeId = access.Get<const CExprTypeId>(inputId).id;
 					auto* irType   = access.TryGet<const CIRType>(typeId);
 					if (irType && irType->instance)
 					{

@@ -91,7 +91,7 @@ namespace rift::TypeSystem
 			if (access.IsValid(declId))
 			{
 				const AST::Id typeId = access.Get<const CDeclVariable>(declId).typeId;
-				access.Add<CExprType>(id, {typeId});
+				access.Add<CExprTypeId>(id, {typeId});
 			}
 		}
 	}
@@ -100,5 +100,21 @@ namespace rift::TypeSystem
 	{
 		TArray<AST::Id> literals =
 		    ecs::ListAny<CLiteralBool, CLiteralIntegral, CLiteralFloating, CLiteralString>(ast);
+	}
+
+	void ResolveExprTypeIds(
+	    TAccessRef<TWrite<CExprTypeId>, CExprType, CNamespace, CParent, CChild> access)
+	{
+		auto callExprs = ecs::ListAll<CExprType>(access);
+		ecs::ExcludeIf<CExprTypeId>(access, callExprs);
+		for (AST::Id id : callExprs)
+		{
+			auto& expr           = access.Get<const CExprType>(id);
+			const AST::Id typeId = AST::FindIdFromNamespace(access, expr.type);
+			if (!IsNone(typeId))
+			{
+				access.Add(id, CExprTypeId{typeId});
+			}
+		}
 	}
 }    // namespace rift::TypeSystem

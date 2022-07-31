@@ -21,7 +21,10 @@ namespace rift::TypeSystem
 	void Init(AST::Tree& ast);
 
 	using PropagateVariableTypesAccess =
-	    TAccessRef<CExprDeclRefId, CDeclVariable, TWrite<CExprType>>;
+	    TAccessRef<CExprDeclRefId, CDeclVariable, TWrite<CExprTypeId>>;
 	void PropagateVariableTypes(PropagateVariableTypesAccess access);
 	void PropagateExpressionTypes(AST::Tree& ast);
+
+	void ResolveExprTypeIds(
+	    TAccessRef<TWrite<CExprTypeId>, CExprType, CNamespace, CParent, CChild> access);
 }    // namespace rift::TypeSystem

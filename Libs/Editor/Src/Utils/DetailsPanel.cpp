@@ -1,6 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include "AST/Id.h"
+#include "AST/Utils/Namespaces.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "imgui.h"
@@ -24,7 +25,7 @@
 
 namespace rift
 {
-	void EditFunctionPin(AST::Tree& ast, AST::Id typeId, AST::Id id)
+	void EditFunctionPin(AST::Tree& ast, AST::Id ownerId, AST::Id id)
 	{
 		auto* ns   = ast.TryGet<CNamespace>(id);
 		auto* type = ast.TryGet<CExprType>(id);
@@ -41,9 +42,10 @@ namespace rift
 		popupName.clear();
 		Strings::FormatTo(popupName, "##PinContextMenu_{}", id);
 
+		AST::Id typeId = AST::FindIdFromNamespace(ast, type->type);
 
 		UI::TableNextRow();
-		const Color color = Style::GetTypeColor(ast, type->id);
+		const Color color = Style::GetTypeColor(ast, typeId);
 		UI::TableSetBgColor(ImGuiTableBgTarget_RowBg0, color.DWColor());
 
 		UI::TableNextColumn();    // Name
@@ -65,12 +67,12 @@ namespace rift
 		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 		labelId.clear();
 		Strings::FormatTo(labelId, "##Type_{}", id);
-		AST::Id selectedTypeId = type->id;
 		UI::SetNextItemWidth(-FLT_MIN);
-		if (Editor::TypeCombo(ast, labelId, selectedTypeId))
+		if (Editor::TypeCombo(ast, labelId, typeId))
 		{
 			ScopedChange(ast, id);
-			type->id = selectedTypeId;
+			ast.GetOrAdd<CExprTypeId>(id).id = typeId;
+			type->type                       = AST::GetNamespace(ast, typeId);
 		}
 		UI::PopStyleVar();
 		if (UI::IsItemHovered())

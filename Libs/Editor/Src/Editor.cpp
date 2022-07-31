@@ -81,6 +81,7 @@ namespace rift
 
 			LoadSystem::Run(ast);
 			FunctionsSystem::ResolveCallFunctionIds(ast);
+			TypeSystem::ResolveExprTypeIds(ast);
 			TypeSystem::PropagateVariableTypes(ast);
 			TypeSystem::PropagateExpressionTypes(ast);
 

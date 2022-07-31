@@ -78,7 +78,7 @@ namespace rift::Graph
 		return Nodes::ScreenToGridPosition(screenPosition) * GetInvGridSize();
 	}
 
-	void DrawInputs(TAccessRef<CInvalid, CExprType, CNamespace> access, const CExprInputs& inputs)
+	void DrawInputs(TAccessRef<CInvalid, CExprTypeId, CNamespace> access, const CExprInputs& inputs)
 	{
 		for (AST::Id pinId : inputs.pinIds)
 		{
@@ -95,7 +95,7 @@ namespace rift::Graph
 				Style::PushTextColor(Style::invalidColor);
 				pinColor = Style::invalidColor;
 			}
-			else if (auto* type = access.TryGet<const CExprType>(pinId))
+			else if (auto* type = access.TryGet<const CExprTypeId>(pinId))
 			{
 				typeId = type->id;
 				pinColor =
@@ -118,7 +118,7 @@ namespace rift::Graph
 	}
 
 	void DrawOutputs(
-	    TAccessRef<CInvalid, CExprType, CNamespace> access, const CExprOutputs& outputs)
+	    TAccessRef<CInvalid, CExprTypeId, CNamespace> access, const CExprOutputs& outputs)
 	{
 		for (AST::Id pinId : outputs.pinIds)
 		{
@@ -135,7 +135,7 @@ namespace rift::Graph
 				Style::PushTextColor(Style::invalidColor);
 				pinColor = Style::invalidColor;
 			}
-			else if (auto* type = access.TryGet<const CExprType>(pinId))
+			else if (auto* type = access.TryGet<const CExprTypeId>(pinId))
 			{
 				typeId = type->id;
 				pinColor =
@@ -335,7 +335,7 @@ namespace rift::Graph
 		Style::PopNodeBackgroundColor();
 	}
 
-	using FunctionDeclsAccess = TAccessRef<CExprOutputs, CInvalid, CExprType, CNamespace,
+	using FunctionDeclsAccess = TAccessRef<CExprOutputs, CInvalid, CExprTypeId, CNamespace,
 	    TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef, TWrite<CNodePosition>>;
 	void DrawFunctionDecls(FunctionDeclsAccess access, const TArray<AST::Id>& functionDecls)
 	{
@@ -406,7 +406,7 @@ namespace rift::Graph
 
 	using CallsAccess =
 	    TAccessRef<TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef, CExprCall, CExprInputs,
-	        CExprOutputs, CNamespace, CExprType, CInvalid, TWrite<CNodePosition>, CType>;
+	        CExprOutputs, CNamespace, CExprTypeId, CInvalid, TWrite<CNodePosition>, CType>;
 	void DrawCalls(CallsAccess access, AST::Id typeId, const TArray<AST::Id>& childrenIds)
 	{
 		for (AST::Id id : childrenIds)
@@ -556,8 +556,8 @@ namespace rift::Graph
 		{
 			AST::Id variableId = ast.Get<const CExprDeclRefId>(id).declarationId;
 
-			const CExprType* exprType = ast.TryGet<CExprType>(id);
-			AST::Id typeId            = exprType ? exprType->id : AST::NoId;
+			const CExprTypeId* exprType = ast.TryGet<CExprTypeId>(id);
+			AST::Id typeId              = exprType ? exprType->id : AST::NoId;
 
 			const Color color = Style::GetTypeColor(ast, typeId);
 			Style::PushNodeBackgroundColor(color);
@@ -781,7 +781,7 @@ namespace rift::Graph
 		Nodes::PopStyleVar();
 	}
 
-	void DrawExpressionLinks(TAccessRef<CParent, CExprInputs, CExprType, CInvalid>& access,
+	void DrawExpressionLinks(TAccessRef<CParent, CExprInputs, CExprTypeId, CInvalid>& access,
 	    const TArray<AST::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 1.5f);
@@ -810,12 +810,12 @@ namespace rift::Graph
 				{
 					color = Style::invalidColor;
 				}
-				else if (const auto* type = access.TryGet<const CExprType>(output.pinId))
+				else if (const auto* type = access.TryGet<const CExprTypeId>(output.pinId))
 				{
 					color =
 					    Style::GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), type->id);
 				}
-				else if (const auto* type = access.TryGet<const CExprType>(inputId))
+				else if (const auto* type = access.TryGet<const CExprTypeId>(inputId))
 				{
 					color =
 					    Style::GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), type->id);

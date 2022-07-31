@@ -2,6 +2,7 @@
 #pragma once
 
 #include "AST/Id.h"
+#include "AST/Utils/Namespaces.h"
 
 #include <Pipe/Reflect/Struct.h>
 
@@ -12,10 +13,29 @@ namespace rift
 	{
 		STRUCT(CExprType, p::Struct)
 
+		PROP(type)
+		AST::Namespace type;
+	};
+
+	static void Read(Reader& ct, CExprType& val)
+	{
+		ct.Serialize(val.type);
+	}
+	static void Write(Writer& ct, const CExprType& val)
+	{
+		ct.Serialize(val.type);
+	}
+
+
+	struct CExprTypeId : public p::Struct
+	{
+		STRUCT(CExprTypeId, p::Struct)
+
 		PROP(id, p::Prop_NotSerialized)
 		AST::Id id = AST::NoId;
 
 
-		CExprType(AST::Id id = AST::NoId) : id{id} {}
+		CExprTypeId(AST::Id id = AST::NoId) : id{id} {}
 	};
+
 }    // namespace rift

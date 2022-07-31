@@ -6,6 +6,7 @@
 #include "AST/Id.h"
 #include "AST/Utils/Hierarchy.h"
 
+#include <Pipe/ECS/Filtering.h>
 #include <Pipe/Math/Math.h>
 
 
@@ -138,7 +139,8 @@ namespace rift::AST
 		TArray<Id> localRoots;
 		if (!rootIds)
 		{
-			Hierarchy::GetRoots(access, localRoots);
+			localRoots = ecs::ListAll<CNamespace>(access);
+			ecs::ExcludeIf<CChild>(access, localRoots);
 			rootIds = &localRoots;
 		}
 
