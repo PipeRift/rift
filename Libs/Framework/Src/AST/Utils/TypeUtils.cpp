@@ -425,7 +425,7 @@ namespace rift::Types
 		AST::Tree& ast   = type.GetContext();
 		const AST::Id id = ast.Create();
 		ast.Add<CExprBinaryOperator>(id, {operatorType});
-		ast.Add<CExprOutputs>(id);
+		ast.Add<CExprOutputs>(id).Add(id);
 
 		auto& inputs = ast.Add<CExprInputs>(id);
 		inputs.Resize(2);

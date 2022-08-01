@@ -1,6 +1,6 @@
 {
     "type": "Class",
-    "count": 3,
+    "count": 10,
     "roots": [
         0
     ],
@@ -8,20 +8,87 @@
         "CChild": {
             "0": -1,
             "1": 0,
-            "2": 1
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 1,
+            "6": 2,
+            "7": 2,
+            "8": 4,
+            "9": 4
         },
         "CDeclFunction": {
             "1": {}
         },
+        "CExprBinaryOperator": {
+            "2": {
+                "type": "Add"
+            },
+            "4": {
+                "type": "Add"
+            }
+        },
         "CExprOutputs": {
             "1": {
                 "pinIds": [
+                    5
+                ]
+            },
+            "2": {
+                "pinIds": [
                     2
+                ]
+            },
+            "3": {
+                "pinIds": [
+                    3
+                ]
+            },
+            "4": {
+                "pinIds": [
+                    4
+                ]
+            }
+        },
+        "CExprInputs": {
+            "2": {
+                "linkedOutputs": [
+                    {
+                        "nodeId": 3,
+                        "pinId": 3
+                    },
+                    {
+                        "nodeId": -1,
+                        "pinId": -1
+                    }
+                ],
+                "pinIds": [
+                    6,
+                    7
+                ]
+            },
+            "4": {
+                "linkedOutputs": [
+                    {
+                        "nodeId": 2,
+                        "pinId": 2
+                    },
+                    {
+                        "nodeId": -1,
+                        "pinId": -1
+                    }
+                ],
+                "pinIds": [
+                    8,
+                    9
                 ]
             }
         },
         "CExprType": {
-            "2": [
+            "3": [
+                "I32"
+            ],
+            "5": [
                 "String"
             ]
         },
@@ -29,6 +96,18 @@
             "1": {
                 "x": 0.0,
                 "y": 0.0
+            },
+            "2": {
+                "x": 13.0,
+                "y": 5.0
+            },
+            "3": {
+                "x": 6.0,
+                "y": 5.0
+            },
+            "4": {
+                "x": 18.0,
+                "y": 5.0
             }
         },
         "CNamespace": {
@@ -38,17 +117,34 @@
             "1": {
                 "name": "Print"
             },
-            "2": {
+            "5": {
                 "name": "value"
             }
         },
         "CParent": {
             "0": [
-                1
+                1,
+                2,
+                3,
+                4
             ],
             "1": [
-                2
+                5
+            ],
+            "2": [
+                6,
+                7
+            ],
+            "4": [
+                8,
+                9
             ]
+        },
+        "CLiteralIntegral": {
+            "3": {
+                "value": 0,
+                "type": "S32"
+            }
         },
         "CStmtOutput": {
             "1": -1

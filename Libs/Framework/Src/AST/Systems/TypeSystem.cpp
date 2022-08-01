@@ -2,6 +2,10 @@
 
 #include "AST/Systems/TypeSystem.h"
 
+#include "AST/Components/CExprBinaryOperator.h"
+#include "AST/Components/CExprInputs.h"
+#include "AST/Components/CExprOutputs.h"
+#include "AST/Components/CExprUnaryOperator.h"
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/CLiteralBool.h"
 #include "AST/Components/CLiteralFloating.h"
@@ -9,6 +13,8 @@
 #include "AST/Components/CLiteralString.h"
 #include "AST/Components/CNamespace.h"
 #include "AST/Components/CType.h"
+#include "AST/Components/Tags/CDirty.h"
+#include "AST/Id.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Tree.h"
 
@@ -98,8 +104,34 @@ namespace rift::TypeSystem
 
 	void PropagateExpressionTypes(AST::Tree& ast)
 	{
-		TArray<AST::Id> literals =
-		    ecs::ListAny<CLiteralBool, CLiteralIntegral, CLiteralFloating, CLiteralString>(ast);
+		// TODO: Only do this with dirty types
+
+		// TODO: In editor, also get binary/unary operators not connected to anything
+		TArray<AST::Id> propagationSources;
+		ecs::GetIf<CExprCall>(ast, propagationSources);
+
+		TArray<OutputId> pendingToPropagate;
+
+		// Find connected to sources
+		for (AST::Id sourceId : propagationSources)
+		{
+			if (auto* inputs = ast.TryGet<CExprInputs>(sourceId)) [[likely]]
+			{
+				pendingToPropagate.Append(inputs->linkedOutputs);
+			}
+		}
+
+		while (!pendingToPropagate.IsEmpty())
+		{
+			for (i32 i = pendingToPropagate.Size() - 1; i >= 0; --i)
+			{
+				OutputId id = pendingToPropagate[i];
+			}
+			// For each pending propagate (iterate backwards)
+			// Get connected
+			// Those connected that have invalid type, add to pending propagate
+			// If all connected are propagated, propagate this and remove from pending propagate
+		}
 	}
 
 	void ResolveExprTypeIds(
