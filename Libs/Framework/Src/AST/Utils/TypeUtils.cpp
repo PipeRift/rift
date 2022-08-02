@@ -268,7 +268,7 @@ namespace rift::Types
 
 		// Bool input
 		const AST::Id valueId = ast.Create();
-		ast.Add<CExprTypeId>(valueId, {ast.GetNativeTypes().boolId});
+		ast.Add<CExprTypeId>(valueId, {.id = ast.GetNativeTypes().boolId});
 		ast.Add<CExprType>(id).type = AST::GetNamespace(ast, ast.GetNativeTypes().boolId);
 		AST::Hierarchy::AddChildren(ast, id, valueId);
 		ast.Add<CExprInputs>(id).Add(valueId);
@@ -302,7 +302,7 @@ namespace rift::Types
 	{
 		AST::Tree& ast   = type.GetContext();
 		const AST::Id id = ast.Create();
-		ast.Add<CExprTypeId>(id, {literalTypeId});
+		ast.Add<CExprTypeId>(id, {.id = literalTypeId});
 		ast.Add<CExprType>(id).type = AST::GetNamespace(ast, literalTypeId);
 		ast.Add<CExprOutputs>(id).Add(id);
 

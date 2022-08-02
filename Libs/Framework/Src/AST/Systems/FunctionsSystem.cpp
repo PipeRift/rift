@@ -199,9 +199,8 @@ namespace rift::FunctionsSystem
 					}
 				}
 
-				const auto* pinType     = access.TryGet<const CExprTypeId>(pinId);
-				const AST::Id pinTypeId = pinType ? pinType->id : AST::NoId;
-				access.Add<CExprTypeId>(callOutputs.pinIds[i], {pinTypeId});
+				const auto* pinType = access.TryGet<const CExprTypeId>(pinId);
+				access.Add<CExprTypeId>(callOutputs.pinIds[i], pinType ? *pinType : CExprTypeId{});
 			}
 
 			// Mark as invalid all after N function params, and valid those before
@@ -271,9 +270,8 @@ namespace rift::FunctionsSystem
 					}
 				}
 
-				const auto* pinType     = access.TryGet<const CExprTypeId>(pinId);
-				const AST::Id pinTypeId = pinType ? pinType->id : AST::NoId;
-				access.Add<CExprTypeId>(callInputs.pinIds[i], {pinTypeId});
+				const auto* pinType = access.TryGet<const CExprTypeId>(pinId);
+				access.Add<CExprTypeId>(callInputs.pinIds[i], pinType ? *pinType : CExprTypeId{});
 			}
 
 			// Mark as invalid all after N function params, and valid those before

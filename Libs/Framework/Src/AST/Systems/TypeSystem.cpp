@@ -97,7 +97,7 @@ namespace rift::TypeSystem
 			if (access.IsValid(declId))
 			{
 				const AST::Id typeId = access.Get<const CDeclVariable>(declId).typeId;
-				access.Add<CExprTypeId>(id, {typeId});
+				access.Add<CExprTypeId>(id, {.id = typeId});
 			}
 		}
 	}
@@ -145,7 +145,7 @@ namespace rift::TypeSystem
 			const AST::Id typeId = AST::FindIdFromNamespace(access, expr.type);
 			if (!IsNone(typeId))
 			{
-				access.Add(id, CExprTypeId{typeId});
+				access.Add(id, CExprTypeId{.id = typeId, .mode = expr.mode});
 			}
 		}
 	}

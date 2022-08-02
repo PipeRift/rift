@@ -85,7 +85,7 @@ namespace rift::Graph
 		if (auto* type = access.TryGet<const CExprTypeId>(id))
 		{
 			typeId    = type->id;
-			isPointer = type->pointer != CExprTypePointer::NotPointer;
+			isPointer = type->mode != TypeMode::Value;
 		}
 
 		Color pinColor = Style::GetTypeColor<void>();
@@ -113,7 +113,7 @@ namespace rift::Graph
 		if (auto* type = access.TryGet<const CExprTypeId>(id))
 		{
 			typeId    = type->id;
-			isPointer = type->pointer != CExprTypePointer::NotPointer;
+			isPointer = type->mode != TypeMode::Value;
 		}
 
 		Color pinColor = Style::GetTypeColor<void>();
