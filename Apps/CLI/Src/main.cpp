@@ -79,7 +79,8 @@ int main(int argc, char** argv)
 
 	CLI11_PARSE(app, argc, argv);
 
-	TPtr<compiler::Backend> backend = FindBackendByName(availableBackends, selectedBackendStr);
+	TPtr<compiler::Backend> backend =
+	    FindBackendByName(availableBackends, Name(selectedBackendStr));
 
 	ZoneScopedNC("CLI Execution", 0x459bd1);
 

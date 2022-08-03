@@ -70,11 +70,11 @@ namespace rift::compiler::Cpp
 		ModuleTarget target = module.target;
 		if (target == ModuleTarget::Executable)
 		{
-			AddExecutable(code, compiler, name.ToString(), "20");
+			AddExecutable(code, compiler, name, "20");
 		}
 		else
 		{
-			AddLibrary(code, compiler, target, name.ToString(), "20");
+			AddLibrary(code, compiler, target, name, "20");
 		}
 		files::SaveStringFile(codePath / name.ToString() / "CMakelists.txt", code);
 	}
@@ -83,7 +83,7 @@ namespace rift::compiler::Cpp
 	{
 		String code;
 		Name projectName = Modules::GetProjectName(compiler.ast);
-		SetProject(code, compiler, projectName.ToString(), "0.1");
+		SetProject(code, compiler, projectName, "0.1");
 
 		TAccess<TWrite<CModule>> modules{compiler.ast};
 		for (AST::Id moduleId : ecs::ListAll<CModule>(modules))

@@ -165,7 +165,7 @@ namespace rift::Modules
 		{
 			// Obtain name from project file name
 			const String fileName = p::ToString(file->path);
-			return {GetFilename(GetParentPath(fileName))};    // Folder name
+			return Name{GetFilename(GetParentPath(fileName))};    // Folder name
 		}
 		return {};
 	}

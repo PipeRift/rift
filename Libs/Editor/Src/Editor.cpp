@@ -3,6 +3,7 @@
 #include "Editor.h"
 
 #include "AST/Systems/FunctionsSystem.h"
+#include "AST/Utils/Namespaces.h"
 #include "Statics/SEditor.h"
 #include "Systems/EditorSystem.h"
 #include "Utils/FunctionGraph.h"
@@ -27,6 +28,20 @@ namespace rift
 	{
 		UI::RegisterCustomInspection<AST::Id>([](StringView label, void* data, Type* type) {
 			UI::DrawKeyValue(label, data, GetType<ecs::IdTraits<AST::Id>::Entity>());
+		});
+
+		UI::RegisterCustomInspection<AST::Namespace>([](StringView label, void* data, Type* type) {
+			UI::TableNextRow();
+			UI::TableSetColumnIndex(0);
+			UI::AlignTextToFramePadding();
+			UI::Text(label);
+			UI::TableSetColumnIndex(1);
+			auto* ns        = static_cast<AST::Namespace*>(data);
+			String asString = ns->ToString();
+			if (UI::InputText("##value", asString))
+			{
+				*ns = AST::Namespace{asString};
+			}
 		});
 	}
 

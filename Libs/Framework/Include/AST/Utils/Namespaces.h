@@ -29,6 +29,9 @@ namespace rift::AST
 		template<i32 M>
 		Namespace(Name scopes[M]) requires(M <= scopeCount) : scopes{scopes}
 		{}
+		Namespace(StringView value);
+		// Prevent initializer list from stealing string constructor
+		Namespace(const String& value) : Namespace(StringView{value}) {}
 		Namespace(std::initializer_list<Name> values)
 		{
 			const i32 size = p::math::Min(i32(values.size()), scopeCount);
@@ -70,7 +73,7 @@ namespace rift::AST
 		}
 		operator bool() const
 		{
-			return IsEmpty();
+			return !IsEmpty();
 		}
 
 		Name* begin()
