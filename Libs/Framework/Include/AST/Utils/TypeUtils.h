@@ -7,6 +7,7 @@
 #include "AST/Components/CExprBinaryOperator.h"
 #include "AST/Components/CExprInputs.h"
 #include "AST/Components/CExprOutputs.h"
+#include "AST/Components/CExprType.h"
 #include "AST/Components/CExprUnaryOperator.h"
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/CNamespace.h"
@@ -69,4 +70,6 @@ namespace rift::Types
 	    TWrite<CStmtOutputs>, TWrite<CParent>, TWrite<CChild>, CFileRef>;
 	void RemoveNodes(const RemoveAccess& access, TSpan<AST::Id> ids);
 
+	bool CopyExpressionType(
+	    TAccessRef<TWrite<CExprTypeId>> access, AST::Id sourcePinId, AST::Id targetPinId);
 }    // namespace rift::Types

@@ -473,4 +473,26 @@ namespace rift::Types
 		ScopedChange(access, ids);
 		AST::Hierarchy::RemoveDeep(access, ids);
 	}
+
+	bool CopyExpressionType(
+	    TAccessRef<TWrite<CExprTypeId>> access, AST::Id sourcePinId, AST::Id targetPinId)
+	{
+		auto* sourceType = access.TryGet<const CExprTypeId>(sourcePinId);
+		auto* targetType = access.TryGet<CExprTypeId>(targetPinId);
+		if (!sourceType || IsNone(sourceType->id)
+		    || (targetType && sourceType->id == targetType->id))
+		{
+			return false;
+		}
+
+		if (targetType)
+		{
+			*targetType = *sourceType;
+		}
+		else
+		{
+			access.Add<CExprTypeId>(targetPinId, *sourceType);
+		}
+		return true;
+	}
 }    // namespace rift::Types

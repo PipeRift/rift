@@ -2,21 +2,13 @@
 
 #include "AST/Systems/TypeSystem.h"
 
-#include "AST/Components/CExprBinaryOperator.h"
-#include "AST/Components/CExprInputs.h"
-#include "AST/Components/CExprOutputs.h"
-#include "AST/Components/CExprUnaryOperator.h"
 #include "AST/Components/CFileRef.h"
-#include "AST/Components/CLiteralBool.h"
-#include "AST/Components/CLiteralFloating.h"
-#include "AST/Components/CLiteralIntegral.h"
-#include "AST/Components/CLiteralString.h"
 #include "AST/Components/CNamespace.h"
-#include "AST/Components/CType.h"
-#include "AST/Components/Tags/CDirty.h"
 #include "AST/Id.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Tree.h"
+#include "AST/Utils/Hierarchy.h"
+#include "AST/Utils/TypeUtils.h"
 
 #include <Pipe/ECS/Filtering.h>
 
@@ -102,35 +94,83 @@ namespace rift::TypeSystem
 		}
 	}
 
-	void PropagateExpressionTypes(AST::Tree& ast)
+	bool PropagateUnaryOperator(TAccess<CExprInputs, TWrite<CExprTypeId>> access, AST::Id nodeId)
 	{
-		// TODO: Only do this with dirty types
-
-		// TODO: In editor, also get binary/unary operators not connected to anything
-		TArray<AST::Id> propagationSources;
-		ecs::GetIf<CExprCall>(ast, propagationSources);
-
-		TArray<OutputId> pendingToPropagate;
-
-		// Find connected to sources
-		for (AST::Id sourceId : propagationSources)
+		const AST::Id outputId = nodeId;    // Output in unary operator is same as the node itself
+		const auto& inputs     = access.Get<const CExprInputs>(nodeId);
+		const OutputId* linkedOutputId = inputs.linkedOutputs.At(0);
+		if (linkedOutputId && linkedOutputId->pinId != AST::NoId)
 		{
-			if (auto* inputs = ast.TryGet<CExprInputs>(sourceId)) [[likely]]
+			return Types::CopyExpressionType(access, linkedOutputId->pinId, outputId);
+		}
+		return false;
+	}
+
+	bool PropagateBinaryOperator(TAccess<CExprInputs, TWrite<CExprTypeId>> access, AST::Id nodeId)
+	{
+		const auto& inputs = access.Get<const CExprInputs>(nodeId);
+		AST::Id outputId   = nodeId;    // Output in binary operator is same as the node itself
+		if (inputs.pinIds.Size() == 2) [[likely]]
+		{
+			const OutputId firstLinkedOutputId = inputs.linkedOutputs[0];
+			// Set output type from first connection
+			if (Types::CopyExpressionType(access, firstLinkedOutputId.pinId, outputId))
 			{
-				pendingToPropagate.Append(inputs->linkedOutputs);
+				// Set input types
+				Types::CopyExpressionType(access, firstLinkedOutputId.pinId, inputs.pinIds[0]);
+				Types::CopyExpressionType(access, inputs.linkedOutputs[1].pinId, inputs.pinIds[1]);
+				return true;
 			}
 		}
+		return false;
+	}
 
-		while (!pendingToPropagate.IsEmpty())
+	void PropagateExpressionTypes(PropagateExpressionTypesAccess access)
+	{
+		TArray<AST::Id> dirtyTypeIds = ecs::ListAll<CType, CChanged>(access);
+
+		TArray<AST::Id> dirtyNodeIds;
+		AST::Hierarchy::GetChildren(access, dirtyTypeIds, dirtyNodeIds);
+
+		// Make sure the nodes have inputs and outputs
+		ecs::ExcludeIfNot<CExprInputs, CExprOutputs>(access, dirtyNodeIds);
+
+		// Only Unary and Binary operators propagate as of right now
+		ecs::ExcludeIf(dirtyNodeIds, [&access](AST::Id id) {
+			return !access.Has<CExprUnaryOperator>(id) && !access.Has<CExprBinaryOperator>(id);
+		});
+
+		bool anyPropagated;
+		while (!dirtyNodeIds.IsEmpty())    // Repeat until nothing to propagate
 		{
-			for (i32 i = pendingToPropagate.Size() - 1; i >= 0; --i)
+			bool anyPropagated = false;
+			// Propagate all dirty nodes, remove successfully propagated ones
+			for (i32 i = dirtyNodeIds.Size() - 1; i >= 0; --i)
 			{
-				OutputId id = pendingToPropagate[i];
+				const AST::Id nodeId = dirtyNodeIds[i];
+
+				if (access.Has<CExprUnaryOperator>(nodeId))
+				{
+					if (PropagateUnaryOperator(access, nodeId))
+					{
+						dirtyNodeIds.RemoveAtSwapUnsafe(i);
+						anyPropagated = true;
+					}
+				}
+				else if (access.Has<CExprBinaryOperator>(nodeId))
+				{
+					if (PropagateBinaryOperator(access, nodeId))
+					{
+						dirtyNodeIds.RemoveAtSwapUnsafe(i);
+						anyPropagated = true;
+					}
+				}
 			}
-			// For each pending propagate (iterate backwards)
-			// Get connected
-			// Those connected that have invalid type, add to pending propagate
-			// If all connected are propagated, propagate this and remove from pending propagate
+
+			if (!anyPropagated)    // If nothing propagated, there is nothing else we can do
+			{
+				break;
+			}
 		}
 	}
 

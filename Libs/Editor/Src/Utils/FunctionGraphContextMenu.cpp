@@ -125,6 +125,7 @@ namespace rift::Graph
 
 		if (canEditBody && UI::MenuItem("Delete"))
 		{
+			ScopedChange(ast, linkIds);
 			for (AST::Id linkId : linkIds)
 			{
 				AST::Expressions::Disconnect(

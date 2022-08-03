@@ -887,10 +887,13 @@ namespace rift::Graph
 			}
 			Nodes::EndNodeEditor();
 
+
 			Nodes::Id outputPin;
 			Nodes::Id inputPin;
 			if (Nodes::IsLinkCreated(outputPin, inputPin))
 			{
+				AST::Id pinIds[2]{AST::Id(outputPin), AST::Id(inputPin)};
+				ScopedChange(ast, pinIds);
 				AST::Statements::TryConnect(ast, AST::Id(outputPin), AST::Id(inputPin));
 				AST::Expressions::TryConnect(ast,
 				    AST::Expressions::OutputFromPinId(ast, AST::Id(outputPin)),
@@ -899,6 +902,7 @@ namespace rift::Graph
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))
 			{
+				ScopedChange(ast, AST::Id(linkId));
 				// linkId is always the outputId
 				AST::Statements::Disconnect(ast, AST::Id(linkId));
 				AST::Expressions::Disconnect(

@@ -97,13 +97,13 @@ namespace rift
 			LoadSystem::Run(ast);
 			FunctionsSystem::ResolveCallFunctionIds(ast);
 			TypeSystem::ResolveExprTypeIds(ast);
-			TypeSystem::PropagateVariableTypes(ast);
-			TypeSystem::PropagateExpressionTypes(ast);
 
 			EditorSystem::Draw(ast);
+			TypeSystem::PropagateVariableTypes(ast);
 			FunctionsSystem::PropagateDirtyIntoCalls(ast);
 			FunctionsSystem::PushInvalidPinsBack(ast);
 			FunctionsSystem::SyncCallPinsFromFunction(ast);
+			TypeSystem::PropagateExpressionTypes(ast);
 		}
 		else
 		{
