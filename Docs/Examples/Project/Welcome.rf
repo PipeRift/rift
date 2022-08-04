@@ -1,6 +1,6 @@
 {
     "type": "Class",
-    "count": 12,
+    "count": 14,
     "roots": [
         0
     ],
@@ -12,12 +12,14 @@
             "3": 0,
             "4": 0,
             "5": 0,
-            "6": 1,
-            "7": 1,
-            "8": 2,
-            "9": 2,
-            "10": 4,
-            "11": 4
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 1,
+            "11": 1,
+            "12": 2,
+            "13": 2
         },
         "CDeclFunction": {
             "1": {}
@@ -25,16 +27,13 @@
         "CExprBinaryOperator": {
             "2": {
                 "type": "Add"
-            },
-            "4": {
-                "type": "Add"
             }
         },
         "CExprOutputs": {
             "1": {
                 "pinIds": [
-                    6,
-                    7
+                    10,
+                    11
                 ]
             },
             "2": {
@@ -56,9 +55,33 @@
                 "pinIds": [
                     5
                 ]
+            },
+            "6": {
+                "pinIds": [
+                    6
+                ]
+            },
+            "7": {
+                "pinIds": [
+                    7
+                ]
+            },
+            "8": {
+                "pinIds": [
+                    8
+                ]
+            },
+            "9": {
+                "pinIds": [
+                    9
+                ]
             }
         },
         "CExprInputs": {
+            "1": {
+                "linkedOutputs": [],
+                "pinIds": []
+            },
             "2": {
                 "linkedOutputs": [
                     {
@@ -66,57 +89,45 @@
                         "pinId": 3
                     },
                     {
-                        "nodeId": -1,
-                        "pinId": -1
+                        "nodeId": 6,
+                        "pinId": 6
                     }
                 ],
                 "pinIds": [
-                    8,
-                    9
-                ]
-            },
-            "4": {
-                "linkedOutputs": [
-                    {
-                        "nodeId": 2,
-                        "pinId": 2
-                    },
-                    {
-                        "nodeId": -1,
-                        "pinId": -1
-                    }
-                ],
-                "pinIds": [
-                    10,
-                    11
+                    12,
+                    13
                 ]
             }
         },
         "CExprType": {
-            "2": [
-                "I32"
-            ],
             "3": [
-                "I32"
+                "Bool"
             ],
             "4": [
                 "I32"
             ],
             "5": [
-                "Bool"
+                "Float"
             ],
             "6": [
-                "String"
+                "Double"
             ],
             "7": [
-                "TestProject",
-                "Welcome"
+                "String"
             ],
             "8": [
-                "I32"
+                "U32"
+            ],
+            "9": [
+                "U32"
             ],
             "10": [
-                "I32"
+                "TestProject",
+                "TestClass"
+            ],
+            "11": [
+                "TestProject",
+                "TestStruct"
             ]
         },
         "CNodePosition": {
@@ -125,20 +136,36 @@
                 "y": 0.0
             },
             "2": {
-                "x": 13.0,
+                "x": 14.0,
                 "y": 5.0
             },
             "3": {
-                "x": 6.0,
+                "x": 0.0,
                 "y": 5.0
             },
             "4": {
-                "x": 17.0,
-                "y": 4.0
+                "x": 0.0,
+                "y": 9.0
             },
             "5": {
-                "x": 8.0,
+                "x": 0.0,
                 "y": 7.0
+            },
+            "6": {
+                "x": 7.0,
+                "y": 7.0
+            },
+            "7": {
+                "x": 0.0,
+                "y": 13.0
+            },
+            "8": {
+                "x": 0.0,
+                "y": 11.0
+            },
+            "9": {
+                "x": 8.0,
+                "y": 14.0
             }
         },
         "CNamespace": {
@@ -148,11 +175,11 @@
             "1": {
                 "name": "Print"
             },
-            "6": {
-                "name": "value"
+            "10": {
+                "name": "class"
             },
-            "7": {
-                "name": "test"
+            "11": {
+                "name": "struct"
             }
         },
         "CParent": {
@@ -161,30 +188,53 @@
                 2,
                 3,
                 4,
-                5
-            ],
-            "1": [
+                5,
                 6,
-                7
-            ],
-            "2": [
+                7,
                 8,
                 9
             ],
-            "4": [
+            "1": [
                 10,
                 11
+            ],
+            "2": [
+                12,
+                13
             ]
         },
         "CLiteralBool": {
-            "5": {
+            "3": {
                 "value": false
             }
         },
+        "CLiteralFloating": {
+            "5": {
+                "value": 0.0,
+                "type": "F32"
+            },
+            "6": {
+                "value": 0.0,
+                "type": "F64"
+            }
+        },
         "CLiteralIntegral": {
-            "3": {
+            "4": {
                 "value": 0,
                 "type": "S32"
+            },
+            "8": {
+                "value": 0,
+                "type": "S32"
+            },
+            "9": {
+                "value": 0,
+                "type": "U32"
+            }
+        },
+        "CLiteralString": {
+            "7": {
+                "value": "String"
             }
         },
         "CStmtOutput": {

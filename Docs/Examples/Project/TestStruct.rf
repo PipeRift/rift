@@ -1,0 +1,17 @@
+{
+    "type": "Struct",
+    "count": 1,
+    "roots": [
+        0
+    ],
+    "components": {
+        "CChild": {
+            "0": -1
+        },
+        "CNamespace": {
+            "0": {
+                "name": "TestStruct"
+            }
+        }
+    }
+}

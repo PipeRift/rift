@@ -110,14 +110,15 @@ namespace rift::AST::Statements
 			return false;
 		}
 
-		const Id inputNode = linkId;
-		auto* inputComp    = ast.TryGet<CStmtInput>(inputNode);
-		if (EnsureMsg(inputComp && !IsNone(inputComp->linkOutputNode),
+		// Input node is always the same id as linkId
+		auto* inputComp = ast.TryGet<CStmtInput>(linkId);
+		if (inputComp
+		    && EnsureMsg(!IsNone(inputComp->linkOutputNode),
 		        "Trying to disconnect a unexistant link")) [[likely]]
 		{
 			// We expect the other side to have outputs component
 			auto& outputsComp = ast.Get<CStmtOutputs>(inputComp->linkOutputNode);
-			if (Id* lastInputNode = outputsComp.linkInputNodes.Find(inputNode)) [[likely]]
+			if (Id* lastInputNode = outputsComp.linkInputNodes.Find(linkId)) [[likely]]
 			{
 				*lastInputNode = AST::NoId;
 			}

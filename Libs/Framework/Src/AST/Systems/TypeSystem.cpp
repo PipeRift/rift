@@ -113,14 +113,11 @@ namespace rift::TypeSystem
 		if (inputs.pinIds.Size() == 2) [[likely]]
 		{
 			const OutputId firstLinkedOutputId = inputs.linkedOutputs[0];
+			// Set input types
+			Types::CopyExpressionType(access, firstLinkedOutputId.pinId, inputs.pinIds[0]);
+			Types::CopyExpressionType(access, inputs.linkedOutputs[1].pinId, inputs.pinIds[1]);
 			// Set output type from first connection
-			if (Types::CopyExpressionType(access, firstLinkedOutputId.pinId, outputId))
-			{
-				// Set input types
-				Types::CopyExpressionType(access, firstLinkedOutputId.pinId, inputs.pinIds[0]);
-				Types::CopyExpressionType(access, inputs.linkedOutputs[1].pinId, inputs.pinIds[1]);
-				return true;
-			}
+			return Types::CopyExpressionType(access, firstLinkedOutputId.pinId, outputId);
 		}
 		return false;
 	}

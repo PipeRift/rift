@@ -24,23 +24,31 @@ namespace rift::Style
 	{
 		if constexpr (IsSame<T, bool>)
 		{
-			return Color::FromHEX(0xF94144);
+			return Color::FromHEX(0xBF4A41);
 		}
 		else if constexpr (FloatingPoint<T>)
 		{
-			return Color::FromHEX(0x90BE6D);
+			return Color::FromHEX(0x54BFA6);
 		}
 		else if constexpr (SignedIntegral<T>)
 		{
-			return Color::FromHEX(0x43AA8B);
+			return Color::FromHEX(0x63BF54);
 		}
 		else if constexpr (UnsignedIntegral<T>)
 		{
-			return Color::FromHEX(0x4D908E);
+			return Color::FromHEX(0x54BF79);
 		}
 		else if constexpr (IsSame<T, String>)
 		{
-			return Color::FromHEX(0xBC40F9);
+			return Color::FromHEX(0xBF54AE);
+		}
+		else if constexpr (IsSame<T, Class>)
+		{
+			return Color::FromHEX(0x545FBF);
+		}
+		else if constexpr (IsSame<T, Struct>)
+		{
+			return Color::FromHEX(0x548CBF);
 		}
 		return Color::Gray();
 	};
