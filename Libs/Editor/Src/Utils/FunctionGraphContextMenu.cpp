@@ -107,7 +107,7 @@ namespace rift::Graph
 		TArray<AST::Id> calls = ecs::GetIf<CExprCall>(ast, nodeIds);
 		if (!calls.IsEmpty() && UI::MenuItem("Refresh"))
 		{
-			ast.Add<CCallDirty>(calls);
+			ast.AddN<CCallDirty>(calls);
 		}
 
 		if (canEditBody && UI::MenuItem("Delete"))

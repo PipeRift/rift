@@ -34,7 +34,7 @@ namespace rift::FunctionsSystem
 	void Init(AST::Tree& ast)
 	{
 		ast.OnAdd<CExprCallId>().Bind([](auto& ast, auto ids) {
-			ast.template Add<CCallDirty>(ids);
+			ast.template AddN<CCallDirty>(ids);
 		});
 	}
 
@@ -212,7 +212,7 @@ namespace rift::FunctionsSystem
 			const i32 count = callOutputs.pinIds.Size() - validSize;
 			if (count > 0)
 			{
-				access.Add<CInvalid>({callOutputs.pinIds.Data() + firstInvalid, count});
+				access.AddN<CInvalid>({callOutputs.pinIds.Data() + firstInvalid, count});
 			}
 		}
 
@@ -283,7 +283,7 @@ namespace rift::FunctionsSystem
 			const i32 count = callInputs.pinIds.Size() - validSize;
 			if (count > 0)
 			{
-				access.Add<CInvalid>({callInputs.pinIds.Data() + firstInvalid, count});
+				access.AddN<CInvalid>({callInputs.pinIds.Data() + firstInvalid, count});
 			}
 		}
 
