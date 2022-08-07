@@ -9,12 +9,27 @@
 
 namespace rift
 {
+	enum class TypeMode
+	{
+		Value,
+		Pointer,
+		PointerToPointer
+	};
+}    // namespace rift
+ENUM(rift::TypeMode)
+
+
+namespace rift
+{
 	struct CExprType : public p::Struct
 	{
 		STRUCT(CExprType, p::Struct)
 
 		PROP(type)
 		AST::Namespace type;
+
+		PROP(mode)
+		TypeMode mode = TypeMode::Value;
 	};
 
 	static void Read(Reader& ct, CExprType& val)
@@ -34,8 +49,8 @@ namespace rift
 		PROP(id, p::Prop_NotSerialized)
 		AST::Id id = AST::NoId;
 
-
-		CExprTypeId(AST::Id id = AST::NoId) : id{id} {}
+		PROP(mode)
+		TypeMode mode = TypeMode::Value;
 	};
 
 }    // namespace rift

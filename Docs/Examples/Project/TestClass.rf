@@ -1,0 +1,14 @@
+{
+    "type": "Class",
+    "count": 1,
+    "roots": [
+        0
+    ],
+    "components": {
+        "CNamespace": {
+            "0": {
+                "name": "TestClass"
+            }
+        }
+    }
+}

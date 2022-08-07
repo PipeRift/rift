@@ -2,6 +2,9 @@
 
 #include "Utils/EditorStyle.h"
 
+#include "AST/Components/CDeclClass.h"
+#include "AST/Components/CDeclStruct.h"
+
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
 
@@ -10,6 +13,11 @@ namespace rift::Style
 {
 	const Color GetTypeColor(const AST::Tree& ast, AST::Id id)
 	{
+		if (!ast.IsValid(id))
+		{
+			return GetTypeColor<void>();
+		}
+
 		const auto& nativeIds = ast.GetNativeTypes();
 		if (id == nativeIds.boolId)
 		{
@@ -35,6 +43,14 @@ namespace rift::Style
 		else if (id == nativeIds.stringId)
 		{
 			return GetTypeColor<String>();
+		}
+		else if (ast.Has<CDeclClass>(id))
+		{
+			return GetTypeColor<Class>();
+		}
+		else if (ast.Has<CDeclStruct>(id))
+		{
+			return GetTypeColor<Struct>();
 		}
 		return GetTypeColor<void>();
 	}

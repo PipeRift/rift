@@ -1381,6 +1381,21 @@ namespace rift::Nodes
 				    pinPos + offset.bottomLeft, pinPos + offset.right, pinColor.ToPackedABGR());
 			}
 			break;
+			case PinShape_Diamond: {
+				const float halfSide = 0.5f * gNodes->style.PinDiamondSideLength;
+				gNodes->CanvasDrawList->AddQuad(pinPos + v2{0.f, halfSide},
+				    pinPos + v2{halfSide, 0.f}, pinPos + v2{0.f, -halfSide},
+				    pinPos + v2{-halfSide, 0.f}, pinColor.ToPackedABGR(),
+				    gNodes->style.PinLineThickness);
+			}
+			break;
+			case PinShape_DiamondFilled: {
+				const float halfSide = 0.5f * gNodes->style.PinDiamondSideLength;
+				gNodes->CanvasDrawList->AddQuadFilled(pinPos + v2{0.f, halfSide},
+				    pinPos + v2{halfSide, 0.f}, pinPos + v2{0.f, -halfSide},
+				    pinPos + v2{-halfSide, 0.f}, pinColor.ToPackedABGR());
+			}
+			break;
 			default: assert(!"Invalid PinShape value!"); break;
 		}
 	}
@@ -1615,7 +1630,8 @@ namespace rift::Nodes
 	    , LinkHoverDistance(10.f)
 	    , PinCircleRadius(4.f)
 	    , PinQuadSideLength(7.f)
-	    , PinTriangleSideLength(9.5)
+	    , PinTriangleSideLength(9.5f)
+	    , PinDiamondSideLength(7.f)
 	    , PinLineThickness(1.f)
 	    , PinHoverRadius(10.f)
 	    , PinOffset(0.f)
@@ -2264,6 +2280,8 @@ namespace rift::Nodes
 	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinQuadSideLength)        },
  // StyleVar_PinTriangleSideLength
 	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinTriangleSideLength)    },
+ // StyleVar_PinDiamondSideLength
+	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinDiamondSideLength)     },
  // StyleVar_PinLineThickness
 	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinLineThickness)         },
  // StyleVar_PinHoverRadius

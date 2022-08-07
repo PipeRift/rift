@@ -134,7 +134,7 @@ namespace rift
 		UI::Spacing();
 
 		UI::Text("Inputs");
-		if (UI::BeginTable("##fields", 2, ImGuiTableFlags_SizingFixedFit, {200.f, 0.f}))
+		if (UI::BeginTable("##fields", 2, ImGuiTableFlags_SizingFixedFit))
 		{
 			UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 0.9f);
 			UI::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch, 1.f);
@@ -161,7 +161,7 @@ namespace rift
 		UI::Spacing();
 
 		UI::Text("Outputs");
-		if (UI::BeginTable("##fields", 2, ImGuiTableFlags_SizingFixedFit, {200.f, 0.f}))
+		if (UI::BeginTable("##fields", 2, ImGuiTableFlags_SizingFixedFit))
 		{
 			UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 0.9f);
 			UI::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch, 1.f);

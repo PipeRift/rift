@@ -5,6 +5,7 @@
 #include "AST/Components/CNamespace.h"
 #include "AST/Id.h"
 #include "AST/Utils/Hierarchy.h"
+#include "Pipe/Core/StringView.h"
 
 #include <Pipe/ECS/Filtering.h>
 #include <Pipe/Math/Math.h>
@@ -12,6 +13,37 @@
 
 namespace rift::AST
 {
+	Namespace::Namespace(StringView value)
+	{
+		i32 size          = 0;
+		const TChar* last = value.data() + value.size();
+		const TChar* curr = value.data();
+
+		if (curr != last && *curr == '@')
+			++curr;
+
+		const TChar* scopeStart = curr;
+		while (curr != last && size < scopeCount)
+		{
+			if (*curr == '.')
+			{
+				scopes[size] = Name{
+				    StringView{scopeStart, curr}
+                };
+				scopeStart = curr + 1;
+				++size;
+			}
+			++curr;
+		}
+
+		if (scopeStart < curr)    // Add last
+		{
+			scopes[size] = Name{
+			    StringView{scopeStart, curr}
+            };
+		}
+	}
+
 	bool Namespace::Equals(const Namespace& other) const
 	{
 		for (i32 i = 0; i < scopeCount; ++i)

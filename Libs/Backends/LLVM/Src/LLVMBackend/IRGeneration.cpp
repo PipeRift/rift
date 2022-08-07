@@ -149,8 +149,8 @@ namespace rift::compiler::LLVM
 					}
 					else
 					{
-						const Name argName      = AST::GetName(access, inputId);
-						const Name functionName = AST::GetFullName(access, id);
+						const Name argName        = AST::GetName(access, inputId);
+						const String functionName = AST::GetFullName(access, id);
 						gen.compiler.AddError(Strings::Format(
 						    "Input '{}' in function '{}' has an invalid type. Using i32 instead.",
 						    argName, functionName));

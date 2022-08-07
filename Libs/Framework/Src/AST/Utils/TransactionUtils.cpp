@@ -45,13 +45,13 @@ namespace rift::AST::Transactions
 		Hierarchy::GetAllParents(access, entityIds, parentIds);
 
 		parentIds.Append(entityIds);
-		access.Add<CChanged>(parentIds);
+		access.AddN<CChanged>(parentIds);
 
 		// Transaction ids can also be files. FindParents doesn't consider them, so we merge it
 		ecs::ExcludeIfNot<CFileRef>(access, parentIds);
 		if (!parentIds.IsEmpty())
 		{
-			access.Add<CFileDirty>(parentIds);
+			access.AddN<CFileDirty>(parentIds);
 		}
 
 		// TODO: Capture AST state

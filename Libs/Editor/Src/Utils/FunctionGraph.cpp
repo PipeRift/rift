@@ -78,41 +78,93 @@ namespace rift::Graph
 		return Nodes::ScreenToGridPosition(screenPosition) * GetInvGridSize();
 	}
 
+	void BeginExprInput(TAccessRef<CExprTypeId> access, AST::Id id, const bool& invalid)
+	{
+		bool isPointer = false;
+		AST::Id typeId = AST::NoId;
+		if (auto* type = access.TryGet<const CExprTypeId>(id))
+		{
+			typeId    = type->id;
+			isPointer = type->mode != TypeMode::Value;
+		}
+
+		Color pinColor = Style::GetTypeColor<void>();
+		if (invalid)
+		{
+			Style::PushTextColor(Style::invalidColor);
+			pinColor = Style::invalidColor;
+		}
+		else
+		{
+			pinColor = Style::GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), typeId);
+		}
+
+		Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+
+		Nodes::BeginInput(
+		    i32(id), isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
+	}
+
+	void BeginExprOutput(TAccessRef<CExprTypeId> access, AST::Id id, const bool& invalid)
+	{
+		bool isPointer = false;
+		AST::Id typeId = AST::NoId;
+		if (auto* type = access.TryGet<const CExprTypeId>(id))
+		{
+			typeId    = type->id;
+			isPointer = type->mode != TypeMode::Value;
+		}
+
+		Color pinColor = Style::GetTypeColor<void>();
+		if (invalid)
+		{
+			Style::PushTextColor(Style::invalidColor);
+			pinColor = Style::invalidColor;
+		}
+		else
+		{
+			pinColor = Style::GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), typeId);
+		}
+
+		Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+
+		Nodes::BeginOutput(
+		    i32(id), isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
+	}
+
+	void EndExprInput(const bool& invalid)
+	{
+		Nodes::EndInput();
+		Nodes::PopStyleColor(2);
+		if (invalid)
+		{
+			Style::PopTextColor();
+		}
+	}
+
+	void EndExprOutput(const bool& invalid)
+	{
+		Nodes::EndOutput();
+		Nodes::PopStyleColor(2);
+		if (invalid)
+		{
+			Style::PopTextColor();
+		}
+	}
+
 	void DrawInputs(TAccessRef<CInvalid, CExprTypeId, CNamespace> access, const CExprInputs& inputs)
 	{
 		for (AST::Id pinId : inputs.pinIds)
 		{
-			if (!access.IsValid(pinId))
+			if (access.IsValid(pinId))
 			{
-				continue;
-			}
-
-			AST::Id typeId       = AST::NoId;
-			Color pinColor       = Style::GetTypeColor<void>();
-			const bool isInvalid = access.Has<CInvalid>(pinId);
-			if (isInvalid)
-			{
-				Style::PushTextColor(Style::invalidColor);
-				pinColor = Style::invalidColor;
-			}
-			else if (auto* type = access.TryGet<const CExprTypeId>(pinId))
-			{
-				typeId = type->id;
-				pinColor =
-				    Style::GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), typeId);
-			}
-			Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-
-			Nodes::BeginInput(i32(pinId), Nodes::PinShape_CircleFilled);
-			auto* ns = access.TryGet<const CNamespace>(pinId);
-			UI::Text(ns ? ns->name.ToString() : "none");
-			Nodes::EndInput();
-
-			Nodes::PopStyleColor(2);
-			if (isInvalid)
-			{
-				Style::PopTextColor();
+				const bool invalid = access.Has<CInvalid>(pinId);
+				BeginExprInput(access, pinId, invalid);
+				auto* ns = access.TryGet<const CNamespace>(pinId);
+				UI::Text(ns ? ns->name.ToString() : "none");
+				EndExprInput(invalid);
 			}
 		}
 	}
@@ -122,37 +174,13 @@ namespace rift::Graph
 	{
 		for (AST::Id pinId : outputs.pinIds)
 		{
-			if (!access.IsValid(pinId))
+			if (access.IsValid(pinId))
 			{
-				continue;
-			}
-
-			AST::Id typeId       = AST::NoId;
-			Color pinColor       = Style::GetTypeColor<void>();
-			const bool isInvalid = access.Has<CInvalid>(pinId);
-			if (isInvalid)
-			{
-				Style::PushTextColor(Style::invalidColor);
-				pinColor = Style::invalidColor;
-			}
-			else if (auto* type = access.TryGet<const CExprTypeId>(pinId))
-			{
-				typeId = type->id;
-				pinColor =
-				    Style::GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), typeId);
-			}
-			Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-
-			Nodes::BeginOutput(i32(pinId), Nodes::PinShape_CircleFilled);
-			auto* ns = access.TryGet<const CNamespace>(pinId);
-			UI::Text(ns ? ns->name.ToString() : "none");
-			Nodes::EndOutput();
-
-			Nodes::PopStyleColor(2);
-			if (isInvalid)
-			{
-				Style::PopTextColor();
+				const bool invalid = access.Has<CInvalid>(pinId);
+				BeginExprOutput(access, pinId, invalid);
+				auto* ns = access.TryGet<const CNamespace>(pinId);
+				UI::Text(ns ? ns->name.ToString() : "none");
+				EndExprOutput(invalid);
 			}
 		}
 	}
@@ -214,19 +242,16 @@ namespace rift::Graph
 		static constexpr Color color = Style::GetTypeColor<bool>();
 
 		Style::PushNodeBackgroundColor(color);
-		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
 
 		BeginNode(ast, id);
 		{
-			Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+			BeginExprOutput(ast, id, false);
 			PushInnerNodeStyle();
 			UI::Checkbox("##value", &value);
 			PopInnerNodeStyle();
-			Nodes::EndOutput();
+			EndExprOutput(false);
 		}
 		EndNode(ast);
-		Nodes::PopStyleColor(2);
 		Style::PopNodeBackgroundColor();
 	}
 
@@ -234,14 +259,11 @@ namespace rift::Graph
 	{
 		const bool isSigned = value.IsSigned();
 		const Color color   = isSigned ? Style::GetTypeColor<i32>() : Style::GetTypeColor<u32>();
-
 		Style::PushNodeBackgroundColor(color);
-		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
 
 		BeginNode(ast, id);
 		{
-			Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+			BeginExprOutput(ast, id, false);
 			PushInnerNodeStyle();
 			UI::SetNextItemWidth(math::Max(settings.GetGridSize() * 4.f, 30.f));
 			switch (value.type)
@@ -272,10 +294,9 @@ namespace rift::Graph
 					break;
 			}
 			PopInnerNodeStyle();
-			Nodes::EndOutput();
+			EndExprOutput(false);
 		}
 		EndNode(ast);
-		Nodes::PopStyleColor(2);
 		Style::PopNodeBackgroundColor();
 	}
 
@@ -283,14 +304,11 @@ namespace rift::Graph
 	{
 		const bool isDouble = value.type == FloatingType::F64;
 		const Color color = isDouble ? Style::GetTypeColor<double>() : Style::GetTypeColor<float>();
-
 		Style::PushNodeBackgroundColor(color);
-		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
 
 		BeginNode(ast, id);
 		{
-			Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+			BeginExprOutput(ast, id, false);
 			PushInnerNodeStyle();
 			UI::SetNextItemWidth(math::Max(settings.GetGridSize() * 4.f, 30.f));
 			if (isDouble)
@@ -302,24 +320,20 @@ namespace rift::Graph
 				UI::InputDouble("##value", &value.value);
 			}
 			PopInnerNodeStyle();
-			Nodes::EndOutput();
+			EndExprOutput(false);
 		}
 		EndNode(ast);
-		Nodes::PopStyleColor(2);
 		Style::PopNodeBackgroundColor();
 	}
 
 	void DrawLiteralString(AST::Tree& ast, AST::Id id, String& value)
 	{
 		static constexpr Color color = Style::GetTypeColor<String>();
-
 		Style::PushNodeBackgroundColor(color);
-		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
 
 		BeginNode(ast, id);
 		{
-			Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+			BeginExprOutput(ast, id, false);
 			PushInnerNodeStyle();
 			ImGuiStyle& style     = ImGui::GetStyle();
 			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
@@ -327,11 +341,10 @@ namespace rift::Graph
 			const v2 size{math::Max(minSize.x, textSize.x), math::Max(minSize.y, textSize.y)};
 			UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
 			PopInnerNodeStyle();
-			Nodes::EndOutput();
+			EndExprOutput(false);
 		}
 		EndNode(ast);
 
-		Nodes::PopStyleColor(2);
 		Style::PopNodeBackgroundColor();
 	}
 
@@ -486,6 +499,7 @@ namespace rift::Graph
 		Nodes::PushStyleVar(Nodes::StyleVar_PinLineThickness, 2.5f);
 		Nodes::PushStyleVar(Nodes::StyleVar_NodeCornerRounding, 1.f);
 		Nodes::PushStyleVar(Nodes::StyleVar_PinQuadSideLength, 10.f);
+		Nodes::PushStyleVar(Nodes::StyleVar_PinDiamondSideLength, 10.f);
 		Nodes::PushStyleVar(Nodes::StyleVar_NodePadding, v2(10.f, 2.f));
 
 		Nodes::PushStyleVar(Nodes::StyleVar_NodeBorderThickness, 0.f);
@@ -561,12 +575,10 @@ namespace rift::Graph
 
 			const Color color = Style::GetTypeColor(ast, typeId);
 			Style::PushNodeBackgroundColor(color);
-			Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
 
 			BeginNode(ast, id);
 			{
-				Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+				BeginExprOutput(ast, id, false);
 				PushInnerNodeStyle();
 				StringView name = "Invalid";
 				if (ast.IsValid(variableId) && ast.Has<CNamespace>(variableId))
@@ -575,16 +587,16 @@ namespace rift::Graph
 				}
 				UI::Text(name);
 				PopInnerNodeStyle();
-				Nodes::EndOutput();
+				EndExprOutput(false);
 			}
 			EndNode(ast);
-			Nodes::PopStyleColor(2);
+
 			Style::PopNodeBackgroundColor();
 		}
 	}
 
 	void DrawIfs(TAccessRef<TWrite<CNodePosition>, TWrite<CChanged>, TWrite<CFileDirty>, CChild,
-	                 CFileRef, CStmtIf, CStmtOutputs, CExprInputs, CParent>
+	                 CFileRef, CStmtIf, CStmtOutputs, CExprInputs, CParent, CExprTypeId>
 	                 access,
 	    const TArray<AST::Id>& children)
 	{
@@ -604,19 +616,14 @@ namespace rift::Graph
 						Nodes::EndInput();
 						PopExecutionPinStyle();
 
-						const Color pinColor = Style::GetTypeColor<bool>();
-						Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-						Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
-
 						auto& inputs = access.Get<const CExprInputs>(id);
 						if (!Ensure(inputs.pinIds.Size() == 1))
 						{
 							continue;
 						}
-						Nodes::BeginInput(i32(inputs.pinIds[0]), Nodes::PinShape_CircleFilled);
+						BeginExprInput(access, inputs.pinIds[0], false);
 						UI::TextUnformatted("");
-						Nodes::EndInput();
-						Nodes::PopStyleColor(2);
+						EndExprInput(false);
 					}
 					UI::EndGroup();
 					UI::SameLine();
@@ -653,7 +660,7 @@ namespace rift::Graph
 	}
 
 	void DrawUnaryOperators(TAccessRef<TWrite<CNodePosition>, TWrite<CChanged>, TWrite<CFileDirty>,
-	                            CChild, CParent, CFileRef, CExprUnaryOperator>
+	                            CChild, CParent, CFileRef, CExprUnaryOperator, CExprTypeId>
 	                            access,
 	    const TArray<AST::Id>& children)
 	{
@@ -662,14 +669,12 @@ namespace rift::Graph
 			static constexpr Color color = Style::GetNeutralColor(0);
 
 			Style::PushNodeBackgroundColor(color);
-			Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
 
 			BeginNode(access, id);
 			{
-				Nodes::BeginInput(i32(id), Nodes::PinShape_CircleFilled);
+				BeginExprInput(access, id, false);
 				UI::TextUnformatted("");
-				Nodes::EndInput();
+				EndExprInput(false);
 				UI::SameLine();
 
 				const auto& op       = access.Get<const CExprUnaryOperator>(id);
@@ -677,19 +682,18 @@ namespace rift::Graph
 				UI::Text(shortName);
 
 				UI::SameLine();
-				Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+				BeginExprOutput(access, id, false);
 				UI::TextUnformatted("");
-				Nodes::EndOutput();
+				EndExprOutput(false);
 			}
 			EndNode(access);
 
-			Nodes::PopStyleColor(2);
 			Style::PopNodeBackgroundColor();
 		}
 	}
 
 	void DrawBinaryOperators(TAccessRef<TWrite<CNodePosition>, TWrite<CChanged>, TWrite<CFileDirty>,
-	                             CChild, CParent, CFileRef, CExprBinaryOperator>
+	                             CChild, CParent, CFileRef, CExprBinaryOperator, CExprTypeId>
 	                             access,
 	    const TArray<AST::Id>& children)
 	{
@@ -697,10 +701,7 @@ namespace rift::Graph
 		for (AST::Id id : ecs::GetIf<CExprBinaryOperator>(access, children))
 		{
 			static constexpr Color color = Style::GetNeutralColor(0);
-
 			Style::PushNodeBackgroundColor(color);
-			Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-			Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
 
 			BeginNode(access, id);
 			{
@@ -711,12 +712,13 @@ namespace rift::Graph
 					continue;
 				}
 				UI::BeginGroup();
-				Nodes::BeginInput(i32(pinIds[0]), Nodes::PinShape_CircleFilled);
+				BeginExprInput(access, pinIds[0], false);
 				UI::TextUnformatted("");
-				Nodes::EndInput();
-				Nodes::BeginInput(i32(pinIds[1]), Nodes::PinShape_CircleFilled);
+				EndExprInput(false);
+
+				BeginExprInput(access, pinIds[1], false);
 				UI::TextUnformatted("");
-				Nodes::EndInput();
+				EndExprInput(false);
 				UI::EndGroup();
 				UI::SameLine();
 
@@ -725,13 +727,12 @@ namespace rift::Graph
 				UI::Text(shortName);
 
 				UI::SameLine();
-				Nodes::BeginOutput(i32(id), Nodes::PinShape_CircleFilled);
+				BeginExprOutput(access, id, false);
 				UI::TextUnformatted("");
-				Nodes::EndOutput();
+				EndExprOutput(false);
 			}
 			EndNode(access);
 
-			Nodes::PopStyleColor(2);
 			Style::PopNodeBackgroundColor();
 		}
 	}
@@ -886,10 +887,13 @@ namespace rift::Graph
 			}
 			Nodes::EndNodeEditor();
 
+
 			Nodes::Id outputPin;
 			Nodes::Id inputPin;
 			if (Nodes::IsLinkCreated(outputPin, inputPin))
 			{
+				AST::Id pinIds[2]{AST::Id(outputPin), AST::Id(inputPin)};
+				ScopedChange(ast, pinIds);
 				AST::Statements::TryConnect(ast, AST::Id(outputPin), AST::Id(inputPin));
 				AST::Expressions::TryConnect(ast,
 				    AST::Expressions::OutputFromPinId(ast, AST::Id(outputPin)),
@@ -898,6 +902,7 @@ namespace rift::Graph
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))
 			{
+				ScopedChange(ast, AST::Id(linkId));
 				// linkId is always the outputId
 				AST::Statements::Disconnect(ast, AST::Id(linkId));
 				AST::Expressions::Disconnect(

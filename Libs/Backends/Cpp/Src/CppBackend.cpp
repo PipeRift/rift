@@ -23,18 +23,18 @@ namespace rift::compiler
 		void AssignNativeTypeNames(AST::Tree& ast)
 		{
 			const auto& nativeTypes = ast.GetNativeTypes();
-			ast.Add<CCppNativeName>(nativeTypes.boolId, {"bool"});
-			ast.Add<CCppNativeName>(nativeTypes.floatId, {"float"});
-			ast.Add<CCppNativeName>(nativeTypes.doubleId, {"double"});
-			ast.Add<CCppNativeName>(nativeTypes.u8Id, {"std::uint_8"});
-			ast.Add<CCppNativeName>(nativeTypes.i8Id, {"std::int_8"});
-			ast.Add<CCppNativeName>(nativeTypes.u16Id, {"std::uint_16"});
-			ast.Add<CCppNativeName>(nativeTypes.i16Id, {"std::int_16"});
-			ast.Add<CCppNativeName>(nativeTypes.u32Id, {"std::uint_32"});
-			ast.Add<CCppNativeName>(nativeTypes.i32Id, {"std::int_32"});
-			ast.Add<CCppNativeName>(nativeTypes.u64Id, {"std::uint_64"});
-			ast.Add<CCppNativeName>(nativeTypes.i64Id, {"std::int_64"});
-			ast.Add<CCppNativeName>(nativeTypes.stringId, {"std::string"});
+			ast.Add<CCppNativeName>(nativeTypes.boolId, "bool");
+			ast.Add<CCppNativeName>(nativeTypes.floatId, "float");
+			ast.Add<CCppNativeName>(nativeTypes.doubleId, "double");
+			ast.Add<CCppNativeName>(nativeTypes.u8Id, "std::uint_8");
+			ast.Add<CCppNativeName>(nativeTypes.i8Id, "std::int_8");
+			ast.Add<CCppNativeName>(nativeTypes.u16Id, "std::uint_16");
+			ast.Add<CCppNativeName>(nativeTypes.i16Id, "std::int_16");
+			ast.Add<CCppNativeName>(nativeTypes.u32Id, "std::uint_32");
+			ast.Add<CCppNativeName>(nativeTypes.i32Id, "std::int_32");
+			ast.Add<CCppNativeName>(nativeTypes.u64Id, "std::uint_64");
+			ast.Add<CCppNativeName>(nativeTypes.i64Id, "std::int_64");
+			ast.Add<CCppNativeName>(nativeTypes.stringId, "std::string");
 		}
 
 		void BuildCode(Compiler& compiler, const p::Path& codePath, const p::Path& cmakePath)

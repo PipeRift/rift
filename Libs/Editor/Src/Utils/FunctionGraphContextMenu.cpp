@@ -107,7 +107,7 @@ namespace rift::Graph
 		TArray<AST::Id> calls = ecs::GetIf<CExprCall>(ast, nodeIds);
 		if (!calls.IsEmpty() && UI::MenuItem("Refresh"))
 		{
-			ast.Add<CCallDirty>(calls);
+			ast.AddN<CCallDirty>(calls);
 		}
 
 		if (canEditBody && UI::MenuItem("Delete"))
@@ -125,6 +125,7 @@ namespace rift::Graph
 
 		if (canEditBody && UI::MenuItem("Delete"))
 		{
+			ScopedChange(ast, linkIds);
 			for (AST::Id linkId : linkIds)
 			{
 				AST::Expressions::Disconnect(

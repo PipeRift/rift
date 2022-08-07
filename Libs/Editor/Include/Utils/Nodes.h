@@ -77,6 +77,7 @@ namespace rift::Nodes
 		StyleVar_PinCircleRadius,
 		StyleVar_PinQuadSideLength,
 		StyleVar_PinTriangleSideLength,
+		StyleVar_PinDiamondSideLength,
 		StyleVar_PinLineThickness,
 		StyleVar_PinHoverRadius,
 		StyleVar_PinOffset,
@@ -102,7 +103,9 @@ namespace rift::Nodes
 		PinShape_Triangle,
 		PinShape_TriangleFilled,
 		PinShape_Quad,
-		PinShape_QuadFilled
+		PinShape_QuadFilled,
+		PinShape_Diamond,
+		PinShape_DiamondFilled
 	};
 
 	enum class PinType : u8
@@ -234,6 +237,9 @@ namespace rift::Nodes
 		// The equilateral triangle side length used when the pin shape is either
 		// PinShape_Triangle or PinShape_TriangleFilled.
 		float PinTriangleSideLength;
+		// The quad side length used when the shape is either PinShape_Diamond or
+		// PinShape_DiamondFilled.
+		float PinDiamondSideLength;
 		// The thickness of the line used when the pin shape is not filled.
 		float PinLineThickness;
 		// The radius from the pin's center position inside of which it is detected as being hovered

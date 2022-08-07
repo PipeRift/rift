@@ -34,7 +34,7 @@ namespace rift::FunctionsSystem
 	void Init(AST::Tree& ast)
 	{
 		ast.OnAdd<CExprCallId>().Bind([](auto& ast, auto ids) {
-			ast.template Add<CCallDirty>(ids);
+			ast.template AddN<CCallDirty>(ids);
 		});
 	}
 
@@ -199,9 +199,8 @@ namespace rift::FunctionsSystem
 					}
 				}
 
-				const auto* pinType     = access.TryGet<const CExprTypeId>(pinId);
-				const AST::Id pinTypeId = pinType ? pinType->id : AST::NoId;
-				access.Add<CExprTypeId>(callOutputs.pinIds[i], {pinTypeId});
+				const auto* pinType = access.TryGet<const CExprTypeId>(pinId);
+				access.Add<CExprTypeId>(callOutputs.pinIds[i], pinType ? *pinType : CExprTypeId{});
 			}
 
 			// Mark as invalid all after N function params, and valid those before
@@ -213,7 +212,7 @@ namespace rift::FunctionsSystem
 			const i32 count = callOutputs.pinIds.Size() - validSize;
 			if (count > 0)
 			{
-				access.Add<CInvalid>({callOutputs.pinIds.Data() + firstInvalid, count});
+				access.AddN<CInvalid>({callOutputs.pinIds.Data() + firstInvalid, count});
 			}
 		}
 
@@ -271,9 +270,8 @@ namespace rift::FunctionsSystem
 					}
 				}
 
-				const auto* pinType     = access.TryGet<const CExprTypeId>(pinId);
-				const AST::Id pinTypeId = pinType ? pinType->id : AST::NoId;
-				access.Add<CExprTypeId>(callInputs.pinIds[i], {pinTypeId});
+				const auto* pinType = access.TryGet<const CExprTypeId>(pinId);
+				access.Add<CExprTypeId>(callInputs.pinIds[i], pinType ? *pinType : CExprTypeId{});
 			}
 
 			// Mark as invalid all after N function params, and valid those before
@@ -285,7 +283,7 @@ namespace rift::FunctionsSystem
 			const i32 count = callInputs.pinIds.Size() - validSize;
 			if (count > 0)
 			{
-				access.Add<CInvalid>({callInputs.pinIds.Data() + firstInvalid, count});
+				access.AddN<CInvalid>({callInputs.pinIds.Data() + firstInvalid, count});
 			}
 		}
 

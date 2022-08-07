@@ -1,6 +1,6 @@
 {
     "type": "Class",
-    "count": 3,
+    "count": 14,
     "roots": [
         0
     ],
@@ -8,27 +8,164 @@
         "CChild": {
             "0": -1,
             "1": 0,
-            "2": 1
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 1,
+            "11": 1,
+            "12": 2,
+            "13": 2
         },
         "CDeclFunction": {
             "1": {}
         },
+        "CExprBinaryOperator": {
+            "2": {
+                "type": "Add"
+            }
+        },
         "CExprOutputs": {
             "1": {
                 "pinIds": [
+                    10,
+                    11
+                ]
+            },
+            "2": {
+                "pinIds": [
                     2
+                ]
+            },
+            "3": {
+                "pinIds": [
+                    3
+                ]
+            },
+            "4": {
+                "pinIds": [
+                    4
+                ]
+            },
+            "5": {
+                "pinIds": [
+                    5
+                ]
+            },
+            "6": {
+                "pinIds": [
+                    6
+                ]
+            },
+            "7": {
+                "pinIds": [
+                    7
+                ]
+            },
+            "8": {
+                "pinIds": [
+                    8
+                ]
+            },
+            "9": {
+                "pinIds": [
+                    9
+                ]
+            }
+        },
+        "CExprInputs": {
+            "1": {
+                "linkedOutputs": [],
+                "pinIds": []
+            },
+            "2": {
+                "linkedOutputs": [
+                    {
+                        "nodeId": 3,
+                        "pinId": 3
+                    },
+                    {
+                        "nodeId": 6,
+                        "pinId": 6
+                    }
+                ],
+                "pinIds": [
+                    12,
+                    13
                 ]
             }
         },
         "CExprType": {
-            "2": [
-                "I64"
+            "3": [
+                "Bool"
+            ],
+            "4": [
+                "I32"
+            ],
+            "5": [
+                "Float"
+            ],
+            "6": [
+                "Double"
+            ],
+            "7": [
+                "String"
+            ],
+            "8": [
+                "U32"
+            ],
+            "9": [
+                "U32"
+            ],
+            "10": [
+                "TestProject",
+                "TestClass"
+            ],
+            "11": [
+                "TestProject",
+                "TestStruct"
             ]
         },
         "CNodePosition": {
             "1": {
                 "x": 0.0,
                 "y": 0.0
+            },
+            "2": {
+                "x": 14.0,
+                "y": 5.0
+            },
+            "3": {
+                "x": 0.0,
+                "y": 5.0
+            },
+            "4": {
+                "x": 0.0,
+                "y": 9.0
+            },
+            "5": {
+                "x": 0.0,
+                "y": 7.0
+            },
+            "6": {
+                "x": 7.0,
+                "y": 7.0
+            },
+            "7": {
+                "x": 0.0,
+                "y": 13.0
+            },
+            "8": {
+                "x": 0.0,
+                "y": 11.0
+            },
+            "9": {
+                "x": 8.0,
+                "y": 14.0
             }
         },
         "CNamespace": {
@@ -38,17 +175,67 @@
             "1": {
                 "name": "Print"
             },
-            "2": {
-                "name": "value"
+            "10": {
+                "name": "class"
+            },
+            "11": {
+                "name": "struct"
             }
         },
         "CParent": {
             "0": [
-                1
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
             ],
             "1": [
-                2
+                10,
+                11
+            ],
+            "2": [
+                12,
+                13
             ]
+        },
+        "CLiteralBool": {
+            "3": {
+                "value": false
+            }
+        },
+        "CLiteralFloating": {
+            "5": {
+                "value": 0.0,
+                "type": "F32"
+            },
+            "6": {
+                "value": 0.0,
+                "type": "F64"
+            }
+        },
+        "CLiteralIntegral": {
+            "4": {
+                "value": 0,
+                "type": "S32"
+            },
+            "8": {
+                "value": 0,
+                "type": "S32"
+            },
+            "9": {
+                "value": 0,
+                "type": "U32"
+            }
+        },
+        "CLiteralString": {
+            "7": {
+                "value": "String"
+            }
         },
         "CStmtOutput": {
             "1": -1

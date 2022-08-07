@@ -247,7 +247,7 @@ namespace rift
 			if (insideOther)
 			{
 				// If a module is inside another, create the folders in between
-				InsertItem(folders, Item{oneId, p::ToString(path), true});
+				InsertItem(folders, Item{oneId, Name{p::ToString(path)}, true});
 			}
 			else
 			{
@@ -393,7 +393,8 @@ namespace rift
 					renameId         = AST::NoId;
 					Path destination = p::ToPath(GetParentPath(path)) / renameBuffer;
 					destination.replace_extension("rf");
-					// FIX: Type caches dont detect renamed types. Should provide helpers for that
+					// FIX: Type caches dont detect renamed types. Should provide helpers for
+					// that
 					files::Rename(p::ToPath(path), destination);
 					renameBuffer     = "";
 					renameHasFocused = false;
