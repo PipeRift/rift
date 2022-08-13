@@ -19,6 +19,7 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Description", name: "description", widget: "string" }
+      - { label: "Subtitle", name: "lead", widget: "string", required: false }
       - { label: "Date", name: "date", widget: "date" }
       - { label: "Modified Date", name: "lastmod", widget: "date" }
       - { label: "Images", name: "images", widget: "list", summary: '{{fields.image}}', field: {
@@ -29,7 +30,7 @@ collections:
       - { label: "Tags", name: "tags", widget: "list", required: false}
       - { label: "Contributors", name: "contributors", widget: "list"}
       - { label: "Homepage", name: "homepage", widget: "boolean", required: false}
-      - { label: "Body", name: "body", widget: "markdown" }
+      - { label: "Body", name: "body", widget: "markdown", required: false }
     meta: { path: { widget: string, label: 'Path', index_file: 'index' } }
 
   - name: "docs"
@@ -42,6 +43,7 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Description", name: "description", widget: "string" }
+      - { label: "Subtitle", name: "lead", widget: "string", required: false }
       - { label: "Date", name: "date", widget: "date" }
       - { label: "Modified Date", name: "lastmod", widget: "date" }
       - { label: "Images", name: "images", widget: "list", summary: '{{fields.image}}', field: {
@@ -52,5 +54,7 @@ collections:
       - { label: "Tags", name: "tags", widget: "list", required: false}
       - { label: "Contributors", name: "contributors", widget: "list"}
       - { label: "Homepage", name: "homepage", widget: "boolean", required: false}
-      - { label: "Body", name: "body", widget: "markdown" }
+      - { label: "Table of Contents", name: "toc", widget: "boolean", default: true}
+      - { label: "Weight", name: "weight", widget: "number" }
+      - { label: "Body", name: "body", widget: "markdown", required: false}
     meta: { path: { widget: string, label: 'Path', index_file: '_index' } }
