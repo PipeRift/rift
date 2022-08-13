@@ -1,0 +1,115 @@
+# Meta Data for SEO
+
+## Homepage
+title = "Rift"
+titleSeparator = "-"
+titleAddition = "Visual & Compiled"
+description = "Rift is a programming language designed to compile visual representations to machine code, focusing on performance and compile times."
+
+## Documentation
+# docsVersion = "1.0"
+
+## Open Graph
+images = ["/images/logo.png"]
+ogLocale = "en_US"
+domainTLD = "piperift.com"
+titleHome = "Rift"
+
+## Twitter Cards
+twitterSite = "@piperift"
+twitterCreator = "@muitxer"
+
+## JSON-LD
+# schemaType = "Person"
+schemaType = "Organization"
+schemaName = "Piperift"
+schemaAuthor = "Miguel Fernandez Arce"
+schemaAuthorTwitter = "https://twitter.com/muitxer"
+schemaAuthorLinkedIn = "https://www.linkedin.com/in/muitxer/"
+schemaAuthorGitHub = "https://github.com/muit"
+schemaLocale = "en-US"
+schemaLogo = "logo.png"
+schemaLogoWidth = 512
+schemaLogoHeight = 512
+schemaImage = "logo.png"
+schemaImageWidth = 1280
+schemaImageHeight = 640
+schemaTwitter = "https://twitter.com/piperift"
+schemaLinkedIn = ""
+schemaGitHub = "https://github.com/Piperift"
+schemaSection = "blog"
+
+## Sitelinks Search Box
+siteLinksSearchBox = false
+
+## Chrome Browser
+themeColor = "#fff"
+
+# Images - Temporarily left in place for backward compatibility
+quality = 85
+bgColor = "#fff"
+landscapePhotoWidths = [900, 800, 700, 600, 500]
+portraitPhotoWidths = [800, 700, 600, 500]
+lqipWidth = "20x"
+smallLimit = "300"
+
+# Images
+imageResponsive = true
+imageConvertTo = "webp"
+imageImageSizes = ["480","720","1080","1280","1600","2048"]
+singleSize = false
+imageAddClass = "img-fluid lazyload blur-up"
+
+### Image template
+defaultImage = "default-image.png" # put in `./assets/images/`
+fillImage = "1270x740 Center" # normalize image size
+
+# Footer
+footer = "<div class=\"d-flex justify-content-between\"><div>Copyright (c) 2015-2022 Piperift.</div><div class=\"px-2\">Powered by <a class=\"text-muted\" href=\"https://gohugo.io/\">Hugo</a> and <a class=\"text-muted\" href=\"https://getdoks.org/\">Doks</a></div></div>"
+
+# Feed
+copyRight = "Copyright (c) 2015-2022 Piperift"
+
+# Alert
+alert = false
+alertDismissable = true
+alertText = ""
+
+# Project
+projectRepo = "https://github.com/Piperift/rift"
+
+# Edit Page
+# repoHost [Github | Gitea | GitLab | Bitbucket | BitbucketServer ] is used for building the edit link based on git hoster
+repoHost = "GitHub"
+docsRepo = "https://github.com/Piperift/rift"
+docsRepoBranch = "main"
+docsRepoSubPath = ""
+editPage = false
+lastMod = false
+
+[sections]
+  sectionNav = ["docs", "guides"]
+
+[options]
+  lazySizes = true
+  clipBoard = true
+  instantPage = true
+  flexSearch = true
+  searchSectionsShow = []
+  searchSectionsIndex = []
+  darkMode = true
+  bootStrapJs = true
+  breadCrumb = false
+  highLight = true
+  kaTex = false
+  multilingualMode = false
+  docsVersioning = false
+  fullWidth = false
+  navbarSticky = true
+  toTopButton = false
+  scrollSpy = false # experimental; needs Bootstrap >= 5.2.0-beta1
+
+[menu]
+  [menu.section]
+    auto = true
+    collapsibleSidebar = true
