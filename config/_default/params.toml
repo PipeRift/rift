@@ -28,10 +28,10 @@ schemaAuthorTwitter = "https://twitter.com/muitxer"
 schemaAuthorLinkedIn = "https://www.linkedin.com/in/muitxer/"
 schemaAuthorGitHub = "https://github.com/muit"
 schemaLocale = "en-US"
-schemaLogo = "logo-doks.png"
+schemaLogo = "logo.png"
 schemaLogoWidth = 512
 schemaLogoHeight = 512
-schemaImage = "doks.png"
+schemaImage = "logo.png"
 schemaImageWidth = 1280
 schemaImageHeight = 640
 schemaTwitter = "https://twitter.com/piperift"
@@ -74,6 +74,9 @@ copyRight = "Copyright (c) 2015-2022 Piperift"
 alert = false
 alertDismissable = true
 alertText = ""
+
+# Project
+projectRepo = "https://github.com/Piperift/rift"
 
 # Edit Page
 # repoHost [Github | Gitea | GitLab | Bitbucket | BitbucketServer ] is used for building the edit link based on git hoster
