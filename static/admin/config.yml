@@ -1,0 +1,30 @@
+backend:
+  name: github
+  repo: piperift/piperift.github.io
+  branch: main # Branch to update (optional; defaults to master)
+
+publish_mode: editorial_workflow
+
+media_folder: "static/images"
+public_folder: "/images"
+
+collections:
+  - name: "posts"
+    label: "Posts"
+    label_singular: 'Post'
+    folder: "content/blog"
+    create: true
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Description", name: "description", widget: "string" }
+      - { label: "Date", name: "date", widget: "date" }
+      - { label: "Modified Date", name: "lastmod", widget: "date" }
+      - { label: "Images", name: "images", widget: "list", summary: '{{fields.image}}', field: {
+            label: Image, name: image, widget: image
+          }, required: false
+        }
+      - { label: "Categories", name: "categories", widget: "list", required: false}
+      - { label: "Tags", name: "tags", widget: "list", required: false}
+      - { label: "Contributors", name: "contributors", widget: "list"}
+      - { label: "Homepage", name: "homepage", widget: "boolean", required: false}
+      - { label: "Body", name: "body", widget: "markdown" }
