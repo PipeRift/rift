@@ -10,10 +10,10 @@ description = "Rift is a programming language designed to compile visual represe
 # docsVersion = "1.0"
 
 ## Open Graph
-images = ["doks.png"]
+images = ["/images/logo.png"]
 ogLocale = "en_US"
-domainTLD = "doks.netlify.app"
-titleHome = "Doks Theme"
+domainTLD = "piperift.com"
+titleHome = "Rift"
 
 ## Twitter Cards
 twitterSite = "@piperift"
@@ -65,7 +65,7 @@ defaultImage = "default-image.png" # put in `./assets/images/`
 fillImage = "1270x740 Center" # normalize image size
 
 # Footer
-footer = "Powered by <a class=\"text-muted\" href=\"https://www.netlify.com/\">Netlify</a>, <a class=\"text-muted\" href=\"https://gohugo.io/\">Hugo</a>, and <a class=\"text-muted\" href=\"https://getdoks.org/\">Doks</a>"
+footer = "<div class=\"d-flex justify-content-between\"><div>Copyright (c) 2015-2022 Piperift.</div><div class=\"px-2\">Powered by <a class=\"text-muted\" href=\"https://gohugo.io/\">Hugo</a> and <a class=\"text-muted\" href=\"https://getdoks.org/\">Doks</a></div></div>"
 
 # Feed
 copyRight = "Copyright (c) 2015-2022 Piperift"

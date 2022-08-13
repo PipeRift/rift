@@ -76,7 +76,13 @@
   url = "https://twitter.com/piperift"
   weight = 20
 
-# [[footer]]
-#   name = "Privacy"
-#   url = "/privacy-policy/"
-#   weight = 10
+
+[[footer]]
+  name = "Contribute"
+  url = "https://github.com/PipeRift/rift/blob/main/CONTRIBUTING.md"
+  weight = 10
+
+[[footer]]
+  name = "Sponsor"
+  url = "https://github.com/sponsors/muit"
+  weight = 20
