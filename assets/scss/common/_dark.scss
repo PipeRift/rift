@@ -35,7 +35,7 @@ $navbar-dark-active-color:          $primary-dark;
   color: $link-color-dark;
 }
 
-[data-dark-mode] body a:not(.btn).text-body {
+[data-dark-mode] body a.text-body:not(.btn) {
   color: $body-color-dark !important;
 }
 
@@ -394,10 +394,6 @@ $navbar-dark-active-color:          $primary-dark;
 
 [data-dark-mode] body .docs-links h3:not(:first-child) {
   border-top: 1px solid $border-dark;
-}
-
-[data-dark-mode] body a:not(.btn).docs-link {
-  color: $body-color-dark;
 }
 
 [data-dark-mode] body .page-links li:not(:first-child) {
