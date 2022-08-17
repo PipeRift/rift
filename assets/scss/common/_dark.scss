@@ -5,53 +5,74 @@
 $primary-dark: lighten($primary, 15%);
 
 
-$body-bg-dark: $gray-900;
-$body-overlay-dark: darken($body-bg-dark, 2.5%);
+$color-dark-bg: $gray-900;
+$body-overlay-dark: darken($color-dark-bg, 2.5%);
 
 /*
-$border-dark: darken($body-bg-dark, 2.5%);
+$border-dark: darken($color-dark-bg, 2.5%);
 */
 $border-dark: $gray-800;
 $body-color-dark: $gray-300;
 $dots-dark: darken($body-color-dark, 50%);
 
 $link-color-dark: $primary-dark;
-$button-color-dark: $link-color-dark;
-$focus-color-dark: lighten($link-color-dark, 2.5%);
+$color-dark-btn-bg: $primary-dark;
+$color-dark-btn-border: lighten($color-dark-btn-bg, 5%);
+$focus-color-dark: lighten($primary-dark, 2.5%);
 
 $navbar-dark-color:                 $body-color-dark;
-$navbar-dark-hover-color:           $link-color-dark;
-$navbar-dark-active-color:          $link-color-dark;
+$navbar-dark-hover-color:           $primary-dark;
+$navbar-dark-active-color:          $primary-dark;
 
 /** Theme styles */
 
 [data-dark-mode] body {
-  background: $body-bg-dark;
+  background: $color-dark-bg;
   color: $body-color-dark;
 }
 
-[data-dark-mode] body a {
+[data-dark-mode] body a:not(.btn) {
   color: $link-color-dark;
 }
 
-[data-dark-mode] body a.text-body {
+[data-dark-mode] body a:not(.btn).text-body {
   color: $body-color-dark !important;
 }
 
 [data-dark-mode] body .btn-primary {
-  @include button-variant($button-color-dark, $button-color-dark);
+  @include button-variant(
+    $color-dark-btn-bg,
+    $color-dark-btn-border,
+    $color-dark-bg,
+    darken($color-dark-btn-bg, 5%),
+    darken($color-dark-btn-border, 15%),
+    $color-dark-bg,
+    $color-dark-btn-bg,
+    darken($color-dark-btn-border, 15%),
+    $color-dark-bg);
+}
 
-  color: $body-bg-dark !important;
+[data-dark-mode] body .btn-copy {
+  @include button-variant(
+    $color-dark-btn-bg,
+    $color-dark-btn-border,
+    $color-dark-bg,
+    darken($color-dark-btn-bg, 5%),
+    darken($color-dark-btn-border, 15%),
+    $color-dark-bg,
+    $color-dark-btn-bg,
+    darken($color-dark-btn-border, 15%),
+    $color-dark-bg);
 }
 
 [data-dark-mode] body .btn-outline-primary {
-  @include button-outline-variant($button-color-dark, $button-color-dark);
+  @include button-outline-variant($color-dark-btn-bg, $color-dark-btn-bg);
 
   color: $link-color-dark;
 }
 
 [data-dark-mode] body .btn-outline-primary:hover {
-  color: $body-bg-dark;
+  color: $color-dark-bg;
 }
 
 [data-dark-mode] body .btn-doks-light {
@@ -140,7 +161,7 @@ $navbar-dark-active-color:          $link-color-dark;
 }
 
 [data-dark-mode] body .alert-primary a {
-  color: $body-bg-dark;
+  color: $color-dark-bg;
 }
 
 [data-dark-mode] body .alert-doks {
@@ -337,7 +358,7 @@ $navbar-dark-active-color:          $link-color-dark;
 [data-dark-mode] body .docs-links,
 [data-dark-mode] body .docs-toc {
   scrollbar-width: thin;
-  scrollbar-color: $body-bg-dark $body-bg-dark;
+  scrollbar-color: $color-dark-bg $color-dark-bg;
 }
 
 [data-dark-mode] body .docs-links::-webkit-scrollbar,
@@ -347,18 +368,18 @@ $navbar-dark-active-color:          $link-color-dark;
 
 [data-dark-mode] body .docs-links::-webkit-scrollbar-track,
 [data-dark-mode] body .docs-toc::-webkit-scrollbar-track {
-  background: $body-bg-dark;
+  background: $color-dark-bg;
 }
 
 [data-dark-mode] body .docs-links::-webkit-scrollbar-thumb,
 [data-dark-mode] body .docs-toc::-webkit-scrollbar-thumb {
-  background: $body-bg-dark;
+  background: $color-dark-bg;
 }
 
 [data-dark-mode] body .docs-links:hover,
 [data-dark-mode] body .docs-toc:hover {
   scrollbar-width: thin;
-  scrollbar-color: $border-dark $body-bg-dark;
+  scrollbar-color: $border-dark $color-dark-bg;
 }
 
 [data-dark-mode] body .docs-links:hover::-webkit-scrollbar-thumb,
@@ -375,7 +396,7 @@ $navbar-dark-active-color:          $link-color-dark;
   border-top: 1px solid $border-dark;
 }
 
-[data-dark-mode] body a.docs-link {
+[data-dark-mode] body a:not(.btn).docs-link {
   color: $body-color-dark;
 }
 
@@ -384,7 +405,7 @@ $navbar-dark-active-color:          $link-color-dark;
 }
 
 [data-dark-mode] body .card {
-  background: $body-bg-dark;
+  background: $color-dark-bg;
   border: 1px solid $border-dark;
 }
 
@@ -410,7 +431,7 @@ $navbar-dark-active-color:          $link-color-dark;
 }
 
 [data-dark-mode] body .bg-light {
-  background: darken($body-bg-dark, 1.5%) !important;
+  background: darken($color-dark-bg, 1.5%) !important;
 }
 
 [data-dark-mode] body .bg-dots {
@@ -423,7 +444,7 @@ $navbar-dark-active-color:          $link-color-dark;
 
 [data-dark-mode] body .alert-primary {
   background: $link-color-dark;
-  color: $body-bg-dark;
+  color: $color-dark-bg;
 }
 
 [data-dark-mode] body .figure-caption {
@@ -461,7 +482,7 @@ $navbar-dark-active-color:          $link-color-dark;
 */
 
 [data-dark-mode] body .offcanvas {
-  background-color: $body-bg-dark;
+  background-color: $color-dark-bg;
 }
 
 [data-dark-mode] body .btn-close {
@@ -482,7 +503,7 @@ $navbar-dark-active-color:          $link-color-dark;
 */
 
 [data-dark-mode] .dropdown-item {
-  color: $body-bg-dark;
+  color: $color-dark-bg;
 }
 
 [data-dark-mode] body hr.text-black-50 {
@@ -504,20 +525,20 @@ $navbar-dark-active-color:          $link-color-dark;
   border: $pagination-border-width solid $border-dark;
 
   &:hover {
-    color: $body-bg-dark;
+    color: $color-dark-bg;
     background-color: $body-color-dark;
     border-color: $body-color-dark;
   }
 
   &:focus {
-    color: $body-bg-dark;
+    color: $color-dark-bg;
     background-color: $body-color-dark;
   }
 }
 
 [data-dark-mode] .page-item {
   &.active .page-link {
-    color: $body-bg-dark;
+    color: $color-dark-bg;
 
     @include gradient-bg($link-color-dark);
 
@@ -541,13 +562,13 @@ $navbar-dark-active-color:          $link-color-dark;
 
 [data-dark-mode] .dropdown-menu .dropdown-item:hover {
   color: $link-color-dark;
-  background: $body-bg-dark;
+  background: $color-dark-bg;
 }
 
 [data-dark-mode] .dropdown-menu .dropdown-item.active,
 [data-dark-mode] .dropdown-menu .dropdown-item:focus {
   color: $link-color-dark;
-  background: $body-bg-dark;
+  background: $color-dark-bg;
 }
 
 [data-dark-mode] .doks-navbar .dropdown-item.current,

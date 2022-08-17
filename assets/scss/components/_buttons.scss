@@ -71,29 +71,22 @@ pre {
   font-family: $font-family-sans-serif;
   font-size: $font-size-sm;
   padding: 0.25rem 0.5rem;
-  color: $color-btn-text;
-  background-color: $color-btn-bg;
-  border-color: $color-btn-border;
-}
 
-.btn-copy:hover {
-  color: $color-btn-text;
-  background-color: lighten($color-btn-bg, 5%);
-  border-color: lighten($color-btn-border, 15%);
+  @include button-variant(
+    $color-btn-bg,
+    $color-btn-border,
+    $color-btn-text,
+    lighten($color-btn-bg, 5%),
+    lighten($color-btn-border, 15%),
+    $color-btn-text,
+    $color-btn-text,
+    $color-btn-bg,
+    lighten($color-btn-border, 15%)
+  );
 }
 
 .btn-copy:focus {
-  color: $color-btn-text;
-  background-color: $color-btn-bg;
-  border-color: lighten($color-btn-border, 15%);
   box-shadow: none;
-}
-
-.btn-copy:active,
-.btn-copy.active {
-  color: $color-btn-text;
-  background-color: $color-btn-bg;
-  border-color: lighten($color-btn-border, 15%);
 }
 
 .btn-copy:active:focus,
