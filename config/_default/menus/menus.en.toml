@@ -50,7 +50,7 @@
 
 [[main]]
   name = "Docs"
-  url = "/docs/prologue/introduction/"
+  url = "/docs/quick-start/introduction/"
   weight = 50
 
 [[main]]

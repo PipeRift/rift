@@ -4,3 +4,4 @@ public
 resources
 .netlify
 .hugo_build.lock
+package-lock.json
