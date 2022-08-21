@@ -33,6 +33,11 @@ To do so, run the following command on the project's root folder:
 
 `git submodule update --init --recursive`
 
+### Install Dependencies (Linux)
+
+Run the following to install needed dependencies on Linux:
+`sudo apt install build-essential xz-utils curl xorg-dev libx11-dev xlibmesa-glu-dev`
+
 ### Build Rift's LLVM
 
 Rift uses a custom build process for LLVM which comes packed conveniently with the project, but requires manual setup.
