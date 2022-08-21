@@ -4,7 +4,7 @@ Thank you for considering contributing to Rift. Rift needs of people like you to
 There are many ways of contributing to Rift. **Using Rift** and sharing your feedback, opinions and ideas with the community is an incredibly helpful way to start. But you are also welcomed to report bugs, propose new features, submit code changes, improve the documentation or discuss language design with us.
 
 ## Getting started
-You can [read this guide](Docs/Development/Setup.md) you can follow with an step by step process on how to setup the development environment.
+You can [read this guide](https://piperift.com/docs/development/setup/) you can follow with an step by step process on how to setup the development environment.
 
 ## Bug Reports
 Before submitting a bug report, make sure you are testing the last version of Rift. The issue could have already been fixed. If that is not the case, have a look at the open [list of bugs](https://github.com/PipeRift/rift/issues?q=is%3Aopen+is%3Aissue+label%3Abug) before submitting a new [bug report](https://github.com/PipeRift/rift/issues/new?labels=bug&template=bug_report.md).

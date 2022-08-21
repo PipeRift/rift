@@ -74,8 +74,24 @@ It has also been tested on **x64** and **ARM64** architectures.
 Developed by Miguel Fernandez Arce (Muit) and every direct or indirect [contributors](https://github.com/piperift/rift/graphs/contributors) to the GitHub repository.
 
 ## License
-Rift is licensed under the LGPLv3 License, see [LICENSE](https://github.com/piperift/rift/blob/master/LICENSE) for more information.
+Rift is licensed under the [LGPLv3](https://github.com/piperift/rift/blob/master/LICENSE) license with some exceptions.
 
-All libraries outside of Rift are free to choose their own licenses even if they extend Rift's functionality as modules.
+### Why LGPL License?
+Any Rift's source code licensed as [LGPLv3](https://github.com/piperift/rift/blob/master/LICENSE) seeks to defend the following:
+- Rift must remain free and distributable to and by everyone
+- Everyone can freely contribute and modify Rift
+- Rift can be used to learn
 
-Some libraries inside Rift could also be licensed under more permissive licenses.
+The GPL strictly aims at protecting these freedoms, requiring everyone to share their modifications when they also share the software in public. That aspect is commonly referred to as [Copyleft](http://en.wikipedia.org/wiki/Copyleft).
+
+### Details
+While Rift editor, compiler and other tools are under LGPL, other components/tools might be under more permissive licenses.
+
+This also means code you created can be under any license. One example could be a custom compiler pass for optimization, or a new view that adds a new way to edit code.
+
+Rift’s source can also be embedded into other projects (explaining the L of LGPL). This means projects embedding Rift do not need to inherit the same license and can be commercial, but Rift components must keep their own licenses and remain open source if LGPL, including any modifications to them.
+
+### Your code
+Any code or assets you create with Rift as a language is of your sole property. This includes code files like .rf or .rift and any generated files by Rift compiler, editor or tools.
+
+This means Rift can be used commercially by studios, programmers, designers, artists or anyone else.
