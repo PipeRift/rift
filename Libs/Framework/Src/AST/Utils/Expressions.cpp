@@ -8,8 +8,8 @@
 
 namespace rift::AST::Expressions
 {
-	bool WouldLoop(
-	    TAccessRef<CExprInputs, CExprOutputs> access, AST::Id outputNodeId, AST::Id inputNodeId)
+	bool WouldLoop(TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access, AST::Id outputNodeId,
+	    AST::Id inputNodeId)
 	{
 		TArray<AST::Id> currentNodeIds{outputNodeId};
 		TArray<AST::Id> nextNodeIds{};
@@ -39,7 +39,8 @@ namespace rift::AST::Expressions
 		return false;
 	}
 
-	bool CanConnect(TAccessRef<CExprInputs, CExprOutputs> access, OutputId output, InputId input)
+	bool CanConnect(
+	    TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access, OutputId output, InputId input)
 	{
 		if (output.IsNone() || input.IsNone())
 		{
@@ -62,12 +63,37 @@ namespace rift::AST::Expressions
 			return false;
 		}
 
+		{    // Type checking
+			const auto* outputType = access.TryGet<const CExprTypeId>(output.pinId);
+			// Can connect if output is any or not void
+			if (outputType && outputType->id == NoId)
+			{
+				return false;
+			}
+
+			const auto* inputType = access.TryGet<const CExprTypeId>(input.pinId);
+			// Can connect if input is any or not void
+			if (inputType && inputType->id == NoId)
+			{
+				return false;
+			}
+
+			if (outputType && inputType)
+			{
+				// TODO: Check if different types can be implicitly casted
+				if (outputType->id != inputType->id)
+				{
+					return false;
+				}
+			}
+		}
+
 		// Ensure output and input wouldn't loop
 		return !WouldLoop(access, output.nodeId, input.nodeId);
 	}
 
-	bool TryConnect(
-	    TAccessRef<TWrite<CExprInputs>, CExprOutputs> access, OutputId output, InputId input)
+	bool TryConnect(TAccessRef<TWrite<CExprInputs>, CExprOutputs, CExprTypeId> access,
+	    OutputId output, InputId input)
 	{
 		if (!CanConnect(access, output, input))
 		{

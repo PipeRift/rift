@@ -3,10 +3,10 @@
 
 #include "AST/Components/CExprInputs.h"
 #include "AST/Components/CExprOutputs.h"
+#include "AST/Components/CExprType.h"
 #include "AST/Components/Tags/CInvalid.h"
 #include "AST/Id.h"
 #include "AST/Tree.h"
-#include "AST/Utils/Expressions.h"
 
 #include <Pipe/Core/Span.h>
 #include <Pipe/ECS/Filtering.h>
@@ -15,10 +15,11 @@
 // NOTE: In expression graphs, the Link Id is the Input Pin Id
 namespace rift::AST::Expressions
 {
-	bool CanConnect(TAccessRef<CExprInputs, CExprOutputs> access, OutputId output, InputId input);
+	bool CanConnect(
+	    TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access, OutputId output, InputId input);
 
-	bool TryConnect(
-	    TAccessRef<TWrite<CExprInputs>, CExprOutputs> access, OutputId output, InputId input);
+	bool TryConnect(TAccessRef<TWrite<CExprInputs>, CExprOutputs, CExprTypeId> access,
+	    OutputId output, InputId input);
 	// Disconnects a particular link. (Note: link ids are the same as input nodes)
 	bool Disconnect(Tree& ast, InputId input);
 
