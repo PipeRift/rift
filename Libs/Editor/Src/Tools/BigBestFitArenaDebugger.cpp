@@ -191,6 +191,7 @@ namespace rift
 
 					UI::PushItemWidth(-FLT_MIN);
 					UI::ProgressBar(usedPct, ImVec2(0.f, 0.0f), "");
+					UI::PopItemWidth();
 
 					const String usedPctLabel =
 					    Strings::Format("{:.0f}%% used ({})", usedPct * 100.f, used);
