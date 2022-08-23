@@ -265,34 +265,26 @@ namespace rift::Graph
 		{
 			BeginExprOutput(ast, id, false);
 			PushInnerNodeStyle();
-			UI::SetNextItemWidth(math::Max(settings.GetGridSize() * 4.f, 30.f));
+
+			ImGuiDataType dataType = ImGuiDataType_COUNT;
 			switch (value.type)
 			{
-				case IntegralType::S8:
-					UI::InputScalar("##value", ImGuiDataType_S8, &value.value);
-					break;
-				case IntegralType::S16:
-					UI::InputScalar("##value", ImGuiDataType_S16, &value.value);
-					break;
-				case IntegralType::S32:
-					UI::InputScalar("##value", ImGuiDataType_S32, &value.value);
-					break;
-				case IntegralType::S64:
-					UI::InputScalar("##value", ImGuiDataType_S64, &value.value);
-					break;
-				case IntegralType::U8:
-					UI::InputScalar("##value", ImGuiDataType_U8, &value.value);
-					break;
-				case IntegralType::U16:
-					UI::InputScalar("##value", ImGuiDataType_U16, &value.value);
-					break;
-				case IntegralType::U32:
-					UI::InputScalar("##value", ImGuiDataType_U32, &value.value);
-					break;
-				case IntegralType::U64:
-					UI::InputScalar("##value", ImGuiDataType_U64, &value.value);
-					break;
+				case IntegralType::S8: dataType = ImGuiDataType_S8; break;
+				case IntegralType::S16: dataType = ImGuiDataType_S16; break;
+				case IntegralType::S32: dataType = ImGuiDataType_S32; break;
+				case IntegralType::S64: dataType = ImGuiDataType_S64; break;
+				case IntegralType::U8: dataType = ImGuiDataType_U8; break;
+				case IntegralType::U16: dataType = ImGuiDataType_U16; break;
+				case IntegralType::U32: dataType = ImGuiDataType_U32; break;
+				case IntegralType::U64: dataType = ImGuiDataType_U64; break;
 			}
+			const char* format = value.IsSigned() ? "%i" : "%iu";
+
+			char buf[64];
+			UI::DataTypeFormatString(buf, IM_ARRAYSIZE(buf), dataType, &value.value, format);
+			UI::SetNextItemWidth(5.f + math::Max(UI::CalcTextSize(buf).x, 20.f));
+			UI::InputScalar("##value", dataType, &value.value, nullptr, nullptr, format);
+
 			PopInnerNodeStyle();
 			EndExprOutput(false);
 		}
@@ -305,20 +297,17 @@ namespace rift::Graph
 		const bool isDouble = value.type == FloatingType::F64;
 		const Color color = isDouble ? Style::GetTypeColor<double>() : Style::GetTypeColor<float>();
 		Style::PushNodeBackgroundColor(color);
-
 		BeginNode(ast, id);
 		{
 			BeginExprOutput(ast, id, false);
 			PushInnerNodeStyle();
-			UI::SetNextItemWidth(math::Max(settings.GetGridSize() * 4.f, 30.f));
-			if (isDouble)
-			{
-				UI::InputFloat("##value", reinterpret_cast<float*>(&value.value));
-			}
-			else
-			{
-				UI::InputDouble("##value", &value.value);
-			}
+
+			const ImGuiDataType dataType = isDouble ? ImGuiDataType_Double : ImGuiDataType_Float;
+			char buf[64];
+			UI::DataTypeFormatString(buf, IM_ARRAYSIZE(buf), dataType, &value.value, "%.15g");
+			UI::SetNextItemWidth(5.f + math::Max(UI::CalcTextSize(buf).x, 20.f));
+			UI::InputScalar("##value", dataType, &value.value, nullptr, nullptr, "%.15g");
+
 			PopInnerNodeStyle();
 			EndExprOutput(false);
 		}
