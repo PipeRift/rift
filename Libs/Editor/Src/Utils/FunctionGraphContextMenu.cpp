@@ -174,15 +174,15 @@ namespace rift::Graph
 			String makeStr{};
 			auto& typeList = ast.GetStatic<STypes>();
 			TAccess<CType, CNamespace> typesAccess{ast};
-			for (const auto& it : typeList.typesByName)
+			for (ecs::Id typeId : ecs::ListAll<CType>(typesAccess))
 			{
-				if (auto* ns = typesAccess.TryGet<const CNamespace>(it.second))
+				if (auto* ns = typesAccess.TryGet<const CNamespace>(typeId))
 				{
 					makeStr.clear();
 					Strings::FormatTo(makeStr, "Make {}", ns->name);
 					if (ContextItem(makeStr, filter))
 					{
-						AST::Id newId = Types::AddLiteral({ast, typeId}, it.second);
+						AST::Id newId = Types::AddLiteral({ast, typeId}, typeId);
 						SetPositionAndConnect(ast, newId, gridPos);
 					}
 				}

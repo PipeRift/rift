@@ -8,9 +8,11 @@
 #include "Utils/ModuleUtils.h"
 #include "Utils/TypeUtils.h"
 
+#include <AST/Statics/STypes.h>
 #include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/Paths.h>
+#include <AST/Utils/TransactionUtils.h>
 #include <AST/Utils/TypeUtils.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
@@ -390,12 +392,26 @@ namespace rift
 				UI::InputText("##newname", renameBuffer, ImGuiInputTextFlags_AutoSelectAll);
 				if (UI::IsItemDeactivatedAfterEdit())
 				{
-					renameId         = AST::NoId;
+					ScopedChange(ast, item.id);
 					Path destination = p::ToPath(GetParentPath(path)) / renameBuffer;
 					destination.replace_extension("rf");
-					// FIX: Type caches dont detect renamed types. Should provide helpers for
-					// that
-					files::Rename(p::ToPath(path), destination);
+					// TODO: Move this into systems. Renaming a type shouldnt require so many manual
+					// steps
+					if (files::Rename(p::ToPath(path), destination))
+					{
+						if (auto* file = ast.TryGet<CFileRef>(item.id))
+						{
+							file->path = destination;
+						}
+
+						auto& types = ast.GetOrSetStatic<STypes>();
+						types.typesByPath.Remove(item.path);
+						types.typesByPath.Insert(Name{files::ToString(destination)}, item.id);
+
+						ast.Add<CNamespace>(item.id, Name{renameBuffer});
+					}
+
+					renameId         = AST::NoId;
 					renameBuffer     = "";
 					renameHasFocused = false;
 				}

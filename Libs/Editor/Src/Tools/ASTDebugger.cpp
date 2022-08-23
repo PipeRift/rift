@@ -85,7 +85,7 @@ namespace rift
 				UI::TableSetupColumn("Id");
 				UI::TableHeadersRow();
 
-				for (const auto& it : types->typesByName)
+				for (const auto& it : types->typesByPath)
 				{
 					UI::TableNextRow();
 					UI::TableNextColumn();    // Name

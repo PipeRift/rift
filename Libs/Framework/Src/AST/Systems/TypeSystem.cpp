@@ -19,41 +19,6 @@ namespace rift::TypeSystem
 	{
 		TAccess<CType, CNamespace> access{ast};
 
-		auto& types = ast.GetOrSetStatic<STypes>();
-		types.typesByName.Clear();
-
-		// Cache existing types
-
-		auto typeIds = ecs::ListAll<CType, CNamespace>(access);
-		types.typesByName.Reserve(u32(typeIds.Size()));
-		for (AST::Id typeId : typeIds)
-		{
-			const auto& type = access.Get<const CNamespace>(typeId);
-			types.typesByName.Insert(type.name, typeId);
-		}
-
-		ast.OnAdd<CType>().Bind([](auto& ast, auto ids) {
-			auto& types = ast.template GetOrSetStatic<STypes>();
-			for (AST::Id id : ids)
-			{
-				if (const auto* type = ast.template TryGet<const CNamespace>(id))
-				{
-					types.typesByName.Insert(type->name, id);
-				}
-			}
-		});
-
-		ast.OnRemove<CType>().Bind([](auto& ast, auto ids) {
-			auto& types = ast.template GetOrSetStatic<STypes>();
-			for (AST::Id id : ids)
-			{
-				if (const auto* type = ast.template TryGet<const CNamespace>(id))
-				{
-					types.typesByName.Remove(type->name);
-				}
-			}
-		});
-
 		ast.OnAdd<CFileRef>().Bind([](auto& ast, auto ids) {
 			auto& types = ast.template GetOrSetStatic<STypes>();
 			for (AST::Id id : ids)

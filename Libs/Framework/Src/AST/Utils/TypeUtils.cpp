@@ -439,17 +439,6 @@ namespace rift::Types
 	}
 
 	AST::Id FindFunctionByName(
-	    TAccessRef<CDeclFunction, CNamespace, CParent> access, Name ownerName, Name functionName)
-	{
-		auto& types = access.GetContext().GetStatic<STypes>();
-		if (const AST::Id* typeId = types.typesByName.Find(ownerName))
-		{
-			return FindFunctionByName(access, *typeId, functionName);
-		}
-		return AST::NoId;
-	}
-
-	AST::Id FindFunctionByName(
 	    TAccessRef<CDeclFunction, CNamespace, CParent> access, AST::Id ownerId, Name functionName)
 	{
 		if (!IsNone(ownerId))
