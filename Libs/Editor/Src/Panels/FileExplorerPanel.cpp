@@ -378,7 +378,7 @@ namespace rift
 				if (UI::IsItemHovered() && UI::IsKeyReleased(GLFW_KEY_F2))
 				{
 					renameId     = item.id;
-					renameBuffer = fileName;
+					renameBuffer = Strings::RemoveFromEnd(fileName, ".rf");
 				}
 			}
 			else
@@ -390,13 +390,27 @@ namespace rift
 					UI::SetKeyboardFocusHere();
 				}
 				UI::InputText("##newname", renameBuffer, ImGuiInputTextFlags_AutoSelectAll);
-				if (UI::IsItemDeactivatedAfterEdit())
+
+				const StringView parsedNewName = Strings::RemoveFromEnd(renameBuffer, ".rf");
+				const bool nameIsEmpty         = parsedNewName.empty();
+				const ecs::Id sameNameFuncId   = Types::FindChildByName(
+				      ast, AST::Hierarchy::GetParent(ast, item.id), Name{parsedNewName});
+				if (nameIsEmpty || (!IsNone(sameNameFuncId) && item.id != sameNameFuncId))
+				{
+					Style::PushTextColor(LinearColor::Red());
+					UI::SetNextWindowPos(UI::GetCursorScreenPos());
+					UI::SetTooltip(nameIsEmpty
+					                   ? "A type's name can't be empty"
+					                   : "This name is in use by another type in this module");
+					Style::PopTextColor();
+				}
+				else if (UI::IsItemDeactivatedAfterEdit())
 				{
 					ScopedChange(ast, item.id);
 					Path destination = p::ToPath(GetParentPath(path)) / renameBuffer;
 					destination.replace_extension("rf");
-					// TODO: Move this into systems. Renaming a type shouldnt require so many manual
-					// steps
+					// TODO: Move this into systems. Renaming a type shouldnt require so many
+					// manual steps
 					if (files::Rename(p::ToPath(path), destination))
 					{
 						if (auto* file = ast.TryGet<CFileRef>(item.id))
@@ -408,7 +422,7 @@ namespace rift
 						types.typesByPath.Remove(item.path);
 						types.typesByPath.Insert(Name{files::ToString(destination)}, item.id);
 
-						ast.Add<CNamespace>(item.id, Name{renameBuffer});
+						ast.Add<CNamespace>(item.id, Name{parsedNewName});
 					}
 
 					renameId         = AST::NoId;

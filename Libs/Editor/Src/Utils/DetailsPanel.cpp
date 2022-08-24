@@ -118,7 +118,7 @@ namespace rift
 		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
 		if (UI::InputText("##name", functionName, ImGuiInputTextFlags_AutoSelectAll))
 		{
-			ecs::Id sameNameFuncId = Types::FindFunctionByName(ast, typeId, Name{functionName});
+			ecs::Id sameNameFuncId = Types::FindChildByName(ast, typeId, Name{functionName});
 			if (!IsNone(sameNameFuncId) && id != sameNameFuncId)
 			{
 				Style::PushTextColor(LinearColor::Red());

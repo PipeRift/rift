@@ -61,8 +61,8 @@ namespace rift::Types
 	AST::Id AddUnaryOperator(AST::TypeRef type, UnaryOperatorType operatorType);
 	AST::Id AddBinaryOperator(AST::TypeRef type, BinaryOperatorType operatorType);
 
-	AST::Id FindFunctionByName(
-	    TAccessRef<CDeclFunction, CNamespace, CParent> access, AST::Id ownerId, Name functionName);
+	AST::Id FindChildByName(
+	    TAccessRef<CNamespace, CParent> access, AST::Id ownerId, Name functionName);
 
 	using RemoveAccess = TAccess<TWrite<CChanged>, TWrite<CFileDirty>, TWrite<CStmtInput>,
 	    TWrite<CStmtOutputs>, TWrite<CParent>, TWrite<CChild>, CFileRef>;
