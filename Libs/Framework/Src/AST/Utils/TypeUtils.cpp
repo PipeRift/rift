@@ -438,17 +438,17 @@ namespace rift::Types
 		return id;
 	}
 
-	AST::Id FindFunctionByName(
-	    TAccessRef<CDeclFunction, CNamespace, CParent> access, AST::Id ownerId, Name functionName)
+	AST::Id FindChildByName(
+	    TAccessRef<CNamespace, CParent> access, AST::Id ownerId, Name functionName)
 	{
 		if (!IsNone(ownerId))
 		{
 			TArray<AST::Id> children;
 			AST::Hierarchy::GetChildren(access, ownerId, children);
-			ecs::ExcludeIfNot<CDeclFunction, CNamespace>(access, children);
 			for (AST::Id childId : children)
 			{
-				if (access.Get<const CNamespace>(childId).name == functionName)
+				const auto* ns = access.TryGet<const CNamespace>(childId);
+				if (ns && ns->name == functionName)
 				{
 					return childId;
 				}
