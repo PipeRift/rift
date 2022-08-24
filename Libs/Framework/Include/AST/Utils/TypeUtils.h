@@ -62,8 +62,6 @@ namespace rift::Types
 	AST::Id AddBinaryOperator(AST::TypeRef type, BinaryOperatorType operatorType);
 
 	AST::Id FindFunctionByName(
-	    TAccessRef<CDeclFunction, CNamespace, CParent> access, Name ownerName, Name functionName);
-	AST::Id FindFunctionByName(
 	    TAccessRef<CDeclFunction, CNamespace, CParent> access, AST::Id ownerId, Name functionName);
 
 	using RemoveAccess = TAccess<TWrite<CChanged>, TWrite<CFileDirty>, TWrite<CStmtInput>,
