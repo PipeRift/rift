@@ -25,6 +25,7 @@ namespace rift
 		template<typename T>
 		void AddPlugin()
 		{
+			// TODO: Ensure unique
 			plugins.Add(MakeOwned<T>());
 		}
 

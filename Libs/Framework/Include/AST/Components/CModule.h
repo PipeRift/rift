@@ -20,7 +20,7 @@ namespace rift
 	enum class ModuleType : u8
 	{
 		Rift,
-		CBinding
+		Native
 	};
 }    // namespace rift
 // TODO: Simplify enum reflection so that ENUM() is not needed
