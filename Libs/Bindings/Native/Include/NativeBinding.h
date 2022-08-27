@@ -15,4 +15,6 @@ namespace rift
 	public:
 		void Register(TPtr<Rift> rift) override {}
 	};
+
+	void Sync();
 }    // namespace rift
