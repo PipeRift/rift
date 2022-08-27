@@ -5,6 +5,7 @@ add_subdirectory(Pipe)
 add_subdirectory(Framework)
 add_subdirectory(Backends/LLVM)
 add_subdirectory(Backends/Cpp)
+add_subdirectory(Bindings/Native)
 
 add_subdirectory(UI)
 add_subdirectory(Views/Graph)
