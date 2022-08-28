@@ -3,7 +3,6 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Compiler/Utils/BackendUtils.h>
-#include <CppBackend.h>
 #include <GraphView.h>
 #include <LLVMBackend.h>
 #include <Pipe/Core/Profiler.h>
@@ -64,7 +63,6 @@ int main(int argc, char** argv)
 	p::Log::Init("Saved/Logs");
 	TOwnPtr<Rift> rift = MakeOwned<Rift>();
 	rift->AddPlugin<LLVMBackendPlugin>();
-	rift->AddPlugin<CPPBackendPlugin>();
 
 	rift->AddPlugin<GraphViewPlugin>();
 

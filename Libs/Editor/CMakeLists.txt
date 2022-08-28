@@ -9,7 +9,6 @@ set_target_properties (RiftEditor PROPERTIES FOLDER Rift)
 target_link_libraries(RiftEditor PUBLIC
     rift::Rift
     rift::Backend::LLVM
-    rift::Backend::Cpp
     rift::UI
     CLI11
 )
