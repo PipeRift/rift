@@ -6,8 +6,8 @@
 #include "Pipe/Core/PlatformProcess.h"
 #include "Pipe/Core/String.h"
 
-#include <AST/Components/CModule.h>
 #include <AST/Components/CNamespace.h>
+#include <AST/Components/CRiftModule.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Pipe/Core/Subprocess.h>
 #include <Pipe/ECS/Filtering.h>
@@ -20,32 +20,33 @@ namespace rift::compiler::LLVM
 {
 	void Link(Compiler& compiler)
 	{
-		for (AST::Id moduleId : ecs::ListAll<CModule, CIRModule>(compiler.ast))
+		String linkerPath{PlatformProcess::GetExecutablePath()};
+		linkerPath.append("/");
+		linkerPath.append(RIFT_LLVM_LINKER_PATH);
+
+		for (AST::Id moduleId : ecs::ListAll<CRiftModule, CIRModule>(compiler.ast))
 		{
-			p::Name moduleName = Modules::GetModuleName(compiler.ast, moduleId);
-			const auto& module = compiler.ast.Get<const CModule>(moduleId);
-			auto& irModule     = compiler.ast.Get<CIRModule>(moduleId);
+			p::Name moduleName     = Modules::GetModuleName(compiler.ast, moduleId);
+			const auto& riftModule = compiler.ast.Get<const CRiftModule>(moduleId);
+			auto& irModule         = compiler.ast.Get<CIRModule>(moduleId);
 			if (p::files::Exists(irModule.objectFile))
 			{
 				TArray<const char*> command;
 
-				String linkerPath{PlatformProcess::GetExecutablePath()};
-				linkerPath.append("/");
-				linkerPath.append(RIFT_LLVM_LINKER_PATH);
 				command.Add(linkerPath.c_str());
 
 				const char* extension = nullptr;
-				switch (module.target)
+				switch (riftModule.target)
 				{
-					case ModuleTarget::Executable:
+					case RiftModuleTarget::Executable:
 						command.Add("/entry:main");
 						extension = "exe";
 						break;
-					case ModuleTarget::Shared:
+					case RiftModuleTarget::Shared:
 						command.Add("/dll");
 						extension = "dll";
 						break;
-					case ModuleTarget::Static:
+					case RiftModuleTarget::Static:
 						command.Add("/lib");
 						extension = "lib";
 						break;

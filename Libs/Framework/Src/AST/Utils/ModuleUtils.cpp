@@ -213,5 +213,15 @@ namespace rift::Modules
 		p::ReadWriter common{ct};
 		ast.GetOrAdd<CNamespace>(id).SerializeReflection(common);
 		ast.GetOrAdd<CModule>(id).SerializeReflection(common);
+
+		// Extract module type data
+		p::Type* type = nullptr;
+		// ct.Next("type", type);
+		if (type)
+		{
+			// Add from type:
+			// typeComp = ...;
+			// typeComp.SerializeReflection(common);
+		}
 	}
 }    // namespace rift::Modules
