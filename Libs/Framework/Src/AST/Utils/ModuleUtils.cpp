@@ -202,26 +202,25 @@ namespace rift::Modules
 	{
 		ZoneScoped;
 
-		JsonFormatReader reader{data};
-		if (!reader.IsValid())
+		JsonFormatReader formatReader{data};
+		if (!formatReader.IsValid())
 		{
 			return;
 		}
 
-		AST::Reader ct{reader, ast};
-		ct.BeginObject();
-		p::ReadWriter common{ct};
-		ast.GetOrAdd<CNamespace>(id).SerializeReflection(common);
-		ast.GetOrAdd<CModule>(id).SerializeReflection(common);
+		AST::Reader r{formatReader, ast};
+		r.BeginObject();
+		p::ReadWriter rw{r};
+		ast.GetOrAdd<CNamespace>(id).SerializeReflection(rw);
+		ast.GetOrAdd<CModule>(id).SerializeReflection(rw);
 
 		// Extract module type data
 		p::Type* type = nullptr;
-		// ct.Next("type", type);
+		r.Next("type", type);
 		if (type)
 		{
-			// Add from type:
-			// typeComp = ...;
-			// typeComp.SerializeReflection(common);
+			// void* instance = nullptr;    // Add by type
+			// type->Read(r, instance);
 		}
 	}
 }    // namespace rift::Modules

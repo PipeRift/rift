@@ -6,9 +6,7 @@
     ],
     "components": {
         "CNamespace": {
-            "0": {
-                "name": "TestClass"
-            }
+            "0": "TestClass"
         }
     }
 }

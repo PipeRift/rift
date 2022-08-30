@@ -169,18 +169,10 @@
             }
         },
         "CNamespace": {
-            "0": {
-                "name": "Welcome"
-            },
-            "1": {
-                "name": "Print"
-            },
-            "10": {
-                "name": "class"
-            },
-            "11": {
-                "name": "struct"
-            }
+            "0": "Welcome",
+            "1": "Print",
+            "10": "class",
+            "11": "struct"
         },
         "CParent": {
             "0": [

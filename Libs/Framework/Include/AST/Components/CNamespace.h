@@ -27,4 +27,13 @@ namespace rift
 			return name == other;
 		}
 	};
+
+	inline void Read(p::Reader& r, CNamespace& val)
+	{
+		r.Serialize(val.name);
+	}
+	inline void Write(p::Writer& w, const CNamespace& val)
+	{
+		w.Serialize(val.name);
+	}
 }    // namespace rift
