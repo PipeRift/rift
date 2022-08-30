@@ -5,6 +5,7 @@
 #include "Compiler/CompilerConfig.h"
 
 #include <Pipe/Core/Profiler.h>
+#include <Pipe/Core/String.h>
 #include <Pipe/Reflect/Reflection.h>
 #include <Pipe/Reflect/Struct.h>
 
