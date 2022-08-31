@@ -7,8 +7,7 @@
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "Editor.h"
-#include "imgui.h"
-#include "imgui_internal.h"
+#include "Pipe/Files/Files.h"
 #include "Statics/SEditor.h"
 #include "Utils/DetailsPanel.h"
 #include "Utils/ElementsPanel.h"
@@ -22,7 +21,6 @@
 #include <AST/Components/CType.h>
 #include <AST/Components/Tags/CDirty.h>
 #include <Compiler/Compiler.h>
-#include <CppBackend.h>
 #include <IconsFontAwesome5.h>
 #include <LLVMBackend.h>
 #include <Pipe/Core/Array.h>

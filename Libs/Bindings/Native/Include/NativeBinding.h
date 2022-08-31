@@ -13,6 +13,11 @@ namespace rift
 		CLASS(NativeBindingPlugin, Plugin)
 
 	public:
-		void Register(TPtr<Rift> rift) override {}
+		void Register(TPtr<Rift> rift) override
+		{
+			// Register module type
+		}
 	};
+
+	void Sync();
 }    // namespace rift

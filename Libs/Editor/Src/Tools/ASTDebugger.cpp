@@ -9,7 +9,7 @@
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Paths.h>
 #include <IconsFontAwesome5.h>
-#include <Pipe/Reflect/Registry.h>
+#include <Pipe/Reflect/TypeRegistry.h>
 #include <UI/Inspection.h>
 #include <UI/UI.h>
 
@@ -31,7 +31,7 @@ namespace rift
 			return;
 		}
 
-		const auto& registry = ReflectionRegistry::Get();
+		const auto& registry = TypeRegistry::Get();
 		for (const auto& poolInstance : ast.GetPools())
 		{
 			Type* type = registry.FindType(poolInstance.componentId);

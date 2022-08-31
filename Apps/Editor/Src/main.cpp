@@ -1,6 +1,5 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include <CppBackend.h>
 #include <Editor.h>
 #include <GraphView.h>
 #include <LLVMBackend.h>
@@ -20,7 +19,6 @@ int RunEditor(StringView projectPath)
 	p::Log::Init("Saved/Logs");
 	TOwnPtr<rift::Rift> rift = MakeOwned<rift::Rift>();
 	rift->AddPlugin<LLVMBackendPlugin>();
-	rift->AddPlugin<CPPBackendPlugin>();
 
 	rift->AddPlugin<GraphViewPlugin>();
 

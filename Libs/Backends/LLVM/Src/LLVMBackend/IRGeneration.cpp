@@ -23,6 +23,7 @@
 #include <AST/Components/CLiteralFloating.h>
 #include <AST/Components/CLiteralIntegral.h>
 #include <AST/Components/CLiteralString.h>
+#include <AST/Components/CRiftModule.h>
 #include <AST/Components/CStmtIf.h>
 #include <AST/Components/CStmtOutputs.h>
 #include <AST/Components/CStmtReturn.h>
@@ -389,8 +390,8 @@ namespace rift::compiler::LLVM
 
 		DefineFunctions(gen, ast, functionIds);
 
-		const auto& mod = compiler.ast.Get<const CModule>(moduleId);
-		if (mod.target == ModuleTarget::Executable)
+		const auto* riftMod = compiler.ast.TryGet<const CRiftModule>(moduleId);
+		if (riftMod && riftMod->target == RiftModuleTarget::Executable)
 		{
 			CreateMain(gen);
 		}

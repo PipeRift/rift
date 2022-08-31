@@ -9,9 +9,7 @@
             "0": -1
         },
         "CNamespace": {
-            "0": {
-                "name": "TestStruct"
-            }
+            "0": "TestStruct"
         }
     }
 }
