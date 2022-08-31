@@ -122,6 +122,8 @@ namespace rift::compiler
 		Log::Info("Linking");
 		LLVM::Link(compiler);
 
+		compiler.ast.ClearPool<CIRModule>();
+
 		if (!compiler.HasErrors())
 		{
 			Log::Info("Build complete.");

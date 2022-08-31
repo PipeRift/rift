@@ -361,7 +361,7 @@ namespace rift::compiler::LLVM
 		const Name name = Modules::GetModuleName(compiler.ast, moduleId);
 
 		CIRModule& module      = compiler.ast.Add<CIRModule>(moduleId);
-		module.instance        = Move(MakeOwned<llvm::Module>(ToLLVM(name), llvm));
+		module.instance        = MakeOwned<llvm::Module>(ToLLVM(name), llvm);
 		llvm::Module& irModule = *module.instance.Get();
 
 		ModuleIRGen gen{compiler, irModule, llvm, builder};
