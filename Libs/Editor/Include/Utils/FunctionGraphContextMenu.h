@@ -5,10 +5,10 @@
 #include <Pipe/ECS/Id.h>
 
 
-namespace rift::Graph
+namespace rift::Editor::Graph
 {
 	void DrawNodesContextMenu(AST::Tree& ast, AST::Id typeId, p::TSpan<AST::Id> nodeIds);
 	void DrawGraphContextMenu(AST::Tree& ast, AST::Id typeId, AST::Id hoveredNodeId);
 	void DrawContextMenu(
 	    AST::Tree& ast, AST::Id typeId, AST::Id hoveredNodeId, AST::Id hoveredLinkId);
-}    // namespace rift::Graph
+}    // namespace rift::Editor::Graph

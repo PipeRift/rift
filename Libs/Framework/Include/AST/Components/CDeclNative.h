@@ -4,10 +4,10 @@
 #include "AST/Components/CDeclRecord.h"
 
 
-namespace rift
+namespace rift::AST
 {
 	struct CDeclNative : public CDeclRecord
 	{
 		STRUCT(CDeclNative, CDeclRecord)
 	};
-}    // namespace rift
+}    // namespace rift::AST

@@ -19,15 +19,15 @@
 #include <AST/Components/Views/CNodePosition.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Utils/Expressions.h>
-#include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
+#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <UI/UI.h>
 
 
-namespace rift::Graph
+namespace rift::Editor::Graph
 {
 	void SetPositionAndConnect(AST::Tree& ast, AST::Id id, v2 position)
 	{
@@ -86,15 +86,15 @@ namespace rift::Graph
 	void DrawNodesContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> nodeIds)
 	{
 		Check(!nodeIds.IsEmpty());
-		const bool canEditBody = Types::CanEditFunctionBodies(ast, typeId);
+		const bool canEditBody = AST::Types::CanEditFunctionBodies(ast, typeId);
 
 		AST::Id firstNodeId = nodeIds[0];
 
-		if (nodeIds.Size() == 1 && ast.Has<CDeclFunction>(firstNodeId))
+		if (nodeIds.Size() == 1 && ast.Has<AST::CDeclFunction>(firstNodeId))
 		{
 			if (canEditBody && UI::MenuItem("Add return node"))
 			{
-				AST::Id newId = Types::AddReturn({ast, typeId});
+				AST::Id newId = AST::Types::AddReturn({ast, typeId});
 				if (!IsNone(newId))
 				{
 					v2 position = ast.Get<CNodePosition>(firstNodeId).position;
@@ -104,22 +104,22 @@ namespace rift::Graph
 				}
 			}
 		}
-		TArray<AST::Id> calls = ecs::GetIf<CExprCall>(ast, nodeIds);
+		TArray<AST::Id> calls = ecs::GetIf<AST::CExprCall>(ast, nodeIds);
 		if (!calls.IsEmpty() && UI::MenuItem("Refresh"))
 		{
-			ast.AddN<CCallDirty>(calls);
+			ast.AddN<AST::CCallDirty>(calls);
 		}
 
 		if (canEditBody && UI::MenuItem("Delete"))
 		{
-			Types::RemoveNodes(ast, nodeIds);
+			AST::Types::RemoveNodes(ast, nodeIds);
 		}
 	}
 
 	void DrawLinksContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> linkIds)
 	{
 		Check(!linkIds.IsEmpty());
-		const bool canEditBody = Types::CanEditFunctionBodies(ast, typeId);
+		const bool canEditBody = AST::Types::CanEditFunctionBodies(ast, typeId);
 
 		AST::Id firstLinkId = linkIds[0];
 
@@ -138,7 +138,7 @@ namespace rift::Graph
 	void DrawGraphContextMenu(AST::Tree& ast, AST::Id typeId)
 	{
 		static ImGuiTextFilter filter;
-		const bool canEditBody = Types::CanEditFunctionBodies(ast, typeId);
+		const bool canEditBody = AST::Types::CanEditFunctionBodies(ast, typeId);
 
 		if (UI::IsWindowAppearing())
 		{
@@ -158,12 +158,12 @@ namespace rift::Graph
 		{
 			if (ContextItem("Return", filter))
 			{
-				AST::Id newId = Types::AddReturn({ast, typeId});
+				AST::Id newId = AST::Types::AddReturn({ast, typeId});
 				SetPositionAndConnect(ast, newId, gridPos);
 			}
 			if (ContextItem("If", filter))
 			{
-				AST::Id newId = Types::AddIf({ast, typeId});
+				AST::Id newId = AST::Types::AddIf({ast, typeId});
 				SetPositionAndConnect(ast, newId, gridPos);
 			}
 			ContextTreePop(filter);
@@ -172,17 +172,17 @@ namespace rift::Graph
 		if (ContextTreeNode("Constructors", filter))
 		{
 			String makeStr{};
-			auto& typeList = ast.GetStatic<STypes>();
-			TAccess<CType, CNamespace> typesAccess{ast};
-			for (ecs::Id typeId : ecs::ListAll<CType>(typesAccess))
+			auto& typeList = ast.GetStatic<AST::STypes>();
+			TAccess<AST::CType, AST::CNamespace> typesAccess{ast};
+			for (ecs::Id typeId : ecs::ListAll<AST::CType>(typesAccess))
 			{
-				if (auto* ns = typesAccess.TryGet<const CNamespace>(typeId))
+				if (auto* ns = typesAccess.TryGet<const AST::CNamespace>(typeId))
 				{
 					makeStr.clear();
 					Strings::FormatTo(makeStr, "Make {}", ns->name);
 					if (ContextItem(makeStr, filter))
 					{
-						AST::Id newId = Types::AddLiteral({ast, typeId}, typeId);
+						AST::Id newId = AST::Types::AddLiteral({ast, typeId}, typeId);
 						SetPositionAndConnect(ast, newId, gridPos);
 					}
 				}
@@ -193,16 +193,16 @@ namespace rift::Graph
 		if (ContextTreeNode("Functions", filter))
 		{
 			static String label;
-			TAccess<CDeclFunction, CNamespace, CChild, CType> access{ast};
-			for (AST::Id functionId : ecs::ListAll<CDeclFunction, CNamespace>(access))
+			TAccess<AST::CDeclFunction, AST::CNamespace, AST::CChild, AST::CType> access{ast};
+			for (AST::Id functionId : ecs::ListAll<AST::CDeclFunction, AST::CNamespace>(access))
 			{
-				Name name = access.Get<const CNamespace>(functionId).name;
+				Name name = access.Get<const AST::CNamespace>(functionId).name;
 				label.clear();
-				AST::Id funcTypeId = AST::Hierarchy::GetParent(access, functionId);
-				if (!IsNone(funcTypeId) && access.Has<CType, CNamespace>(funcTypeId))
+				AST::Id funcTypeId = p::ecs::GetParent(access, functionId);
+				if (!IsNone(funcTypeId) && access.Has<AST::CType, AST::CNamespace>(funcTypeId))
 				{
-					Strings::FormatTo(
-					    label, "{}   ({})", name, access.Get<const CNamespace>(funcTypeId).name);
+					Strings::FormatTo(label, "{}   ({})", name,
+					    access.Get<const AST::CNamespace>(funcTypeId).name);
 				}
 				else
 				{
@@ -210,7 +210,7 @@ namespace rift::Graph
 				}
 				if (ContextItem(label, filter))
 				{
-					AST::Id newId = Types::AddCall({ast, typeId}, functionId);
+					AST::Id newId = AST::Types::AddCall({ast, typeId}, functionId);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}
@@ -220,16 +220,16 @@ namespace rift::Graph
 		if (ContextTreeNode("Variables", filter))
 		{
 			static String label;
-			TAccess<CDeclVariable, CNamespace, CChild, CType> access{ast};
-			for (AST::Id variableId : ecs::ListAll<CDeclVariable, CNamespace>(access))
+			TAccess<AST::CDeclVariable, AST::CNamespace, AST::CChild, AST::CType> access{ast};
+			for (AST::Id variableId : ecs::ListAll<AST::CDeclVariable, AST::CNamespace>(access))
 			{
-				Name name = access.Get<const CNamespace>(variableId).name;
+				Name name = access.Get<const AST::CNamespace>(variableId).name;
 				label.clear();
-				AST::Id typeId = AST::Hierarchy::GetParent(access, variableId);
-				if (!IsNone(typeId) && access.Has<CType, CNamespace>(typeId))
+				AST::Id typeId = p::ecs::GetParent(access, variableId);
+				if (!IsNone(typeId) && access.Has<AST::CType, AST::CNamespace>(typeId))
 				{
 					Strings::FormatTo(
-					    label, "{}   ({})", name, access.Get<const CNamespace>(typeId).name);
+					    label, "{}   ({})", name, access.Get<const AST::CNamespace>(typeId).name);
 				}
 				else
 				{
@@ -237,7 +237,7 @@ namespace rift::Graph
 				}
 				if (ContextItem(label, filter))
 				{
-					AST::Id newId = Types::AddDeclarationReference({ast, typeId}, variableId);
+					AST::Id newId = AST::Types::AddDeclarationReference({ast, typeId}, variableId);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}
@@ -248,28 +248,28 @@ namespace rift::Graph
 		{
 			static String name;
 			// Unary operators
-			for (auto type : GetEnumValues<UnaryOperatorType>())
+			for (auto type : GetEnumValues<AST::UnaryOperatorType>())
 			{
 				name.clear();
-				StringView shortName = Types::GetUnaryOperatorName(type);
-				StringView longName  = Types::GetUnaryOperatorLongName(type);
+				StringView shortName = GetUnaryOperatorName(type);
+				StringView longName  = GetUnaryOperatorLongName(type);
 				Strings::FormatTo(name, "{}   ({})", shortName, longName);
 				if (ContextItem(name, filter))
 				{
-					AST::Id newId = Types::AddUnaryOperator({ast, typeId}, type);
+					AST::Id newId = AST::Types::AddUnaryOperator({ast, typeId}, type);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}
 			// Binary operators
-			for (auto type : GetEnumValues<BinaryOperatorType>())
+			for (auto type : GetEnumValues<AST::BinaryOperatorType>())
 			{
 				name.clear();
-				StringView shortName = Types::GetBinaryOperatorName(type);
-				StringView longName  = Types::GetBinaryOperatorLongName(type);
+				StringView shortName = GetBinaryOperatorName(type);
+				StringView longName  = GetBinaryOperatorLongName(type);
 				Strings::FormatTo(name, "{}   ({})", shortName, longName);
 				if (ContextItem(name, filter))
 				{
-					AST::Id newId = Types::AddBinaryOperator({ast, typeId}, type);
+					AST::Id newId = AST::Types::AddBinaryOperator({ast, typeId}, type);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}
@@ -314,4 +314,4 @@ namespace rift::Graph
 			UI::EndPopup();
 		}
 	}
-}    // namespace rift::Graph
+}    // namespace rift::Editor::Graph

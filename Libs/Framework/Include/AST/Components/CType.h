@@ -1,16 +1,12 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Pipe/Core/Guid.h>
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift
+namespace rift::AST
 {
-	using namespace p;
-
-
-	enum class RiftType : u8
+	enum class RiftType : p::u8
 	{
 		None              = 0,
 		Class             = 1 << 0,
@@ -21,8 +17,8 @@ namespace rift
 	PIPE_DEFINE_FLAG_OPERATORS(RiftType)
 
 
-	struct CType : public Struct
+	struct CType : public p::Struct
 	{
-		STRUCT(CType, Struct)
+		STRUCT(CType, p::Struct)
 	};
-}    // namespace rift
+}    // namespace rift::AST

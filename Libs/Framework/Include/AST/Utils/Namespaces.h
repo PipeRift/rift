@@ -1,15 +1,15 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Components/CChild.h"
 #include "AST/Components/CModule.h"
 #include "AST/Components/CNamespace.h"
 #include "AST/Id.h"
-#include "AST/Utils/Hierarchy.h"
-#include "Pipe/Math/Math.h"
 
 #include <Pipe/Core/GenericEnums.h>
 #include <Pipe/ECS/Access.h>
+#include <Pipe/ECS/Components/CChild.h>
+#include <Pipe/ECS/Utils/Hierarchy.h>
+#include <Pipe/Math/Math.h>
 #include <Pipe/Reflect/EnumType.h>
 
 

@@ -7,11 +7,11 @@
 #include <Pipe/Core/Checks.h>
 
 
-namespace rift::Modules
+namespace rift::Editor
 {
-	void OpenEditor(TAccessRef<TWrite<CModuleEditor>, CModule> access, AST::Id id)
+	void OpenModule(TAccessRef<TWrite<CModuleEditor>, AST::CModule> access, AST::Id id)
 	{
-		Check(access.Has<CModule>(id));
+		Check(access.Has<AST::CModule>(id));
 		if (auto* editor = access.TryGet<CModuleEditor>(id))
 		{
 			editor->pendingFocus = true;
@@ -22,14 +22,14 @@ namespace rift::Modules
 		}
 	}
 
-	void CloseEditor(TAccessRef<TWrite<CModuleEditor>, CModule> access, AST::Id id)
+	void CloseModule(TAccessRef<TWrite<CModuleEditor>, AST::CModule> access, AST::Id id)
 	{
-		Check(access.Has<CModule>(id));
+		Check(access.Has<AST::CModule>(id));
 		access.Remove<CModuleEditor>(id);
 	}
 
-	bool IsEditorOpen(TAccessRef<CModuleEditor> access, AST::Id id)
+	bool IsModuleOpen(TAccessRef<CModuleEditor> access, AST::Id id)
 	{
 		return access.Has<CModuleEditor>(id);
 	}
-}    // namespace rift::Modules
+}    // namespace rift::Editor

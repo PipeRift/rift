@@ -7,21 +7,21 @@
 #include "AST/Id.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Tree.h"
-#include "AST/Utils/Hierarchy.h"
 #include "AST/Utils/TypeUtils.h"
 
 #include <Pipe/ECS/Filtering.h>
+#include <Pipe/ECS/Utils/Hierarchy.h>
 
 
-namespace rift::TypeSystem
+namespace rift::AST::TypeSystem
 {
-	void Init(AST::Tree& ast)
+	void Init(Tree& ast)
 	{
 		TAccess<CType, CNamespace> access{ast};
 
 		ast.OnAdd<CFileRef>().Bind([](auto& ast, auto ids) {
 			auto& types = ast.template GetOrSetStatic<STypes>();
-			for (AST::Id id : ids)
+			for (Id id : ids)
 			{
 				if (ast.template Has<CType>(id) && ast.template Has<CFileRef>(id))
 				{
@@ -34,7 +34,7 @@ namespace rift::TypeSystem
 
 		ast.OnRemove<CFileRef>().Bind([](auto& ast, auto ids) {
 			auto& types = ast.template GetOrSetStatic<STypes>();
-			for (AST::Id id : ids)
+			for (Id id : ids)
 			{
 				if (ast.template Has<CType>(id) && ast.template Has<CFileRef>(id))
 				{
@@ -48,33 +48,33 @@ namespace rift::TypeSystem
 
 	void PropagateVariableTypes(PropagateVariableTypesAccess access)
 	{
-		for (AST::Id id : ecs::ListAll<CExprDeclRefId>(access))
+		for (Id id : ecs::ListAll<CExprDeclRefId>(access))
 		{
-			const AST::Id declId = access.Get<const CExprDeclRefId>(id).declarationId;
+			const Id declId = access.Get<const CExprDeclRefId>(id).declarationId;
 			if (access.IsValid(declId))
 			{
-				const AST::Id typeId = access.Get<const CDeclVariable>(declId).typeId;
+				const Id typeId = access.Get<const CDeclVariable>(declId).typeId;
 				access.Add<CExprTypeId>(id, {.id = typeId});
 			}
 		}
 	}
 
-	bool PropagateUnaryOperator(TAccess<CExprInputs, TWrite<CExprTypeId>> access, AST::Id nodeId)
+	bool PropagateUnaryOperator(TAccess<CExprInputs, TWrite<CExprTypeId>> access, Id nodeId)
 	{
-		const AST::Id outputId = nodeId;    // Output in unary operator is same as the node itself
-		const auto& inputs     = access.Get<const CExprInputs>(nodeId);
+		const Id outputId  = nodeId;    // Output in unary operator is same as the node itself
+		const auto& inputs = access.Get<const CExprInputs>(nodeId);
 		const OutputId* linkedOutputId = inputs.linkedOutputs.At(0);
-		if (linkedOutputId && linkedOutputId->pinId != AST::NoId)
+		if (linkedOutputId && linkedOutputId->pinId != NoId)
 		{
 			return Types::CopyExpressionType(access, linkedOutputId->pinId, outputId);
 		}
 		return false;
 	}
 
-	bool PropagateBinaryOperator(TAccess<CExprInputs, TWrite<CExprTypeId>> access, AST::Id nodeId)
+	bool PropagateBinaryOperator(TAccess<CExprInputs, TWrite<CExprTypeId>> access, Id nodeId)
 	{
 		const auto& inputs = access.Get<const CExprInputs>(nodeId);
-		AST::Id outputId   = nodeId;    // Output in binary operator is same as the node itself
+		Id outputId        = nodeId;    // Output in binary operator is same as the node itself
 		if (inputs.pinIds.Size() == 2) [[likely]]
 		{
 			const OutputId firstLinkedOutputId = inputs.linkedOutputs[0];
@@ -89,16 +89,16 @@ namespace rift::TypeSystem
 
 	void PropagateExpressionTypes(PropagateExpressionTypesAccess access)
 	{
-		TArray<AST::Id> dirtyTypeIds = ecs::ListAll<CType, CChanged>(access);
+		TArray<Id> dirtyTypeIds = ecs::ListAll<CType, CChanged>(access);
 
-		TArray<AST::Id> dirtyNodeIds;
-		AST::Hierarchy::GetChildren(access, dirtyTypeIds, dirtyNodeIds);
+		TArray<Id> dirtyNodeIds;
+		p::ecs::GetChildren(access, dirtyTypeIds, dirtyNodeIds);
 
 		// Make sure the nodes have inputs and outputs
 		ecs::ExcludeIfNot<CExprInputs, CExprOutputs>(access, dirtyNodeIds);
 
 		// Only Unary and Binary operators propagate as of right now
-		ecs::ExcludeIf(dirtyNodeIds, [&access](AST::Id id) {
+		ecs::ExcludeIf(dirtyNodeIds, [&access](Id id) {
 			return !access.Has<CExprUnaryOperator>(id) && !access.Has<CExprBinaryOperator>(id);
 		});
 
@@ -109,7 +109,7 @@ namespace rift::TypeSystem
 			// Propagate all dirty nodes, remove successfully propagated ones
 			for (i32 i = dirtyNodeIds.Size() - 1; i >= 0; --i)
 			{
-				const AST::Id nodeId = dirtyNodeIds[i];
+				const Id nodeId = dirtyNodeIds[i];
 
 				if (access.Has<CExprUnaryOperator>(nodeId))
 				{
@@ -141,14 +141,14 @@ namespace rift::TypeSystem
 	{
 		auto callExprs = ecs::ListAll<CExprType>(access);
 		ecs::ExcludeIf<CExprTypeId>(access, callExprs);
-		for (AST::Id id : callExprs)
+		for (Id id : callExprs)
 		{
-			auto& expr           = access.Get<const CExprType>(id);
-			const AST::Id typeId = AST::FindIdFromNamespace(access, expr.type);
+			auto& expr      = access.Get<const CExprType>(id);
+			const Id typeId = FindIdFromNamespace(access, expr.type);
 			if (!IsNone(typeId))
 			{
 				access.Add(id, CExprTypeId{.id = typeId, .mode = expr.mode});
 			}
 		}
 	}
-}    // namespace rift::TypeSystem
+}    // namespace rift::AST::TypeSystem

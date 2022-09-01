@@ -36,23 +36,23 @@ go_bandit([]() {
 		});
 
 		it("Can load empty descriptor", [&]() {
-			files::SaveStringFile(testProjectPath / Modules::moduleFile, "{}");
+			files::SaveStringFile(testProjectPath / AST::Modules::moduleFile, "{}");
 
 			AST::Tree ast;
-			bool result = Modules::OpenProject(ast, testProjectPath);
+			bool result = AST::Modules::OpenProject(ast, testProjectPath);
 			AssertThat(result, Equals(true));
-			AssertThat(Modules::HasProject(ast), Equals(true));
+			AssertThat(AST::Modules::HasProject(ast), Equals(true));
 		});
 
 		it("Project name equals the folder", [&]() {
-			files::SaveStringFile(testProjectPath / Modules::moduleFile, "{}");
+			files::SaveStringFile(testProjectPath / AST::Modules::moduleFile, "{}");
 
 			AST::Tree ast;
-			bool result = Modules::OpenProject(ast, testProjectPath);
+			bool result = AST::Modules::OpenProject(ast, testProjectPath);
 			AssertThat(result, Equals(true));
-			AssertThat(Modules::HasProject(ast), Equals(true));
+			AssertThat(AST::Modules::HasProject(ast), Equals(true));
 
-			StringView projectName = Modules::GetProjectName(ast).ToString();
+			StringView projectName = AST::Modules::GetProjectName(ast).ToString();
 			AssertThat(projectName, Equals("TestProject"));
 		});
 
@@ -60,14 +60,14 @@ go_bandit([]() {
 		// the file
 		it("Project name can be overriden", [&]() {
 			files::SaveStringFile(
-			    testProjectPath / Modules::moduleFile, "{\"name\": \"SomeProject\"}");
+			    testProjectPath / AST::Modules::moduleFile, "{\"name\": \"SomeProject\"}");
 
 			AST::Tree ast;
-			bool result = Modules::OpenProject(ast, testProjectPath);
+			bool result = AST::Modules::OpenProject(ast, testProjectPath);
 			AssertThat(result, Equals(true));
-			AssertThat(Modules::HasProject(ast), Equals(true));
+			AssertThat(AST::Modules::HasProject(ast), Equals(true));
 
-			StringView projectName = Modules::GetProjectName(ast).ToString();
+			StringView projectName = AST::Modules::GetProjectName(ast).ToString();
 			AssertThat(projectName, Equals("SomeProject"));
 		});
 	});

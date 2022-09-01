@@ -12,6 +12,7 @@
 using namespace snowhouse;
 using namespace bandit;
 using namespace rift;
+using namespace p::core;
 
 
 go_bandit([]() {
@@ -19,24 +20,24 @@ go_bandit([]() {
 		it("Can get namespaces", [&]() {
 			AST::Tree ast;
 
-			AST::Id functionId = Types::AddFunction({ast, AST::NoId}, "TestFunction");
+			AST::Id functionId = AST::Types::AddFunction({ast, AST::NoId}, "TestFunction");
 			AssertThat(
 			    AST::GetNamespace(ast, functionId).ToString().c_str(), Equals("@TestFunction"));
 			AssertThat(AST::GetParentNamespace(ast, functionId).ToString().c_str(), Equals(""));
 
-			AST::Id classBId    = Types::CreateType(ast, RiftType::Class, "TestClass");
-			AST::Id functionBId = Types::AddFunction({ast, classBId}, "TestFunction");
+			AST::Id classBId    = AST::Types::CreateType(ast, AST::RiftType::Class, "TestClass");
+			AST::Id functionBId = AST::Types::AddFunction({ast, classBId}, "TestFunction");
 			AssertThat(AST::GetNamespace(ast, functionBId).ToString().c_str(),
 			    Equals("@TestClass.TestFunction"));
 			AssertThat(
 			    AST::GetParentNamespace(ast, functionBId).ToString().c_str(), Equals("@TestClass"));
 
 			AST::Id parentC = ast.Create();
-			ast.Add<CModule>(parentC);
-			ast.Add(parentC, CNamespace{"SomeScope"});
-			AST::Id classCId = Types::CreateType(ast, RiftType::Class, "TestClass");
-			AST::Hierarchy::AddChildren(ast, parentC, classCId);
-			AST::Id functionCId = Types::AddFunction({ast, classCId}, "TestFunction");
+			ast.Add<AST::CModule>(parentC);
+			ast.Add(parentC, AST::CNamespace{"SomeScope"});
+			AST::Id classCId = AST::Types::CreateType(ast, AST::RiftType::Class, "TestClass");
+			p::ecs::AddChildren(ast, parentC, classCId);
+			AST::Id functionCId = AST::Types::AddFunction({ast, classCId}, "TestFunction");
 			AssertThat(AST::GetNamespace(ast, functionCId).ToString().c_str(),
 			    Equals("@SomeScope.TestClass.TestFunction"));
 			AssertThat(AST::GetParentNamespace(ast, functionCId).ToString().c_str(),
@@ -47,11 +48,11 @@ go_bandit([]() {
 			AST::Tree ast;
 
 			AST::Id parent = ast.Create();
-			ast.Add<CModule>(parent);
-			ast.Add(parent, CNamespace{"SomeModule"});
-			AST::Id classId = Types::CreateType(ast, RiftType::Class, "TestClass");
-			AST::Hierarchy::AddChildren(ast, parent, classId);
-			AST::Id functionId = Types::AddFunction({ast, classId}, "TestFunction");
+			ast.Add<AST::CModule>(parent);
+			ast.Add(parent, AST::CNamespace{"SomeModule"});
+			AST::Id classId = AST::Types::CreateType(ast, AST::RiftType::Class, "TestClass");
+			p::ecs::AddChildren(ast, parent, classId);
+			AST::Id functionId = AST::Types::AddFunction({ast, classId}, "TestFunction");
 			p::String ns = AST::GetNamespace(ast, functionId).ToString(AST::LocalNamespace::Yes);
 			AssertThat(ns.c_str(), Equals("TestClass.TestFunction"));
 		});
@@ -101,17 +102,17 @@ go_bandit([]() {
 		it("Can find id from namespace", [&]() {
 			AST::Tree ast;
 			AST::Id parent = ast.Create();
-			ast.Add<CModule>(parent);
-			ast.Add(parent, CNamespace{"A"});
+			ast.Add<AST::CModule>(parent);
+			ast.Add(parent, AST::CNamespace{"A"});
 
-			AST::Id classId = Types::CreateType(ast, RiftType::Class, "B");
-			AST::Hierarchy::AddChildren(ast, parent, classId);
+			AST::Id classId = AST::Types::CreateType(ast, AST::RiftType::Class, "B");
+			p::ecs::AddChildren(ast, parent, classId);
 
-			AST::Id class2Id = Types::CreateType(ast, RiftType::Class, "B2");
-			AST::Hierarchy::AddChildren(ast, parent, class2Id);
+			AST::Id class2Id = AST::Types::CreateType(ast, AST::RiftType::Class, "B2");
+			p::ecs::AddChildren(ast, parent, class2Id);
 
-			AST::Id functionId  = Types::AddFunction({ast, classId}, "C");
-			AST::Id function2Id = Types::AddFunction({ast, classId}, "C2");
+			AST::Id functionId  = AST::Types::AddFunction({ast, classId}, "C");
+			AST::Id function2Id = AST::Types::AddFunction({ast, classId}, "C2");
 
 
 			AssertThat(AST::FindIdFromNamespace(ast, {"A"}), Equals(parent));

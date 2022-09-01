@@ -7,9 +7,9 @@
 #include <Pipe/Serialize/Serialization.h>
 
 
-namespace rift
+namespace rift::AST
 {
-	using namespace p;
+	using namespace p::core;
 
 
 	struct CStmtOutput : public p::Struct
@@ -17,7 +17,7 @@ namespace rift
 		STRUCT(CStmtOutput, p::Struct)
 
 		PROP(linkInputNode)
-		AST::Id linkInputNode = AST::NoId;
+		Id linkInputNode = NoId;
 	};
 
 
@@ -27,14 +27,13 @@ namespace rift
 
 		// Both arrays keep the same index to the input node and the output pin
 		PROP(pinIds)
-		TArray<AST::Id> pinIds;
+		TArray<Id> pinIds;
 		PROP(linkInputNodes)
-		TArray<AST::Id> linkInputNodes;
+		TArray<Id> linkInputNodes;
 
 
 		CStmtOutputs() = default;
-		CStmtOutputs(p::TArray<AST::Id> pins)
-		    : pinIds{Move(pins)}, linkInputNodes(pinIds.Size(), AST::NoId)
+		CStmtOutputs(p::TArray<Id> pins) : pinIds{Move(pins)}, linkInputNodes(pinIds.Size(), NoId)
 		{}
 	};
 
@@ -46,4 +45,4 @@ namespace rift
 	{
 		ct.Serialize(val.linkInputNode);
 	}
-}    // namespace rift
+}    // namespace rift::AST

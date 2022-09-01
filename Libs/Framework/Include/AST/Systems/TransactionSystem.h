@@ -12,9 +12,9 @@ namespace rift::AST
 	struct Tree;
 }
 
-namespace rift::TransactionSystem
+namespace rift::AST::TransactionSystem
 {
-	void Init(AST::Tree& ast);
+	void Init(Tree& ast);
 
-	void ClearTags(AST::Tree& ast);
-}    // namespace rift::TransactionSystem
+	void ClearTags(Tree& ast);
+}    // namespace rift::AST::TransactionSystem

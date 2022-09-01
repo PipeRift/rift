@@ -22,7 +22,7 @@ int RunEditor(StringView projectPath)
 
 	rift->AddPlugin<GraphViewPlugin>();
 
-	const int result = Editor::Get().Run(rift, projectPath);
+	const int result = Editor::Editor::Get().Run(rift, projectPath);
 	p::Log::Shutdown();
 	return result;
 }

@@ -2,19 +2,19 @@
 
 #pragma once
 
-#include "AST/Components/CChild.h"
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 
 #include <Pipe/ECS/Access.h>
+#include <Pipe/ECS/Components/CChild.h>
 
 
-namespace rift
+namespace rift::AST
 {
-	using TransactionAccess = TAccess<TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef>;
+	using TransactionAccess = TAccessRef<TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef>;
 
-	namespace AST::Transactions
+	namespace Transactions
 	{
 		struct Transaction
 		{
@@ -34,8 +34,8 @@ namespace rift
 
 		bool PreChange(const TransactionAccess& access, TSpan<const Id> entityIds);
 		void PostChange();
-	}    // namespace AST::Transactions
-}    // namespace rift
+	}    // namespace Transactions
+}    // namespace rift::AST
 
 #define ScopedChange(access, entityIds) \
 	rift::AST::Transactions::ScopedTransaction _transaction{access, entityIds};

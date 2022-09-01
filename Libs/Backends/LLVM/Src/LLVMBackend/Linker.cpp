@@ -24,10 +24,10 @@ namespace rift::compiler::LLVM
 		linkerPath.append("/");
 		linkerPath.append(RIFT_LLVM_LINKER_PATH);
 
-		for (AST::Id moduleId : ecs::ListAll<CRiftModule, CIRModule>(compiler.ast))
+		for (AST::Id moduleId : ecs::ListAll<AST::CRiftModule, CIRModule>(compiler.ast))
 		{
-			p::Name moduleName     = Modules::GetModuleName(compiler.ast, moduleId);
-			const auto& riftModule = compiler.ast.Get<const CRiftModule>(moduleId);
+			p::Name moduleName     = AST::Modules::GetModuleName(compiler.ast, moduleId);
+			const auto& riftModule = compiler.ast.Get<const AST::CRiftModule>(moduleId);
 			auto& irModule         = compiler.ast.Get<CIRModule>(moduleId);
 			if (p::files::Exists(irModule.objectFile))
 			{
@@ -38,15 +38,15 @@ namespace rift::compiler::LLVM
 				const char* extension = nullptr;
 				switch (riftModule.target)
 				{
-					case RiftModuleTarget::Executable:
+					case AST::RiftModuleTarget::Executable:
 						command.Add("/entry:main");
 						extension = "exe";
 						break;
-					case RiftModuleTarget::Shared:
+					case AST::RiftModuleTarget::Shared:
 						command.Add("/dll");
 						extension = "dll";
 						break;
-					case RiftModuleTarget::Static:
+					case AST::RiftModuleTarget::Static:
 						command.Add("/lib");
 						extension = "lib";
 						break;

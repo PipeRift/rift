@@ -5,7 +5,7 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift
+namespace rift::AST
 {
 	struct CNamespace : public p::Struct
 	{
@@ -36,4 +36,4 @@ namespace rift
 	{
 		w.Serialize(val.name);
 	}
-}    // namespace rift
+}    // namespace rift::AST

@@ -3,9 +3,9 @@
 #include "AST/Utils/TransactionUtils.h"
 
 #include "AST/Components/CType.h"
-#include "AST/Utils/Hierarchy.h"
 
 #include <Pipe/ECS/Filtering.h>
+#include <Pipe/ECS/Utils/Hierarchy.h>
 
 
 namespace rift::AST::Transactions
@@ -42,7 +42,7 @@ namespace rift::AST::Transactions
 
 		// Mark files dirty
 		TArray<Id> parentIds;
-		Hierarchy::GetAllParents(access, entityIds, parentIds);
+		p::ecs::GetAllParents(access, entityIds, parentIds);
 
 		parentIds.Append(entityIds);
 		access.AddN<CChanged>(parentIds);

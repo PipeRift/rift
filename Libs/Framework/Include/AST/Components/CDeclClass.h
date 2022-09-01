@@ -3,13 +3,11 @@
 
 #include "AST/Components/CDeclRecord.h"
 
-#include <AST/Tree.h>
 
-
-namespace rift
+namespace rift::AST
 {
 	struct CDeclClass : public CDeclRecord
 	{
 		STRUCT(CDeclClass, CDeclRecord)
 	};
-}    // namespace rift
+}    // namespace rift::AST

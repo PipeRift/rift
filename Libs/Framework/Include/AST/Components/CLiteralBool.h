@@ -4,7 +4,7 @@
 #include "AST/Components/CLiteral.h"
 
 
-namespace rift
+namespace rift::AST
 {
 	struct CLiteralBool : public CLiteral
 	{
@@ -13,4 +13,4 @@ namespace rift
 		PROP(value)
 		bool value = false;
 	};
-}    // namespace rift
+}    // namespace rift::AST

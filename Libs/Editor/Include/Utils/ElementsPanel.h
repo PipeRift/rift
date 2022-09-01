@@ -10,15 +10,15 @@
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprType.h>
 #include <AST/Components/CNamespace.h>
-#include <AST/Components/CParent.h>
 #include <AST/Components/CType.h>
 #include <AST/Tree.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <Pipe/Core/StringView.h>
+#include <Pipe/ECS/Components/CParent.h>
 #include <Pipe/ECS/Filtering.h>
 
 
-namespace rift
+namespace rift::Editor
 {
 	struct CTypeEditor;
 
@@ -29,8 +29,9 @@ namespace rift
 		HideValue = 1 << 0
 	};
 
-	using TVariableAccessRef = TAccessRef<TWrite<CDeclVariable>, TWrite<CNamespace>, CType,
-	    CDeclNative, CDeclStruct, CDeclClass, CParent>;
+	using TVariableAccessRef =
+	    p::TAccessRef<p::TWrite<AST::CDeclVariable>, p::TWrite<AST::CNamespace>, AST::CType,
+	        AST::CDeclNative, AST::CDeclStruct, AST::CDeclClass, AST::CParent>;
 
 	void DrawField(AST::Tree& ast, CTypeEditor& editor, AST::Id functionId, AST::Id fieldId,
 	    DrawFieldFlags flags = DrawFieldFlags::None);
@@ -39,4 +40,4 @@ namespace rift
 	void DrawFunction(AST::Tree& ast, CTypeEditor& editor, AST::Id functionId);
 
 	void DrawElementsPanel(AST::Tree& ast, AST::Id typeId);
-}    // namespace rift
+}    // namespace rift::Editor

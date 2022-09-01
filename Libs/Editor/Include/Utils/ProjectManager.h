@@ -5,8 +5,8 @@
 #include <UI/UI.h>
 
 
-namespace rift
+namespace rift::Editor
 {
 	void DrawProjectManager(AST::Tree& ast);
 	void OpenProjectManager();
-}    // namespace rift
+}    // namespace rift::Editor

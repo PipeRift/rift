@@ -18,12 +18,12 @@ namespace rift::AST
 	struct Tree;
 }
 
-namespace rift::FunctionsSystem
+namespace rift::AST::FunctionsSystem
 {
 	struct CTmpInvalidKeep
 	{};
 
-	void Init(AST::Tree& ast);
+	void Init(Tree& ast);
 	void ResolveCallFunctionIds(
 	    TAccessRef<TWrite<CExprCallId>, CExprCall, CDeclFunction, CNamespace, CParent, CChild>
 	        access);
@@ -31,10 +31,10 @@ namespace rift::FunctionsSystem
 	    TAccessRef<TWrite<CExprInputs>, TWrite<CExprOutputs>, CInvalid> access);
 
 	// Marks calls referencing dirty functions as dirty theirselfs
-	void PropagateDirtyIntoCalls(AST::Tree& ast);
-	void SyncCallPinsFromFunction(AST::Tree& ast);
+	void PropagateDirtyIntoCalls(Tree& ast);
+	void SyncCallPinsFromFunction(Tree& ast);
 	using InvalidDisconnectedPinAccess =
 	    TAccessRef<CInvalid, CExprInputs, TWrite<CTmpInvalidKeep>, TWrite<CChild>, TWrite<CParent>>;
 	void RemoveInvalidDisconnectedArgs(InvalidDisconnectedPinAccess access);
-	void ClearAddedTags(AST::Tree& ast);
-}    // namespace rift::FunctionsSystem
+	void ClearAddedTags(Tree& ast);
+}    // namespace rift::AST::FunctionsSystem

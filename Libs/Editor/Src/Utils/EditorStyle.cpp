@@ -44,11 +44,11 @@ namespace rift::Style
 		{
 			return GetTypeColor<String>();
 		}
-		else if (ast.Has<CDeclClass>(id))
+		else if (ast.Has<AST::CDeclClass>(id))
 		{
 			return GetTypeColor<Class>();
 		}
-		else if (ast.Has<CDeclStruct>(id))
+		else if (ast.Has<AST::CDeclStruct>(id))
 		{
 			return GetTypeColor<Struct>();
 		}

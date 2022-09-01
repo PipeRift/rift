@@ -7,7 +7,7 @@
 #include <Pipe/Reflect/Reflection.h>
 
 
-namespace rift
+namespace rift::AST
 {
 	using namespace p::core;
 
@@ -24,10 +24,10 @@ namespace rift
 		U32 = S32 | literalUnsignedMask,
 		U64 = S64 | literalUnsignedMask
 	};
-}    // namespace rift
-ENUM(rift::IntegralType)
+}    // namespace rift::AST
+ENUM(rift::AST::IntegralType)
 template<>
-struct magic_enum::customize::enum_range<rift::IntegralType>
+struct magic_enum::customize::enum_range<rift::AST::IntegralType>
 {
 	static constexpr int min = 0;
 	static constexpr int max = 256;
@@ -36,7 +36,7 @@ struct magic_enum::customize::enum_range<rift::IntegralType>
 };
 
 
-namespace rift
+namespace rift::AST
 {
 	struct CLiteralIntegral : public CLiteral
 	{
@@ -59,4 +59,4 @@ namespace rift
 			return u8(type) & ~literalUnsignedMask;
 		}
 	};
-}    // namespace rift
+}    // namespace rift::AST

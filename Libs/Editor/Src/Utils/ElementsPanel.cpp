@@ -14,23 +14,23 @@
 #include "Utils/Widgets.h"
 
 #include <AST/Utils/Expressions.h>
-#include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/TypeUtils.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
 #include <Pipe/Core/EnumFlags.h>
 #include <Pipe/ECS/Filtering.h>
+#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <UI/UI.h>
 
 
-namespace rift
+namespace rift::Editor
 {
 	// using namespace EnumOperators;
 
 	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, AST::Id variableId)
 	{
-		auto* ns           = access.TryGet<CNamespace>(variableId);
-		auto* variableDecl = access.TryGet<CDeclVariable>(variableId);
+		auto* ns           = access.TryGet<AST::CNamespace>(variableId);
+		auto* variableDecl = access.TryGet<AST::CDeclVariable>(variableId);
 		if (!ns || !variableDecl)
 		{
 			return;
@@ -130,7 +130,7 @@ namespace rift
 
 	void DrawFunction(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId, AST::Id id)
 	{
-		auto* ns = ast.TryGet<CNamespace>(id);
+		auto* ns = ast.TryGet<AST::CNamespace>(id);
 		if (!ns)
 		{
 			return;
@@ -172,15 +172,15 @@ namespace rift
 		}
 	}
 
-	void DrawVariables(TVariableAccessRef access, TransactionAccess transAccess,
+	void DrawVariables(TVariableAccessRef access, AST::TransactionAccess transAccess,
 	    CTypeEditor& editor, AST::Id typeId)
 	{
 		if (UI::CollapsingHeader("Variables", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			UI::Indent(10.f);
 			TArray<AST::Id> variableIds;
-			AST::Hierarchy::GetChildren(access, typeId, variableIds);
-			ecs::ExcludeIfNot<CDeclVariable>(access, variableIds);
+			p::ecs::GetChildren(access, typeId, variableIds);
+			ecs::ExcludeIfNot<AST::CDeclVariable>(access, variableIds);
 
 			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
 			bool showTable = UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit);
@@ -192,7 +192,7 @@ namespace rift
 				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.30f);
 				for (AST::Id child : variableIds)
 				{
-					if (access.Has<CDeclVariable>(child))
+					if (access.Has<AST::CDeclVariable>(child))
 					{
 						UI::TableNextRow();
 						DrawVariable(access, editor, child);
@@ -205,7 +205,7 @@ namespace rift
 			if (UI::Button(ICON_FA_PLUS "##Variable", ImVec2(-FLT_MIN, 0.0f)))
 			{
 				ScopedChange(transAccess, typeId);
-				Types::AddVariable(
+				AST::Types::AddVariable(
 				    {static_cast<AST::Tree&>(access.GetContext()), typeId}, "NewVariable");
 			}
 			Style::PopStyleCompact();
@@ -224,8 +224,8 @@ namespace rift
 			UI::Indent(10.f);
 
 			TArray<AST::Id> functionIds;
-			AST::Hierarchy::GetChildren(ast, typeId, functionIds);
-			ecs::ExcludeIfNot<CDeclFunction>(ast, functionIds);
+			p::ecs::GetChildren(ast, typeId, functionIds);
+			ecs::ExcludeIfNot<AST::CDeclFunction>(ast, functionIds);
 			for (AST::Id functionId : functionIds)
 			{
 				DrawFunction(ast, editor, typeId, functionId);
@@ -235,7 +235,7 @@ namespace rift
 			if (UI::Button(ICON_FA_PLUS "##Function", ImVec2(-FLT_MIN, 0.0f)))
 			{
 				ScopedChange(ast, typeId);
-				Types::AddFunction({ast, typeId}, "NewFunction");
+				AST::Types::AddFunction({ast, typeId}, "NewFunction");
 			}
 			Style::PopStyleCompact();
 			UI::Unindent(10.f);
@@ -258,12 +258,12 @@ namespace rift
 			UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
 			editor.elementsFilter.Draw("##filter");
 
-			if (Types::CanContainVariables(ast, typeId))
+			if (AST::Types::CanContainVariables(ast, typeId))
 			{
 				DrawVariables(ast, ast, editor, typeId);
 			}
 
-			if (Types::CanContainFunctions(ast, typeId))
+			if (AST::Types::CanContainFunctions(ast, typeId))
 			{
 				DrawFunctions(ast, editor, typeId);
 			}
@@ -281,9 +281,9 @@ namespace rift
 			// If pin has not been marked for removal, destroy the entity
 			if (!removedPin)
 			{
-				AST::Hierarchy::RemoveDeep(ast, editor.pendingDeletePropertyId);
+				p::ecs::RemoveDeep(ast, editor.pendingDeletePropertyId);
 				editor.pendingDeletePropertyId = AST::NoId;
 			}
 		}
 	}
-}    // namespace rift
+}    // namespace rift::Editor

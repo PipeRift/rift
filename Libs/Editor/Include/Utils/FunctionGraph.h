@@ -13,7 +13,7 @@ namespace rift
 	struct DockSpaceLayout;
 }
 
-namespace rift::Graph
+namespace rift::Editor::Graph
 {
 	struct Settings
 	{
@@ -58,4 +58,4 @@ namespace rift::Graph
 	v2 GetNodePosition(AST::Id id);
 
 	void SnapNodeDimensionsToGrid();
-}    // namespace rift::Graph
+}    // namespace rift::Editor::Graph

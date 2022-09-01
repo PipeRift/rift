@@ -14,38 +14,36 @@ namespace rift::AST
 	struct Tree;
 }
 
-namespace rift::LoadSystem
+namespace rift::AST::LoadSystem
 {
 	struct ModuleTypePaths
 	{
-		AST::Id moduleId;
+		Id moduleId;
 		TArray<Path> paths;    // p::Paths of module types
 		TArray<Name> pathNames;
 	};
 
-	void Init(AST::Tree& ast);
-	void Run(AST::Tree& ast);
+	void Init(Tree& ast);
+	void Run(Tree& ast);
 
-	void LoadSubmodules(AST::Tree& ast);
-	void LoadTypes(AST::Tree& ast);
+	void LoadSubmodules(Tree& ast);
+	void LoadTypes(Tree& ast);
 
 	/**
 	 * @param paths of all currently unloaded modules
 	 */
-	void ScanSubmodules(AST::Tree& ast, TArray<Path>& paths);
+	void ScanSubmodules(Tree& ast, TArray<Path>& paths);
 	/**
 	 * @param paths of all currently unloaded types
 	 */
-	void ScanTypes(AST::Tree& ast, TArray<ModuleTypePaths>& pathsByModule);
+	void ScanTypes(Tree& ast, TArray<ModuleTypePaths>& pathsByModule);
 
-	void CreateModulesFromPaths(AST::Tree& ast, TArray<Path>& paths, TArray<AST::Id>& ids);
-	void CreateTypesFromPaths(
-	    AST::Tree& ast, TSpan<ModuleTypePaths> pathsByModule, TArray<AST::Id>& ids);
+	void CreateModulesFromPaths(Tree& ast, TArray<Path>& paths, TArray<Id>& ids);
+	void CreateTypesFromPaths(Tree& ast, TSpan<ModuleTypePaths> pathsByModule, TArray<Id>& ids);
 
-	void LoadFileStrings(
-	    TAccessRef<CFileRef> access, TSpan<AST::Id> nodes, TArray<String>& strings);
+	void LoadFileStrings(TAccessRef<CFileRef> access, TSpan<Id> nodes, TArray<String>& strings);
 
-	void DeserializeModules(AST::Tree& ast, TSpan<AST::Id> moduleIds, TSpan<String> strings);
-	void DeserializeTypes(AST::Tree& ast, TSpan<AST::Id> typeIds, TSpan<String> strings);
+	void DeserializeModules(Tree& ast, TSpan<Id> moduleIds, TSpan<String> strings);
+	void DeserializeTypes(Tree& ast, TSpan<Id> typeIds, TSpan<String> strings);
 
-}    // namespace rift::LoadSystem
+}    // namespace rift::AST::LoadSystem

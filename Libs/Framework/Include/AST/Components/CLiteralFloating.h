@@ -7,21 +7,20 @@
 #include <Pipe/Reflect/Reflection.h>
 
 
-namespace rift
+namespace rift::AST
 {
-	using namespace p;
-	// using namespace p::EnumOperators;
+	using namespace p::core;
 
 	enum class FloatingType : u8
 	{
 		F32 = 32,
 		F64 = 64
 	};
-}    // namespace rift
-ENUM(rift::FloatingType)
+}    // namespace rift::AST
+ENUM(rift::AST::FloatingType)
 
 
-namespace rift
+namespace rift::AST
 {
 	struct CLiteralFloating : public CLiteral
 	{
@@ -40,4 +39,4 @@ namespace rift
 			return static_cast<UnderlyingType<FloatingType>>(type);
 		}
 	};
-}    // namespace rift
+}    // namespace rift::AST

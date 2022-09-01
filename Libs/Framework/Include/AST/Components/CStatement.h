@@ -4,10 +4,10 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift
+namespace rift::AST
 {
 	struct CStatement : public p::Struct
 	{
 		STRUCT(CStatement, p::Struct)
 	};
-}    // namespace rift
+}    // namespace rift::AST

@@ -1,13 +1,14 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Utils/Hierarchy.h"
+#include "AST/Id.h"
 
 #include <Pipe/ECS/Id.h>
+#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift
+namespace rift::AST
 {
 	struct OutputId : public p::Struct
 	{
@@ -24,7 +25,7 @@ namespace rift
 
 		bool IsNone() const
 		{
-			return ecs::IsNone(nodeId) || ecs::IsNone(pinId);
+			return p::ecs::IsNone(nodeId) || p::ecs::IsNone(pinId);
 		}
 	};
 
@@ -33,10 +34,10 @@ namespace rift
 		STRUCT(CExprInputs, p::Struct)
 
 		PROP(linkedOutputs)
-		TArray<OutputId> linkedOutputs;
+		p::TArray<OutputId> linkedOutputs;
 
 		PROP(pinIds)
-		TArray<AST::Id> pinIds;
+		p::TArray<AST::Id> pinIds;
 
 
 		CExprInputs& Add(AST::Id pinId)
@@ -46,24 +47,24 @@ namespace rift
 			return *this;
 		}
 
-		CExprInputs& Insert(i32 index, AST::Id pinId)
+		CExprInputs& Insert(p::i32 index, AST::Id pinId)
 		{
 			pinIds.Insert(index, pinId);
 			linkedOutputs.Insert(index, {});
 			return *this;
 		}
 
-		CExprInputs& Swap(i32 firstIndex, i32 secondIndex)
+		CExprInputs& Swap(p::i32 firstIndex, p::i32 secondIndex)
 		{
 			pinIds.Swap(firstIndex, secondIndex);
 			linkedOutputs.Swap(firstIndex, secondIndex);
 			return *this;
 		}
 
-		void Resize(i32 count)
+		void Resize(p::i32 count)
 		{
 			linkedOutputs.Resize(count);
 			pinIds.Resize(count, AST::NoId);
 		}
 	};
-}    // namespace rift
+}    // namespace rift::AST

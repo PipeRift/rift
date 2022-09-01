@@ -1,14 +1,15 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Utils/Hierarchy.h"
+#include "AST/Id.h"
 
 #include <Pipe/ECS/Access.h>
 #include <Pipe/ECS/Id.h>
+#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift
+namespace rift::AST
 {
 	struct InputId : public p::Struct
 	{
@@ -25,7 +26,7 @@ namespace rift
 
 		bool IsNone() const
 		{
-			return ecs::IsNone(nodeId) || ecs::IsNone(pinId);
+			return p::ecs::IsNone(nodeId) || p::ecs::IsNone(pinId);
 		}
 	};
 
@@ -34,7 +35,7 @@ namespace rift
 		STRUCT(CExprOutputs, p::Struct)
 
 		PROP(pinIds)
-		TArray<AST::Id> pinIds;
+		p::TArray<AST::Id> pinIds;
 
 
 		CExprOutputs() {}
@@ -49,16 +50,16 @@ namespace rift
 			return *this;
 		}
 
-		CExprOutputs& Insert(i32 index, AST::Id pinId)
+		CExprOutputs& Insert(p::i32 index, AST::Id pinId)
 		{
 			pinIds.Insert(index, pinId);
 			return *this;
 		}
 
-		CExprOutputs& Swap(i32 firstIndex, i32 secondIndex)
+		CExprOutputs& Swap(p::i32 firstIndex, p::i32 secondIndex)
 		{
 			pinIds.Swap(firstIndex, secondIndex);
 			return *this;
 		}
 	};
-}    // namespace rift
+}    // namespace rift::AST

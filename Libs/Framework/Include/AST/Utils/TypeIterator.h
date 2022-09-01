@@ -7,15 +7,17 @@
 #include <Pipe/Files/FormatFileIterator.h>
 
 
-namespace rift
+namespace rift::AST
 {
-	class TypeIterator : public FormatFileIterator<files::RecursiveIterator>
+	class TypeIterator : public p::files::FormatFileIterator<p::files::RecursiveIterator>
 	{
-	public:
-		using FormatFileIterator<files::RecursiveIterator>::FormatFileIterator;
+		using Super = p::files::FormatFileIterator<p::files::RecursiveIterator>;
 
-		explicit TypeIterator(const p::Path& path, const TSet<Path>* ignorePaths = nullptr)
-		    : FormatFileIterator(Paths::typeExtension, path)
+	public:
+		using Super::Super;
+
+		explicit TypeIterator(const p::Path& path, const p::TSet<p::Path>* ignorePaths = nullptr)
+		    : Super(Paths::typeExtension, path)
 		{}
 
 		const p::Path& operator*() const noexcept
@@ -39,4 +41,4 @@ namespace rift
 	{
 		return {};
 	}
-}    // namespace rift
+}    // namespace rift::AST

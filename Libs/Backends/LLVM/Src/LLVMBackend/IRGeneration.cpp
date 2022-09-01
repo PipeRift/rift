@@ -30,7 +30,6 @@
 #include <AST/Components/CType.h>
 #include <AST/Components/Tags/CInvalid.h>
 #include <AST/Id.h>
-#include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Statements.h>
@@ -40,22 +39,23 @@
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Verifier.h>
 #include <Pipe/ECS/Filtering.h>
+#include <Pipe/ECS/Utils/Hierarchy.h>
 
 
 namespace rift::compiler::LLVM
 {
-	using BlockAccessRef = TAccessRef<CStmtOutput, CStmtOutputs, CExprInputs, CStmtIf, CExprCallId,
-	    CIRFunction, CIRValue, CNamespace>;
+	using BlockAccessRef = TAccessRef<AST::CStmtOutput, AST::CStmtOutputs, AST::CExprInputs,
+	    AST::CStmtIf, AST::CExprCallId, CIRFunction, CIRValue, AST::CNamespace>;
 
 	// Forward declarations
 	void AddStmtBlock(ModuleIRGen& gen, BlockAccessRef access, AST::Id firstStmtId,
 	    llvm::BasicBlock* block, const CIRFunction& function);
 	llvm::BasicBlock* AddIf(
 	    ModuleIRGen& gen, BlockAccessRef access, AST::Id id, const CIRFunction& function);
-	void AddCall(ModuleIRGen& gen, AST::Id id, const CExprCallId& call, BlockAccessRef access);
+	void AddCall(ModuleIRGen& gen, AST::Id id, const AST::CExprCallId& call, BlockAccessRef access);
 
 
-	void BindNativeTypes(llvm::LLVMContext& llvm, TAccessRef<CType, TWrite<CIRType>> access)
+	void BindNativeTypes(llvm::LLVMContext& llvm, TAccessRef<AST::CType, TWrite<CIRType>> access)
 	{
 		const auto& nativeTypes = static_cast<AST::Tree&>(access.GetContext()).GetNativeTypes();
 		access.Add<CIRType>(nativeTypes.boolId, {llvm::Type::getInt8Ty(llvm)});
@@ -73,7 +73,8 @@ namespace rift::compiler::LLVM
 	}
 
 	void DeclareStructs(ModuleIRGen& gen,
-	    TAccessRef<CType, CNamespace, TWrite<CIRType>, CChild, CModule> access, TSpan<AST::Id> ids)
+	    TAccessRef<AST::CType, AST::CNamespace, TWrite<CIRType>, AST::CChild, AST::CModule> access,
+	    TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
 		for (AST::Id id : ids)
@@ -84,7 +85,8 @@ namespace rift::compiler::LLVM
 	}
 
 	void DefineStructs(ModuleIRGen& gen,
-	    TAccessRef<CIRType, CParent, CNamespace, CDeclVariable> access, TSpan<AST::Id> ids)
+	    TAccessRef<CIRType, AST::CParent, AST::CNamespace, AST::CDeclVariable> access,
+	    TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
 		TArray<AST::Id> memberIds;
@@ -96,11 +98,11 @@ namespace rift::compiler::LLVM
 			// Add members
 			memberIds.Clear(false);
 			memberTypes.Clear(false);
-			AST::Hierarchy::GetChildren(access, id, memberIds);
-			ecs::ExcludeIfNot<CDeclVariable>(access, memberIds);
+			p::ecs::GetChildren(access, id, memberIds);
+			ecs::ExcludeIfNot<AST::CDeclVariable>(access, memberIds);
 			for (AST::Id memberId : memberIds)
 			{
-				const auto& var = access.Get<const CDeclVariable>(memberId);
+				const auto& var = access.Get<const AST::CDeclVariable>(memberId);
 				if (auto* irType = access.TryGet<const CIRType>(var.typeId))
 				{
 					memberTypes.Add(irType->instance);
@@ -117,8 +119,8 @@ namespace rift::compiler::LLVM
 		}
 	}
 
-	using DeclareFunctionAccess = TAccessRef<TWrite<CIRFunction>, CNamespace, CExprTypeId,
-	    CExprOutputs, CIRType, CParent, CChild, CInvalid, CModule>;
+	using DeclareFunctionAccess = TAccessRef<TWrite<CIRFunction>, AST::CNamespace, AST::CExprTypeId,
+	    AST::CExprOutputs, CIRType, AST::CParent, AST::CChild, AST::CInvalid, AST::CModule>;
 	void DeclareFunctions(ModuleIRGen& gen, DeclareFunctionAccess access, TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
@@ -130,19 +132,19 @@ namespace rift::compiler::LLVM
 
 			inputIds.Clear(false);
 			inputTypes.Clear(false);
-			if (auto* outputs = access.TryGet<const CExprOutputs>(id))
+			if (auto* outputs = access.TryGet<const AST::CExprOutputs>(id))
 			{
 				for (i32 i = 0; i < outputs->pinIds.Size(); ++i)
 				{
 					AST::Id inputId = outputs->pinIds[i];
-					if (access.Has<CInvalid>(inputId))
+					if (access.Has<AST::CInvalid>(inputId))
 					{
 						continue;
 					}
 
 					inputIds.Add(inputId);
 
-					AST::Id typeId = access.Get<const CExprTypeId>(inputId).id;
+					AST::Id typeId = access.Get<const AST::CExprTypeId>(inputId).id;
 					auto* irType   = access.TryGet<const CIRType>(typeId);
 					if (irType && irType->instance)
 					{
@@ -196,7 +198,7 @@ namespace rift::compiler::LLVM
 
 		for (AST::Id id : stmtIds)
 		{
-			if (const auto* call = access.TryGet<const CExprCallId>(id))
+			if (const auto* call = access.TryGet<const AST::CExprCallId>(id))
 			{
 				AddCall(gen, id, *call, access);
 			}
@@ -204,7 +206,7 @@ namespace rift::compiler::LLVM
 
 		if (splitId != AST::NoId)
 		{
-			if (access.Has<const CStmtIf>(splitId))
+			if (access.Has<const AST::CStmtIf>(splitId))
 			{
 				AddIf(gen, access, splitId, function);
 			}
@@ -212,7 +214,7 @@ namespace rift::compiler::LLVM
 		// TODO: Resolve continuation block and generate it
 	}
 
-	llvm::Value* AddExpr(ModuleIRGen& gen, BlockAccessRef access, const OutputId& output)
+	llvm::Value* AddExpr(ModuleIRGen& gen, BlockAccessRef access, const AST::OutputId& output)
 	{
 		const auto* value =
 		    !IsNone(output.pinId) ? access.TryGet<const CIRValue>(output.pinId) : nullptr;
@@ -226,10 +228,10 @@ namespace rift::compiler::LLVM
 	llvm::BasicBlock* AddIf(
 	    ModuleIRGen& gen, BlockAccessRef access, AST::Id id, const CIRFunction& function)
 	{
-		const auto& outputs      = access.Get<const CStmtOutputs>(id);
+		const auto& outputs      = access.Get<const AST::CStmtOutputs>(id);
 		const auto& connectedIds = outputs.linkInputNodes;
 		Check(connectedIds.Size() == 2);
-		const auto& exprInputs = access.Get<const CExprInputs>(id);
+		const auto& exprInputs = access.Get<const AST::CExprInputs>(id);
 		Check(exprInputs.linkedOutputs.Size() == 1);
 
 		llvm::Value* condV = AddExpr(gen, access, exprInputs.linkedOutputs.First());
@@ -256,7 +258,7 @@ namespace rift::compiler::LLVM
 		return contBlock;
 	}
 
-	void AddCall(ModuleIRGen& gen, AST::Id id, const CExprCallId& call, BlockAccessRef access)
+	void AddCall(ModuleIRGen& gen, AST::Id id, const AST::CExprCallId& call, BlockAccessRef access)
 	{
 		const AST::Id functionId = call.functionId;
 		if (!access.IsValid(functionId))
@@ -273,12 +275,12 @@ namespace rift::compiler::LLVM
 		}
 
 		TArray<llvm::Value*> args;
-		if (auto* inputs = access.TryGet<const CExprInputs>(id))
+		if (auto* inputs = access.TryGet<const AST::CExprInputs>(id))
 		{
 			args.Reserve(inputs->linkedOutputs.Size());
 			for (i32 i = 0; i < inputs->linkedOutputs.Size(); ++i)
 			{
-				OutputId output = inputs->linkedOutputs[i];
+				AST::OutputId output = inputs->linkedOutputs[i];
 				if (!output.IsNone())
 				{
 					args.Add(AddExpr(gen, access, output));
@@ -296,7 +298,7 @@ namespace rift::compiler::LLVM
 			const auto& irFunction = access.Get<const CIRFunction>(id);
 			auto* block = llvm::BasicBlock::Create(gen.llvm, "entry", irFunction.instance);
 
-			const auto& output = access.Get<const CStmtOutput>(id);
+			const auto& output = access.Get<const AST::CStmtOutput>(id);
 			AddStmtBlock(gen, access, output.linkInputNode, block, irFunction);
 
 			// Generate default return
@@ -318,35 +320,35 @@ namespace rift::compiler::LLVM
 		gen.builder.CreateRet(llvm::ConstantInt::get(gen.llvm, llvm::APInt(32, 0)));
 	}
 
-	using GenerateLiteralsAccs = TAccessRef<CLiteralBool, CLiteralIntegral, CLiteralFloating,
-	    CLiteralString, TWrite<CIRValue>>;
+	using GenerateLiteralsAccs = TAccessRef<AST::CLiteralBool, AST::CLiteralIntegral,
+	    AST::CLiteralFloating, AST::CLiteralString, TWrite<CIRValue>>;
 	void GenerateLiterals(llvm::LLVMContext& llvm, GenerateLiteralsAccs access)
 	{
-		for (AST::Id id : ecs::ListAll<CLiteralBool>(access))
+		for (AST::Id id : ecs::ListAll<AST::CLiteralBool>(access))
 		{
-			const auto& boolean = access.Get<const CLiteralBool>(id);
+			const auto& boolean = access.Get<const AST::CLiteralBool>(id);
 			llvm::Value* value  = llvm::ConstantInt::get(llvm, llvm::APInt(1, boolean.value, true));
 			access.Add<CIRValue>(id, value);
 		}
-		for (AST::Id id : ecs::ListAll<CLiteralIntegral>(access))
+		for (AST::Id id : ecs::ListAll<AST::CLiteralIntegral>(access))
 		{
-			const auto& integral = access.Get<const CLiteralIntegral>(id);
+			const auto& integral = access.Get<const AST::CLiteralIntegral>(id);
 			llvm::Value* value   = llvm::ConstantInt::get(
 			      llvm, llvm::APInt(integral.GetSize(), integral.value, integral.IsSigned()));
 			access.Add<CIRValue>(id, value);
 		}
-		for (AST::Id id : ecs::ListAll<CLiteralFloating>(access))
+		for (AST::Id id : ecs::ListAll<AST::CLiteralFloating>(access))
 		{
-			const auto& floating = access.Get<const CLiteralFloating>(id);
+			const auto& floating = access.Get<const AST::CLiteralFloating>(id);
 			llvm::Value* value =
-			    llvm::ConstantFP::get(llvm, llvm::APFloat(floating.type == FloatingType::F32
+			    llvm::ConstantFP::get(llvm, llvm::APFloat(floating.type == AST::FloatingType::F32
 			                                                  ? static_cast<float>(floating.value)
 			                                                  : floating.value));
 			access.Add<CIRValue>(id, value);
 		}
-		for (AST::Id id : ecs::ListAll<CLiteralString>(access))
+		for (AST::Id id : ecs::ListAll<AST::CLiteralString>(access))
 		{
-			const auto& string = access.Get<const CLiteralString>(id);
+			const auto& string = access.Get<const AST::CLiteralString>(id);
 			llvm::Value* value = llvm::ConstantDataArray::getString(llvm, ToLLVM(string.value));
 			access.Add<CIRValue>(id, value);
 		}
@@ -358,7 +360,7 @@ namespace rift::compiler::LLVM
 		ZoneScoped;
 		auto& ast = compiler.ast;
 
-		const Name name = Modules::GetModuleName(compiler.ast, moduleId);
+		const Name name = AST::Modules::GetModuleName(compiler.ast, moduleId);
 
 		CIRModule& module      = compiler.ast.Add<CIRModule>(moduleId);
 		module.instance        = MakeOwned<llvm::Module>(ToLLVM(name), llvm);
@@ -368,21 +370,22 @@ namespace rift::compiler::LLVM
 
 		// Filter all module rift types
 		TArray<AST::Id> typeIds;
-		AST::Hierarchy::GetChildren(ast, moduleId, typeIds);
-		ecs::ExcludeIfNot<CType>(ast, typeIds);
-		TArray<AST::Id> structIds            = ecs::GetIf<CDeclStruct>(ast, typeIds);
-		TArray<AST::Id> classIds             = ecs::GetIf<CDeclClass>(ast, typeIds);
-		TArray<AST::Id> functionLibraryIds   = ecs::GetIf<CDeclFunctionLibrary>(ast, typeIds);
-		TArray<AST::Id> functionInterfaceIds = ecs::GetIf<CDeclFunctionInterface>(ast, typeIds);
+		p::ecs::GetChildren(ast, moduleId, typeIds);
+		ecs::ExcludeIfNot<AST::CType>(ast, typeIds);
+		TArray<AST::Id> structIds          = ecs::GetIf<AST::CDeclStruct>(ast, typeIds);
+		TArray<AST::Id> classIds           = ecs::GetIf<AST::CDeclClass>(ast, typeIds);
+		TArray<AST::Id> functionLibraryIds = ecs::GetIf<AST::CDeclFunctionLibrary>(ast, typeIds);
+		TArray<AST::Id> functionInterfaceIds =
+		    ecs::GetIf<AST::CDeclFunctionInterface>(ast, typeIds);
 
 		DeclareStructs(gen, ast, structIds);
 		DeclareStructs(gen, ast, classIds);
 
 		TArray<AST::Id> functionIds;
-		AST::Hierarchy::GetChildren(ast, classIds, functionIds);
-		AST::Hierarchy::GetChildren(ast, functionLibraryIds, functionIds);
-		AST::Hierarchy::GetChildren(ast, functionInterfaceIds, functionIds);
-		ecs::ExcludeIfNot<CDeclFunction>(ast, functionIds);
+		p::ecs::GetChildren(ast, classIds, functionIds);
+		p::ecs::GetChildren(ast, functionLibraryIds, functionIds);
+		p::ecs::GetChildren(ast, functionInterfaceIds, functionIds);
+		ecs::ExcludeIfNot<AST::CDeclFunction>(ast, functionIds);
 		DeclareFunctions(gen, ast, functionIds);
 
 		DefineStructs(gen, ast, structIds);
@@ -390,8 +393,8 @@ namespace rift::compiler::LLVM
 
 		DefineFunctions(gen, ast, functionIds);
 
-		const auto* riftMod = compiler.ast.TryGet<const CRiftModule>(moduleId);
-		if (riftMod && riftMod->target == RiftModuleTarget::Executable)
+		const auto* riftMod = compiler.ast.TryGet<const AST::CRiftModule>(moduleId);
+		if (riftMod && riftMod->target == AST::RiftModuleTarget::Executable)
 		{
 			CreateMain(gen);
 		}
@@ -402,7 +405,7 @@ namespace rift::compiler::LLVM
 		BindNativeTypes(llvm, compiler.ast);
 		GenerateLiterals(llvm, compiler.ast);
 
-		for (AST::Id moduleId : ecs::ListAll<CModule>(compiler.ast))
+		for (AST::Id moduleId : ecs::ListAll<AST::CModule>(compiler.ast))
 		{
 			GenerateIRModule(compiler, moduleId, llvm, builder);
 		}

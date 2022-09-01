@@ -9,7 +9,7 @@
 #include <Utils/NodesInternal.h>
 
 
-namespace rift
+namespace rift::Editor
 {
 	struct CTypeEditor : public p::Struct
 	{
@@ -37,4 +37,4 @@ namespace rift
 	inline const Name CTypeEditor::rightTopNode{"rightTopNode"};
 	inline const Name CTypeEditor::rightBottomNode{"rightBottomNode"};
 	inline const Name CTypeEditor::centralNode{"centralNode"};
-}    // namespace rift
+}    // namespace rift::Editor

@@ -7,13 +7,16 @@
 
 namespace rift::Editor
 {
-	void ListTypesFromFilter(TAccessRef<CNamespace> access, TArray<AST::Id> typeIds,
+	using namespace p::core;
+
+
+	void ListTypesFromFilter(p::TAccessRef<AST::CNamespace> access, p::TArray<AST::Id> typeIds,
 	    AST::Id& selectedId, ImGuiTextFilter& searchFilter)
 	{
 		for (AST::Id id : typeIds)
 		{
-			const auto& type   = access.Get<const CNamespace>(id);
-			const String& name = type.name.ToString();
+			const auto& type      = access.Get<const AST::CNamespace>(id);
+			const p::String& name = type.name.ToString();
 
 			if (!searchFilter.PassFilter(name.c_str(), name.c_str() + name.size()))
 			{
@@ -29,13 +32,15 @@ namespace rift::Editor
 		}
 	}
 
-	bool TypeCombo(TAccessRef<CNamespace, CType, CDeclNative, CDeclStruct, CDeclClass> access,
-	    StringView label, AST::Id& selectedId)
+	bool TypeCombo(p::TAccessRef<AST::CNamespace, AST::CType, AST::CDeclNative, AST::CDeclStruct,
+	                   AST::CDeclClass>
+	                   access,
+	    p::StringView label, AST::Id& selectedId)
 	{
-		Name ownerName;
+		p::Name ownerName;
 		if (!IsNone(selectedId))
 		{
-			ownerName = access.Get<const CNamespace>(selectedId).name;
+			ownerName = access.Get<const AST::CNamespace>(selectedId).name;
 		}
 
 		AST::Id lastId = selectedId;
@@ -49,9 +54,9 @@ namespace rift::Editor
 			UI::SetNextItemWidth(-FLT_MIN);
 			filter.Draw("##Filter");
 
-			auto nativeIds = ecs::ListAll<CType, CDeclNative, CNamespace>(access);
-			auto structIds = ecs::ListAll<CType, CDeclStruct, CNamespace>(access);
-			auto classIds  = ecs::ListAll<CType, CDeclClass, CNamespace>(access);
+			auto nativeIds = p::ecs::ListAll<AST::CType, AST::CDeclNative, AST::CNamespace>(access);
+			auto structIds = p::ecs::ListAll<AST::CType, AST::CDeclStruct, AST::CNamespace>(access);
+			auto classIds  = p::ecs::ListAll<AST::CType, AST::CDeclClass, AST::CNamespace>(access);
 			if (filter.IsActive())
 			{
 				if (UI::TreeNodeEx("Native##Filtered", ImGuiTreeNodeFlags_DefaultOpen))

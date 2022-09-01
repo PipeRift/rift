@@ -33,7 +33,7 @@
 #include <UI/UI.h>
 
 
-namespace rift::EditorSystem
+namespace rift::Editor::EditorSystem
 {
 	void OnProjectEditorOpen(AST::Tree& ast)
 	{
@@ -119,7 +119,7 @@ namespace rift::EditorSystem
 	{
 		ZoneScoped;
 
-		if (Modules::HasProject(ast))
+		if (AST::Modules::HasProject(ast))
 		{
 			DrawProject(ast);
 		}
@@ -226,7 +226,7 @@ namespace rift::EditorSystem
 		}
 		auto& editor = ast.GetStatic<SEditor>();
 
-		const auto& path = Modules::GetProjectPath(ast);
+		const auto& path = AST::Modules::GetProjectPath(ast);
 		UI::PushID(Hash<Path>()(path));
 
 		DrawProjectMenuBar(ast, editor);
@@ -269,7 +269,7 @@ namespace rift::EditorSystem
 				}
 				if (UI::MenuItem("Close current"))
 				{
-					Modules::CloseProject(ast);
+					AST::Modules::CloseProject(ast);
 					editorData.skipFrameAfterMenu = true;
 				}
 				UI::Separator();
@@ -278,21 +278,23 @@ namespace rift::EditorSystem
 				{
 					TArray<TPair<Path, String>> fileDatas;
 
-					auto dirtyTypeIds = ecs::ListAll<CType, CTypeEditor, CFileRef, CFileDirty>(ast);
+					auto dirtyTypeIds =
+					    ecs::ListAll<AST::CType, CTypeEditor, AST::CFileRef, AST::CFileDirty>(ast);
 					for (AST::Id typeId : dirtyTypeIds)
 					{
-						auto& file     = ast.Get<CFileRef>(typeId);
+						auto& file     = ast.Get<AST::CFileRef>(typeId);
 						auto& fileData = fileDatas.AddRef({file.path, ""});
-						Types::Serialize(ast, typeId, fileData.second);
+						AST::Types::Serialize(ast, typeId, fileData.second);
 					}
 
 					auto dirtyModuleIds =
-					    ecs::ListAll<CModule, CModuleEditor, CFileRef, CFileDirty>(ast);
+					    ecs::ListAll<AST::CModule, CModuleEditor, AST::CFileRef, AST::CFileDirty>(
+					        ast);
 					for (AST::Id moduleId : dirtyModuleIds)
 					{
-						auto& file     = ast.Get<CFileRef>(moduleId);
+						auto& file     = ast.Get<AST::CFileRef>(moduleId);
 						auto& fileData = fileDatas.AddRef({file.path, ""});
-						Modules::Serialize(ast, moduleId, fileData.second);
+						AST::Modules::Serialize(ast, moduleId, fileData.second);
 					}
 
 					for (auto& fileData : fileDatas)
@@ -300,8 +302,8 @@ namespace rift::EditorSystem
 						files::SaveStringFile(fileData.first, fileData.second);
 					}
 
-					ast.Remove<CFileDirty>(dirtyTypeIds);
-					ast.Remove<CFileDirty>(dirtyModuleIds);
+					ast.Remove<AST::CFileDirty>(dirtyTypeIds);
+					ast.Remove<AST::CFileDirty>(dirtyModuleIds);
 
 					UI::AddNotification({UI::ToastType::Success, 1.f,
 					    !fileDatas.IsEmpty() ? Strings::Format("Saved {} files", fileDatas.Size())
@@ -387,12 +389,12 @@ namespace rift::EditorSystem
 		{
 			if (UI::MenuItem(ICON_FA_SAVE, "CTRL+S"))
 			{
-				auto& file = ast.Get<CFileRef>(moduleId);
+				auto& file = ast.Get<AST::CFileRef>(moduleId);
 				TPair<Path, String> fileData{file.path, ""};
-				Modules::Serialize(ast, moduleId, fileData.second);
+				AST::Modules::Serialize(ast, moduleId, fileData.second);
 
 				files::SaveStringFile(fileData.first, fileData.second);
-				ast.Remove<CFileDirty>(moduleId);
+				ast.Remove<AST::CFileDirty>(moduleId);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
 				    Strings::Format("Saved file {}", p::GetFilename(file.path))});
@@ -403,19 +405,20 @@ namespace rift::EditorSystem
 
 	void DrawModules(AST::Tree& ast, SEditor& editor)
 	{
-		TAccess<TWrite<CModuleEditor>, TWrite<CModule>, TWrite<CNamespace>, CFileRef> moduleEditors{
-		    ast};
-		for (AST::Id moduleId : ecs::ListAll<CModule, CModuleEditor, CFileRef>(moduleEditors))
+		TAccess<TWrite<CModuleEditor>, TWrite<AST::CModule>, TWrite<AST::CNamespace>, AST::CFileRef>
+		    moduleEditors{ast};
+		for (AST::Id moduleId :
+		    ecs::ListAll<AST::CModule, CModuleEditor, AST::CFileRef>(moduleEditors))
 		{
 			ZoneScopedN("Draw Type");
 
 			auto& moduleEditor = moduleEditors.Get<CModuleEditor>(moduleId);
-			const auto& file   = moduleEditors.Get<const CFileRef>(moduleId);
+			const auto& file   = moduleEditors.Get<const AST::CFileRef>(moduleId);
 
 			bool isOpen               = true;
 			const String path         = p::ToString(file.path);
 			const StringView filename = p::GetFilename(path);
-			const StringView dirty    = ast.Has<CFileDirty>(moduleId) ? "*" : "";
+			const StringView dirty    = ast.Has<AST::CFileDirty>(moduleId) ? "*" : "";
 			const String windowName   = Strings::Format("{}{}###{}", filename, dirty, moduleId);
 
 			if (moduleEditor.pendingFocus)
@@ -437,9 +440,9 @@ namespace rift::EditorSystem
 
 				if (UI::BeginInspector("ModuleInspector"))
 				{
-					auto& ns = moduleEditors.GetOrAdd<CNamespace>(moduleId);
+					auto& ns = moduleEditors.GetOrAdd<AST::CNamespace>(moduleId);
 					UI::InspectStruct(&ns);
-					auto& module = moduleEditors.Get<CModule>(moduleId);
+					auto& module = moduleEditors.Get<AST::CModule>(moduleId);
 					UI::InspectStruct(&module);
 					UI::EndInspector();
 				}
@@ -452,7 +455,7 @@ namespace rift::EditorSystem
 
 			if (!isOpen)
 			{
-				Modules::CloseEditor(ast, moduleId);
+				CloseModule(ast, moduleId);
 			}
 		}
 	}
@@ -464,19 +467,19 @@ namespace rift::EditorSystem
 		{
 			if (UI::MenuItem(ICON_FA_SAVE, "CTRL+S"))
 			{
-				auto& file = ast.Get<CFileRef>(typeId);
+				auto& file = ast.Get<AST::CFileRef>(typeId);
 				TPair<Path, String> fileData{file.path, ""};
-				Types::Serialize(ast, typeId, fileData.second);
+				AST::Types::Serialize(ast, typeId, fileData.second);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
 				    Strings::Format("Saved file {}", p::GetFilename(file.path))});
 
 				files::SaveStringFile(fileData.first, fileData.second);
-				ast.Remove<CFileDirty>(typeId);
+				ast.Remove<AST::CFileDirty>(typeId);
 			}
 			if (UI::BeginMenu("View"))
 			{
-				if (Types::CanContainFunctions(ast, typeId))
+				if (AST::Types::CanContainFunctions(ast, typeId))
 				{
 					UI::MenuItem("Graph", nullptr, &typeEditor.showGraph);
 				}
@@ -492,18 +495,18 @@ namespace rift::EditorSystem
 	{
 		ZoneScoped;
 
-		TAccess<TWrite<CTypeEditor>, CType, CFileRef> access{ast};
-		for (AST::Id typeId : ecs::ListAll<CType, CTypeEditor, CFileRef>(access))
+		TAccess<TWrite<CTypeEditor>, AST::CType, AST::CFileRef> access{ast};
+		for (AST::Id typeId : ecs::ListAll<AST::CType, CTypeEditor, AST::CFileRef>(access))
 		{
 			ZoneScopedN("Draw Type");
 
 			auto& typeEditor = access.Get<CTypeEditor>(typeId);
-			const auto& file = access.Get<const CFileRef>(typeId);
+			const auto& file = access.Get<const AST::CFileRef>(typeId);
 
 			bool isOpen               = true;
 			const String path         = p::ToString(file.path);
 			const StringView filename = p::GetFilename(path);
-			const StringView dirty    = ast.Has<CFileDirty>(typeId) ? "*" : "";
+			const StringView dirty    = ast.Has<AST::CFileDirty>(typeId) ? "*" : "";
 			const String windowName   = Strings::Format("{}{}###{}", filename, dirty, typeId);
 
 			if (typeEditor.pendingFocus)
@@ -525,7 +528,7 @@ namespace rift::EditorSystem
 
 				CreateTypeDockspace(typeEditor, windowName.c_str());
 
-				if (Types::CanContainFunctions(ast, typeId))
+				if (AST::Types::CanContainFunctions(ast, typeId))
 				{
 					Graph::DrawTypeGraph(ast, typeId, typeEditor);
 
@@ -552,8 +555,8 @@ namespace rift::EditorSystem
 
 			if (!isOpen)
 			{
-				Types::CloseEditor(ast, typeId);
+				CloseType(ast, typeId);
 			}
 		}
 	}
-}    // namespace rift::EditorSystem
+}    // namespace rift::Editor::EditorSystem

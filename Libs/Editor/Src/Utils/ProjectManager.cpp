@@ -8,7 +8,7 @@
 #include <UI/UI.h>
 
 
-namespace rift
+namespace rift::Editor
 {
 	void DrawProjectManager(AST::Tree& ast)
 	{
@@ -121,4 +121,4 @@ namespace rift
 	{
 		UI::OpenPopup("Project Manager");
 	}
-}    // namespace rift
+}    // namespace rift::Editor

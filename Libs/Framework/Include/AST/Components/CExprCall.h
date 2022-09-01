@@ -9,24 +9,21 @@
 #include <Pipe/Serialize/SerializationFwd.h>
 
 
-namespace rift
+namespace rift::AST
 {
-	using namespace p::core;
-
-
 	struct CExprCall : public CExpression
 	{
 		STRUCT(CExprCall, CExpression)
 
 		PROP(function)
-		AST::Namespace function;
+		Namespace function;
 	};
 
-	static void Read(Reader& ct, CExprCall& val)
+	inline void Read(p::Reader& ct, CExprCall& val)
 	{
 		ct.Serialize(val.function);
 	}
-	static void Write(Writer& ct, const CExprCall& val)
+	inline void Write(p::Writer& ct, const CExprCall& val)
 	{
 		ct.Serialize(val.function);
 	}
@@ -39,9 +36,9 @@ namespace rift
 
 		// Id pointing to the function declaration
 		PROP(functionId)
-		AST::Id functionId = AST::NoId;
+		Id functionId = NoId;
 
 
-		CExprCallId(AST::Id functionId = AST::NoId) : functionId{functionId} {}
+		CExprCallId(Id functionId = NoId) : functionId{functionId} {}
 	};
-}    // namespace rift
+}    // namespace rift::AST

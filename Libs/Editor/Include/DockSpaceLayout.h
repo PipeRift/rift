@@ -7,7 +7,7 @@
 #include <UI/UI.h>
 
 
-namespace rift
+namespace rift::Editor
 {
 	using namespace p;
 
@@ -75,4 +75,4 @@ namespace rift
 			return idPtr ? *idPtr : 0;
 		}
 	};
-}    // namespace rift
+}    // namespace rift::Editor

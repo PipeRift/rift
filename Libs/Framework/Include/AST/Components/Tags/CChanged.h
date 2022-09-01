@@ -4,7 +4,7 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift
+namespace rift::AST
 {
 	// Asigned to entities that have been modified during the last frame
 	// Gets cleared after one frame
@@ -12,4 +12,4 @@ namespace rift
 	{
 		STRUCT(CChanged, p::Struct, p::Struct_NotSerialized)
 	};
-}    // namespace rift
+}    // namespace rift::AST

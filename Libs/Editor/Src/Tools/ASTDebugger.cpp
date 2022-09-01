@@ -5,10 +5,10 @@
 #include <AST/Components/CStmtOutputs.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Tree.h>
-#include <AST/Utils/Hierarchy.h>
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Paths.h>
 #include <IconsFontAwesome5.h>
+#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Reflect/TypeRegistry.h>
 #include <UI/Inspection.h>
 #include <UI/UI.h>
@@ -16,7 +16,7 @@
 
 namespace rift
 {
-	using namespace Memory;
+	using namespace p::core;
 
 	void DrawEntityInspector(AST::Tree& ast, AST::Id entityId, bool* open = nullptr)
 	{
@@ -31,10 +31,10 @@ namespace rift
 			return;
 		}
 
-		const auto& registry = TypeRegistry::Get();
+		const auto& registry = AST::TypeRegistry::Get();
 		for (const auto& poolInstance : ast.GetPools())
 		{
-			Type* type = registry.FindType(poolInstance.componentId);
+			AST::Type* type = registry.FindType(poolInstance.componentId);
 			if (!type || !poolInstance.GetPool()->Has(entityId))
 			{
 				continue;
@@ -52,7 +52,7 @@ namespace rift
 			if (UI::CollapsingHeader(typeName.c_str(), flags))
 			{
 				UI::Indent();
-				DataType* dataType = type->AsData();
+				AST::DataType* dataType = type->AsData();
 				if (data && dataType && UI::BeginInspector("EntityInspector"))
 				{
 					UI::InspectProperties(data, dataType);
@@ -75,10 +75,10 @@ namespace rift
 		static const ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable
 		                                   | ImGuiTableFlags_Hideable
 		                                   | ImGuiTableFlags_SizingStretchProp;
-		if (auto* types = ast.TryGetStatic<STypes>())
+		if (auto* types = ast.TryGetStatic<AST::STypes>())
 		{
 			UI::BeginChild("typesTableChild",
-			    ImVec2(0.f, math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
+			    ImVec2(0.f, p::math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
 			if (UI::BeginTable("typesTable", 2, flags, ImVec2(0.f, UI::GetContentRegionAvail().y)))
 			{
 				UI::TableSetupColumn("Name");
@@ -157,15 +157,15 @@ namespace rift
 				if (showHierarchy && !filter.IsActive())
 				{
 					TArray<AST::Id> roots;
-					AST::Hierarchy::GetRoots(access, roots);
+					p::ecs::GetRoots(access, roots);
 					for (auto root : roots)
 					{
 						DrawNode(access, root, true);
 					}
 
-					TArray<AST::Id> orphans = ecs::ListAll<CNamespace>(access);
-					ecs::ExcludeIf<CChild>(access, orphans);
-					ecs::ExcludeIf<CParent>(access, orphans);
+					TArray<AST::Id> orphans = p::ecs::ListAll<AST::CNamespace>(access);
+					p::ecs::ExcludeIf<AST::CChild>(access, orphans);
+					p::ecs::ExcludeIf<AST::CParent>(access, orphans);
 					for (auto orphan : orphans)
 					{
 						DrawNode(access, orphan, true);
@@ -195,25 +195,25 @@ namespace rift
 		{
 			idText = "No Id";
 		}
-		else if (auto version = ecs::GetVersion(nodeId); version > 0)
+		else if (auto version = p::ecs::GetVersion(nodeId); version > 0)
 		{
-			Strings::FormatTo(idText, "{} (v{})", ecs::GetIndex(nodeId), version);
+			Strings::FormatTo(idText, "{} (v{})", p::ecs::GetIndex(nodeId), version);
 		}
 		else
 		{
-			Strings::FormatTo(idText, "{}", ecs::GetIndex(nodeId));
+			Strings::FormatTo(idText, "{}", p::ecs::GetIndex(nodeId));
 		}
 
 		static String name;
 		name.clear();
-		if (const auto* id = access.TryGet<const CNamespace>(nodeId))
+		if (const auto* id = access.TryGet<const AST::CNamespace>(nodeId))
 		{
 			name = id->name.ToString();
 		}
 
 		static String path;
 		path.clear();
-		if (const auto* file = access.TryGet<const CFileRef>(nodeId))
+		if (const auto* file = access.TryGet<const AST::CFileRef>(nodeId))
 		{
 			path = p::ToString(file->path);
 
@@ -245,10 +245,10 @@ namespace rift
 
 		ImGui::TableNextColumn();
 		bool hasChildren;
-		const CParent* parent = nullptr;
+		const AST::CParent* parent = nullptr;
 		if (showChildren)
 		{
-			parent      = access.TryGet<const CParent>(nodeId);
+			parent      = access.TryGet<const AST::CParent>(nodeId);
 			hasChildren = parent && !parent->children.IsEmpty();
 		}
 		else

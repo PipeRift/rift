@@ -9,9 +9,9 @@
 #include <AST/Utils/ModuleUtils.h>
 
 
-namespace rift::Modules
+namespace rift::Editor
 {
-	void OpenEditor(TAccessRef<TWrite<CModuleEditor>, CModule> access, AST::Id id);
-	void CloseEditor(TAccessRef<TWrite<CModuleEditor>, CModule> access, AST::Id id);
-	bool IsEditorOpen(TAccessRef<CModuleEditor> access, AST::Id id);
-}    // namespace rift::Modules
+	void OpenModule(TAccessRef<TWrite<CModuleEditor>, AST::CModule> access, AST::Id id);
+	void CloseModule(TAccessRef<TWrite<CModuleEditor>, AST::CModule> access, AST::Id id);
+	bool IsModuleOpen(TAccessRef<CModuleEditor> access, AST::Id id);
+}    // namespace rift::Editor
