@@ -5,7 +5,7 @@
 #include <Pipe/Math/Color.h>
 
 
-namespace rift::Style
+namespace rift::UI
 {
 	using namespace p;
 
@@ -97,4 +97,4 @@ namespace rift::Style
 	{
 		return color.Shade(0.2f);
 	}
-};    // namespace rift::Style
+};    // namespace rift::UI

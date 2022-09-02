@@ -93,10 +93,10 @@ namespace rift::UI
 		{
 			switch (toast.type)
 			{
-				case ToastType::Success: return Style::successColor;
-				case ToastType::Warning: return Style::warningColor;
-				case ToastType::Error: return Style::errorColor;
-				case ToastType::Info: return Style::infoColor;
+				case ToastType::Success: return UI::successColor;
+				case ToastType::Warning: return UI::warningColor;
+				case ToastType::Error: return UI::errorColor;
+				case ToastType::Info: return UI::infoColor;
 				case ToastType::None:
 				default: return Color::White();
 			}
@@ -146,7 +146,7 @@ namespace rift::UI
 	void DrawNotifications()
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 2.f);
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, Style::GetNeutralColor(0));
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, UI::GetNeutralColor(0));
 
 		float height = 0.f;
 		for (i32 i = 0; i < gNotifications.Size(); ++i)

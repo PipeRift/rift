@@ -14,7 +14,7 @@
 #include <Pipe/Math/Math.h>
 
 
-namespace rift::Style
+namespace rift::UI
 {
 	using namespace p;
 
@@ -56,13 +56,13 @@ namespace rift::Style
 
 	struct FontDescriptor
 	{
-		std::array<FontType, GetEnumSize<FontMode>()> modes{};
+		std::array<FontType, GetEnumSize<UI::FontMode>()> modes{};
 
-		FontType& operator[](FontMode mode)
+		FontType& operator[](UI::FontMode mode)
 		{
 			return modes[u8(mode)];
 		}
-		const FontType& operator[](FontMode mode) const
+		const FontType& operator[](UI::FontMode mode) const
 		{
 			return modes[u8(mode)];
 		}
@@ -78,7 +78,7 @@ namespace rift::Style
 		return io.Fonts->AddFontFromFileTTF(ToString(file).data(), size, fontConfig, glyphRanges);
 	}
 
-	void AddTextFont(Name name, FontMode mode, float size, p::Path file)
+	void AddTextFont(Name name, UI::FontMode mode, float size, p::Path file)
 	{
 		FontDescriptor* font = gFonts.Find(name);
 		if (!font)
@@ -108,35 +108,39 @@ namespace rift::Style
 		auto resources = rift::Paths::GetResourcesPath() / "Editor";
 
 		// Work Sans
-		AddTextFont("WorkSans", FontMode::Bold, 14.f, resources / "Fonts/WorkSans-Bold.ttf");
+		AddTextFont("WorkSans", UI::FontMode::Bold, 14.f, resources / "Fonts/WorkSans-Bold.ttf");
+		AddTextFont("WorkSans", UI::FontMode::BoldItalic, 14.f,
+		    resources / "Fonts/WorkSans-BoldItalic.ttf");
 		AddTextFont(
-		    "WorkSans", FontMode::BoldItalic, 14.f, resources / "Fonts/WorkSans-BoldItalic.ttf");
-		AddTextFont("WorkSans", FontMode::Italic, 14.f, resources / "Fonts/WorkSans-Italic.ttf");
-		AddTextFont("WorkSans", FontMode::Light, 14.f, resources / "Fonts/WorkSans-Light.ttf");
+		    "WorkSans", UI::FontMode::Italic, 14.f, resources / "Fonts/WorkSans-Italic.ttf");
+		AddTextFont("WorkSans", UI::FontMode::Light, 14.f, resources / "Fonts/WorkSans-Light.ttf");
+		AddTextFont("WorkSans", UI::FontMode::LightItalic, 14.f,
+		    resources / "Fonts/WorkSans-LightItalic.ttf");
 		AddTextFont(
-		    "WorkSans", FontMode::LightItalic, 14.f, resources / "Fonts/WorkSans-LightItalic.ttf");
-		AddTextFont("WorkSans", FontMode::Regular, 14.f, resources / "Fonts/WorkSans-Regular.ttf");
-		AddTextFont("WorkSans", FontMode::Regular, 18.f, resources / "Fonts/WorkSans-Regular.ttf");
+		    "WorkSans", UI::FontMode::Regular, 14.f, resources / "Fonts/WorkSans-Regular.ttf");
+		AddTextFont(
+		    "WorkSans", UI::FontMode::Regular, 18.f, resources / "Fonts/WorkSans-Regular.ttf");
 
 		// Karla
-		AddTextFont("Karla", FontMode::Bold, 14.f, resources / "Fonts/Karla-Bold.ttf");
-		AddTextFont("Karla", FontMode::BoldItalic, 14.f, resources / "Fonts/Karla-BoldItalic.ttf");
-		AddTextFont("Karla", FontMode::Italic, 14.f, resources / "Fonts/Karla-Italic.ttf");
-		AddTextFont("Karla", FontMode::Light, 14.f, resources / "Fonts/Karla-Light.ttf");
+		AddTextFont("Karla", UI::FontMode::Bold, 14.f, resources / "Fonts/Karla-Bold.ttf");
 		AddTextFont(
-		    "Karla", FontMode::LightItalic, 14.f, resources / "Fonts/Karla-LightItalic.ttf");
-		AddTextFont("Karla", FontMode::Regular, 14.f, resources / "Fonts/Karla-Regular.ttf");
+		    "Karla", UI::FontMode::BoldItalic, 14.f, resources / "Fonts/Karla-BoldItalic.ttf");
+		AddTextFont("Karla", UI::FontMode::Italic, 14.f, resources / "Fonts/Karla-Italic.ttf");
+		AddTextFont("Karla", UI::FontMode::Light, 14.f, resources / "Fonts/Karla-Light.ttf");
+		AddTextFont(
+		    "Karla", UI::FontMode::LightItalic, 14.f, resources / "Fonts/Karla-LightItalic.ttf");
+		AddTextFont("Karla", UI::FontMode::Regular, 14.f, resources / "Fonts/Karla-Regular.ttf");
 
 		io.Fonts->Build();
 	}
 
-	ImFont* FindFont(Name name, FontMode mode, float size)
+	ImFont* FindFont(Name name, UI::FontMode mode, float size)
 	{
 		const FontDescriptor* const font = gFonts.Find(name);
 		return font ? (*font)[mode].Get(size) : nullptr;
 	}
 
-	void SetDefaultFont(Name name, FontMode mode, float size)
+	void SetDefaultFont(Name name, UI::FontMode mode, float size)
 	{
 		ImFont* font = FindFont(name, mode, size);
 		if (!font && !name.IsNone())
@@ -146,7 +150,7 @@ namespace rift::Style
 		ImGui::GetIO().FontDefault = font;
 	}
 
-	void PushFont(Name name, FontMode mode, float size)
+	void PushFont(Name name, UI::FontMode mode, float size)
 	{
 		ImFont* font = FindFont(name, mode, size);
 		if (!font && !name.IsNone())
@@ -177,47 +181,47 @@ namespace rift::Style
 
 		ImVec4* colors = style.Colors;
 
-		LinearColor titleColor            = GetNeutralColor(0);
+		LinearColor titleColor            = UI::GetNeutralColor(0);
 		colors[ImGuiCol_TitleBg]          = titleColor.Shade(0.2f);
 		colors[ImGuiCol_TitleBgActive]    = titleColor;
-		colors[ImGuiCol_TitleBgCollapsed] = Disabled(titleColor);
+		colors[ImGuiCol_TitleBgCollapsed] = UI::Disabled(titleColor);
 
-		colors[ImGuiCol_WindowBg] = GetNeutralColor(1);
-		colors[ImGuiCol_Border]   = GetNeutralColor(0);
+		colors[ImGuiCol_WindowBg] = UI::GetNeutralColor(1);
+		colors[ImGuiCol_Border]   = UI::GetNeutralColor(0);
 
-		colors[ImGuiCol_CheckMark]        = whiteTextColor;
-		colors[ImGuiCol_SliderGrabActive] = GetNeutralColor(5);
-		colors[ImGuiCol_SliderGrab]       = GetNeutralColor(4);
+		colors[ImGuiCol_CheckMark]        = UI::whiteTextColor;
+		colors[ImGuiCol_SliderGrabActive] = UI::GetNeutralColor(5);
+		colors[ImGuiCol_SliderGrab]       = UI::GetNeutralColor(4);
 
 
-		LinearColor separatorColor        = GetNeutralColor(1);
-		colors[ImGuiCol_SeparatorHovered] = Hovered(separatorColor);
+		LinearColor separatorColor        = UI::GetNeutralColor(1);
+		colors[ImGuiCol_SeparatorHovered] = UI::Hovered(separatorColor);
 		colors[ImGuiCol_SeparatorActive]  = separatorColor;
 
-		LinearColor resizeGripColor        = GetNeutralColor(1);
+		LinearColor resizeGripColor        = UI::GetNeutralColor(1);
 		colors[ImGuiCol_ResizeGrip]        = resizeGripColor.Shade(0.3f);
-		colors[ImGuiCol_ResizeGripHovered] = Hovered(resizeGripColor);
+		colors[ImGuiCol_ResizeGripHovered] = UI::Hovered(resizeGripColor);
 		colors[ImGuiCol_ResizeGripActive]  = resizeGripColor;
 
-		colors[ImGuiCol_DockingPreview] = GetNeutralColor(2);
+		colors[ImGuiCol_DockingPreview] = UI::GetNeutralColor(2);
 		colors[ImGuiCol_DockingEmptyBg] = LinearColor::White().Shade(0.97f);
-		colors[ImGuiCol_TextSelectedBg] = primaryColor.Shade(0.1f);
+		colors[ImGuiCol_TextSelectedBg] = UI::primaryColor.Shade(0.1f);
 
-		colors[ImGuiCol_NavHighlight] = primaryColor;
+		colors[ImGuiCol_NavHighlight] = UI::primaryColor;
 
 		// colors[ImGuiCol_Border] = neutralColor.Shade(0.1f).Translucency(0.5f);
 
-		colors[ImGuiCol_Text]         = whiteTextColor;
-		colors[ImGuiCol_TextDisabled] = whiteTextColor.Shade(0.15f);
+		colors[ImGuiCol_Text]         = UI::whiteTextColor;
+		colors[ImGuiCol_TextDisabled] = UI::whiteTextColor.Shade(0.15f);
 
-		colors[ImGuiCol_ModalWindowDimBg] = primaryColor.Shade(0.5f).Translucency(0.05f);
+		colors[ImGuiCol_ModalWindowDimBg] = UI::primaryColor.Shade(0.5f).Translucency(0.05f);
 
-		PushButtonColor(GetNeutralColor(3));
-		PushFrameBgColor(GetNeutralColor(2));
-		PushHeaderColor();
+		UI::PushButtonColor(UI::GetNeutralColor(3));
+		UI::PushFrameBgColor(UI::GetNeutralColor(2));
+		UI::PushHeaderColor();
 
 		LoadFonts();
-		Style::SetDefaultFont("WorkSans");
+		UI::SetDefaultFont("WorkSans");
 	}
 
 	void PopGeneralStyle() {}
@@ -240,7 +244,7 @@ namespace rift::Style
 	void PushFrameBgColor(LinearColor color)
 	{
 		UI::PushStyleColor(ImGuiCol_FrameBg, color.Shade(0.3f));
-		UI::PushStyleColor(ImGuiCol_FrameBgHovered, Hovered(color));
+		UI::PushStyleColor(ImGuiCol_FrameBgHovered, UI::Hovered(color));
 		UI::PushStyleColor(ImGuiCol_FrameBgActive, color);
 	}
 
@@ -252,7 +256,7 @@ namespace rift::Style
 	void PushButtonColor(LinearColor color)
 	{
 		UI::PushStyleColor(ImGuiCol_Button, color);
-		UI::PushStyleColor(ImGuiCol_ButtonHovered, Hovered(color));
+		UI::PushStyleColor(ImGuiCol_ButtonHovered, UI::Hovered(color));
 		UI::PushStyleColor(ImGuiCol_ButtonActive, color.Tint(0.1f));
 	}
 
@@ -264,7 +268,7 @@ namespace rift::Style
 	void PushHeaderColor(LinearColor color)
 	{
 		UI::PushStyleColor(ImGuiCol_Header, color);
-		UI::PushStyleColor(ImGuiCol_HeaderHovered, Hovered(color));
+		UI::PushStyleColor(ImGuiCol_HeaderHovered, UI::Hovered(color));
 		UI::PushStyleColor(ImGuiCol_HeaderActive, color.Tint(0.1f));
 	}
 
@@ -283,4 +287,4 @@ namespace rift::Style
 	{
 		UI::PopStyleColor(2);
 	}
-}    // namespace rift::Style
+}    // namespace rift::UI

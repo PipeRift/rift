@@ -12,7 +12,7 @@
 #include <UI/UI.h>
 
 
-namespace rift
+namespace rift::Editor
 {
 	// using namespace p::core::EnumOperators;
 
@@ -110,4 +110,4 @@ namespace rift
 			}
 		}
 	}
-}    // namespace rift
+}    // namespace rift::Editor

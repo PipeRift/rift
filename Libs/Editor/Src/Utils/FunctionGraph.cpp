@@ -88,19 +88,19 @@ namespace rift::Editor::Graph
 			isPointer = type->mode != AST::TypeMode::Value;
 		}
 
-		Color pinColor = Style::GetTypeColor<void>();
+		Color pinColor = GetTypeColor<void>();
 		if (invalid)
 		{
-			Style::PushTextColor(Style::invalidColor);
-			pinColor = Style::invalidColor;
+			UI::PushTextColor(invalidColor);
+			pinColor = invalidColor;
 		}
 		else
 		{
-			pinColor = Style::GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), typeId);
+			pinColor = GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), typeId);
 		}
 
 		Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::Hovered(pinColor));
 
 		Nodes::BeginInput(
 		    i32(id), isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
@@ -116,19 +116,19 @@ namespace rift::Editor::Graph
 			isPointer = type->mode != AST::TypeMode::Value;
 		}
 
-		Color pinColor = Style::GetTypeColor<void>();
+		Color pinColor = GetTypeColor<void>();
 		if (invalid)
 		{
-			Style::PushTextColor(Style::invalidColor);
-			pinColor = Style::invalidColor;
+			UI::PushTextColor(invalidColor);
+			pinColor = invalidColor;
 		}
 		else
 		{
-			pinColor = Style::GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), typeId);
+			pinColor = GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), typeId);
 		}
 
 		Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(pinColor));
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::Hovered(pinColor));
 
 		Nodes::BeginOutput(
 		    i32(id), isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
@@ -140,7 +140,7 @@ namespace rift::Editor::Graph
 		Nodes::PopStyleColor(2);
 		if (invalid)
 		{
-			Style::PopTextColor();
+			UI::PopTextColor();
 		}
 	}
 
@@ -150,7 +150,7 @@ namespace rift::Editor::Graph
 		Nodes::PopStyleColor(2);
 		if (invalid)
 		{
-			Style::PopTextColor();
+			UI::PopTextColor();
 		}
 	}
 
@@ -197,7 +197,7 @@ namespace rift::Editor::Graph
 			SetNodePosition(id, currentNodeTransform->position);
 		}
 
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, Style::selectedColor);
+		Nodes::PushStyleColor(Nodes::ColorVar_NodeOutline, selectedColor);
 		Nodes::BeginNode(id);
 	}
 
@@ -228,9 +228,9 @@ namespace rift::Editor::Graph
 
 	void PushExecutionPinStyle()
 	{
-		static constexpr Color color = Style::executionColor;
+		static constexpr Color color = executionColor;
 		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, Style::Hovered(color));
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::Hovered(color));
 	}
 
 	void PopExecutionPinStyle()
@@ -240,9 +240,9 @@ namespace rift::Editor::Graph
 
 	void DrawLiteralBool(AST::Tree& ast, AST::Id id, bool& value)
 	{
-		static constexpr Color color = Style::GetTypeColor<bool>();
+		static constexpr Color color = GetTypeColor<bool>();
 
-		Style::PushNodeBackgroundColor(color);
+		PushNodeBackgroundColor(color);
 
 		BeginNode(ast, id);
 		{
@@ -253,14 +253,14 @@ namespace rift::Editor::Graph
 			EndExprOutput(false);
 		}
 		EndNode(ast);
-		Style::PopNodeBackgroundColor();
+		PopNodeBackgroundColor();
 	}
 
 	void DrawLiteralIntegral(AST::Tree& ast, AST::Id id, AST::CLiteralIntegral& value)
 	{
 		const bool isSigned = value.IsSigned();
-		const Color color   = isSigned ? Style::GetTypeColor<i32>() : Style::GetTypeColor<u32>();
-		Style::PushNodeBackgroundColor(color);
+		const Color color   = isSigned ? GetTypeColor<i32>() : GetTypeColor<u32>();
+		PushNodeBackgroundColor(color);
 
 		BeginNode(ast, id);
 		{
@@ -290,14 +290,14 @@ namespace rift::Editor::Graph
 			EndExprOutput(false);
 		}
 		EndNode(ast);
-		Style::PopNodeBackgroundColor();
+		PopNodeBackgroundColor();
 	}
 
 	void DrawLiteralFloating(AST::Tree& ast, AST::Id id, AST::CLiteralFloating& value)
 	{
 		const bool isDouble = value.type == AST::FloatingType::F64;
-		const Color color = isDouble ? Style::GetTypeColor<double>() : Style::GetTypeColor<float>();
-		Style::PushNodeBackgroundColor(color);
+		const Color color   = isDouble ? GetTypeColor<double>() : GetTypeColor<float>();
+		PushNodeBackgroundColor(color);
 		BeginNode(ast, id);
 		{
 			BeginExprOutput(ast, id, false);
@@ -313,13 +313,13 @@ namespace rift::Editor::Graph
 			EndExprOutput(false);
 		}
 		EndNode(ast);
-		Style::PopNodeBackgroundColor();
+		PopNodeBackgroundColor();
 	}
 
 	void DrawLiteralString(AST::Tree& ast, AST::Id id, String& value)
 	{
-		static constexpr Color color = Style::GetTypeColor<String>();
-		Style::PushNodeBackgroundColor(color);
+		static constexpr Color color = GetTypeColor<String>();
+		PushNodeBackgroundColor(color);
 
 		BeginNode(ast, id);
 		{
@@ -335,7 +335,7 @@ namespace rift::Editor::Graph
 		}
 		EndNode(ast);
 
-		Style::PopNodeBackgroundColor();
+		PopNodeBackgroundColor();
 	}
 
 	using FunctionDeclsAccess = p::TAccessRef<AST::CExprOutputs, AST::CInvalid, AST::CExprTypeId,
@@ -351,8 +351,8 @@ namespace rift::Editor::Graph
 				name = ns->name;
 			}
 
-			Style::PushNodeBackgroundColor(rift::Style::GetNeutralColor(0));
-			Style::PushNodeTitleColor(Style::functionColor);
+			PushNodeBackgroundColor(UI::GetNeutralColor(0));
+			PushNodeTitleColor(functionColor);
 			BeginNode(access, functionId);
 			{
 				Nodes::BeginNodeTitleBar();
@@ -374,8 +374,8 @@ namespace rift::Editor::Graph
 				}
 			}
 			EndNode(access);
-			Style::PopNodeTitleColor();
-			Style::PopNodeBackgroundColor();
+			PopNodeTitleColor();
+			PopNodeBackgroundColor();
 		}
 	}
 
@@ -384,8 +384,8 @@ namespace rift::Editor::Graph
 	                        access,
 	    AST::Id id)
 	{
-		Style::PushNodeBackgroundColor(rift::Style::GetNeutralColor(0));
-		Style::PushNodeTitleColor(Style::returnColor);
+		PushNodeBackgroundColor(rift::UI::GetNeutralColor(0));
+		PushNodeTitleColor(returnColor);
 		BeginNode(access, id);
 		{
 			Nodes::BeginNodeTitleBar();
@@ -404,8 +404,8 @@ namespace rift::Editor::Graph
 			Nodes::EndNodeTitleBar();
 		}
 		EndNode(access);
-		Style::PopNodeTitleColor();
-		Style::PopNodeBackgroundColor();
+		PopNodeTitleColor();
+		PopNodeBackgroundColor();
 	}
 
 	using CallsAccess = TAccessRef<TWrite<AST::CChanged>, TWrite<AST::CFileDirty>, AST::CChild,
@@ -419,8 +419,8 @@ namespace rift::Editor::Graph
 			{
 				StringView functionName = call->function.Last().ToString();
 
-				Style::PushNodeBackgroundColor(rift::Style::GetNeutralColor(0));
-				Style::PushNodeTitleColor(Style::callColor);
+				PushNodeBackgroundColor(rift::UI::GetNeutralColor(0));
+				PushNodeTitleColor(callColor);
 				BeginNode(access, id);
 				{
 					Nodes::BeginNodeTitleBar();
@@ -463,8 +463,8 @@ namespace rift::Editor::Graph
 					UI::EndGroup();
 				}
 				EndNode(access);
-				Style::PopNodeTitleColor();
-				Style::PopNodeBackgroundColor();
+				PopNodeTitleColor();
+				PopNodeBackgroundColor();
 			}
 		}
 	}
@@ -495,12 +495,12 @@ namespace rift::Editor::Graph
 
 		Nodes::PushStyleVar(Nodes::StyleVar_NodeBorderThickness, 0.f);
 
-		// Style::PushStyleCompact();
+		// UI::PushStyleCompact();
 	}
 
 	void PopNodeStyle()
 	{
-		// Style::PopStyleCompact();
+		// UI::PopStyleCompact();
 		Nodes::PopStyleVar(4);
 	}
 
@@ -564,8 +564,8 @@ namespace rift::Editor::Graph
 			const AST::CExprTypeId* exprType = ast.TryGet<AST::CExprTypeId>(id);
 			AST::Id typeId                   = exprType ? exprType->id : AST::NoId;
 
-			const Color color = Style::GetTypeColor(ast, typeId);
-			Style::PushNodeBackgroundColor(color);
+			const Color color = GetTypeColor(ast, typeId);
+			PushNodeBackgroundColor(color);
 
 			BeginNode(ast, id);
 			{
@@ -582,7 +582,7 @@ namespace rift::Editor::Graph
 			}
 			EndNode(ast);
 
-			Style::PopNodeBackgroundColor();
+			PopNodeBackgroundColor();
 		}
 	}
 
@@ -592,8 +592,8 @@ namespace rift::Editor::Graph
 	                 access,
 	    const TArray<AST::Id>& children)
 	{
-		Style::PushNodeBackgroundColor(Style::GetNeutralColor(0));
-		Style::PushNodeTitleColor(Style::flowColor);
+		PushNodeBackgroundColor(UI::GetNeutralColor(0));
+		PushNodeTitleColor(flowColor);
 		for (AST::Id id :
 		    ecs::GetIf<AST::CStmtIf, AST::CExprInputs, AST::CStmtOutputs>(access, children))
 		{
@@ -648,8 +648,8 @@ namespace rift::Editor::Graph
 			}
 			EndNode(access);
 		}
-		Style::PopNodeTitleColor();
-		Style::PopNodeBackgroundColor();
+		PopNodeTitleColor();
+		PopNodeBackgroundColor();
 	}
 
 	void DrawUnaryOperators(
@@ -660,9 +660,9 @@ namespace rift::Editor::Graph
 	{
 		for (AST::Id id : ecs::GetIf<AST::CExprUnaryOperator>(access, children))
 		{
-			static constexpr Color color = Style::GetNeutralColor(0);
+			static constexpr Color color = UI::GetNeutralColor(0);
 
-			Style::PushNodeBackgroundColor(color);
+			PushNodeBackgroundColor(color);
 
 			BeginNode(access, id);
 			{
@@ -681,8 +681,7 @@ namespace rift::Editor::Graph
 				EndExprOutput(false);
 			}
 			EndNode(access);
-
-			Style::PopNodeBackgroundColor();
+			PopNodeBackgroundColor();
 		}
 	}
 
@@ -695,8 +694,8 @@ namespace rift::Editor::Graph
 		TArray<AST::Id> pinIds;
 		for (AST::Id id : ecs::GetIf<AST::CExprBinaryOperator>(access, children))
 		{
-			static constexpr Color color = Style::GetNeutralColor(0);
-			Style::PushNodeBackgroundColor(color);
+			static constexpr Color color = UI::GetNeutralColor(0);
+			PushNodeBackgroundColor(color);
 
 			BeginNode(access, id);
 			{
@@ -727,8 +726,7 @@ namespace rift::Editor::Graph
 				EndExprOutput(false);
 			}
 			EndNode(access);
-
-			Style::PopNodeBackgroundColor();
+			PopNodeBackgroundColor();
 		}
 	}
 
@@ -736,9 +734,9 @@ namespace rift::Editor::Graph
 	    const TArray<AST::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 2.f);
-		Nodes::PushStyleColor(Nodes::ColorVar_Link, Style::executionColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(Style::executionColor));
-		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
+		Nodes::PushStyleColor(Nodes::ColorVar_Link, executionColor);
+		Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, UI::Hovered(executionColor));
+		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, selectedColor);
 
 		for (AST::Id outputId : GetIf<AST::CStmtOutput>(access, children))
 		{
@@ -782,7 +780,7 @@ namespace rift::Editor::Graph
 	    const TArray<AST::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 1.5f);
-		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, Style::selectedColor);
+		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, selectedColor);
 
 		for (AST::Id nodeId : ecs::GetIf<AST::CExprInputs>(access, children))
 		{
@@ -802,24 +800,22 @@ namespace rift::Editor::Graph
 					continue;
 				}
 
-				Color color = Style::GetTypeColor<void>();
+				Color color = GetTypeColor<void>();
 				if (access.Has<AST::CInvalid>(inputId) || access.Has<AST::CInvalid>(output.pinId))
 				{
-					color = Style::invalidColor;
+					color = invalidColor;
 				}
 				else if (const auto* type = access.TryGet<const AST::CExprTypeId>(output.pinId))
 				{
-					color =
-					    Style::GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), type->id);
+					color = GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), type->id);
 				}
 				else if (const auto* type = access.TryGet<const AST::CExprTypeId>(inputId))
 				{
-					color =
-					    Style::GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), type->id);
+					color = GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), type->id);
 				}
 
 				Nodes::PushStyleColor(Nodes::ColorVar_Link, color);
-				Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, Style::Hovered(color));
+				Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, UI::Hovered(color));
 
 				Nodes::Link(i32(inputId), i32(output.pinId), i32(inputId));
 

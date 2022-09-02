@@ -17,7 +17,7 @@
 #include <UI/UI.h>
 
 
-namespace rift
+namespace rift::Editor
 {
 	struct ASTDebugger
 	{
@@ -37,4 +37,4 @@ namespace rift
 		    p::TAccessRef<AST::CNamespace, AST::CFileRef, AST::CParent, AST::CChild, AST::CModule>;
 		void DrawNode(DrawNodeAccess access, AST::Id nodeId, bool showChildren);
 	};
-}    // namespace rift
+}    // namespace rift::Editor

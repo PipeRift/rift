@@ -301,16 +301,16 @@ namespace rift::Editor
 				// TODO: Display module name
 				const String text = Strings::Format(ICON_FA_BOX " {}", fileName);
 
-				Style::PushHeaderColor(Style::primaryColor);
-				Style::PushStyleCompact();
+				UI::PushHeaderColor(UI::primaryColor);
+				UI::PushStyleCompact();
 				const bool isProject = item.id == projectModuleId;
 				if (item.id == projectModuleId)    // Is project
 				{
 					flags |= ImGuiTreeNodeFlags_DefaultOpen;
 				}
 				bool open = UI::CollapsingHeader(text.data(), flags);
-				Style::PopStyleCompact();
-				Style::PopHeaderColor();
+				UI::PopStyleCompact();
+				UI::PopHeaderColor();
 
 				if (UI::BeginPopupContextItem())
 				{
@@ -398,12 +398,12 @@ namespace rift::Editor
 				      ast, p::ecs::GetParent(ast, item.id), Name{parsedNewName});
 				if (nameIsEmpty || (!IsNone(sameNameFuncId) && item.id != sameNameFuncId))
 				{
-					Style::PushTextColor(LinearColor::Red());
+					UI::PushTextColor(LinearColor::Red());
 					UI::SetNextWindowPos(UI::GetCursorScreenPos());
 					UI::SetTooltip(nameIsEmpty
 					                   ? "A type's name can't be empty"
 					                   : "This name is in use by another type in this module");
-					Style::PopTextColor();
+					UI::PopTextColor();
 				}
 				else if (UI::IsItemDeactivatedAfterEdit())
 				{

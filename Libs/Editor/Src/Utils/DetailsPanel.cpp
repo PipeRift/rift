@@ -45,7 +45,7 @@ namespace rift::Editor
 		AST::Id typeId = AST::FindIdFromNamespace(ast, type->type);
 
 		UI::TableNextRow();
-		const Color color = Style::GetTypeColor(ast, typeId);
+		const Color color = GetTypeColor(ast, typeId);
 		UI::TableSetBgColor(ImGuiTableBgTarget_RowBg0, color.DWColor());
 
 		UI::TableNextColumn();    // Name
@@ -121,9 +121,9 @@ namespace rift::Editor
 			ecs::Id sameNameFuncId = AST::Types::FindChildByName(ast, typeId, Name{functionName});
 			if (!IsNone(sameNameFuncId) && id != sameNameFuncId)
 			{
-				Style::PushTextColor(LinearColor::Red());
+				UI::PushTextColor(LinearColor::Red());
 				UI::SetTooltip("This name is in use by another function in this type");
-				Style::PopTextColor();
+				UI::PopTextColor();
 			}
 			else
 			{
@@ -147,7 +147,7 @@ namespace rift::Editor
 			}
 			UI::EndTable();
 		}
-		Style::PushStyleCompact();
+		UI::PushStyleCompact();
 		UI::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, {0.5f, 0.5f});
 		UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
 		if (UI::Selectable(ICON_FA_PLUS "##AddInput"))
@@ -157,7 +157,7 @@ namespace rift::Editor
 		}
 		UI::HelpTooltip("Adds a new input parameter to a function");
 		UI::PopStyleVar();
-		Style::PopStyleCompact();
+		UI::PopStyleCompact();
 		UI::Spacing();
 
 		UI::Text("Outputs");
@@ -174,7 +174,7 @@ namespace rift::Editor
 			}
 			UI::EndTable();
 		}
-		Style::PushStyleCompact();
+		UI::PushStyleCompact();
 		UI::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 		UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
 		if (UI::Selectable(ICON_FA_PLUS "##AddOutput"))
@@ -184,7 +184,7 @@ namespace rift::Editor
 		}
 		UI::HelpTooltip("Adds a new output parameter to a function");
 		UI::PopStyleVar();
-		Style::PopStyleCompact();
+		UI::PopStyleCompact();
 		UI::Spacing();
 	}
 

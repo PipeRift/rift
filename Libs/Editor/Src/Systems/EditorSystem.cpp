@@ -341,12 +341,12 @@ namespace rift::Editor::EditorSystem
 				if (UI::BeginMenu("Settings"))
 				{
 					float gridSize = Graph::settings.GetGridSize();
-					Style::PushStyleCompact();
+					UI::PushStyleCompact();
 					if (UI::SliderFloat("Grid Size", &gridSize, 8.f, 32.f, "%.f"))
 					{
 						Graph::settings.SetGridSize(gridSize);
 					}
-					Style::PopStyleCompact();
+					UI::PopStyleCompact();
 					UI::EndMenu();
 				}
 				UI::EndMenu();

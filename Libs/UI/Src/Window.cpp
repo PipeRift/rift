@@ -82,7 +82,7 @@ namespace rift::UI
 		                | ImGuiConfigFlags_ViewportsEnable;
 		io.ConfigDockingAlwaysTabBar = true;
 
-		Style::PushGeneralStyle();
+		UI::PushGeneralStyle();
 
 		ImGuiStyle& style = ImGui::GetStyle();
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -101,7 +101,7 @@ namespace rift::UI
 
 	void Shutdown()
 	{
-		Style::PopGeneralStyle();
+		UI::PopGeneralStyle();
 		if (gWindow)
 		{
 			// Cleanup

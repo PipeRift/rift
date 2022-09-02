@@ -66,19 +66,19 @@ namespace rift::UI
 
 	static bool Begin(const char* name, bool* pOpen = nullptr, ImGuiWindowFlags flags = 0)
 	{
-		LinearColor titleColor = Style::GetNeutralColor(0);
+		LinearColor titleColor = UI::GetNeutralColor(0);
 		UI::PushStyleColor(ImGuiCol_TitleBg, titleColor);
 		UI::PushStyleColor(ImGuiCol_TitleBgActive, titleColor);
-		UI::PushStyleColor(ImGuiCol_TitleBgCollapsed, Style::Disabled(titleColor));
+		UI::PushStyleColor(ImGuiCol_TitleBgCollapsed, UI::Disabled(titleColor));
 
-		LinearColor tabColorActive = Style::GetNeutralColor(1);
-		LinearColor tabColor       = Style::Disabled(tabColorActive);
+		LinearColor tabColorActive = UI::GetNeutralColor(1);
+		LinearColor tabColor       = UI::Disabled(tabColorActive);
 		UI::PushStyleColor(ImGuiCol_Tab, tabColor);
 		UI::PushStyleColor(ImGuiCol_TabActive, tabColorActive);
 		UI::PushStyleColor(ImGuiCol_TabUnfocused, tabColor);
 		UI::PushStyleColor(ImGuiCol_TabUnfocusedActive, tabColorActive);
-		UI::PushStyleColor(ImGuiCol_TabHovered, Style::Hovered(tabColorActive));
-		Style::PushTextColor(Style::GetNeutralTextColor(1));
+		UI::PushStyleColor(ImGuiCol_TabHovered, UI::Hovered(tabColorActive));
+		UI::PushTextColor(UI::GetNeutralTextColor(1));
 
 		const bool value = ImGui::Begin(name, pOpen, flags);
 
@@ -90,7 +90,7 @@ namespace rift::UI
 	{
 		UI::PopStyleVar();
 		ImGui::End();
-		Style::PopTextColor();
+		UI::PopTextColor();
 		UI::PopStyleColor(5);
 		UI::PopStyleColor(3);
 	}

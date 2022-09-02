@@ -8,7 +8,7 @@
 #include <Pipe/Memory/Block.h>
 
 
-namespace rift
+namespace rift::Editor
 {
 	using namespace p;
 
@@ -21,4 +21,4 @@ namespace rift
 		MemoryDebugger();
 		void Draw();
 	};
-}    // namespace rift
+}    // namespace rift::Editor

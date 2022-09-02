@@ -44,12 +44,12 @@ namespace rift::Editor
 		ImGui::PushID(ns);
 
 		const Color color =
-		    Style::GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), variableDecl->typeId);
+		    GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), variableDecl->typeId);
 		static constexpr float frameHeight = 20.f;
 
 		UI::TableNextColumn();
 		{    // Custom Selectable
-			Style::PushHeaderColor(LinearColor::Transparent());
+			UI::PushHeaderColor(LinearColor::Transparent());
 
 			ImRect bb = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
 
@@ -79,11 +79,11 @@ namespace rift::Editor
 			}
 			else if (UI::IsItemHovered())
 			{
-				bgColor = Style::Hovered(color);
+				bgColor = UI::Hovered(color);
 			}
 			UI::RenderFrame(bb.Min, bb.Max, bgColor.DWColor(), false, 2.f);
 
-			Style::PopHeaderColor();
+			UI::PopHeaderColor();
 		}
 
 		if (UI::BeginPopupContextItem())
@@ -141,7 +141,7 @@ namespace rift::Editor
 			return;
 		}
 
-		Style::PushHeaderColor(Style::callColor);
+		UI::PushHeaderColor(callColor);
 		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
 		static String headerId;
 		headerId.clear();
@@ -159,7 +159,7 @@ namespace rift::Editor
 			editor.selectedPropertyId = id;
 		}
 		UI::PopStyleVar();
-		Style::PopHeaderColor();
+		UI::PopHeaderColor();
 
 		if (ImGui::BeginPopupContextItem())
 		{
@@ -201,14 +201,14 @@ namespace rift::Editor
 				UI::EndTable();
 			}
 
-			Style::PushStyleCompact();
+			UI::PushStyleCompact();
 			if (UI::Button(ICON_FA_PLUS "##Variable", ImVec2(-FLT_MIN, 0.0f)))
 			{
 				ScopedChange(transAccess, typeId);
 				AST::Types::AddVariable(
 				    {static_cast<AST::Tree&>(access.GetContext()), typeId}, "NewVariable");
 			}
-			Style::PopStyleCompact();
+			UI::PopStyleCompact();
 			UI::Unindent(10.f);
 			UI::Dummy(ImVec2(0.0f, 10.0f));
 		}
@@ -231,13 +231,13 @@ namespace rift::Editor
 				DrawFunction(ast, editor, typeId, functionId);
 			}
 
-			Style::PushStyleCompact();
+			UI::PushStyleCompact();
 			if (UI::Button(ICON_FA_PLUS "##Function", ImVec2(-FLT_MIN, 0.0f)))
 			{
 				ScopedChange(ast, typeId);
 				AST::Types::AddFunction({ast, typeId}, "NewFunction");
 			}
-			Style::PopStyleCompact();
+			UI::PopStyleCompact();
 			UI::Unindent(10.f);
 			UI::Dummy(ImVec2(0.0f, 10.0f));
 		}

@@ -14,7 +14,7 @@
 #include <UI/UI.h>
 
 
-namespace rift
+namespace rift::Editor
 {
 	using namespace p::core;
 
@@ -232,15 +232,15 @@ namespace rift
 		static String inspectLabel;
 		inspectLabel.clear();
 		Strings::FormatTo(inspectLabel, ICON_FA_SEARCH "##{}", nodeId);
-		Style::PushButtonColor(Style::GetNeutralColor(1));
-		Style::PushTextColor(selectedNode == nodeId ? Style::whiteTextColor
-		                                            : Style::whiteTextColor.Translucency(0.3f));
+		UI::PushButtonColor(UI::GetNeutralColor(1));
+		UI::PushTextColor(
+		    selectedNode == nodeId ? UI::whiteTextColor : UI::whiteTextColor.Translucency(0.3f));
 		if (UI::Button(inspectLabel.c_str()))
 		{
 			selectedNode = nodeId;
 		}
-		Style::PopTextColor();
-		Style::PopButtonColor();
+		UI::PopTextColor();
+		UI::PopButtonColor();
 
 
 		ImGui::TableNextColumn();
@@ -258,7 +258,7 @@ namespace rift
 
 		bool open = false;
 		static Name font{"WorkSans"};
-		Style::PushFont(font, Style::FontMode::Bold);
+		UI::PushFont(font, UI::FontMode::Bold);
 		if (hasChildren)
 		{
 			open = UI::TreeNodeEx(idText.c_str(), ImGuiTreeNodeFlags_SpanFullWidth);
@@ -269,7 +269,7 @@ namespace rift
 			UI::Text(idText);
 			UI::Unindent(10.f);
 		}
-		Style::PopFont();
+		UI::PopFont();
 
 
 		ImGui::TableNextColumn();
@@ -278,9 +278,9 @@ namespace rift
 
 		if (ImGui::TableNextColumn())
 		{
-			Style::PushFont("WorkSans", Style::FontMode::Italic);
+			UI::PushFont("WorkSans", UI::FontMode::Italic);
 			UI::Text(path);
-			Style::PopFont();
+			UI::PopFont();
 		}
 
 		if (ImGui::TableNextColumn())
@@ -299,4 +299,4 @@ namespace rift
 			UI::TreePop();
 		}
 	}
-}    // namespace rift
+}    // namespace rift::Editor
