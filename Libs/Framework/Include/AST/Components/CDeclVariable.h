@@ -7,13 +7,13 @@
 #include <Pipe/Reflect/ReflectionFlags.h>
 
 
-namespace rift
+namespace rift::AST
 {
 	struct CDeclVariable : public CDeclaration
 	{
 		STRUCT(CDeclVariable, CDeclaration)
 
 		PROP(typeId, p::Prop_NotSerialized)
-		AST::Id typeId = AST::NoId;
+		Id typeId = NoId;
 	};
-}    // namespace rift
+}    // namespace rift::AST

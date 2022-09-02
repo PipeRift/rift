@@ -6,7 +6,7 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift
+namespace rift::AST
 {
 	struct SModules : public p::Struct
 	{
@@ -14,4 +14,4 @@ namespace rift
 
 		p::TMap<p::Name, AST::Id> modulesByPath;
 	};
-}    // namespace rift
+}    // namespace rift::AST

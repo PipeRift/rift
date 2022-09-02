@@ -7,7 +7,7 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift
+namespace rift::AST
 {
 	enum class TypeMode
 	{
@@ -15,11 +15,11 @@ namespace rift
 		Pointer,
 		PointerToPointer
 	};
-}    // namespace rift
-ENUM(rift::TypeMode)
+}    // namespace rift::AST
+ENUM(rift::AST::TypeMode)
 
 
-namespace rift
+namespace rift::AST
 {
 	struct CExprType : public p::Struct
 	{
@@ -53,4 +53,4 @@ namespace rift
 		TypeMode mode = TypeMode::Value;
 	};
 
-}    // namespace rift
+}    // namespace rift::AST

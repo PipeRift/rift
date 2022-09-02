@@ -5,7 +5,7 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift
+namespace rift::AST
 {
 	enum class RiftModuleTarget : p::u8
 	{
@@ -13,11 +13,11 @@ namespace rift
 		Shared,
 		Static
 	};
-}    // namespace rift
-ENUM(rift::RiftModuleTarget)
+}    // namespace rift::AST
+ENUM(rift::AST::RiftModuleTarget)
 
 
-namespace rift
+namespace rift::AST
 {
 	struct CRiftModule : public p::Struct
 	{
@@ -26,4 +26,4 @@ namespace rift
 		PROP(target)
 		RiftModuleTarget target = RiftModuleTarget::Executable;
 	};
-}    // namespace rift
+}    // namespace rift::AST

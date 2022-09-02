@@ -7,7 +7,7 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift
+namespace rift::AST
 {
 	// Dirty tags are cleaned manually by the respective systems. CChanged instead gets cleared
 	// after one frame
@@ -24,4 +24,4 @@ namespace rift
 
 	// Marks a type as dirty, meaning is has been modified
 	using CCallDirty = TDirty<CExprCallId>;
-}    // namespace rift
+}    // namespace rift::AST

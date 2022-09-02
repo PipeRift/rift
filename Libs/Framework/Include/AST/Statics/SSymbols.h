@@ -7,13 +7,15 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift
+namespace rift::AST
 {
-	struct SSymbols : public p::Struct
+	using namespace p::core;
+
+	struct SSymbols : public Struct
 	{
-		STRUCT(SSymbols, p::Struct)
+		STRUCT(SSymbols, Struct)
 
 		// Cached map of symbols
-		TMap<AST::Namespace, AST::Id> symbols;
+		TMap<Namespace, Id> symbols;
 	};
-}    // namespace rift
+}    // namespace rift::AST

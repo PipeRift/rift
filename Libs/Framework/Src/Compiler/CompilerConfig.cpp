@@ -9,7 +9,7 @@ namespace rift::compiler
 {
 	void Config::Init(AST::Tree& ast)
 	{
-		buildPath         = Modules::GetProjectPath(ast) / "Build";
+		buildPath         = AST::Modules::GetProjectPath(ast) / "Build";
 		intermediatesPath = buildPath / "Intermediates";
 		binariesPath      = buildPath / buildMode;
 	}

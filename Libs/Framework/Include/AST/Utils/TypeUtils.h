@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "AST/Components/CChild.h"
 #include "AST/Components/CDeclFunction.h"
 #include "AST/Components/CExprBinaryOperator.h"
 #include "AST/Components/CExprInputs.h"
@@ -11,7 +10,6 @@
 #include "AST/Components/CExprUnaryOperator.h"
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/CNamespace.h"
-#include "AST/Components/CParent.h"
 #include "AST/Components/CStmtInput.h"
 #include "AST/Components/CStmtOutputs.h"
 #include "AST/Components/CType.h"
@@ -21,53 +19,52 @@
 #include "AST/TypeRef.h"
 
 #include <Pipe/ECS/Access.h>
+#include <Pipe/ECS/Components/CChild.h>
+#include <Pipe/ECS/Components/CParent.h>
 
 
-namespace rift::Types
+namespace rift::AST::Types
 {
-	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, RiftType category);
-	RiftType GetCategory(AST::Tree& ast, AST::Id id);
+	void InitTypeFromCategory(Tree& ast, Id id, RiftType category);
+	RiftType GetCategory(Tree& ast, Id id);
 
-	AST::Id CreateType(
-	    AST::Tree& ast, RiftType type, Name name = Name::None(), const p::Path& path = {});
+	Id CreateType(Tree& ast, RiftType type, Name name = Name::None(), const p::Path& path = {});
 
-	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access,
-	    TSpan<AST::Id> types, bool removeFromDisk = false);
+	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access, TSpan<Id> types,
+	    bool removeFromDisk = false);
 
-	void Serialize(AST::Tree& ast, AST::Id id, String& data);
-	void Deserialize(AST::Tree& ast, AST::Id id, const String& data);
+	void Serialize(Tree& ast, Id id, String& data);
+	void Deserialize(Tree& ast, Id id, const String& data);
 
-	AST::Id FindTypeByPath(AST::Tree& ast, const p::Path& path);
-	bool IsClass(const AST::Tree& ast, AST::Id typeId);
-	bool IsStruct(const AST::Tree& ast, AST::Id typeId);
-	bool IsFunctionLibrary(const AST::Tree& ast, AST::Id typeId);
-	bool CanContainVariables(const AST::Tree& ast, AST::Id typeId);
-	bool CanContainFunctions(const AST::Tree& ast, AST::Id typeId);
-	bool CanEditFunctionBodies(const AST::Tree& ast, AST::Id typeId);
+	Id FindTypeByPath(Tree& ast, const p::Path& path);
+	bool IsClass(const Tree& ast, Id typeId);
+	bool IsStruct(const Tree& ast, Id typeId);
+	bool IsFunctionLibrary(const Tree& ast, Id typeId);
+	bool CanContainVariables(const Tree& ast, Id typeId);
+	bool CanContainFunctions(const Tree& ast, Id typeId);
+	bool CanEditFunctionBodies(const Tree& ast, Id typeId);
 
 
-	AST::Id AddVariable(AST::TypeRef type, Name name);
-	AST::Id AddFunction(AST::TypeRef type, Name name);
+	Id AddVariable(TypeRef type, Name name);
+	Id AddFunction(TypeRef type, Name name);
 
-	AST::Id AddCall(AST::TypeRef type, AST::Id targetFunctionId);
-	AST::Id AddFunctionInput(AST::Tree& ast, AST::Id functionId, Name name = Name::None());
-	AST::Id AddFunctionOutput(AST::Tree& ast, AST::Id functionId, Name name = Name::None());
+	Id AddCall(TypeRef type, Id targetFunctionId);
+	Id AddFunctionInput(Tree& ast, Id functionId, Name name = Name::None());
+	Id AddFunctionOutput(Tree& ast, Id functionId, Name name = Name::None());
 
-	AST::Id AddIf(AST::TypeRef type);
-	AST::Id AddReturn(AST::TypeRef type);
+	Id AddIf(TypeRef type);
+	Id AddReturn(TypeRef type);
 
-	AST::Id AddLiteral(AST::TypeRef type, AST::Id literalTypeId);
-	AST::Id AddDeclarationReference(AST::TypeRef type, AST::Id declId);
-	AST::Id AddUnaryOperator(AST::TypeRef type, UnaryOperatorType operatorType);
-	AST::Id AddBinaryOperator(AST::TypeRef type, BinaryOperatorType operatorType);
+	Id AddLiteral(TypeRef type, Id literalTypeId);
+	Id AddDeclarationReference(TypeRef type, Id declId);
+	Id AddUnaryOperator(TypeRef type, UnaryOperatorType operatorType);
+	Id AddBinaryOperator(TypeRef type, BinaryOperatorType operatorType);
 
-	AST::Id FindChildByName(
-	    TAccessRef<CNamespace, CParent> access, AST::Id ownerId, Name functionName);
+	Id FindChildByName(TAccessRef<CNamespace, CParent> access, Id ownerId, Name functionName);
 
 	using RemoveAccess = TAccess<TWrite<CChanged>, TWrite<CFileDirty>, TWrite<CStmtInput>,
 	    TWrite<CStmtOutputs>, TWrite<CParent>, TWrite<CChild>, CFileRef>;
-	void RemoveNodes(const RemoveAccess& access, TSpan<AST::Id> ids);
+	void RemoveNodes(const RemoveAccess& access, TSpan<Id> ids);
 
-	bool CopyExpressionType(
-	    TAccessRef<TWrite<CExprTypeId>> access, AST::Id sourcePinId, AST::Id targetPinId);
-}    // namespace rift::Types
+	bool CopyExpressionType(TAccessRef<TWrite<CExprTypeId>> access, Id sourcePinId, Id targetPinId);
+}    // namespace rift::AST::Types

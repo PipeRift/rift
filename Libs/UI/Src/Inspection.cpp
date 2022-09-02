@@ -138,7 +138,7 @@ namespace rift::UI
 			UI::Unindent(20.f);
 		}
 		UI::SameLine(ImGui::GetContentRegionAvailWidth() - 50.f);
-		Style::PushStyleCompact();
+		UI::PushStyleCompact();
 		if (UI::Button(ICON_FA_PLUS "##AddItem", v2(16.f, 18.f)))
 		{
 			property.AddItem(instance, nullptr);
@@ -148,7 +148,7 @@ namespace rift::UI
 		{
 			property.Clear(instance);
 		}
-		Style::PopStyleCompact();
+		UI::PopStyleCompact();
 		if (open)
 		{
 			UI::Indent(20.f);
@@ -158,7 +158,7 @@ namespace rift::UI
 	void DrawArrayItemButtons(const ArrayProperty& property, void* instance, i32 index)
 	{
 		UI::SameLine(ImGui::GetContentRegionAvailWidth() - 20.f);
-		Style::PushStyleCompact();
+		UI::PushStyleCompact();
 		static String label;
 		label.clear();
 		Strings::FormatTo(label, ICON_FA_TIMES "##removeItem_{}", index);
@@ -166,7 +166,7 @@ namespace rift::UI
 		{
 			property.RemoveItem(instance, index);
 		}
-		Style::PopStyleCompact();
+		UI::PopStyleCompact();
 	}
 
 	void InspectArrayProperty(const ArrayProperty& property, void* instance)
@@ -285,12 +285,12 @@ namespace rift::UI
 
 	bool BeginInspectHeader(StringView label)
 	{
-		Style::PushHeaderColor(Style::GetNeutralColor(1));
+		UI::PushHeaderColor(UI::GetNeutralColor(1));
 
 		UI::AlignTextToFramePadding();
 		bool isOpen = UI::CollapsingHeader(
 		    label.data(), ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_AllowItemOverlap);
-		Style::PopHeaderColor();
+		UI::PopHeaderColor();
 
 		if (isOpen)
 		{

@@ -2,7 +2,7 @@
 
 #include "Compiler/Systems/OptimizationSystem.h"
 
-#include "AST/Utils/Hierarchy.h"
+#include <Pipe/ECS/Utils/Hierarchy.h>
 
 
 namespace rift::OptimizationSystem

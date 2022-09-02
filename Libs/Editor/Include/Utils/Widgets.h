@@ -14,8 +14,10 @@
 
 namespace rift::Editor
 {
-	bool TypeCombo(TAccessRef<CNamespace, CType, CDeclNative, CDeclStruct, CDeclClass> access,
-	    StringView label, AST::Id& selectedTypeId);
+	bool TypeCombo(AST::TAccessRef<AST::CNamespace, AST::CType, AST::CDeclNative, AST::CDeclStruct,
+	                   AST::CDeclClass>
+	                   access,
+	    p::StringView label, AST::Id& selectedTypeId);
 
-	bool InputLiteralValue(AST::Tree& ast, StringView label, AST::Id literalId);
+	bool InputLiteralValue(AST::Tree& ast, p::StringView label, AST::Id literalId);
 }    // namespace rift::Editor

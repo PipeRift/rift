@@ -3,14 +3,16 @@
 
 #include "AST/Components/CLiteral.h"
 
+#include <Pipe/Core/String.h>
 
-namespace rift
+
+namespace rift::AST
 {
 	struct CLiteralString : public CLiteral
 	{
 		STRUCT(CLiteralString, CLiteral)
 
 		PROP(value)
-		String value;
+		p::String value;
 	};
-}    // namespace rift
+}    // namespace rift::AST

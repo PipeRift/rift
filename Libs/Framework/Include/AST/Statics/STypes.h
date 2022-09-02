@@ -6,13 +6,15 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift
+namespace rift::AST
 {
-	struct STypes : public p::Struct
-	{
-		STRUCT(STypes, p::Struct)
+	using namespace p::core;
 
-		TMap<Name, AST::Id> typesByName;
-		TMap<Name, AST::Id> typesByPath;
+	struct STypes : public Struct
+	{
+		STRUCT(STypes, Struct)
+
+		TMap<Name, Id> typesByName;
+		TMap<Name, Id> typesByPath;
 	};
-}    // namespace rift
+}    // namespace rift::AST

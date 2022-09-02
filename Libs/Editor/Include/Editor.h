@@ -7,7 +7,7 @@
 #include <Rift.h>
 
 
-namespace rift
+namespace rift::Editor
 {
 	using namespace p;
 
@@ -58,4 +58,4 @@ namespace rift
 	protected:
 		void UpdateConfig();
 	};
-}    // namespace rift
+}    // namespace rift::Editor

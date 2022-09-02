@@ -8,15 +8,18 @@
 #include <UI/Style.h>
 
 
-namespace rift::Style
+namespace rift::Editor
 {
+	using namespace p;
+
+
 	constexpr Color selectedColor{Color::FromHEX(0xdba43f)};
 	constexpr Color executionColor{Color::FromHEX(0xdbdbdb)};
 
 	constexpr Color functionColor{Color::FromHEX(0xCC3D33)};
 	constexpr Color returnColor{functionColor.Shade(0.1f)};
 	constexpr Color callColor{Color::FromHEX(0x3366CC)};
-	constexpr Color flowColor{GetNeutralColor(4)};
+	constexpr Color flowColor{UI::GetNeutralColor(4)};
 	constexpr Color invalidColor{Color::FromHEX(0xF95040)};
 
 	template<typename T>
@@ -61,4 +64,4 @@ namespace rift::Style
 
 	void PushNodeBackgroundColor(Color color);
 	void PopNodeBackgroundColor();
-}    // namespace rift::Style
+}    // namespace rift::Editor

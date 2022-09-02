@@ -12,10 +12,10 @@ namespace rift
 		STRUCT(CNodePosition, p::Struct)
 
 		PROP(position)
-		v2 position;
+		p::v2 position;
 
 		CNodePosition() = default;
-		CNodePosition(v2 position) : position{position} {}
+		CNodePosition(p::v2 position) : position{position} {}
 	};
 	static void Read(p::Reader& ct, CNodePosition& val)
 	{

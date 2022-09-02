@@ -5,13 +5,15 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift
+namespace rift::AST
 {
+	using namespace p::core;
+
 	struct CModule : public p::Struct
 	{
 		STRUCT(CModule, p::Struct)
 
 		PROP(dependencies)
-		p::TArray<p::Name> dependencies;
+		TArray<Name> dependencies;
 	};
-}    // namespace rift
+}    // namespace rift::AST

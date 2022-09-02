@@ -3,19 +3,20 @@
 #include "AST/Utils/Expressions.h"
 
 #include "AST/Id.h"
-#include "AST/Utils/Hierarchy.h"
+
+#include <Pipe/ECS/Utils/Hierarchy.h>
 
 
 namespace rift::AST::Expressions
 {
-	bool WouldLoop(TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access, AST::Id outputNodeId,
-	    AST::Id inputNodeId)
+	bool WouldLoop(
+	    TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access, Id outputNodeId, Id inputNodeId)
 	{
-		TArray<AST::Id> currentNodeIds{outputNodeId};
-		TArray<AST::Id> nextNodeIds{};
+		TArray<Id> currentNodeIds{outputNodeId};
+		TArray<Id> nextNodeIds{};
 		while (!currentNodeIds.IsEmpty())
 		{
-			for (AST::Id id : currentNodeIds)
+			for (Id id : currentNodeIds)
 			{
 				if (const auto* inputs = access.TryGet<const CExprInputs>(id))
 				{
@@ -103,7 +104,7 @@ namespace rift::AST::Expressions
 		auto& inputs = access.Get<CExprInputs>(input.nodeId);
 
 		// Find pin index
-		const i32 index = inputs.pinIds.FindIndex([&input](AST::Id pinId) {
+		const i32 index = inputs.pinIds.FindIndex([&input](Id pinId) {
 			return input.pinId == pinId;
 		});
 		if (index != NO_INDEX && Ensure(index < inputs.linkedOutputs.Size()))
@@ -124,7 +125,7 @@ namespace rift::AST::Expressions
 		auto& inputs = ast.Get<CExprInputs>(input.nodeId);
 
 		// Find pin index
-		const i32 index = inputs.pinIds.FindIndex([&input](AST::Id pinId) {
+		const i32 index = inputs.pinIds.FindIndex([&input](Id pinId) {
 			return input.pinId == pinId;
 		});
 		if (index != NO_INDEX && Ensure(index < inputs.linkedOutputs.Size())) [[likely]]
@@ -164,7 +165,7 @@ namespace rift::AST::Expressions
 		return false;
 	}
 
-	InputId InputFromPinId(TAccessRef<CExprInputs, CChild> access, AST::Id pinId)
+	InputId InputFromPinId(TAccessRef<CExprInputs, CChild> access, Id pinId)
 	{
 		InputId input{};
 		input.pinId = pinId;
@@ -172,12 +173,12 @@ namespace rift::AST::Expressions
 		input.nodeId = pinId;
 		if (!IsNone(input.nodeId) && !access.Has<CExprInputs>(input.nodeId))
 		{
-			input.nodeId = AST::Hierarchy::GetParent(access, pinId);
+			input.nodeId = p::ecs::GetParent(access, pinId);
 		}
 		return input;
 	}
 
-	OutputId OutputFromPinId(TAccessRef<CExprOutputs, CChild> access, AST::Id pinId)
+	OutputId OutputFromPinId(TAccessRef<CExprOutputs, CChild> access, Id pinId)
 	{
 		OutputId output{};
 		output.pinId = pinId;
@@ -185,7 +186,7 @@ namespace rift::AST::Expressions
 		output.nodeId = pinId;
 		if (!IsNone(output.nodeId) && !access.Has<CExprOutputs>(output.nodeId))
 		{
-			output.nodeId = AST::Hierarchy::GetParent(access, pinId);
+			output.nodeId = p::ecs::GetParent(access, pinId);
 		}
 		return output;
 	}

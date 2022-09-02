@@ -11,87 +11,87 @@
 #include <Pipe/ECS/Access.h>
 
 
-namespace rift::Types
+namespace rift::Editor
 {
-	void OpenEditor(TAccessRef<TWrite<CTypeEditor>, CType> access, AST::Id id);
-	void CloseEditor(TAccessRef<TWrite<CTypeEditor>, CType> access, AST::Id id);
-	bool IsEditorOpen(TAccessRef<CTypeEditor> access, AST::Id id);
+	void OpenType(TAccessRef<TWrite<CTypeEditor>, AST::CType> access, AST::Id id);
+	void CloseType(TAccessRef<TWrite<CTypeEditor>, AST::CType> access, AST::Id id);
+	bool IsTypeOpen(TAccessRef<CTypeEditor> access, AST::Id id);
 
-	constexpr StringView GetUnaryOperatorName(UnaryOperatorType type)
+	constexpr StringView GetUnaryOperatorName(AST::UnaryOperatorType type)
 	{
 		switch (type)
 		{
-			case UnaryOperatorType::Not: return "!";
-			case UnaryOperatorType::Negation: return "-";
-			case UnaryOperatorType::Increment: return "++";
-			case UnaryOperatorType::Decrement: return "--";
-			case UnaryOperatorType::BitNot: return "~";
+			case AST::UnaryOperatorType::Not: return "!";
+			case AST::UnaryOperatorType::Negation: return "-";
+			case AST::UnaryOperatorType::Increment: return "++";
+			case AST::UnaryOperatorType::Decrement: return "--";
+			case AST::UnaryOperatorType::BitNot: return "~";
 		}
 		return "";
 	}
 
-	constexpr StringView GetUnaryOperatorLongName(UnaryOperatorType type)
+	constexpr StringView GetUnaryOperatorLongName(AST::UnaryOperatorType type)
 	{
 		switch (type)
 		{
-			case UnaryOperatorType::Not: return "not";
-			case UnaryOperatorType::Negation: return "negation";
-			case UnaryOperatorType::Increment: return "increment";
-			case UnaryOperatorType::Decrement: return "decrement";
-			case UnaryOperatorType::BitNot: return "bitwise not / one's complement";
+			case AST::UnaryOperatorType::Not: return "not";
+			case AST::UnaryOperatorType::Negation: return "negation";
+			case AST::UnaryOperatorType::Increment: return "increment";
+			case AST::UnaryOperatorType::Decrement: return "decrement";
+			case AST::UnaryOperatorType::BitNot: return "bitwise not / one's complement";
 		}
 		return "";
 	}
 
-	constexpr StringView GetBinaryOperatorName(BinaryOperatorType type)
+	constexpr StringView GetBinaryOperatorName(AST::BinaryOperatorType type)
 	{
 		switch (type)
 		{
-			case BinaryOperatorType::Add: return "+";
-			case BinaryOperatorType::Sub: return "-";
-			case BinaryOperatorType::Mul: return "*";
-			case BinaryOperatorType::Div: return "/";
-			case BinaryOperatorType::Mod: return "%";
+			case AST::BinaryOperatorType::Add: return "+";
+			case AST::BinaryOperatorType::Sub: return "-";
+			case AST::BinaryOperatorType::Mul: return "*";
+			case AST::BinaryOperatorType::Div: return "/";
+			case AST::BinaryOperatorType::Mod: return "%";
 
-			case BinaryOperatorType::Equal: return "==";
-			case BinaryOperatorType::NotEqual: return "!=";
-			case BinaryOperatorType::Greater: return ">";
-			case BinaryOperatorType::Less: return "<";
-			case BinaryOperatorType::GreaterOrEqual: return ">=";
-			case BinaryOperatorType::LessOrEqual: return "<=";
+			case AST::BinaryOperatorType::Equal: return "==";
+			case AST::BinaryOperatorType::NotEqual: return "!=";
+			case AST::BinaryOperatorType::Greater: return ">";
+			case AST::BinaryOperatorType::Less: return "<";
+			case AST::BinaryOperatorType::GreaterOrEqual: return ">=";
+			case AST::BinaryOperatorType::LessOrEqual: return "<=";
 
-			case BinaryOperatorType::And: return "&&";
-			case BinaryOperatorType::Or: return "||";
-			case BinaryOperatorType::BitAnd: return "&";
-			case BinaryOperatorType::BitOr: return "|";
-			case BinaryOperatorType::Xor: return "^";
+			case AST::BinaryOperatorType::And: return "&&";
+			case AST::BinaryOperatorType::Or: return "||";
+			case AST::BinaryOperatorType::BitAnd: return "&";
+			case AST::BinaryOperatorType::BitOr: return "|";
+			case AST::BinaryOperatorType::Xor: return "^";
 		}
 		return "";
 	}
 
-	constexpr StringView GetBinaryOperatorLongName(BinaryOperatorType type)
+	constexpr StringView GetBinaryOperatorLongName(AST::BinaryOperatorType type)
 	{
 		switch (type)
 		{
-			case BinaryOperatorType::Add: return "add";
-			case BinaryOperatorType::Sub: return "subtract";
-			case BinaryOperatorType::Mul: return "multiply";
-			case BinaryOperatorType::Div: return "divide";
-			case BinaryOperatorType::Mod: return "module";
+			case AST::BinaryOperatorType::Add: return "add";
+			case AST::BinaryOperatorType::Sub: return "subtract";
+			case AST::BinaryOperatorType::Mul: return "multiply";
+			case AST::BinaryOperatorType::Div: return "divide";
+			case AST::BinaryOperatorType::Mod: return "module";
 
-			case BinaryOperatorType::Equal: return "equal";
-			case BinaryOperatorType::NotEqual: return "not equal";
-			case BinaryOperatorType::Greater: return "greater";
-			case BinaryOperatorType::Less: return "less";
-			case BinaryOperatorType::GreaterOrEqual: return "greater or equal";
-			case BinaryOperatorType::LessOrEqual: return "less or equal";
+			case AST::BinaryOperatorType::Equal: return "equal";
+			case AST::BinaryOperatorType::NotEqual: return "not equal";
+			case AST::BinaryOperatorType::Greater: return "greater";
+			case AST::BinaryOperatorType::Less: return "less";
+			case AST::BinaryOperatorType::GreaterOrEqual: return "greater or equal";
+			case AST::BinaryOperatorType::LessOrEqual: return "less or equal";
 
-			case BinaryOperatorType::And: return "and";
-			case BinaryOperatorType::Or: return "or";
-			case BinaryOperatorType::BitAnd: return "bitwise and";
-			case BinaryOperatorType::BitOr: return "bitwise or";
-			case BinaryOperatorType::Xor: return "exclusive or";
+			case AST::BinaryOperatorType::And: return "and";
+			case AST::BinaryOperatorType::Or: return "or";
+			case AST::BinaryOperatorType::BitAnd: return "bitwise and";
+			case AST::BinaryOperatorType::BitOr: return "bitwise or";
+			case AST::BinaryOperatorType::Xor: return "exclusive or";
 		}
 		return "";
 	}
-}    // namespace rift::Types
+}    // namespace rift::Editor

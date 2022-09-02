@@ -330,7 +330,7 @@ namespace rift::Nodes
 	v2 ScreenToMiniMapPosition(const v2& v);
 
 
-	// Use PushStyleColor and PopStyleColor to modify Style::Colors mid-frame.
+	// Use PushStyleColor and PopStyleColor to modify UI::Colors mid-frame.
 	void PushStyleColor(ColorVar item, Color color);
 	void PopStyleColor(i32 count = 1);
 	void PushStyleVar(StyleVar style_item, float value);

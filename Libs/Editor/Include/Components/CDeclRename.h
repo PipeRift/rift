@@ -9,13 +9,13 @@
 #include <UI/UI.h>
 
 
-namespace rift
+namespace rift::Editor
 {
 	struct CDeclRename : public p::Struct
 	{
 		STRUCT(CDeclRename, p::Struct, p::Struct_NotSerialized)
 
 		// Renaming uses this buffer to temporarely store the name being edited
-		String buffer;
+		p::String buffer;
 	};
-}    // namespace rift
+}    // namespace rift::Editor

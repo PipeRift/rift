@@ -15,7 +15,7 @@
 #include <UI/UI.h>
 
 
-namespace rift
+namespace rift::Editor
 {
 	using namespace p::core;
 	using namespace p::files;
@@ -46,4 +46,4 @@ namespace rift
 
 	inline const Name SEditor::leftNode{"leftNode"};
 	inline const Name SEditor::centralNode{"centralNode"};
-}    // namespace rift
+}    // namespace rift::Editor

@@ -12,12 +12,12 @@
 #include <Pipe/Memory/OwnPtr.h>
 
 
-namespace rift
+namespace rift::AST
 {
 	struct CModule;
 }
 
-namespace rift::Modules
+namespace rift::AST::Modules
 {
 	using namespace p::core;
 	using namespace p::files;
@@ -45,4 +45,4 @@ namespace rift::Modules
 
 	void Serialize(AST::Tree& ast, AST::Id id, String& data);
 	void Deserialize(AST::Tree& ast, AST::Id id, const String& data);
-}    // namespace rift::Modules
+}    // namespace rift::AST::Modules

@@ -29,11 +29,11 @@ namespace rift::AST::Expressions
 	 * @param ids
 	 * @param ignoreRoot ignore ids's inputs and outputs and only remove from children
 	 */
-	void DisconnectAllDeep(Tree& ast, TSpan<const AST::Id> ids, bool ignoreRoot = false);
+	void DisconnectAllDeep(Tree& ast, TSpan<const Id> ids, bool ignoreRoot = false);
 
 	bool RemoveInputPin(TAccessRef<CExprInputs, TWrite<CInvalid>> access, InputId id);
 	bool RemoveOutputPin(TAccessRef<CExprOutputs, TWrite<CInvalid>> access, OutputId id);
 
-	InputId InputFromPinId(TAccessRef<CExprInputs, CChild> access, AST::Id pinId);
-	OutputId OutputFromPinId(TAccessRef<CExprOutputs, CChild> access, AST::Id pinId);
+	InputId InputFromPinId(TAccessRef<CExprInputs, CChild> access, Id pinId);
+	OutputId OutputFromPinId(TAccessRef<CExprOutputs, CChild> access, Id pinId);
 }    // namespace rift::AST::Expressions

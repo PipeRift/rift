@@ -3,7 +3,8 @@
 #include "AST/Utils/Statements.h"
 
 #include "AST/Id.h"
-#include "AST/Utils/Hierarchy.h"
+
+#include <Pipe/ECS/Utils/Hierarchy.h>
 
 
 namespace rift::AST::Statements
@@ -39,7 +40,7 @@ namespace rift::AST::Statements
 		}
 		else
 		{
-			outputNode = Hierarchy::GetParent(ast, outputPin);
+			outputNode = p::ecs::GetParent(ast, outputPin);
 			if (IsNone(outputNode))
 			{
 				return false;
@@ -135,7 +136,7 @@ namespace rift::AST::Statements
 	}
 	bool DisconnectFromOutputPin(Tree& ast, AST::Id outputPin)
 	{
-		return DisconnectFromOutputPin(ast, outputPin, Hierarchy::GetParent(ast, outputPin));
+		return DisconnectFromOutputPin(ast, outputPin, p::ecs::GetParent(ast, outputPin));
 	}
 	bool DisconnectFromOutputPin(Tree& ast, AST::Id outputPin, AST::Id outputNode)
 	{

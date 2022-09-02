@@ -16,9 +16,9 @@
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
 
-namespace rift::Modules
+namespace rift::AST::Modules
 {
-	bool ValidateProjectPath(Path& path, String& error)
+	bool ValidateProjectPath(p::Path& path, p::String& error)
 	{
 		if (path.empty())
 		{
@@ -223,4 +223,4 @@ namespace rift::Modules
 			// type->Read(r, instance);
 		}
 	}
-}    // namespace rift::Modules
+}    // namespace rift::AST::Modules

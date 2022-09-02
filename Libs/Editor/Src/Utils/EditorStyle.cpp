@@ -9,7 +9,7 @@
 #include <Utils/Nodes.h>
 
 
-namespace rift::Style
+namespace rift::Editor
 {
 	const Color GetTypeColor(const AST::Tree& ast, AST::Id id)
 	{
@@ -44,11 +44,11 @@ namespace rift::Style
 		{
 			return GetTypeColor<String>();
 		}
-		else if (ast.Has<CDeclClass>(id))
+		else if (ast.Has<AST::CDeclClass>(id))
 		{
 			return GetTypeColor<Class>();
 		}
-		else if (ast.Has<CDeclStruct>(id))
+		else if (ast.Has<AST::CDeclStruct>(id))
 		{
 			return GetTypeColor<Struct>();
 		}
@@ -59,7 +59,7 @@ namespace rift::Style
 	void PushNodeTitleColor(Color color)
 	{
 		Nodes::PushStyleColor(Nodes::ColorVar_TitleBar, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, Style::Hovered(color));
+		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, UI::Hovered(color));
 		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarSelected, color);
 	}
 
@@ -71,7 +71,7 @@ namespace rift::Style
 	void PushNodeBackgroundColor(Color color)
 	{
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, Style::Hovered(color));
+		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, UI::Hovered(color));
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, color);
 	}
 
@@ -79,4 +79,4 @@ namespace rift::Style
 	{
 		Nodes::PopStyleColor(3);
 	}
-}    // namespace rift::Style
+}    // namespace rift::Editor

@@ -14,10 +14,10 @@ namespace rift
 		STRUCT(View, p::Struct)
 
 		PROP(name)
-		Name name;
+		p::Name name;
 
-		RiftType supportedTypes = RiftType::None;
+		AST::RiftType supportedTypes = AST::RiftType::None;
 
-		TFunction<void()> onDrawEditor;
+		p::TFunction<void()> onDrawEditor;
 	};
 }    // namespace rift

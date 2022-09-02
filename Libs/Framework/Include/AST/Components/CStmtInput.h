@@ -6,7 +6,7 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift
+namespace rift::AST
 {
 	using namespace p;
 
@@ -15,7 +15,7 @@ namespace rift
 		STRUCT(CStmtInput, Struct)
 
 		PROP(linkOutputNode)
-		AST::Id linkOutputNode = AST::NoId;
+		Id linkOutputNode = NoId;
 	};
 
 	static void Read(Reader& ct, CStmtInput& val)
@@ -26,4 +26,4 @@ namespace rift
 	{
 		ct.Serialize(val.linkOutputNode);
 	}
-}    // namespace rift
+}    // namespace rift::AST

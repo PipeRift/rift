@@ -18,31 +18,31 @@
 #include "AST/Utils/TypeIterator.h"
 #include "AST/Utils/TypeUtils.h"
 
-#include <AST/Utils/Hierarchy.h>
+#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
 
-namespace rift::LoadSystem
+namespace rift::AST::LoadSystem
 {
-	void Init(AST::Tree& ast)
+	void Init(Tree& ast)
 	{
 		ast.SetStatic<SLoadQueue>();
 		ast.SetStatic<SStringLoad>();
 	}
 
-	void Run(AST::Tree& ast)
+	void Run(Tree& ast)
 	{
 		LoadSubmodules(ast);
 		LoadTypes(ast);
 	}
 
-	void LoadSubmodules(AST::Tree& ast)
+	void LoadSubmodules(Tree& ast)
 	{
 		TArray<Path> paths;
 		ScanSubmodules(ast, paths);
 
-		TArray<AST::Id> idsToLoad;
+		TArray<Id> idsToLoad;
 		CreateModulesFromPaths(ast, paths, idsToLoad);
 
 		TArray<String> strings;
@@ -50,12 +50,12 @@ namespace rift::LoadSystem
 		DeserializeModules(ast, idsToLoad, strings);
 	}
 
-	void LoadTypes(AST::Tree& ast)
+	void LoadTypes(Tree& ast)
 	{
 		TArray<ModuleTypePaths> pathsByModule;
 		ScanTypes(ast, pathsByModule);
 
-		TArray<AST::Id> idsToLoad;
+		TArray<Id> idsToLoad;
 		CreateTypesFromPaths(ast, pathsByModule, idsToLoad);
 
 		TArray<String> strings;
@@ -63,13 +63,13 @@ namespace rift::LoadSystem
 		DeserializeTypes(ast, idsToLoad, strings);
 	}
 
-	void ScanSubmodules(AST::Tree& ast, TArray<Path>& paths)
+	void ScanSubmodules(Tree& ast, TArray<Path>& paths)
 	{
 		ZoneScoped;
 
 		paths.Clear();
 
-		AST::Id projectId = Modules::GetProjectId(ast);
+		Id projectId      = Modules::GetProjectId(ast);
 		auto& projectFile = ast.Get<CFileRef>(projectId);
 		for (const auto& modulePath : ModuleIterator(projectFile.path.parent_path(), nullptr))
 		{
@@ -77,7 +77,7 @@ namespace rift::LoadSystem
 		}
 	}
 
-	void ScanTypes(AST::Tree& ast, TArray<ModuleTypePaths>& pathsByModule)
+	void ScanTypes(Tree& ast, TArray<ModuleTypePaths>& pathsByModule)
 	{
 		ZoneScoped;
 
@@ -90,7 +90,7 @@ namespace rift::LoadSystem
 		auto modules = ecs::ListAll<CModule>(access);
 
 		modulePaths.Reserve(modules.Size());
-		for (AST::Id moduleId : modules)
+		for (Id moduleId : modules)
 		{
 			const auto& moduleFile = access.Get<const CFileRef>(moduleId);
 			modulePaths.Insert(moduleFile.path.parent_path());
@@ -98,21 +98,22 @@ namespace rift::LoadSystem
 
 		// Find all type files by module
 		pathsByModule.Reserve(modules.Size());
-		for (AST::Id moduleId : modules)
+		for (Id moduleId : modules)
 		{
 			const auto& moduleFile = access.Get<const CFileRef>(moduleId);
 
 			auto& paths = pathsByModule.AddRef({moduleId}).paths;
 			ZoneScopedN("Iterate module files");
 			// Iterate all types ignoring other module paths
-			for (const auto& typePath : TypeIterator(moduleFile.path.parent_path(), &modulePaths))
+			for (const auto& typePath :
+			    AST::TypeIterator(moduleFile.path.parent_path(), &modulePaths))
 			{
 				paths.Add(typePath);
 			}
 		}
 	}
 
-	void CreateModulesFromPaths(AST::Tree& ast, TArray<Path>& paths, TArray<AST::Id>& ids)
+	void CreateModulesFromPaths(Tree& ast, TArray<Path>& paths, TArray<Id>& ids)
 	{
 		ZoneScoped;
 
@@ -123,7 +124,7 @@ namespace rift::LoadSystem
 		auto moduleIds = ecs::ListAll<CModule, CFileRef>(access);
 		paths.RemoveIfSwap([&access, &moduleIds](const p::Path& path) {
 			bool moduleExists = false;
-			for (AST::Id id : moduleIds)
+			for (Id id : moduleIds)
 			{
 				if (path == access.Get<const CFileRef>(id).path)
 				{
@@ -139,18 +140,17 @@ namespace rift::LoadSystem
 
 		for (i32 i = 0; i < ids.Size(); ++i)
 		{
-			AST::Id id = ids[i];
+			Id id = ids[i];
 			access.Add<CModule>(id);
 			access.Add<CFileRef>(id, Move(paths[i]));
 		}
 
 		// Link modules to the project
-		const AST::Id projectId = Modules::GetProjectId(access);
-		AST::Hierarchy::AddChildren(access, projectId, ids);
+		const Id projectId = Modules::GetProjectId(access);
+		p::ecs::AddChildren(access, projectId, ids);
 	}
 
-	void CreateTypesFromPaths(
-	    AST::Tree& ast, TSpan<ModuleTypePaths> pathsByModule, TArray<AST::Id>& ids)
+	void CreateTypesFromPaths(Tree& ast, TSpan<ModuleTypePaths> pathsByModule, TArray<Id>& ids)
 	{
 		ZoneScoped;
 
@@ -176,7 +176,7 @@ namespace rift::LoadSystem
 		}
 
 		// Create nodes
-		TArray<AST::Id> typeIds;
+		TArray<Id> typeIds;
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
 			typeIds.Resize(modulePaths.paths.Size());
@@ -184,7 +184,7 @@ namespace rift::LoadSystem
 
 			for (i32 i = 0; i < typeIds.Size(); ++i)
 			{
-				AST::Id id = typeIds[i];
+				Id id      = typeIds[i];
 				Path& path = modulePaths.paths[i];
 
 				ast.Add<CFileRef>(id, Move(path));
@@ -195,12 +195,12 @@ namespace rift::LoadSystem
 				Name pathName = modulePaths.pathNames[i];
 				types->typesByPath.Insert(pathName, typeIds[i]);
 			}
-			AST::Hierarchy::AddChildren(ast, modulePaths.moduleId, typeIds);
+			p::ecs::AddChildren(ast, modulePaths.moduleId, typeIds);
 			ids.Append(typeIds);
 		}
 	}
 
-	void LoadFileStrings(TAccessRef<CFileRef> access, TSpan<AST::Id> nodes, TArray<String>& strings)
+	void LoadFileStrings(TAccessRef<CFileRef> access, TSpan<Id> nodes, TArray<String>& strings)
 	{
 		ZoneScoped;
 		strings.Resize(nodes.Size());
@@ -217,7 +217,7 @@ namespace rift::LoadSystem
 		}
 	}
 
-	void DeserializeModules(AST::Tree& ast, TSpan<AST::Id> moduleIds, TSpan<String> strings)
+	void DeserializeModules(Tree& ast, TSpan<Id> moduleIds, TSpan<String> strings)
 	{
 		ZoneScoped;
 		Check(moduleIds.Size() == strings.Size());
@@ -228,7 +228,7 @@ namespace rift::LoadSystem
 		}
 	}
 
-	void DeserializeTypes(AST::Tree& ast, TSpan<AST::Id> typeIds, TSpan<String> strings)
+	void DeserializeTypes(Tree& ast, TSpan<Id> typeIds, TSpan<String> strings)
 	{
 		ZoneScoped;
 		Check(typeIds.Size() == strings.Size());
@@ -238,4 +238,4 @@ namespace rift::LoadSystem
 			Types::Deserialize(ast, typeIds[i], strings[i]);
 		}
 	}
-}    // namespace rift::LoadSystem
+}    // namespace rift::AST::LoadSystem

@@ -8,7 +8,7 @@
 #include <UI/UI.h>
 
 
-namespace rift
+namespace rift::Editor
 {
 	void DrawProjectManager(AST::Tree& ast)
 	{
@@ -25,9 +25,9 @@ namespace rift
 		if (UI::BeginPopupModal("Project Manager", nullptr,
 		        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			Style::PushFont("WorkSans", Style::FontMode::Regular, 18.f);
+			UI::PushFont("WorkSans", UI::FontMode::Regular, 18.f);
 			UI::Text("Projects");
-			Style::PopFont();
+			UI::PopFont();
 			UI::Separator();
 			UI::Spacing();
 
@@ -78,9 +78,9 @@ namespace rift
 			UI::Spacing();
 			UI::Spacing();
 
-			Style::PushFont("WorkSans", Style::FontMode::Regular, 18.f);
+			UI::PushFont("WorkSans", UI::FontMode::Regular, 18.f);
 			UI::Text("New");
-			Style::PopFont();
+			UI::PopFont();
 			UI::Separator();
 			UI::Spacing();
 
@@ -121,4 +121,4 @@ namespace rift
 	{
 		UI::OpenPopup("Project Manager");
 	}
-}    // namespace rift
+}    // namespace rift::Editor

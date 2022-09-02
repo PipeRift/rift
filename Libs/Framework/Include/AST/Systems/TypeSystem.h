@@ -19,12 +19,12 @@ namespace rift::AST
 	struct Tree;
 }
 
-namespace rift::TypeSystem
+namespace rift::AST::TypeSystem
 {
 	using namespace p;
 
 
-	void Init(AST::Tree& ast);
+	void Init(Tree& ast);
 
 	using PropagateVariableTypesAccess =
 	    TAccessRef<CExprDeclRefId, CDeclVariable, TWrite<CExprTypeId>>;
@@ -36,4 +36,4 @@ namespace rift::TypeSystem
 
 	void ResolveExprTypeIds(
 	    TAccessRef<TWrite<CExprTypeId>, CExprType, CNamespace, CParent, CChild> access);
-}    // namespace rift::TypeSystem
+}    // namespace rift::AST::TypeSystem

@@ -4,10 +4,10 @@
 
 #include "AST/Components/CNamespace.h"
 #include "AST/Id.h"
-#include "AST/Utils/Hierarchy.h"
 #include "Pipe/Core/StringView.h"
 
 #include <Pipe/ECS/Filtering.h>
+#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Math/Math.h>
 
 
@@ -143,7 +143,7 @@ namespace rift::AST
 			{
 				break;
 			}
-			id = AST::Hierarchy::GetParent(access, id);
+			id = p::ecs::GetParent(access, id);
 		}
 
 		i32 i, scopeIndex = 0;
@@ -160,7 +160,7 @@ namespace rift::AST
 	{
 		if (!IsNone(id))
 		{
-			return GetNamespace(access, Hierarchy::GetParent(access, id));
+			return GetNamespace(access, p::ecs::GetParent(access, id));
 		}
 		return {};
 	}
@@ -202,7 +202,7 @@ namespace rift::AST
 			if (!IsNone(foundScopeId))
 			{
 				// Found matching name, check next scope
-				scopeIds = Hierarchy::GetChildren(access, foundScopeId);
+				scopeIds = p::ecs::GetChildren(access, foundScopeId);
 				++depth;
 			}
 			else

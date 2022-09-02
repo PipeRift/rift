@@ -2,7 +2,6 @@
 
 #include "AST/Serialization.h"
 
-#include "AST/Components/CChild.h"
 #include "AST/Components/CDeclClass.h"
 #include "AST/Components/CDeclFunction.h"
 #include "AST/Components/CDeclStruct.h"
@@ -19,16 +18,17 @@
 #include "AST/Components/CLiteralIntegral.h"
 #include "AST/Components/CLiteralString.h"
 #include "AST/Components/CNamespace.h"
-#include "AST/Components/CParent.h"
 #include "AST/Components/CStmtIf.h"
 #include "AST/Components/CStmtInput.h"
 #include "AST/Components/CStmtOutputs.h"
 #include "AST/Components/CStmtReturn.h"
 #include "AST/Components/Tags/CNotSerialized.h"
 #include "AST/Components/Views/CNodePosition.h"
-#include "AST/Utils/Hierarchy.h"
 
+#include <Pipe/ECS/Components/CChild.h>
+#include <Pipe/ECS/Components/CParent.h>
 #include <Pipe/ECS/Filtering.h>
+#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Reflect/TypeName.h>
 
 
@@ -119,7 +119,7 @@ namespace rift::AST
 	void Reader::SerializeEntities(TArray<Id>& entities)
 	{
 		TArray<Id> parents;
-		Hierarchy::GetParents(ast, entities, parents);
+		p::ecs::GetParents(ast, entities, parents);
 
 		Next("count", nodeCount);
 		ids.Resize(i32(nodeCount));
@@ -173,7 +173,7 @@ namespace rift::AST
 			Leave();
 		}
 
-		Hierarchy::FixParentLinks(ast, parents);
+		p::ecs::FixParentLinks(ast, parents);
 	}
 
 	void Writer::SerializeEntities(const TArray<Id>& entities, bool includeChildren)
@@ -240,7 +240,7 @@ namespace rift::AST
 			while (pendingInspection.Size() > 0)
 			{
 				RemoveIgnoredEntities(pendingInspection);
-				Hierarchy::GetChildren(ast, pendingInspection, currentLinked);
+				p::ecs::GetChildren(ast, pendingInspection, currentLinked);
 				children.Append(currentLinked);
 				pendingInspection = Move(currentLinked);
 			}

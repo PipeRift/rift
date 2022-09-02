@@ -7,11 +7,11 @@
 #include <Pipe/Core/Checks.h>
 
 
-namespace rift::Types
+namespace rift::Editor
 {
-	void OpenEditor(TAccessRef<TWrite<CTypeEditor>, CType> access, AST::Id id)
+	void OpenType(TAccessRef<TWrite<CTypeEditor>, AST::CType> access, AST::Id id)
 	{
-		Check(access.Has<CType>(id));
+		Check(access.Has<AST::CType>(id));
 		if (auto* editor = access.TryGet<CTypeEditor>(id))
 		{
 			editor->pendingFocus = true;
@@ -22,14 +22,14 @@ namespace rift::Types
 		}
 	}
 
-	void CloseEditor(TAccessRef<TWrite<CTypeEditor>, CType> access, AST::Id id)
+	void CloseType(TAccessRef<TWrite<CTypeEditor>, AST::CType> access, AST::Id id)
 	{
-		Check(access.Has<CType>(id));
+		Check(access.Has<AST::CType>(id));
 		access.Remove<CTypeEditor>(id);
 	}
 
-	bool IsEditorOpen(TAccessRef<CTypeEditor> access, AST::Id id)
+	bool IsTypeOpen(TAccessRef<CTypeEditor> access, AST::Id id)
 	{
 		return access.Has<CTypeEditor>(id);
 	}
-}    // namespace rift::Types
+}    // namespace rift::Editor

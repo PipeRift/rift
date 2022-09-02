@@ -24,7 +24,6 @@
 #include "AST/Components/CStmtReturn.h"
 #include "AST/Serialization.h"
 #include "AST/Statics/STypes.h"
-#include "AST/Utils/Hierarchy.h"
 #include "AST/Utils/Namespaces.h"
 #include "AST/Utils/Paths.h"
 #include "AST/Utils/Statements.h"
@@ -32,13 +31,14 @@
 
 #include <Pipe/Core/Checks.h>
 #include <Pipe/Core/Profiler.h>
+#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
 
-namespace rift::Types
+namespace rift::AST::Types
 {
-	void InitTypeFromCategory(AST::Tree& ast, AST::Id id, RiftType category)
+	void InitTypeFromCategory(Tree& ast, Id id, RiftType category)
 	{
 		if (auto* fileRef = ast.TryGet<CFileRef>(id))
 		{
@@ -59,7 +59,7 @@ namespace rift::Types
 		}
 	}
 
-	RiftType GetCategory(AST::Tree& ast, AST::Id id)
+	RiftType GetCategory(Tree& ast, Id id)
 	{
 		if (ast.Has<CDeclStruct>(id))
 		{
@@ -80,9 +80,9 @@ namespace rift::Types
 		return RiftType::None;
 	}
 
-	AST::Id CreateType(AST::Tree& ast, RiftType type, Name name, const p::Path& path)
+	Id CreateType(Tree& ast, RiftType type, Name name, const p::Path& path)
 	{
-		AST::Id id = ast.Create();
+		Id id = ast.Create();
 		if (!path.empty())
 		{
 			ast.Add<CFileRef>(id, path);
@@ -97,11 +97,11 @@ namespace rift::Types
 	}
 
 	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access,
-	    TSpan<AST::Id> typeIds, bool removeFromDisk)
+	    TSpan<Id> typeIds, bool removeFromDisk)
 	{
 		if (removeFromDisk)
 		{
-			for (AST::Id id : typeIds)
+			for (Id id : typeIds)
 			{
 				if (const auto* file = access.TryGet<const CFileRef>(id))
 				{
@@ -109,22 +109,22 @@ namespace rift::Types
 				}
 			}
 		}
-		AST::Hierarchy::RemoveDeep(access, typeIds);
+		p::ecs::RemoveDeep(access, typeIds);
 	}
 
-	void Serialize(AST::Tree& ast, AST::Id id, String& data)
+	void Serialize(Tree& ast, Id id, String& data)
 	{
 		ZoneScoped;
 
 		JsonFormatWriter writer{};
-		AST::Writer ct{writer.GetContext(), ast, true};
+		Writer ct{writer.GetContext(), ast, true};
 		ct.BeginObject();
 		ct.Next("type", GetCategory(ast, id));
 		ct.SerializeEntity(id);
 		data = writer.ToString();
 	}
 
-	void Deserialize(AST::Tree& ast, AST::Id id, const String& data)
+	void Deserialize(Tree& ast, Id id, const String& data)
 	{
 		ZoneScoped;
 
@@ -134,7 +134,7 @@ namespace rift::Types
 			return;
 		}
 
-		AST::Reader ct{reader, ast};
+		Reader ct{reader, ast};
 		ct.BeginObject();
 
 		RiftType category = RiftType::None;
@@ -145,165 +145,165 @@ namespace rift::Types
 	}
 
 
-	AST::Id FindTypeByPath(AST::Tree& ast, const p::Path& path)
+	Id FindTypeByPath(Tree& ast, const p::Path& path)
 	{
 		if (auto* types = ast.TryGetStatic<STypes>())
 		{
 			const Name pathName{ToString(path)};
-			if (AST::Id* id = types->typesByPath.Find(pathName))
+			if (Id* id = types->typesByPath.Find(pathName))
 			{
 				return *id;
 			}
 		}
-		return AST::NoId;
+		return NoId;
 	}
 
-	bool IsClass(const AST::Tree& ast, AST::Id typeId)
+	bool IsClass(const Tree& ast, Id typeId)
 	{
 		return ast.Has<CDeclClass>(typeId);
 	}
 
-	bool IsStruct(const AST::Tree& ast, AST::Id typeId)
+	bool IsStruct(const Tree& ast, Id typeId)
 	{
 		return ast.Has<CDeclStruct>(typeId);
 	}
 
-	bool IsFunctionLibrary(const AST::Tree& ast, AST::Id typeId)
+	bool IsFunctionLibrary(const Tree& ast, Id typeId)
 	{
 		return ast.Has<CDeclFunctionLibrary>(typeId);
 	}
 
-	bool CanContainVariables(const AST::Tree& ast, AST::Id typeId)
+	bool CanContainVariables(const Tree& ast, Id typeId)
 	{
 		return ast.HasAny<CDeclClass, CDeclStruct>(typeId);
 	}
 
-	bool CanContainFunctions(const AST::Tree& ast, AST::Id typeId)
+	bool CanContainFunctions(const Tree& ast, Id typeId)
 	{
 		return ast.HasAny<CDeclClass, CDeclFunctionLibrary, CDeclFunctionInterface>(typeId);
 	}
 
-	bool CanEditFunctionBodies(const AST::Tree& ast, AST::Id typeId)
+	bool CanEditFunctionBodies(const Tree& ast, Id typeId)
 	{
 		return ast.HasAny<CDeclClass, CDeclFunctionLibrary>(typeId);
 	}
 
 
-	AST::Id AddVariable(AST::TypeRef type, Name name)
+	Id AddVariable(TypeRef type, Name name)
 	{
-		AST::Tree& ast = type.GetContext();
+		Tree& ast = type.GetContext();
 
-		AST::Id id = ast.Create();
+		Id id = ast.Create();
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CDeclVariable, CParent>(id);
 
 		if (type)
 		{
-			AST::Hierarchy::AddChildren(ast, type, id);
+			p::ecs::AddChildren(ast, type, id);
 		}
 		return id;
 	}
 
-	AST::Id AddFunction(AST::TypeRef type, Name name)
+	Id AddFunction(TypeRef type, Name name)
 	{
-		AST::Tree& ast = type.GetContext();
+		Tree& ast = type.GetContext();
 
-		AST::Id id = ast.Create();
+		Id id = ast.Create();
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CDeclFunction, CParent>(id);
 		ast.Add<CStmtOutput>(id);
 
 		if (type)
 		{
-			AST::Hierarchy::AddChildren(ast, type, id);
+			p::ecs::AddChildren(ast, type, id);
 		}
 		return id;
 	}
 
-	AST::Id AddCall(AST::TypeRef type, AST::Id functionId)
+	Id AddCall(TypeRef type, Id functionId)
 	{
-		AST::Tree& ast   = type.GetContext();
-		const AST::Id id = ast.Create();
+		Tree& ast   = type.GetContext();
+		const Id id = ast.Create();
 
 		ast.Add<CStmtInput, CStmtOutput, CExprOutputs, CExprInputs>(id);
 
 		ast.Add<CExprCallId>(id, {functionId});
-		ast.Add<CExprCall>(id).function = AST::GetNamespace(ast, functionId);
+		ast.Add<CExprCall>(id).function = GetNamespace(ast, functionId);
 
 		if (type)
 		{
-			AST::Hierarchy::AddChildren(ast, type.GetId(), id);
+			p::ecs::AddChildren(ast, type.GetId(), id);
 		}
 		return id;
 	}
 
-	AST::Id AddFunctionInput(AST::Tree& ast, AST::Id functionId, Name name)
+	Id AddFunctionInput(Tree& ast, Id functionId, Name name)
 	{
-		AST::Id id = ast.Create();
+		Id id = ast.Create();
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
-		AST::Hierarchy::AddChildren(ast, functionId, id);
+		p::ecs::AddChildren(ast, functionId, id);
 		ast.GetOrAdd<CExprOutputs>(functionId).Add(id);
 		return id;
 	}
 
-	AST::Id AddFunctionOutput(AST::Tree& ast, AST::Id functionId, Name name)
+	Id AddFunctionOutput(Tree& ast, Id functionId, Name name)
 	{
-		AST::Id id = ast.Create();
+		Id id = ast.Create();
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
-		AST::Hierarchy::AddChildren(ast, functionId, id);
+		p::ecs::AddChildren(ast, functionId, id);
 		ast.GetOrAdd<CExprInputs>(functionId).Add(id);
 		return id;
 	}
 
-	AST::Id AddIf(AST::TypeRef type)
+	Id AddIf(TypeRef type)
 	{
-		AST::Tree& ast   = type.GetContext();
-		const AST::Id id = ast.Create();
+		Tree& ast   = type.GetContext();
+		const Id id = ast.Create();
 		ast.Add<CStmtIf>(id);
 		ast.Add<CStmtInput>(id);
 
 		// Bool input
-		const AST::Id valueId = ast.Create();
+		const Id valueId = ast.Create();
 		ast.Add<CExprTypeId>(valueId, {.id = ast.GetNativeTypes().boolId});
-		ast.Add<CExprType>(id).type = AST::GetNamespace(ast, ast.GetNativeTypes().boolId);
-		AST::Hierarchy::AddChildren(ast, id, valueId);
+		ast.Add<CExprType>(id).type = GetNamespace(ast, ast.GetNativeTypes().boolId);
+		p::ecs::AddChildren(ast, id, valueId);
 		ast.Add<CExprInputs>(id).Add(valueId);
 
-		TArray<AST::Id> outIds(2);
+		TArray<Id> outIds(2);
 		ast.Create(outIds);
-		AST::Hierarchy::AddChildren(ast, id, outIds);
+		p::ecs::AddChildren(ast, id, outIds);
 		ast.Add<CStmtOutputs>(id, Move(outIds));
 
 		if (type)
 		{
-			AST::Hierarchy::AddChildren(ast, type.GetId(), id);
+			p::ecs::AddChildren(ast, type.GetId(), id);
 		}
 		return id;
 	}
 
-	AST::Id AddReturn(AST::TypeRef type)
+	Id AddReturn(TypeRef type)
 	{
-		AST::Tree& ast         = type.GetContext();
-		const AST::Id returnId = ast.Create();
+		Tree& ast         = type.GetContext();
+		const Id returnId = ast.Create();
 		ast.Add<CStmtReturn>(returnId);
 		ast.Add<CStmtInput>(returnId);
 		if (type)
 		{
-			AST::Hierarchy::AddChildren(ast, type.GetId(), returnId);
+			p::ecs::AddChildren(ast, type.GetId(), returnId);
 		}
 		return returnId;
 	}
 
-	AST::Id AddLiteral(AST::TypeRef type, AST::Id literalTypeId)
+	Id AddLiteral(TypeRef type, Id literalTypeId)
 	{
-		AST::Tree& ast   = type.GetContext();
-		const AST::Id id = ast.Create();
+		Tree& ast   = type.GetContext();
+		const Id id = ast.Create();
 		ast.Add<CExprTypeId>(id, {.id = literalTypeId});
-		ast.Add<CExprType>(id).type = AST::GetNamespace(ast, literalTypeId);
+		ast.Add<CExprType>(id).type = GetNamespace(ast, literalTypeId);
 		ast.Add<CExprOutputs>(id).Add(id);
 
 		bool created        = false;
@@ -373,25 +373,25 @@ namespace rift::Types
 		if (!created)
 		{
 			ast.Destroy(id);
-			return AST::NoId;
+			return NoId;
 		}
 
 		if (type)
 		{
-			AST::Hierarchy::AddChildren(ast, type.GetId(), id);
+			p::ecs::AddChildren(ast, type.GetId(), id);
 		}
 		return id;
 	}
 
-	AST::Id AddDeclarationReference(AST::TypeRef type, AST::Id declId)
+	Id AddDeclarationReference(TypeRef type, Id declId)
 	{
-		AST::Tree& ast   = type.GetContext();
-		const AST::Id id = ast.Create();
+		Tree& ast   = type.GetContext();
+		const Id id = ast.Create();
 
 		ast.Add<CExprDeclRef>(id);
 		ast.Add<CExprOutputs>(id).Add(id);    // Types gets resolved by a system later
 
-		const AST::Id typeId = AST::Hierarchy::GetParent(ast, declId);
+		const Id typeId = p::ecs::GetParent(ast, declId);
 		Check(!IsNone(typeId));
 		auto& declRefExpr           = ast.Add<CExprDeclRef>(id);
 		declRefExpr.ownerName       = ast.Get<CNamespace>(typeId).name;
@@ -401,51 +401,50 @@ namespace rift::Types
 
 		if (type)
 		{
-			AST::Hierarchy::AddChildren(ast, type.GetId(), id);
+			p::ecs::AddChildren(ast, type.GetId(), id);
 		}
 		return id;
 	}
 
-	AST::Id AddUnaryOperator(AST::TypeRef type, UnaryOperatorType operatorType)
+	Id AddUnaryOperator(TypeRef type, UnaryOperatorType operatorType)
 	{
-		AST::Tree& ast   = type.GetContext();
-		const AST::Id id = ast.Create();
+		Tree& ast   = type.GetContext();
+		const Id id = ast.Create();
 		ast.Add<CExprUnaryOperator>(id, {operatorType});
 		ast.Add<CExprInputs>(id).Add(id);
 		ast.Add<CExprOutputs>(id).Add(id);
 		if (type)
 		{
-			AST::Hierarchy::AddChildren(ast, type.GetId(), id);
+			p::ecs::AddChildren(ast, type.GetId(), id);
 		}
 		return id;
 	}
 
-	AST::Id AddBinaryOperator(AST::TypeRef type, BinaryOperatorType operatorType)
+	Id AddBinaryOperator(TypeRef type, BinaryOperatorType operatorType)
 	{
-		AST::Tree& ast   = type.GetContext();
-		const AST::Id id = ast.Create();
+		Tree& ast   = type.GetContext();
+		const Id id = ast.Create();
 		ast.Add<CExprBinaryOperator>(id, {operatorType});
 		ast.Add<CExprOutputs>(id).Add(id);
 
 		auto& inputs = ast.Add<CExprInputs>(id);
 		inputs.Resize(2);
 		ast.Create(inputs.pinIds);
-		AST::Hierarchy::AddChildren(ast, id, inputs.pinIds);
+		p::ecs::AddChildren(ast, id, inputs.pinIds);
 		if (type)
 		{
-			AST::Hierarchy::AddChildren(ast, type.GetId(), id);
+			p::ecs::AddChildren(ast, type.GetId(), id);
 		}
 		return id;
 	}
 
-	AST::Id FindChildByName(
-	    TAccessRef<CNamespace, CParent> access, AST::Id ownerId, Name functionName)
+	Id FindChildByName(TAccessRef<CNamespace, CParent> access, Id ownerId, Name functionName)
 	{
 		if (!IsNone(ownerId))
 		{
-			TArray<AST::Id> children;
-			AST::Hierarchy::GetChildren(access, ownerId, children);
-			for (AST::Id childId : children)
+			TArray<Id> children;
+			p::ecs::GetChildren(access, ownerId, children);
+			for (Id childId : children)
 			{
 				const auto* ns = access.TryGet<const CNamespace>(childId);
 				if (ns && ns->name == functionName)
@@ -454,17 +453,16 @@ namespace rift::Types
 				}
 			}
 		}
-		return AST::NoId;
+		return NoId;
 	}
 
-	void RemoveNodes(const RemoveAccess& access, TSpan<AST::Id> ids)
+	void RemoveNodes(const RemoveAccess& access, TSpan<Id> ids)
 	{
 		ScopedChange(access, ids);
-		AST::Hierarchy::RemoveDeep(access, ids);
+		p::ecs::RemoveDeep(access, ids);
 	}
 
-	bool CopyExpressionType(
-	    TAccessRef<TWrite<CExprTypeId>> access, AST::Id sourcePinId, AST::Id targetPinId)
+	bool CopyExpressionType(TAccessRef<TWrite<CExprTypeId>> access, Id sourcePinId, Id targetPinId)
 	{
 		auto* sourceType = access.TryGet<const CExprTypeId>(sourcePinId);
 		auto* targetType = access.TryGet<CExprTypeId>(targetPinId);
@@ -484,4 +482,4 @@ namespace rift::Types
 		}
 		return true;
 	}
-}    // namespace rift::Types
+}    // namespace rift::AST::Types

@@ -3,13 +3,13 @@
 
 #include "AST/Tree.h"
 
-#include <AST/Components/CChild.h>
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
 #include <AST/Components/CNamespace.h>
-#include <AST/Components/CParent.h>
 #include <Pipe/Core/Platform.h>
 #include <Pipe/Core/StringView.h>
+#include <Pipe/ECS/Components/CChild.h>
+#include <Pipe/ECS/Components/CParent.h>
 #include <Pipe/ECS/Filtering.h>
 #include <Pipe/Math/Vector.h>
 #include <Pipe/Memory/BigBestFitArena.h>
@@ -17,7 +17,7 @@
 #include <UI/UI.h>
 
 
-namespace rift
+namespace rift::Editor
 {
 	struct ASTDebugger
 	{
@@ -33,7 +33,8 @@ namespace rift
 		void Draw(AST::Tree& ast);
 
 	private:
-		using DrawNodeAccess = TAccessRef<CNamespace, CFileRef, CParent, CChild, CModule>;
+		using DrawNodeAccess =
+		    p::TAccessRef<AST::CNamespace, AST::CFileRef, AST::CParent, AST::CChild, AST::CModule>;
 		void DrawNode(DrawNodeAccess access, AST::Id nodeId, bool showChildren);
 	};
-}    // namespace rift
+}    // namespace rift::Editor

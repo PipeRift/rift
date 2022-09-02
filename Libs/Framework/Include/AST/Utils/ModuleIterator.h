@@ -7,7 +7,7 @@
 #include <Pipe/Files/FormatFileIterator.h>
 
 
-namespace rift
+namespace rift::AST
 {
 	class ModuleIterator : public FormatFileIterator<files::RecursiveIterator>
 	{
@@ -39,4 +39,4 @@ namespace rift
 	{
 		return {};
 	}
-}    // namespace rift
+}    // namespace rift::AST
