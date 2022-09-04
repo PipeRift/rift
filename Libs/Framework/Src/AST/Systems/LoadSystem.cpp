@@ -8,7 +8,6 @@
 #include "AST/Components/CModule.h"
 #include "AST/Components/CNamespace.h"
 #include "AST/Components/CType.h"
-#include "AST/Serialization.h"
 #include "AST/Statics/SLoadQueue.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/SStringLoad.h"

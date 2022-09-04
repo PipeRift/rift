@@ -2,7 +2,6 @@
 
 #include "AST/Utils/ModuleUtils.h"
 
-#include "AST/Serialization.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Systems/FunctionsSystem.h"
@@ -11,6 +10,7 @@
 #include "AST/Utils/Paths.h"
 
 #include <Pipe/ECS/Filtering.h>
+#include <Pipe/ECS/Serialization.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
@@ -184,9 +184,9 @@ namespace rift::AST::Modules
 		ZoneScoped;
 
 		JsonFormatWriter writer{};
-		AST::Writer ct{writer.GetContext(), ast, true};
-		ct.BeginObject();
-		ReadWriter common{ct};
+		p::ecs::EntityWriter w{writer.GetContext(), ast, true};
+		w.BeginObject();
+		ReadWriter common{w};
 		if (auto* ns = ast.TryGet<CNamespace>(id))
 		{
 			ns->SerializeReflection(common);
@@ -208,7 +208,7 @@ namespace rift::AST::Modules
 			return;
 		}
 
-		AST::Reader r{formatReader, ast};
+		p::ecs::EntityReader r{formatReader, ast};
 		r.BeginObject();
 		p::ReadWriter rw{r};
 		ast.GetOrAdd<CNamespace>(id).SerializeReflection(rw);

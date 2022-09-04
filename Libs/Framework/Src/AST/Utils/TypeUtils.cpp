@@ -22,7 +22,7 @@
 #include "AST/Components/CStmtInput.h"
 #include "AST/Components/CStmtOutputs.h"
 #include "AST/Components/CStmtReturn.h"
-#include "AST/Serialization.h"
+#include "AST/Components/Views/CNodePosition.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Utils/Namespaces.h"
 #include "AST/Utils/Paths.h"
@@ -31,6 +31,7 @@
 
 #include <Pipe/Core/Checks.h>
 #include <Pipe/Core/Profiler.h>
+#include <Pipe/ECS/Serialization.h>
 #include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
@@ -38,6 +39,13 @@
 
 namespace rift::AST::Types
 {
+	auto typeComponents = [](auto& rw) {
+		rw.SerializeComponents<CChild, CDeclVariable, CDeclFunction, CExprBinaryOperator, CExprCall,
+		    CExprDeclRefId, CExprOutputs, CExprInputs, CStmtReturn, CExprType, CExprUnaryOperator,
+		    CNodePosition, CNamespace, CParent, CLiteralBool, CLiteralFloating, CLiteralIntegral,
+		    CLiteralString, CStmtIf, CStmtOutput, CStmtOutputs, CStmtInput>();
+	};
+
 	void InitTypeFromCategory(Tree& ast, Id id, RiftType category)
 	{
 		if (auto* fileRef = ast.TryGet<CFileRef>(id))
@@ -117,10 +125,11 @@ namespace rift::AST::Types
 		ZoneScoped;
 
 		JsonFormatWriter writer{};
-		Writer ct{writer.GetContext(), ast, true};
-		ct.BeginObject();
-		ct.Next("type", GetCategory(ast, id));
-		ct.SerializeEntity(id);
+		p::ecs::EntityWriter w{writer.GetContext(), ast, true};
+		w.BeginObject();
+		w.Next("type", GetCategory(ast, id));
+		w.SerializeEntity(id, typeComponents);
+
 		data = writer.ToString();
 	}
 
@@ -134,14 +143,14 @@ namespace rift::AST::Types
 			return;
 		}
 
-		Reader ct{reader, ast};
-		ct.BeginObject();
+		p::ecs::EntityReader r{reader, ast};
+		r.BeginObject();
 
 		RiftType category = RiftType::None;
-		ct.Next("type", category);
+		r.Next("type", category);
 		Types::InitTypeFromCategory(ast, id, category);
 
-		ct.SerializeEntity(id);
+		r.SerializeEntity(id, typeComponents);
 	}
 
 
