@@ -2,6 +2,8 @@
 
 #include "AST/Utils/ModuleUtils.h"
 
+#include "AST/Components/CModule.h"
+#include "AST/Components/CRiftModule.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Systems/FunctionsSystem.h"
@@ -186,15 +188,18 @@ namespace rift::AST::Modules
 		JsonFormatWriter writer{};
 		p::ecs::EntityWriter w{writer.GetContext(), ast};
 		w.BeginObject();
-		ReadWriter common{w};
-		if (auto* ns = ast.TryGet<CNamespace>(id))
-		{
-			ns->SerializeReflection(common);
-		}
-		if (auto* module = ast.TryGet<CModule>(id))
-		{
-			module->SerializeReflection(common);
-		}
+		w.SerializeSingleEntity(id, [](auto& w) {
+			w.SerializeComponents<CNamespace, CModule, CRiftModule>();
+		});
+		// ReadWriter common{w};
+		// if (auto* ns = ast.TryGet<CNamespace>(id))
+		//{
+		//	ns->SerializeReflection(common);
+		// }
+		// if (auto* module = ast.TryGet<CModule>(id))
+		//{
+		//	module->SerializeReflection(common);
+		// }
 		data = writer.ToString();
 	}
 
@@ -210,17 +215,20 @@ namespace rift::AST::Modules
 
 		p::ecs::EntityReader r{formatReader, ast};
 		r.BeginObject();
-		p::ReadWriter rw{r};
-		ast.GetOrAdd<CNamespace>(id).SerializeReflection(rw);
-		ast.GetOrAdd<CModule>(id).SerializeReflection(rw);
+		r.SerializeSingleEntity(id, [](auto& r) {
+			r.SerializeComponents<CNamespace, CModule, CRiftModule>();
+		});
+		// p::ReadWriter rw{r};
+		// ast.GetOrAdd<CNamespace>(id).SerializeReflection(rw);
+		// ast.GetOrAdd<CModule>(id).SerializeReflection(rw);
 
 		// Extract module type data
-		p::Type* type = nullptr;
-		r.Next("type", type);
-		if (type)
-		{
-			// void* instance = nullptr;    // Add by type
-			// type->Read(r, instance);
-		}
+		// p::Type* type = nullptr;
+		// r.Next("type", type);
+		// if (type)
+		//{
+		// void* instance = nullptr;    // Add by type
+		// type->Read(r, instance);
+		//}
 	}
 }    // namespace rift::AST::Modules

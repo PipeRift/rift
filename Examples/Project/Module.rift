@@ -1,9 +1,11 @@
 {
-    "name": "TestProject",
-    "target": "Executable",
-    "type": "Rift",
-    "dependencies": [
-        "Extern/Serialization"
-    ],
-    "libraryFiles": []
+    "CNamespace": "none",
+    "CModule": {
+        "dependencies": [
+            "Extern/Serialization"
+        ]
+    },
+    "CRiftModule": {
+        "target": "Executable"
+    }
 }
