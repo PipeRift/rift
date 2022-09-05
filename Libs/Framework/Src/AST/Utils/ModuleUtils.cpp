@@ -184,7 +184,7 @@ namespace rift::AST::Modules
 		ZoneScoped;
 
 		JsonFormatWriter writer{};
-		p::ecs::EntityWriter w{writer.GetContext(), ast, true};
+		p::ecs::EntityWriter w{writer.GetContext(), ast};
 		w.BeginObject();
 		ReadWriter common{w};
 		if (auto* ns = ast.TryGet<CNamespace>(id))

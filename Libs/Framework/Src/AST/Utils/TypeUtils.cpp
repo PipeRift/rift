@@ -40,10 +40,10 @@
 namespace rift::AST::Types
 {
 	auto typeComponents = [](auto& rw) {
-		rw.SerializeComponents<CChild, CDeclVariable, CDeclFunction, CExprBinaryOperator, CExprCall,
-		    CExprDeclRefId, CExprOutputs, CExprInputs, CStmtReturn, CExprType, CExprUnaryOperator,
-		    CNodePosition, CNamespace, CParent, CLiteralBool, CLiteralFloating, CLiteralIntegral,
-		    CLiteralString, CStmtIf, CStmtOutput, CStmtOutputs, CStmtInput>();
+		rw.template SerializeComponents<CChild, CDeclVariable, CDeclFunction, CExprBinaryOperator,
+		    CExprCall, CExprDeclRefId, CExprOutputs, CExprInputs, CStmtReturn, CExprType,
+		    CExprUnaryOperator, CNodePosition, CNamespace, CParent, CLiteralBool, CLiteralFloating,
+		    CLiteralIntegral, CLiteralString, CStmtIf, CStmtOutput, CStmtOutputs, CStmtInput>();
 	};
 
 	void InitTypeFromCategory(Tree& ast, Id id, RiftType category)
@@ -125,7 +125,7 @@ namespace rift::AST::Types
 		ZoneScoped;
 
 		JsonFormatWriter writer{};
-		p::ecs::EntityWriter w{writer.GetContext(), ast, true};
+		p::ecs::EntityWriter w{writer.GetContext(), ast};
 		w.BeginObject();
 		w.Next("type", GetCategory(ast, id));
 		w.SerializeEntity(id, typeComponents);
