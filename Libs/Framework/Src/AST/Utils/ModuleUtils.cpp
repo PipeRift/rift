@@ -20,6 +20,10 @@
 
 namespace rift::AST::Modules
 {
+	auto moduleComponents = [](auto& rw) {
+		rw.template SerializeComponents<CNamespace, CModule, CRiftModule>();
+	};
+
 	bool ValidateProjectPath(p::Path& path, p::String& error)
 	{
 		if (path.empty())
@@ -184,51 +188,22 @@ namespace rift::AST::Modules
 	void Serialize(AST::Tree& ast, AST::Id id, String& data)
 	{
 		ZoneScoped;
-
 		JsonFormatWriter writer{};
 		p::ecs::EntityWriter w{writer.GetContext(), ast};
 		w.BeginObject();
-		w.SerializeSingleEntity(id, [](auto& w) {
-			w.SerializeComponents<CNamespace, CModule, CRiftModule>();
-		});
-		// ReadWriter common{w};
-		// if (auto* ns = ast.TryGet<CNamespace>(id))
-		//{
-		//	ns->SerializeReflection(common);
-		// }
-		// if (auto* module = ast.TryGet<CModule>(id))
-		//{
-		//	module->SerializeReflection(common);
-		// }
+		w.SerializeSingleEntity(id, moduleComponents);
 		data = writer.ToString();
 	}
 
 	void Deserialize(AST::Tree& ast, AST::Id id, const String& data)
 	{
 		ZoneScoped;
-
 		JsonFormatReader formatReader{data};
-		if (!formatReader.IsValid())
+		if (formatReader.IsValid())
 		{
-			return;
+			p::ecs::EntityReader r{formatReader, ast};
+			r.BeginObject();
+			r.SerializeSingleEntity(id, moduleComponents);
 		}
-
-		p::ecs::EntityReader r{formatReader, ast};
-		r.BeginObject();
-		r.SerializeSingleEntity(id, [](auto& r) {
-			r.SerializeComponents<CNamespace, CModule, CRiftModule>();
-		});
-		// p::ReadWriter rw{r};
-		// ast.GetOrAdd<CNamespace>(id).SerializeReflection(rw);
-		// ast.GetOrAdd<CModule>(id).SerializeReflection(rw);
-
-		// Extract module type data
-		// p::Type* type = nullptr;
-		// r.Next("type", type);
-		// if (type)
-		//{
-		// void* instance = nullptr;    // Add by type
-		// type->Read(r, instance);
-		//}
 	}
 }    // namespace rift::AST::Modules
