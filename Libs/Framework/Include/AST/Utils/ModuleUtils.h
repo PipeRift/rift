@@ -17,7 +17,7 @@ namespace rift::AST
 	struct CModule;
 }
 
-namespace rift::AST::Modules
+namespace rift::AST
 {
 	using namespace p::core;
 	using namespace p::files;
@@ -28,6 +28,8 @@ namespace rift::AST::Modules
 	bool CreateProject(Tree& ast, Path path);
 	bool OpenProject(Tree& ast, Path path);
 	void CloseProject(Tree& ast);
+
+	Id CreateModule(Tree& ast, Path path);
 
 	Id GetProjectId(TAccessRef<CProject> access);
 
@@ -43,6 +45,6 @@ namespace rift::AST::Modules
 	// Resolve a module's name
 	Path GetModulePath(TAccessRef<CFileRef> access, Id moduleId);
 
-	void Serialize(AST::Tree& ast, AST::Id id, String& data);
-	void Deserialize(AST::Tree& ast, AST::Id id, const String& data);
-}    // namespace rift::AST::Modules
+	void SerializeModule(AST::Tree& ast, AST::Id id, String& data);
+	void DeserializeModule(AST::Tree& ast, AST::Id id, const String& data);
+}    // namespace rift::AST

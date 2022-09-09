@@ -44,7 +44,7 @@ namespace rift::compiler
 
 			auto& irModule      = compiler.ast.Get<CIRModule>(moduleId);
 			irModule.objectFile = Strings::Format(
-			    "{}/{}.o", intermediatesPath, AST::Modules::GetModuleName(compiler.ast, moduleId));
+			    "{}/{}.o", intermediatesPath, AST::GetModuleName(compiler.ast, moduleId));
 			Log::Info("Creating object '{}'", irModule.objectFile);
 
 			irModule.instance->setTargetTriple(ToLLVM(targetTriple));

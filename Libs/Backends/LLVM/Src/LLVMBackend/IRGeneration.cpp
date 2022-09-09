@@ -360,7 +360,7 @@ namespace rift::compiler::LLVM
 		ZoneScoped;
 		auto& ast = compiler.ast;
 
-		const Name name = AST::Modules::GetModuleName(compiler.ast, moduleId);
+		const Name name = AST::GetModuleName(compiler.ast, moduleId);
 
 		CIRModule& module      = compiler.ast.Add<CIRModule>(moduleId);
 		module.instance        = MakeOwned<llvm::Module>(ToLLVM(name), llvm);

@@ -84,9 +84,9 @@ int main(int argc, char** argv)
 
 	const p::Path path = p::ToPath(pathStr);
 	AST::Tree ast;
-	AST::Modules::OpenProject(ast, path);
+	AST::OpenProject(ast, path);
 
-	if (!AST::Modules::HasProject(ast))
+	if (!AST::HasProject(ast))
 	{
 		Log::Error("Couldn't open project '{}'", p::ToString(path));
 		return 1;

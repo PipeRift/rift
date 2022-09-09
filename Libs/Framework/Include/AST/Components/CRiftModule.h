@@ -1,8 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Pipe/Files/Paths.h>
-#include <Pipe/Reflect/Struct.h>
+#include "AST/Components/CModuleType.h"
 
 
 namespace rift::AST
@@ -16,12 +15,11 @@ namespace rift::AST
 }    // namespace rift::AST
 ENUM(rift::AST::RiftModuleTarget)
 
-
 namespace rift::AST
 {
-	struct CRiftModule : public p::Struct
+	struct CRiftModule : public CModuleType
 	{
-		STRUCT(CRiftModule, p::Struct)
+		STRUCT(CRiftModule, CModuleType)
 
 		PROP(target)
 		RiftModuleTarget target = RiftModuleTarget::Executable;

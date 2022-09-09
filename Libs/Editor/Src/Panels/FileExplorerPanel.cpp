@@ -79,7 +79,7 @@ namespace rift::Editor
 		UI::BeginChild("Files");
 		if (UI::BeginPopupContextWindow())
 		{
-			String projectPath = p::ToString(AST::Modules::GetProjectPath(ast));
+			String projectPath = p::ToString(AST::GetProjectPath(ast));
 			DrawContextMenu(ast, projectPath, AST::NoId);
 			UI::EndPopup();
 		}
@@ -211,7 +211,7 @@ namespace rift::Editor
 		// Set root folder (not displayed)
 		folders.InsertDefaulted(Name::None());
 
-		projectModuleId = AST::Modules::GetProjectId(access);
+		projectModuleId = AST::GetProjectId(access);
 
 		// Create module folders
 		TArray<AST::Id> modules = ecs::ListAll<AST::CModule>(access);

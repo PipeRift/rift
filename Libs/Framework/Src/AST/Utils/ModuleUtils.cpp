@@ -18,13 +18,13 @@
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
 
-namespace rift::AST::Modules
+namespace rift::AST
 {
 	auto moduleComponents = [](auto& rw) {
 		rw.template SerializeComponents<CNamespace, CModule, CRiftModule>();
 	};
 
-	bool ValidateProjectPath(p::Path& path, p::String& error)
+	bool ValidateModulePath(p::Path& path, p::String& error)
 	{
 		if (path.empty())
 		{
@@ -50,36 +50,13 @@ namespace rift::AST::Modules
 
 	bool CreateProject(Tree& ast, p::Path path)
 	{
-		String error;
-		if (!ValidateProjectPath(path, error))
-		{
-			Log::Error("Can't create project: {}", error);
-			return false;
-		}
-
-		if (!files::ExistsAsFolder(path))
-		{
-			files::CreateFolder(path, true);
-		}
-
-		const p::Path filePath = path / moduleFile;
-		if (files::ExistsAsFile(filePath))
-		{
-			Log::Error("Can't create project: Folder already contains a '{}' file", moduleFile);
-			return false;
-		}
-
-		JsonFormatWriter writer{};
-		writer.GetContext().BeginObject();
-		files::SaveStringFile(filePath, writer.ToString());
-
-		return OpenProject(ast, path);
+		return CreateModule(ast, path) != NoId;
 	}
 
 	bool OpenProject(Tree& ast, p::Path path)
 	{
 		String error;
-		if (!ValidateProjectPath(path, error))
+		if (!ValidateModulePath(path, error))
 		{
 			Log::Error("Can't open project: {}", error);
 			return false;
@@ -120,6 +97,36 @@ namespace rift::AST::Modules
 	void CloseProject(Tree& ast)
 	{
 		ast.Reset();
+	}
+
+	Id CreateModule(Tree& ast, Path path)
+	{
+		String error;
+		if (!ValidateModulePath(path, error))
+		{
+			Log::Error("Can't create module: {}", error);
+			return NoId;
+		}
+
+		if (!files::ExistsAsFolder(path))
+		{
+			files::CreateFolder(path, true);
+		}
+
+		const p::Path filePath = path / moduleFile;
+		if (files::ExistsAsFile(filePath))
+		{
+			Log::Error("Can't create module: Folder already contains a '{}' file", moduleFile);
+			return NoId;
+		}
+
+		Id moduleId = ast.Create();
+		ast.Add<CModule, CRiftModule>(moduleId);
+
+		p::String data;
+		SerializeModule(ast, moduleId, data);
+		files::SaveStringFile(filePath, data);
+		return moduleId;
 	}
 
 	Id GetProjectId(TAccessRef<CProject> access)
@@ -185,7 +192,7 @@ namespace rift::AST::Modules
 		return p::Path{};
 	}
 
-	void Serialize(AST::Tree& ast, AST::Id id, String& data)
+	void SerializeModule(AST::Tree& ast, AST::Id id, String& data)
 	{
 		ZoneScoped;
 		JsonFormatWriter writer{};
@@ -195,7 +202,7 @@ namespace rift::AST::Modules
 		data = writer.ToString();
 	}
 
-	void Deserialize(AST::Tree& ast, AST::Id id, const String& data)
+	void DeserializeModule(AST::Tree& ast, AST::Id id, const String& data)
 	{
 		ZoneScoped;
 		JsonFormatReader formatReader{data};
@@ -206,4 +213,4 @@ namespace rift::AST::Modules
 			r.SerializeSingleEntity(id, moduleComponents);
 		}
 	}
-}    // namespace rift::AST::Modules
+}    // namespace rift::AST

@@ -68,7 +68,7 @@ namespace rift::AST::LoadSystem
 
 		paths.Clear();
 
-		Id projectId      = Modules::GetProjectId(ast);
+		Id projectId      = GetProjectId(ast);
 		auto& projectFile = ast.Get<CFileRef>(projectId);
 		for (const auto& modulePath : ModuleIterator(projectFile.path.parent_path(), nullptr))
 		{
@@ -145,7 +145,7 @@ namespace rift::AST::LoadSystem
 		}
 
 		// Link modules to the project
-		const Id projectId = Modules::GetProjectId(access);
+		const Id projectId = GetProjectId(access);
 		p::ecs::AddChildren(access, projectId, ids);
 	}
 
@@ -223,7 +223,7 @@ namespace rift::AST::LoadSystem
 
 		for (i32 i = 0; i < moduleIds.Size(); ++i)
 		{
-			Modules::Deserialize(ast, moduleIds[i], strings[i]);
+			DeserializeModule(ast, moduleIds[i], strings[i]);
 		}
 	}
 
