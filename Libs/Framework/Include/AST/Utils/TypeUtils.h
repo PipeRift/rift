@@ -23,23 +23,23 @@
 #include <Pipe/ECS/Components/CParent.h>
 
 
-namespace rift::AST::Types
+namespace rift::AST
 {
 	void InitTypeFromCategory(Tree& ast, Id id, RiftType category);
-	RiftType GetCategory(Tree& ast, Id id);
+	RiftType GetTypeCategory(Tree& ast, Id id);
 
 	Id CreateType(Tree& ast, RiftType type, Name name = Name::None(), const p::Path& path = {});
 
 	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access, TSpan<Id> types,
 	    bool removeFromDisk = false);
 
-	void Serialize(Tree& ast, Id id, String& data);
-	void Deserialize(Tree& ast, Id id, const String& data);
+	void SerializeType(Tree& ast, Id id, String& data);
+	void DeserializeType(Tree& ast, Id id, const String& data);
 
 	Id FindTypeByPath(Tree& ast, const p::Path& path);
-	bool IsClass(const Tree& ast, Id typeId);
-	bool IsStruct(const Tree& ast, Id typeId);
-	bool IsFunctionLibrary(const Tree& ast, Id typeId);
+	bool IsClassType(const Tree& ast, Id typeId);
+	bool IsStructType(const Tree& ast, Id typeId);
+	bool IsStaticType(const Tree& ast, Id typeId);
 	bool CanContainVariables(const Tree& ast, Id typeId);
 	bool CanContainFunctions(const Tree& ast, Id typeId);
 	bool CanEditFunctionBodies(const Tree& ast, Id typeId);
@@ -67,4 +67,4 @@ namespace rift::AST::Types
 	void RemoveNodes(const RemoveAccess& access, TSpan<Id> ids);
 
 	bool CopyExpressionType(TAccessRef<TWrite<CExprTypeId>> access, Id sourcePinId, Id targetPinId);
-}    // namespace rift::AST::Types
+}    // namespace rift::AST

@@ -3,7 +3,7 @@
 #include "AST/Systems/LoadSystem.h"
 
 #include "AST/Components/CDeclClass.h"
-#include "AST/Components/CDeclFunctionLibrary.h"
+#include "AST/Components/CDeclStatic.h"
 #include "AST/Components/CDeclStruct.h"
 #include "AST/Components/CModule.h"
 #include "AST/Components/CNamespace.h"
@@ -234,7 +234,7 @@ namespace rift::AST::LoadSystem
 
 		for (i32 i = 0; i < typeIds.Size(); ++i)
 		{
-			Types::Deserialize(ast, typeIds[i], strings[i]);
+			DeserializeType(ast, typeIds[i], strings[i]);
 		}
 	}
 }    // namespace rift::AST::LoadSystem

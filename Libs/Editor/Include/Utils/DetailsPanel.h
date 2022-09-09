@@ -4,8 +4,8 @@
 
 #include <AST/Components/CDeclClass.h>
 #include <AST/Components/CDeclFunction.h>
-#include <AST/Components/CDeclFunctionLibrary.h>
 #include <AST/Components/CDeclNative.h>
+#include <AST/Components/CDeclStatic.h>
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprType.h>
@@ -16,6 +16,7 @@
 #include <Pipe/Core/StringView.h>
 #include <Pipe/ECS/Components/CParent.h>
 #include <Pipe/ECS/Filtering.h>
+
 
 
 namespace rift::Editor

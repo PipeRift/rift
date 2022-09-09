@@ -118,7 +118,7 @@ namespace rift::Editor
 		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
 		if (UI::InputText("##name", functionName, ImGuiInputTextFlags_AutoSelectAll))
 		{
-			ecs::Id sameNameFuncId = AST::Types::FindChildByName(ast, typeId, Name{functionName});
+			ecs::Id sameNameFuncId = AST::FindChildByName(ast, typeId, Name{functionName});
 			if (!IsNone(sameNameFuncId) && id != sameNameFuncId)
 			{
 				UI::PushTextColor(LinearColor::Red());
@@ -153,7 +153,7 @@ namespace rift::Editor
 		if (UI::Selectable(ICON_FA_PLUS "##AddInput"))
 		{
 			ScopedChange(ast, id);
-			AST::Types::AddFunctionInput(ast, id);
+			AST::AddFunctionInput(ast, id);
 		}
 		UI::HelpTooltip("Adds a new input parameter to a function");
 		UI::PopStyleVar();
@@ -180,7 +180,7 @@ namespace rift::Editor
 		if (UI::Selectable(ICON_FA_PLUS "##AddOutput"))
 		{
 			ScopedChange(ast, id);
-			AST::Types::AddFunctionOutput(ast, id);
+			AST::AddFunctionOutput(ast, id);
 		}
 		UI::HelpTooltip("Adds a new output parameter to a function");
 		UI::PopStyleVar();

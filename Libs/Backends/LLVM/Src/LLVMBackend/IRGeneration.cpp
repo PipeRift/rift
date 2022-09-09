@@ -3,7 +3,6 @@
 #include "LLVMBackend/IRGeneration.h"
 
 #include "LLVMBackend/Components/CIRFunction.h"
-#include "LLVMBackend/Components/CIRInstruction.h"
 #include "LLVMBackend/Components/CIRModule.h"
 #include "LLVMBackend/Components/CIRType.h"
 #include "LLVMBackend/Components/CIRValue.h"
@@ -11,8 +10,7 @@
 
 #include <AST/Components/CDeclClass.h>
 #include <AST/Components/CDeclFunction.h>
-#include <AST/Components/CDeclFunctionInterface.h>
-#include <AST/Components/CDeclFunctionLibrary.h>
+#include <AST/Components/CDeclStatic.h>
 #include <AST/Components/CDeclStruct.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprCall.h>
@@ -372,19 +370,16 @@ namespace rift::compiler::LLVM
 		TArray<AST::Id> typeIds;
 		p::ecs::GetChildren(ast, moduleId, typeIds);
 		ecs::ExcludeIfNot<AST::CType>(ast, typeIds);
-		TArray<AST::Id> structIds          = ecs::GetIf<AST::CDeclStruct>(ast, typeIds);
-		TArray<AST::Id> classIds           = ecs::GetIf<AST::CDeclClass>(ast, typeIds);
-		TArray<AST::Id> functionLibraryIds = ecs::GetIf<AST::CDeclFunctionLibrary>(ast, typeIds);
-		TArray<AST::Id> functionInterfaceIds =
-		    ecs::GetIf<AST::CDeclFunctionInterface>(ast, typeIds);
+		TArray<AST::Id> structIds = ecs::GetIf<AST::CDeclStruct>(ast, typeIds);
+		TArray<AST::Id> classIds  = ecs::GetIf<AST::CDeclClass>(ast, typeIds);
+		TArray<AST::Id> staticIds = ecs::GetIf<AST::CDeclStatic>(ast, typeIds);
 
 		DeclareStructs(gen, ast, structIds);
 		DeclareStructs(gen, ast, classIds);
 
 		TArray<AST::Id> functionIds;
 		p::ecs::GetChildren(ast, classIds, functionIds);
-		p::ecs::GetChildren(ast, functionLibraryIds, functionIds);
-		p::ecs::GetChildren(ast, functionInterfaceIds, functionIds);
+		p::ecs::GetChildren(ast, staticIds, functionIds);
 		ecs::ExcludeIfNot<AST::CDeclFunction>(ast, functionIds);
 		DeclareFunctions(gen, ast, functionIds);
 

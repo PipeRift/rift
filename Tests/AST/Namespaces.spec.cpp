@@ -20,13 +20,13 @@ go_bandit([]() {
 		it("Can get namespaces", [&]() {
 			AST::Tree ast;
 
-			AST::Id functionId = AST::Types::AddFunction({ast, AST::NoId}, "TestFunction");
+			AST::Id functionId = AST::AddFunction({ast, AST::NoId}, "TestFunction");
 			AssertThat(
 			    AST::GetNamespace(ast, functionId).ToString().c_str(), Equals("@TestFunction"));
 			AssertThat(AST::GetParentNamespace(ast, functionId).ToString().c_str(), Equals(""));
 
-			AST::Id classBId    = AST::Types::CreateType(ast, AST::RiftType::Class, "TestClass");
-			AST::Id functionBId = AST::Types::AddFunction({ast, classBId}, "TestFunction");
+			AST::Id classBId    = AST::CreateType(ast, AST::RiftType::Class, "TestClass");
+			AST::Id functionBId = AST::AddFunction({ast, classBId}, "TestFunction");
 			AssertThat(AST::GetNamespace(ast, functionBId).ToString().c_str(),
 			    Equals("@TestClass.TestFunction"));
 			AssertThat(
@@ -35,9 +35,9 @@ go_bandit([]() {
 			AST::Id parentC = ast.Create();
 			ast.Add<AST::CModule>(parentC);
 			ast.Add(parentC, AST::CNamespace{"SomeScope"});
-			AST::Id classCId = AST::Types::CreateType(ast, AST::RiftType::Class, "TestClass");
+			AST::Id classCId = AST::CreateType(ast, AST::RiftType::Class, "TestClass");
 			p::ecs::AddChildren(ast, parentC, classCId);
-			AST::Id functionCId = AST::Types::AddFunction({ast, classCId}, "TestFunction");
+			AST::Id functionCId = AST::AddFunction({ast, classCId}, "TestFunction");
 			AssertThat(AST::GetNamespace(ast, functionCId).ToString().c_str(),
 			    Equals("@SomeScope.TestClass.TestFunction"));
 			AssertThat(AST::GetParentNamespace(ast, functionCId).ToString().c_str(),
@@ -50,9 +50,9 @@ go_bandit([]() {
 			AST::Id parent = ast.Create();
 			ast.Add<AST::CModule>(parent);
 			ast.Add(parent, AST::CNamespace{"SomeModule"});
-			AST::Id classId = AST::Types::CreateType(ast, AST::RiftType::Class, "TestClass");
+			AST::Id classId = AST::CreateType(ast, AST::RiftType::Class, "TestClass");
 			p::ecs::AddChildren(ast, parent, classId);
-			AST::Id functionId = AST::Types::AddFunction({ast, classId}, "TestFunction");
+			AST::Id functionId = AST::AddFunction({ast, classId}, "TestFunction");
 			p::String ns = AST::GetNamespace(ast, functionId).ToString(AST::LocalNamespace::Yes);
 			AssertThat(ns.c_str(), Equals("TestClass.TestFunction"));
 		});
@@ -105,14 +105,14 @@ go_bandit([]() {
 			ast.Add<AST::CModule>(parent);
 			ast.Add(parent, AST::CNamespace{"A"});
 
-			AST::Id classId = AST::Types::CreateType(ast, AST::RiftType::Class, "B");
+			AST::Id classId = AST::CreateType(ast, AST::RiftType::Class, "B");
 			p::ecs::AddChildren(ast, parent, classId);
 
-			AST::Id class2Id = AST::Types::CreateType(ast, AST::RiftType::Class, "B2");
+			AST::Id class2Id = AST::CreateType(ast, AST::RiftType::Class, "B2");
 			p::ecs::AddChildren(ast, parent, class2Id);
 
-			AST::Id functionId  = AST::Types::AddFunction({ast, classId}, "C");
-			AST::Id function2Id = AST::Types::AddFunction({ast, classId}, "C2");
+			AST::Id functionId  = AST::AddFunction({ast, classId}, "C");
+			AST::Id function2Id = AST::AddFunction({ast, classId}, "C2");
 
 
 			AssertThat(AST::FindIdFromNamespace(ast, {"A"}), Equals(parent));

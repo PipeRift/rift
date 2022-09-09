@@ -6,8 +6,8 @@
 
 namespace rift::AST
 {
-	struct CDeclFunctionInterface : public CDeclaration
+	struct CDeclStatic : public CDeclaration
 	{
-		STRUCT(CDeclFunctionInterface, CDeclaration)
+		STRUCT(CDeclStatic, CDeclaration)
 	};
 }    // namespace rift::AST

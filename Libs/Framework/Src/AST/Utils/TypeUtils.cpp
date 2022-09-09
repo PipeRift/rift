@@ -3,8 +3,7 @@
 #include "AST/Utils/TypeUtils.h"
 
 #include "AST/Components/CDeclClass.h"
-#include "AST/Components/CDeclFunctionInterface.h"
-#include "AST/Components/CDeclFunctionLibrary.h"
+#include "AST/Components/CDeclStatic.h"
 #include "AST/Components/CDeclStruct.h"
 #include "AST/Components/CDeclVariable.h"
 #include "AST/Components/CExprCall.h"
@@ -26,7 +25,6 @@
 #include "AST/Statics/STypes.h"
 #include "AST/Utils/Namespaces.h"
 #include "AST/Utils/Paths.h"
-#include "AST/Utils/Statements.h"
 #include "AST/Utils/TransactionUtils.h"
 
 #include <Pipe/Core/Checks.h>
@@ -37,7 +35,7 @@
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
 
-namespace rift::AST::Types
+namespace rift::AST
 {
 	auto typeComponents = [](auto& rw) {
 		rw.template SerializeComponents<CChild, CDeclVariable, CDeclFunction, CExprBinaryOperator,
@@ -61,13 +59,12 @@ namespace rift::AST::Types
 		{
 			case RiftType::Class: ast.Add<CDeclClass>(id); break;
 			case RiftType::Struct: ast.Add<CDeclStruct>(id); break;
-			case RiftType::FunctionLibrary: ast.Add<CDeclFunctionLibrary>(id); break;
-			case RiftType::FunctionInterface: ast.Add<CDeclFunctionInterface>(id); break;
+			case RiftType::Static: ast.Add<CDeclStatic>(id); break;
 			default: break;
 		}
 	}
 
-	RiftType GetCategory(Tree& ast, Id id)
+	RiftType GetTypeCategory(Tree& ast, Id id)
 	{
 		if (ast.Has<CDeclStruct>(id))
 		{
@@ -77,13 +74,9 @@ namespace rift::AST::Types
 		{
 			return RiftType::Class;
 		}
-		else if (ast.Has<CDeclFunctionLibrary>(id))
+		else if (ast.Has<CDeclStatic>(id))
 		{
-			return RiftType::FunctionLibrary;
-		}
-		else if (ast.Has<CDeclFunctionInterface>(id))
-		{
-			return RiftType::FunctionInterface;
+			return RiftType::Static;
 		}
 		return RiftType::None;
 	}
@@ -120,20 +113,20 @@ namespace rift::AST::Types
 		p::ecs::RemoveDeep(access, typeIds);
 	}
 
-	void Serialize(Tree& ast, Id id, String& data)
+	void SerializeType(Tree& ast, Id id, String& data)
 	{
 		ZoneScoped;
 
 		JsonFormatWriter writer{};
 		p::ecs::EntityWriter w{writer.GetContext(), ast};
 		w.BeginObject();
-		w.Next("type", GetCategory(ast, id));
+		w.Next("type", GetTypeCategory(ast, id));
 		w.SerializeEntity(id, typeComponents);
 
 		data = writer.ToString();
 	}
 
-	void Deserialize(Tree& ast, Id id, const String& data)
+	void DeserializeType(Tree& ast, Id id, const String& data)
 	{
 		ZoneScoped;
 
@@ -148,7 +141,7 @@ namespace rift::AST::Types
 
 		RiftType category = RiftType::None;
 		r.Next("type", category);
-		Types::InitTypeFromCategory(ast, id, category);
+		InitTypeFromCategory(ast, id, category);
 
 		r.SerializeEntity(id, typeComponents);
 	}
@@ -167,19 +160,19 @@ namespace rift::AST::Types
 		return NoId;
 	}
 
-	bool IsClass(const Tree& ast, Id typeId)
+	bool IsClassType(const Tree& ast, Id typeId)
 	{
 		return ast.Has<CDeclClass>(typeId);
 	}
 
-	bool IsStruct(const Tree& ast, Id typeId)
+	bool IsStructType(const Tree& ast, Id typeId)
 	{
 		return ast.Has<CDeclStruct>(typeId);
 	}
 
-	bool IsFunctionLibrary(const Tree& ast, Id typeId)
+	bool IsStaticType(const Tree& ast, Id typeId)
 	{
-		return ast.Has<CDeclFunctionLibrary>(typeId);
+		return ast.Has<CDeclStatic>(typeId);
 	}
 
 	bool CanContainVariables(const Tree& ast, Id typeId)
@@ -189,12 +182,12 @@ namespace rift::AST::Types
 
 	bool CanContainFunctions(const Tree& ast, Id typeId)
 	{
-		return ast.HasAny<CDeclClass, CDeclFunctionLibrary, CDeclFunctionInterface>(typeId);
+		return ast.HasAny<CDeclClass, CDeclStatic>(typeId);
 	}
 
 	bool CanEditFunctionBodies(const Tree& ast, Id typeId)
 	{
-		return ast.HasAny<CDeclClass, CDeclFunctionLibrary>(typeId);
+		return ast.HasAny<CDeclClass, CDeclStatic>(typeId);
 	}
 
 
@@ -491,4 +484,4 @@ namespace rift::AST::Types
 		}
 		return true;
 	}
-}    // namespace rift::AST::Types
+}    // namespace rift::AST

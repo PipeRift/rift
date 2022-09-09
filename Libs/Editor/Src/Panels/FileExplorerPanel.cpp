@@ -36,7 +36,7 @@ namespace rift::Editor
 		// Open recently created types
 		if (!pendingOpenCreatedPath.empty())
 		{
-			AST::Id typeId = AST::Types::FindTypeByPath(ast, pendingOpenCreatedPath);
+			AST::Id typeId = AST::FindTypeByPath(ast, pendingOpenCreatedPath);
 			if (!IsNone(typeId))
 			{
 				OpenType(ast, typeId);
@@ -125,7 +125,7 @@ namespace rift::Editor
 
 			if (isType && UI::MenuItem("Delete"))
 			{
-				AST::Types::RemoveTypes(ast, itemId, true);
+				AST::RemoveTypes(ast, itemId, true);
 			}
 
 			UI::Separator();
@@ -137,21 +137,15 @@ namespace rift::Editor
 			{
 				if (UI::MenuItem("Class"))
 				{
-					CreateType(ast, "Create Class file", AST::RiftType::Class, path);
+					CreateType(ast, "Create Class type", AST::RiftType::Class, path);
 				}
 				if (UI::MenuItem("Struct"))
 				{
-					CreateType(ast, "Create Struct file", AST::RiftType::Struct, path);
+					CreateType(ast, "Create Struct type", AST::RiftType::Struct, path);
 				}
-				if (UI::MenuItem("Function Library"))
+				if (UI::MenuItem("Static"))
 				{
-					CreateType(
-					    ast, "Create Function Library file", AST::RiftType::FunctionLibrary, path);
-				}
-				if (UI::MenuItem("Function Interface"))
-				{
-					CreateType(ast, "Create Function Interface file",
-					    AST::RiftType::FunctionInterface, path);
+					CreateType(ast, "Create Static type", AST::RiftType::Static, path);
 				}
 				UI::EndMenu();
 			}
@@ -394,8 +388,8 @@ namespace rift::Editor
 
 				const StringView parsedNewName = Strings::RemoveFromEnd(renameBuffer, ".rf");
 				const bool nameIsEmpty         = parsedNewName.empty();
-				const ecs::Id sameNameFuncId   = AST::Types::FindChildByName(
-				      ast, p::ecs::GetParent(ast, item.id), Name{parsedNewName});
+				const ecs::Id sameNameFuncId =
+				    AST::FindChildByName(ast, p::ecs::GetParent(ast, item.id), Name{parsedNewName});
 				if (nameIsEmpty || (!IsNone(sameNameFuncId) && item.id != sameNameFuncId))
 				{
 					UI::PushTextColor(LinearColor::Red());
@@ -475,10 +469,10 @@ namespace rift::Editor
         },
 		    true);
 
-		AST::Id typeId = AST::Types::CreateType(ast, category, Name::None(), path);
+		AST::Id typeId = AST::CreateType(ast, category, Name::None(), path);
 
 		String data;
-		AST::Types::Serialize(ast, typeId, data);
+		AST::SerializeType(ast, typeId, data);
 		files::SaveStringFile(path, data);
 
 		// Destroy the temporal type after saving it

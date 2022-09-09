@@ -286,7 +286,7 @@ namespace rift::Editor::EditorSystem
 					{
 						auto& file     = ast.Get<AST::CFileRef>(typeId);
 						auto& fileData = fileDatas.AddRef({file.path, ""});
-						AST::Types::Serialize(ast, typeId, fileData.second);
+						AST::SerializeType(ast, typeId, fileData.second);
 					}
 
 					auto dirtyModuleIds =
@@ -486,7 +486,7 @@ namespace rift::Editor::EditorSystem
 			{
 				auto& file = ast.Get<AST::CFileRef>(typeId);
 				TPair<Path, String> fileData{file.path, ""};
-				AST::Types::Serialize(ast, typeId, fileData.second);
+				AST::SerializeType(ast, typeId, fileData.second);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
 				    Strings::Format("Saved file {}", p::GetFilename(file.path))});
@@ -496,7 +496,7 @@ namespace rift::Editor::EditorSystem
 			}
 			if (UI::BeginMenu("View"))
 			{
-				if (AST::Types::CanContainFunctions(ast, typeId))
+				if (AST::CanContainFunctions(ast, typeId))
 				{
 					UI::MenuItem("Graph", nullptr, &typeEditor.showGraph);
 				}
@@ -545,7 +545,7 @@ namespace rift::Editor::EditorSystem
 
 				CreateTypeDockspace(typeEditor, windowName.c_str());
 
-				if (AST::Types::CanContainFunctions(ast, typeId))
+				if (AST::CanContainFunctions(ast, typeId))
 				{
 					Graph::DrawTypeGraph(ast, typeId, typeEditor);
 

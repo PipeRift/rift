@@ -205,7 +205,7 @@ namespace rift::Editor
 			if (UI::Button(ICON_FA_PLUS "##Variable", ImVec2(-FLT_MIN, 0.0f)))
 			{
 				ScopedChange(transAccess, typeId);
-				AST::Types::AddVariable(
+				AST::AddVariable(
 				    {static_cast<AST::Tree&>(access.GetContext()), typeId}, "NewVariable");
 			}
 			UI::PopStyleCompact();
@@ -235,7 +235,7 @@ namespace rift::Editor
 			if (UI::Button(ICON_FA_PLUS "##Function", ImVec2(-FLT_MIN, 0.0f)))
 			{
 				ScopedChange(ast, typeId);
-				AST::Types::AddFunction({ast, typeId}, "NewFunction");
+				AST::AddFunction({ast, typeId}, "NewFunction");
 			}
 			UI::PopStyleCompact();
 			UI::Unindent(10.f);
@@ -258,12 +258,12 @@ namespace rift::Editor
 			UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
 			editor.elementsFilter.Draw("##filter");
 
-			if (AST::Types::CanContainVariables(ast, typeId))
+			if (AST::CanContainVariables(ast, typeId))
 			{
 				DrawVariables(ast, ast, editor, typeId);
 			}
 
-			if (AST::Types::CanContainFunctions(ast, typeId))
+			if (AST::CanContainFunctions(ast, typeId))
 			{
 				DrawFunctions(ast, editor, typeId);
 			}

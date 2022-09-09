@@ -66,7 +66,7 @@ namespace rift::AST::TypeSystem
 		const OutputId* linkedOutputId = inputs.linkedOutputs.At(0);
 		if (linkedOutputId && linkedOutputId->pinId != NoId)
 		{
-			return Types::CopyExpressionType(access, linkedOutputId->pinId, outputId);
+			return CopyExpressionType(access, linkedOutputId->pinId, outputId);
 		}
 		return false;
 	}
@@ -79,10 +79,10 @@ namespace rift::AST::TypeSystem
 		{
 			const OutputId firstLinkedOutputId = inputs.linkedOutputs[0];
 			// Set input types
-			Types::CopyExpressionType(access, firstLinkedOutputId.pinId, inputs.pinIds[0]);
-			Types::CopyExpressionType(access, inputs.linkedOutputs[1].pinId, inputs.pinIds[1]);
+			CopyExpressionType(access, firstLinkedOutputId.pinId, inputs.pinIds[0]);
+			CopyExpressionType(access, inputs.linkedOutputs[1].pinId, inputs.pinIds[1]);
 			// Set output type from first connection
-			return Types::CopyExpressionType(access, firstLinkedOutputId.pinId, outputId);
+			return CopyExpressionType(access, firstLinkedOutputId.pinId, outputId);
 		}
 		return false;
 	}

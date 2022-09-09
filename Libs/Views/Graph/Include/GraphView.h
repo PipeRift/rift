@@ -19,9 +19,8 @@ namespace rift
 		void Register(TPtr<Rift> rift) override
 		{
 			rift->AddView(View{.name = "Graph",
-			    .supportedTypes      = AST::RiftType::Class | AST::RiftType::FunctionLibrary
-			                    | AST::RiftType::FunctionInterface,
-			    .onDrawEditor = &GraphViewPlugin::DrawEditor});
+			    .supportedTypes      = AST::RiftType::Class | AST::RiftType::Static,
+			    .onDrawEditor        = &GraphViewPlugin::DrawEditor});
 		}
 
 		static void DrawEditor() {}
