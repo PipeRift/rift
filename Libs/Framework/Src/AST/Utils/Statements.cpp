@@ -7,9 +7,9 @@
 #include <Pipe/ECS/Utils/Hierarchy.h>
 
 
-namespace rift::AST::Statements
+namespace rift::AST
 {
-	bool CanConnect(const Tree& ast, Id outputNode, Id outputPin, Id inputNode)
+	bool CanConnectStmt(const Tree& ast, Id outputNode, Id outputPin, Id inputNode)
 	{
 		if (outputNode == inputNode)
 		{
@@ -22,10 +22,10 @@ namespace rift::AST::Statements
 			return false;
 		}
 
-		return !WouldLoop(ast, outputNode, outputPin, inputNode);
+		return !WouldStmtLoop(ast, outputNode, outputPin, inputNode);
 	}
 
-	bool TryConnect(Tree& ast, Id outputPin, Id inputNode)
+	bool TryConnectStmt(Tree& ast, Id outputPin, Id inputNode)
 	{
 		if (!Ensure(!IsNone(outputPin) && !IsNone(inputNode)))
 		{
@@ -47,7 +47,7 @@ namespace rift::AST::Statements
 			}
 		}
 
-		if (!CanConnect(ast, outputNode, outputPin, inputNode))
+		if (!CanConnectStmt(ast, outputNode, outputPin, inputNode))
 		{
 			return false;
 		}
@@ -104,7 +104,7 @@ namespace rift::AST::Statements
 		return true;
 	}
 
-	bool Disconnect(Tree& ast, Id linkId)
+	bool DisconnectStmtLink(Tree& ast, Id linkId)
 	{
 		if (IsNone(linkId))
 		{
@@ -129,16 +129,12 @@ namespace rift::AST::Statements
 		return false;
 	}
 
-	bool DisconnectFromInputPin(Tree& ast, AST::Id inputPin)
+	bool DisconnectStmtFromPrevious(Tree& ast, AST::Id inputPin)
 	{
 		// NOTE: Input pin ids equal input node ids
-		return Disconnect(ast, inputPin);
+		return DisconnectStmtLink(ast, inputPin);
 	}
-	bool DisconnectFromOutputPin(Tree& ast, AST::Id outputPin)
-	{
-		return DisconnectFromOutputPin(ast, outputPin, p::ecs::GetParent(ast, outputPin));
-	}
-	bool DisconnectFromOutputPin(Tree& ast, AST::Id outputPin, AST::Id outputNode)
+	bool DisconnectStmtFromNext(Tree& ast, AST::Id outputPin, AST::Id outputNode)
 	{
 		// NOTE: Can be optimized if needed since outputs is accessed twice counting
 		// Disconnect()
@@ -147,13 +143,17 @@ namespace rift::AST::Statements
 			i32 pinIndex = outputsComp->pinIds.FindIndex(outputPin);
 			if (pinIndex != NO_INDEX) [[likely]]
 			{
-				return Disconnect(ast, outputsComp->linkInputNodes[pinIndex]);
+				return DisconnectStmtLink(ast, outputsComp->linkInputNodes[pinIndex]);
 			}
 		}
 		return false;
 	}
+	bool DisconnectStmtFromNext(Tree& ast, AST::Id outputPin)
+	{
+		return DisconnectStmtFromNext(ast, outputPin, p::ecs::GetParent(ast, outputPin));
+	}
 
-	bool WouldLoop(const Tree& ast, Id outputNode, Id outputPin, Id inputNode)
+	bool WouldStmtLoop(const Tree& ast, Id outputNode, Id outputPin, Id inputNode)
 	{
 		AST::Id currentNode = outputNode;
 		while (!IsNone(currentNode))
@@ -172,49 +172,52 @@ namespace rift::AST::Statements
 		return false;
 	}
 
-	Id GetConnectedToInput(TAccessRef<CStmtInput> access, Id node)
+	Id GetPreviousStmt(TAccessRef<CStmtInput> access, Id stmtIds)
 	{
-		if (const auto* input = access.TryGet<const CStmtInput>(node))
+		if (const auto* input = access.TryGet<const CStmtInput>(stmtIds))
 		{
 			return input->linkOutputNode;
 		}
 		return NoId;
 	}
 
-	void GetConnectedToInputs(TAccessRef<CStmtInput> access, TSpan<const Id> nodes, TArray<Id>& ids)
+	void GetPreviousStmts(
+	    TAccessRef<CStmtInput> access, TSpan<const Id> stmtIds, TArray<Id>& prevStmtIds)
 	{
-		for (const Id node : nodes)
+		prevStmtIds.ReserveMore(stmtIds.Size());
+		for (const Id stmtId : stmtIds)
 		{
-			if (const auto* input = access.TryGet<const CStmtInput>(node))
+			if (const auto* input = access.TryGet<const CStmtInput>(stmtId))
 			{
-				ids.Add(input->linkOutputNode);
+				prevStmtIds.Add(input->linkOutputNode);
 			}
 		}
 	}
 
-	TSpan<Id> GetConnectedToOutputs(TAccessRef<CStmtOutputs> access, Id node)
+	TSpan<Id> GetNextStmts(TAccessRef<CStmtOutputs> access, Id stmtIds)
 	{
-		if (const auto* output = access.TryGet<const CStmtOutputs>(node))
+		if (const auto* output = access.TryGet<const CStmtOutputs>(stmtIds))
 		{
 			return output->linkInputNodes;
 		}
 		return {};
 	}
 
-	void GetConnectedToOutputs(
-	    TAccessRef<CStmtOutputs> access, TSpan<const Id> nodes, TArray<Id>& ids)
+	void GetNextStmts(
+	    TAccessRef<CStmtOutputs> access, TSpan<const Id> stmtIds, TArray<Id>& nextStmtIds)
 	{
-		for (const Id node : nodes)
+		nextStmtIds.ReserveMore(stmtIds.Size());
+		for (const Id stmtId : stmtIds)
 		{
-			if (const auto* output = access.TryGet<const CStmtOutputs>(node))
+			if (const auto* output = access.TryGet<const CStmtOutputs>(stmtId))
 			{
-				ids.Append(output->linkInputNodes);
+				nextStmtIds.Append(output->linkInputNodes);
 			}
 		}
 	}
 
-	void GetChain(TAccessRef<CStmtOutput, CStmtOutputs> access, Id firstStmtId, TArray<Id>& stmtIds,
-	    Id& splitStmtId)
+	void GetStmtChain(TAccessRef<CStmtOutput, CStmtOutputs> access, Id firstStmtId,
+	    TArray<Id>& stmtIds, Id& splitStmtId)
 	{
 		Id id = firstStmtId;
 		while (id != AST::NoId && access.Has<CStmtOutput>(id))
@@ -228,4 +231,4 @@ namespace rift::AST::Statements
 			splitStmtId = id;
 		}
 	}
-}    // namespace rift::AST::Statements
+}    // namespace rift::AST

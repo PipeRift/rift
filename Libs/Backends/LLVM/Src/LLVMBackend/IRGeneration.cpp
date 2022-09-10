@@ -192,7 +192,7 @@ namespace rift::compiler::LLVM
 
 		AST::Id splitId = AST::NoId;
 		TArray<AST::Id> stmtIds;
-		AST::Statements::GetChain(access, firstStmtId, stmtIds, splitId);
+		AST::GetStmtChain(access, firstStmtId, stmtIds, splitId);
 
 		for (AST::Id id : stmtIds)
 		{
@@ -212,7 +212,7 @@ namespace rift::compiler::LLVM
 		// TODO: Resolve continuation block and generate it
 	}
 
-	llvm::Value* AddExpr(ModuleIRGen& gen, BlockAccessRef access, const AST::OutputId& output)
+	llvm::Value* AddExpr(ModuleIRGen& gen, BlockAccessRef access, const AST::ExprOutput& output)
 	{
 		const auto* value =
 		    !IsNone(output.pinId) ? access.TryGet<const CIRValue>(output.pinId) : nullptr;
@@ -278,7 +278,7 @@ namespace rift::compiler::LLVM
 			args.Reserve(inputs->linkedOutputs.Size());
 			for (i32 i = 0; i < inputs->linkedOutputs.Size(); ++i)
 			{
-				AST::OutputId output = inputs->linkedOutputs[i];
+				AST::ExprOutput output = inputs->linkedOutputs[i];
 				if (!output.IsNone())
 				{
 					args.Add(AddExpr(gen, access, output));

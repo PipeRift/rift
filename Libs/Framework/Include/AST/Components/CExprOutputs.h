@@ -11,9 +11,9 @@
 
 namespace rift::AST
 {
-	struct InputId : public p::Struct
+	struct ExprInput : public p::Struct
 	{
-		STRUCT(InputId, p::Struct)
+		STRUCT(ExprInput, p::Struct)
 
 		PROP(nodeId)
 		AST::Id nodeId = AST::NoId;
@@ -22,7 +22,7 @@ namespace rift::AST
 		AST::Id pinId = AST::NoId;
 
 
-		InputId() = default;
+		ExprInput() = default;
 
 		bool IsNone() const
 		{
