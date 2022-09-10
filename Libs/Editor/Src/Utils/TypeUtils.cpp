@@ -2,9 +2,8 @@
 
 #include "Utils/TypeUtils.h"
 
-#include "AST/Serialization.h"
-
 #include <Pipe/Core/Checks.h>
+#include <Pipe/ECS/Serialization.h>
 
 
 namespace rift::Editor

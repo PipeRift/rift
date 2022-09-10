@@ -7,6 +7,7 @@
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "Editor.h"
+#include "imgui.h"
 #include "Pipe/Files/Files.h"
 #include "Statics/SEditor.h"
 #include "Utils/DetailsPanel.h"
@@ -18,6 +19,7 @@
 
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
+#include <AST/Components/CRiftModule.h>
 #include <AST/Components/CType.h>
 #include <AST/Components/Tags/CDirty.h>
 #include <Compiler/Compiler.h>
@@ -119,7 +121,7 @@ namespace rift::Editor::EditorSystem
 	{
 		ZoneScoped;
 
-		if (AST::Modules::HasProject(ast))
+		if (AST::HasProject(ast))
 		{
 			DrawProject(ast);
 		}
@@ -226,7 +228,7 @@ namespace rift::Editor::EditorSystem
 		}
 		auto& editor = ast.GetStatic<SEditor>();
 
-		const auto& path = AST::Modules::GetProjectPath(ast);
+		const auto& path = AST::GetProjectPath(ast);
 		UI::PushID(Hash<Path>()(path));
 
 		DrawProjectMenuBar(ast, editor);
@@ -269,7 +271,7 @@ namespace rift::Editor::EditorSystem
 				}
 				if (UI::MenuItem("Close current"))
 				{
-					AST::Modules::CloseProject(ast);
+					AST::CloseProject(ast);
 					editorData.skipFrameAfterMenu = true;
 				}
 				UI::Separator();
@@ -284,7 +286,7 @@ namespace rift::Editor::EditorSystem
 					{
 						auto& file     = ast.Get<AST::CFileRef>(typeId);
 						auto& fileData = fileDatas.AddRef({file.path, ""});
-						AST::Types::Serialize(ast, typeId, fileData.second);
+						AST::SerializeType(ast, typeId, fileData.second);
 					}
 
 					auto dirtyModuleIds =
@@ -294,7 +296,7 @@ namespace rift::Editor::EditorSystem
 					{
 						auto& file     = ast.Get<AST::CFileRef>(moduleId);
 						auto& fileData = fileDatas.AddRef({file.path, ""});
-						AST::Modules::Serialize(ast, moduleId, fileData.second);
+						AST::SerializeModule(ast, moduleId, fileData.second);
 					}
 
 					for (auto& fileData : fileDatas)
@@ -391,7 +393,7 @@ namespace rift::Editor::EditorSystem
 			{
 				auto& file = ast.Get<AST::CFileRef>(moduleId);
 				TPair<Path, String> fileData{file.path, ""};
-				AST::Modules::Serialize(ast, moduleId, fileData.second);
+				AST::SerializeModule(ast, moduleId, fileData.second);
 
 				files::SaveStringFile(fileData.first, fileData.second);
 				ast.Remove<AST::CFileDirty>(moduleId);
@@ -405,7 +407,8 @@ namespace rift::Editor::EditorSystem
 
 	void DrawModules(AST::Tree& ast, SEditor& editor)
 	{
-		TAccess<TWrite<CModuleEditor>, TWrite<AST::CModule>, TWrite<AST::CNamespace>, AST::CFileRef>
+		TAccess<TWrite<CModuleEditor>, TWrite<AST::CNamespace>, TWrite<AST::CModule>,
+		    TWrite<AST::CRiftModule>, AST::CFileRef>
 		    moduleEditors{ast};
 		for (AST::Id moduleId :
 		    ecs::ListAll<AST::CModule, CModuleEditor, AST::CFileRef>(moduleEditors))
@@ -442,8 +445,22 @@ namespace rift::Editor::EditorSystem
 				{
 					auto& ns = moduleEditors.GetOrAdd<AST::CNamespace>(moduleId);
 					UI::InspectStruct(&ns);
+
 					auto& module = moduleEditors.Get<AST::CModule>(moduleId);
-					UI::InspectStruct(&module);
+					if (UI::BeginInspectHeader("Module"))
+					{
+						UI::InspectStruct(&module);
+						UI::EndInspectHeader();
+					}
+
+					if (auto* riftModule = moduleEditors.TryGet<AST::CRiftModule>(moduleId))
+					{
+						if (UI::BeginInspectHeader("Rift"))
+						{
+							UI::InspectStruct(riftModule);
+							UI::EndInspectHeader();
+						}
+					}
 					UI::EndInspector();
 				}
 			}
@@ -469,7 +486,7 @@ namespace rift::Editor::EditorSystem
 			{
 				auto& file = ast.Get<AST::CFileRef>(typeId);
 				TPair<Path, String> fileData{file.path, ""};
-				AST::Types::Serialize(ast, typeId, fileData.second);
+				AST::SerializeType(ast, typeId, fileData.second);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
 				    Strings::Format("Saved file {}", p::GetFilename(file.path))});
@@ -479,7 +496,7 @@ namespace rift::Editor::EditorSystem
 			}
 			if (UI::BeginMenu("View"))
 			{
-				if (AST::Types::CanContainFunctions(ast, typeId))
+				if (AST::CanContainFunctions(ast, typeId))
 				{
 					UI::MenuItem("Graph", nullptr, &typeEditor.showGraph);
 				}
@@ -528,7 +545,7 @@ namespace rift::Editor::EditorSystem
 
 				CreateTypeDockspace(typeEditor, windowName.c_str());
 
-				if (AST::Types::CanContainFunctions(ast, typeId))
+				if (AST::CanContainFunctions(ast, typeId))
 				{
 					Graph::DrawTypeGraph(ast, typeId, typeEditor);
 

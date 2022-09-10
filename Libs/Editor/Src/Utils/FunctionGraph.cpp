@@ -842,8 +842,7 @@ namespace rift::Editor::Graph
 		if (UI::Begin(graphId.c_str(), &typeEditor.showGraph, ImGuiWindowFlags_NoCollapse))
 		{
 			Nodes::SetEditorContext(&typeEditor.nodesEditor);
-			Nodes::GetCurrentContext()->canCreateLinks =
-			    AST::Types::CanEditFunctionBodies(ast, typeId);
+			Nodes::GetCurrentContext()->canCreateLinks = AST::CanEditFunctionBodies(ast, typeId);
 			Nodes::BeginNodeEditor();
 			PushNodeStyle();
 
@@ -876,7 +875,7 @@ namespace rift::Editor::Graph
 
 			if (UI::IsKeyReleased(GLFW_KEY_DELETE))
 			{
-				AST::Types::RemoveNodes(ast, Nodes::GetSelectedNodes());
+				AST::RemoveNodes(ast, Nodes::GetSelectedNodes());
 			}
 			Nodes::EndNodeEditor();
 

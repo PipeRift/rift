@@ -36,38 +36,37 @@ go_bandit([]() {
 		});
 
 		it("Can load empty descriptor", [&]() {
-			files::SaveStringFile(testProjectPath / AST::Modules::moduleFile, "{}");
+			files::SaveStringFile(testProjectPath / AST::moduleFile, "{}");
 
 			AST::Tree ast;
-			bool result = AST::Modules::OpenProject(ast, testProjectPath);
+			bool result = AST::OpenProject(ast, testProjectPath);
 			AssertThat(result, Equals(true));
-			AssertThat(AST::Modules::HasProject(ast), Equals(true));
+			AssertThat(AST::HasProject(ast), Equals(true));
 		});
 
 		it("Project name equals the folder", [&]() {
-			files::SaveStringFile(testProjectPath / AST::Modules::moduleFile, "{}");
+			files::SaveStringFile(testProjectPath / AST::moduleFile, "{}");
 
 			AST::Tree ast;
-			bool result = AST::Modules::OpenProject(ast, testProjectPath);
+			bool result = AST::OpenProject(ast, testProjectPath);
 			AssertThat(result, Equals(true));
-			AssertThat(AST::Modules::HasProject(ast), Equals(true));
+			AssertThat(AST::HasProject(ast), Equals(true));
 
-			StringView projectName = AST::Modules::GetProjectName(ast).ToString();
+			StringView projectName = AST::GetProjectName(ast).ToString();
 			AssertThat(projectName, Equals("TestProject"));
 		});
 
 		// TODO: Fix module loading. They can't load from CFileRef pointing to the folder and not
 		// the file
 		it("Project name can be overriden", [&]() {
-			files::SaveStringFile(
-			    testProjectPath / AST::Modules::moduleFile, "{\"name\": \"SomeProject\"}");
+			files::SaveStringFile(testProjectPath / AST::moduleFile, "{\"name\": \"SomeProject\"}");
 
 			AST::Tree ast;
-			bool result = AST::Modules::OpenProject(ast, testProjectPath);
+			bool result = AST::OpenProject(ast, testProjectPath);
 			AssertThat(result, Equals(true));
-			AssertThat(AST::Modules::HasProject(ast), Equals(true));
+			AssertThat(AST::HasProject(ast), Equals(true));
 
-			StringView projectName = AST::Modules::GetProjectName(ast).ToString();
+			StringView projectName = AST::GetProjectName(ast).ToString();
 			AssertThat(projectName, Equals("SomeProject"));
 		});
 	});

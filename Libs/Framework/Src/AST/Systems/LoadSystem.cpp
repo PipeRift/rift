@@ -3,12 +3,11 @@
 #include "AST/Systems/LoadSystem.h"
 
 #include "AST/Components/CDeclClass.h"
-#include "AST/Components/CDeclFunctionLibrary.h"
+#include "AST/Components/CDeclStatic.h"
 #include "AST/Components/CDeclStruct.h"
 #include "AST/Components/CModule.h"
 #include "AST/Components/CNamespace.h"
 #include "AST/Components/CType.h"
-#include "AST/Serialization.h"
 #include "AST/Statics/SLoadQueue.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/SStringLoad.h"
@@ -69,7 +68,7 @@ namespace rift::AST::LoadSystem
 
 		paths.Clear();
 
-		Id projectId      = Modules::GetProjectId(ast);
+		Id projectId      = GetProjectId(ast);
 		auto& projectFile = ast.Get<CFileRef>(projectId);
 		for (const auto& modulePath : ModuleIterator(projectFile.path.parent_path(), nullptr))
 		{
@@ -146,7 +145,7 @@ namespace rift::AST::LoadSystem
 		}
 
 		// Link modules to the project
-		const Id projectId = Modules::GetProjectId(access);
+		const Id projectId = GetProjectId(access);
 		p::ecs::AddChildren(access, projectId, ids);
 	}
 
@@ -224,7 +223,7 @@ namespace rift::AST::LoadSystem
 
 		for (i32 i = 0; i < moduleIds.Size(); ++i)
 		{
-			Modules::Deserialize(ast, moduleIds[i], strings[i]);
+			DeserializeModule(ast, moduleIds[i], strings[i]);
 		}
 	}
 
@@ -235,7 +234,7 @@ namespace rift::AST::LoadSystem
 
 		for (i32 i = 0; i < typeIds.Size(); ++i)
 		{
-			Types::Deserialize(ast, typeIds[i], strings[i]);
+			DeserializeType(ast, typeIds[i], strings[i]);
 		}
 	}
 }    // namespace rift::AST::LoadSystem

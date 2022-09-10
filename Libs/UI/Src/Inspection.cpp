@@ -171,8 +171,6 @@ namespace rift::UI
 
 	void InspectArrayProperty(const ArrayProperty& property, void* instance)
 	{
-		UI::TableNextRow();
-		UI::TableSetColumnIndex(0);
 		const bool open = BeginInspectHeader(property.GetDisplayName().data());
 		UI::TableSetColumnIndex(1);
 		DrawArrayValue(open, property, instance);
@@ -187,8 +185,6 @@ namespace rift::UI
 				{
 					label.clear();
 					Strings::FormatTo(label, "{}", i);
-					UI::TableNextRow();
-					UI::TableSetColumnIndex(0);
 					const bool open = BeginInspectHeader(label);
 					if (open)
 					{
@@ -248,8 +244,6 @@ namespace rift::UI
 		}
 		else if (auto* structType = type->AsStruct())
 		{
-			UI::TableNextRow();
-			UI::TableSetColumnIndex(0);
 			if (BeginInspectHeader(handle.GetDisplayName()))
 			{
 				InspectProperties(instance, structType);
@@ -285,6 +279,8 @@ namespace rift::UI
 
 	bool BeginInspectHeader(StringView label)
 	{
+		UI::TableNextRow();
+		UI::TableSetColumnIndex(0);
 		UI::PushHeaderColor(UI::GetNeutralColor(1));
 
 		UI::AlignTextToFramePadding();

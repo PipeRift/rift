@@ -20,9 +20,3 @@ namespace rift::AST
 	using CParent = ecs::CParent;
 	using CChild  = ecs::CChild;
 }    // namespace rift::AST
-
-namespace p::ecs
-{
-	void Read(p::Reader& ct, p::ecs::Id& val);
-	void Write(p::Writer& ct, p::ecs::Id val);
-}    // namespace p::ecs

@@ -86,7 +86,7 @@ namespace rift::Editor::Graph
 	void DrawNodesContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> nodeIds)
 	{
 		Check(!nodeIds.IsEmpty());
-		const bool canEditBody = AST::Types::CanEditFunctionBodies(ast, typeId);
+		const bool canEditBody = AST::CanEditFunctionBodies(ast, typeId);
 
 		AST::Id firstNodeId = nodeIds[0];
 
@@ -94,7 +94,7 @@ namespace rift::Editor::Graph
 		{
 			if (canEditBody && UI::MenuItem("Add return node"))
 			{
-				AST::Id newId = AST::Types::AddReturn({ast, typeId});
+				AST::Id newId = AST::AddReturn({ast, typeId});
 				if (!IsNone(newId))
 				{
 					v2 position = ast.Get<CNodePosition>(firstNodeId).position;
@@ -112,14 +112,14 @@ namespace rift::Editor::Graph
 
 		if (canEditBody && UI::MenuItem("Delete"))
 		{
-			AST::Types::RemoveNodes(ast, nodeIds);
+			AST::RemoveNodes(ast, nodeIds);
 		}
 	}
 
 	void DrawLinksContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> linkIds)
 	{
 		Check(!linkIds.IsEmpty());
-		const bool canEditBody = AST::Types::CanEditFunctionBodies(ast, typeId);
+		const bool canEditBody = AST::CanEditFunctionBodies(ast, typeId);
 
 		AST::Id firstLinkId = linkIds[0];
 
@@ -138,7 +138,7 @@ namespace rift::Editor::Graph
 	void DrawGraphContextMenu(AST::Tree& ast, AST::Id typeId)
 	{
 		static ImGuiTextFilter filter;
-		const bool canEditBody = AST::Types::CanEditFunctionBodies(ast, typeId);
+		const bool canEditBody = AST::CanEditFunctionBodies(ast, typeId);
 
 		if (UI::IsWindowAppearing())
 		{
@@ -158,12 +158,12 @@ namespace rift::Editor::Graph
 		{
 			if (ContextItem("Return", filter))
 			{
-				AST::Id newId = AST::Types::AddReturn({ast, typeId});
+				AST::Id newId = AST::AddReturn({ast, typeId});
 				SetPositionAndConnect(ast, newId, gridPos);
 			}
 			if (ContextItem("If", filter))
 			{
-				AST::Id newId = AST::Types::AddIf({ast, typeId});
+				AST::Id newId = AST::AddIf({ast, typeId});
 				SetPositionAndConnect(ast, newId, gridPos);
 			}
 			ContextTreePop(filter);
@@ -182,7 +182,7 @@ namespace rift::Editor::Graph
 					Strings::FormatTo(makeStr, "Make {}", ns->name);
 					if (ContextItem(makeStr, filter))
 					{
-						AST::Id newId = AST::Types::AddLiteral({ast, typeId}, typeId);
+						AST::Id newId = AST::AddLiteral({ast, typeId}, typeId);
 						SetPositionAndConnect(ast, newId, gridPos);
 					}
 				}
@@ -210,7 +210,7 @@ namespace rift::Editor::Graph
 				}
 				if (ContextItem(label, filter))
 				{
-					AST::Id newId = AST::Types::AddCall({ast, typeId}, functionId);
+					AST::Id newId = AST::AddCall({ast, typeId}, functionId);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}
@@ -237,7 +237,7 @@ namespace rift::Editor::Graph
 				}
 				if (ContextItem(label, filter))
 				{
-					AST::Id newId = AST::Types::AddDeclarationReference({ast, typeId}, variableId);
+					AST::Id newId = AST::AddDeclarationReference({ast, typeId}, variableId);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}
@@ -256,7 +256,7 @@ namespace rift::Editor::Graph
 				Strings::FormatTo(name, "{}   ({})", shortName, longName);
 				if (ContextItem(name, filter))
 				{
-					AST::Id newId = AST::Types::AddUnaryOperator({ast, typeId}, type);
+					AST::Id newId = AST::AddUnaryOperator({ast, typeId}, type);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}
@@ -269,7 +269,7 @@ namespace rift::Editor::Graph
 				Strings::FormatTo(name, "{}   ({})", shortName, longName);
 				if (ContextItem(name, filter))
 				{
-					AST::Id newId = AST::Types::AddBinaryOperator({ast, typeId}, type);
+					AST::Id newId = AST::AddBinaryOperator({ast, typeId}, type);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}

@@ -2,7 +2,8 @@
 
 #include "AST/Utils/ModuleUtils.h"
 
-#include "AST/Serialization.h"
+#include "AST/Components/CModule.h"
+#include "AST/Components/CRiftModule.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Systems/FunctionsSystem.h"
@@ -11,14 +12,19 @@
 #include "AST/Utils/Paths.h"
 
 #include <Pipe/ECS/Filtering.h>
+#include <Pipe/ECS/Serialization.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
 
-namespace rift::AST::Modules
+namespace rift::AST
 {
-	bool ValidateProjectPath(p::Path& path, p::String& error)
+	auto moduleComponents = [](auto& rw) {
+		rw.template SerializeComponents<CNamespace, CModule, CRiftModule>();
+	};
+
+	bool ValidateModulePath(p::Path& path, p::String& error)
 	{
 		if (path.empty())
 		{
@@ -44,36 +50,13 @@ namespace rift::AST::Modules
 
 	bool CreateProject(Tree& ast, p::Path path)
 	{
-		String error;
-		if (!ValidateProjectPath(path, error))
-		{
-			Log::Error("Can't create project: {}", error);
-			return false;
-		}
-
-		if (!files::ExistsAsFolder(path))
-		{
-			files::CreateFolder(path, true);
-		}
-
-		const p::Path filePath = path / moduleFile;
-		if (files::ExistsAsFile(filePath))
-		{
-			Log::Error("Can't create project: Folder already contains a '{}' file", moduleFile);
-			return false;
-		}
-
-		JsonFormatWriter writer{};
-		writer.GetContext().BeginObject();
-		files::SaveStringFile(filePath, writer.ToString());
-
-		return OpenProject(ast, path);
+		return CreateModule(ast, path) != NoId;
 	}
 
 	bool OpenProject(Tree& ast, p::Path path)
 	{
 		String error;
-		if (!ValidateProjectPath(path, error))
+		if (!ValidateModulePath(path, error))
 		{
 			Log::Error("Can't open project: {}", error);
 			return false;
@@ -114,6 +97,36 @@ namespace rift::AST::Modules
 	void CloseProject(Tree& ast)
 	{
 		ast.Reset();
+	}
+
+	Id CreateModule(Tree& ast, Path path)
+	{
+		String error;
+		if (!ValidateModulePath(path, error))
+		{
+			Log::Error("Can't create module: {}", error);
+			return NoId;
+		}
+
+		if (!files::ExistsAsFolder(path))
+		{
+			files::CreateFolder(path, true);
+		}
+
+		const p::Path filePath = path / moduleFile;
+		if (files::ExistsAsFile(filePath))
+		{
+			Log::Error("Can't create module: Folder already contains a '{}' file", moduleFile);
+			return NoId;
+		}
+
+		Id moduleId = ast.Create();
+		ast.Add<CModule, CRiftModule>(moduleId);
+
+		p::String data;
+		SerializeModule(ast, moduleId, data);
+		files::SaveStringFile(filePath, data);
+		return moduleId;
 	}
 
 	Id GetProjectId(TAccessRef<CProject> access)
@@ -179,48 +192,25 @@ namespace rift::AST::Modules
 		return p::Path{};
 	}
 
-	void Serialize(AST::Tree& ast, AST::Id id, String& data)
+	void SerializeModule(AST::Tree& ast, AST::Id id, String& data)
 	{
 		ZoneScoped;
-
 		JsonFormatWriter writer{};
-		AST::Writer ct{writer.GetContext(), ast, true};
-		ct.BeginObject();
-		ReadWriter common{ct};
-		if (auto* ns = ast.TryGet<CNamespace>(id))
-		{
-			ns->SerializeReflection(common);
-		}
-		if (auto* module = ast.TryGet<CModule>(id))
-		{
-			module->SerializeReflection(common);
-		}
+		p::ecs::EntityWriter w{writer.GetContext(), ast};
+		w.BeginObject();
+		w.SerializeSingleEntity(id, moduleComponents);
 		data = writer.ToString();
 	}
 
-	void Deserialize(AST::Tree& ast, AST::Id id, const String& data)
+	void DeserializeModule(AST::Tree& ast, AST::Id id, const String& data)
 	{
 		ZoneScoped;
-
 		JsonFormatReader formatReader{data};
-		if (!formatReader.IsValid())
+		if (formatReader.IsValid())
 		{
-			return;
-		}
-
-		AST::Reader r{formatReader, ast};
-		r.BeginObject();
-		p::ReadWriter rw{r};
-		ast.GetOrAdd<CNamespace>(id).SerializeReflection(rw);
-		ast.GetOrAdd<CModule>(id).SerializeReflection(rw);
-
-		// Extract module type data
-		p::Type* type = nullptr;
-		r.Next("type", type);
-		if (type)
-		{
-			// void* instance = nullptr;    // Add by type
-			// type->Read(r, instance);
+			p::ecs::EntityReader r{formatReader, ast};
+			r.BeginObject();
+			r.SerializeSingleEntity(id, moduleComponents);
 		}
 	}
-}    // namespace rift::AST::Modules
+}    // namespace rift::AST

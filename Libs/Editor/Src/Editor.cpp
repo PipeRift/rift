@@ -89,7 +89,7 @@ namespace rift::Editor
 
 	void Editor::Tick()
 	{
-		if (AST::Modules::HasProject(ast))
+		if (AST::HasProject(ast))
 		{
 			AST::FunctionsSystem::ClearAddedTags(ast);
 			AST::TransactionSystem::ClearTags(ast);
@@ -123,16 +123,16 @@ namespace rift::Editor
 
 	bool Editor::CreateProject(const p::Path& path, bool closeFirst)
 	{
-		if (!closeFirst && AST::Modules::HasProject(ast))
+		if (!closeFirst && AST::HasProject(ast))
 		{
 			return false;
 		}
 
-		if (AST::Modules::CreateProject(ast, path))
+		if (AST::CreateProject(ast, path) && AST::OpenProject(ast, path))
 		{
 			ast.SetStatic<SEditor>();
 			EditorSystem::Init(ast);
-			SetUIConfigFile(AST::Modules::GetProjectPath(ast) / "Saved/UI.ini");
+			SetUIConfigFile(AST::GetProjectPath(ast) / "Saved/UI.ini");
 			return true;
 		}
 		return false;
@@ -140,16 +140,16 @@ namespace rift::Editor
 
 	bool Editor::OpenProject(const p::Path& path, bool closeFirst)
 	{
-		if (!closeFirst && AST::Modules::HasProject(ast))
+		if (!closeFirst && AST::HasProject(ast))
 		{
 			return false;
 		}
 
-		if (AST::Modules::OpenProject(ast, path))
+		if (AST::OpenProject(ast, path))
 		{
 			ast.SetStatic<SEditor>();
 			EditorSystem::Init(ast);
-			SetUIConfigFile(AST::Modules::GetProjectPath(ast) / "Saved/UI.ini");
+			SetUIConfigFile(AST::GetProjectPath(ast) / "Saved/UI.ini");
 			return true;
 		}
 		return false;

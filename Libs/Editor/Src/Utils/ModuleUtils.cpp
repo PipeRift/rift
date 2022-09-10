@@ -2,8 +2,6 @@
 
 #include "Utils/ModuleUtils.h"
 
-#include "AST/Serialization.h"
-
 #include <Pipe/Core/Checks.h>
 
 

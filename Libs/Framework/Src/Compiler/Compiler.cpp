@@ -37,7 +37,7 @@ namespace rift::compiler
 		{
 			ZoneScopedN("Frontend");
 
-			if (!AST::Modules::HasProject(ast))
+			if (!AST::HasProject(ast))
 			{
 				Log::Error("No existing project to build.");
 				return;
@@ -52,7 +52,7 @@ namespace rift::compiler
 			AST::TypeSystem::PropagateExpressionTypes(ast);
 		}
 
-		Log::Info("Building project '{}'", AST::Modules::GetProjectName(compiler.ast));
+		Log::Info("Building project '{}'", AST::GetProjectName(compiler.ast));
 		// Clean build folders
 		Log::Info("Cleaning previous build");
 		files::Delete(compiler.config.binariesPath, true, false);
