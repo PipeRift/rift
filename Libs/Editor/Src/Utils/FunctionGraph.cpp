@@ -793,8 +793,8 @@ namespace rift::Editor::Graph
 
 			for (i32 i = 0; i < inputs.linkedOutputs.Size(); ++i)
 			{
-				AST::Id inputId      = inputs.pinIds[i];
-				AST::OutputId output = inputs.linkedOutputs[i];
+				AST::Id inputId        = inputs.pinIds[i];
+				AST::ExprOutput output = inputs.linkedOutputs[i];
 				if (!access.IsValid(inputId) || !access.IsValid(output.pinId))
 				{
 					continue;
@@ -886,19 +886,17 @@ namespace rift::Editor::Graph
 			{
 				AST::Id pinIds[2]{AST::Id(outputPin), AST::Id(inputPin)};
 				ScopedChange(ast, pinIds);
-				AST::Statements::TryConnect(ast, AST::Id(outputPin), AST::Id(inputPin));
-				AST::Expressions::TryConnect(ast,
-				    AST::Expressions::OutputFromPinId(ast, AST::Id(outputPin)),
-				    AST::Expressions::InputFromPinId(ast, AST::Id(inputPin)));
+				AST::TryConnectStmt(ast, AST::Id(outputPin), AST::Id(inputPin));
+				AST::TryConnectExpr(ast, AST::GetExprOutputFromPin(ast, AST::Id(outputPin)),
+				    AST::GetExprInputFromPin(ast, AST::Id(inputPin)));
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))
 			{
 				ScopedChange(ast, AST::Id(linkId));
 				// linkId is always the outputId
-				AST::Statements::Disconnect(ast, AST::Id(linkId));
-				AST::Expressions::Disconnect(
-				    ast, AST::Expressions::InputFromPinId(ast, AST::Id(linkId)));
+				AST::DisconnectStmtLink(ast, AST::Id(linkId));
+				AST::DisconnectExpr(ast, AST::GetExprInputFromPin(ast, AST::Id(linkId)));
 			}
 
 			AST::Id hoveredNodeId = Nodes::GetHoveredNode();

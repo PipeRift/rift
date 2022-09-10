@@ -10,9 +10,9 @@
 
 namespace rift::AST
 {
-	struct OutputId : public p::Struct
+	struct ExprOutput : public p::Struct
 	{
-		STRUCT(OutputId, p::Struct)
+		STRUCT(ExprOutput, p::Struct)
 
 		PROP(nodeId)
 		AST::Id nodeId = AST::NoId;
@@ -21,7 +21,7 @@ namespace rift::AST
 		AST::Id pinId = AST::NoId;
 
 
-		OutputId() = default;
+		ExprOutput() = default;
 
 		bool IsNone() const
 		{
@@ -34,7 +34,7 @@ namespace rift::AST
 		STRUCT(CExprInputs, p::Struct)
 
 		PROP(linkedOutputs)
-		p::TArray<OutputId> linkedOutputs;
+		p::TArray<ExprOutput> linkedOutputs;
 
 		PROP(pinIds)
 		p::TArray<AST::Id> pinIds;

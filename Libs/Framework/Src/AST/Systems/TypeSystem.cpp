@@ -63,7 +63,7 @@ namespace rift::AST::TypeSystem
 	{
 		const Id outputId  = nodeId;    // Output in unary operator is same as the node itself
 		const auto& inputs = access.Get<const CExprInputs>(nodeId);
-		const OutputId* linkedOutputId = inputs.linkedOutputs.At(0);
+		const ExprOutput* linkedOutputId = inputs.linkedOutputs.At(0);
 		if (linkedOutputId && linkedOutputId->pinId != NoId)
 		{
 			return CopyExpressionType(access, linkedOutputId->pinId, outputId);
@@ -77,7 +77,7 @@ namespace rift::AST::TypeSystem
 		Id outputId        = nodeId;    // Output in binary operator is same as the node itself
 		if (inputs.pinIds.Size() == 2) [[likely]]
 		{
-			const OutputId firstLinkedOutputId = inputs.linkedOutputs[0];
+			const ExprOutput firstLinkedOutputId = inputs.linkedOutputs[0];
 			// Set input types
 			CopyExpressionType(access, firstLinkedOutputId.pinId, inputs.pinIds[0]);
 			CopyExpressionType(access, inputs.linkedOutputs[1].pinId, inputs.pinIds[1]);

@@ -41,15 +41,14 @@ namespace rift::Editor::Graph
 			switch (linkPin.second)
 			{
 				case Nodes::PinType::Output:
-					AST::Statements::TryConnect(ast, linkPinId, id);
-					AST::Expressions::TryConnect(ast,
-					    AST::Expressions::OutputFromPinId(ast, linkPinId),
-					    AST::Expressions::InputFromPinId(ast, id));
+					AST::TryConnectStmt(ast, linkPinId, id);
+					AST::TryConnectExpr(ast, AST::GetExprOutputFromPin(ast, linkPinId),
+					    AST::GetExprInputFromPin(ast, id));
 					break;
 				case Nodes::PinType::Input:
-					AST::Statements::TryConnect(ast, id, linkPinId);
-					AST::Expressions::TryConnect(ast, AST::Expressions::OutputFromPinId(ast, id),
-					    AST::Expressions::InputFromPinId(ast, linkPinId));
+					AST::TryConnectStmt(ast, id, linkPinId);
+					AST::TryConnectExpr(ast, AST::GetExprOutputFromPin(ast, id),
+					    AST::GetExprInputFromPin(ast, linkPinId));
 					break;
 				default: break;
 			}
@@ -100,7 +99,7 @@ namespace rift::Editor::Graph
 					v2 position = ast.Get<CNodePosition>(firstNodeId).position;
 					ast.Add<CNodePosition>(newId, position + v2{10.f, 0.f});
 
-					AST::Statements::TryConnect(ast, firstNodeId, newId);
+					AST::TryConnectStmt(ast, firstNodeId, newId);
 				}
 			}
 		}
@@ -128,9 +127,8 @@ namespace rift::Editor::Graph
 			ScopedChange(ast, linkIds);
 			for (AST::Id linkId : linkIds)
 			{
-				AST::Expressions::Disconnect(
-				    ast, AST::Expressions::InputFromPinId(ast, firstLinkId));
-				AST::Statements::DisconnectFromInputPin(ast, firstLinkId);
+				AST::DisconnectExpr(ast, AST::GetExprInputFromPin(ast, firstLinkId));
+				AST::DisconnectStmtLink(ast, firstLinkId);
 			}
 		}
 	}

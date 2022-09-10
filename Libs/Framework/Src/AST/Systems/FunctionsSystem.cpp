@@ -86,7 +86,7 @@ namespace rift::AST::FunctionsSystem
 				Id id = inputs.pinIds[i];
 				if (access.Has<CInvalid>(id))
 				{
-					OutputId output = inputs.linkedOutputs[i];
+					ExprOutput output = inputs.linkedOutputs[i];
 					inputs.pinIds.RemoveAt(i, false);
 					inputs.pinIds.Add(id);
 					inputs.linkedOutputs.RemoveAt(i, false);
@@ -303,8 +303,8 @@ namespace rift::AST::FunctionsSystem
 			const auto& inputs = access.Get<const CExprInputs>(id);
 			for (i32 i = 0; i < inputs.pinIds.Size(); ++i)
 			{
-				Id pinId               = inputs.pinIds[i];
-				const OutputId& output = inputs.linkedOutputs[i];
+				Id pinId                 = inputs.pinIds[i];
+				const ExprOutput& output = inputs.linkedOutputs[i];
 				if (!output.IsNone())    // Is connected
 				{
 					if (access.Has<CInvalid>(pinId))

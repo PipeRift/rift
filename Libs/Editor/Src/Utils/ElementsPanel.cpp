@@ -273,10 +273,10 @@ namespace rift::Editor
 		if (!IsNone(editor.pendingDeletePropertyId))
 		{
 			ScopedChange(ast, editor.pendingDeletePropertyId);
-			bool removedPin = AST::Expressions::RemoveInputPin(
-			    ast, AST::Expressions::InputFromPinId(ast, editor.pendingDeletePropertyId));
-			removedPin |= AST::Expressions::RemoveOutputPin(
-			    ast, AST::Expressions::OutputFromPinId(ast, editor.pendingDeletePropertyId));
+			bool removedPin = AST::RemoveExprInputPin(
+			    ast, AST::GetExprInputFromPin(ast, editor.pendingDeletePropertyId));
+			removedPin |= AST::RemoveExprOutputPin(
+			    ast, AST::GetExprOutputFromPin(ast, editor.pendingDeletePropertyId));
 
 			// If pin has not been marked for removal, destroy the entity
 			if (!removedPin)

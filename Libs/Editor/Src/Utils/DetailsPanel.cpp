@@ -101,8 +101,8 @@ namespace rift::Editor
 		}
 		if (removePin)
 		{
-			AST::Expressions::RemoveInputPin(ast, AST::Expressions::InputFromPinId(ast, id));
-			AST::Expressions::RemoveOutputPin(ast, AST::Expressions::OutputFromPinId(ast, id));
+			AST::RemoveExprInputPin(ast, AST::GetExprInputFromPin(ast, id));
+			AST::RemoveExprOutputPin(ast, AST::GetExprOutputFromPin(ast, id));
 		}
 	}
 

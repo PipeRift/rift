@@ -7,9 +7,9 @@
 #include <Pipe/ECS/Utils/Hierarchy.h>
 
 
-namespace rift::AST::Expressions
+namespace rift::AST
 {
-	bool WouldLoop(
+	bool WouldExprLoop(
 	    TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access, Id outputNodeId, Id inputNodeId)
 	{
 		TArray<Id> currentNodeIds{outputNodeId};
@@ -21,7 +21,7 @@ namespace rift::AST::Expressions
 				if (const auto* inputs = access.TryGet<const CExprInputs>(id))
 				{
 					nextNodeIds.ReserveMore(inputs->linkedOutputs.Size());
-					for (OutputId output : inputs->linkedOutputs)
+					for (ExprOutput output : inputs->linkedOutputs)
 					{
 						if (output.nodeId == inputNodeId)
 						{
@@ -40,8 +40,8 @@ namespace rift::AST::Expressions
 		return false;
 	}
 
-	bool CanConnect(
-	    TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access, OutputId output, InputId input)
+	bool CanConnectExpr(TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access,
+	    ExprOutput output, ExprInput input)
 	{
 		if (output.IsNone() || input.IsNone())
 		{
@@ -90,13 +90,13 @@ namespace rift::AST::Expressions
 		}
 
 		// Ensure output and input wouldn't loop
-		return !WouldLoop(access, output.nodeId, input.nodeId);
+		return !WouldExprLoop(access, output.nodeId, input.nodeId);
 	}
 
-	bool TryConnect(TAccessRef<TWrite<CExprInputs>, CExprOutputs, CExprTypeId> access,
-	    OutputId output, InputId input)
+	bool TryConnectExpr(TAccessRef<TWrite<CExprInputs>, CExprOutputs, CExprTypeId> access,
+	    ExprOutput output, ExprInput input)
 	{
-		if (!CanConnect(access, output, input))
+		if (!CanConnectExpr(access, output, input))
 		{
 			return false;
 		}
@@ -115,7 +115,7 @@ namespace rift::AST::Expressions
 		return false;    // Pin was invalid
 	}
 
-	bool Disconnect(Tree& ast, InputId input)
+	bool DisconnectExpr(Tree& ast, ExprInput input)
 	{
 		if (input.IsNone() || !ast.Has<CExprInputs>(input.nodeId))
 		{
@@ -130,15 +130,15 @@ namespace rift::AST::Expressions
 		});
 		if (index != NO_INDEX && Ensure(index < inputs.linkedOutputs.Size())) [[likely]]
 		{
-			OutputId& linked = inputs.linkedOutputs[index];
-			linked           = {};
+			ExprOutput& linked = inputs.linkedOutputs[index];
+			linked             = {};
 			return true;
 		}
 		return false;
 	}
 
 
-	bool RemoveInputPin(TAccessRef<CExprInputs, TWrite<CInvalid>> access, InputId input)
+	bool RemoveExprInputPin(TAccessRef<CExprInputs, TWrite<CInvalid>> access, ExprInput input)
 	{
 		if (!input.IsNone())
 		{
@@ -152,7 +152,7 @@ namespace rift::AST::Expressions
 		return false;
 	}
 
-	bool RemoveOutputPin(TAccessRef<CExprOutputs, TWrite<CInvalid>> access, OutputId output)
+	bool RemoveExprOutputPin(TAccessRef<CExprOutputs, TWrite<CInvalid>> access, ExprOutput output)
 	{
 		if (!output.IsNone())
 		{
@@ -165,9 +165,9 @@ namespace rift::AST::Expressions
 		return false;
 	}
 
-	InputId InputFromPinId(TAccessRef<CExprInputs, CChild> access, Id pinId)
+	ExprInput GetExprInputFromPin(TAccessRef<CExprInputs, CChild> access, Id pinId)
 	{
-		InputId input{};
+		ExprInput input{};
 		input.pinId = pinId;
 		// If node is not the pin itself, it must be the parent
 		input.nodeId = pinId;
@@ -178,9 +178,9 @@ namespace rift::AST::Expressions
 		return input;
 	}
 
-	OutputId OutputFromPinId(TAccessRef<CExprOutputs, CChild> access, Id pinId)
+	ExprOutput GetExprOutputFromPin(TAccessRef<CExprOutputs, CChild> access, Id pinId)
 	{
-		OutputId output{};
+		ExprOutput output{};
 		output.pinId = pinId;
 		// If node is not the pin itself, it must be the parent
 		output.nodeId = pinId;
@@ -190,4 +190,4 @@ namespace rift::AST::Expressions
 		}
 		return output;
 	}
-}    // namespace rift::AST::Expressions
+}    // namespace rift::AST

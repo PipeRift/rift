@@ -47,17 +47,17 @@ go_bandit([]() {
 			AST::Id callId     = AST::AddCall({ast, AST::NoId}, functionId);
 			AST::Id ifId       = AST::AddIf({ast, AST::NoId});
 
-			AssertThat(AST::Statements::TryConnect(ast, functionId, callId), Equals(true));
+			AssertThat(AST::TryConnectStmt(ast, functionId, callId), Equals(true));
 
 			// Can't connect to self
-			AssertThat(AST::Statements::TryConnect(ast, functionId, functionId), Equals(false));
+			AssertThat(AST::TryConnectStmt(ast, functionId, functionId), Equals(false));
 
 			// Can't connect in loops
-			AssertThat(AST::Statements::TryConnect(ast, callId, ifId), Equals(true));
-			AssertThat(AST::Statements::TryConnect(ast, ifId, callId), Equals(false));
+			AssertThat(AST::TryConnectStmt(ast, callId, ifId), Equals(true));
+			AssertThat(AST::TryConnectStmt(ast, ifId, callId), Equals(false));
 
 			// Can replace a connection
-			AssertThat(AST::Statements::TryConnect(ast, functionId, ifId), Equals(true));
+			AssertThat(AST::TryConnectStmt(ast, functionId, ifId), Equals(true));
 		});
 
 		it("Can connect with multiple outputs", [&]() {
@@ -69,20 +69,20 @@ go_bandit([]() {
 			AST::Id call1Id = AST::AddCall({ast, AST::NoId}, functionId);
 			AST::Id call2Id = AST::AddCall({ast, AST::NoId}, functionId);
 
-			AssertThat(AST::Statements::TryConnect(
-			               ast, ast.Get<AST::CStmtOutputs>(ifId).pinIds[0], call2Id),
+			AssertThat(
+			    AST::TryConnectStmt(ast, ast.Get<AST::CStmtOutputs>(ifId).pinIds[0], call2Id),
 			    Equals(true));
 			AssertThat(ast.Get<AST::CStmtOutputs>(ifId).linkInputNodes[0], Equals(call2Id));
 
 			// Can replace a connection
-			AssertThat(AST::Statements::TryConnect(
-			               ast, ast.Get<AST::CStmtOutputs>(ifId).pinIds[0], call1Id),
+			AssertThat(
+			    AST::TryConnectStmt(ast, ast.Get<AST::CStmtOutputs>(ifId).pinIds[0], call1Id),
 			    Equals(true));
 			AssertThat(ast.Get<AST::CStmtOutputs>(ifId).linkInputNodes[0], Equals(call1Id));
 
 			// Can connect to a different pin
-			AssertThat(AST::Statements::TryConnect(
-			               ast, ast.Get<AST::CStmtOutputs>(ifId).pinIds[1], call2Id),
+			AssertThat(
+			    AST::TryConnectStmt(ast, ast.Get<AST::CStmtOutputs>(ifId).pinIds[1], call2Id),
 			    Equals(true));
 			AssertThat(ast.Get<AST::CStmtOutputs>(ifId).linkInputNodes[1], Equals(call2Id));
 		});
