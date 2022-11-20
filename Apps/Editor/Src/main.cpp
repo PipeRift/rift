@@ -3,6 +3,7 @@
 #include <Editor.h>
 #include <GraphView.h>
 #include <LLVMBackend.h>
+#include <Pipe/Pipe.h>
 
 #include <iostream>
 
@@ -16,14 +17,14 @@ using namespace rift;
 
 int RunEditor(StringView projectPath)
 {
-	p::Log::Init("Saved/Logs");
+	p::Initialize("Saved/Logs");
 	TOwnPtr<rift::Rift> rift = MakeOwned<rift::Rift>();
 	rift->AddPlugin<LLVMBackendPlugin>();
 
 	rift->AddPlugin<GraphViewPlugin>();
 
 	const int result = Editor::Editor::Get().Run(rift, projectPath);
-	p::Log::Shutdown();
+	p::Shutdown();
 	return result;
 }
 

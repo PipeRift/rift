@@ -7,6 +7,7 @@
 #include <LLVMBackend.h>
 #include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/Pipe.h>
 #include <Rift.h>
 
 #include <chrono>
@@ -60,7 +61,7 @@ namespace rift
 
 int main(int argc, char** argv)
 {
-	p::Log::Init("Saved/Logs");
+	p::Initialize("Saved/Logs");
 	TOwnPtr<Rift> rift = MakeOwned<Rift>();
 	rift->AddPlugin<LLVMBackendPlugin>();
 
@@ -101,6 +102,6 @@ int main(int argc, char** argv)
 		std::this_thread::sleep_for(std::chrono::seconds(3));
 	}
 
-	Log::Shutdown();
+	p::Shutdown();
 	return 0;
 }

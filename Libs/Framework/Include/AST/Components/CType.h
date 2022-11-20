@@ -13,7 +13,7 @@ namespace rift::AST
 		Struct = 1 << 1,
 		Static = 1 << 2
 	};
-	PIPE_DEFINE_FLAG_OPERATORS(RiftType)
+	P_DEFINE_FLAG_OPERATORS(RiftType);
 
 
 	struct CType : public p::Struct

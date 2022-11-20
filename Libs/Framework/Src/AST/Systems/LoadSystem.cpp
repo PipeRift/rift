@@ -163,7 +163,8 @@ namespace rift::AST::LoadSystem
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
 			modulePaths.paths.RemoveIfSwap([types, &modulePaths](const p::Path& path) {
-				const Name pathName{ToString(path)};
+				const String pathStr = ToString(path);
+				const Name pathName{pathStr};
 
 				if (!types->typesByPath.Contains(pathName))
 				{

@@ -4,12 +4,12 @@
 PIPE_OVERRIDE_NEW_DELETE
 
 #include <bandit/bandit.h>
-#include <Pipe/Core/Log.h>
+#include <Pipe/Pipe.h>
 
 
 int main(int argc, char* argv[])
 {
-	p::Log::Init({});    // No folder logging
+	p::Initialize();
 	int result = bandit::run(argc, argv);
-	p::Log::Shutdown();
+	p::Shutdown();
 }
