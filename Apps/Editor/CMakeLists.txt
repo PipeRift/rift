@@ -11,6 +11,7 @@ set_target_properties (RiftEditorExe PROPERTIES FOLDER Rift/Executables)
 target_link_libraries(RiftEditorExe PUBLIC
     rift::Editor
     rift::Backend::LLVM
+    rift::Bindings::Native
     rift::View::Graph
 )
 pipe_target_define_platform(RiftEditorExe)

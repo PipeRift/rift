@@ -3,6 +3,7 @@
 #include <Editor.h>
 #include <GraphView.h>
 #include <LLVMBackend.h>
+#include <NativeBinding.h>
 #include <Pipe/Pipe.h>
 
 #include <iostream>
@@ -19,9 +20,9 @@ int RunEditor(StringView projectPath)
 {
 	p::Initialize("Saved/Logs");
 	TOwnPtr<rift::Rift> rift = MakeOwned<rift::Rift>();
-	rift->AddPlugin<LLVMBackendPlugin>();
-
-	rift->AddPlugin<GraphViewPlugin>();
+	rift->EnablePlugin<LLVMBackendPlugin>();
+	rift->EnablePlugin<GraphViewPlugin>();
+	rift->EnablePlugin<NativeBindingPlugin>();
 
 	const int result = Editor::Editor::Get().Run(rift, projectPath);
 	p::Shutdown();

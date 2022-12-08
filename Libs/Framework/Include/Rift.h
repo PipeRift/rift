@@ -6,6 +6,7 @@
 #include "View.h"
 
 #include <Pipe/Reflect/Class.h>
+#include <Pipe/Reflect/ClassType.h>
 
 
 namespace rift
@@ -15,16 +16,21 @@ namespace rift
 		CLASS(Rift, Class)
 
 	protected:
-		TArray<TOwnPtr<Plugin>> plugins;
+		TMap<ClassType*, TOwnPtr<Plugin>> plugins;
 		TArray<View> views;
 
 
 	public:
 		template<typename T>
-		void AddPlugin()
+		void EnablePlugin()
 		{
-			// TODO: Ensure unique
-			plugins.Add(MakeOwned<T>());
+			plugins.Insert(T::GetStaticType(), MakeOwned<T>());
+		}
+
+		template<typename T>
+		void DisablePlugin()
+		{
+			plugins.Remove(T::StaticType());
 		}
 
 		template<typename T>
