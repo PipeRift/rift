@@ -1,9 +1,8 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <Editor.h>
-#include <GraphView.h>
-#include <LLVMBackend.h>
-#include <NativeBinding.h>
+#include <GraphViewModule.h>
+#include <LLVMBackendModule.h>
 #include <Pipe/Pipe.h>
 
 #include <iostream>
@@ -20,9 +19,8 @@ int RunEditor(StringView projectPath)
 {
 	p::Initialize("Saved/Logs");
 	TOwnPtr<rift::Rift> rift = MakeOwned<rift::Rift>();
-	rift->EnablePlugin<LLVMBackendPlugin>();
-	rift->EnablePlugin<GraphViewPlugin>();
-	rift->EnablePlugin<NativeBindingPlugin>();
+	rift->EnableModule<LLVMBackendModule>();
+	rift->EnableModule<GraphViewModule>();
 
 	const int result = Editor::Editor::Get().Run(rift, projectPath);
 	p::Shutdown();

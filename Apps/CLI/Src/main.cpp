@@ -3,9 +3,8 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Compiler/Utils/BackendUtils.h>
-#include <GraphView.h>
-#include <LLVMBackend.h>
-#include <NativeBinding.h>
+#include <GraphViewModule.h>
+#include <LLVMBackendModule.h>
 #include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Pipe.h>
@@ -13,7 +12,6 @@
 
 #include <chrono>
 #include <CLI/CLI.hpp>
-
 
 
 using namespace rift;
@@ -65,9 +63,8 @@ int main(int argc, char** argv)
 {
 	p::Initialize("Saved/Logs");
 	TOwnPtr<Rift> rift = MakeOwned<Rift>();
-	rift->EnablePlugin<LLVMBackendPlugin>();
-	rift->EnablePlugin<GraphViewPlugin>();
-	rift->EnablePlugin<NativeBindingPlugin>();
+	rift->EnableModule<LLVMBackendModule>();
+	rift->EnableModule<GraphViewModule>();
 
 	CLI::App app{"Rift compiler"};
 	String pathStr;

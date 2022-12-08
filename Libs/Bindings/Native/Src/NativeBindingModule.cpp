@@ -1,10 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "NativeBinding.h"
+#include "NativeBindingModule.h"
 
 #include <AST/Id.h>
 #include <clang-c/Index.h>
 #include <Pipe/Core/Span.h>
+#include <Pipe/Memory/NewDelete.h>
+
+P_OVERRIDE_NEW_DELETE
 
 
 namespace rift::NativeBinding

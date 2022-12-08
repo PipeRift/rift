@@ -10,11 +10,19 @@ namespace rift
 {
 	using namespace p;
 
-	class Plugin : public Class
+	class Module : public Class
 	{
-		CLASS(Plugin, Class)
+		CLASS(Module, Class)
 
 	public:
 		virtual void Register(TPtr<struct Rift> rift) = 0;
+
+		template<typename ModuleType>
+		void AddDependency()
+		{
+			GetRift()->EnableModule<ModuleType>();
+		}
+
+		TPtr<struct Rift> GetRift();
 	};
 }    // namespace rift

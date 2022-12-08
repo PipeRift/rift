@@ -12,7 +12,10 @@ pipe_target_shared_output_directory(RiftBackendLLVM)
 
 target_link_libraries(RiftBackendLLVM PUBLIC rift::Rift)
 
-target_link_libraries(RiftBackendLLVM PRIVATE RiftLLVM)
+target_link_libraries(RiftBackendLLVM PRIVATE
+    RiftLLVM
+    rift::Bindings::Native
+)
 
 target_compile_definitions(RiftBackendLLVM PRIVATE RIFT_LLVM_LINKER="${RIFT_LLVM_LINKER}" RIFT_LLVM_LINKER_PATH="${RIFT_LLVM_LINKER_PATH}")
 

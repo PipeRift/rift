@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "Plugin.h"
 #include "View.h"
 
 #include <Pipe/Reflect/Class.h>
@@ -11,26 +10,26 @@
 
 namespace rift
 {
-	class Rift : public Class
+	class Rift : public p::Class
 	{
-		CLASS(Rift, Class)
+		CLASS(Rift, p::Class)
 
 	protected:
-		TMap<ClassType*, TOwnPtr<Plugin>> plugins;
-		TArray<View> views;
+		p::TMap<p::ClassType*, p::TOwnPtr<class Module>> modules;
+		p::TArray<View> views;
 
 
 	public:
 		template<typename T>
-		void EnablePlugin()
+		void EnableModule()
 		{
-			plugins.Insert(T::GetStaticType(), MakeOwned<T>());
+			EnableModule(T::GetStaticType());
 		}
 
 		template<typename T>
-		void DisablePlugin()
+		void DisableModule()
 		{
-			plugins.Remove(T::StaticType());
+			DisableModule(T::GetStaticType());
 		}
 
 		template<typename T>
@@ -38,5 +37,8 @@ namespace rift
 		{
 			views.Add(Move(view));
 		}
+
+		void EnableModule(p::ClassType* type);
+		void DisableModule(p::ClassType* type);
 	};
 }    // namespace rift

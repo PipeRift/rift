@@ -11,7 +11,6 @@ set_target_properties (RiftCLIExe PROPERTIES FOLDER Rift/Executables)
 target_link_libraries(RiftCLIExe PUBLIC
     rift::Rift
     rift::Backend::LLVM
-    rift::Bindings::Native
     rift::View::Graph
     CLI11
 )

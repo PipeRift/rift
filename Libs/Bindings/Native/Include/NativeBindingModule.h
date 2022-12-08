@@ -2,15 +2,15 @@
 
 #pragma once
 
-#include <Plugin.h>
+#include <Module.h>
 #include <Rift.h>
 
 
 namespace rift
 {
-	class NativeBindingPlugin : public Plugin
+	class NativeBindingModule : public Module
 	{
-		CLASS(NativeBindingPlugin, Plugin)
+		CLASS(NativeBindingModule, Module)
 
 	public:
 		void Register(TPtr<Rift> rift) override

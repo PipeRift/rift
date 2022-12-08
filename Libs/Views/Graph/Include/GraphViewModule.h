@@ -3,24 +3,25 @@
 #pragma once
 
 #include <Compiler/Backend.h>
+#include <Module.h>
 #include <Pipe/Core/EnumFlags.h>
-#include <Plugin.h>
 #include <Rift.h>
 #include <View.h>
 
 
+
 namespace rift
 {
-	class GraphViewPlugin : public Plugin
+	class GraphViewModule : public Module
 	{
-		CLASS(GraphViewPlugin, Plugin)
+		CLASS(GraphViewModule, Module)
 
 	public:
 		void Register(TPtr<Rift> rift) override
 		{
 			rift->AddView(View{.name = "Graph",
 			    .supportedTypes      = AST::RiftType::Class | AST::RiftType::Static,
-			    .onDrawEditor        = &GraphViewPlugin::DrawEditor});
+			    .onDrawEditor        = &GraphViewModule::DrawEditor});
 		}
 
 		static void DrawEditor() {}
