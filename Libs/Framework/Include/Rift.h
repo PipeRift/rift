@@ -25,20 +25,25 @@ namespace rift
 		{
 			EnableModule(T::GetStaticType());
 		}
-
 		template<typename T>
 		void DisableModule()
 		{
 			DisableModule(T::GetStaticType());
 		}
+		template<typename T>
+		p::TPtr<T> GetModule()
+		{
+			return GetModule(T::GetStaticType()).Cast<T>();
+		}
+
+		void EnableModule(p::ClassType* type);
+		void DisableModule(p::ClassType* type);
+		p::TPtr<Module> GetModule(p::ClassType* type);
 
 		template<typename T>
 		void AddView(T view)
 		{
 			views.Add(Move(view));
 		}
-
-		void EnableModule(p::ClassType* type);
-		void DisableModule(p::ClassType* type);
 	};
 }    // namespace rift

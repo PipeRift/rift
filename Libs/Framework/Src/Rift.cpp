@@ -21,4 +21,13 @@ namespace rift
 	{
 		modules.Remove(type);
 	}
+
+	p::TPtr<Module> Rift::GetModule(p::ClassType* type)
+	{
+		if (auto* module = modules.Find(type))
+		{
+			return *module;
+		}
+		return {};
+	}
 };    // namespace rift
