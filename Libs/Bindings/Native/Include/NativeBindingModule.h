@@ -8,16 +8,15 @@
 
 namespace rift
 {
+	namespace AST
+	{
+		class Tree;
+	}
+
 	class NativeBindingModule : public Module
 	{
 		CLASS(NativeBindingModule, Module)
 
-	public:
-		void Register(TPtr<Rift> rift) override
-		{
-			// Register module type
-		}
+		void SyncIncludes(AST::Tree& ast);
 	};
-
-	void Sync();
 }    // namespace rift

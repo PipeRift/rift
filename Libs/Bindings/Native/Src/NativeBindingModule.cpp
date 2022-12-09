@@ -2,21 +2,30 @@
 
 #include "NativeBindingModule.h"
 
+#include "Components/CNativeModule.h"
+#include "HeaderIterator.h"
+
+#include <AST/Components/CFileRef.h>
+#include <AST/Components/CModule.h>
 #include <AST/Id.h>
+#include <AST/Tree.h>
+#include <AST/Utils/ModuleUtils.h>
 #include <clang-c/Index.h>
 #include <Pipe/Core/Span.h>
+#include <Pipe/ECS/Filtering.h>
 #include <Pipe/Memory/NewDelete.h>
+
 
 P_OVERRIDE_NEW_DELETE
 
 
-namespace rift::NativeBinding
+namespace rift
 {
 	struct ParsedModule
 	{
-		AST::Id moduleId;
+		AST::Id id    = AST::NoId;
 		CXIndex index = clang_createIndex(0, 0);
-		TArray<StringView> includes;
+		TArray<String> headers;
 		TArray<CXTranslationUnit> units;
 
 		~ParsedModule()
@@ -29,20 +38,31 @@ namespace rift::NativeBinding
 		}
 	};
 
-	void ResolveIncludes(TSpan<ParsedModule> parsedModules) {}
+	void FindHeaders(AST::Tree& ast, TSpan<ParsedModule> parsedModules)
+	{
+		p::TAccess<AST::CFileRef> access{ast};
+		for (auto& module : parsedModules)
+		{
+			Path path = AST::GetModulePath(access, module.id);
+			for (const auto& headerPath : HeaderIterator(path))
+			{
+				module.headers.Add(p::ToString(headerPath));
+			}
+		}
+	}
 
-	void ParseIncludes(TSpan<ParsedModule> parsedModules)
+	void ParseHeaders(AST::Tree& ast, TSpan<ParsedModule> parsedModules)
 	{
 		for (auto& module : parsedModules)
 		{
-			for (i32 i = 0; i < module.includes.Size(); ++i)
+			for (i32 i = 0; i < module.headers.Size(); ++i)
 			{
-				const StringView include     = module.includes[i];
+				const StringView include     = module.headers[i];
 				const CXTranslationUnit unit = clang_parseTranslationUnit(
 				    module.index, include.data(), nullptr, 0, nullptr, 0, CXTranslationUnit_None);
 				if (!unit)
 				{
-					module.includes.RemoveAt(i, false);
+					module.headers.RemoveAt(i, false);
 					--i;
 					Log::Error("Unable to parse module header '{}'", include);
 					continue;
@@ -52,20 +72,20 @@ namespace rift::NativeBinding
 		}
 	}
 
-	void Sync()
+	void NativeBindingModule::SyncIncludes(AST::Tree& ast)
 	{
 		TArray<AST::Id> moduleIds;
-		// TODO: Find dirty native modules
+		p::ecs::ListAll<AST::CModule, CNativeModule>(ast, moduleIds);
 
 		TArray<ParsedModule> parsedModules;
 		parsedModules.Reserve(moduleIds.Size());
 		for (i32 i = 0; i < moduleIds.Size(); ++i)
 		{
-			auto& parsed    = parsedModules.AddDefaultedRef();
-			parsed.moduleId = moduleIds[i];
+			auto& parsed = parsedModules.AddDefaultedRef();
+			parsed.id    = moduleIds[i];
 		}
-		ResolveIncludes(parsedModules);
-		ParseIncludes(parsedModules);
+		FindHeaders(ast, parsedModules);
+		ParseHeaders(ast, parsedModules);
 		// TODO: Generate Rift interface
 	}
-}    // namespace rift::NativeBinding
+}    // namespace rift
