@@ -5,9 +5,7 @@
 #include <Compiler/Backend.h>
 #include <Module.h>
 #include <Pipe/Core/EnumFlags.h>
-#include <Rift.h>
 #include <View.h>
-
 
 
 namespace rift
@@ -17,11 +15,11 @@ namespace rift
 		CLASS(GraphViewModule, Module)
 
 	public:
-		void Register(TPtr<Rift> rift) override
+		void Register() override
 		{
-			rift->AddView(View{.name = "Graph",
-			    .supportedTypes      = AST::RiftType::Class | AST::RiftType::Static,
-			    .onDrawEditor        = &GraphViewModule::DrawEditor});
+			RegisterView(View{.name = "Graph",
+			    .supportedTypes     = AST::RiftType::Class | AST::RiftType::Static,
+			    .onDrawEditor       = &GraphViewModule::DrawEditor});
 		}
 
 		static void DrawEditor() {}

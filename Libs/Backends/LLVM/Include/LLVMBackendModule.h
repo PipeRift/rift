@@ -3,7 +3,6 @@
 
 #include <Compiler/Backend.h>
 #include <Module.h>
-#include <Rift.h>
 
 
 namespace rift

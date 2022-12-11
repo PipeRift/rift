@@ -18,11 +18,10 @@ using namespace rift;
 int RunEditor(StringView projectPath)
 {
 	p::Initialize("Saved/Logs");
-	TOwnPtr<rift::Rift> rift = MakeOwned<rift::Rift>();
-	rift->EnableModule<LLVMBackendModule>();
-	rift->EnableModule<GraphViewModule>();
+	EnableModule<LLVMBackendModule>();
+	EnableModule<GraphViewModule>();
 
-	const int result = Editor::Editor::Get().Run(rift, projectPath);
+	const int result = Editor::Editor::Get().Run(projectPath);
 	p::Shutdown();
 	return result;
 }

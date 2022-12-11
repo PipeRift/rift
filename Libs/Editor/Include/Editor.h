@@ -4,7 +4,6 @@
 #include <AST/Tree.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Math/FrameTime.h>
-#include <Rift.h>
 
 
 namespace rift::Editor
@@ -33,7 +32,7 @@ namespace rift::Editor
 
 		~Editor();
 
-		int Run(TPtr<Rift> rift, StringView projectPath = {});
+		int Run(StringView projectPath = {});
 
 		void Tick();
 

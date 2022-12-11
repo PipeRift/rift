@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Rift.h"
+
 #include <Pipe/Memory/OwnPtr.h>
 #include <Pipe/Reflect/Class.h>
 
@@ -15,14 +17,12 @@ namespace rift
 		CLASS(Module, Class)
 
 	public:
-		virtual void Register(TPtr<struct Rift> rift) = 0;
+		virtual void Register() {}
 
 		template<typename ModuleType>
 		void AddDependency()
 		{
-			GetRift()->EnableModule<ModuleType>();
+			EnableModule<ModuleType>();
 		}
-
-		TPtr<struct Rift> GetRift();
 	};
 }    // namespace rift

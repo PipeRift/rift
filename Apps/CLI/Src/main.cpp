@@ -62,9 +62,8 @@ namespace rift
 int main(int argc, char** argv)
 {
 	p::Initialize("Saved/Logs");
-	TOwnPtr<Rift> rift = MakeOwned<Rift>();
-	rift->EnableModule<LLVMBackendModule>();
-	rift->EnableModule<GraphViewModule>();
+	EnableModule<LLVMBackendModule>();
+	EnableModule<GraphViewModule>();
 
 	CLI::App app{"Rift compiler"};
 	String pathStr;

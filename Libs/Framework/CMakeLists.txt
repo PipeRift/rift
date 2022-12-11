@@ -12,6 +12,7 @@ pipe_target_shared_output_directory(Rift)
 target_link_libraries(Rift PUBLIC
     Pipe
     Taskflow
+    rift::Bindings::Native
 )
 
 install(TARGETS Rift

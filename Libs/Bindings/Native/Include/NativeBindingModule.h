@@ -3,7 +3,6 @@
 #pragma once
 
 #include <Module.h>
-#include <Rift.h>
 
 
 namespace rift
