@@ -38,6 +38,13 @@ namespace rift
 		}
 	};
 
+	NativeBindingModule::NativeBindingModule()
+	{
+#if WITH_EDITOR
+		p::Log::Info("WITH EDITOR: TRUE");
+#endif
+	}
+
 	void FindHeaders(AST::Tree& ast, TSpan<ParsedModule> parsedModules)
 	{
 		p::TAccess<AST::CFileRef> access{ast};

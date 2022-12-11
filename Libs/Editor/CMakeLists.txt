@@ -1,23 +1,20 @@
 
 add_library(RiftEditor STATIC)
-add_library(rift::Editor ALIAS RiftEditor)
 
 target_include_directories(RiftEditor PUBLIC Include)
 file(GLOB_RECURSE RiftEditor_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
 target_sources(RiftEditor PRIVATE ${RiftEditor_SOURCE_FILES})
 
 target_link_libraries(RiftEditor PUBLIC
-    rift::Rift
-    rift::Backend::LLVM
-    rift::UI
+    Rift
+    RiftBackendLLVM
+    RiftUI
     CLI11
 )
 
 rift_module(RiftEditor)
 rift_enable_module_resources(RiftEditor)
-set_target_properties (RiftEditor PROPERTIES FOLDER Rift)
 set_icon(RiftEditor ../../Resources/Icon.ico)
-
 
 install(TARGETS RiftEditor
     EXPORT RiftTargets

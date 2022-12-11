@@ -1,6 +1,5 @@
 
 add_library(Rift STATIC)
-add_library(rift::Rift ALIAS Rift)
 target_include_directories(Rift PUBLIC Include)
 
 file(GLOB_RECURSE FRAMEWORK_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
@@ -9,7 +8,7 @@ target_sources(Rift PRIVATE ${FRAMEWORK_SOURCE_FILES})
 target_link_libraries(Rift PUBLIC
     Pipe
     Taskflow
-    rift::Bindings::Native
+    RiftBindingNative
 )
 
 rift_module(Rift)

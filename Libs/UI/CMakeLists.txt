@@ -1,6 +1,5 @@
 
 add_library(RiftUI STATIC)
-add_library(rift::UI ALIAS RiftUI)
 
 target_include_directories(RiftUI PUBLIC Include)
 file(GLOB_RECURSE UI_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
@@ -16,7 +15,6 @@ target_link_libraries(RiftUI PUBLIC
 target_compile_definitions(RiftUI PRIVATE NOMINMAX)
 
 rift_module(RiftUI)
-set_target_properties (RiftUI PROPERTIES FOLDER Rift)
 
 install(TARGETS RiftUI
     EXPORT RiftTargets
