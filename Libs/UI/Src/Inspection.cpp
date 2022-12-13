@@ -120,11 +120,11 @@ namespace rift::UI
 		UI::AlignTextToFramePadding();
 		UI::Text(label);
 		UI::TableSetColumnIndex(1);
-		if (auto* nativeType = type->AsNative())
+		if (auto* nativeType = Cast<NativeType>(type))
 		{
 			DrawNativeValue(data, nativeType);
 		}
-		else if (auto* enumType = type->AsEnum())
+		else if (auto* enumType = Cast<EnumType>(type))
 		{
 			DrawEnumValue(data, enumType);
 		}
@@ -179,7 +179,7 @@ namespace rift::UI
 			const i32 size = property.GetSize(instance);
 			auto* type     = property.GetType();
 			static String label;
-			if (auto* structType = type->AsStruct())
+			if (auto* structType = Cast<StructType>(type))
 			{
 				for (i32 i = 0; i < size; ++i)
 				{
@@ -242,7 +242,7 @@ namespace rift::UI
 		{
 			(*custom)(handle.GetDisplayName(), instance, type);
 		}
-		else if (auto* structType = type->AsStruct())
+		else if (auto* structType = Cast<StructType>(type))
 		{
 			if (BeginInspectHeader(handle.GetDisplayName()))
 			{

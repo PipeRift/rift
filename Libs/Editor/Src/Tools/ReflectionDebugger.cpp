@@ -101,7 +101,7 @@ namespace rift::Editor
 		UI::TableSetColumnIndex(2);    // Name
 		UI::Text(name);
 
-		if (const DataType* dataType = type->AsData())
+		if (const auto* dataType = Cast<DataType>(type))
 		{
 			if (const DataType* parent = dataType->GetParent())
 			{
