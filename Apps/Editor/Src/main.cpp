@@ -1,8 +1,8 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <Editor.h>
-#include <GraphView.h>
-#include <LLVMBackend.h>
+#include <GraphViewModule.h>
+#include <LLVMBackendModule.h>
 #include <Pipe/Pipe.h>
 
 #include <iostream>
@@ -18,12 +18,10 @@ using namespace rift;
 int RunEditor(StringView projectPath)
 {
 	p::Initialize("Saved/Logs");
-	TOwnPtr<rift::Rift> rift = MakeOwned<rift::Rift>();
-	rift->AddPlugin<LLVMBackendPlugin>();
+	EnableModule<LLVMBackendModule>();
+	EnableModule<GraphViewModule>();
 
-	rift->AddPlugin<GraphViewPlugin>();
-
-	const int result = Editor::Editor::Get().Run(rift, projectPath);
+	const int result = Editor::Editor::Get().Run(projectPath);
 	p::Shutdown();
 	return result;
 }

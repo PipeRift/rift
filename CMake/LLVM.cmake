@@ -46,12 +46,12 @@ separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
 message(STATUS "LLVM_LIBS: ${LLVM_AVAILABLE_LIBS}")
 message(STATUS "LLVM_INCLUDE_DIRS: ${LLVM_INCLUDE_DIRS}")
 message(STATUS "LLVM_DEFINITIONS: ${LLVM_DEFINITIONS_LIST}")
-
+message(STATUS "CLANG_LIBS: ${CLANG_EXPORTED_TARGETS}")
 
 
 add_library(RiftLLVM INTERFACE)
 target_include_directories(RiftLLVM INTERFACE ${LLVM_INCLUDE_DIRS})
-llvm_map_components_to_libnames(llvm_libs core x86asmparser x86codegen)
+llvm_map_components_to_libnames(llvm_libs core support options x86asmparser x86codegen)
 target_link_libraries(RiftLLVM INTERFACE ${LLVM_AVAILABLE_LIBS})
 target_compile_definitions(RiftLLVM INTERFACE ${LLVM_DEFINITIONS_LIST} -DNOMINMAX)
 #if(COMPILER_CLANG)
@@ -60,7 +60,7 @@ target_compile_definitions(RiftLLVM INTERFACE ${LLVM_DEFINITIONS_LIST} -DNOMINMA
 # pipe_target_disable_all_warnings(LLVM INTERFACE)
 add_library(RiftClang INTERFACE)
 target_include_directories(RiftClang INTERFACE ${CLANG_INCLUDE_DIRS})
-target_link_libraries(RiftClang INTERFACE ${CLANG_AVAILABLE_LIBS})
+target_link_libraries(RiftClang INTERFACE ${CLANG_EXPORTED_TARGETS})
 target_compile_definitions(RiftClang INTERFACE ${CLANG_DEFINITIONS_LIST} -DNOMINMAX)
 target_link_libraries(RiftClang INTERFACE RiftLLVM)
 

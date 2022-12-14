@@ -17,7 +17,6 @@
 #include <Pipe/Core/Log.h>
 #include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Files.h>
-#include <Rift.h>
 #include <UI/Inspection.h>
 #include <UI/Window.h>
 
@@ -45,7 +44,7 @@ namespace rift::Editor
 		});
 	}
 
-	int Editor::Run(TPtr<Rift> rift, StringView projectPath)
+	int Editor::Run(StringView projectPath)
 	{
 		FileWatcher::StartAsync();
 

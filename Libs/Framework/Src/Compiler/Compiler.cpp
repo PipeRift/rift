@@ -9,6 +9,7 @@
 #include "Compiler/Systems/OptimizationSystem.h"
 #include "Rift.h"
 
+#include <NativeBindingModule.h>
 #include <Pipe/Files/Files.h>
 
 
@@ -43,6 +44,12 @@ namespace rift::compiler
 				return;
 			}
 			compiler.config.Init(ast);
+
+			if (auto* nativeBindings = GetModule<NativeBindingModule>().Get())
+			{
+				Log::Info("Interpret native modules");
+				nativeBindings->SyncIncludes(ast);
+			}
 
 			Log::Info("Loading files");
 			AST::LoadSystem::Run(ast);

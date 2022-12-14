@@ -1,22 +1,18 @@
 
 add_executable(RiftCLIExe Src/main.cpp)
-add_executable(rift::CLIExe ALIAS RiftCLIExe)
-set_target_properties(RiftCLIExe PROPERTIES OUTPUT_NAME "Rift")
 
 target_include_directories(RiftCLIExe PUBLIC Include)
 file(GLOB_RECURSE CLI_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
 target_sources(RiftCLIExe PRIVATE ${CLI_SOURCE_FILES})
-pipe_target_enable_CPP20(RiftCLIExe)
-set_target_properties (RiftCLIExe PROPERTIES FOLDER Rift/Executables)
-target_link_libraries(RiftCLIExe PUBLIC
-    rift::Rift
-    rift::Backend::LLVM
-    rift::View::Graph
-    CLI11
-)
-pipe_target_define_platform(RiftCLIExe)
-pipe_target_shared_output_directory(RiftCLIExe)
 
+target_link_libraries(RiftCLIExe PUBLIC
+    CLI11
+    Rift
+    ${RIFT_RUNTIME_MODULES}
+)
+
+rift_module(RiftCLIExe)
+set_target_properties(RiftCLIExe PROPERTIES OUTPUT_NAME "Rift")
 set_icon(RiftCLIExe ../../Resources/Icon.ico)
 
 install(TARGETS RiftCLIExe

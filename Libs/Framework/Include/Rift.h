@@ -2,35 +2,33 @@
 
 #pragma once
 
-#include "Plugin.h"
 #include "View.h"
 
 #include <Pipe/Reflect/Class.h>
+#include <Pipe/Reflect/ClassType.h>
 
 
 namespace rift
 {
-	class Rift : public Class
+	template<typename T>
+	void EnableModule()
 	{
-		CLASS(Rift, Class)
+		EnableModule(T::GetStaticType());
+	}
+	template<typename T>
+	void DisableModule()
+	{
+		DisableModule(T::GetStaticType());
+	}
+	template<typename T>
+	p::TPtr<T> GetModule()
+	{
+		return GetModule(T::GetStaticType()).Cast<T>();
+	}
 
-	protected:
-		TArray<TOwnPtr<Plugin>> plugins;
-		TArray<View> views;
+	void EnableModule(p::ClassType* type);
+	void DisableModule(p::ClassType* type);
+	p::TPtr<class Module> GetModule(p::ClassType* type);
 
-
-	public:
-		template<typename T>
-		void AddPlugin()
-		{
-			// TODO: Ensure unique
-			plugins.Add(MakeOwned<T>());
-		}
-
-		template<typename T>
-		void AddView(T view)
-		{
-			views.Add(Move(view));
-		}
-	};
+	void RegisterView(View view);
 }    // namespace rift

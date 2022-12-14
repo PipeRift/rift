@@ -5,7 +5,6 @@
 #include "Compiler/Compiler.h"
 
 #include <Pipe/Reflect/Class.h>
-#include <Rift.h>
 
 
 namespace rift::compiler

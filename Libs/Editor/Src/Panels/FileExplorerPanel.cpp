@@ -24,7 +24,6 @@
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Files/STDFileSystem.h>
-#include <Rift.h>
 #include <UI/Style.h>
 #include <UI/UI.h>
 
