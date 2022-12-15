@@ -64,9 +64,10 @@ namespace rift
 		{
 			for (i32 i = 0; i < module.headers.Size(); ++i)
 			{
-				const StringView include     = module.headers[i];
-				const CXTranslationUnit unit = clang_parseTranslationUnit(
-				    module.index, include.data(), nullptr, 0, nullptr, 0, CXTranslationUnit_None);
+				const StringView include = module.headers[i];
+				const CXTranslationUnit unit =
+				    clang_parseTranslationUnit(module.index, include.data(), nullptr, 0, nullptr, 0,
+				        CXTranslationUnit_DetailedPreprocessingRecord);
 				if (!unit)
 				{
 					module.headers.RemoveAt(i, false);
