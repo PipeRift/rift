@@ -10,6 +10,13 @@
 
 namespace rift
 {
+	void EnableModule(p::ClassType* type);
+	void DisableModule(p::ClassType* type);
+	p::TPtr<class Module> GetModule(p::ClassType* type);
+
+	void RegisterView(View view);
+
+
 	template<typename T>
 	void EnableModule()
 	{
@@ -25,10 +32,4 @@ namespace rift
 	{
 		return GetModule(T::GetStaticType()).Cast<T>();
 	}
-
-	void EnableModule(p::ClassType* type);
-	void DisableModule(p::ClassType* type);
-	p::TPtr<class Module> GetModule(p::ClassType* type);
-
-	void RegisterView(View view);
 }    // namespace rift
