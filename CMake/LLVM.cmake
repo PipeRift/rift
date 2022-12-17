@@ -57,12 +57,14 @@ target_compile_definitions(RiftLLVM INTERFACE ${LLVM_DEFINITIONS_LIST} -DNOMINMA
 #if(COMPILER_CLANG)
     #target_compile_options(RiftLLVM INTERFACE -fms-compatibility-version=14.20)
 #endif()
-# pipe_target_disable_all_warnings(LLVM INTERFACE)
+pipe_target_disable_all_warnings(RiftLLVM INTERFACE)
+
 add_library(RiftClang INTERFACE)
 target_include_directories(RiftClang INTERFACE ${CLANG_INCLUDE_DIRS})
 target_link_libraries(RiftClang INTERFACE ${CLANG_EXPORTED_TARGETS})
 target_compile_definitions(RiftClang INTERFACE ${CLANG_DEFINITIONS_LIST} -DNOMINMAX)
 target_link_libraries(RiftClang INTERFACE RiftLLVM)
+pipe_target_disable_all_warnings(RiftClang INTERFACE)
 
 # Copy LLVM linker
 if (PLATFORM_WINDOWS)
