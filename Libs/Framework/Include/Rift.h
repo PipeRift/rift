@@ -30,6 +30,6 @@ namespace rift
 	template<typename T>
 	p::TPtr<T> GetModule()
 	{
-		return GetModule(T::GetStaticType()).Cast<T>();
+		return GetModule(T::GetStaticType()).template Cast<T>();
 	}
 }    // namespace rift
