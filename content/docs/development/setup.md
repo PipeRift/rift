@@ -13,10 +13,8 @@ toc: true
 
 ## Requirements
 
+- A Cpp20 compiler (e.g: Clang 14 or higher)
 - CMake
-
-On Linux:
-- LLVM 14 or higher
 
 ## Cloning Rift
 
@@ -35,8 +33,15 @@ To do so, run the following command on the project's root folder:
 
 ### Install Dependencies (Linux)
 
-Run the following to install needed dependencies on Linux:
+Run the following to install needed dependencies on Linux.
+
+Clang and CMake:
+`sudo apt install clang cmake`
+Other compilers with C++20 support can also be used.
+  
+Build essentials & graphics:
 `sudo apt install build-essential xz-utils curl xorg-dev libx11-dev xlibmesa-glu-dev`
+
 
 ### Build Rift's LLVM
 
