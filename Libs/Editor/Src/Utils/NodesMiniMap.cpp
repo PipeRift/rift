@@ -129,9 +129,9 @@ namespace rift::Nodes
 
 	void MiniMap::DrawLink(EditorContext& editor, const i32 linkIdx)
 	{
-		const LinkData& link      = editor.Links.Pool[linkIdx];
-		const PinData& outputData = editor.outputs.Pool[link.outputIdx];
-		const PinData& inputData  = editor.inputs.Pool[link.inputIdx];
+		const LinkData& link      = editor.links.pool[linkIdx];
+		const PinData& outputData = editor.outputs.pool[link.outputIdx];
+		const PinData& inputData  = editor.inputs.pool[link.inputIdx];
 
 		const v2 outputPosition       = ScreenToMiniMapPosition(editor, outputData.position);
 		const v2 inputPosition        = ScreenToMiniMapPosition(editor, inputData.position);
@@ -191,9 +191,9 @@ namespace rift::Nodes
 		    miniMapRect.min, miniMapRect.max, true /* i32ersect with editor clip-rect */);
 
 		// Draw links first so they appear under nodes, and we can use the same draw channel
-		for (i32 linkIdx = 0; linkIdx < editor.Links.Pool.Size(); ++linkIdx)
+		for (i32 linkIdx = 0; linkIdx < editor.links.pool.Size(); ++linkIdx)
 		{
-			if (editor.Links.InUse.IsSet(linkIdx))
+			if (editor.links.inUse.IsSet(linkIdx))
 			{
 				DrawLink(editor, linkIdx);
 			}
