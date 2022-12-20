@@ -35,11 +35,11 @@ To do so, run the following command on the project's root folder:
 
 Run the following to install needed dependencies on Linux.
 
-Clang and CMake:
-`sudo apt install clang cmake`
+Clang and CMake:<br>
+`sudo apt install clang cmake`<br>
 Other compilers with C++20 support can also be used.
   
-Build essentials & graphics:
+Build essentials & graphics:<br>
 `sudo apt install build-essential xz-utils curl xorg-dev libx11-dev xlibmesa-glu-dev`
 
 
