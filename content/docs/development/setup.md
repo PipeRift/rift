@@ -47,11 +47,11 @@ Build essentials & graphics:
 
 Rift uses a custom build process for LLVM which comes packed conveniently with the project, but requires manual setup.
 
-This build can be easily triggered running the script `Programs/SetupLLVM.bat` (or `Programs/SetupLLVM.sh` on MacOS/Linux).
+This build can be easily triggered running the script `python Programs/SetupLLVM.py`.
 
 Sit and get comfortable, this might take a while.
 
-Optionally, you could use a pre-built LLVM installation instead on MacOS or Linux. Not on Windows however, since its installation of LLVM does not contain certain elements that are required for us to build Rift.
+Optionally (but not recommended), you could use a pre-built LLVM installation instead on MacOS or Linux. Not on Windows however, since its installation of LLVM does not contain certain elements that are required for us to build Rift.
 
 ## Configure & Build
 
