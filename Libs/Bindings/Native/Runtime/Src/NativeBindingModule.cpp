@@ -16,7 +16,7 @@
 #include <Pipe/Memory/NewDelete.h>
 
 
-P_OVERRIDE_NEW_DELETE
+// P_OVERRIDE_NEW_DELETE
 
 
 namespace rift
