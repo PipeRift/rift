@@ -18,7 +18,7 @@ def main(argv):
 
   if not os.path.exists(rift_llvm_path):
     print('> Downloading rift-llvm')
-    subprocess.run('git clone -s --depth 1 --branch {} https://github.com/PipeRift/rift-llvm.git {}'.format(rift_llvm_version, rift_llvm_path), check=True)
+    subprocess.run('git clone -s --depth 1 --branch {} https://github.com/PipeRift/rift-llvm.git {}'.format(rift_llvm_version, rift_llvm_path), shell=True, check=True)
     os.chdir(rift_llvm_path)
   else:
     print('> Updating rift-llvm')
@@ -26,13 +26,13 @@ def main(argv):
     os.system('git pull origin {}'.format(rift_llvm_version))
 
   print('\n> Init LLVM')
-  os.system('python init.py')
+  os.system('python3 init.py')
 
   print('\n> Build LLVM')
-  os.system('python build.py --config Debug')
-  os.system('python build.py --config Release')
-  os.system('python build.py --config RelWithDebInfo')
-  os.system('python build.py --config MinSizeRel')
+  os.system('python3 build.py --config Debug')
+  os.system('python3 build.py --config Release')
+  os.system('python3 build.py --config RelWithDebInfo')
+  os.system('python3 build.py --config MinSizeRel')
 
 if __name__ == "__main__":
   main(sys.argv[1:])
