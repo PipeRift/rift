@@ -5,7 +5,7 @@ add_library(RiftBindingNative STATIC)
 target_link_libraries(RiftBindingNative PUBLIC Rift)
 target_link_libraries(RiftBindingNative PRIVATE RiftClang)
 
-rift_runtime_module(RiftBindingNative)
+rift_compiler_module(RiftBindingNative)
 
 install(TARGETS RiftBindingNative
     EXPORT RiftTargets

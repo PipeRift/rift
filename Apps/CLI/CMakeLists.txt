@@ -8,7 +8,7 @@ target_sources(RiftCLIExe PRIVATE ${CLI_SOURCE_FILES})
 target_link_libraries(RiftCLIExe PUBLIC
     CLI11
     Rift
-    ${RIFT_RUNTIME_MODULES}
+    RiftCompilerModules
 )
 
 rift_module(RiftCLIExe)

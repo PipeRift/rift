@@ -6,9 +6,9 @@ file(GLOB_RECURSE RiftEditor_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
 target_sources(RiftEditorExe PRIVATE ${RiftEditor_SOURCE_FILES})
 
 target_link_libraries(RiftEditorExe PUBLIC
-    ${RIFT_RUNTIME_MODULES}
+    RiftCompilerModules
     RiftEditor
-    ${RIFT_EDITOR_MODULES}
+    RiftEditorModules
 )
 target_compile_definitions(RiftEditorExe PUBLIC RIFT_EDITOR=1)
 

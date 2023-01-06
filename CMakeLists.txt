@@ -6,6 +6,10 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# These targets accumulate compiler and editor modules for executables to link to
+add_library(RiftCompilerModules INTERFACE)
+add_library(RiftEditorModules INTERFACE)
+
 
 ################################################################################
 # Project
@@ -29,11 +33,9 @@ include(CMake/Util.cmake)
 include(CMake/SetIcon.cmake)
 include(CMake/CheckClangTools.cmake)
 
-
-# Add LLVM
 include(CMake/LLVM.cmake)
-
 add_subdirectory(Extern)
+
 add_subdirectory(Libs)
 
 # Executables
@@ -44,7 +46,6 @@ add_subdirectory(Apps/Editor)
 if(BUILD_TESTING AND RIFT_BUILD_TESTS)
     include(CTest)
     add_subdirectory(Tests)
-    add_subdirectory(Benchmarks)
 endif()
 
 # clang-format

@@ -1,6 +1,6 @@
 
 add_library(RiftViewGraph STATIC)
-rift_runtime_module(RiftViewGraph)
+rift_compiler_module(RiftViewGraph)
 target_link_libraries(RiftViewGraph PUBLIC Rift)
 
 install(TARGETS RiftViewGraph
