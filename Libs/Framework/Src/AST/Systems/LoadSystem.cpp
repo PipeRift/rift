@@ -99,13 +99,12 @@ namespace rift::AST::LoadSystem
 		pathsByModule.Reserve(modules.Size());
 		for (Id moduleId : modules)
 		{
-			const auto& moduleFile = access.Get<const CFileRef>(moduleId);
+			Path path = AST::GetModulePath(access, moduleId);
 
 			auto& paths = pathsByModule.AddRef({moduleId}).paths;
 			ZoneScopedN("Iterate module files");
 			// Iterate all types ignoring other module paths
-			for (const auto& typePath :
-			    AST::TypeIterator(moduleFile.path.parent_path(), &modulePaths))
+			for (const auto& typePath : AST::TypeIterator(path, &modulePaths))
 			{
 				paths.Add(typePath);
 			}
@@ -163,7 +162,8 @@ namespace rift::AST::LoadSystem
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
 			modulePaths.paths.RemoveIfSwap([types, &modulePaths](const p::Path& path) {
-				const Name pathName{ToString(path)};
+				const String pathStr = ToString(path);
+				const Name pathName{pathStr};
 
 				if (!types->typesByPath.Contains(pathName))
 				{

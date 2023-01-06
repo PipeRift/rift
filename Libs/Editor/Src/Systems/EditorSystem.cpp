@@ -24,7 +24,7 @@
 #include <AST/Components/Tags/CDirty.h>
 #include <Compiler/Compiler.h>
 #include <IconsFontAwesome5.h>
-#include <LLVMBackend.h>
+#include <LLVMBackendModule.h>
 #include <Pipe/Core/Array.h>
 #include <Pipe/ECS/Filtering.h>
 #include <Pipe/Files/FileDialog.h>

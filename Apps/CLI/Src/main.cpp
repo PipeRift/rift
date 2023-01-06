@@ -3,10 +3,11 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Compiler/Utils/BackendUtils.h>
-#include <GraphView.h>
-#include <LLVMBackend.h>
+#include <GraphViewModule.h>
+#include <LLVMBackendModule.h>
 #include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/Pipe.h>
 #include <Rift.h>
 
 #include <chrono>
@@ -60,11 +61,9 @@ namespace rift
 
 int main(int argc, char** argv)
 {
-	p::Log::Init("Saved/Logs");
-	TOwnPtr<Rift> rift = MakeOwned<Rift>();
-	rift->AddPlugin<LLVMBackendPlugin>();
-
-	rift->AddPlugin<GraphViewPlugin>();
+	p::Initialize("Saved/Logs");
+	EnableModule<LLVMBackendModule>();
+	EnableModule<GraphViewModule>();
 
 	CLI::App app{"Rift compiler"};
 	String pathStr;
@@ -101,6 +100,6 @@ int main(int argc, char** argv)
 		std::this_thread::sleep_for(std::chrono::seconds(3));
 	}
 
-	Log::Shutdown();
+	p::Shutdown();
 	return 0;
 }

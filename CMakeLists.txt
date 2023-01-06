@@ -34,16 +34,11 @@ include(CMake/CheckClangTools.cmake)
 include(CMake/LLVM.cmake)
 
 add_subdirectory(Extern)
-
 add_subdirectory(Libs)
 
 # Executables
 add_subdirectory(Apps/CLI)
 add_subdirectory(Apps/Editor)
-
-# Copy Resources folder
-file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/Bin/Resources)
-file(COPY Resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Bin)
 
 # Tests
 if(BUILD_TESTING AND RIFT_BUILD_TESTS)

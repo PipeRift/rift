@@ -600,7 +600,7 @@ namespace rift::Nodes
 
 	void BeginLinkDetach(EditorContext& editor, i32 linkIdx, PinIdx detachPinIdx)
 	{
-		const LinkData& link         = editor.Links.Pool[linkIdx];
+		const LinkData& link         = editor.links.pool[linkIdx];
 		ClickInteractionState& state = editor.clickInteraction;
 		state.type                   = ClickInteractionType_LinkCreation;
 		const bool pinIsOutput       = detachPinIdx.type == PinType::Output;
@@ -637,9 +637,9 @@ namespace rift::Nodes
 
 		if (modifierPressed)
 		{
-			const LinkData& link     = editor.Links.Pool[linkIdx];
-			const PinData& outputPin = editor.outputs.Pool[link.outputIdx];
-			const PinData& inputPin  = editor.inputs.Pool[link.inputIdx];
+			const LinkData& link     = editor.links.pool[linkIdx];
+			const PinData& outputPin = editor.outputs.pool[link.outputIdx];
+			const PinData& inputPin  = editor.inputs.pool[link.inputIdx];
 			const v2& mousePos       = gNodes->mousePosition;
 			const float distToStart  = ImLengthSqr(outputPin.position - mousePos);
 			const float distToEnd    = ImLengthSqr(inputPin.position - mousePos);
@@ -737,14 +737,14 @@ namespace rift::Nodes
 
 		// Test for overlap against links
 
-		for (i32 linkIdx = 0; linkIdx < editor.Links.Pool.Size(); ++linkIdx)
+		for (i32 linkIdx = 0; linkIdx < editor.links.pool.Size(); ++linkIdx)
 		{
-			if (editor.Links.InUse.IsSet(linkIdx))
+			if (editor.links.inUse.IsSet(linkIdx))
 			{
-				const LinkData& link = editor.Links.Pool[linkIdx];
+				const LinkData& link = editor.links.pool[linkIdx];
 
-				const PinData& outputPin  = editor.outputs.Pool[link.outputIdx];
-				const PinData& inputPin   = editor.inputs.Pool[link.inputIdx];
+				const PinData& outputPin  = editor.outputs.pool[link.outputIdx];
+				const PinData& inputPin   = editor.inputs.pool[link.inputIdx];
 				const Rect& nodeStartRect = editor.nodes[outputPin.parentNodeId].rect;
 				const Rect& nodeEndRect   = editor.nodes[inputPin.parentNodeId].rect;
 
@@ -795,14 +795,14 @@ namespace rift::Nodes
 			Swap(outputPin, inputPin);
 		}
 
-		for (i32 i = 0; i < editor.Links.Pool.Size(); ++i)
+		for (i32 i = 0; i < editor.links.pool.Size(); ++i)
 		{
-			if (editor.Links.InUse.IsSet(i))
+			if (editor.links.inUse.IsSet(i))
 			{
 				continue;
 			}
 
-			const LinkData& link = editor.Links.Pool[i];
+			const LinkData& link = editor.links.pool[i];
 			if (outputPin == link.outputIdx && inputPin == link.inputIdx)
 			{
 				return {i};
@@ -1073,7 +1073,7 @@ namespace rift::Nodes
 				for (i32 i = 0; i < nodeBelow.inputs.Size; ++i)
 				{
 					const i32 pinIdx = nodeBelow.inputs[i];
-					const v2& pinPos = editor.inputs.Pool[pinIdx].position;
+					const v2& pinPos = editor.inputs.pool[pinIdx].position;
 
 					if (rectAbove.Contains(pinPos))
 					{
@@ -1083,7 +1083,7 @@ namespace rift::Nodes
 				for (i32 i = 0; i < nodeBelow.outputs.Size; ++i)
 				{
 					const i32 pinIdx = nodeBelow.outputs[i];
-					const v2& pinPos = editor.outputs.Pool[pinIdx].position;
+					const v2& pinPos = editor.outputs.pool[pinIdx].position;
 
 					if (rectAbove.Contains(pinPos))
 					{
@@ -1102,9 +1102,9 @@ namespace rift::Nodes
 
 		const float hoverRadiusSqr = gNodes->style.PinHoverRadius * gNodes->style.PinHoverRadius;
 
-		for (i32 idx = 0; idx < pins.Pool.Size(); ++idx)
+		for (i32 idx = 0; idx < pins.pool.Size(); ++idx)
 		{
-			if (!pins.InUse.IsSet(idx))
+			if (!pins.inUse.IsSet(idx))
 			{
 				continue;
 			}
@@ -1114,7 +1114,7 @@ namespace rift::Nodes
 				continue;
 			}
 
-			const v2& pinPos        = pins.Pool[idx].position;
+			const v2& pinPos        = pins.pool[idx].position;
 			const float distanceSqr = (pinPos - gNodes->mousePosition).LengthSquared();
 
 			// TODO: gNodes->style.PinHoverRadius needs to be copied i32o pin data and the
@@ -1176,16 +1176,16 @@ namespace rift::Nodes
 		// The latter is a requirement for link detaching with drag click to work, as both a
 		// link and pin are required to be hovered over for the feature to work.
 
-		for (i32 idx = 0; idx < links.Pool.Size(); ++idx)
+		for (i32 idx = 0; idx < links.pool.Size(); ++idx)
 		{
-			if (!links.InUse.IsSet(idx))
+			if (!links.inUse.IsSet(idx))
 			{
 				continue;
 			}
 
-			const LinkData& link     = links.Pool[idx];
-			const PinData& outputPin = outputs.Pool[link.outputIdx];
-			const PinData& inputPin  = inputs.Pool[link.inputIdx];
+			const LinkData& link     = links.pool[idx];
+			const PinData& outputPin = outputs.pool[link.outputIdx];
+			const PinData& inputPin  = inputs.pool[link.inputIdx];
 
 			// If there is a hovered pin links can only be considered hovered if they use that
 			// pin
@@ -1485,9 +1485,9 @@ namespace rift::Nodes
 
 	void DrawLink(EditorContext& editor, const i32 linkIdx)
 	{
-		const LinkData& link    = editor.Links.Pool[linkIdx];
-		const PinData& startPin = editor.outputs.Pool[link.outputIdx];
-		const PinData& endPin   = editor.inputs.Pool[link.inputIdx];
+		const LinkData& link    = editor.links.pool[linkIdx];
+		const PinData& startPin = editor.outputs.pool[link.outputIdx];
+		const PinData& endPin   = editor.inputs.pool[link.inputIdx];
 
 		const CubicBezier cubicBezier = MakeCubicBezier(startPin.position, endPin.position,
 		    PinType::Output, gNodes->style.linkLineSegmentsPerLength);
@@ -1542,7 +1542,7 @@ namespace rift::Nodes
 		auto& pool                = editor.GetPinPool(type);
 		const i32 pinIdx          = ObjectPoolFindOrCreateIndex(pool, id);
 		gNodes->CurrentPinIdx     = {pinIdx, type};
-		PinData& pin              = pool.Pool[pinIdx];
+		PinData& pin              = pool.pool[pinIdx];
 		pin.id                    = id;
 		pin.parentNodeId          = nodeId;
 		pin.Shape                 = shape;
@@ -1859,7 +1859,7 @@ namespace rift::Nodes
 		editor.nodes.SwapFrameIds();
 		ObjectPoolReset(editor.inputs);
 		ObjectPoolReset(editor.outputs);
-		ObjectPoolReset(editor.Links);
+		ObjectPoolReset(editor.links);
 
 		gNodes->hoveredNodeId = AST::NoId;
 		gNodes->HoveredLinkIdx.Reset();
@@ -1975,7 +1975,7 @@ namespace rift::Nodes
 			if (IsNone(gNodes->hoveredNodeId))
 			{
 				gNodes->HoveredLinkIdx =
-				    ResolveHoveredLink(editor.Links, editor.outputs, editor.inputs);
+				    ResolveHoveredLink(editor.links, editor.outputs, editor.inputs);
 			}
 		}
 
@@ -1989,9 +1989,9 @@ namespace rift::Nodes
 		// draw channel.
 		gNodes->CanvasDrawList->ChannelsSetCurrent(0);
 
-		for (i32 linkIdx = 0; linkIdx < editor.Links.Pool.Size(); ++linkIdx)
+		for (i32 linkIdx = 0; linkIdx < editor.links.pool.Size(); ++linkIdx)
 		{
-			if (editor.Links.InUse.IsSet(linkIdx))
+			if (editor.links.inUse.IsSet(linkIdx))
 			{
 				DrawLink(editor, linkIdx);
 			}
@@ -2068,7 +2068,7 @@ namespace rift::Nodes
 		DrawListSortChannelsByDepth(editor.nodes.depthOrder);
 
 		// After the links have been rendered, the link pool can be updated as well.
-		ObjectPoolUpdate(editor.Links);
+		ObjectPoolUpdate(editor.links);
 
 		// Finally, merge the draw channels
 		gNodes->CanvasDrawList->ChannelsMerge();
@@ -2210,7 +2210,7 @@ namespace rift::Nodes
 		assert(gNodes->currentScope == Scope::Editor);
 
 		EditorContext& editor    = GetEditorContext();
-		LinkData& link           = ObjectPoolFindOrCreateObject(editor.Links, id);
+		LinkData& link           = ObjectPoolFindOrCreateObject(editor.links, id);
 		link.id                  = id;
 		link.outputIdx           = ObjectPoolFindOrCreateIndex(editor.outputs, outputPin);
 		link.inputIdx            = ObjectPoolFindOrCreateIndex(editor.inputs, inputPin);
@@ -2220,13 +2220,13 @@ namespace rift::Nodes
 
 		// Check if this link was created by the current link event
 		if ((editor.clickInteraction.type == ClickInteractionType_LinkCreation
-		        && editor.inputs.Pool[link.inputIdx].Flags & PinFlags_EnableLinkCreationOnSnap
+		        && editor.inputs.pool[link.inputIdx].Flags & PinFlags_EnableLinkCreationOnSnap
 		        && editor.clickInteraction.linkCreation.outputIdx == link.outputIdx
 		        && editor.clickInteraction.linkCreation.inputIdx == link.inputIdx)
 		    || (editor.clickInteraction.linkCreation.outputIdx == link.inputIdx
 		        && editor.clickInteraction.linkCreation.inputIdx == link.outputIdx))
 		{
-			gNodes->SnapLinkIdx = ObjectPoolFindOrCreateIndex(editor.Links, id);
+			gNodes->SnapLinkIdx = ObjectPoolFindOrCreateIndex(editor.links, id);
 		}
 	}
 
@@ -2416,7 +2416,7 @@ namespace rift::Nodes
 		if (gNodes->HoveredLinkIdx.IsValid())
 		{
 			const EditorContext& editor = GetEditorContext();
-			return AST::Id(editor.Links.Pool[gNodes->HoveredLinkIdx.Value()].id);
+			return AST::Id(editor.links.pool[gNodes->HoveredLinkIdx.Value()].id);
 		}
 		return AST::NoId;
 	}
@@ -2433,7 +2433,7 @@ namespace rift::Nodes
 
 		const EditorContext& editor = GetEditorContext();
 		return gNodes->HoveredLinkIdx.IsValid()
-		    && linkId == AST::Id(editor.Links.Pool[gNodes->HoveredLinkIdx.Value()].id);
+		    && linkId == AST::Id(editor.links.pool[gNodes->HoveredLinkIdx.Value()].id);
 	}
 
 	bool IsPinHovered(Id* const pin)
@@ -2478,7 +2478,7 @@ namespace rift::Nodes
 		for (i32 i = 0; i < editor.selectedLinkIndices.size(); ++i)
 		{
 			const i32 linkIdx = editor.selectedLinkIndices[i];
-			linkIds[i]        = AST::Id(editor.Links.Pool[linkIdx].id);
+			linkIds[i]        = AST::Id(editor.links.pool[linkIdx].id);
 		}
 		return !linkIds.IsEmpty();
 	}
@@ -2504,7 +2504,7 @@ namespace rift::Nodes
 	void ClearLinkSelection(Id linkId)
 	{
 		EditorContext& editor = GetEditorContext();
-		const i32 idx         = ObjectPoolFind(editor.Links, linkId);
+		const i32 idx         = ObjectPoolFind(editor.links, linkId);
 		assert(idx >= 0);
 		assert(editor.selectedLinkIndices.find(idx) != editor.selectedLinkIndices.end());
 		editor.selectedLinkIndices.find_erase_unsorted(idx);
@@ -2519,7 +2519,7 @@ namespace rift::Nodes
 	void SelectLink(Id linkId)
 	{
 		EditorContext& editor = GetEditorContext();
-		const i32 idx         = ObjectPoolFind(editor.Links, linkId);
+		const i32 idx         = ObjectPoolFind(editor.links, linkId);
 		assert(idx >= 0);
 		assert(editor.selectedLinkIndices.find(idx) == editor.selectedLinkIndices.end());
 		editor.selectedLinkIndices.push_back(idx);
@@ -2534,13 +2534,13 @@ namespace rift::Nodes
 	bool IsLinkSelected(Id linkId)
 	{
 		EditorContext& editor = GetEditorContext();
-		return IsObjectSelected(editor.Links, editor.selectedLinkIndices, linkId);
+		return IsObjectSelected(editor.links, editor.selectedLinkIndices, linkId);
 	}
 
 	bool IsLinkSelectedByIdx(i32 linkIdx)
 	{
 		EditorContext& editor = GetEditorContext();
-		return IsObjectSelectedByIdx(editor.Links, editor.selectedLinkIndices, linkIdx);
+		return IsObjectSelectedByIdx(editor.links, editor.selectedLinkIndices, linkIdx);
 	}
 
 	bool IsPinActive()
@@ -2661,8 +2661,8 @@ namespace rift::Nodes
 			const EditorContext& editor = GetEditorContext();
 			const i32 outputIdx         = editor.clickInteraction.linkCreation.outputIdx;
 			const i32 inputIdx          = editor.clickInteraction.linkCreation.inputIdx;
-			const PinData& outputData   = editor.outputs.Pool[outputIdx];
-			const PinData& inputData    = editor.inputs.Pool[inputIdx];
+			const PinData& outputData   = editor.outputs.pool[outputIdx];
+			const PinData& inputData    = editor.inputs.pool[inputIdx];
 
 			outputPinId  = outputData.id;
 			outputNodeId = outputData.parentNodeId;
@@ -2688,7 +2688,7 @@ namespace rift::Nodes
 		{
 			const EditorContext& editor = GetEditorContext();
 			const i32 linkIdx           = gNodes->DeletedLinkIdx.Value();
-			linkId                      = editor.Links.Pool[linkIdx].id;
+			linkId                      = editor.links.pool[linkIdx].id;
 		}
 
 		return linkDestroyed;

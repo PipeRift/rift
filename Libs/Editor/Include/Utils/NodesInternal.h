@@ -42,7 +42,7 @@ namespace rift::Nodes
 		Node   = 1 << 1,
 		Pin    = 1 << 2
 	};
-	PIPE_DEFINE_FLAG_OPERATORS(Scope)
+	P_DEFINE_FLAG_OPERATORS(Scope);
 
 	enum UIState_
 	{
@@ -82,8 +82,8 @@ namespace rift::Nodes
 	template<typename T>
 	struct ObjectPool
 	{
-		TArray<T> Pool;
-		BitArray InUse;
+		TArray<T> pool;
+		BitArray inUse;
 		TArray<i32> availableIds;
 		ImGuiStorage idMap;
 	};
@@ -395,7 +395,7 @@ namespace rift::Nodes
 		NodeArray<NodeData> nodes;
 		ObjectPool<PinData> outputs;
 		ObjectPool<PinData> inputs;
-		ObjectPool<LinkData> Links;
+		ObjectPool<LinkData> links;
 
 		// ui related fields
 		v2 panning = v2::Zero();
@@ -440,12 +440,12 @@ namespace rift::Nodes
 		PinData& GetPinData(PinIdx pin)
 		{
 			// TODO: Incompatible id types!
-			return GetPinPool(pin.type).Pool[pin.index];
+			return GetPinPool(pin.type).pool[pin.index];
 		}
 		const PinData& GetPinData(PinIdx pin) const
 		{
 			// TODO: Incompatible id types!
-			return GetPinPool(pin.type).Pool[i32(pin.index)];
+			return GetPinPool(pin.type).pool[i32(pin.index)];
 		}
 	};
 
@@ -525,15 +525,17 @@ namespace rift::Nodes
 	template<typename T>
 	static inline void ObjectPoolUpdate(ObjectPool<T>& objects)
 	{
-		for (i32 i = 0; i < objects.InUse.Size(); ++i)
+		for (i32 i = 0; i < objects.inUse.Size(); ++i)
 		{
-			const Id id = objects.Pool[i].id;
-
-			if (!objects.InUse.IsSet(i) && objects.idMap.GetInt(id, -1) == i)
+			if (!objects.inUse.IsSet(i))
 			{
-				objects.idMap.SetInt(id, -1);
-				objects.availableIds.Add(i);
-				(objects.Pool.Data() + i)->~T();
+				const Id id = objects.pool[i].id;
+				if (objects.idMap.GetInt(id, -1) == i)
+				{
+					objects.idMap.SetInt(id, -1);
+					objects.availableIds.Add(i);
+					(objects.pool.Data() + i)->~T();
+				}
 			}
 		}
 	}
@@ -541,9 +543,9 @@ namespace rift::Nodes
 	template<typename T>
 	static inline void ObjectPoolReset(ObjectPool<T>& objects)
 	{
-		if (!objects.InUse.IsEmpty())
+		if (!objects.inUse.IsEmpty())
 		{
-			objects.InUse.ClearBits();
+			objects.inUse.ClearBits();
 		}
 	}
 
@@ -557,23 +559,23 @@ namespace rift::Nodes
 		{
 			if (objects.availableIds.IsEmpty())
 			{
-				index = objects.Pool.Size();
-				Check(objects.Pool.Size() == objects.InUse.Size());
-				const i32 newSize = objects.Pool.Size() + 1;
-				objects.Pool.Resize(newSize);
-				objects.InUse.Resize(newSize);
+				index = objects.pool.Size();
+				Check(objects.pool.Size() == objects.inUse.Size());
+				const i32 newSize = objects.pool.Size() + 1;
+				objects.pool.Resize(newSize);
+				objects.inUse.Resize(newSize);
 			}
 			else
 			{
 				index = objects.availableIds.Last();
 				objects.availableIds.RemoveLast();
 			}
-			objects.Pool[index] = T{id};
+			objects.pool[index] = T{id};
 			objects.idMap.SetInt(static_cast<ImGuiID>(id), index);
 		}
 
 		// Flag it as used
-		objects.InUse.FillBit(index);
+		objects.inUse.FillBit(index);
 		return index;
 	}
 
@@ -581,6 +583,6 @@ namespace rift::Nodes
 	static inline T& ObjectPoolFindOrCreateObject(ObjectPool<T>& objects, const Id id)
 	{
 		const int index = ObjectPoolFindOrCreateIndex(objects, id);
-		return objects.Pool[index];
+		return objects.pool[index];
 	}
 }    // namespace rift::Nodes

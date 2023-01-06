@@ -2,18 +2,17 @@
 #pragma once
 
 #include <Compiler/Backend.h>
-#include <Plugin.h>
-#include <Rift.h>
+#include <Module.h>
 
 
 namespace rift
 {
-	class LLVMBackendPlugin : public Plugin
+	class LLVMBackendModule : public Module
 	{
-		CLASS(LLVMBackendPlugin, Plugin)
+		CLASS(LLVMBackendModule, Module)
 
 	public:
-		void Register(TPtr<Rift> rift) override {}
+		LLVMBackendModule();
 	};
 
 

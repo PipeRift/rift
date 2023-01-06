@@ -1,9 +1,6 @@
 {
     "type": "Class",
     "count": 14,
-    "roots": [
-        0
-    ],
     "components": {
         "CChild": {
             "0": -1,
@@ -121,10 +118,7 @@
             "9": [
                 "U32"
             ],
-            "10": [
-                "TestProject",
-                "TestClass"
-            ],
+            "10": [],
             "11": [
                 "TestProject",
                 "TestStruct"

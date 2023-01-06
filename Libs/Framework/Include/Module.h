@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Rift.h"
+
 #include <Pipe/Memory/OwnPtr.h>
 #include <Pipe/Reflect/Class.h>
 
@@ -10,11 +12,17 @@ namespace rift
 {
 	using namespace p;
 
-	class Plugin : public Class
+	class Module : public Class
 	{
-		CLASS(Plugin, Class)
+		CLASS(Module, Class)
 
 	public:
-		virtual void Register(TPtr<struct Rift> rift) = 0;
+		virtual void Register() {}
+
+		template<typename ModuleType>
+		void AddDependency()
+		{
+			EnableModule<ModuleType>();
+		}
 	};
 }    // namespace rift

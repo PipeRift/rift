@@ -118,7 +118,7 @@ namespace rift::AST
 		ZoneScoped;
 
 		JsonFormatWriter writer{};
-		p::ecs::EntityWriter w{writer.GetContext(), ast};
+		p::ecs::EntityWriter w{writer.GetWriter(), ast};
 		w.BeginObject();
 		w.Next("type", GetTypeCategory(ast, id));
 		w.SerializeEntity(id, typeComponents);
