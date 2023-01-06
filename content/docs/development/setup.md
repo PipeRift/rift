@@ -47,7 +47,7 @@ Build essentials & graphics:<br>
 
 Rift uses a custom build process for LLVM which comes packed conveniently with the project, but requires manual setup.
 
-This build can be easily triggered running the script `python Programs/SetupLLVM.py`.
+This build can be easily triggered running the script `python3 Tools/SetupLLVM.py`.
 
 Sit and get comfortable, this might take a while.
 
