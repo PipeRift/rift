@@ -1,3 +1,4 @@
+# Copyright 2015-2023 Piperift - All rights reserved
 
 add_executable(RiftCLIExe Src/main.cpp)
 

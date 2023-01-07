@@ -1,3 +1,4 @@
+# Copyright 2015-2023 Piperift - All rights reserved
 
 file(GLOB_RECURSE TESTS_SOURCE_FILES CONFIGURE_DEPENDS *.cpp *.h)
 add_executable(RiftTests ${TESTS_SOURCE_FILES})

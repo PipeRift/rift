@@ -1,3 +1,4 @@
+# Copyright 2015-2023 Piperift - All rights reserved
 
 function(rift_module target)
     pipe_target_define_platform(${target})

@@ -1,3 +1,5 @@
+# Copyright 2015-2023 Piperift - All rights reserved
+
 find_program(
     CLANG_TIDY_EXE
     NAMES "clang-tidy"
