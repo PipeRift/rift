@@ -9,3 +9,5 @@ add_subdirectory(Bindings/Native)
 add_subdirectory(UI)
 add_subdirectory(Views/Graph)
 add_subdirectory(Editor)
+
+add_subdirectory(Runtimes)
