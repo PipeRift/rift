@@ -1,3 +1,5 @@
+# Copyright 2015-2023 Piperift - All rights reserved
+
 # CMake version
 cmake_minimum_required (VERSION 3.21)
 MESSAGE(STATUS "CMAKE_ROOT: " ${CMAKE_ROOT})
@@ -9,6 +11,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # These targets accumulate compiler and editor modules for executables to link to
 add_library(RiftCompilerModules INTERFACE)
 add_library(RiftEditorModules INTERFACE)
+add_library(RiftRuntimeModules INTERFACE)
 
 
 ################################################################################
