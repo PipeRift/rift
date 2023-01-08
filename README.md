@@ -5,9 +5,9 @@
 
 Rift is a **compiled**, **typed** and **visual** programming language.
 
-![Fibonacci](https://piperift.com/images/code-sample.png)
+![Fibonacci](https://riftlang.org/images/code-sample.png)
 
-## [Documentation](https://piperift.com)
+## [Documentation](https://riftlang.org)
 <br>
 
 ## Code is Data
