@@ -1,4 +1,4 @@
-baseurl = "https://doks.netlify.app/"
+baseurl = "https://riftlang.org/"
 canonifyURLs = false
 disableAliases = true
 disableHugoGeneratorInject = true

@@ -12,7 +12,7 @@ description = "Rift is a programming language designed to compile visual represe
 ## Open Graph
 images = ["/images/logo.png"]
 ogLocale = "en_US"
-domainTLD = "piperift.com"
+domainTLD = "riftlang.org"
 titleHome = "Rift"
 
 ## Twitter Cards
