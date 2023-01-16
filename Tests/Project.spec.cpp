@@ -36,7 +36,7 @@ go_bandit([]() {
 		});
 
 		it("Can load empty descriptor", [&]() {
-			files::SaveStringFile(testProjectPath / AST::moduleFile, "{}");
+			files::SaveStringFile(testProjectPath / AST::moduleFilename, "{}");
 
 			AST::Tree ast;
 			bool result = AST::OpenProject(ast, testProjectPath);
@@ -45,7 +45,7 @@ go_bandit([]() {
 		});
 
 		it("Project name equals the folder", [&]() {
-			files::SaveStringFile(testProjectPath / AST::moduleFile, "{}");
+			files::SaveStringFile(testProjectPath / AST::moduleFilename, "{}");
 
 			AST::Tree ast;
 			bool result = AST::OpenProject(ast, testProjectPath);
@@ -59,7 +59,8 @@ go_bandit([]() {
 		// TODO: Fix module loading. They can't load from CFileRef pointing to the folder and not
 		// the file
 		it("Project name can be overriden", [&]() {
-			files::SaveStringFile(testProjectPath / AST::moduleFile, "{\"name\": \"SomeProject\"}");
+			files::SaveStringFile(
+			    testProjectPath / AST::moduleFilename, "{\"name\": \"SomeProject\"}");
 
 			AST::Tree ast;
 			bool result = AST::OpenProject(ast, testProjectPath);

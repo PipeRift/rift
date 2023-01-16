@@ -1,32 +1,26 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Utils/Paths.h"
+#include "AST/Components/CModule.h"
 
 #include <Pipe/Core/Set.h>
-#include <Pipe/Files/FormatFileIterator.h>
+#include <Pipe/Files/LambdaFileIterator.h>
 
 
 namespace rift::AST
 {
-	class ModuleIterator : public FormatFileIterator<files::RecursiveIterator>
+	class ModuleIterator : public p::LambdaFileIterator<p::RecursiveIterator>
 	{
+		using Super = p::LambdaFileIterator<p::RecursiveIterator>;
+
 	public:
-		using FormatFileIterator<files::RecursiveIterator>::FormatFileIterator;
+		using Super::Super;
 
-		explicit ModuleIterator(const p::Path& path, const TSet<Path>* ignorePaths = nullptr)
-		    : FormatFileIterator(Paths::moduleExtension, path)
+		explicit ModuleIterator(const p::Path& path)
+		    : Super(path, [](const auto& path) {
+			    return path.filename() == moduleFilename;
+		    })
 		{}
-
-		const p::Path& operator*() const noexcept
-		{
-			return fileIterator->path();
-		}
-
-		const p::Path* operator->() const noexcept
-		{
-			return &operator*();
-		}
 	};
 
 

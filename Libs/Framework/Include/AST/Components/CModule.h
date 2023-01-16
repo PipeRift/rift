@@ -9,6 +9,8 @@ namespace rift::AST
 {
 	using namespace p::core;
 
+	static constexpr StringView moduleFilename = "__module__.rf";
+
 	struct CModule : public p::Struct
 	{
 		STRUCT(CModule, p::Struct)
