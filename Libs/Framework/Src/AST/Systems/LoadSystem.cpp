@@ -70,7 +70,7 @@ namespace rift::AST::LoadSystem
 
 		Id projectId      = GetProjectId(ast);
 		auto& projectFile = ast.Get<CFileRef>(projectId);
-		for (const auto& modulePath : ModuleIterator(projectFile.path.parent_path(), nullptr))
+		for (const auto& modulePath : ModuleIterator(projectFile.path.parent_path()))
 		{
 			paths.Add(modulePath);
 		}
@@ -104,7 +104,8 @@ namespace rift::AST::LoadSystem
 			auto& paths = pathsByModule.AddRef({moduleId}).paths;
 			ZoneScopedN("Iterate module files");
 			// Iterate all types ignoring other module paths
-			for (const auto& typePath : AST::TypeIterator(path, &modulePaths))
+			for (const auto& typePath :
+			    AST::TypeIterator(path /*TODO: Ignore paths | , &modulePaths*/))
 			{
 				paths.Add(typePath);
 			}

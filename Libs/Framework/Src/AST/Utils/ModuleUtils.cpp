@@ -34,7 +34,7 @@ namespace rift::AST
 
 		if (files::IsFile(path))
 		{
-			if (path.filename() != moduleFile)
+			if (path.filename() != moduleFilename)
 			{
 				error = "Path is not a rift module file or a folder";
 				return false;
@@ -68,10 +68,10 @@ namespace rift::AST
 			return false;
 		}
 
-		const p::Path filePath = path / moduleFile;
+		const p::Path filePath = path / moduleFilename;
 		if (!files::ExistsAsFile(filePath))
 		{
-			Log::Error("Can't open project: Folder doesn't contain a '{}' file", moduleFile);
+			Log::Error("Can't open project: Folder doesn't contain a '{}' file", moduleFilename);
 			return false;
 		}
 
@@ -113,10 +113,10 @@ namespace rift::AST
 			files::CreateFolder(path, true);
 		}
 
-		const p::Path filePath = path / moduleFile;
+		const p::Path filePath = path / moduleFilename;
 		if (files::ExistsAsFile(filePath))
 		{
-			Log::Error("Can't create module: Folder already contains a '{}' file", moduleFile);
+			Log::Error("Can't create module: Folder already contains a '{}' file", moduleFilename);
 			return NoId;
 		}
 

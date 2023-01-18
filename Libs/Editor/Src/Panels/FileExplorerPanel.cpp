@@ -352,13 +352,13 @@ namespace rift::Editor
 		else
 		{
 			String text;
-			if (Strings::EndsWith(fileName, ".rf"))
-			{
-				text = Strings::Format(ICON_FA_FILE_CODE " {}", fileName.data());
-			}
-			else if (Strings::EndsWith(fileName, ".rift"))
+			if (fileName == AST::moduleFilename)
 			{
 				text = Strings::Format(ICON_FA_FILE_ALT " {}", fileName);
+			}
+			else if (Strings::EndsWith(fileName, ".rf"))
+			{
+				text = Strings::Format(ICON_FA_FILE_CODE " {}", fileName.data());
 			}
 			else
 			{

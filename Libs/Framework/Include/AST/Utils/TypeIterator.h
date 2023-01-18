@@ -4,31 +4,23 @@
 #include "AST/Utils/Paths.h"
 
 #include <Pipe/Core/Set.h>
-#include <Pipe/Files/FormatFileIterator.h>
+#include <Pipe/Files/LambdaFileIterator.h>
 
 
 namespace rift::AST
 {
-	class TypeIterator : public p::files::FormatFileIterator<p::files::RecursiveIterator>
+	class TypeIterator : public p::files::LambdaFileIterator<p::files::RecursiveIterator>
 	{
-		using Super = p::files::FormatFileIterator<p::files::RecursiveIterator>;
+		using Super = p::files::LambdaFileIterator<p::files::RecursiveIterator>;
 
 	public:
 		using Super::Super;
 
-		explicit TypeIterator(const p::Path& path, const p::TSet<p::Path>* ignorePaths = nullptr)
-		    : Super(Paths::typeExtension, path)
+		explicit TypeIterator(const p::Path& path)
+		    : Super(path, [](const auto& path) {
+			    return path.extension() == Paths::typeExtension;
+		    })
 		{}
-
-		const p::Path& operator*() const noexcept
-		{
-			return fileIterator->path();
-		}
-
-		const p::Path* operator->() const noexcept
-		{
-			return &operator*();
-		}
 	};
 
 

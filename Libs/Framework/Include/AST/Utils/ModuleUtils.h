@@ -23,8 +23,6 @@ namespace rift::AST
 	using namespace p::files;
 	using namespace AST;
 
-	static constexpr StringView moduleFile{"Module.rift"};
-
 	bool CreateProject(Tree& ast, Path path);
 	bool OpenProject(Tree& ast, Path path);
 	void CloseProject(Tree& ast);
