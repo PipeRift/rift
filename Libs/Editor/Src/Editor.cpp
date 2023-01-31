@@ -60,7 +60,7 @@ namespace rift::Editor
 		Log::Info("Editor is ready");
 
 		// Open a project if a path has been provided
-		OpenProject(p::ToPath(projectPath), false);
+		OpenProject(projectPath, false);
 
 		while (!UI::WantsToClose())
 		{
@@ -120,7 +120,7 @@ namespace rift::Editor
 		}
 	}
 
-	bool Editor::CreateProject(const p::Path& path, bool closeFirst)
+	bool Editor::CreateProject(p::StringView path, bool closeFirst)
 	{
 		if (!closeFirst && AST::HasProject(ast))
 		{
@@ -131,13 +131,13 @@ namespace rift::Editor
 		{
 			ast.SetStatic<SEditor>();
 			EditorSystem::Init(ast);
-			SetUIConfigFile(AST::GetProjectPath(ast) / "Saved/UI.ini");
+			SetUIConfigFile(p::JoinPaths(AST::GetProjectPath(ast), "Saved/UI.ini"));
 			return true;
 		}
 		return false;
 	}
 
-	bool Editor::OpenProject(const p::Path& path, bool closeFirst)
+	bool Editor::OpenProject(p::StringView path, bool closeFirst)
 	{
 		if (!closeFirst && AST::HasProject(ast))
 		{
@@ -148,7 +148,7 @@ namespace rift::Editor
 		{
 			ast.SetStatic<SEditor>();
 			EditorSystem::Init(ast);
-			SetUIConfigFile(AST::GetProjectPath(ast) / "Saved/UI.ini");
+			SetUIConfigFile(p::JoinPaths(AST::GetProjectPath(ast), "Saved/UI.ini"));
 			return true;
 		}
 		return false;

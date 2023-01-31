@@ -3,6 +3,7 @@
 
 #include "AST/Id.h"
 
+#include <Pipe/Files/Paths.h>
 #include <Pipe/Reflect/Struct.h>
 
 
@@ -15,6 +16,8 @@ namespace rift::AST
 		STRUCT(STypes, Struct)
 
 		TMap<Name, Id> typesByName;
+		// TODO: Use StringView to point to CFileRef component's path.
+		// Current TMap lookup of stringviews seems unconsistent
 		TMap<Name, Id> typesByPath;
 	};
 }    // namespace rift::AST

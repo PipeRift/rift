@@ -28,7 +28,7 @@ namespace rift::AST
 	void InitTypeFromCategory(Tree& ast, Id id, RiftType category);
 	RiftType GetTypeCategory(Tree& ast, Id id);
 
-	Id CreateType(Tree& ast, RiftType type, Name name = Name::None(), const p::Path& path = {});
+	Id CreateType(Tree& ast, RiftType type, Name name = Name::None(), StringView path = {});
 
 	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access, TSpan<Id> types,
 	    bool removeFromDisk = false);
@@ -36,14 +36,13 @@ namespace rift::AST
 	void SerializeType(Tree& ast, Id id, String& data);
 	void DeserializeType(Tree& ast, Id id, const String& data);
 
-	Id FindTypeByPath(Tree& ast, const p::Path& path);
+	Id FindTypeByPath(Tree& ast, p::StringView path);
 	bool IsClassType(const Tree& ast, Id typeId);
 	bool IsStructType(const Tree& ast, Id typeId);
 	bool IsStaticType(const Tree& ast, Id typeId);
 	bool CanContainVariables(const Tree& ast, Id typeId);
 	bool CanContainFunctions(const Tree& ast, Id typeId);
 	bool CanEditFunctionBodies(const Tree& ast, Id typeId);
-
 
 	Id AddVariable(TypeRef type, Name name);
 	Id AddFunction(TypeRef type, Name name);

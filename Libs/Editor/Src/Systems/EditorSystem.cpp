@@ -262,7 +262,7 @@ namespace rift::Editor::EditorSystem
 			{
 				if (UI::MenuItem("Open Project"))
 				{
-					const p::Path folder =
+					const p::String folder =
 					    files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
 					if (Editor::Get().OpenProject(folder))
 					{

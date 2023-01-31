@@ -49,8 +49,8 @@ namespace rift::Editor
 			return Get().ast;
 		}
 
-		bool CreateProject(const Path& path, bool closeFirst = true);
-		bool OpenProject(const Path& path, bool closeFirst = true);
+		bool CreateProject(p::StringView path, bool closeFirst = true);
+		bool OpenProject(p::StringView path, bool closeFirst = true);
 
 		void Close();
 

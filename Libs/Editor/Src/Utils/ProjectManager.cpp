@@ -33,7 +33,7 @@ namespace rift::Editor
 
 			if (UI::Button("Open", v2{-FLT_MIN, 0.0f}))
 			{
-				Path folder =
+				String folder =
 				    files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
 				if (Editor::Get().OpenProject(folder))
 				{
@@ -101,7 +101,7 @@ namespace rift::Editor
 
 			if (UI::Button("Create", v2{-FLT_MIN, 0.0f}))
 			{
-				if (Editor::Get().CreateProject(p::ToPath(folder)))
+				if (Editor::Get().CreateProject(folder))
 				{
 					folder = "";
 					UI::CloseCurrentPopup();

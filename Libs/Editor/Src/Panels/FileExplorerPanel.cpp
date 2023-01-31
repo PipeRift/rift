@@ -39,7 +39,7 @@ namespace rift::Editor
 			if (!IsNone(typeId))
 			{
 				OpenType(ast, typeId);
-				pendingOpenCreatedPath = p::Path{};
+				pendingOpenCreatedPath = {};
 			}
 		}
 
@@ -85,7 +85,7 @@ namespace rift::Editor
 
 		{
 			ZoneScopedN("Draw Files");
-			for (auto& item : folders[Name::None()].items)
+			for (auto& item : folders[{}].items)
 			{
 				DrawItem(ast, item);
 			}
@@ -161,10 +161,10 @@ namespace rift::Editor
 		}
 	}
 
-	void FileExplorerPanel::InsertItem(TMap<Name, Folder>& folders, const Item& item)
+	void FileExplorerPanel::InsertItem(const Item& item)
 	{
-		Name lastName         = item.path;
-		StringView parentPath = p::GetParentPath(item.path.ToString());
+		StringView lastPath   = item.path;
+		StringView parentPath = p::GetParentPath(item.path);
 		Name parentName{parentPath};
 
 		if (Folder* parent = folders.Find(parentName))
@@ -172,24 +172,22 @@ namespace rift::Editor
 			parent->items.Add(item);
 			return;
 		}
-		folders.Insert(parentName, Folder{{item}});
+		folders.Insert(parentName, Folder{.items = {item}});
 
-		parentPath = p::GetParentPath(parentPath);
 		while (!parentPath.empty())
 		{
-			lastName   = parentName;
-			parentName = Name{parentPath};
+			lastPath   = parentPath;
+			parentPath = p::GetParentPath(parentPath);
+			parentName = p::Name{parentPath};
 
-			const Item newItem{AST::NoId, lastName, true};
+			const Item newItem{.id = AST::NoId, .path = p::String{lastPath}, .isFolder = true};
 			if (Folder* parent = folders.Find(parentName))
 			{
 				parent->items.Add(newItem);
 				// Found an existing folder. Leave since we assume all parent folders are valid
 				return;
 			}
-			folders.Insert(parentName, Folder{{newItem}});
-
-			parentPath = p::GetParentPath(parentPath);
+			folders.Insert(parentName, Folder{.items = {newItem}});
 		}
 	}
 
@@ -202,52 +200,47 @@ namespace rift::Editor
 		folders.Clear();
 
 		// Set root folder (not displayed)
-		folders.InsertDefaulted(Name::None());
+		folders.InsertDefaulted({});
 
 		projectModuleId = AST::GetProjectId(access);
 
 		// Create module folders
 		TArray<AST::Id> modules = ecs::ListAll<AST::CModule>(access);
-		TMap<AST::Id, p::Path> moduleFolders;
+		TMap<AST::Id, p::StringView> moduleFolders;
 		moduleFolders.Reserve(modules.Size());
 		for (AST::Id moduleId : modules)
 		{
-			auto& file      = access.Get<const AST::CFileRef>(moduleId);
-			Path folderPath = file.path.parent_path();
-			const Name pathName{ToString(folderPath)};
-			folders.InsertDefaulted(pathName);
-			moduleFolders.Insert(moduleId, Move(folderPath));
+			auto& file               = access.Get<const AST::CFileRef>(moduleId);
+			p::StringView folderPath = p::GetParentPath(file.path);
+			folders.InsertDefaulted(p::Name{folderPath});
+			moduleFolders.Insert(moduleId, folderPath);
 		}
 
 		// Create folders between modules
 		for (AST::Id oneId : modules)
 		{
-			bool insideOther    = false;
-			const p::Path& path = moduleFolders[oneId];
+			bool insideOther         = false;
+			const p::StringView path = moduleFolders[oneId];
 
 			for (AST::Id otherId : modules)
 			{
-				if (oneId != otherId)
+				if (oneId != otherId
+				    && Strings::StartsWith(path, moduleFolders[otherId]))    // Is relative
 				{
-					const p::Path& otherPath = moduleFolders[otherId];
-
-					if (Strings::Contains<Path::value_type>(path.native(),
-					        otherPath.native()))    // Is relative
-					{
-						insideOther = true;
-						break;
-					}
+					insideOther = true;
+					break;
 				}
 			}
 
 			if (insideOther)
 			{
 				// If a module is inside another, create the folders in between
-				InsertItem(folders, Item{oneId, Name{p::ToString(path)}, true});
+				InsertItem(Item{.id = oneId, .path = p::String{path}, .isFolder = true});
 			}
 			else
 			{
-				folders[Name::None()].items.Add(Item{oneId, Name{ToString(path)}, true});
+				// Add at root folder
+				folders[{}].items.Add(Item{.id = oneId, .path = p::String{path}, .isFolder = true});
 			}
 		}
 
@@ -257,8 +250,7 @@ namespace rift::Editor
 			auto& file = access.Get<const AST::CFileRef>(typeId);
 			if (!file.path.empty())
 			{
-				const String path = p::ToString(file.path);
-				InsertItem(folders, Item{typeId, Name{path}});
+				InsertItem(Item{typeId, file.path});
 			}
 		}
 	}
@@ -271,16 +263,16 @@ namespace rift::Editor
 			{
 				return one.isFolder;
 			}
-			return one.path.ToString() < other.path.ToString();
+			return one.path < other.path;
 		});
 	}
 
 	void FileExplorerPanel::DrawItem(AST::Tree& ast, const Item& item)
 	{
-		const String path         = item.path.ToString();
+		const String path         = p::ToString(item.path);
 		const StringView fileName = p::GetFilename(path);
 
-		if (Folder* folder = folders.Find(item.path))
+		if (Folder* folder = folders.Find(p::Name{item.path}))
 		{
 			ImGuiTreeNodeFlags flags = 0;
 			if (folder->items.IsEmpty())
@@ -401,8 +393,8 @@ namespace rift::Editor
 				else if (UI::IsItemDeactivatedAfterEdit())
 				{
 					ScopedChange(ast, item.id);
-					Path destination = p::ToPath(GetParentPath(path)) / renameBuffer;
-					destination.replace_extension("rf");
+					p::String destination = p::JoinPaths(p::GetParentPath(path), renameBuffer);
+					p::ReplaceExtension(destination, "rf");
 					// TODO: Move this into systems. Renaming a type shouldnt require so many
 					// manual steps
 					if (files::Rename(p::ToPath(path), destination))
@@ -413,8 +405,8 @@ namespace rift::Editor
 						}
 
 						auto& types = ast.GetOrSetStatic<AST::STypes>();
-						types.typesByPath.Remove(item.path);
-						types.typesByPath.Insert(Name{files::ToString(destination)}, item.id);
+						types.typesByPath.Remove(p::Name{item.path});
+						types.typesByPath.Insert(p::Name{destination}, item.id);
 
 						ast.Add<AST::CNamespace>(item.id, Name{parsedNewName});
 					}
@@ -460,9 +452,9 @@ namespace rift::Editor
 	void FileExplorerPanel::DrawTypeActions(AST::Id id, AST::CType& type) {}
 
 	void FileExplorerPanel::CreateType(
-	    AST::Tree& ast, StringView title, AST::RiftType category, p::Path folderPath)
+	    AST::Tree& ast, StringView title, AST::RiftType category, p::StringView folderPath)
 	{
-		const p::Path path = files::SaveFileDialog(title, folderPath,
+		const p::String path = files::SaveFileDialog(title, folderPath,
 		    {
 		        {"Rift Type", Strings::Format("*.{}", Paths::typeExtension)}
         },

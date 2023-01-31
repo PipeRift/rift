@@ -66,8 +66,8 @@ int main(int argc, char** argv)
 	EnableModule<GraphViewModule>();
 
 	CLI::App app{"Rift compiler"};
-	String pathStr;
-	app.add_option("-p,--project", pathStr, "Project path")->required();
+	String path;
+	app.add_option("-p,--project", path, "Project path")->required();
 
 
 	String selectedBackendStr;
@@ -81,7 +81,6 @@ int main(int argc, char** argv)
 
 	ZoneScopedNC("CLI Execution", 0x459bd1);
 
-	const p::Path path = p::ToPath(pathStr);
 	AST::Tree ast;
 	AST::OpenProject(ast, path);
 

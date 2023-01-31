@@ -19,8 +19,7 @@ namespace rift::AST::LoadSystem
 	struct ModuleTypePaths
 	{
 		Id moduleId;
-		TArray<Path> paths;    // p::Paths of module types
-		TArray<Name> pathNames;
+		TArray<p::String> paths;    // p::Paths of module types
 	};
 
 	void Init(Tree& ast);
@@ -32,13 +31,13 @@ namespace rift::AST::LoadSystem
 	/**
 	 * @param paths of all currently unloaded modules
 	 */
-	void ScanSubmodules(Tree& ast, TArray<Path>& paths);
+	void ScanSubmodules(Tree& ast, TArray<String>& paths);
 	/**
 	 * @param paths of all currently unloaded types
 	 */
 	void ScanTypes(Tree& ast, TArray<ModuleTypePaths>& pathsByModule);
 
-	void CreateModulesFromPaths(Tree& ast, TArray<Path>& paths, TArray<Id>& ids);
+	void CreateModulesFromPaths(Tree& ast, TArray<String>& paths, TArray<Id>& ids);
 	void CreateTypesFromPaths(Tree& ast, TSpan<ModuleTypePaths> pathsByModule, TArray<Id>& ids);
 
 	void LoadFileStrings(TAccessRef<CFileRef> access, TSpan<Id> nodes, TArray<String>& strings);

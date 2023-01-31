@@ -17,7 +17,7 @@ using namespace rift;
 using namespace p;
 using namespace std::chrono_literals;
 
-Path testProjectPath = GetCurrentPath() / "TestProject";
+String testProjectPath = p::JoinPaths(GetCurrentPath(), "TestProject");
 
 
 go_bandit([]() {
@@ -36,7 +36,7 @@ go_bandit([]() {
 		});
 
 		it("Can load empty descriptor", [&]() {
-			files::SaveStringFile(testProjectPath / AST::moduleFilename, "{}");
+			files::SaveStringFile(p::JoinPaths(testProjectPath, AST::moduleFilename), "{}");
 
 			AST::Tree ast;
 			bool result = AST::OpenProject(ast, testProjectPath);
@@ -45,7 +45,7 @@ go_bandit([]() {
 		});
 
 		it("Project name equals the folder", [&]() {
-			files::SaveStringFile(testProjectPath / AST::moduleFilename, "{}");
+			files::SaveStringFile(p::JoinPaths(testProjectPath, AST::moduleFilename), "{}");
 
 			AST::Tree ast;
 			bool result = AST::OpenProject(ast, testProjectPath);
@@ -60,7 +60,7 @@ go_bandit([]() {
 		// the file
 		it("Project name can be overriden", [&]() {
 			files::SaveStringFile(
-			    testProjectPath / AST::moduleFilename, "{\"name\": \"SomeProject\"}");
+			    p::JoinPaths(testProjectPath, AST::moduleFilename), "{\"name\": \"SomeProject\"}");
 
 			AST::Tree ast;
 			bool result = AST::OpenProject(ast, testProjectPath);

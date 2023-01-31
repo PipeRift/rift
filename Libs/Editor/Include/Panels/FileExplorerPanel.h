@@ -32,8 +32,8 @@ namespace rift::Editor
 
 		struct Item
 		{
-			AST::Id id;
-			p::Name path;
+			AST::Id id = AST::NoId;
+			p::String path;
 			bool isFolder = false;
 		};
 
@@ -54,7 +54,7 @@ namespace rift::Editor
 		p::String renameBuffer;
 		bool renameHasFocused = false;
 
-		p::Path pendingOpenCreatedPath;
+		p::StringView pendingOpenCreatedPath;
 
 
 	public:
@@ -73,14 +73,15 @@ namespace rift::Editor
 		void SortFolder(Folder& folder);
 
 	private:
-		void InsertItem(p::TMap<p::Name, Folder>& folders, const Item& item);
+		void InsertItem(const Item& item);
 		void DrawItem(AST::Tree& ast, const Item& item);
 		// void DrawFile(AST::Tree& ast, File& file);
 
 		void DrawModuleActions(AST::Id id, struct AST::CModule& module);
 		void DrawTypeActions(AST::Id id, struct AST::CType& type);
 
-		void CreateType(AST::Tree& ast, p::StringView title, AST::RiftType category, p::Path path);
+		void CreateType(
+		    AST::Tree& ast, p::StringView title, AST::RiftType category, p::StringView path);
 	};
 
 

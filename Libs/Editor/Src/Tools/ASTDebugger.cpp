@@ -89,7 +89,7 @@ namespace rift::Editor
 				{
 					UI::TableNextRow();
 					UI::TableNextColumn();    // Name
-					UI::Text(it.first.ToString());
+					UI::Text(p::ToString(it.first));
 
 					UI::TableNextColumn();    // Id
 

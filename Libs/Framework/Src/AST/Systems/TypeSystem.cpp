@@ -26,8 +26,7 @@ namespace rift::AST::TypeSystem
 				if (ast.template Has<CType>(id) && ast.template Has<CFileRef>(id))
 				{
 					const auto& file = ast.template Get<const CFileRef>(id);
-					const Name pathName{ToString(file.path)};
-					types.typesByPath.Insert(pathName, id);
+					types.typesByPath.Insert(p::Name{file.path}, id);
 				}
 			}
 		});
@@ -39,8 +38,7 @@ namespace rift::AST::TypeSystem
 				if (ast.template Has<CType>(id) && ast.template Has<CFileRef>(id))
 				{
 					const auto& file = ast.template Get<const CFileRef>(id);
-					const Name pathName{ToString(file.path)};
-					types.typesByPath.Remove(pathName);
+					types.typesByPath.Remove(p::Name{file.path});
 				}
 			}
 		});

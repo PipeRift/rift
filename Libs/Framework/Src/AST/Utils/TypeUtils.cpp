@@ -48,8 +48,8 @@ namespace rift::AST
 	{
 		if (auto* fileRef = ast.TryGet<CFileRef>(id))
 		{
-			String fileName = p::GetFilename(fileRef->path);
-			fileName        = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
+			p::StringView fileName{p::GetFilename(fileRef->path)};
+			fileName = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
 			ast.Add<CNamespace>(id, {Name{fileName}});
 		}
 
@@ -81,7 +81,7 @@ namespace rift::AST
 		return RiftType::None;
 	}
 
-	Id CreateType(Tree& ast, RiftType type, Name name, const p::Path& path)
+	Id CreateType(Tree& ast, RiftType type, Name name, StringView path)
 	{
 		Id id = ast.Create();
 		if (!path.empty())
@@ -147,12 +147,12 @@ namespace rift::AST
 	}
 
 
-	Id FindTypeByPath(Tree& ast, const p::Path& path)
+	Id FindTypeByPath(Tree& ast, p::StringView path)
 	{
 		if (auto* types = ast.TryGetStatic<STypes>())
 		{
-			const Name pathName{ToString(path)};
-			if (Id* id = types->typesByPath.Find(pathName))
+			// TODO: Replace once StringView TMap is more stable
+			if (Id* id = types->typesByPath.Find(p::Name{path}))
 			{
 				return *id;
 			}

@@ -18,10 +18,10 @@ namespace rift::AST
 		STRUCT(CFileRef, p::Struct, p::Struct_NotSerialized)
 
 		PROP(path)
-		p::Path path;
+		p::String path;
 
 
 		CFileRef() {}
-		CFileRef(p::Path path) : path(Move(path)) {}
+		CFileRef(p::StringView path) : path{path} {}
 	};
 }    // namespace rift::AST
