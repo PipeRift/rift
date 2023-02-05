@@ -3,10 +3,10 @@
 
 #include "AST/Components/CProject.h"
 
+#include <AST/Components/CDeclType.h>
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
 #include <AST/Components/CNamespace.h>
-#include <AST/Components/CType.h>
 #include <AST/Tree.h>
 #include <Pipe/Core/Array.h>
 #include <Pipe/Core/String.h>
@@ -68,7 +68,7 @@ namespace rift::Editor
 		void DrawContextMenu(AST::Tree& ast, p::StringView path, AST::Id itemId);
 
 		void CacheProjectFiles(
-		    p::TAccessRef<AST::CProject, AST::CModule, AST::CFileRef, AST::CType> access);
+		    p::TAccessRef<AST::CProject, AST::CModule, AST::CFileRef, AST::CDeclType> access);
 
 		void SortFolder(Folder& folder);
 
@@ -78,10 +78,9 @@ namespace rift::Editor
 		// void DrawFile(AST::Tree& ast, File& file);
 
 		void DrawModuleActions(AST::Id id, struct AST::CModule& module);
-		void DrawTypeActions(AST::Id id, struct AST::CType& type);
+		void DrawTypeActions(AST::Id id, struct AST::CDeclType& type);
 
-		void CreateType(
-		    AST::Tree& ast, p::StringView title, AST::RiftType category, p::StringView path);
+		void CreateType(AST::Tree& ast, p::StringView title, p::Name typeId, p::StringView path);
 	};
 
 

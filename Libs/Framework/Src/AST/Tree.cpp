@@ -3,8 +3,8 @@
 #include "AST/Tree.h"
 
 #include "AST/Components/CDeclNative.h"
+#include "AST/Components/CDeclType.h"
 #include "AST/Components/CNamespace.h"
-#include "AST/Components/CType.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
 
@@ -45,51 +45,51 @@ namespace rift::AST
 		Destroy(ListAll<CDeclNative>(*this));
 
 		nativeTypes.boolId = Create();
-		Add<CType, CDeclNative>(nativeTypes.boolId);
+		Add<CDeclType, CDeclNative>(nativeTypes.boolId);
 		Add<CNamespace>(nativeTypes.boolId, "Bool");
 
 		nativeTypes.floatId = Create();
-		Add<CType, CDeclNative>(nativeTypes.floatId);
+		Add<CDeclType, CDeclNative>(nativeTypes.floatId);
 		Add<CNamespace>(nativeTypes.floatId, "Float");
 
 		nativeTypes.doubleId = Create();
-		Add<CType, CDeclNative>(nativeTypes.doubleId);
+		Add<CDeclType, CDeclNative>(nativeTypes.doubleId);
 		Add<CNamespace>(nativeTypes.doubleId, "Double");
 
 		nativeTypes.u8Id = Create();
-		Add<CType, CDeclNative>(nativeTypes.u8Id);
+		Add<CDeclType, CDeclNative>(nativeTypes.u8Id);
 		Add<CNamespace>(nativeTypes.u8Id, "U8");
 
 		nativeTypes.i8Id = Create();
-		Add<CType, CDeclNative>(nativeTypes.i8Id);
+		Add<CDeclType, CDeclNative>(nativeTypes.i8Id);
 		Add<CNamespace>(nativeTypes.i8Id, "I8");
 
 		nativeTypes.u16Id = Create();
-		Add<CType, CDeclNative>(nativeTypes.u16Id);
+		Add<CDeclType, CDeclNative>(nativeTypes.u16Id);
 		Add<CNamespace>(nativeTypes.u16Id, "U16");
 
 		nativeTypes.i16Id = Create();
-		Add<CType, CDeclNative>(nativeTypes.i16Id);
+		Add<CDeclType, CDeclNative>(nativeTypes.i16Id);
 		Add<CNamespace>(nativeTypes.i16Id, "I16");
 
 		nativeTypes.u32Id = Create();
-		Add<CType, CDeclNative>(nativeTypes.u32Id);
+		Add<CDeclType, CDeclNative>(nativeTypes.u32Id);
 		Add<CNamespace>(nativeTypes.u32Id, "U32");
 
 		nativeTypes.i32Id = Create();
-		Add<CType, CDeclNative>(nativeTypes.i32Id);
+		Add<CDeclType, CDeclNative>(nativeTypes.i32Id);
 		Add<CNamespace>(nativeTypes.i32Id, "I32");
 
 		nativeTypes.u64Id = Create();
-		Add<CType, CDeclNative>(nativeTypes.u64Id);
+		Add<CDeclType, CDeclNative>(nativeTypes.u64Id);
 		Add<CNamespace>(nativeTypes.u64Id, "U64");
 
 		nativeTypes.i64Id = Create();
-		Add<CType, CDeclNative>(nativeTypes.i64Id);
+		Add<CDeclType, CDeclNative>(nativeTypes.i64Id);
 		Add<CNamespace>(nativeTypes.i64Id, "I64");
 
 		nativeTypes.stringId = Create();
-		Add<CType, CDeclNative>(nativeTypes.stringId);
+		Add<CDeclType, CDeclNative>(nativeTypes.stringId);
 		Add<CNamespace>(nativeTypes.stringId, "String");
 	}
 

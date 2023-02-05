@@ -3,6 +3,7 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Compiler/Utils/BackendUtils.h>
+#include <FrameworkModule.h>
 #include <GraphViewModule.h>
 #include <LLVMBackendModule.h>
 #include <Pipe/Core/Profiler.h>
@@ -62,6 +63,7 @@ namespace rift
 int main(int argc, char** argv)
 {
 	p::Initialize("Saved/Logs");
+	EnableModule<FrameworkModule>();
 	EnableModule<LLVMBackendModule>();
 	EnableModule<GraphViewModule>();
 

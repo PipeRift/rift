@@ -3,6 +3,7 @@
 #include "Panels/FileExplorerPanel.h"
 
 #include "Editor.h"
+#include "Pipe/Core/String.h"
 #include "Statics/SEditor.h"
 #include "UI/Widgets.h"
 #include "Utils/ModuleUtils.h"
@@ -24,6 +25,7 @@
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Files/STDFileSystem.h>
+#include <Rift.h>
 #include <UI/Style.h>
 #include <UI/UI.h>
 
@@ -96,7 +98,7 @@ namespace rift::Editor
 	void FileExplorerPanel::DrawContextMenu(AST::Tree& ast, StringView path, AST::Id itemId)
 	{
 		const bool hasId    = ast.IsValid(itemId);
-		const bool isType   = hasId && ast.Has<AST::CType>(itemId);
+		const bool isType   = hasId && ast.Has<AST::CDeclType>(itemId);
 		const bool isModule = hasId && ast.Has<AST::CModule>(itemId);
 
 		if (hasId)
@@ -134,17 +136,17 @@ namespace rift::Editor
 		{
 			if (UI::BeginMenu("Create type"))
 			{
-				if (UI::MenuItem("Class"))
+				String createText;
+				for (const auto& fileType : GetFileTypes())
 				{
-					CreateType(ast, "Create Class type", AST::RiftType::Class, path);
-				}
-				if (UI::MenuItem("Struct"))
-				{
-					CreateType(ast, "Create Struct type", AST::RiftType::Struct, path);
-				}
-				if (UI::MenuItem("Static"))
-				{
-					CreateType(ast, "Create Static type", AST::RiftType::Static, path);
+					createText.clear();
+					Strings::FormatTo(createText, "{}##{}", fileType.displayName, fileType.id);
+					if (UI::MenuItem(createText.c_str()))
+					{
+						createText.clear();
+						Strings::FormatTo(createText, "Create {} type", fileType.displayName);
+						CreateType(ast, createText, fileType.id, path);
+					}
 				}
 				UI::EndMenu();
 			}
@@ -192,7 +194,7 @@ namespace rift::Editor
 	}
 
 	void FileExplorerPanel::CacheProjectFiles(
-	    TAccessRef<AST::CProject, AST::CModule, AST::CFileRef, AST::CType> access)
+	    TAccessRef<AST::CProject, AST::CModule, AST::CFileRef, AST::CDeclType> access)
 	{
 		ZoneScoped;
 		dirty = false;
@@ -245,7 +247,7 @@ namespace rift::Editor
 		}
 
 		// Create items
-		for (AST::Id typeId : ecs::ListAll<AST::CType, AST::CFileRef>(access))
+		for (AST::Id typeId : ecs::ListAll<AST::CDeclType, AST::CFileRef>(access))
 		{
 			auto& file = access.Get<const AST::CFileRef>(typeId);
 			if (!file.path.empty())
@@ -449,10 +451,10 @@ namespace rift::Editor
 	}
 
 	void FileExplorerPanel::DrawModuleActions(AST::Id id, AST::CModule& module) {}
-	void FileExplorerPanel::DrawTypeActions(AST::Id id, AST::CType& type) {}
+	void FileExplorerPanel::DrawTypeActions(AST::Id id, AST::CDeclType& type) {}
 
 	void FileExplorerPanel::CreateType(
-	    AST::Tree& ast, StringView title, AST::RiftType category, p::StringView folderPath)
+	    AST::Tree& ast, StringView title, p::Name typeId, p::StringView folderPath)
 	{
 		const p::String path = files::SaveFileDialog(title, folderPath,
 		    {
@@ -460,14 +462,14 @@ namespace rift::Editor
         },
 		    true);
 
-		AST::Id typeId = AST::CreateType(ast, category, Name::None(), path);
+		AST::Id id = AST::CreateType(ast, typeId, Name::None(), path);
 
 		String data;
-		AST::SerializeType(ast, typeId, data);
+		AST::SerializeType(ast, id, data);
 		files::SaveStringFile(path, data);
 
 		// Destroy the temporal type after saving it
-		ast.Destroy(typeId);
+		ast.Destroy(id);
 
 		// Mark path to be opened later once the type has loaded
 		pendingOpenCreatedPath = path;

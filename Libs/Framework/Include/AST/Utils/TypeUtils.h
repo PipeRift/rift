@@ -3,6 +3,7 @@
 #pragma once
 
 #include "AST/Components/CDeclFunction.h"
+#include "AST/Components/CDeclType.h"
 #include "AST/Components/CExprBinaryOperator.h"
 #include "AST/Components/CExprInputs.h"
 #include "AST/Components/CExprOutputs.h"
@@ -12,7 +13,6 @@
 #include "AST/Components/CNamespace.h"
 #include "AST/Components/CStmtInput.h"
 #include "AST/Components/CStmtOutputs.h"
-#include "AST/Components/CType.h"
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 #include "AST/Tree.h"
@@ -25,10 +25,9 @@
 
 namespace rift::AST
 {
-	void InitTypeFromCategory(Tree& ast, Id id, RiftType category);
-	RiftType GetTypeCategory(Tree& ast, Id id);
+	void InitTypeFromFileType(Tree& ast, Id id, p::Name typeId);
 
-	Id CreateType(Tree& ast, RiftType type, Name name = Name::None(), StringView path = {});
+	Id CreateType(Tree& ast, p::Name typeId, Name name = Name::None(), StringView path = {});
 
 	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access, TSpan<Id> types,
 	    bool removeFromDisk = false);

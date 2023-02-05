@@ -12,6 +12,7 @@
 #include <AST/Components/CDeclFunction.h>
 #include <AST/Components/CDeclStatic.h>
 #include <AST/Components/CDeclStruct.h>
+#include <AST/Components/CDeclType.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprCall.h>
 #include <AST/Components/CExprInputs.h>
@@ -25,7 +26,6 @@
 #include <AST/Components/CStmtIf.h>
 #include <AST/Components/CStmtOutputs.h>
 #include <AST/Components/CStmtReturn.h>
-#include <AST/Components/CType.h>
 #include <AST/Components/Tags/CInvalid.h>
 #include <AST/Id.h>
 #include <AST/Utils/ModuleUtils.h>
@@ -53,7 +53,8 @@ namespace rift::compiler::LLVM
 	void AddCall(ModuleIRGen& gen, AST::Id id, const AST::CExprCallId& call, BlockAccessRef access);
 
 
-	void BindNativeTypes(llvm::LLVMContext& llvm, TAccessRef<AST::CType, TWrite<CIRType>> access)
+	void BindNativeTypes(
+	    llvm::LLVMContext& llvm, TAccessRef<AST::CDeclType, TWrite<CIRType>> access)
 	{
 		const auto& nativeTypes = static_cast<AST::Tree&>(access.GetContext()).GetNativeTypes();
 		access.Add<CIRType>(nativeTypes.boolId, {llvm::Type::getInt8Ty(llvm)});
@@ -71,7 +72,8 @@ namespace rift::compiler::LLVM
 	}
 
 	void DeclareStructs(ModuleIRGen& gen,
-	    TAccessRef<AST::CType, AST::CNamespace, TWrite<CIRType>, AST::CChild, AST::CModule> access,
+	    TAccessRef<AST::CDeclType, AST::CNamespace, TWrite<CIRType>, AST::CChild, AST::CModule>
+	        access,
 	    TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
@@ -368,8 +370,8 @@ namespace rift::compiler::LLVM
 
 		// Filter all module rift types
 		TArray<AST::Id> typeIds;
-		p::ecs::GetChildren(ast, moduleId, typeIds);
-		ecs::ExcludeIfNot<AST::CType>(ast, typeIds);
+		ecs::GetChildren(ast, moduleId, typeIds);
+		ecs::ExcludeIfNot<AST::CDeclType>(ast, typeIds);
 		TArray<AST::Id> structIds = ecs::GetIf<AST::CDeclStruct>(ast, typeIds);
 		TArray<AST::Id> classIds  = ecs::GetIf<AST::CDeclClass>(ast, typeIds);
 		TArray<AST::Id> staticIds = ecs::GetIf<AST::CDeclStatic>(ast, typeIds);

@@ -5,6 +5,7 @@
 #include "AST/Components/CDeclClass.h"
 #include "AST/Components/CDeclStatic.h"
 #include "AST/Components/CDeclStruct.h"
+#include "AST/Components/CDeclType.h"
 #include "AST/Components/CDeclVariable.h"
 #include "AST/Components/CExprCall.h"
 #include "AST/Components/CExprDeclRef.h"
@@ -26,6 +27,8 @@
 #include "AST/Utils/Namespaces.h"
 #include "AST/Utils/Paths.h"
 #include "AST/Utils/TransactionUtils.h"
+#include "FrameworkModule.h"
+#include "Rift.h"
 
 #include <Pipe/Core/Checks.h>
 #include <Pipe/Core/Profiler.h>
@@ -44,7 +47,7 @@ namespace rift::AST
 		    CLiteralIntegral, CLiteralString, CStmtIf, CStmtOutput, CStmtOutputs, CStmtInput>();
 	};
 
-	void InitTypeFromCategory(Tree& ast, Id id, RiftType category)
+	void InitTypeFromFileType(Tree& ast, Id id, p::Name typeId)
 	{
 		if (auto* fileRef = ast.TryGet<CFileRef>(id))
 		{
@@ -53,42 +56,22 @@ namespace rift::AST
 			ast.Add<CNamespace>(id, {Name{fileName}});
 		}
 
-		ast.Add<CType>(id);
+		ast.Add<CDeclType>(id, {.typeId = typeId});
 
-		switch (category)
+		if (auto* fileType = FindFileType(typeId))
 		{
-			case RiftType::Class: ast.Add<CDeclClass>(id); break;
-			case RiftType::Struct: ast.Add<CDeclStruct>(id); break;
-			case RiftType::Static: ast.Add<CDeclStatic>(id); break;
-			default: break;
+			fileType->onAddTag(ast, id);
 		}
 	}
 
-	RiftType GetTypeCategory(Tree& ast, Id id)
-	{
-		if (ast.Has<CDeclStruct>(id))
-		{
-			return RiftType::Struct;
-		}
-		else if (ast.Has<CDeclClass>(id))
-		{
-			return RiftType::Class;
-		}
-		else if (ast.Has<CDeclStatic>(id))
-		{
-			return RiftType::Static;
-		}
-		return RiftType::None;
-	}
-
-	Id CreateType(Tree& ast, RiftType type, Name name, StringView path)
+	Id CreateType(Tree& ast, p::Name typeId, Name name, StringView path)
 	{
 		Id id = ast.Create();
 		if (!path.empty())
 		{
 			ast.Add<CFileRef>(id, path);
 		}
-		InitTypeFromCategory(ast, id, type);
+		InitTypeFromFileType(ast, id, typeId);
 
 		if (!name.IsNone() && !ast.Has<CNamespace>(id))
 		{
@@ -117,10 +100,16 @@ namespace rift::AST
 	{
 		ZoneScoped;
 
+		if (!Ensure(ast.Has<CDeclType>(id)))
+		{
+			return;
+		}
+
 		JsonFormatWriter writer{};
 		p::ecs::EntityWriter w{writer.GetWriter(), ast};
 		w.BeginObject();
-		w.Next("type", GetTypeCategory(ast, id));
+
+		w.Next("type", ast.Get<CDeclType>(id).typeId);
 		w.SerializeEntity(id, typeComponents);
 
 		data = writer.ToString();
@@ -139,9 +128,9 @@ namespace rift::AST
 		p::ecs::EntityReader r{reader, ast};
 		r.BeginObject();
 
-		RiftType category = RiftType::None;
-		r.Next("type", category);
-		InitTypeFromCategory(ast, id, category);
+		p::Name typeId;
+		r.Next("type", typeId);
+		InitTypeFromFileType(ast, id, typeId);
 
 		r.SerializeEntity(id, typeComponents);
 	}

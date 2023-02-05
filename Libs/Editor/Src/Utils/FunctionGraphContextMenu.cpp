@@ -12,10 +12,10 @@
 #include "Utils/Widgets.h"
 
 #include <AST/Components/CDeclFunction.h>
+#include <AST/Components/CDeclType.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprType.h>
 #include <AST/Components/CNamespace.h>
-#include <AST/Components/CType.h>
 #include <AST/Components/Views/CNodePosition.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Utils/Expressions.h>
@@ -171,8 +171,8 @@ namespace rift::Editor::Graph
 		{
 			String makeStr{};
 			auto& typeList = ast.GetStatic<AST::STypes>();
-			TAccess<AST::CType, AST::CNamespace> typesAccess{ast};
-			for (ecs::Id typeId : ecs::ListAll<AST::CType>(typesAccess))
+			TAccess<AST::CDeclType, AST::CNamespace> typesAccess{ast};
+			for (ecs::Id typeId : ecs::ListAll<AST::CDeclType>(typesAccess))
 			{
 				if (auto* ns = typesAccess.TryGet<const AST::CNamespace>(typeId))
 				{
@@ -191,13 +191,13 @@ namespace rift::Editor::Graph
 		if (ContextTreeNode("Functions", filter))
 		{
 			static String label;
-			TAccess<AST::CDeclFunction, AST::CNamespace, AST::CChild, AST::CType> access{ast};
+			TAccess<AST::CDeclFunction, AST::CNamespace, AST::CChild, AST::CDeclType> access{ast};
 			for (AST::Id functionId : ecs::ListAll<AST::CDeclFunction, AST::CNamespace>(access))
 			{
 				Name name = access.Get<const AST::CNamespace>(functionId).name;
 				label.clear();
 				AST::Id funcTypeId = p::ecs::GetParent(access, functionId);
-				if (!IsNone(funcTypeId) && access.Has<AST::CType, AST::CNamespace>(funcTypeId))
+				if (!IsNone(funcTypeId) && access.Has<AST::CDeclType, AST::CNamespace>(funcTypeId))
 				{
 					Strings::FormatTo(label, "{}   ({})", name,
 					    access.Get<const AST::CNamespace>(funcTypeId).name);
@@ -218,13 +218,13 @@ namespace rift::Editor::Graph
 		if (ContextTreeNode("Variables", filter))
 		{
 			static String label;
-			TAccess<AST::CDeclVariable, AST::CNamespace, AST::CChild, AST::CType> access{ast};
+			TAccess<AST::CDeclVariable, AST::CNamespace, AST::CChild, AST::CDeclType> access{ast};
 			for (AST::Id variableId : ecs::ListAll<AST::CDeclVariable, AST::CNamespace>(access))
 			{
 				Name name = access.Get<const AST::CNamespace>(variableId).name;
 				label.clear();
 				AST::Id typeId = p::ecs::GetParent(access, variableId);
-				if (!IsNone(typeId) && access.Has<AST::CType, AST::CNamespace>(typeId))
+				if (!IsNone(typeId) && access.Has<AST::CDeclType, AST::CNamespace>(typeId))
 				{
 					Strings::FormatTo(
 					    label, "{}   ({})", name, access.Get<const AST::CNamespace>(typeId).name);

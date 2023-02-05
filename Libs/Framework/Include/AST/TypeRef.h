@@ -1,7 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Components/CType.h"
+#include "AST/Components/CDeclType.h"
 #include "AST/Tree.h"
 
 #include <Pipe/Core/Checks.h>
@@ -20,7 +20,7 @@ namespace rift::AST
 		{
 			if (!IsNone(typeId))
 			{
-				Ensure(ast.Has<CType>(typeId));
+				Ensure(ast.Has<CDeclType>(typeId));
 			}
 		}
 

@@ -4,17 +4,17 @@
 
 #include "Components/CTypeEditor.h"
 
+#include <AST/Components/CDeclType.h>
 #include <AST/Components/CExprBinaryOperator.h>
 #include <AST/Components/CExprUnaryOperator.h>
-#include <AST/Components/CType.h>
 #include <AST/Utils/TypeUtils.h>
 #include <Pipe/ECS/Access.h>
 
 
 namespace rift::Editor
 {
-	void OpenType(TAccessRef<TWrite<CTypeEditor>, AST::CType> access, AST::Id id);
-	void CloseType(TAccessRef<TWrite<CTypeEditor>, AST::CType> access, AST::Id id);
+	void OpenType(TAccessRef<TWrite<CTypeEditor>, AST::CDeclType> access, AST::Id id);
+	void CloseType(TAccessRef<TWrite<CTypeEditor>, AST::CDeclType> access, AST::Id id);
 	bool IsTypeOpen(TAccessRef<CTypeEditor> access, AST::Id id);
 
 	constexpr StringView GetUnaryOperatorName(AST::UnaryOperatorType type)

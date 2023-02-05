@@ -10,6 +10,7 @@
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CDeclFunction.h>
+#include <AST/Components/CDeclType.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprBinaryOperator.h>
 #include <AST/Components/CExprCall.h>
@@ -27,7 +28,6 @@
 #include <AST/Components/CStmtInput.h>
 #include <AST/Components/CStmtOutputs.h>
 #include <AST/Components/CStmtReturn.h>
-#include <AST/Components/CType.h>
 #include <AST/Components/Tags/CInvalid.h>
 #include <AST/Components/Views/CNodePosition.h>
 #include <AST/Utils/Expressions.h>
@@ -410,7 +410,7 @@ namespace rift::Editor::Graph
 
 	using CallsAccess = TAccessRef<TWrite<AST::CChanged>, TWrite<AST::CFileDirty>, AST::CChild,
 	    AST::CFileRef, AST::CExprCall, AST::CExprInputs, AST::CExprOutputs, AST::CNamespace,
-	    AST::CExprTypeId, AST::CInvalid, TWrite<CNodePosition>, AST::CType>;
+	    AST::CExprTypeId, AST::CInvalid, TWrite<CNodePosition>, AST::CDeclType>;
 	void DrawCalls(CallsAccess access, AST::Id typeId, const TArray<AST::Id>& childrenIds)
 	{
 		for (AST::Id id : childrenIds)

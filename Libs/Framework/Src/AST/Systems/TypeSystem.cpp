@@ -17,13 +17,13 @@ namespace rift::AST::TypeSystem
 {
 	void Init(Tree& ast)
 	{
-		TAccess<CType, CNamespace> access{ast};
+		TAccess<CDeclType, CNamespace> access{ast};
 
 		ast.OnAdd<CFileRef>().Bind([](auto& ast, auto ids) {
 			auto& types = ast.template GetOrSetStatic<STypes>();
 			for (Id id : ids)
 			{
-				if (ast.template Has<CType>(id) && ast.template Has<CFileRef>(id))
+				if (ast.template Has<CDeclType>(id) && ast.template Has<CFileRef>(id))
 				{
 					const auto& file = ast.template Get<const CFileRef>(id);
 					types.typesByPath.Insert(p::Name{file.path}, id);
@@ -35,7 +35,7 @@ namespace rift::AST::TypeSystem
 			auto& types = ast.template GetOrSetStatic<STypes>();
 			for (Id id : ids)
 			{
-				if (ast.template Has<CType>(id) && ast.template Has<CFileRef>(id))
+				if (ast.template Has<CDeclType>(id) && ast.template Has<CFileRef>(id))
 				{
 					const auto& file = ast.template Get<const CFileRef>(id);
 					types.typesByPath.Remove(p::Name{file.path});
@@ -87,7 +87,7 @@ namespace rift::AST::TypeSystem
 
 	void PropagateExpressionTypes(PropagateExpressionTypesAccess access)
 	{
-		TArray<Id> dirtyTypeIds = ecs::ListAll<CType, CChanged>(access);
+		TArray<Id> dirtyTypeIds = ecs::ListAll<CDeclType, CChanged>(access);
 
 		TArray<Id> dirtyNodeIds;
 		p::ecs::GetChildren(access, dirtyTypeIds, dirtyNodeIds);

@@ -1,7 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Components/CType.h"
+#include "AST/Components/CDeclType.h"
 
 #include <Pipe/Core/Function.h>
 #include <Pipe/Reflect/Struct.h>
@@ -16,7 +16,7 @@ namespace rift
 		PROP(name)
 		p::Name name;
 
-		AST::RiftType supportedTypes = AST::RiftType::None;
+		p::TArray<p::Name> supportedTypes;
 
 		p::TFunction<void()> onDrawEditor;
 	};

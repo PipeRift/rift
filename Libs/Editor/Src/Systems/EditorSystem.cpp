@@ -17,10 +17,10 @@
 #include "Utils/ProjectManager.h"
 #include "Utils/TypeUtils.h"
 
+#include <AST/Components/CDeclType.h>
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
 #include <AST/Components/CRiftModule.h>
-#include <AST/Components/CType.h>
 #include <AST/Components/Tags/CDirty.h>
 #include <Compiler/Compiler.h>
 #include <IconsFontAwesome5.h>
@@ -281,7 +281,8 @@ namespace rift::Editor::EditorSystem
 					TArray<TPair<Path, String>> fileDatas;
 
 					auto dirtyTypeIds =
-					    ecs::ListAll<AST::CType, CTypeEditor, AST::CFileRef, AST::CFileDirty>(ast);
+					    ecs::ListAll<AST::CDeclType, CTypeEditor, AST::CFileRef, AST::CFileDirty>(
+					        ast);
 					for (AST::Id typeId : dirtyTypeIds)
 					{
 						auto& file     = ast.Get<AST::CFileRef>(typeId);
@@ -512,8 +513,8 @@ namespace rift::Editor::EditorSystem
 	{
 		ZoneScoped;
 
-		TAccess<TWrite<CTypeEditor>, AST::CType, AST::CFileRef> access{ast};
-		for (AST::Id typeId : ecs::ListAll<AST::CType, CTypeEditor, AST::CFileRef>(access))
+		TAccess<TWrite<CTypeEditor>, AST::CDeclType, AST::CFileRef> access{ast};
+		for (AST::Id typeId : ecs::ListAll<AST::CDeclType, CTypeEditor, AST::CFileRef>(access))
 		{
 			ZoneScopedN("Draw Type");
 

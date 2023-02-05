@@ -8,6 +8,7 @@
 namespace rift
 {
 	static p::TMap<p::ClassType*, p::TOwnPtr<class Module>> modules{};
+	static p::TArray<FileTypeDescriptor> fileTypes;
 	static p::TArray<View> views{};
 
 
@@ -39,4 +40,22 @@ namespace rift
 	{
 		views.Add(Move(view));
 	}
+
+	void RegisterFileType(FileTypeDescriptor&& descriptor)
+	{
+		fileTypes.FindOrAddSorted(Move(descriptor));
+	}
+
+
+	p::TSpan<const FileTypeDescriptor> GetFileTypes()
+	{
+		return fileTypes;
+	}
+
+	const FileTypeDescriptor* FindFileType(p::Name typeId)
+	{
+		const i32 index = fileTypes.FindSortedEqual(typeId);
+		return index != NO_INDEX ? fileTypes.Data() + index : nullptr;
+	}
+
 };    // namespace rift

@@ -1,7 +1,0 @@
-{
-    "name": "Standard Library",
-    "target": "Static",
-    "type": "CBinding",
-    "dependencies": [],
-    "libraryFiles": []
-}

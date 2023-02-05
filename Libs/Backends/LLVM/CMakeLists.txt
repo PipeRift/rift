@@ -2,7 +2,6 @@
 
 add_library(RiftBackendLLVM STATIC)
 rift_compiler_module(RiftBackendLLVM)
-rift_enable_module_resources(RiftBackendLLVM)
 
 target_link_libraries(RiftBackendLLVM PUBLIC Rift)
 target_link_libraries(RiftBackendLLVM PRIVATE

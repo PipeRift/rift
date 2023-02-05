@@ -1,6 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #include <Editor.h>
+#include <FrameworkModule.h>
 #include <GraphViewModule.h>
 #include <LLVMBackendModule.h>
 #include <Pipe/Pipe.h>
@@ -18,6 +19,7 @@ using namespace rift;
 int RunEditor(StringView projectPath)
 {
 	p::Initialize("Saved/Logs");
+	EnableModule<FrameworkModule>();
 	EnableModule<LLVMBackendModule>();
 	EnableModule<GraphViewModule>();
 
