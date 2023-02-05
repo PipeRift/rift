@@ -21,9 +21,7 @@ namespace rift
 		static const p::Name classType;
 		static const p::Name staticType;
 
-		p::TArray<FileTypeDescriptor> fileTypes;
 
-
-		FrameworkModule();
+		void Load() override;
 	};
 }    // namespace rift

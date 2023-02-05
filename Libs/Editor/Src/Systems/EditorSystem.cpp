@@ -133,7 +133,7 @@ namespace rift::Editor::EditorSystem
 		DrawMenuBar(ast);
 		DrawProjectManager(ast);
 
-#if BUILD_DEBUG
+#if P_DEBUG
 		if (bool& showDemo = Editor::Get().showDemo)
 		{
 			UI::ShowDemoWindow(&showDemo);
@@ -206,7 +206,7 @@ namespace rift::Editor::EditorSystem
 		{
 			if (UI::BeginMenu("Views"))
 			{
-#if BUILD_DEBUG
+#if P_DEBUG
 				UI::MenuItem("Style", nullptr, &Editor::Get().showStyle);
 				UI::MenuItem("Metrics", nullptr, &Editor::Get().showMetrics);
 				UI::MenuItem("Demo", nullptr, &Editor::Get().showDemo);

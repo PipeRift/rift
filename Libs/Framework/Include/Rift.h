@@ -19,6 +19,7 @@ namespace rift
 		p::Name id;
 		p::StructType* tagType = nullptr;
 		p::String displayName;
+		p::String category;
 
 		p::TFunction<void(AST::Tree&, AST::Id)> onAddTag;
 
@@ -66,11 +67,13 @@ namespace rift
 	const FileTypeDescriptor* FindFileType(p::Name typeId);
 
 	template<typename TagType>
-	void RegisterFileType(p::Name typeId, p::StringView displayName = {})
+	void RegisterFileType(
+	    p::Name typeId, p::StringView displayName = {}, p::StringView category = {})
 	{
 		RegisterFileType(FileTypeDescriptor{.id = typeId,
 		    .tagType                            = TagType::GetStaticType(),
 		    .displayName                        = p::String{displayName},
+		    .category                           = p::String{category},
 		    .onAddTag                           = [](auto& ast, AST::Id id) {
                 ast.Add<TagType>(id);
 		    }});

@@ -16,8 +16,7 @@ namespace rift
 	{
 		CLASS(NativeBindingModule, Module)
 
-		NativeBindingModule();
-
+		void Load() override;
 		void SyncIncludes(AST::Tree& ast);
 	};
 }    // namespace rift

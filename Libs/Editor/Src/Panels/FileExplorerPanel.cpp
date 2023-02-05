@@ -45,7 +45,6 @@ namespace rift::Editor
 			}
 		}
 
-
 		auto& editor = ast.GetStatic<SEditor>();
 		editor.layout.BindNextWindowToNode(SEditor::leftNode);
 
@@ -136,16 +135,34 @@ namespace rift::Editor
 		{
 			if (UI::BeginMenu("Create type"))
 			{
-				String createText;
-				for (const auto& fileType : GetFileTypes())
+				TArray<const FileTypeDescriptor*> types;
+				types.Reserve(GetFileTypes().Size());
+				for (const auto& type : GetFileTypes())
 				{
+					types.Add(&type);
+				}
+				types.Sort([](const auto* one, const auto* other) {
+					return one->category < other->category;
+				});
+
+				p::StringView currentCategory;
+				String createText;
+				for (const auto& fileType : types)
+				{
+					if (currentCategory != fileType->category)
+					{
+						currentCategory = fileType->category;
+						ImGui::Separator();
+						ImGui::MenuItem(currentCategory.data(), nullptr, false, false);
+					}
+
 					createText.clear();
-					Strings::FormatTo(createText, "{}##{}", fileType.displayName, fileType.id);
+					Strings::FormatTo(createText, "{}##{}", fileType->displayName, fileType->id);
 					if (UI::MenuItem(createText.c_str()))
 					{
 						createText.clear();
-						Strings::FormatTo(createText, "Create {} type", fileType.displayName);
-						CreateType(ast, createText, fileType.id, path);
+						Strings::FormatTo(createText, "Create {} type", fileType->displayName);
+						CreateType(ast, createText, fileType->id, path);
 					}
 				}
 				UI::EndMenu();

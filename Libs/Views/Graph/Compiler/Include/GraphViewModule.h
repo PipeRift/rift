@@ -16,14 +16,7 @@ namespace rift
 		CLASS(GraphViewModule, Module)
 
 	public:
-		void Register() override
-		{
-			RegisterView(View{
-			    .name           = "Graph",
-			    .supportedTypes = {FrameworkModule::classType, FrameworkModule::structType},
-			    .onDrawEditor   = &GraphViewModule::DrawEditor
-            });
-		}
+		void Load() override;
 
 		static void DrawEditor() {}
 	};

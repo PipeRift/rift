@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Pipe/Core/Platform.h"
 #include "Rift.h"
 
 #include <Pipe/Memory/OwnPtr.h>
@@ -12,16 +13,39 @@ namespace rift
 {
 	using namespace p;
 
+
 	class Module : public Class
 	{
 		CLASS(Module, Class)
 
+		enum class State : u8
+		{
+			Uninitialized,
+			Initialized,
+			Loading,
+			Ready
+		};
+
+		State state = State::Uninitialized;
+
+
 	public:
-		virtual void Register() {}
+		void DoLoad();
+
+		bool IsLoading() const
+		{
+			return state == State::Loading;
+		}
+
+	protected:
+		virtual void Load() {}
 
 		template<typename ModuleType>
 		void AddDependency()
 		{
+			EnsureMsg(state == State::Uninitialized,
+			    "Should not add dependencies outside of the constructor");
+
 			EnableModule<ModuleType>();
 		}
 	};

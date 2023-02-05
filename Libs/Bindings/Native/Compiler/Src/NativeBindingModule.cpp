@@ -2,8 +2,11 @@
 
 #include "NativeBindingModule.h"
 
+#include "Components/CDeclCStatic.h"
+#include "Components/CDeclCStruct.h"
 #include "Components/CNativeModule.h"
 #include "HeaderIterator.h"
+#include "Rift.h"
 
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
@@ -38,11 +41,10 @@ namespace rift
 		}
 	};
 
-	NativeBindingModule::NativeBindingModule()
+	void NativeBindingModule::Load()
 	{
-#if WITH_EDITOR
-		p::Log::Info("WITH EDITOR: TRUE");
-#endif
+		RegisterFileType<CDeclCStruct>("CStruct", "C Struct", "Bindings");
+		RegisterFileType<CDeclCStatic>("CStatic", "C Static", "Bindings");
 	}
 
 	void FindHeaders(AST::Tree& ast, TSpan<ParsedModule> parsedModules)

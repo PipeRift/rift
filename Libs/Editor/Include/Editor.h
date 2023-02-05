@@ -20,7 +20,7 @@ namespace rift::Editor
 		AST::Tree ast;
 
 	public:
-#if BUILD_DEBUG
+#if P_DEBUG
 		bool showDemo    = false;
 		bool showMetrics = false;
 		bool showStyle   = false;

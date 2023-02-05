@@ -5,3 +5,15 @@
 #include <Pipe/Memory/NewDelete.h>
 
 // P_OVERRIDE_NEW_DELETE
+
+namespace rift
+{
+	void GraphViewModule::Load()
+	{
+		RegisterView(View{
+		    .name           = "Graph",
+		    .supportedTypes = {FrameworkModule::classType, FrameworkModule::structType},
+		    .onDrawEditor   = &GraphViewModule::DrawEditor
+        });
+	}
+}    // namespace rift

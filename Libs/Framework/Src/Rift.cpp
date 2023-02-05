@@ -18,7 +18,9 @@ namespace rift
 
 		if (!modules.Contains(type))
 		{
-			modules.Insert(type, MakeOwned<Module>(type));
+			auto module = MakeOwned<Module>(type);
+			module->DoLoad();
+			modules.Insert(type, Move(module));
 		}
 	}
 

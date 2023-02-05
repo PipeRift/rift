@@ -18,7 +18,7 @@ namespace rift
 	const p::Name FrameworkModule::staticType = "Static";
 
 
-	FrameworkModule::FrameworkModule()
+	void FrameworkModule::Load()
 	{
 		RegisterFileType<AST::CDeclStruct>(structType, "Struct");
 		RegisterFileType<AST::CDeclClass>(classType, "Class");

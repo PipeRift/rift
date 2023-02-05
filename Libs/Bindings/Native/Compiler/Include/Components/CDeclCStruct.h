@@ -6,7 +6,7 @@
 
 namespace rift
 {
-	struct CDeclCStruct : public CDeclRecord
+	struct CDeclCStruct : public AST::CDeclRecord
 	{
 		STRUCT(CDeclCStruct, CDeclRecord)
 	};
