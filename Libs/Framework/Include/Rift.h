@@ -75,7 +75,7 @@ namespace rift
 		    .displayName                        = p::String{displayName},
 		    .category                           = p::String{category},
 		    .onAddTag                           = [](auto& ast, AST::Id id) {
-                ast.Add<TagType>(id);
+                ast.template Add<TagType>(id);
 		    }});
 	}
 }    // namespace rift
