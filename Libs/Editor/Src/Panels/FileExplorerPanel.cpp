@@ -182,7 +182,6 @@ namespace rift::Editor
 
 	void FileExplorerPanel::InsertItem(const Item& item)
 	{
-		StringView lastPath   = item.path;
 		StringView parentPath = p::GetParentPath(item.path);
 		Name parentName{parentPath};
 
@@ -193,6 +192,7 @@ namespace rift::Editor
 		}
 		folders.Insert(parentName, Folder{.items = {item}});
 
+		StringView lastPath;
 		while (!parentPath.empty())
 		{
 			lastPath   = parentPath;
