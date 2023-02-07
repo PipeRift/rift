@@ -2,13 +2,14 @@
 
 #include "IO.h"
 
-#include <cstdio>
+#include <iostream>
+
 
 extern "C"
 {
 	void Print(const char* text)
 	{
-		std::printf(text);
+		std::cout << text;
 	}
 
 	void PrintHelloWorld()
