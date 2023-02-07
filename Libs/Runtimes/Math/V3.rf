@@ -1,0 +1,9 @@
+{
+    "type": "CStruct",
+    "count": 1,
+    "components": {
+        "CNamespace": {
+            "0": "V3"
+        }
+    }
+}

@@ -11,7 +11,7 @@ namespace rift
 	{
 		STRUCT(CNativeModule, p::Struct)
 
-		PROP(includePaths)
-		p::TArray<p::Path> includePaths;
+		PROP(staticBinaries)
+		p::TArray<p::Path> staticBinaries;
 	};
 }    // namespace rift

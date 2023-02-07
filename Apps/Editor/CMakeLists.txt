@@ -16,11 +16,3 @@ target_compile_definitions(RiftEditorExe PUBLIC RIFT_EDITOR=1)
 rift_module(RiftEditorExe)
 set_target_properties(RiftEditorExe PROPERTIES OUTPUT_NAME "RiftEditor")
 set_icon(RiftEditorExe Icon.ico)
-
-install(TARGETS RiftEditorExe
-    EXPORT RiftTargets
-    LIBRARY DESTINATION Lib
-    ARCHIVE DESTINATION Lib
-    RUNTIME DESTINATION Bin
-    INCLUDES DESTINATION Include
-)

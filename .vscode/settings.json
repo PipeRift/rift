@@ -163,21 +163,21 @@
             "name": "Rift",
             "cwd": "${workspaceFolder}/Build/Bin",
             "windows": {
-                "cmd": "RiftTests.exe",
+                "cmd": "Tests/RiftTests.exe",
                 "watches": [
                     "Rift.lib",
                     "Pipe.lib"
                 ]
             },
             "linux": {
-                "cmd": "RiftTests",
+                "cmd": "Tests/RiftTests",
                 "watches": [
                     "Rift.so",
                     "Pipe.so"
                 ]
             },
             "osx": {
-                "cmd": "RiftTests",
+                "cmd": "Tests/RiftTests",
                 "watches": [
                     "Rift.dylib",
                     "Pipe.dylib"
@@ -189,20 +189,20 @@
             "name": "Pipe",
             "cwd": "${workspaceFolder}/Build/Bin",
             "windows": {
-                "cmd": "PipeTests.exe",
+                "cmd": "Tests/PipeTests.exe",
                 "watches": [
                     "Pipe.lib",
                     "Pipe.dll"
                 ]
             },
             "linux": {
-                "cmd": "PipeTests",
+                "cmd": "Tests/PipeTests",
                 "watches": [
                     "Pipe.so"
                 ]
             },
             "osx": {
-                "cmd": "PipeTests",
+                "cmd": "Tests/PipeTests",
                 "watches": [
                     "Pipe.dylib"
                 ]

@@ -68,17 +68,3 @@ target_link_libraries(RiftClang INTERFACE libclang)
 target_compile_definitions(RiftClang INTERFACE ${CLANG_DEFINITIONS_LIST} -DNOMINMAX)
 target_link_libraries(RiftClang INTERFACE RiftLLVM)
 pipe_target_disable_all_warnings(RiftClang INTERFACE)
-
-# Copy LLVM linker
-if (PLATFORM_WINDOWS)
-    set(RIFT_LLVM_LINKER lld-link.exe)
-elseif(PLATFORM_LINUX)
-    set(RIFT_LLVM_LINKER ld.lld)
-elseif(PLATFORM_MACOS)
-    set(RIFT_LLVM_LINKER ld64.lld)
-endif()
-
-file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/Bin/llvm)
-file(COPY ${RIFT_LLVM_BIN_PATH}/bin/${RIFT_LLVM_LINKER} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Bin/llvm)
-set(RIFT_LLVM_LINKER_PATH llvm/${RIFT_LLVM_LINKER})
-

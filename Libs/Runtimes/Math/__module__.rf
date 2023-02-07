@@ -3,5 +3,8 @@
         "dependencies": []
     },
     "CNativeModule": {
+        "staticBinaries": [
+            "./Lib/Math.lib"
+        ]
     }
 }

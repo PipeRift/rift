@@ -16,11 +16,3 @@ target_link_libraries(RiftEditor PUBLIC
 rift_module(RiftEditor)
 rift_enable_module_resources(RiftEditor)
 set_icon(RiftEditor ../../Resources/Icon.ico)
-
-install(TARGETS RiftEditor
-    EXPORT RiftTargets
-    LIBRARY DESTINATION Lib
-    ARCHIVE DESTINATION Lib
-    RUNTIME DESTINATION Bin
-    INCLUDES DESTINATION Include
-)
