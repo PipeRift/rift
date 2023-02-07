@@ -1,0 +1,20 @@
+{
+    "type": "CStatic",
+    "count": 2,
+    "components": {
+        "CChild": {
+            "0": -1,
+            "1": 0
+        },
+        "CDeclFunction": {
+            "1": {}
+        },
+        "CNamespace": {
+            "0": "IO",
+            "1": "PrintHelloWorld"
+        },
+        "CParent": {
+            "0": [1]
+        }
+    }
+}
