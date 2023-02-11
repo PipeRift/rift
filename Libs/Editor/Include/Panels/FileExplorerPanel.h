@@ -44,7 +44,7 @@ namespace rift::Editor
 
 	private:
 		AST::Id projectModuleId = AST::NoId;
-		p::TMap<p::Name, Folder> folders;
+		p::TMap<p::Tag, Folder> folders;
 
 		bool open  = true;
 		bool dirty = true;
@@ -80,7 +80,7 @@ namespace rift::Editor
 		void DrawModuleActions(AST::Id id, struct AST::CModule& module);
 		void DrawTypeActions(AST::Id id, struct AST::CDeclType& type);
 
-		void CreateType(AST::Tree& ast, p::StringView title, p::Name typeId, p::StringView path);
+		void CreateType(AST::Tree& ast, p::StringView title, p::Tag typeId, p::StringView path);
 	};
 
 

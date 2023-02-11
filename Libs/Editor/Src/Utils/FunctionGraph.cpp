@@ -164,7 +164,7 @@ namespace rift::Editor::Graph
 				const bool invalid = access.Has<AST::CInvalid>(pinId);
 				BeginExprInput(access, pinId, invalid);
 				auto* ns = access.TryGet<const AST::CNamespace>(pinId);
-				UI::Text(ns ? ns->name.ToString() : "none");
+				UI::Text(ns ? ns->name.AsString() : "none");
 				EndExprInput(invalid);
 			}
 		}
@@ -180,7 +180,7 @@ namespace rift::Editor::Graph
 				const bool invalid = access.Has<AST::CInvalid>(pinId);
 				BeginExprOutput(access, pinId, invalid);
 				auto* ns = access.TryGet<const AST::CNamespace>(pinId);
-				UI::Text(ns ? ns->name.ToString() : "none");
+				UI::Text(ns ? ns->name.AsString() : "none");
 				EndExprOutput(invalid);
 			}
 		}
@@ -345,7 +345,7 @@ namespace rift::Editor::Graph
 	{
 		for (AST::Id functionId : functionDecls)
 		{
-			Name name;
+			Tag name;
 			if (auto* ns = access.TryGet<const AST::CNamespace>(functionId))
 			{
 				name = ns->name;
@@ -357,7 +357,7 @@ namespace rift::Editor::Graph
 			{
 				Nodes::BeginNodeTitleBar();
 				{
-					UI::Text(name.ToString());
+					UI::Text(name.AsString());
 					UI::SameLine();
 
 					PushExecutionPinStyle();
@@ -417,7 +417,7 @@ namespace rift::Editor::Graph
 		{
 			if (auto* call = access.TryGet<const AST::CExprCall>(id))
 			{
-				StringView functionName = call->function.Last().ToString();
+				StringView functionName = call->function.Last().AsString();
 
 				PushNodeBackgroundColor(rift::UI::GetNeutralColor(0));
 				PushNodeTitleColor(callColor);
@@ -574,7 +574,7 @@ namespace rift::Editor::Graph
 				StringView name = "Invalid";
 				if (ast.IsValid(variableId) && ast.Has<AST::CNamespace>(variableId))
 				{
-					name = ast.Get<const AST::CNamespace>(variableId).name.ToString();
+					name = ast.Get<const AST::CNamespace>(variableId).name.AsString();
 				}
 				UI::Text(name);
 				PopInnerNodeStyle();

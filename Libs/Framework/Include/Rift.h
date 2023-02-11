@@ -4,10 +4,10 @@
 
 #include "AST/Id.h"
 #include "AST/Tree.h"
-#include "Pipe/Core/Name.h"
 #include "View.h"
 
 #include <Pipe/Core/Span.h>
+#include <Pipe/Core/Tag.h>
 #include <Pipe/Reflect/Class.h>
 #include <Pipe/Reflect/ClassType.h>
 
@@ -16,7 +16,7 @@ namespace rift
 {
 	struct FileTypeDescriptor
 	{
-		p::Name id;
+		p::Tag id;
 		p::StructType* tagType = nullptr;
 		p::String displayName;
 		p::String category;
@@ -28,11 +28,11 @@ namespace rift
 		{
 			return id < other.id;
 		}
-		friend bool operator<(const p::Name& lhs, const FileTypeDescriptor& rhs)
+		friend bool operator<(const p::Tag& lhs, const FileTypeDescriptor& rhs)
 		{
 			return lhs < rhs.id;
 		}
-		friend bool operator<(const FileTypeDescriptor& lhs, const p::Name& rhs)
+		friend bool operator<(const FileTypeDescriptor& lhs, const p::Tag& rhs)
 		{
 			return lhs.id < rhs;
 		}
@@ -64,11 +64,11 @@ namespace rift
 	void RegisterFileType(FileTypeDescriptor&& descriptor);
 
 	p::TSpan<const FileTypeDescriptor> GetFileTypes();
-	const FileTypeDescriptor* FindFileType(p::Name typeId);
+	const FileTypeDescriptor* FindFileType(p::Tag typeId);
 
 	template<typename TagType>
 	void RegisterFileType(
-	    p::Name typeId, p::StringView displayName = {}, p::StringView category = {})
+	    p::Tag typeId, p::StringView displayName = {}, p::StringView category = {})
 	{
 		RegisterFileType(FileTypeDescriptor{.id = typeId,
 		    .tagType                            = TagType::GetStaticType(),

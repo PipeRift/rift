@@ -9,16 +9,16 @@
 
 namespace rift::Editor
 {
-	const Name DockSpaceLayout::rootNodeId{"root"};
+	const Tag DockSpaceLayout::rootNodeId{"root"};
 
 
-	bool DockSpaceLayout::Builder::Split(Name originNodeId, ImGuiDir direction, float splitRatio,
-	    Name newNodeID, Name oppositeNewNodeID)
+	bool DockSpaceLayout::Builder::Split(Tag originNodeId, ImGuiDir direction, float splitRatio,
+	    Tag newNodeID, Tag oppositeNewNodeID)
 	{
 		const ImGuiID originDockNodeId = layout.GetDockNodeId(originNodeId);
 		if (originDockNodeId == 0)
 		{
-			Log::Error("Error splitting node {}. It doesn't exist.", originNodeId.ToString());
+			Log::Error("Error splitting node {}. It doesn't exist.", originNodeId.AsString());
 			return false;
 		}
 
@@ -31,14 +31,14 @@ namespace rift::Editor
 		return true;
 	}
 
-	ImGuiDockNodeFlags& DockSpaceLayout::Builder::GetNodeLocalFlags(Name nodeId)
+	ImGuiDockNodeFlags& DockSpaceLayout::Builder::GetNodeLocalFlags(Tag nodeId)
 	{
 		const ImGuiID dockNodeId = layout.GetDockNodeId(nodeId);
 		Check(dockNodeId > 0);
 		return ImGui::DockBuilderGetNode(dockNodeId)->LocalFlags;
 	}
 
-	ImGuiDockNodeFlags& DockSpaceLayout::Builder::GetNodeSharedFlags(Name nodeId)
+	ImGuiDockNodeFlags& DockSpaceLayout::Builder::GetNodeSharedFlags(Tag nodeId)
 	{
 		const ImGuiID dockNodeId = layout.GetDockNodeId(nodeId);
 		Check(dockNodeId > 0);
@@ -65,7 +65,7 @@ namespace rift::Editor
 		}
 	}
 
-	void DockSpaceLayout::BindWindowToNode(StringView windowId, Name nodeId)
+	void DockSpaceLayout::BindWindowToNode(StringView windowId, Tag nodeId)
 	{
 		ImGuiID dockId = GetDockNodeId(nodeId);
 		if (dockId > 0)
@@ -73,7 +73,7 @@ namespace rift::Editor
 			ImGui::DockBuilderDockWindow(windowId.data(), dockId);
 		}
 	}
-	void DockSpaceLayout::BindNextWindowToNode(Name nodeId, ImGuiCond cond)
+	void DockSpaceLayout::BindNextWindowToNode(Tag nodeId, ImGuiCond cond)
 	{
 		ImGuiID dockId = GetDockNodeId(nodeId);
 		if (dockId > 0)

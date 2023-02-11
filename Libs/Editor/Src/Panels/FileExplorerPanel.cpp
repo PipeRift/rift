@@ -183,7 +183,7 @@ namespace rift::Editor
 	void FileExplorerPanel::InsertItem(const Item& item)
 	{
 		StringView parentPath = p::GetParentPath(item.path);
-		Name parentName{parentPath};
+		Tag parentName{parentPath};
 
 		if (Folder* parent = folders.Find(parentName))
 		{
@@ -197,7 +197,7 @@ namespace rift::Editor
 		{
 			lastPath   = parentPath;
 			parentPath = p::GetParentPath(parentPath);
-			parentName = p::Name{parentPath};
+			parentName = p::Tag{parentPath};
 
 			const Item newItem{.id = AST::NoId, .path = p::String{lastPath}, .isFolder = true};
 			if (Folder* parent = folders.Find(parentName))
@@ -231,7 +231,7 @@ namespace rift::Editor
 		{
 			auto& file               = access.Get<const AST::CFileRef>(moduleId);
 			p::StringView folderPath = p::GetParentPath(file.path);
-			folders.InsertDefaulted(p::Name{folderPath});
+			folders.InsertDefaulted(p::Tag{folderPath});
 			moduleFolders.Insert(moduleId, folderPath);
 		}
 
@@ -291,7 +291,7 @@ namespace rift::Editor
 		const String path         = p::ToString(item.path);
 		const StringView fileName = p::GetFilename(path);
 
-		if (Folder* folder = folders.Find(p::Name{item.path}))
+		if (Folder* folder = folders.Find(p::Tag{item.path}))
 		{
 			ImGuiTreeNodeFlags flags = 0;
 			if (folder->items.IsEmpty())
@@ -399,7 +399,7 @@ namespace rift::Editor
 				const StringView parsedNewName = Strings::RemoveFromEnd(renameBuffer, ".rf");
 				const bool nameIsEmpty         = parsedNewName.empty();
 				const ecs::Id sameNameFuncId =
-				    AST::FindChildByName(ast, p::ecs::GetParent(ast, item.id), Name{parsedNewName});
+				    AST::FindChildByName(ast, p::ecs::GetParent(ast, item.id), Tag{parsedNewName});
 				if (nameIsEmpty || (!IsNone(sameNameFuncId) && item.id != sameNameFuncId))
 				{
 					UI::PushTextColor(LinearColor::Red());
@@ -424,10 +424,10 @@ namespace rift::Editor
 						}
 
 						auto& types = ast.GetOrSetStatic<AST::STypes>();
-						types.typesByPath.Remove(p::Name{item.path});
-						types.typesByPath.Insert(p::Name{destination}, item.id);
+						types.typesByPath.Remove(p::Tag{item.path});
+						types.typesByPath.Insert(p::Tag{destination}, item.id);
 
-						ast.Add<AST::CNamespace>(item.id, Name{parsedNewName});
+						ast.Add<AST::CNamespace>(item.id, Tag{parsedNewName});
 					}
 
 					renameId         = AST::NoId;
@@ -471,7 +471,7 @@ namespace rift::Editor
 	void FileExplorerPanel::DrawTypeActions(AST::Id id, AST::CDeclType& type) {}
 
 	void FileExplorerPanel::CreateType(
-	    AST::Tree& ast, StringView title, p::Name typeId, p::StringView folderPath)
+	    AST::Tree& ast, StringView title, p::Tag typeId, p::StringView folderPath)
 	{
 		const p::String path = files::SaveFileDialog(title, folderPath,
 		    {
@@ -479,7 +479,7 @@ namespace rift::Editor
         },
 		    true);
 
-		AST::Id id = AST::CreateType(ast, typeId, Name::None(), path);
+		AST::Id id = AST::CreateType(ast, typeId, Tag::None(), path);
 
 		String data;
 		AST::SerializeType(ast, id, data);

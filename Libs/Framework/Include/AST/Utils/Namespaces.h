@@ -22,17 +22,17 @@ namespace rift::AST
 		STRUCT(Namespace, Struct)
 
 		static constexpr i32 scopeCount = 8;
-		Name scopes[scopeCount];    // TODO: Implement Inline arrays
+		Tag scopes[scopeCount];    // TODO: Implement Inline arrays
 
 
 		Namespace() = default;
 		template<i32 M>
-		Namespace(Name scopes[M]) requires(M <= scopeCount) : scopes{scopes}
+		Namespace(Tag scopes[M]) requires(M <= scopeCount) : scopes{scopes}
 		{}
 		Namespace(StringView value);
 		// Prevent initializer list from stealing string constructor
 		Namespace(const String& value) : Namespace(StringView{value}) {}
-		Namespace(std::initializer_list<Name> values)
+		Namespace(std::initializer_list<Tag> values)
 		{
 			const i32 size = p::math::Min(i32(values.size()), scopeCount);
 			for (i32 i = 0; i < size; ++i)
@@ -46,19 +46,19 @@ namespace rift::AST
 		i32 Size() const;
 		bool Contains(const Namespace& other) const;
 		p::String ToString(LocalNamespace isLocal = LocalNamespace::No) const;
-		Name& First()
+		Tag& First()
 		{
 			return scopes[0];
 		}
-		Name First() const
+		Tag First() const
 		{
 			return scopes[0];
 		}
-		Name& Last()
+		Tag& Last()
 		{
 			return scopes[Size() - 1];
 		}
-		Name Last() const
+		Tag Last() const
 		{
 			return scopes[Size() - 1];
 		}
@@ -66,7 +66,7 @@ namespace rift::AST
 		{
 			return Equals(other);
 		}
-		Name operator[](i32 index) const
+		Tag operator[](i32 index) const
 		{
 			Check(index >= 0 && index < scopeCount);
 			return scopes[index];
@@ -76,19 +76,19 @@ namespace rift::AST
 			return !IsEmpty();
 		}
 
-		Name* begin()
+		Tag* begin()
 		{
 			return scopes;
 		}
-		const Name* begin() const
+		const Tag* begin() const
 		{
 			return scopes;
 		}
-		Name* end()
+		Tag* end()
 		{
 			return scopes + Size();
 		}
-		const Name* end() const
+		const Tag* end() const
 		{
 			return scopes + Size();
 		}
@@ -111,8 +111,8 @@ namespace rift::AST
 	Id FindIdFromNamespace(TAccessRef<CNamespace, CChild, CParent> access, const Namespace& ns,
 	    const TArray<Id>* rootIds = nullptr);
 
-	Name GetName(TAccessRef<CNamespace> access, Id id);
-	Name GetNameUnsafe(TAccessRef<CNamespace> access, Id id);
+	Tag GetName(TAccessRef<CNamespace> access, Id id);
+	Tag GetNameUnsafe(TAccessRef<CNamespace> access, Id id);
 	p::String GetFullName(TAccessRef<CNamespace, CChild, CModule> access, Id id,
 	    LocalNamespace localNamespace = LocalNamespace::No);
 }    // namespace rift::AST

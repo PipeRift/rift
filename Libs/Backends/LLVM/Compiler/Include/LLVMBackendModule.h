@@ -23,7 +23,7 @@ namespace rift
 			CLASS(LLVMBackend, Backend)
 
 		public:
-			Name GetName() override
+			Tag GetName() override
 			{
 				return "LLVM";
 			}

@@ -194,7 +194,7 @@ namespace rift::Editor::Graph
 			TAccess<AST::CDeclFunction, AST::CNamespace, AST::CChild, AST::CDeclType> access{ast};
 			for (AST::Id functionId : ecs::ListAll<AST::CDeclFunction, AST::CNamespace>(access))
 			{
-				Name name = access.Get<const AST::CNamespace>(functionId).name;
+				Tag name = access.Get<const AST::CNamespace>(functionId).name;
 				label.clear();
 				AST::Id funcTypeId = p::ecs::GetParent(access, functionId);
 				if (!IsNone(funcTypeId) && access.Has<AST::CDeclType, AST::CNamespace>(funcTypeId))
@@ -221,7 +221,7 @@ namespace rift::Editor::Graph
 			TAccess<AST::CDeclVariable, AST::CNamespace, AST::CChild, AST::CDeclType> access{ast};
 			for (AST::Id variableId : ecs::ListAll<AST::CDeclVariable, AST::CNamespace>(access))
 			{
-				Name name = access.Get<const AST::CNamespace>(variableId).name;
+				Tag name = access.Get<const AST::CNamespace>(variableId).name;
 				label.clear();
 				AST::Id typeId = p::ecs::GetParent(access, variableId);
 				if (!IsNone(typeId) && access.Has<AST::CDeclType, AST::CNamespace>(typeId))

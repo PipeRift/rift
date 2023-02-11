@@ -31,14 +31,14 @@ namespace rift::AST
 
 	Id GetProjectId(TAccessRef<CProject> access);
 
-	Name GetProjectName(TAccessRef<CProject, CNamespace, CFileRef> access);
+	Tag GetProjectName(TAccessRef<CProject, CNamespace, CFileRef> access);
 	p::StringView GetProjectPath(TAccessRef<CFileRef, CProject> access);
 	CModule* GetProjectModule(TAccessRef<CProject, TWrite<CModule>> access);
 
 	bool HasProject(Tree& ast);
 
 	// Resolve a module's name
-	Name GetModuleName(TAccessRef<CNamespace, CFileRef> access, Id moduleId);
+	Tag GetModuleName(TAccessRef<CNamespace, CFileRef> access, Id moduleId);
 
 	// Resolve a module's name
 	p::StringView GetModulePath(TAccessRef<CFileRef> access, Id moduleId);

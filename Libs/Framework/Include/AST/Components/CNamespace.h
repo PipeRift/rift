@@ -1,7 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include <Pipe/Core/Name.h>
+#include <Pipe/Core/Tag.h>
 #include <Pipe/Reflect/Struct.h>
 
 
@@ -12,17 +12,17 @@ namespace rift::AST
 		STRUCT(CNamespace, p::Struct)
 
 		PROP(name);
-		p::Name name;
+		p::Tag name;
 
 
 		CNamespace() = default;
-		CNamespace(p::Name name) : name(name) {}
+		CNamespace(p::Tag name) : name(name) {}
 
 		bool operator==(const CNamespace& other) const
 		{
 			return name == other.name;
 		}
-		bool operator==(p::Name other) const
+		bool operator==(p::Tag other) const
 		{
 			return name == other;
 		}

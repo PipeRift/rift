@@ -109,8 +109,8 @@ namespace rift::compiler::LLVM
 				}
 				else
 				{
-					const Name memberName = AST::GetName(access, memberId);
-					const Name typeName   = AST::GetName(access, id);
+					const Tag memberName = AST::GetName(access, memberId);
+					const Tag typeName   = AST::GetName(access, id);
 					gen.compiler.AddError(Strings::Format(
 					    "Variable '{}' in struct '{}' has an invalid type", memberName, typeName));
 				}
@@ -152,7 +152,7 @@ namespace rift::compiler::LLVM
 					}
 					else
 					{
-						const Name argName        = AST::GetName(access, inputId);
+						const Tag argName         = AST::GetName(access, inputId);
 						const String functionName = AST::GetFullName(access, id);
 						gen.compiler.AddError(Strings::Format(
 						    "Input '{}' in function '{}' has an invalid type. Using i32 instead.",
@@ -174,7 +174,7 @@ namespace rift::compiler::LLVM
 			const auto& args = functionComp.instance->args();
 			for (auto& arg : args)
 			{
-				Name name = AST::GetName(access, inputIds[i++]);
+				Tag name = AST::GetName(access, inputIds[i++]);
 				arg.setName(ToLLVM(name));
 			}
 
@@ -360,7 +360,7 @@ namespace rift::compiler::LLVM
 		ZoneScoped;
 		auto& ast = compiler.ast;
 
-		const Name name = AST::GetModuleName(compiler.ast, moduleId);
+		const Tag name = AST::GetModuleName(compiler.ast, moduleId);
 
 		CIRModule& module      = compiler.ast.Add<CIRModule>(moduleId);
 		module.instance        = MakeOwned<llvm::Module>(ToLLVM(name), llvm);

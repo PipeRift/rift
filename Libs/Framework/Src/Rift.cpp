@@ -54,7 +54,7 @@ namespace rift
 		return fileTypes;
 	}
 
-	const FileTypeDescriptor* FindFileType(p::Name typeId)
+	const FileTypeDescriptor* FindFileType(p::Tag typeId)
 	{
 		const i32 index = fileTypes.FindSortedEqual(typeId);
 		return index != NO_INDEX ? fileTypes.Data() + index : nullptr;

@@ -17,9 +17,9 @@ namespace rift
 		CLASS(FrameworkModule, Module)
 
 	public:
-		static const p::Name structType;
-		static const p::Name classType;
-		static const p::Name staticType;
+		static const p::Tag structType;
+		static const p::Tag classType;
+		static const p::Tag staticType;
 
 
 		void Load() override;

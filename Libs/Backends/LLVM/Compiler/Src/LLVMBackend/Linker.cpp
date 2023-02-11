@@ -26,7 +26,7 @@ namespace rift::compiler::LLVM
 
 		for (AST::Id moduleId : ecs::ListAll<AST::CRiftModule, CIRModule>(compiler.ast))
 		{
-			p::Name moduleName     = AST::GetModuleName(compiler.ast, moduleId);
+			p::Tag moduleName      = AST::GetModuleName(compiler.ast, moduleId);
 			const auto& riftModule = compiler.ast.Get<const AST::CRiftModule>(moduleId);
 			auto& irModule         = compiler.ast.Get<CIRModule>(moduleId);
 			if (p::files::Exists(irModule.objectFile))

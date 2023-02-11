@@ -27,7 +27,7 @@ namespace rift::AST
 		{
 			if (*curr == '.')
 			{
-				scopes[size] = Name{
+				scopes[size] = Tag{
 				    StringView{scopeStart, curr}
                 };
 				scopeStart = curr + 1;
@@ -38,7 +38,7 @@ namespace rift::AST
 
 		if (scopeStart < curr)    // Add last
 		{
-			scopes[size] = Name{
+			scopes[size] = Tag{
 			    StringView{scopeStart, curr}
             };
 		}
@@ -48,8 +48,8 @@ namespace rift::AST
 	{
 		for (i32 i = 0; i < scopeCount; ++i)
 		{
-			const Name scope      = scopes[i];
-			const Name otherScope = other.scopes[i];
+			const Tag scope      = scopes[i];
+			const Tag otherScope = other.scopes[i];
 			if (scope != otherScope)
 			{
 				return false;
@@ -83,21 +83,21 @@ namespace rift::AST
 		if (!isLocal)
 		{
 			ns.append("@");
-			const Name firstScope = scopes[0];
+			const Tag firstScope = scopes[0];
 			if (!firstScope.IsNone())
 			{
-				ns.append(firstScope.ToString());
+				ns.append(firstScope.AsString());
 				ns.append(".");
 			}
 		}
 		for (i32 i = 1; i < scopeCount; ++i)
 		{
-			const Name scope = scopes[i];
+			const Tag scope = scopes[i];
 			if (scope.IsNone())
 			{
 				break;
 			}
-			ns.append(scope.ToString());
+			ns.append(scope.AsString());
 			ns.append(".");
 		}
 
@@ -178,7 +178,7 @@ namespace rift::AST
 
 		const TArray<Id>* scopeIds = rootIds;
 		Id foundScopeId            = NoId;
-		Name scopeName;
+		Tag scopeName;
 		i32 depth = 0;
 		while (scopeIds && depth < Namespace::scopeCount)
 		{
@@ -213,12 +213,12 @@ namespace rift::AST
 		return foundScopeId;
 	}
 
-	Name GetName(TAccessRef<CNamespace> access, Id id)
+	Tag GetName(TAccessRef<CNamespace> access, Id id)
 	{
 		auto* ns = access.TryGet<const CNamespace>(id);
-		return ns ? ns->name : Name::None();
+		return ns ? ns->name : Tag::None();
 	}
-	Name GetNameUnsafe(TAccessRef<CNamespace> access, Id id)
+	Tag GetNameUnsafe(TAccessRef<CNamespace> access, Id id)
 	{
 		return access.Get<const CNamespace>(id).name;
 	}

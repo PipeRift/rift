@@ -47,13 +47,13 @@ namespace rift::AST
 		    CLiteralIntegral, CLiteralString, CStmtIf, CStmtOutput, CStmtOutputs, CStmtInput>();
 	};
 
-	void InitTypeFromFileType(Tree& ast, Id id, p::Name typeId)
+	void InitTypeFromFileType(Tree& ast, Id id, p::Tag typeId)
 	{
 		if (auto* fileRef = ast.TryGet<CFileRef>(id))
 		{
 			p::StringView fileName{p::GetFilename(fileRef->path)};
 			fileName = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
-			ast.Add<CNamespace>(id, {Name{fileName}});
+			ast.Add<CNamespace>(id, {Tag{fileName}});
 		}
 
 		ast.Add<CDeclType>(id, {.typeId = typeId});
@@ -64,7 +64,7 @@ namespace rift::AST
 		}
 	}
 
-	Id CreateType(Tree& ast, p::Name typeId, Name name, StringView path)
+	Id CreateType(Tree& ast, p::Tag typeId, Tag name, StringView path)
 	{
 		Id id = ast.Create();
 		if (!path.empty())
@@ -128,7 +128,7 @@ namespace rift::AST
 		p::ecs::EntityReader r{reader, ast};
 		r.BeginObject();
 
-		p::Name typeId;
+		p::Tag typeId;
 		r.Next("type", typeId);
 		InitTypeFromFileType(ast, id, typeId);
 
@@ -141,7 +141,7 @@ namespace rift::AST
 		if (auto* types = ast.TryGetStatic<STypes>())
 		{
 			// TODO: Replace once StringView TMap is more stable
-			if (Id* id = types->typesByPath.Find(p::Name{path}))
+			if (Id* id = types->typesByPath.Find(p::Tag{path}))
 			{
 				return *id;
 			}
@@ -180,7 +180,7 @@ namespace rift::AST
 	}
 
 
-	Id AddVariable(TypeRef type, Name name)
+	Id AddVariable(TypeRef type, Tag name)
 	{
 		Tree& ast = type.GetContext();
 
@@ -195,7 +195,7 @@ namespace rift::AST
 		return id;
 	}
 
-	Id AddFunction(TypeRef type, Name name)
+	Id AddFunction(TypeRef type, Tag name)
 	{
 		Tree& ast = type.GetContext();
 
@@ -228,7 +228,7 @@ namespace rift::AST
 		return id;
 	}
 
-	Id AddFunctionInput(Tree& ast, Id functionId, Name name)
+	Id AddFunctionInput(Tree& ast, Id functionId, Tag name)
 	{
 		Id id = ast.Create();
 		ast.Add<CNamespace>(id, name);
@@ -239,7 +239,7 @@ namespace rift::AST
 		return id;
 	}
 
-	Id AddFunctionOutput(Tree& ast, Id functionId, Name name)
+	Id AddFunctionOutput(Tree& ast, Id functionId, Tag name)
 	{
 		Id id = ast.Create();
 		ast.Add<CNamespace>(id, name);
@@ -429,7 +429,7 @@ namespace rift::AST
 		return id;
 	}
 
-	Id FindChildByName(TAccessRef<CNamespace, CParent> access, Id ownerId, Name functionName)
+	Id FindChildByName(TAccessRef<CNamespace, CParent> access, Id ownerId, Tag functionName)
 	{
 		if (!IsNone(ownerId))
 		{

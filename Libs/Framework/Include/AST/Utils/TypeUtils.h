@@ -25,9 +25,9 @@
 
 namespace rift::AST
 {
-	void InitTypeFromFileType(Tree& ast, Id id, p::Name typeId);
+	void InitTypeFromFileType(Tree& ast, Id id, p::Tag typeId);
 
-	Id CreateType(Tree& ast, p::Name typeId, Name name = Name::None(), StringView path = {});
+	Id CreateType(Tree& ast, p::Tag typeId, Tag name = Tag::None(), StringView path = {});
 
 	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access, TSpan<Id> types,
 	    bool removeFromDisk = false);
@@ -43,12 +43,12 @@ namespace rift::AST
 	bool CanContainFunctions(const Tree& ast, Id typeId);
 	bool CanEditFunctionBodies(const Tree& ast, Id typeId);
 
-	Id AddVariable(TypeRef type, Name name);
-	Id AddFunction(TypeRef type, Name name);
+	Id AddVariable(TypeRef type, Tag name);
+	Id AddFunction(TypeRef type, Tag name);
 
 	Id AddCall(TypeRef type, Id targetFunctionId);
-	Id AddFunctionInput(Tree& ast, Id functionId, Name name = Name::None());
-	Id AddFunctionOutput(Tree& ast, Id functionId, Name name = Name::None());
+	Id AddFunctionInput(Tree& ast, Id functionId, Tag name = Tag::None());
+	Id AddFunctionOutput(Tree& ast, Id functionId, Tag name = Tag::None());
 
 	Id AddIf(TypeRef type);
 	Id AddReturn(TypeRef type);
@@ -58,7 +58,7 @@ namespace rift::AST
 	Id AddUnaryOperator(TypeRef type, UnaryOperatorType operatorType);
 	Id AddBinaryOperator(TypeRef type, BinaryOperatorType operatorType);
 
-	Id FindChildByName(TAccessRef<CNamespace, CParent> access, Id ownerId, Name functionName);
+	Id FindChildByName(TAccessRef<CNamespace, CParent> access, Id ownerId, Tag functionName);
 
 	using RemoveAccess = TAccess<TWrite<CChanged>, TWrite<CFileDirty>, TWrite<CStmtInput>,
 	    TWrite<CStmtOutputs>, TWrite<CParent>, TWrite<CChild>, CFileRef>;

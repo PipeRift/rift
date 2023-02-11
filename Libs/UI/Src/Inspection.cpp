@@ -31,13 +31,13 @@ namespace rift::UI
 		Strings::FormatTo(label, "##{}", sizet(data));
 
 		const i32 currentIndex = type->GetIndexFromValue(data);
-		if (UI::BeginCombo(label.c_str(), type->GetNameByIndex(currentIndex).ToString().c_str()))
+		if (UI::BeginCombo(label.c_str(), type->GetNameByIndex(currentIndex).AsString().data()))
 		{
 			for (i32 i = 0; i < type->Size(); ++i)
 			{
 				const bool isSelected = currentIndex == i;
 
-				if (UI::Selectable(type->GetNameByIndex(i).ToString().c_str(), isSelected))
+				if (UI::Selectable(type->GetNameByIndex(i).AsString().data(), isSelected))
 				{
 					type->SetValueFromIndex(data, i);
 				}
@@ -66,13 +66,13 @@ namespace rift::UI
 		{
 			UI::InputText(label.c_str(), *static_cast<String*>(data));
 		}
-		else if (type == GetType<Name>())
+		else if (type == GetType<Tag>())
 		{
-			Name& name  = *static_cast<Name*>(data);
-			String text = name.ToString();
+			Tag& name = *static_cast<Tag*>(data);
+			String text{name.AsString()};
 			if (UI::InputText(label.c_str(), text))
 			{
-				name = Name{text};
+				name = Tag{text};
 			}
 		}
 		else if (type == GetType<u8>())

@@ -14,9 +14,9 @@ namespace rift
 		STRUCT(View, p::Struct)
 
 		PROP(name)
-		p::Name name;
+		p::Tag name;
 
-		p::TArray<p::Name> supportedTypes;
+		p::TArray<p::Tag> supportedTypes;
 
 		p::TFunction<void()> onDrawEditor;
 	};

@@ -34,19 +34,19 @@ namespace rift
 		}
 		else
 		{
-			Strings::FormatTo(desc, Name::None().ToString());
+			Strings::FormatTo(desc, "None");
 		}
 
 		// Set default value
-		const Name def = backends.IsEmpty() ? Name::None() : backends[0]->GetName();
-		selected       = def.ToString();
+		const Tag def = backends.IsEmpty() ? Tag::None() : backends[0]->GetName();
+		selected      = def.AsString();
 
 		auto stdDesc = Strings::Convert<std::string, TChar>(desc);
 		app.add_option("-b,--backend", selected, stdDesc, true);
 	}
 
 	TPtr<compiler::Backend> FindBackendByName(
-	    const TArray<TOwnPtr<compiler::Backend>>& backends, Name name)
+	    const TArray<TOwnPtr<compiler::Backend>>& backends, Tag name)
 	{
 		TOwnPtr<compiler::Backend>* backend = backends.Find([name](const auto& backend) {
 			return backend->GetName() == name;
@@ -78,8 +78,7 @@ int main(int argc, char** argv)
 
 	CLI11_PARSE(app, argc, argv);
 
-	TPtr<compiler::Backend> backend =
-	    FindBackendByName(availableBackends, Name(selectedBackendStr));
+	TPtr<compiler::Backend> backend = FindBackendByName(availableBackends, Tag(selectedBackendStr));
 
 	ZoneScopedNC("CLI Execution", 0x459bd1);
 

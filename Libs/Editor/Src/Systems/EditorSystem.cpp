@@ -72,7 +72,7 @@ namespace rift::Editor::EditorSystem
 			//                           | Details  //
 			//                           |          //
 			// ==================================== //
-			Name rightNode{"rightNode"};
+			Tag rightNode{"rightNode"};
 			builder.Split(
 			    builder.GetRootNode(), ImGuiDir_Right, 0.25f, rightNode, CTypeEditor::centralNode);
 

@@ -13,9 +13,9 @@ P_OVERRIDE_NEW_DELETE
 
 namespace rift
 {
-	const p::Name FrameworkModule::structType = "Struct";
-	const p::Name FrameworkModule::classType  = "Class";
-	const p::Name FrameworkModule::staticType = "Static";
+	const p::Tag FrameworkModule::structType = "Struct";
+	const p::Tag FrameworkModule::classType  = "Class";
+	const p::Tag FrameworkModule::staticType = "Static";
 
 
 	void FrameworkModule::Load()

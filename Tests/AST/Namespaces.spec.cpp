@@ -65,14 +65,14 @@ go_bandit([]() {
 			AssertThat(ns0.IsEmpty(), Equals(true));
 
 			AST::Namespace ns1{"A"};
-			AssertThat(ns1.scopes[0].ToString().c_str(), Equals("A"));
+			AssertThat(ns1.scopes[0].AsString().data(), Equals("A"));
 			AssertThat(ns1.scopes[1].IsNone(), Equals(true));
 			AssertThat(ns1.Size(), Equals(1));
 			AssertThat(ns1.IsEmpty(), Equals(false));
 
 			AST::Namespace ns2{"A", "B"};
-			AssertThat(ns2.scopes[0].ToString().c_str(), Equals("A"));
-			AssertThat(ns2.scopes[1].ToString().c_str(), Equals("B"));
+			AssertThat(ns2.scopes[0].AsString().data(), Equals("A"));
+			AssertThat(ns2.scopes[1].AsString().data(), Equals("B"));
 			AssertThat(ns2.scopes[2].IsNone(), Equals(true));
 			AssertThat(ns2.Size(), Equals(2));
 			AssertThat(ns2.IsEmpty(), Equals(false));
@@ -80,22 +80,22 @@ go_bandit([]() {
 
 		it("Can iterate", [&]() {
 			AST::Namespace ns0{};
-			for (const Name& name : ns0)
+			for (const Tag& name : ns0)
 			{
 				Assert();
 			}
 
 			AST::Namespace ns1{"C"};
-			for (const Name& name : ns1)
+			for (const Tag& name : ns1)
 			{
-				AssertThat(name.ToString().c_str(), Equals("C"));
+				AssertThat(name.AsString().data(), Equals("C"));
 			}
 
 			AST::Namespace ns2{"A", "B"};
 			i32 i = 0;
-			for (const Name& name : ns2)
+			for (const Tag& name : ns2)
 			{
-				AssertThat(name.ToString().c_str(), Equals(ns2.scopes[i].ToString().c_str()));
+				AssertThat(name.AsString().data(), Equals(ns2.scopes[i].AsString().data()));
 				++i;
 			}
 		});

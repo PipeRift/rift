@@ -52,7 +52,7 @@ go_bandit([]() {
 			AssertThat(result, Equals(true));
 			AssertThat(AST::HasProject(ast), Equals(true));
 
-			StringView projectName = AST::GetProjectName(ast).ToString();
+			StringView projectName = AST::GetProjectName(ast).AsString();
 			AssertThat(projectName, Equals("TestProject"));
 		});
 
@@ -67,7 +67,7 @@ go_bandit([]() {
 			AssertThat(result, Equals(true));
 			AssertThat(AST::HasProject(ast), Equals(true));
 
-			StringView projectName = AST::GetProjectName(ast).ToString();
+			StringView projectName = AST::GetProjectName(ast).AsString();
 			AssertThat(projectName, Equals("SomeProject"));
 		});
 	});

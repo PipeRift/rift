@@ -16,6 +16,6 @@ namespace rift::AST
 		STRUCT(CModule, p::Struct)
 
 		PROP(dependencies)
-		TArray<Name> dependencies;
+		TArray<Tag> dependencies;
 	};
 }    // namespace rift::AST

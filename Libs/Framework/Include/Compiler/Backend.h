@@ -14,15 +14,15 @@ namespace rift::compiler
 		CLASS(Backend, Class)
 
 	public:
-		virtual Name GetName()
+		virtual Tag GetName()
 		{
-			return Name::None();
+			return Tag::None();
 		}
 
 		virtual void Build(Compiler& compiler)
 		{
 			CheckMsg(false, "Backend '{}' tried to run but Build() is not implemented.",
-			    GetName().ToString());
+			    GetName().AsString());
 		}
 	};
 }    // namespace rift::compiler

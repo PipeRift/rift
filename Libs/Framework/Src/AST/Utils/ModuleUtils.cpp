@@ -137,7 +137,7 @@ namespace rift::AST
 		return ecs::GetFirst<CProject>(access);
 	}
 
-	Name GetProjectName(TAccessRef<CProject, CNamespace, CFileRef> access)
+	Tag GetProjectName(TAccessRef<CProject, CNamespace, CFileRef> access)
 	{
 		Id moduleId = GetProjectId(access);
 		return GetModuleName(access, moduleId);
@@ -163,7 +163,7 @@ namespace rift::AST
 		return GetProjectId(ast) != NoId;
 	}
 
-	Name GetModuleName(TAccessRef<CNamespace, CFileRef> access, Id moduleId)
+	Tag GetModuleName(TAccessRef<CNamespace, CFileRef> access, Id moduleId)
 	{
 		if (!access.IsValid(moduleId))
 		{
@@ -181,7 +181,7 @@ namespace rift::AST
 		{
 			// Obtain name from project file name
 			const String fileName = p::ToString(file->path);
-			return Name{p::GetFilename(p::GetParentPath(fileName))};    // Folder name
+			return Tag{p::GetFilename(p::GetParentPath(fileName))};    // Folder name
 		}
 		return {};
 	}

@@ -11,6 +11,6 @@ namespace rift::AST
 		STRUCT(CDeclType, p::Struct)
 
 		PROP(typeId)
-		p::Name typeId;
+		p::Tag typeId;
 	};
 }    // namespace rift::AST

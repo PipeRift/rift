@@ -23,7 +23,6 @@
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
 
-
 namespace rift::AST::LoadSystem
 {
 	void Init(Tree& ast)
@@ -169,7 +168,7 @@ namespace rift::AST::LoadSystem
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
 			modulePaths.paths.RemoveIfSwap([types, &modulePaths](const p::String& path) {
-				return types->typesByPath.Contains(p::Name{path});
+				return types->typesByPath.Contains(p::Tag{path});
 			});
 		}
 
@@ -185,7 +184,7 @@ namespace rift::AST::LoadSystem
 				const Id id  = typeIds[i];
 				String& path = modulePaths.paths[i];
 
-				types->typesByPath.Insert(p::Name{path}, id);
+				types->typesByPath.Insert(p::Tag{path}, id);
 				ast.Add<CFileRef>(id, Move(path));
 			}
 

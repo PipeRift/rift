@@ -68,7 +68,7 @@ namespace rift::UI
 		}
 	};
 
-	static TMap<Name, FontDescriptor> gFonts{};
+	static TMap<Tag, FontDescriptor> gFonts{};
 
 
 	ImFont* AddFont(Path file, float size, const ImFontConfig* fontConfig = nullptr,
@@ -78,7 +78,7 @@ namespace rift::UI
 		return io.Fonts->AddFontFromFileTTF(ToString(file).data(), size, fontConfig, glyphRanges);
 	}
 
-	void AddTextFont(Name name, UI::FontMode mode, float size, p::Path file)
+	void AddTextFont(Tag name, UI::FontMode mode, float size, p::Path file)
 	{
 		FontDescriptor* font = gFonts.Find(name);
 		if (!font)
@@ -134,13 +134,13 @@ namespace rift::UI
 		io.Fonts->Build();
 	}
 
-	ImFont* FindFont(Name name, UI::FontMode mode, float size)
+	ImFont* FindFont(Tag name, UI::FontMode mode, float size)
 	{
 		const FontDescriptor* const font = gFonts.Find(name);
 		return font ? (*font)[mode].Get(size) : nullptr;
 	}
 
-	void SetDefaultFont(Name name, UI::FontMode mode, float size)
+	void SetDefaultFont(Tag name, UI::FontMode mode, float size)
 	{
 		ImFont* font = FindFont(name, mode, size);
 		if (!font && !name.IsNone())
@@ -150,7 +150,7 @@ namespace rift::UI
 		ImGui::GetIO().FontDefault = font;
 	}
 
-	void PushFont(Name name, UI::FontMode mode, float size)
+	void PushFont(Tag name, UI::FontMode mode, float size)
 	{
 		ImFont* font = FindFont(name, mode, size);
 		if (!font && !name.IsNone())
