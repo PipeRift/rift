@@ -142,26 +142,28 @@ namespace rift::Editor
 					types.Add(&type);
 				}
 				types.Sort([](const auto* one, const auto* other) {
-					return one->category < other->category;
+					return one->settings.category < other->settings.category;
 				});
 
 				p::StringView currentCategory;
 				String createText;
 				for (const auto& fileType : types)
 				{
-					if (currentCategory != fileType->category)
+					if (currentCategory != fileType->settings.category)
 					{
-						currentCategory = fileType->category;
+						currentCategory = fileType->settings.category;
 						ImGui::Separator();
 						ImGui::MenuItem(currentCategory.data(), nullptr, false, false);
 					}
 
 					createText.clear();
-					Strings::FormatTo(createText, "{}##{}", fileType->displayName, fileType->id);
+					Strings::FormatTo(
+					    createText, "{}##{}", fileType->settings.displayName, fileType->id);
 					if (UI::MenuItem(createText.c_str()))
 					{
 						createText.clear();
-						Strings::FormatTo(createText, "Create {} type", fileType->displayName);
+						Strings::FormatTo(
+						    createText, "Create {} type", fileType->settings.displayName);
 						CreateType(ast, createText, fileType->id, path);
 					}
 				}

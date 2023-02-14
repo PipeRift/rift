@@ -497,7 +497,7 @@ namespace rift::Editor::EditorSystem
 			}
 			if (UI::BeginMenu("View"))
 			{
-				if (AST::CanContainFunctions(ast, typeId))
+				if (AST::HasFunctions(ast, typeId))
 				{
 					UI::MenuItem("Graph", nullptr, &typeEditor.showGraph);
 				}
@@ -546,22 +546,23 @@ namespace rift::Editor::EditorSystem
 
 				CreateTypeDockspace(typeEditor, windowName.c_str());
 
-				if (AST::CanContainFunctions(ast, typeId))
+				if (AST::HasFunctionBodies(ast, typeId))
 				{
 					Graph::DrawTypeGraph(ast, typeId, typeEditor);
+				}
+				else
+				{
+					// TODO: Collapse central node
+				}
 
+				if (AST::HasVariables(ast, typeId) || AST::HasFunctions(ast, typeId))
+				{
 					typeEditor.layout.BindNextWindowToNode(
 					    CTypeEditor::rightBottomNode, ImGuiCond_Appearing);
 					DrawDetailsPanel(ast, typeId);
 
 					typeEditor.layout.BindNextWindowToNode(
 					    CTypeEditor::rightTopNode, ImGuiCond_Appearing);
-					DrawElementsPanel(ast, typeId);
-				}
-				else
-				{
-					typeEditor.layout.BindNextWindowToNode(
-					    DockSpaceLayout::rootNodeId, ImGuiCond_Appearing);
 					DrawElementsPanel(ast, typeId);
 				}
 			}

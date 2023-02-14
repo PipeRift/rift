@@ -39,9 +39,9 @@ namespace rift::AST
 	bool IsClassType(const Tree& ast, Id typeId);
 	bool IsStructType(const Tree& ast, Id typeId);
 	bool IsStaticType(const Tree& ast, Id typeId);
-	bool CanContainVariables(const Tree& ast, Id typeId);
-	bool CanContainFunctions(const Tree& ast, Id typeId);
-	bool CanEditFunctionBodies(const Tree& ast, Id typeId);
+	bool HasVariables(TAccess<CDeclType> access, Id typeId);
+	bool HasFunctions(TAccess<CDeclType> access, Id typeId);
+	bool HasFunctionBodies(TAccess<CDeclType> access, Id typeId);
 
 	Id AddVariable(TypeRef type, Tag name);
 	Id AddFunction(TypeRef type, Tag name);

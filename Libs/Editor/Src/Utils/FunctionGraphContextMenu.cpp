@@ -85,7 +85,7 @@ namespace rift::Editor::Graph
 	void DrawNodesContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> nodeIds)
 	{
 		Check(!nodeIds.IsEmpty());
-		const bool canEditBody = AST::CanEditFunctionBodies(ast, typeId);
+		const bool canEditBody = AST::HasFunctionBodies(ast, typeId);
 
 		AST::Id firstNodeId = nodeIds[0];
 
@@ -118,7 +118,7 @@ namespace rift::Editor::Graph
 	void DrawLinksContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> linkIds)
 	{
 		Check(!linkIds.IsEmpty());
-		const bool canEditBody = AST::CanEditFunctionBodies(ast, typeId);
+		const bool canEditBody = AST::HasFunctionBodies(ast, typeId);
 
 		AST::Id firstLinkId = linkIds[0];
 
@@ -136,7 +136,7 @@ namespace rift::Editor::Graph
 	void DrawGraphContextMenu(AST::Tree& ast, AST::Id typeId)
 	{
 		static ImGuiTextFilter filter;
-		const bool canEditBody = AST::CanEditFunctionBodies(ast, typeId);
+		const bool canEditBody = AST::HasFunctionBodies(ast, typeId);
 
 		if (UI::IsWindowAppearing())
 		{

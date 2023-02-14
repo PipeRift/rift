@@ -258,12 +258,12 @@ namespace rift::Editor
 			UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
 			editor.elementsFilter.Draw("##filter");
 
-			if (AST::CanContainVariables(ast, typeId))
+			if (AST::HasVariables(ast, typeId))
 			{
 				DrawVariables(ast, ast, editor, typeId);
 			}
 
-			if (AST::CanContainFunctions(ast, typeId))
+			if (AST::HasFunctions(ast, typeId))
 			{
 				DrawFunctions(ast, editor, typeId);
 			}

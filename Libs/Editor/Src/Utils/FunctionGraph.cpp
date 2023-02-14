@@ -842,7 +842,7 @@ namespace rift::Editor::Graph
 		if (UI::Begin(graphId.c_str(), &typeEditor.showGraph, ImGuiWindowFlags_NoCollapse))
 		{
 			Nodes::SetEditorContext(&typeEditor.nodesEditor);
-			Nodes::GetCurrentContext()->canCreateLinks = AST::CanEditFunctionBodies(ast, typeId);
+			Nodes::GetCurrentContext()->canCreateLinks = AST::HasFunctionBodies(ast, typeId);
 			Nodes::BeginNodeEditor();
 			PushNodeStyle();
 

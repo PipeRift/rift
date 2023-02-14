@@ -164,19 +164,31 @@ namespace rift::AST
 		return ast.Has<CDeclStatic>(typeId);
 	}
 
-	bool CanContainVariables(const Tree& ast, Id typeId)
+	bool HasVariables(TAccess<CDeclType> access, Id typeId)
 	{
-		return ast.HasAny<CDeclClass, CDeclStruct>(typeId);
+		if (const FileTypeDescriptor* fileType = FindFileType(access, typeId))
+		{
+			return fileType->settings.hasVariables;
+		}
+		return false;
 	}
 
-	bool CanContainFunctions(const Tree& ast, Id typeId)
+	bool HasFunctions(TAccess<CDeclType> access, Id typeId)
 	{
-		return ast.HasAny<CDeclClass, CDeclStatic>(typeId);
+		if (const FileTypeDescriptor* fileType = FindFileType(access, typeId))
+		{
+			return fileType->settings.hasFunctions;
+		}
+		return false;
 	}
 
-	bool CanEditFunctionBodies(const Tree& ast, Id typeId)
+	bool HasFunctionBodies(TAccess<CDeclType> access, Id typeId)
 	{
-		return ast.HasAny<CDeclClass, CDeclStatic>(typeId);
+		if (const FileTypeDescriptor* fileType = FindFileType(access, typeId))
+		{
+			return fileType->settings.hasFunctions && fileType->settings.hasFunctionBodies;
+		}
+		return false;
 	}
 
 

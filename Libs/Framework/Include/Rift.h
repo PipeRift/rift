@@ -2,25 +2,34 @@
 
 #pragma once
 
+#include "AST/Components/CDeclType.h"
 #include "AST/Id.h"
 #include "AST/Tree.h"
 #include "View.h"
 
 #include <Pipe/Core/Span.h>
 #include <Pipe/Core/Tag.h>
+#include <Pipe/ECS/Access.h>
 #include <Pipe/Reflect/Class.h>
 #include <Pipe/Reflect/ClassType.h>
 
 
 namespace rift
 {
+	struct FileTypeSettings
+	{
+		p::String displayName;
+		p::String category;
+		bool hasVariables      = false;
+		bool hasFunctions      = false;
+		bool hasFunctionBodies = true;
+	};
+
 	struct FileTypeDescriptor
 	{
 		p::Tag id;
 		p::StructType* tagType = nullptr;
-		p::String displayName;
-		p::String category;
-
+		FileTypeSettings settings;
 		p::TFunction<void(AST::Tree&, AST::Id)> onAddTag;
 
 
@@ -65,17 +74,19 @@ namespace rift
 
 	p::TSpan<const FileTypeDescriptor> GetFileTypes();
 	const FileTypeDescriptor* FindFileType(p::Tag typeId);
+	const FileTypeDescriptor* FindFileType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId);
 
 	template<typename TagType>
-	void RegisterFileType(
-	    p::Tag typeId, p::StringView displayName = {}, p::StringView category = {})
+	void RegisterFileType(p::Tag typeId, FileTypeSettings settings)
 	{
-		RegisterFileType(FileTypeDescriptor{.id = typeId,
-		    .tagType                            = TagType::GetStaticType(),
-		    .displayName                        = p::String{displayName},
-		    .category                           = p::String{category},
-		    .onAddTag                           = [](auto& ast, AST::Id id) {
-                ast.template Add<TagType>(id);
-		    }});
+		RegisterFileType({
+		    .id       = typeId,
+		    .tagType  = TagType::GetStaticType(),
+		    .settings = Move(settings),
+		    .onAddTag =
+		        [](auto& ast, AST::Id id) {
+			ast.template Add<TagType>(id);
+		    },
+		});
 	}
 }    // namespace rift

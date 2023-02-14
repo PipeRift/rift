@@ -43,8 +43,14 @@ namespace rift
 
 	void NativeBindingModule::Load()
 	{
-		RegisterFileType<CDeclCStruct>("CStruct", "C Struct", "Bindings");
-		RegisterFileType<CDeclCStatic>("CStatic", "C Static", "Bindings");
+		RegisterFileType<CDeclCStruct>("CStruct", {.displayName     = "C Struct",
+		                                              .category     = "Bindings",
+		                                              .hasVariables = true,
+		                                              .hasFunctions = false});
+		RegisterFileType<CDeclCStatic>("CStatic", {.displayName     = "C Static",
+		                                              .category     = "Bindings",
+		                                              .hasVariables = true,
+		                                              .hasFunctions = true});
 	}
 
 	void FindHeaders(AST::Tree& ast, TSpan<ParsedModule> parsedModules)

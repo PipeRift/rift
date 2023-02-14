@@ -60,4 +60,13 @@ namespace rift
 		return index != NO_INDEX ? fileTypes.Data() + index : nullptr;
 	}
 
+	const FileTypeDescriptor* FindFileType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId)
+	{
+		if (const auto* type = access.TryGet<const AST::CDeclType>(typeId))
+		{
+			return FindFileType(type->typeId);
+		}
+		return nullptr;
+	}
+
 };    // namespace rift
