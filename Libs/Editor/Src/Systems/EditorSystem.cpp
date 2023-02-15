@@ -74,13 +74,13 @@ namespace rift::Editor::EditorSystem
 			// ==================================== //
 			Tag rightNode{"rightNode"};
 			builder.Split(
-			    builder.GetRootNode(), ImGuiDir_Right, 0.25f, rightNode, CTypeEditor::centralNode);
+			    builder.GetRootNode(), ImGuiDir_Left, 0.5f, CTypeEditor::centralNode, rightNode);
 
 			builder.Split(rightNode, ImGuiDir_Up, 0.4f, CTypeEditor::rightTopNode,
 			    CTypeEditor::rightBottomNode);
 
 			builder.GetNodeLocalFlags(CTypeEditor::centralNode) |=
-			    ImGuiDockNodeFlags_CentralNode | i32(ImGuiDockNodeFlags_AutoHideTabBar);
+			    i32(ImGuiDockNodeFlags_AutoHideTabBar);
 		});
 
 		// TODO: Reseting until we are able to know if the layout was saved before. Reset if it
