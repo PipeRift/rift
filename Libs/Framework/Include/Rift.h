@@ -82,7 +82,7 @@ namespace rift
 		RegisterFileType({
 		    .id       = typeId,
 		    .tagType  = TagType::GetStaticType(),
-		    .settings = Move(settings),
+		    .settings = p::Move(settings),
 		    .onAddTag =
 		        [](auto& ast, AST::Id id) {
 			ast.template Add<TagType>(id);
