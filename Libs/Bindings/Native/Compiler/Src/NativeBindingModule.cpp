@@ -4,7 +4,7 @@
 
 #include "Components/CDeclCStatic.h"
 #include "Components/CDeclCStruct.h"
-#include "Components/CNativeModule.h"
+#include "Components/CNativeBinding.h"
 #include "HeaderIterator.h"
 #include "Rift.h"
 
@@ -47,10 +47,11 @@ namespace rift
 		                                              .category     = "Bindings",
 		                                              .hasVariables = true,
 		                                              .hasFunctions = false});
-		RegisterFileType<CDeclCStatic>("CStatic", {.displayName     = "C Static",
-		                                              .category     = "Bindings",
-		                                              .hasVariables = true,
-		                                              .hasFunctions = true});
+		RegisterFileType<CDeclCStatic>("CStatic", {.displayName          = "C Static",
+		                                              .category          = "Bindings",
+		                                              .hasVariables      = true,
+		                                              .hasFunctions      = true,
+		                                              .hasFunctionBodies = false});
 	}
 
 	void FindHeaders(AST::Tree& ast, TSpan<ParsedModule> parsedModules)
@@ -91,7 +92,7 @@ namespace rift
 	void NativeBindingModule::SyncIncludes(AST::Tree& ast)
 	{
 		TArray<AST::Id> moduleIds;
-		p::ecs::ListAll<AST::CModule, CNativeModule>(ast, moduleIds);
+		p::ecs::ListAll<AST::CModule, CNativeBinding>(ast, moduleIds);
 
 		TArray<ParsedModule> parsedModules;
 		parsedModules.Reserve(moduleIds.Size());

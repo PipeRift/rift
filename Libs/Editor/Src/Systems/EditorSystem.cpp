@@ -550,10 +550,6 @@ namespace rift::Editor::EditorSystem
 				{
 					Graph::DrawTypeGraph(ast, typeId, typeEditor);
 				}
-				else
-				{
-					// TODO: Collapse central node
-				}
 
 				if (AST::HasVariables(ast, typeId) || AST::HasFunctions(ast, typeId))
 				{
