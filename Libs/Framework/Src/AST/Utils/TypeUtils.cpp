@@ -60,7 +60,7 @@ namespace rift::AST
 
 		if (auto* fileType = FindFileType(typeId))
 		{
-			fileType->onAddTag(ast, id);
+			ast.AddDefaulted(fileType->tagType->GetId(), id);
 		}
 	}
 

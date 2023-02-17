@@ -7,13 +7,5 @@
 
 namespace rift
 {
-	struct CIRValue : public p::Struct
-	{
-		STRUCT(CIRValue, p::Struct)
-
-		llvm::Value* instance = nullptr;
-
-
-		CIRValue(llvm::Value* instance) : instance(instance) {}
-	};
+	using CIRValue = llvm::Value*;
 }    // namespace rift

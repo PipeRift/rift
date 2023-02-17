@@ -146,7 +146,7 @@ namespace rift::AST::LoadSystem
 		{
 			Id id = ids[i];
 			access.Add<CModule>(id);
-			access.Add<CFileRef>(id, Move(paths[i]));
+			access.Add(id, CFileRef{Move(paths[i])});
 		}
 
 		// Link modules to the project
@@ -185,7 +185,7 @@ namespace rift::AST::LoadSystem
 				String& path = modulePaths.paths[i];
 
 				types->typesByPath.Insert(p::Tag{path}, id);
-				ast.Add<CFileRef>(id, Move(path));
+				ast.Add(id, CFileRef{Move(path)});
 			}
 
 			p::ecs::AddChildren(ast, modulePaths.moduleId, typeIds);

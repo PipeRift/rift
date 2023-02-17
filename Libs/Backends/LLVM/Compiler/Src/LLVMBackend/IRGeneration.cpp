@@ -57,17 +57,17 @@ namespace rift::compiler::LLVM
 	    llvm::LLVMContext& llvm, TAccessRef<AST::CDeclType, TWrite<CIRType>> access)
 	{
 		const auto& nativeTypes = static_cast<AST::Tree&>(access.GetContext()).GetNativeTypes();
-		access.Add<CIRType>(nativeTypes.boolId, {llvm::Type::getInt8Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.floatId, {llvm::Type::getFloatTy(llvm)});
-		access.Add<CIRType>(nativeTypes.doubleId, {llvm::Type::getDoubleTy(llvm)});
-		access.Add<CIRType>(nativeTypes.u8Id, {llvm::Type::getInt8Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.i8Id, {llvm::Type::getInt8Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.u16Id, {llvm::Type::getInt16Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.i16Id, {llvm::Type::getInt16Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.u32Id, {llvm::Type::getInt32Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.i32Id, {llvm::Type::getInt32Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.u64Id, {llvm::Type::getInt64Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.i64Id, {llvm::Type::getInt64Ty(llvm)});
+		access.Add(nativeTypes.boolId, CIRType{llvm::Type::getInt8Ty(llvm)});
+		access.Add(nativeTypes.floatId, CIRType{llvm::Type::getFloatTy(llvm)});
+		access.Add(nativeTypes.doubleId, CIRType{llvm::Type::getDoubleTy(llvm)});
+		access.Add(nativeTypes.u8Id, CIRType{llvm::Type::getInt8Ty(llvm)});
+		access.Add(nativeTypes.i8Id, CIRType{llvm::Type::getInt8Ty(llvm)});
+		access.Add(nativeTypes.u16Id, CIRType{llvm::Type::getInt16Ty(llvm)});
+		access.Add(nativeTypes.i16Id, CIRType{llvm::Type::getInt16Ty(llvm)});
+		access.Add(nativeTypes.u32Id, CIRType{llvm::Type::getInt32Ty(llvm)});
+		access.Add(nativeTypes.i32Id, CIRType{llvm::Type::getInt32Ty(llvm)});
+		access.Add(nativeTypes.u64Id, CIRType{llvm::Type::getInt64Ty(llvm)});
+		access.Add(nativeTypes.i64Id, CIRType{llvm::Type::getInt64Ty(llvm)});
 		// access.Add<CIRType>(nativeTypes.stringId, {});
 	}
 
@@ -93,7 +93,7 @@ namespace rift::compiler::LLVM
 		TArray<llvm::Type*> memberTypes;
 		for (AST::Id id : ids)
 		{
-			auto* irStruct = static_cast<llvm::StructType*>(access.Get<const CIRType>(id).instance);
+			auto* irStruct = static_cast<llvm::StructType*>(access.Get<const CIRType>(id));
 
 			// Add members
 			memberIds.Clear(false);
@@ -105,7 +105,7 @@ namespace rift::compiler::LLVM
 				const auto& var = access.Get<const AST::CDeclVariable>(memberId);
 				if (auto* irType = access.TryGet<const CIRType>(var.typeId))
 				{
-					memberTypes.Add(irType->instance);
+					memberTypes.Add(*irType);
 				}
 				else
 				{
@@ -146,9 +146,9 @@ namespace rift::compiler::LLVM
 
 					AST::Id typeId = access.Get<const AST::CExprTypeId>(inputId).id;
 					auto* irType   = access.TryGet<const CIRType>(typeId);
-					if (irType && irType->instance)
+					if (irType && *irType)
 					{
-						inputTypes.Add(irType->instance);
+						inputTypes.Add(*irType);
 					}
 					else
 					{
@@ -220,7 +220,7 @@ namespace rift::compiler::LLVM
 		    !IsNone(output.pinId) ? access.TryGet<const CIRValue>(output.pinId) : nullptr;
 		if (value)
 		{
-			return value->instance;
+			return *value;
 		}
 		return nullptr;
 	}
@@ -328,14 +328,14 @@ namespace rift::compiler::LLVM
 		{
 			const auto& boolean = access.Get<const AST::CLiteralBool>(id);
 			llvm::Value* value  = llvm::ConstantInt::get(llvm, llvm::APInt(1, boolean.value, true));
-			access.Add<CIRValue>(id, value);
+			access.Add(id, CIRValue{value});
 		}
 		for (AST::Id id : ecs::ListAll<AST::CLiteralIntegral>(access))
 		{
 			const auto& integral = access.Get<const AST::CLiteralIntegral>(id);
 			llvm::Value* value   = llvm::ConstantInt::get(
 			      llvm, llvm::APInt(integral.GetSize(), integral.value, integral.IsSigned()));
-			access.Add<CIRValue>(id, value);
+			access.Add(id, CIRValue{value});
 		}
 		for (AST::Id id : ecs::ListAll<AST::CLiteralFloating>(access))
 		{
@@ -344,13 +344,13 @@ namespace rift::compiler::LLVM
 			    llvm::ConstantFP::get(llvm, llvm::APFloat(floating.type == AST::FloatingType::F32
 			                                                  ? static_cast<float>(floating.value)
 			                                                  : floating.value));
-			access.Add<CIRValue>(id, value);
+			access.Add(id, CIRValue{value});
 		}
 		for (AST::Id id : ecs::ListAll<AST::CLiteralString>(access))
 		{
 			const auto& string = access.Get<const AST::CLiteralString>(id);
-			llvm::Value* value = llvm::ConstantDataArray::getString(llvm, ToLLVM(string.value));
-			access.Add<CIRValue>(id, value);
+			access.Add(
+			    id, CIRValue{llvm::ConstantDataArray::getString(llvm, ToLLVM(string.value))});
 		}
 	}
 

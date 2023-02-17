@@ -30,7 +30,6 @@ namespace rift
 		p::Tag id;
 		p::StructType* tagType = nullptr;
 		FileTypeSettings settings;
-		p::TFunction<void(AST::Tree&, AST::Id)> onAddTag;
 
 
 		bool operator<(const FileTypeDescriptor& other) const
@@ -79,14 +78,7 @@ namespace rift
 	template<typename TagType>
 	void RegisterFileType(p::Tag typeId, FileTypeSettings settings)
 	{
-		RegisterFileType({
-		    .id       = typeId,
-		    .tagType  = TagType::GetStaticType(),
-		    .settings = p::Move(settings),
-		    .onAddTag =
-		        [](auto& ast, AST::Id id) {
-			ast.template Add<TagType>(id);
-		    },
-		});
+		RegisterFileType(
+		    {.id = typeId, .tagType = TagType::GetStaticType(), .settings = p::Move(settings)});
 	}
 }    // namespace rift

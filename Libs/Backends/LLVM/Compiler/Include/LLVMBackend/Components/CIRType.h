@@ -7,13 +7,5 @@
 
 namespace rift
 {
-	struct CIRType : public p::Struct
-	{
-		STRUCT(CIRType, p::Struct)
-
-		llvm::Type* instance = nullptr;
-
-
-		CIRType(llvm::Type* instance) : instance(instance) {}
-	};
+	using CIRType = llvm::Type*;
 }    // namespace rift

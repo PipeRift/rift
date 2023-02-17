@@ -86,7 +86,7 @@ namespace rift::AST
 		// Create project node (root module)
 		Id projectId = ast.Create();
 		ast.Add<CProject, CModule>(projectId);
-		ast.Add<CFileRef>(projectId, filePath);
+		ast.Add(projectId, CFileRef{filePath});
 
 		// Load project module
 		TArray<String> strings;
