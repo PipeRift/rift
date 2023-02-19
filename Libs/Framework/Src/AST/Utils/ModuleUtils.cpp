@@ -3,7 +3,6 @@
 #include "AST/Utils/ModuleUtils.h"
 
 #include "AST/Components/CModule.h"
-#include "AST/Components/CRiftModule.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Systems/FunctionsSystem.h"
@@ -20,8 +19,11 @@
 
 namespace rift::AST
 {
+	static p::TArray<ModuleBinding> moduleBindings;
+
+
 	auto moduleComponents = [](auto& rw) {
-		rw.template SerializeComponents<CNamespace, CModule, CRiftModule>();
+		rw.template SerializeComponents<CNamespace, CModule, CModule>();
 	};
 
 	bool ValidateModulePath(p::String& path, p::String& error)
@@ -124,7 +126,7 @@ namespace rift::AST
 		}
 
 		Id moduleId = ast.Create();
-		ast.Add<CModule, CRiftModule>(moduleId);
+		ast.Add<CModule>(moduleId);
 
 		p::String data;
 		SerializeModule(ast, moduleId, data);
@@ -215,5 +217,40 @@ namespace rift::AST
 			r.BeginObject();
 			r.SerializeSingleEntity(id, moduleComponents);
 		}
+	}
+
+
+	void RegisterModuleBinding(ModuleBinding binding)
+	{
+		moduleBindings.FindOrAddSorted(Move(binding));
+	}
+	void UnregisterModuleBinding(p::Tag bindingId)
+	{
+		moduleBindings.RemoveSorted(bindingId);
+	}
+	void AddBindingToModule(AST::Tree& ast, AST::Id id, p::Tag bindingId)
+	{
+		if (const auto* binding = FindModuleBinding(bindingId))
+		{
+			ast.AddDefaulted(binding->tagType->GetId(), id);
+		}
+	}
+	void RemoveBindingFromModule(AST::Tree& ast, AST::Id id, p::Tag bindingId)
+	{
+		if (const auto* binding = FindModuleBinding(bindingId))
+		{
+			ast.Remove(binding->tagType->GetId(), id);
+		}
+	}
+
+	const ModuleBinding* FindModuleBinding(p::Tag id)
+	{
+		const i32 index = moduleBindings.FindSortedEqual(id);
+		return index != NO_INDEX ? moduleBindings.Data() + index : nullptr;
+	}
+
+	p::TSpan<const ModuleBinding> GetModuleBindings()
+	{
+		return moduleBindings;
 	}
 }    // namespace rift::AST

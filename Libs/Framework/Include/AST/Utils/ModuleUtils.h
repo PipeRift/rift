@@ -19,9 +19,30 @@ namespace rift::AST
 
 namespace rift::AST
 {
+	struct ModuleBinding
+	{
+		p::Tag id;
+		p::StructType* tagType = nullptr;
+		p::String displayName;
+		p::String category;
+
+		bool operator<(const ModuleBinding& other) const
+		{
+			return id < other.id;
+		}
+		friend bool operator<(const p::Tag& lhs, const ModuleBinding& rhs)
+		{
+			return lhs < rhs.id;
+		}
+		friend bool operator<(const ModuleBinding& lhs, const p::Tag& rhs)
+		{
+			return lhs.id < rhs;
+		}
+	};
+
+
 	using namespace p::core;
 	using namespace p::files;
-	using namespace AST;
 
 	bool CreateProject(Tree& ast, StringView path);
 	bool OpenProject(Tree& ast, StringView path);
@@ -45,4 +66,11 @@ namespace rift::AST
 
 	void SerializeModule(AST::Tree& ast, AST::Id id, String& data);
 	void DeserializeModule(AST::Tree& ast, AST::Id id, const String& data);
+
+	void RegisterModuleBinding(ModuleBinding binding);
+	void UnregisterModuleBinding(p::Tag bindingId);
+	void AddBindingToModule(AST::Tree& ast, AST::Id id, p::Tag bindingId);
+	void RemoveBindingFromModule(AST::Tree& ast, AST::Id id, p::Tag bindingId);
+	const ModuleBinding* FindModuleBinding(p::Tag id);
+	p::TSpan<const ModuleBinding> GetModuleBindings();
 }    // namespace rift::AST

@@ -113,7 +113,7 @@ namespace rift::Editor
 			{
 				if (UI::MenuItem("Open Module"))
 				{
-					OpenModule(ast, itemId);
+					OpenModuleEditor(ast, itemId);
 				}
 			}
 
@@ -135,9 +135,9 @@ namespace rift::Editor
 		{
 			if (UI::BeginMenu("Create type"))
 			{
-				TArray<const FileTypeDescriptor*> types;
-				types.Reserve(GetFileTypes().Size());
-				for (const auto& type : GetFileTypes())
+				TArray<const RiftTypeDescriptor*> types;
+				types.Reserve(GetRiftTypes().Size());
+				for (const auto& type : GetRiftTypes())
 				{
 					types.Add(&type);
 				}
@@ -326,7 +326,7 @@ namespace rift::Editor
 
 				if (UI::IsItemClicked() && UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 				{
-					OpenModule(ast, item.id);
+					OpenModuleEditor(ast, item.id);
 				}
 
 				if (open)

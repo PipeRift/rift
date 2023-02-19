@@ -8,7 +8,7 @@
 namespace rift
 {
 	static p::TMap<p::ClassType*, p::TOwnPtr<class Module>> modules{};
-	static p::TArray<FileTypeDescriptor> fileTypes;
+	static p::TArray<RiftTypeDescriptor> riftTypes;
 	static p::TArray<View> views{};
 
 
@@ -43,28 +43,28 @@ namespace rift
 		views.Add(Move(view));
 	}
 
-	void RegisterFileType(FileTypeDescriptor&& descriptor)
+	void RegisterRiftType(RiftTypeDescriptor&& descriptor)
 	{
-		fileTypes.FindOrAddSorted(Move(descriptor));
+		riftTypes.FindOrAddSorted(Move(descriptor));
 	}
 
 
-	p::TSpan<const FileTypeDescriptor> GetFileTypes()
+	p::TSpan<const RiftTypeDescriptor> GetRiftTypes()
 	{
-		return fileTypes;
+		return riftTypes;
 	}
 
-	const FileTypeDescriptor* FindFileType(p::Tag typeId)
+	const RiftTypeDescriptor* FindRiftType(p::Tag typeId)
 	{
-		const i32 index = fileTypes.FindSortedEqual(typeId);
-		return index != NO_INDEX ? fileTypes.Data() + index : nullptr;
+		const i32 index = riftTypes.FindSortedEqual(typeId);
+		return index != NO_INDEX ? riftTypes.Data() + index : nullptr;
 	}
 
-	const FileTypeDescriptor* FindFileType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId)
+	const RiftTypeDescriptor* FindRiftType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId)
 	{
 		if (const auto* type = access.TryGet<const AST::CDeclType>(typeId))
 		{
-			return FindFileType(type->typeId);
+			return FindRiftType(type->typeId);
 		}
 		return nullptr;
 	}

@@ -20,7 +20,6 @@
 #include <AST/Components/CDeclType.h>
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
-#include <AST/Components/CRiftModule.h>
 #include <AST/Components/Tags/CDirty.h>
 #include <Compiler/Compiler.h>
 #include <IconsFontAwesome5.h>
@@ -110,7 +109,7 @@ namespace rift::Editor::EditorSystem
 	void DrawProjectMenuBar(AST::Tree& ast, SEditor& editorData);
 
 	// Module Editors
-	void DrawModules(AST::Tree& ast, SEditor& editor);
+	void DrawModuleEditors(AST::Tree& ast, SEditor& editor);
 
 	// Type Editors
 	void DrawTypeMenuBar(AST::Tree& ast, AST::Id typeId);
@@ -242,7 +241,7 @@ namespace rift::Editor::EditorSystem
 
 		CreateRootDockspace(editor);
 
-		DrawModules(ast, editor);
+		DrawModuleEditors(ast, editor);
 		DrawTypes(ast, editor);
 
 		editor.reflectionDebugger.Draw();
@@ -406,10 +405,9 @@ namespace rift::Editor::EditorSystem
 		}
 	}
 
-	void DrawModules(AST::Tree& ast, SEditor& editor)
+	void DrawModuleEditors(AST::Tree& ast, SEditor& editor)
 	{
-		TAccess<TWrite<CModuleEditor>, TWrite<AST::CNamespace>, TWrite<AST::CModule>,
-		    TWrite<AST::CRiftModule>, AST::CFileRef>
+		TAccess<TWrite<CModuleEditor>, TWrite<AST::CNamespace>, TWrite<AST::CModule>, AST::CFileRef>
 		    moduleEditors{ast};
 		for (AST::Id moduleId :
 		    ecs::ListAll<AST::CModule, CModuleEditor, AST::CFileRef>(moduleEditors))
@@ -454,7 +452,7 @@ namespace rift::Editor::EditorSystem
 						UI::EndInspectHeader();
 					}
 
-					if (auto* riftModule = moduleEditors.TryGet<AST::CRiftModule>(moduleId))
+					if (auto* riftModule = moduleEditors.TryGet<AST::CModule>(moduleId))
 					{
 						if (UI::BeginInspectHeader("Rift"))
 						{
@@ -473,7 +471,7 @@ namespace rift::Editor::EditorSystem
 
 			if (!isOpen)
 			{
-				CloseModule(ast, moduleId);
+				CloseModuleEditor(ast, moduleId);
 			}
 		}
 	}

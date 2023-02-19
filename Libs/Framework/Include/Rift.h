@@ -16,7 +16,7 @@
 
 namespace rift
 {
-	struct FileTypeSettings
+	struct RiftTypeSettings
 	{
 		p::String displayName;
 		p::String category;
@@ -25,22 +25,21 @@ namespace rift
 		bool hasFunctionBodies = true;
 	};
 
-	struct FileTypeDescriptor
+	struct RiftTypeDescriptor
 	{
 		p::Tag id;
 		p::StructType* tagType = nullptr;
-		FileTypeSettings settings;
+		RiftTypeSettings settings;
 
-
-		bool operator<(const FileTypeDescriptor& other) const
+		bool operator<(const RiftTypeDescriptor& other) const
 		{
 			return id < other.id;
 		}
-		friend bool operator<(const p::Tag& lhs, const FileTypeDescriptor& rhs)
+		friend bool operator<(const p::Tag& lhs, const RiftTypeDescriptor& rhs)
 		{
 			return lhs < rhs.id;
 		}
-		friend bool operator<(const FileTypeDescriptor& lhs, const p::Tag& rhs)
+		friend bool operator<(const RiftTypeDescriptor& lhs, const p::Tag& rhs)
 		{
 			return lhs.id < rhs;
 		}
@@ -69,16 +68,17 @@ namespace rift
 	}
 
 	void RegisterView(View view);
-	void RegisterFileType(FileTypeDescriptor&& descriptor);
+	void RegisterRiftType(RiftTypeDescriptor&& descriptor);
+	void UnregisterRiftType(p::Tag typeId);
 
-	p::TSpan<const FileTypeDescriptor> GetFileTypes();
-	const FileTypeDescriptor* FindFileType(p::Tag typeId);
-	const FileTypeDescriptor* FindFileType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId);
+	p::TSpan<const RiftTypeDescriptor> GetRiftTypes();
+	const RiftTypeDescriptor* FindRiftType(p::Tag typeId);
+	const RiftTypeDescriptor* FindRiftType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId);
 
 	template<typename TagType>
-	void RegisterFileType(p::Tag typeId, FileTypeSettings settings)
+	void RegisterRiftType(p::Tag typeId, RiftTypeSettings settings)
 	{
-		RegisterFileType(
+		RegisterRiftType(
 		    {.id = typeId, .tagType = TagType::GetStaticType(), .settings = p::Move(settings)});
 	}
 }    // namespace rift

@@ -58,7 +58,7 @@ namespace rift::AST
 
 		ast.Add<CDeclType>(id, {.typeId = typeId});
 
-		if (auto* fileType = FindFileType(typeId))
+		if (auto* fileType = FindRiftType(typeId))
 		{
 			ast.AddDefaulted(fileType->tagType->GetId(), id);
 		}
@@ -166,7 +166,7 @@ namespace rift::AST
 
 	bool HasVariables(TAccess<CDeclType> access, Id typeId)
 	{
-		if (const FileTypeDescriptor* fileType = FindFileType(access, typeId))
+		if (const RiftTypeDescriptor* fileType = FindRiftType(access, typeId))
 		{
 			return fileType->settings.hasVariables;
 		}
@@ -175,7 +175,7 @@ namespace rift::AST
 
 	bool HasFunctions(TAccess<CDeclType> access, Id typeId)
 	{
-		if (const FileTypeDescriptor* fileType = FindFileType(access, typeId))
+		if (const RiftTypeDescriptor* fileType = FindRiftType(access, typeId))
 		{
 			return fileType->settings.hasFunctions;
 		}
@@ -184,7 +184,7 @@ namespace rift::AST
 
 	bool HasFunctionBodies(TAccess<CDeclType> access, Id typeId)
 	{
-		if (const FileTypeDescriptor* fileType = FindFileType(access, typeId))
+		if (const RiftTypeDescriptor* fileType = FindRiftType(access, typeId))
 		{
 			return fileType->settings.hasFunctions && fileType->settings.hasFunctionBodies;
 		}

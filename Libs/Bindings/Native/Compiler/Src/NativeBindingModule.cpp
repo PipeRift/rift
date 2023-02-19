@@ -43,11 +43,11 @@ namespace rift
 
 	void NativeBindingModule::Load()
 	{
-		RegisterFileType<CDeclCStruct>("CStruct", {.displayName     = "C Struct",
+		RegisterRiftType<CDeclCStruct>("CStruct", {.displayName     = "C Struct",
 		                                              .category     = "Bindings",
 		                                              .hasVariables = true,
 		                                              .hasFunctions = false});
-		RegisterFileType<CDeclCStatic>("CStatic", {.displayName          = "C Static",
+		RegisterRiftType<CDeclCStatic>("CStatic", {.displayName          = "C Static",
 		                                              .category          = "Bindings",
 		                                              .hasVariables      = true,
 		                                              .hasFunctions      = true,

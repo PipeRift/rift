@@ -20,11 +20,11 @@ namespace rift
 
 	void FrameworkModule::Load()
 	{
-		RegisterFileType<AST::CDeclStruct>(
+		RegisterRiftType<AST::CDeclStruct>(
 		    structType, {.displayName = "Struct", .hasVariables = true, .hasFunctions = false});
-		RegisterFileType<AST::CDeclClass>(
+		RegisterRiftType<AST::CDeclClass>(
 		    classType, {.displayName = "Class", .hasVariables = true, .hasFunctions = true});
-		RegisterFileType<AST::CDeclStatic>(
+		RegisterRiftType<AST::CDeclStatic>(
 		    staticType, {.displayName = "Static", .hasVariables = true, .hasFunctions = true});
 	}
 }    // namespace rift

@@ -1,11 +1,9 @@
 {
     "CNamespace": "none",
     "CModule": {
+        "target": "Executable",
         "dependencies": [
             "Extern/Serialization"
         ]
-    },
-    "CRiftModule": {
-        "target": "Executable"
     }
 }

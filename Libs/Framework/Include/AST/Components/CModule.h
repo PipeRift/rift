@@ -4,18 +4,30 @@
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Reflect/Struct.h>
 
+namespace rift::AST
+{
+	enum class RiftModuleTarget : p::u8
+	{
+		Executable,
+		Shared,
+		Static
+	};
+}    // namespace rift::AST
+ENUM(rift::AST::RiftModuleTarget)
+
 
 namespace rift::AST
 {
-	using namespace p::core;
-
-	static constexpr StringView moduleFilename = "__module__.rf";
+	static constexpr p::StringView moduleFilename = "__module__.rf";
 
 	struct CModule : public p::Struct
 	{
 		STRUCT(CModule, p::Struct)
 
+		PROP(target)
+		RiftModuleTarget target = RiftModuleTarget::Executable;
+
 		PROP(dependencies)
-		TArray<Tag> dependencies;
+		p::TArray<p::Tag> dependencies;
 	};
 }    // namespace rift::AST

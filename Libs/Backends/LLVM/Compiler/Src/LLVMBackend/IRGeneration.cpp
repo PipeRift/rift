@@ -22,7 +22,6 @@
 #include <AST/Components/CLiteralFloating.h>
 #include <AST/Components/CLiteralIntegral.h>
 #include <AST/Components/CLiteralString.h>
-#include <AST/Components/CRiftModule.h>
 #include <AST/Components/CStmtIf.h>
 #include <AST/Components/CStmtOutputs.h>
 #include <AST/Components/CStmtReturn.h>
@@ -362,11 +361,11 @@ namespace rift::compiler::LLVM
 
 		const Tag name = AST::GetModuleName(compiler.ast, moduleId);
 
-		CIRModule& module      = compiler.ast.Add<CIRModule>(moduleId);
-		module.instance        = MakeOwned<llvm::Module>(ToLLVM(name), llvm);
-		llvm::Module& irModule = *module.instance.Get();
+		const auto& module  = compiler.ast.Get<const AST::CModule>(moduleId);
+		CIRModule& irModule = compiler.ast.Add<CIRModule>(moduleId);
+		irModule.instance   = MakeOwned<llvm::Module>(ToLLVM(name), llvm);
 
-		ModuleIRGen gen{compiler, irModule, llvm, builder};
+		ModuleIRGen gen{compiler, *irModule.instance.Get(), llvm, builder};
 
 		// Filter all module rift types
 		TArray<AST::Id> typeIds;
@@ -390,8 +389,7 @@ namespace rift::compiler::LLVM
 
 		DefineFunctions(gen, ast, functionIds);
 
-		const auto* riftMod = compiler.ast.TryGet<const AST::CRiftModule>(moduleId);
-		if (riftMod && riftMod->target == AST::RiftModuleTarget::Executable)
+		if (module.target == AST::RiftModuleTarget::Executable)
 		{
 			CreateMain(gen);
 		}
