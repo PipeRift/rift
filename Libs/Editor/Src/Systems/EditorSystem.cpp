@@ -2,12 +2,14 @@
 
 #include "Systems/EditorSystem.h"
 
+#include "AST/Utils/ModuleUtils.h"
 #include "AST/Utils/TypeUtils.h"
 #include "Components/CModuleEditor.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "Editor.h"
 #include "imgui.h"
+#include "Pipe/Core/String.h"
 #include "Pipe/Files/Files.h"
 #include "Statics/SEditor.h"
 #include "Utils/DetailsPanel.h"
@@ -446,19 +448,37 @@ namespace rift::Editor::EditorSystem
 					UI::InspectStruct(&ns);
 
 					auto& module = moduleEditors.Get<AST::CModule>(moduleId);
-					if (UI::BeginInspectHeader("Module"))
-					{
-						UI::InspectStruct(&module);
-						UI::EndInspectHeader();
-					}
+					UI::InspectStruct(&module);
 
-					if (auto* riftModule = moduleEditors.TryGet<AST::CModule>(moduleId))
+					if (UI::BeginInspectHeader("Bindings"))
 					{
-						if (UI::BeginInspectHeader("Rift"))
+						for (const auto& binding : AST::GetModuleBindings())
 						{
-							UI::InspectStruct(riftModule);
-							UI::EndInspectHeader();
+							auto* pool = ast.GetPool(binding.tagType->GetId());
+							if (void* data = pool ? pool->TryGetVoid(moduleId) : nullptr)
+							{
+								if (UI::BeginInspectHeader(binding.displayName))
+								{
+									UI::InspectProperties(data, binding.tagType);
+									UI::EndInspectHeader();
+								}
+							}
+							else
+							{
+								UI::PushStyleCompact();
+								const p::String addText =
+								    p::Strings::Format(ICON_FA_PLUS " {}", binding.displayName);
+								UI::TableNextRow();
+								UI::TableSetColumnIndex(1);
+								if (UI::Button(addText.c_str(), ImVec2(-FLT_MIN, 0.0f)))
+								{
+									ScopedChange(ast, moduleId);
+									AST::AddBindingToModule(ast, moduleId, binding.id);
+								}
+								UI::PopStyleCompact();
+							}
 						}
+						UI::EndInspectHeader();
 					}
 					UI::EndInspector();
 				}

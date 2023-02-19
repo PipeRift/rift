@@ -43,6 +43,8 @@ namespace rift
 
 	void NativeBindingModule::Load()
 	{
+		AST::RegisterModuleBinding(
+		    {.id = "C", .tagType = CNativeBinding::GetStaticType(), .displayName = "C"});
 		RegisterRiftType<CDeclCStruct>("CStruct", {.displayName     = "C Struct",
 		                                              .category     = "Bindings",
 		                                              .hasVariables = true,

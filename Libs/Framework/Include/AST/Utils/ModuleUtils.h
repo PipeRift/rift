@@ -24,7 +24,6 @@ namespace rift::AST
 		p::Tag id;
 		p::StructType* tagType = nullptr;
 		p::String displayName;
-		p::String category;
 
 		bool operator<(const ModuleBinding& other) const
 		{
