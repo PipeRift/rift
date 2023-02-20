@@ -13,9 +13,13 @@
 
 namespace rift::AST
 {
+	TBroadcast<Tree&> Tree::onInit{};
+
+
 	Tree::Tree()
 	{
 		SetupNativeTypes();
+		onInit(*this);
 	}
 
 	Tree::Tree(const Tree& other) noexcept : ecs::Context(other)
@@ -37,6 +41,11 @@ namespace rift::AST
 		ecs::Context::operator=(Move(other));
 		MoveFrom(Move(other));
 		return *this;
+	}
+
+	const TBroadcast<Tree&>& Tree::OnInit()
+	{
+		return onInit;
 	}
 
 	void Tree::SetupNativeTypes()

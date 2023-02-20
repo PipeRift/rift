@@ -2,6 +2,7 @@
 #pragma once
 
 #include "AST/Id.h"
+#include "Pipe/Core/Broadcast.h"
 
 #include <Pipe/Core/Tag.h>
 #include <Pipe/ECS/Context.h>
@@ -27,9 +28,12 @@ namespace rift::AST
 		AST::Id stringId = AST::NoId;
 	};
 
+
 	struct Tree : public p::ecs::Context
 	{
 	private:
+		static TBroadcast<Tree&> onInit;
+
 		NativeTypeIds nativeTypes;
 
 
@@ -45,6 +49,7 @@ namespace rift::AST
 			return nativeTypes;
 		}
 
+		static const TBroadcast<Tree&>& OnInit();
 
 	private:
 		void CopyFrom(const Tree& other);
@@ -52,4 +57,13 @@ namespace rift::AST
 
 		void SetupNativeTypes();
 	};
+
+
+	template<typename... T>
+	void PreAllocPools()
+	{
+		Tree::OnInit().Bind([](const Tree& ast) {
+			(ast.AssurePool<typename T>(), ...);
+		});
+	}
 }    // namespace rift::AST

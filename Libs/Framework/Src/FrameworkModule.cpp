@@ -5,6 +5,10 @@
 #include "AST/Components/CDeclClass.h"
 #include "AST/Components/CDeclStatic.h"
 #include "AST/Components/CDeclStruct.h"
+#include "AST/Components/CModule.h"
+#include "AST/Components/CNamespace.h"
+#include "AST/Utils/ModuleUtils.h"
+#include "AST/Utils/TypeUtils.h"
 
 #include <Pipe/Memory/NewDelete.h>
 
@@ -20,11 +24,13 @@ namespace rift
 
 	void FrameworkModule::Load()
 	{
-		RegisterRiftType<AST::CDeclStruct>(
+		AST::RegisterFileType<AST::CDeclStruct>(
 		    structType, {.displayName = "Struct", .hasVariables = true, .hasFunctions = false});
-		RegisterRiftType<AST::CDeclClass>(
+		AST::RegisterFileType<AST::CDeclClass>(
 		    classType, {.displayName = "Class", .hasVariables = true, .hasFunctions = true});
-		RegisterRiftType<AST::CDeclStatic>(
+		AST::RegisterFileType<AST::CDeclStatic>(
 		    staticType, {.displayName = "Static", .hasVariables = true, .hasFunctions = true});
+
+		AST::RegisterSerializedModulePools<AST::CNamespace, AST::CModule>();
 	}
 }    // namespace rift

@@ -25,6 +25,36 @@
 
 namespace rift::AST
 {
+	struct RiftTypeSettings
+	{
+		p::String displayName;
+		p::String category;
+		bool hasVariables      = false;
+		bool hasFunctions      = false;
+		bool hasFunctionBodies = true;
+	};
+
+	struct RiftType
+	{
+		p::Tag id;
+		p::StructType* tagType = nullptr;
+		RiftTypeSettings settings;
+
+		bool operator<(const RiftType& other) const
+		{
+			return id < other.id;
+		}
+		friend bool operator<(const p::Tag& lhs, const RiftType& rhs)
+		{
+			return lhs < rhs.id;
+		}
+		friend bool operator<(const RiftType& lhs, const p::Tag& rhs)
+		{
+			return lhs.id < rhs;
+		}
+	};
+
+
 	void InitTypeFromFileType(Tree& ast, Id id, p::Tag typeId);
 
 	Id CreateType(Tree& ast, p::Tag typeId, Tag name = Tag::None(), StringView path = {});
@@ -65,4 +95,19 @@ namespace rift::AST
 	void RemoveNodes(const RemoveAccess& access, TSpan<Id> ids);
 
 	bool CopyExpressionType(TAccessRef<TWrite<CExprTypeId>> access, Id sourcePinId, Id targetPinId);
+
+
+	void RegisterFileType(RiftType&& descriptor);
+	void UnregisterFileType(p::Tag typeId);
+
+	p::TSpan<const RiftType> GetFileTypes();
+	const RiftType* FindFileType(p::Tag typeId);
+	const RiftType* FindFileType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId);
+
+	template<typename TagType>
+	void RegisterFileType(p::Tag typeId, RiftTypeSettings settings)
+	{
+		RegisterFileType(
+		    {.id = typeId, .tagType = TagType::GetStaticType(), .settings = p::Move(settings)});
+	}
 }    // namespace rift::AST

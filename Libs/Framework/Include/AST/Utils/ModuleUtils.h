@@ -3,10 +3,10 @@
 #pragma once
 
 #include "AST/Components/CFileRef.h"
-#include "AST/Components/CModule.h"
 #include "AST/Components/CNamespace.h"
 #include "AST/Components/CProject.h"
 #include "AST/Tree.h"
+#include "Pipe/ECS/Serialization.h"
 
 #include <Pipe/ECS/Filtering.h>
 #include <Pipe/Memory/OwnPtr.h>
@@ -65,6 +65,8 @@ namespace rift::AST
 
 	void SerializeModule(AST::Tree& ast, AST::Id id, String& data);
 	void DeserializeModule(AST::Tree& ast, AST::Id id, const String& data);
+	const TBroadcast<ecs::EntityReader&>& OnReadModulePools();
+	const TBroadcast<ecs::EntityWriter&>& OnWriteModulePools();
 
 	void RegisterModuleBinding(ModuleBinding binding);
 	void UnregisterModuleBinding(p::Tag bindingId);
@@ -72,4 +74,15 @@ namespace rift::AST
 	void RemoveBindingFromModule(AST::Tree& ast, AST::Id id, p::Tag bindingId);
 	const ModuleBinding* FindModuleBinding(p::Tag id);
 	p::TSpan<const ModuleBinding> GetModuleBindings();
+
+
+	template<typename... T>
+	void RegisterSerializedModulePools()
+	{
+		auto components = [](auto& rw) {
+			rw.template SerializePools<T...>();
+		};
+		OnReadModulePools().Bind(components);
+		OnWriteModulePools().Bind(components);
+	}
 }    // namespace rift::AST

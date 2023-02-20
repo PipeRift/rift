@@ -8,7 +8,6 @@
 namespace rift
 {
 	static p::TMap<p::ClassType*, p::TOwnPtr<class Module>> modules{};
-	static p::TArray<RiftTypeDescriptor> riftTypes;
 	static p::TArray<View> views{};
 
 
@@ -42,31 +41,4 @@ namespace rift
 	{
 		views.Add(Move(view));
 	}
-
-	void RegisterRiftType(RiftTypeDescriptor&& descriptor)
-	{
-		riftTypes.FindOrAddSorted(Move(descriptor));
-	}
-
-
-	p::TSpan<const RiftTypeDescriptor> GetRiftTypes()
-	{
-		return riftTypes;
-	}
-
-	const RiftTypeDescriptor* FindRiftType(p::Tag typeId)
-	{
-		const i32 index = riftTypes.FindSortedEqual(typeId);
-		return index != NO_INDEX ? riftTypes.Data() + index : nullptr;
-	}
-
-	const RiftTypeDescriptor* FindRiftType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId)
-	{
-		if (const auto* type = access.TryGet<const AST::CDeclType>(typeId))
-		{
-			return FindRiftType(type->typeId);
-		}
-		return nullptr;
-	}
-
 };    // namespace rift
