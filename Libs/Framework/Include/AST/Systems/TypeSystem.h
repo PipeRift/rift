@@ -1,6 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
+#include "AST/Components/CDeclType.h"
 #include "AST/Components/CDeclVariable.h"
 #include "AST/Components/CExprBinaryOperator.h"
 #include "AST/Components/CExprDeclRef.h"
@@ -8,7 +9,6 @@
 #include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CExprType.h"
 #include "AST/Components/CExprUnaryOperator.h"
-#include "AST/Components/CType.h"
 #include "AST/Components/Tags/CChanged.h"
 
 #include <Pipe/ECS/Access.h>
@@ -30,8 +30,8 @@ namespace rift::AST::TypeSystem
 	    TAccessRef<CExprDeclRefId, CDeclVariable, TWrite<CExprTypeId>>;
 	void PropagateVariableTypes(PropagateVariableTypesAccess access);
 
-	using PropagateExpressionTypesAccess = TAccessRef<CType, CChanged, CExprInputs, CExprOutputs,
-	    TWrite<CExprTypeId>, CExprUnaryOperator, CExprBinaryOperator, CParent>;
+	using PropagateExpressionTypesAccess = TAccessRef<CDeclType, CChanged, CExprInputs,
+	    CExprOutputs, TWrite<CExprTypeId>, CExprUnaryOperator, CExprBinaryOperator, CParent>;
 	void PropagateExpressionTypes(PropagateExpressionTypesAccess access);
 
 	void ResolveExprTypeIds(

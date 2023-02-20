@@ -16,11 +16,3 @@ target_link_libraries(RiftUI PUBLIC
 target_compile_definitions(RiftUI PRIVATE NOMINMAX)
 
 rift_module(RiftUI)
-
-install(TARGETS RiftUI
-    EXPORT RiftTargets
-    LIBRARY DESTINATION Lib
-    ARCHIVE DESTINATION Lib
-    RUNTIME DESTINATION Bin
-    INCLUDES DESTINATION Include
-)

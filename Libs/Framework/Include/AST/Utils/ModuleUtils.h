@@ -19,30 +19,57 @@ namespace rift::AST
 
 namespace rift::AST
 {
+	struct ModuleBinding
+	{
+		p::Tag id;
+		p::StructType* tagType = nullptr;
+		p::String displayName;
+
+		bool operator<(const ModuleBinding& other) const
+		{
+			return id < other.id;
+		}
+		friend bool operator<(const p::Tag& lhs, const ModuleBinding& rhs)
+		{
+			return lhs < rhs.id;
+		}
+		friend bool operator<(const ModuleBinding& lhs, const p::Tag& rhs)
+		{
+			return lhs.id < rhs;
+		}
+	};
+
+
 	using namespace p::core;
 	using namespace p::files;
-	using namespace AST;
 
-	bool CreateProject(Tree& ast, Path path);
-	bool OpenProject(Tree& ast, Path path);
+	bool CreateProject(Tree& ast, StringView path);
+	bool OpenProject(Tree& ast, StringView path);
 	void CloseProject(Tree& ast);
 
-	Id CreateModule(Tree& ast, Path path);
+	Id CreateModule(Tree& ast, StringView path);
 
 	Id GetProjectId(TAccessRef<CProject> access);
 
-	Name GetProjectName(TAccessRef<CProject, CNamespace, CFileRef> access);
-	Path GetProjectPath(TAccessRef<CFileRef, CProject> access);
+	Tag GetProjectName(TAccessRef<CProject, CNamespace, CFileRef> access);
+	p::StringView GetProjectPath(TAccessRef<CFileRef, CProject> access);
 	CModule* GetProjectModule(TAccessRef<CProject, TWrite<CModule>> access);
 
 	bool HasProject(Tree& ast);
 
 	// Resolve a module's name
-	Name GetModuleName(TAccessRef<CNamespace, CFileRef> access, Id moduleId);
+	Tag GetModuleName(TAccessRef<CNamespace, CFileRef> access, Id moduleId);
 
 	// Resolve a module's name
-	Path GetModulePath(TAccessRef<CFileRef> access, Id moduleId);
+	p::StringView GetModulePath(TAccessRef<CFileRef> access, Id moduleId);
 
 	void SerializeModule(AST::Tree& ast, AST::Id id, String& data);
 	void DeserializeModule(AST::Tree& ast, AST::Id id, const String& data);
+
+	void RegisterModuleBinding(ModuleBinding binding);
+	void UnregisterModuleBinding(p::Tag bindingId);
+	void AddBindingToModule(AST::Tree& ast, AST::Id id, p::Tag bindingId);
+	void RemoveBindingFromModule(AST::Tree& ast, AST::Id id, p::Tag bindingId);
+	const ModuleBinding* FindModuleBinding(p::Tag id);
+	p::TSpan<const ModuleBinding> GetModuleBindings();
 }    // namespace rift::AST

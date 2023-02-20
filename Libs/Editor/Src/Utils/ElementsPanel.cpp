@@ -35,7 +35,7 @@ namespace rift::Editor
 		{
 			return;
 		}
-		String name = ns->name.ToString();
+		String name{ns->name.AsString()};
 		if (!editor.elementsFilter.PassFilter(name.data(), name.data() + name.size()))
 		{
 			return;
@@ -104,7 +104,7 @@ namespace rift::Editor
 		if (UI::MutableText(nameId, name,
 		        ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 		{
-			ns->name = Name{name};
+			ns->name = Tag{name};
 		}
 
 		UI::TableNextColumn();
@@ -135,7 +135,7 @@ namespace rift::Editor
 		{
 			return;
 		}
-		String name = ns->name.ToString();
+		StringView name = ns->name.AsString();
 		if (!editor.elementsFilter.PassFilter(name.data(), name.data() + name.size()))
 		{
 			return;
@@ -258,12 +258,12 @@ namespace rift::Editor
 			UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
 			editor.elementsFilter.Draw("##filter");
 
-			if (AST::CanContainVariables(ast, typeId))
+			if (AST::HasVariables(ast, typeId))
 			{
 				DrawVariables(ast, ast, editor, typeId);
 			}
 
-			if (AST::CanContainFunctions(ast, typeId))
+			if (AST::HasFunctions(ast, typeId))
 			{
 				DrawFunctions(ast, editor, typeId);
 			}

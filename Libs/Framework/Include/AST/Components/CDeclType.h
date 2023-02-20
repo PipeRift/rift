@@ -6,8 +6,11 @@
 
 namespace rift::AST
 {
-	struct CModuleType : public p::Struct
+	struct CDeclType : public p::Struct
 	{
-		STRUCT(CModuleType, p::Struct)
+		STRUCT(CDeclType, p::Struct)
+
+		PROP(typeId)
+		p::Tag typeId;
 	};
 }    // namespace rift::AST

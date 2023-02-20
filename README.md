@@ -94,6 +94,6 @@ This also means code you created can be under any license. One example could be 
 Rift’s source can also be embedded into other projects (explaining the L of LGPL). This means projects embedding Rift do not need to inherit the same license and can be commercial, but Rift components must keep their own licenses and remain open source if LGPL, including any modifications to them.
 
 ### Your code
-Any code or assets you create with Rift as a language is of your sole property. This includes code files like .rf or .rift and any generated files by Rift compiler, editor or tools.
+Any code or assets you create with Rift as a language is of your sole property. This includes code files like .rf and any generated files by Rift compiler, editor or tools.
 
 This means Rift can be used commercially by studios, programmers, designers, artists or anyone else.

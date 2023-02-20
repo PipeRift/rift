@@ -5,9 +5,9 @@
 #include "AST/Components/CDeclClass.h"
 #include "AST/Components/CDeclStatic.h"
 #include "AST/Components/CDeclStruct.h"
+#include "AST/Components/CDeclType.h"
 #include "AST/Components/CModule.h"
 #include "AST/Components/CNamespace.h"
-#include "AST/Components/CType.h"
 #include "AST/Statics/SLoadQueue.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/SStringLoad.h"
@@ -16,6 +16,7 @@
 #include "AST/Utils/ModuleUtils.h"
 #include "AST/Utils/TypeIterator.h"
 #include "AST/Utils/TypeUtils.h"
+#include "Pipe/Files/Paths.h"
 
 #include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Files/Files.h>
@@ -38,7 +39,7 @@ namespace rift::AST::LoadSystem
 
 	void LoadSubmodules(Tree& ast)
 	{
-		TArray<Path> paths;
+		TArray<String> paths;
 		ScanSubmodules(ast, paths);
 
 		TArray<Id> idsToLoad;
@@ -62,7 +63,7 @@ namespace rift::AST::LoadSystem
 		DeserializeTypes(ast, idsToLoad, strings);
 	}
 
-	void ScanSubmodules(Tree& ast, TArray<Path>& paths)
+	void ScanSubmodules(Tree& ast, TArray<String>& paths)
 	{
 		ZoneScoped;
 
@@ -70,9 +71,9 @@ namespace rift::AST::LoadSystem
 
 		Id projectId      = GetProjectId(ast);
 		auto& projectFile = ast.Get<CFileRef>(projectId);
-		for (const auto& modulePath : ModuleIterator(projectFile.path.parent_path()))
+		for (const auto& modulePath : ModuleIterator(p::GetParentPath(projectFile.path)))
 		{
-			paths.Add(modulePath);
+			paths.Add(p::ToString(modulePath));
 		}
 	}
 
@@ -92,7 +93,7 @@ namespace rift::AST::LoadSystem
 		for (Id moduleId : modules)
 		{
 			const auto& moduleFile = access.Get<const CFileRef>(moduleId);
-			modulePaths.Insert(moduleFile.path.parent_path());
+			modulePaths.Insert(p::GetParentPath(moduleFile.path));
 		}
 
 		// Find all type files by module
@@ -107,12 +108,16 @@ namespace rift::AST::LoadSystem
 			for (const auto& typePath :
 			    AST::TypeIterator(path /*TODO: Ignore paths | , &modulePaths*/))
 			{
-				paths.Add(typePath);
+				p::String path = p::ToString(typePath);
+				if (p::GetStem(path) != "__module__")    // Ignore module files
+				{
+					paths.Add(path);
+				}
 			}
 		}
 	}
 
-	void CreateModulesFromPaths(Tree& ast, TArray<Path>& paths, TArray<Id>& ids)
+	void CreateModulesFromPaths(Tree& ast, TArray<String>& paths, TArray<Id>& ids)
 	{
 		ZoneScoped;
 
@@ -121,7 +126,7 @@ namespace rift::AST::LoadSystem
 
 		// Remove existing module paths
 		auto moduleIds = ecs::ListAll<CModule, CFileRef>(access);
-		paths.RemoveIfSwap([&access, &moduleIds](const p::Path& path) {
+		paths.RemoveIfSwap([&access, &moduleIds](const p::String& path) {
 			bool moduleExists = false;
 			for (Id id : moduleIds)
 			{
@@ -141,7 +146,7 @@ namespace rift::AST::LoadSystem
 		{
 			Id id = ids[i];
 			access.Add<CModule>(id);
-			access.Add<CFileRef>(id, Move(paths[i]));
+			access.Add(id, CFileRef{Move(paths[i])});
 		}
 
 		// Link modules to the project
@@ -159,23 +164,15 @@ namespace rift::AST::LoadSystem
 			return;
 		}
 
-		// Remove existing types
+		// Remove already existing types
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
-			modulePaths.paths.RemoveIfSwap([types, &modulePaths](const p::Path& path) {
-				const String pathStr = ToString(path);
-				const Name pathName{pathStr};
-
-				if (!types->typesByPath.Contains(pathName))
-				{
-					modulePaths.pathNames.Add(pathName);
-					return false;
-				}
-				return true;
+			modulePaths.paths.RemoveIfSwap([types, &modulePaths](const p::String& path) {
+				return types->typesByPath.Contains(p::Tag{path});
 			});
 		}
 
-		// Create nodes
+		// Create type entities
 		TArray<Id> typeIds;
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
@@ -184,17 +181,13 @@ namespace rift::AST::LoadSystem
 
 			for (i32 i = 0; i < typeIds.Size(); ++i)
 			{
-				Id id      = typeIds[i];
-				Path& path = modulePaths.paths[i];
+				const Id id  = typeIds[i];
+				String& path = modulePaths.paths[i];
 
-				ast.Add<CFileRef>(id, Move(path));
+				types->typesByPath.Insert(p::Tag{path}, id);
+				ast.Add(id, CFileRef{Move(path)});
 			}
 
-			for (i32 i = 0; i < typeIds.Size(); ++i)
-			{
-				Name pathName = modulePaths.pathNames[i];
-				types->typesByPath.Insert(pathName, typeIds[i]);
-			}
 			p::ecs::AddChildren(ast, modulePaths.moduleId, typeIds);
 			ids.Append(typeIds);
 		}
@@ -210,7 +203,7 @@ namespace rift::AST::LoadSystem
 			{
 				if (!files::LoadStringFile(file->path, strings[i], 4))
 				{
-					Log::Error("File could not be loaded from disk ({})", p::ToString(file->path));
+					Log::Error("File could not be loaded from disk ({})", file->path);
 					continue;
 				}
 			}

@@ -3,10 +3,10 @@
 
 #include "AST/Components/CProject.h"
 
+#include <AST/Components/CDeclType.h>
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
 #include <AST/Components/CNamespace.h>
-#include <AST/Components/CType.h>
 #include <AST/Tree.h>
 #include <Pipe/Core/Array.h>
 #include <Pipe/Core/String.h>
@@ -32,8 +32,8 @@ namespace rift::Editor
 
 		struct Item
 		{
-			AST::Id id;
-			p::Name path;
+			AST::Id id = AST::NoId;
+			p::String path;
 			bool isFolder = false;
 		};
 
@@ -44,7 +44,7 @@ namespace rift::Editor
 
 	private:
 		AST::Id projectModuleId = AST::NoId;
-		p::TMap<p::Name, Folder> folders;
+		p::TMap<p::Tag, Folder> folders;
 
 		bool open  = true;
 		bool dirty = true;
@@ -54,7 +54,7 @@ namespace rift::Editor
 		p::String renameBuffer;
 		bool renameHasFocused = false;
 
-		p::Path pendingOpenCreatedPath;
+		p::StringView pendingOpenCreatedPath;
 
 
 	public:
@@ -68,19 +68,19 @@ namespace rift::Editor
 		void DrawContextMenu(AST::Tree& ast, p::StringView path, AST::Id itemId);
 
 		void CacheProjectFiles(
-		    p::TAccessRef<AST::CProject, AST::CModule, AST::CFileRef, AST::CType> access);
+		    p::TAccessRef<AST::CProject, AST::CModule, AST::CFileRef, AST::CDeclType> access);
 
 		void SortFolder(Folder& folder);
 
 	private:
-		void InsertItem(p::TMap<p::Name, Folder>& folders, const Item& item);
+		void InsertItem(const Item& item);
 		void DrawItem(AST::Tree& ast, const Item& item);
 		// void DrawFile(AST::Tree& ast, File& file);
 
 		void DrawModuleActions(AST::Id id, struct AST::CModule& module);
-		void DrawTypeActions(AST::Id id, struct AST::CType& type);
+		void DrawTypeActions(AST::Id id, struct AST::CDeclType& type);
 
-		void CreateType(AST::Tree& ast, p::StringView title, AST::RiftType category, p::Path path);
+		void CreateType(AST::Tree& ast, p::StringView title, p::Tag typeId, p::StringView path);
 	};
 
 

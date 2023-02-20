@@ -11,10 +11,10 @@ namespace rift::AST
 		STRUCT(CExprDeclRef, CExpression)
 
 		PROP(ownerName)
-		p::Name ownerName;
+		p::Tag ownerName;
 
 		PROP(name)
-		p::Name name;
+		p::Tag name;
 	};
 
 	struct CExprDeclRefId : public CExpression

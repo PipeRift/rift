@@ -15,9 +15,9 @@ namespace rift::Editor
 	{
 		STRUCT(CTypeEditor, p::Struct, p::Struct_NotSerialized)
 
-		static const Name rightTopNode;
-		static const Name rightBottomNode;
-		static const Name centralNode;
+		static const Tag rightTopNode;
+		static const Tag rightBottomNode;
+		static const Tag centralNode;
 
 		ImGuiID dockspaceID = 0;
 		DockSpaceLayout layout;
@@ -34,7 +34,7 @@ namespace rift::Editor
 		ImGuiTextFilter elementsFilter;
 	};
 
-	inline const Name CTypeEditor::rightTopNode{"rightTopNode"};
-	inline const Name CTypeEditor::rightBottomNode{"rightBottomNode"};
-	inline const Name CTypeEditor::centralNode{"centralNode"};
+	inline const Tag CTypeEditor::rightTopNode{"rightTopNode"};
+	inline const Tag CTypeEditor::rightBottomNode{"rightBottomNode"};
+	inline const Tag CTypeEditor::centralNode{"centralNode"};
 }    // namespace rift::Editor

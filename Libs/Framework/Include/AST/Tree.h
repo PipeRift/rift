@@ -3,7 +3,7 @@
 
 #include "AST/Id.h"
 
-#include <Pipe/Core/Name.h>
+#include <Pipe/Core/Tag.h>
 #include <Pipe/ECS/Context.h>
 #include <Pipe/Memory/UniquePtr.h>
 

@@ -20,14 +20,14 @@ function(set_icon TARGET path_to_icon)
 	# Extension of icon
 	get_filename_component(icon-ext ${path_to_icon} EXT)
 
-	set(current-output-dir ${CMAKE_BINARY_DIR}/res)
+	set(current-output-dir ${CMAKE_BINARY_DIR})
 	file(MAKE_DIRECTORY ${current-output-dir})
 	set(current-output-path ${current-output-dir}/icon.rc)
 
 	# Convert image to icon
 	if (NOT icon-ext STREQUAL ".ico")
 	  find_program(image_magick magick)
-	  set(icon-output-path ${CMAKE_BINARY_DIR}/res/${icon-name}.ico)
+	  set(icon-output-path ${CMAKE_BINARY_DIR}/${icon-name}.ico)
 	  add_custom_target(icon
 		COMMAND ${image_magick} ${CMAKE_CURRENT_SOURCE_DIR}/${path_to_icon} -resize 48x48 ${icon-output-path}
 		DEPENDS ${path_to_icon}

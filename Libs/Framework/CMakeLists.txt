@@ -14,11 +14,3 @@ target_link_libraries(Rift PUBLIC
 
 rift_module(Rift)
 set_target_properties (Rift PROPERTIES FOLDER Rift)
-
-install(TARGETS Rift
-    EXPORT RiftTargets
-    LIBRARY DESTINATION Lib
-    ARCHIVE DESTINATION Lib
-    RUNTIME DESTINATION Bin
-    INCLUDES DESTINATION Include
-)

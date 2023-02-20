@@ -3,7 +3,7 @@
 
 #include <Pipe/Core/Function.h>
 #include <Pipe/Core/Map.h>
-#include <Pipe/Core/Name.h>
+#include <Pipe/Core/Tag.h>
 #include <UI/UI.h>
 
 
@@ -13,7 +13,7 @@ namespace rift::Editor
 
 	struct DockSpaceLayout
 	{
-		static const Name rootNodeId;
+		static const Tag rootNodeId;
 
 
 		struct Builder
@@ -25,13 +25,13 @@ namespace rift::Editor
 			Builder(DockSpaceLayout& layout) : layout(layout) {}
 
 
-			bool Split(Name originNodeId, ImGuiDir direction, float splitRatio, Name newNodeID,
-			    Name oppositeNewNodeID);
+			bool Split(Tag originNodeId, ImGuiDir direction, float splitRatio, Tag newNodeID,
+			    Tag oppositeNewNodeID);
 
-			ImGuiDockNodeFlags& GetNodeLocalFlags(Name nodeId);
-			ImGuiDockNodeFlags& GetNodeSharedFlags(Name nodeId);
+			ImGuiDockNodeFlags& GetNodeLocalFlags(Tag nodeId);
+			ImGuiDockNodeFlags& GetNodeSharedFlags(Tag nodeId);
 
-			static Name GetRootNode()
+			static Tag GetRootNode()
 			{
 				return rootNodeId;
 			}
@@ -43,7 +43,7 @@ namespace rift::Editor
 	private:
 		bool bWantsToReset      = false;
 		bool bCurrentlyReseting = false;
-		TMap<Name, ImGuiID> nameToDockNodeId;
+		TMap<Tag, ImGuiID> nameToDockNodeId;
 		TFunction<void(Builder&)> onBuild{};
 
 
@@ -63,13 +63,13 @@ namespace rift::Editor
 			bWantsToReset = true;
 		}
 
-		void BindWindowToNode(StringView windowId, Name nodeId);
-		void BindNextWindowToNode(Name nodeId, ImGuiCond cond = ImGuiCond_FirstUseEver);
+		void BindWindowToNode(StringView windowId, Tag nodeId);
+		void BindNextWindowToNode(Tag nodeId, ImGuiCond cond = ImGuiCond_FirstUseEver);
 
 	private:
 		void Rebuild(ImGuiID dockSpaceID);
 
-		ImGuiID GetDockNodeId(Name nameId) const
+		ImGuiID GetDockNodeId(Tag nameId) const
 		{
 			const ImGuiID* const idPtr = nameToDockNodeId.Find(nameId);
 			return idPtr ? *idPtr : 0;

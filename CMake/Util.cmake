@@ -37,19 +37,25 @@ function(rift_runtime_module module)
     target_link_libraries(RiftRuntimeModules INTERFACE ${target})
 
     # Override output folder with suffix
-    pipe_target_shared_output_directory(${target} "Runtime")
+    set_target_properties(${target}
+        PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY  "${CMAKE_BINARY_DIR}/Bin/Runtimes/${module}/Lib"
+        LIBRARY_OUTPUT_DIRECTORY  "${CMAKE_BINARY_DIR}/Bin/Runtimes/${module}/Lib"
+        RUNTIME_OUTPUT_DIRECTORY  "${CMAKE_BINARY_DIR}/Bin/Runtimes/${module}/Bin"
+        INCLUDES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin/Runtimes/${module}/Include"
+    )
     set_target_properties(${target} PROPERTIES OUTPUT_NAME "${module}")
-    install(TARGETS ${target}
-        EXPORT RiftTargets
-        LIBRARY DESTINATION Lib/Runtimes
-        ARCHIVE DESTINATION Lib/Runtimes
-        RUNTIME DESTINATION Bin/Runtimes
-        INCLUDES DESTINATION Include/Runtimes
+
+    add_custom_command(TARGET ${target} POST_BUILD COMMAND
+        ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/${module}" "${CMAKE_BINARY_DIR}/Bin/Runtimes/${module}"
+    )
+    add_custom_command(TARGET ${target} POST_BUILD COMMAND
+        ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/Bin/Runtimes/${module}/Src"
     )
 endfunction(rift_runtime_module)
 
 function(rift_enable_module_resources target)
     add_custom_command(TARGET ${target} POST_BUILD COMMAND
-        ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Resources" "$<TARGET_FILE_DIR:${target}>/Resources"
+        ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Resources" "${CMAKE_BINARY_DIR}/Bin/Resources"
     )
 endfunction(rift_enable_module_resources)

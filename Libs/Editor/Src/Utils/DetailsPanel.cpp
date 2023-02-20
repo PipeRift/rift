@@ -51,12 +51,12 @@ namespace rift::Editor
 		UI::TableNextColumn();    // Name
 		labelId.clear();
 		Strings::FormatTo(labelId, "##Name_{}", id);
-		String name = ns->name.ToString();
+		String name{ns->name.AsString()};
 		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
 		if (UI::MutableText(labelId, name, ImGuiInputTextFlags_AutoSelectAll))
 		{
 			ScopedChange(ast, id);
-			ns->name = Name{name};
+			ns->name = Tag{name};
 		}
 		if (UI::IsItemHovered())
 		{
@@ -114,11 +114,11 @@ namespace rift::Editor
 			return;
 		}
 
-		String functionName = ns->name.ToString();
+		String functionName{ns->name.AsString()};
 		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
 		if (UI::InputText("##name", functionName, ImGuiInputTextFlags_AutoSelectAll))
 		{
-			ecs::Id sameNameFuncId = AST::FindChildByName(ast, typeId, Name{functionName});
+			ecs::Id sameNameFuncId = AST::FindChildByName(ast, typeId, Tag{functionName});
 			if (!IsNone(sameNameFuncId) && id != sameNameFuncId)
 			{
 				UI::PushTextColor(LinearColor::Red());
@@ -128,7 +128,7 @@ namespace rift::Editor
 			else
 			{
 				ScopedChange(ast, id);
-				ns->name = Name{functionName};
+				ns->name = Tag{functionName};
 			}
 		}
 		UI::Spacing();

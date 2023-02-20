@@ -60,13 +60,13 @@ namespace rift::UI
 	// @param name of the font
 	// @param mode of the font. E.g: Bold
 	// @param size desired size of the font. If 0, first size available is used
-	void SetDefaultFont(p::Name name, FontMode mode = FontMode::Regular, float size = 0.f);
+	void SetDefaultFont(p::Tag name, FontMode mode = FontMode::Regular, float size = 0.f);
 
 	// Pushes a font
 	// @param name of the font
 	// @param mode of the font. E.g: Bold
 	// @param size desired size of the font. If 0, first size available is used
-	void PushFont(p::Name name, FontMode mode = FontMode::Regular, float size = 0.f);
+	void PushFont(p::Tag name, FontMode mode = FontMode::Regular, float size = 0.f);
 
 	void PopFont();
 

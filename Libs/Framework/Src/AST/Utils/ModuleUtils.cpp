@@ -3,7 +3,6 @@
 #include "AST/Utils/ModuleUtils.h"
 
 #include "AST/Components/CModule.h"
-#include "AST/Components/CRiftModule.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Systems/FunctionsSystem.h"
@@ -20,11 +19,14 @@
 
 namespace rift::AST
 {
+	static p::TArray<ModuleBinding> moduleBindings;
+
+
 	auto moduleComponents = [](auto& rw) {
-		rw.template SerializeComponents<CNamespace, CModule, CRiftModule>();
+		rw.template SerializeComponents<CNamespace, CModule, CModule>();
 	};
 
-	bool ValidateModulePath(p::Path& path, p::String& error)
+	bool ValidateModulePath(p::String& path, p::String& error)
 	{
 		if (path.empty())
 		{
@@ -34,41 +36,42 @@ namespace rift::AST
 
 		if (files::IsFile(path))
 		{
-			if (path.filename() != moduleFilename)
+			if (p::GetFilename(path) != moduleFilename)
 			{
 				error = "Path is not a rift module file or a folder";
 				return false;
 			}
-			path = ToAbsolutePath(path).parent_path();
+			path = p::GetParentPath(p::ToAbsolutePath(path));
 		}
 		else
 		{
-			path = ToAbsolutePath(path);
+			path = p::String(p::ToAbsolutePath(path));
 		}
 		return true;
 	}
 
-	bool CreateProject(Tree& ast, p::Path path)
+	bool CreateProject(Tree& ast, p::StringView path)
 	{
 		return CreateModule(ast, path) != NoId;
 	}
 
-	bool OpenProject(Tree& ast, p::Path path)
+	bool OpenProject(Tree& ast, p::StringView path)
 	{
+		String validatedPath{path};
 		String error;
-		if (!ValidateModulePath(path, error))
+		if (!ValidateModulePath(validatedPath, error))
 		{
 			Log::Error("Can't open project: {}", error);
 			return false;
 		}
 
-		if (!files::ExistsAsFolder(path))
+		if (!files::ExistsAsFolder(validatedPath))
 		{
 			Log::Error("Can't open project: Folder doesn't exist");
 			return false;
 		}
 
-		const p::Path filePath = path / moduleFilename;
+		const p::String filePath = p::JoinPaths(validatedPath, moduleFilename);
 		if (!files::ExistsAsFile(filePath))
 		{
 			Log::Error("Can't open project: Folder doesn't contain a '{}' file", moduleFilename);
@@ -85,7 +88,7 @@ namespace rift::AST
 		// Create project node (root module)
 		Id projectId = ast.Create();
 		ast.Add<CProject, CModule>(projectId);
-		ast.Add<CFileRef>(projectId, filePath);
+		ast.Add(projectId, CFileRef{filePath});
 
 		// Load project module
 		TArray<String> strings;
@@ -99,21 +102,23 @@ namespace rift::AST
 		ast.Reset();
 	}
 
-	Id CreateModule(Tree& ast, Path path)
+	Id CreateModule(Tree& ast, p::StringView path)
 	{
+		String validatedPath{path};
+
 		String error;
-		if (!ValidateModulePath(path, error))
+		if (!ValidateModulePath(validatedPath, error))
 		{
 			Log::Error("Can't create module: {}", error);
 			return NoId;
 		}
 
-		if (!files::ExistsAsFolder(path))
+		if (!files::ExistsAsFolder(validatedPath))
 		{
-			files::CreateFolder(path, true);
+			files::CreateFolder(validatedPath, true);
 		}
 
-		const p::Path filePath = path / moduleFilename;
+		const p::String filePath = p::JoinPaths(validatedPath, moduleFilename);
 		if (files::ExistsAsFile(filePath))
 		{
 			Log::Error("Can't create module: Folder already contains a '{}' file", moduleFilename);
@@ -121,7 +126,7 @@ namespace rift::AST
 		}
 
 		Id moduleId = ast.Create();
-		ast.Add<CModule, CRiftModule>(moduleId);
+		ast.Add<CModule>(moduleId);
 
 		p::String data;
 		SerializeModule(ast, moduleId, data);
@@ -134,13 +139,13 @@ namespace rift::AST
 		return ecs::GetFirst<CProject>(access);
 	}
 
-	Name GetProjectName(TAccessRef<CProject, CNamespace, CFileRef> access)
+	Tag GetProjectName(TAccessRef<CProject, CNamespace, CFileRef> access)
 	{
 		Id moduleId = GetProjectId(access);
 		return GetModuleName(access, moduleId);
 	}
 
-	Path GetProjectPath(TAccessRef<CFileRef, CProject> access)
+	p::StringView GetProjectPath(TAccessRef<CFileRef, CProject> access)
 	{
 		return GetModulePath(access, GetProjectId(access));
 	}
@@ -160,7 +165,7 @@ namespace rift::AST
 		return GetProjectId(ast) != NoId;
 	}
 
-	Name GetModuleName(TAccessRef<CNamespace, CFileRef> access, Id moduleId)
+	Tag GetModuleName(TAccessRef<CNamespace, CFileRef> access, Id moduleId)
 	{
 		if (!access.IsValid(moduleId))
 		{
@@ -178,18 +183,18 @@ namespace rift::AST
 		{
 			// Obtain name from project file name
 			const String fileName = p::ToString(file->path);
-			return Name{GetFilename(GetParentPath(fileName))};    // Folder name
+			return Tag{p::GetFilename(p::GetParentPath(fileName))};    // Folder name
 		}
 		return {};
 	}
 
-	Path GetModulePath(TAccessRef<CFileRef> access, Id moduleId)
+	p::StringView GetModulePath(TAccessRef<CFileRef> access, Id moduleId)
 	{
 		if (const auto* file = access.TryGet<const CFileRef>(moduleId))
 		{
-			return file->path.parent_path();
+			return p::GetParentPath(file->path);
 		}
-		return p::Path{};
+		return {};
 	}
 
 	void SerializeModule(AST::Tree& ast, AST::Id id, String& data)
@@ -212,5 +217,40 @@ namespace rift::AST
 			r.BeginObject();
 			r.SerializeSingleEntity(id, moduleComponents);
 		}
+	}
+
+
+	void RegisterModuleBinding(ModuleBinding binding)
+	{
+		moduleBindings.FindOrAddSorted(Move(binding));
+	}
+	void UnregisterModuleBinding(p::Tag bindingId)
+	{
+		moduleBindings.RemoveSorted(bindingId);
+	}
+	void AddBindingToModule(AST::Tree& ast, AST::Id id, p::Tag bindingId)
+	{
+		if (const auto* binding = FindModuleBinding(bindingId))
+		{
+			ast.AddDefaulted(binding->tagType->GetId(), id);
+		}
+	}
+	void RemoveBindingFromModule(AST::Tree& ast, AST::Id id, p::Tag bindingId)
+	{
+		if (const auto* binding = FindModuleBinding(bindingId))
+		{
+			ast.Remove(binding->tagType->GetId(), id);
+		}
+	}
+
+	const ModuleBinding* FindModuleBinding(p::Tag id)
+	{
+		const i32 index = moduleBindings.FindSortedEqual(id);
+		return index != NO_INDEX ? moduleBindings.Data() + index : nullptr;
+	}
+
+	p::TSpan<const ModuleBinding> GetModuleBindings()
+	{
+		return moduleBindings;
 	}
 }    // namespace rift::AST

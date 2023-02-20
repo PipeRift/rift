@@ -12,6 +12,7 @@
 #include <AST/Components/CDeclFunction.h>
 #include <AST/Components/CDeclStatic.h>
 #include <AST/Components/CDeclStruct.h>
+#include <AST/Components/CDeclType.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprCall.h>
 #include <AST/Components/CExprInputs.h>
@@ -21,11 +22,9 @@
 #include <AST/Components/CLiteralFloating.h>
 #include <AST/Components/CLiteralIntegral.h>
 #include <AST/Components/CLiteralString.h>
-#include <AST/Components/CRiftModule.h>
 #include <AST/Components/CStmtIf.h>
 #include <AST/Components/CStmtOutputs.h>
 #include <AST/Components/CStmtReturn.h>
-#include <AST/Components/CType.h>
 #include <AST/Components/Tags/CInvalid.h>
 #include <AST/Id.h>
 #include <AST/Utils/ModuleUtils.h>
@@ -53,25 +52,27 @@ namespace rift::compiler::LLVM
 	void AddCall(ModuleIRGen& gen, AST::Id id, const AST::CExprCallId& call, BlockAccessRef access);
 
 
-	void BindNativeTypes(llvm::LLVMContext& llvm, TAccessRef<AST::CType, TWrite<CIRType>> access)
+	void BindNativeTypes(
+	    llvm::LLVMContext& llvm, TAccessRef<AST::CDeclType, TWrite<CIRType>> access)
 	{
 		const auto& nativeTypes = static_cast<AST::Tree&>(access.GetContext()).GetNativeTypes();
-		access.Add<CIRType>(nativeTypes.boolId, {llvm::Type::getInt8Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.floatId, {llvm::Type::getFloatTy(llvm)});
-		access.Add<CIRType>(nativeTypes.doubleId, {llvm::Type::getDoubleTy(llvm)});
-		access.Add<CIRType>(nativeTypes.u8Id, {llvm::Type::getInt8Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.i8Id, {llvm::Type::getInt8Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.u16Id, {llvm::Type::getInt16Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.i16Id, {llvm::Type::getInt16Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.u32Id, {llvm::Type::getInt32Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.i32Id, {llvm::Type::getInt32Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.u64Id, {llvm::Type::getInt64Ty(llvm)});
-		access.Add<CIRType>(nativeTypes.i64Id, {llvm::Type::getInt64Ty(llvm)});
+		access.Add(nativeTypes.boolId, CIRType{llvm::Type::getInt8Ty(llvm)});
+		access.Add(nativeTypes.floatId, CIRType{llvm::Type::getFloatTy(llvm)});
+		access.Add(nativeTypes.doubleId, CIRType{llvm::Type::getDoubleTy(llvm)});
+		access.Add(nativeTypes.u8Id, CIRType{llvm::Type::getInt8Ty(llvm)});
+		access.Add(nativeTypes.i8Id, CIRType{llvm::Type::getInt8Ty(llvm)});
+		access.Add(nativeTypes.u16Id, CIRType{llvm::Type::getInt16Ty(llvm)});
+		access.Add(nativeTypes.i16Id, CIRType{llvm::Type::getInt16Ty(llvm)});
+		access.Add(nativeTypes.u32Id, CIRType{llvm::Type::getInt32Ty(llvm)});
+		access.Add(nativeTypes.i32Id, CIRType{llvm::Type::getInt32Ty(llvm)});
+		access.Add(nativeTypes.u64Id, CIRType{llvm::Type::getInt64Ty(llvm)});
+		access.Add(nativeTypes.i64Id, CIRType{llvm::Type::getInt64Ty(llvm)});
 		// access.Add<CIRType>(nativeTypes.stringId, {});
 	}
 
 	void DeclareStructs(ModuleIRGen& gen,
-	    TAccessRef<AST::CType, AST::CNamespace, TWrite<CIRType>, AST::CChild, AST::CModule> access,
+	    TAccessRef<AST::CDeclType, AST::CNamespace, TWrite<CIRType>, AST::CChild, AST::CModule>
+	        access,
 	    TSpan<AST::Id> ids)
 	{
 		ZoneScoped;
@@ -91,7 +92,7 @@ namespace rift::compiler::LLVM
 		TArray<llvm::Type*> memberTypes;
 		for (AST::Id id : ids)
 		{
-			auto* irStruct = static_cast<llvm::StructType*>(access.Get<const CIRType>(id).instance);
+			auto* irStruct = static_cast<llvm::StructType*>(access.Get<const CIRType>(id));
 
 			// Add members
 			memberIds.Clear(false);
@@ -103,12 +104,12 @@ namespace rift::compiler::LLVM
 				const auto& var = access.Get<const AST::CDeclVariable>(memberId);
 				if (auto* irType = access.TryGet<const CIRType>(var.typeId))
 				{
-					memberTypes.Add(irType->instance);
+					memberTypes.Add(*irType);
 				}
 				else
 				{
-					const Name memberName = AST::GetName(access, memberId);
-					const Name typeName   = AST::GetName(access, id);
+					const Tag memberName = AST::GetName(access, memberId);
+					const Tag typeName   = AST::GetName(access, id);
 					gen.compiler.AddError(Strings::Format(
 					    "Variable '{}' in struct '{}' has an invalid type", memberName, typeName));
 				}
@@ -144,13 +145,13 @@ namespace rift::compiler::LLVM
 
 					AST::Id typeId = access.Get<const AST::CExprTypeId>(inputId).id;
 					auto* irType   = access.TryGet<const CIRType>(typeId);
-					if (irType && irType->instance)
+					if (irType && *irType)
 					{
-						inputTypes.Add(irType->instance);
+						inputTypes.Add(*irType);
 					}
 					else
 					{
-						const Name argName        = AST::GetName(access, inputId);
+						const Tag argName         = AST::GetName(access, inputId);
 						const String functionName = AST::GetFullName(access, id);
 						gen.compiler.AddError(Strings::Format(
 						    "Input '{}' in function '{}' has an invalid type. Using i32 instead.",
@@ -172,7 +173,7 @@ namespace rift::compiler::LLVM
 			const auto& args = functionComp.instance->args();
 			for (auto& arg : args)
 			{
-				Name name = AST::GetName(access, inputIds[i++]);
+				Tag name = AST::GetName(access, inputIds[i++]);
 				arg.setName(ToLLVM(name));
 			}
 
@@ -218,7 +219,7 @@ namespace rift::compiler::LLVM
 		    !IsNone(output.pinId) ? access.TryGet<const CIRValue>(output.pinId) : nullptr;
 		if (value)
 		{
-			return value->instance;
+			return *value;
 		}
 		return nullptr;
 	}
@@ -326,14 +327,14 @@ namespace rift::compiler::LLVM
 		{
 			const auto& boolean = access.Get<const AST::CLiteralBool>(id);
 			llvm::Value* value  = llvm::ConstantInt::get(llvm, llvm::APInt(1, boolean.value, true));
-			access.Add<CIRValue>(id, value);
+			access.Add(id, CIRValue{value});
 		}
 		for (AST::Id id : ecs::ListAll<AST::CLiteralIntegral>(access))
 		{
 			const auto& integral = access.Get<const AST::CLiteralIntegral>(id);
 			llvm::Value* value   = llvm::ConstantInt::get(
 			      llvm, llvm::APInt(integral.GetSize(), integral.value, integral.IsSigned()));
-			access.Add<CIRValue>(id, value);
+			access.Add(id, CIRValue{value});
 		}
 		for (AST::Id id : ecs::ListAll<AST::CLiteralFloating>(access))
 		{
@@ -342,13 +343,13 @@ namespace rift::compiler::LLVM
 			    llvm::ConstantFP::get(llvm, llvm::APFloat(floating.type == AST::FloatingType::F32
 			                                                  ? static_cast<float>(floating.value)
 			                                                  : floating.value));
-			access.Add<CIRValue>(id, value);
+			access.Add(id, CIRValue{value});
 		}
 		for (AST::Id id : ecs::ListAll<AST::CLiteralString>(access))
 		{
 			const auto& string = access.Get<const AST::CLiteralString>(id);
-			llvm::Value* value = llvm::ConstantDataArray::getString(llvm, ToLLVM(string.value));
-			access.Add<CIRValue>(id, value);
+			access.Add(
+			    id, CIRValue{llvm::ConstantDataArray::getString(llvm, ToLLVM(string.value))});
 		}
 	}
 
@@ -358,18 +359,18 @@ namespace rift::compiler::LLVM
 		ZoneScoped;
 		auto& ast = compiler.ast;
 
-		const Name name = AST::GetModuleName(compiler.ast, moduleId);
+		const Tag name = AST::GetModuleName(compiler.ast, moduleId);
 
-		CIRModule& module      = compiler.ast.Add<CIRModule>(moduleId);
-		module.instance        = MakeOwned<llvm::Module>(ToLLVM(name), llvm);
-		llvm::Module& irModule = *module.instance.Get();
+		const auto& module  = compiler.ast.Get<const AST::CModule>(moduleId);
+		CIRModule& irModule = compiler.ast.Add<CIRModule>(moduleId);
+		irModule.instance   = MakeOwned<llvm::Module>(ToLLVM(name), llvm);
 
-		ModuleIRGen gen{compiler, irModule, llvm, builder};
+		ModuleIRGen gen{compiler, *irModule.instance.Get(), llvm, builder};
 
 		// Filter all module rift types
 		TArray<AST::Id> typeIds;
-		p::ecs::GetChildren(ast, moduleId, typeIds);
-		ecs::ExcludeIfNot<AST::CType>(ast, typeIds);
+		ecs::GetChildren(ast, moduleId, typeIds);
+		ecs::ExcludeIfNot<AST::CDeclType>(ast, typeIds);
 		TArray<AST::Id> structIds = ecs::GetIf<AST::CDeclStruct>(ast, typeIds);
 		TArray<AST::Id> classIds  = ecs::GetIf<AST::CDeclClass>(ast, typeIds);
 		TArray<AST::Id> staticIds = ecs::GetIf<AST::CDeclStatic>(ast, typeIds);
@@ -388,8 +389,7 @@ namespace rift::compiler::LLVM
 
 		DefineFunctions(gen, ast, functionIds);
 
-		const auto* riftMod = compiler.ast.TryGet<const AST::CRiftModule>(moduleId);
-		if (riftMod && riftMod->target == AST::RiftModuleTarget::Executable)
+		if (module.target == AST::RiftModuleTarget::Executable)
 		{
 			CreateMain(gen);
 		}

@@ -2,12 +2,14 @@
 
 #include "Systems/EditorSystem.h"
 
+#include "AST/Utils/ModuleUtils.h"
 #include "AST/Utils/TypeUtils.h"
 #include "Components/CModuleEditor.h"
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "Editor.h"
 #include "imgui.h"
+#include "Pipe/Core/String.h"
 #include "Pipe/Files/Files.h"
 #include "Statics/SEditor.h"
 #include "Utils/DetailsPanel.h"
@@ -17,10 +19,9 @@
 #include "Utils/ProjectManager.h"
 #include "Utils/TypeUtils.h"
 
+#include <AST/Components/CDeclType.h>
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
-#include <AST/Components/CRiftModule.h>
-#include <AST/Components/CType.h>
 #include <AST/Components/Tags/CDirty.h>
 #include <Compiler/Compiler.h>
 #include <IconsFontAwesome5.h>
@@ -72,15 +73,15 @@ namespace rift::Editor::EditorSystem
 			//                           | Details  //
 			//                           |          //
 			// ==================================== //
-			Name rightNode{"rightNode"};
+			Tag rightNode{"rightNode"};
 			builder.Split(
-			    builder.GetRootNode(), ImGuiDir_Right, 0.25f, rightNode, CTypeEditor::centralNode);
+			    builder.GetRootNode(), ImGuiDir_Left, 0.5f, CTypeEditor::centralNode, rightNode);
 
 			builder.Split(rightNode, ImGuiDir_Up, 0.4f, CTypeEditor::rightTopNode,
 			    CTypeEditor::rightBottomNode);
 
 			builder.GetNodeLocalFlags(CTypeEditor::centralNode) |=
-			    ImGuiDockNodeFlags_CentralNode | i32(ImGuiDockNodeFlags_AutoHideTabBar);
+			    i32(ImGuiDockNodeFlags_AutoHideTabBar);
 		});
 
 		// TODO: Reseting until we are able to know if the layout was saved before. Reset if it
@@ -110,7 +111,7 @@ namespace rift::Editor::EditorSystem
 	void DrawProjectMenuBar(AST::Tree& ast, SEditor& editorData);
 
 	// Module Editors
-	void DrawModules(AST::Tree& ast, SEditor& editor);
+	void DrawModuleEditors(AST::Tree& ast, SEditor& editor);
 
 	// Type Editors
 	void DrawTypeMenuBar(AST::Tree& ast, AST::Id typeId);
@@ -133,7 +134,7 @@ namespace rift::Editor::EditorSystem
 		DrawMenuBar(ast);
 		DrawProjectManager(ast);
 
-#if BUILD_DEBUG
+#if P_DEBUG
 		if (bool& showDemo = Editor::Get().showDemo)
 		{
 			UI::ShowDemoWindow(&showDemo);
@@ -206,7 +207,7 @@ namespace rift::Editor::EditorSystem
 		{
 			if (UI::BeginMenu("Views"))
 			{
-#if BUILD_DEBUG
+#if P_DEBUG
 				UI::MenuItem("Style", nullptr, &Editor::Get().showStyle);
 				UI::MenuItem("Metrics", nullptr, &Editor::Get().showMetrics);
 				UI::MenuItem("Demo", nullptr, &Editor::Get().showDemo);
@@ -242,7 +243,7 @@ namespace rift::Editor::EditorSystem
 
 		CreateRootDockspace(editor);
 
-		DrawModules(ast, editor);
+		DrawModuleEditors(ast, editor);
 		DrawTypes(ast, editor);
 
 		editor.reflectionDebugger.Draw();
@@ -262,7 +263,7 @@ namespace rift::Editor::EditorSystem
 			{
 				if (UI::MenuItem("Open Project"))
 				{
-					const p::Path folder =
+					const p::String folder =
 					    files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
 					if (Editor::Get().OpenProject(folder))
 					{
@@ -281,7 +282,8 @@ namespace rift::Editor::EditorSystem
 					TArray<TPair<Path, String>> fileDatas;
 
 					auto dirtyTypeIds =
-					    ecs::ListAll<AST::CType, CTypeEditor, AST::CFileRef, AST::CFileDirty>(ast);
+					    ecs::ListAll<AST::CDeclType, CTypeEditor, AST::CFileRef, AST::CFileDirty>(
+					        ast);
 					for (AST::Id typeId : dirtyTypeIds)
 					{
 						auto& file     = ast.Get<AST::CFileRef>(typeId);
@@ -405,10 +407,9 @@ namespace rift::Editor::EditorSystem
 		}
 	}
 
-	void DrawModules(AST::Tree& ast, SEditor& editor)
+	void DrawModuleEditors(AST::Tree& ast, SEditor& editor)
 	{
-		TAccess<TWrite<CModuleEditor>, TWrite<AST::CNamespace>, TWrite<AST::CModule>,
-		    TWrite<AST::CRiftModule>, AST::CFileRef>
+		TAccess<TWrite<CModuleEditor>, TWrite<AST::CNamespace>, TWrite<AST::CModule>, AST::CFileRef>
 		    moduleEditors{ast};
 		for (AST::Id moduleId :
 		    ecs::ListAll<AST::CModule, CModuleEditor, AST::CFileRef>(moduleEditors))
@@ -447,19 +448,37 @@ namespace rift::Editor::EditorSystem
 					UI::InspectStruct(&ns);
 
 					auto& module = moduleEditors.Get<AST::CModule>(moduleId);
-					if (UI::BeginInspectHeader("Module"))
-					{
-						UI::InspectStruct(&module);
-						UI::EndInspectHeader();
-					}
+					UI::InspectStruct(&module);
 
-					if (auto* riftModule = moduleEditors.TryGet<AST::CRiftModule>(moduleId))
+					if (UI::BeginInspectHeader("Bindings"))
 					{
-						if (UI::BeginInspectHeader("Rift"))
+						for (const auto& binding : AST::GetModuleBindings())
 						{
-							UI::InspectStruct(riftModule);
-							UI::EndInspectHeader();
+							auto* pool = ast.GetPool(binding.tagType->GetId());
+							if (void* data = pool ? pool->TryGetVoid(moduleId) : nullptr)
+							{
+								if (UI::BeginInspectHeader(binding.displayName))
+								{
+									UI::InspectProperties(data, binding.tagType);
+									UI::EndInspectHeader();
+								}
+							}
+							else
+							{
+								UI::PushStyleCompact();
+								const p::String addText =
+								    p::Strings::Format(ICON_FA_PLUS " {}", binding.displayName);
+								UI::TableNextRow();
+								UI::TableSetColumnIndex(1);
+								if (UI::Button(addText.c_str(), ImVec2(-FLT_MIN, 0.0f)))
+								{
+									ScopedChange(ast, moduleId);
+									AST::AddBindingToModule(ast, moduleId, binding.id);
+								}
+								UI::PopStyleCompact();
+							}
 						}
+						UI::EndInspectHeader();
 					}
 					UI::EndInspector();
 				}
@@ -472,7 +491,7 @@ namespace rift::Editor::EditorSystem
 
 			if (!isOpen)
 			{
-				CloseModule(ast, moduleId);
+				CloseModuleEditor(ast, moduleId);
 			}
 		}
 	}
@@ -496,7 +515,7 @@ namespace rift::Editor::EditorSystem
 			}
 			if (UI::BeginMenu("View"))
 			{
-				if (AST::CanContainFunctions(ast, typeId))
+				if (AST::HasFunctions(ast, typeId))
 				{
 					UI::MenuItem("Graph", nullptr, &typeEditor.showGraph);
 				}
@@ -512,8 +531,8 @@ namespace rift::Editor::EditorSystem
 	{
 		ZoneScoped;
 
-		TAccess<TWrite<CTypeEditor>, AST::CType, AST::CFileRef> access{ast};
-		for (AST::Id typeId : ecs::ListAll<AST::CType, CTypeEditor, AST::CFileRef>(access))
+		TAccess<TWrite<CTypeEditor>, AST::CDeclType, AST::CFileRef> access{ast};
+		for (AST::Id typeId : ecs::ListAll<AST::CDeclType, CTypeEditor, AST::CFileRef>(access))
 		{
 			ZoneScopedN("Draw Type");
 
@@ -545,22 +564,19 @@ namespace rift::Editor::EditorSystem
 
 				CreateTypeDockspace(typeEditor, windowName.c_str());
 
-				if (AST::CanContainFunctions(ast, typeId))
+				if (AST::HasFunctionBodies(ast, typeId))
 				{
 					Graph::DrawTypeGraph(ast, typeId, typeEditor);
+				}
 
+				if (AST::HasVariables(ast, typeId) || AST::HasFunctions(ast, typeId))
+				{
 					typeEditor.layout.BindNextWindowToNode(
 					    CTypeEditor::rightBottomNode, ImGuiCond_Appearing);
 					DrawDetailsPanel(ast, typeId);
 
 					typeEditor.layout.BindNextWindowToNode(
 					    CTypeEditor::rightTopNode, ImGuiCond_Appearing);
-					DrawElementsPanel(ast, typeId);
-				}
-				else
-				{
-					typeEditor.layout.BindNextWindowToNode(
-					    DockSpaceLayout::rootNodeId, ImGuiCond_Appearing);
 					DrawElementsPanel(ast, typeId);
 				}
 			}

@@ -7,7 +7,7 @@
 
 namespace rift::Editor
 {
-	void OpenModule(TAccessRef<TWrite<CModuleEditor>, AST::CModule> access, AST::Id id)
+	void OpenModuleEditor(TAccessRef<TWrite<CModuleEditor>, AST::CModule> access, AST::Id id)
 	{
 		Check(access.Has<AST::CModule>(id));
 		if (auto* editor = access.TryGet<CModuleEditor>(id))
@@ -20,13 +20,13 @@ namespace rift::Editor
 		}
 	}
 
-	void CloseModule(TAccessRef<TWrite<CModuleEditor>, AST::CModule> access, AST::Id id)
+	void CloseModuleEditor(TAccessRef<TWrite<CModuleEditor>, AST::CModule> access, AST::Id id)
 	{
 		Check(access.Has<AST::CModule>(id));
 		access.Remove<CModuleEditor>(id);
 	}
 
-	bool IsModuleOpen(TAccessRef<CModuleEditor> access, AST::Id id)
+	bool IsEditingModule(TAccessRef<CModuleEditor> access, AST::Id id)
 	{
 		return access.Has<CModuleEditor>(id);
 	}

@@ -12,11 +12,16 @@ namespace rift
 		class Tree;
 	}
 
-	class NativeBindingModule : public Module
+	class FrameworkModule : public Module
 	{
-		CLASS(NativeBindingModule, Module)
+		CLASS(FrameworkModule, Module)
+
+	public:
+		static const p::Tag structType;
+		static const p::Tag classType;
+		static const p::Tag staticType;
+
 
 		void Load() override;
-		void SyncIncludes(AST::Tree& ast);
 	};
 }    // namespace rift

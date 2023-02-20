@@ -3,6 +3,7 @@
 #pragma once
 
 #include <Compiler/Backend.h>
+#include <FrameworkModule.h>
 #include <Module.h>
 #include <Pipe/Core/EnumFlags.h>
 #include <View.h>
@@ -15,12 +16,7 @@ namespace rift
 		CLASS(GraphViewModule, Module)
 
 	public:
-		void Register() override
-		{
-			RegisterView(View{.name = "Graph",
-			    .supportedTypes     = AST::RiftType::Class | AST::RiftType::Static,
-			    .onDrawEditor       = &GraphViewModule::DrawEditor});
-		}
+		void Load() override;
 
 		static void DrawEditor() {}
 	};

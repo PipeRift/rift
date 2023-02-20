@@ -2,6 +2,9 @@
     "CModule": {
         "dependencies": []
     },
-    "CNativeModule": {
+    "CNativeBinding": {
+        "binaries": [
+            "./Lib/Math.lib"
+        ]
     }
 }

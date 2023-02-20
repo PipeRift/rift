@@ -7,6 +7,7 @@
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/TypeUtils.h>
 #include <bandit/bandit.h>
+#include <FrameworkModule.h>
 
 
 using namespace snowhouse;
@@ -25,7 +26,7 @@ go_bandit([]() {
 			    AST::GetNamespace(ast, functionId).ToString().c_str(), Equals("@TestFunction"));
 			AssertThat(AST::GetParentNamespace(ast, functionId).ToString().c_str(), Equals(""));
 
-			AST::Id classBId    = AST::CreateType(ast, AST::RiftType::Class, "TestClass");
+			AST::Id classBId    = AST::CreateType(ast, FrameworkModule::classType, "TestClass");
 			AST::Id functionBId = AST::AddFunction({ast, classBId}, "TestFunction");
 			AssertThat(AST::GetNamespace(ast, functionBId).ToString().c_str(),
 			    Equals("@TestClass.TestFunction"));
@@ -35,7 +36,7 @@ go_bandit([]() {
 			AST::Id parentC = ast.Create();
 			ast.Add<AST::CModule>(parentC);
 			ast.Add(parentC, AST::CNamespace{"SomeScope"});
-			AST::Id classCId = AST::CreateType(ast, AST::RiftType::Class, "TestClass");
+			AST::Id classCId = AST::CreateType(ast, FrameworkModule::classType, "TestClass");
 			p::ecs::AddChildren(ast, parentC, classCId);
 			AST::Id functionCId = AST::AddFunction({ast, classCId}, "TestFunction");
 			AssertThat(AST::GetNamespace(ast, functionCId).ToString().c_str(),
@@ -50,7 +51,7 @@ go_bandit([]() {
 			AST::Id parent = ast.Create();
 			ast.Add<AST::CModule>(parent);
 			ast.Add(parent, AST::CNamespace{"SomeModule"});
-			AST::Id classId = AST::CreateType(ast, AST::RiftType::Class, "TestClass");
+			AST::Id classId = AST::CreateType(ast, FrameworkModule::classType, "TestClass");
 			p::ecs::AddChildren(ast, parent, classId);
 			AST::Id functionId = AST::AddFunction({ast, classId}, "TestFunction");
 			p::String ns = AST::GetNamespace(ast, functionId).ToString(AST::LocalNamespace::Yes);
@@ -64,14 +65,14 @@ go_bandit([]() {
 			AssertThat(ns0.IsEmpty(), Equals(true));
 
 			AST::Namespace ns1{"A"};
-			AssertThat(ns1.scopes[0].ToString().c_str(), Equals("A"));
+			AssertThat(ns1.scopes[0].AsString().data(), Equals("A"));
 			AssertThat(ns1.scopes[1].IsNone(), Equals(true));
 			AssertThat(ns1.Size(), Equals(1));
 			AssertThat(ns1.IsEmpty(), Equals(false));
 
 			AST::Namespace ns2{"A", "B"};
-			AssertThat(ns2.scopes[0].ToString().c_str(), Equals("A"));
-			AssertThat(ns2.scopes[1].ToString().c_str(), Equals("B"));
+			AssertThat(ns2.scopes[0].AsString().data(), Equals("A"));
+			AssertThat(ns2.scopes[1].AsString().data(), Equals("B"));
 			AssertThat(ns2.scopes[2].IsNone(), Equals(true));
 			AssertThat(ns2.Size(), Equals(2));
 			AssertThat(ns2.IsEmpty(), Equals(false));
@@ -79,22 +80,22 @@ go_bandit([]() {
 
 		it("Can iterate", [&]() {
 			AST::Namespace ns0{};
-			for (const Name& name : ns0)
+			for (const Tag& name : ns0)
 			{
 				Assert();
 			}
 
 			AST::Namespace ns1{"C"};
-			for (const Name& name : ns1)
+			for (const Tag& name : ns1)
 			{
-				AssertThat(name.ToString().c_str(), Equals("C"));
+				AssertThat(name.AsString().data(), Equals("C"));
 			}
 
 			AST::Namespace ns2{"A", "B"};
 			i32 i = 0;
-			for (const Name& name : ns2)
+			for (const Tag& name : ns2)
 			{
-				AssertThat(name.ToString().c_str(), Equals(ns2.scopes[i].ToString().c_str()));
+				AssertThat(name.AsString().data(), Equals(ns2.scopes[i].AsString().data()));
 				++i;
 			}
 		});
@@ -105,10 +106,10 @@ go_bandit([]() {
 			ast.Add<AST::CModule>(parent);
 			ast.Add(parent, AST::CNamespace{"A"});
 
-			AST::Id classId = AST::CreateType(ast, AST::RiftType::Class, "B");
+			AST::Id classId = AST::CreateType(ast, FrameworkModule::classType, "B");
 			p::ecs::AddChildren(ast, parent, classId);
 
-			AST::Id class2Id = AST::CreateType(ast, AST::RiftType::Class, "B2");
+			AST::Id class2Id = AST::CreateType(ast, FrameworkModule::classType, "B2");
 			p::ecs::AddChildren(ast, parent, class2Id);
 
 			AST::Id functionId  = AST::AddFunction({ast, classId}, "C");

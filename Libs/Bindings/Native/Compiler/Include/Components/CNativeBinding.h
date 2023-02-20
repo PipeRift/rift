@@ -7,11 +7,11 @@
 
 namespace rift
 {
-	struct CNativeModule : public p::Struct
+	struct CNativeBinding : public p::Struct
 	{
-		STRUCT(CNativeModule, p::Struct)
+		STRUCT(CNativeBinding, p::Struct)
 
-		PROP(includePaths)
-		p::TArray<p::Path> includePaths;
+		PROP(binaries)
+		p::TArray<p::Path> binaries;
 	};
 }    // namespace rift

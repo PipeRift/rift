@@ -3,6 +3,7 @@
 #pragma once
 
 #include "AST/Components/CDeclFunction.h"
+#include "AST/Components/CDeclType.h"
 #include "AST/Components/CExprBinaryOperator.h"
 #include "AST/Components/CExprInputs.h"
 #include "AST/Components/CExprOutputs.h"
@@ -12,7 +13,6 @@
 #include "AST/Components/CNamespace.h"
 #include "AST/Components/CStmtInput.h"
 #include "AST/Components/CStmtOutputs.h"
-#include "AST/Components/CType.h"
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 #include "AST/Tree.h"
@@ -25,10 +25,9 @@
 
 namespace rift::AST
 {
-	void InitTypeFromCategory(Tree& ast, Id id, RiftType category);
-	RiftType GetTypeCategory(Tree& ast, Id id);
+	void InitTypeFromFileType(Tree& ast, Id id, p::Tag typeId);
 
-	Id CreateType(Tree& ast, RiftType type, Name name = Name::None(), const p::Path& path = {});
+	Id CreateType(Tree& ast, p::Tag typeId, Tag name = Tag::None(), StringView path = {});
 
 	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access, TSpan<Id> types,
 	    bool removeFromDisk = false);
@@ -36,21 +35,20 @@ namespace rift::AST
 	void SerializeType(Tree& ast, Id id, String& data);
 	void DeserializeType(Tree& ast, Id id, const String& data);
 
-	Id FindTypeByPath(Tree& ast, const p::Path& path);
+	Id FindTypeByPath(Tree& ast, p::StringView path);
 	bool IsClassType(const Tree& ast, Id typeId);
 	bool IsStructType(const Tree& ast, Id typeId);
 	bool IsStaticType(const Tree& ast, Id typeId);
-	bool CanContainVariables(const Tree& ast, Id typeId);
-	bool CanContainFunctions(const Tree& ast, Id typeId);
-	bool CanEditFunctionBodies(const Tree& ast, Id typeId);
+	bool HasVariables(TAccess<CDeclType> access, Id typeId);
+	bool HasFunctions(TAccess<CDeclType> access, Id typeId);
+	bool HasFunctionBodies(TAccess<CDeclType> access, Id typeId);
 
-
-	Id AddVariable(TypeRef type, Name name);
-	Id AddFunction(TypeRef type, Name name);
+	Id AddVariable(TypeRef type, Tag name);
+	Id AddFunction(TypeRef type, Tag name);
 
 	Id AddCall(TypeRef type, Id targetFunctionId);
-	Id AddFunctionInput(Tree& ast, Id functionId, Name name = Name::None());
-	Id AddFunctionOutput(Tree& ast, Id functionId, Name name = Name::None());
+	Id AddFunctionInput(Tree& ast, Id functionId, Tag name = Tag::None());
+	Id AddFunctionOutput(Tree& ast, Id functionId, Tag name = Tag::None());
 
 	Id AddIf(TypeRef type);
 	Id AddReturn(TypeRef type);
@@ -60,7 +58,7 @@ namespace rift::AST
 	Id AddUnaryOperator(TypeRef type, UnaryOperatorType operatorType);
 	Id AddBinaryOperator(TypeRef type, BinaryOperatorType operatorType);
 
-	Id FindChildByName(TAccessRef<CNamespace, CParent> access, Id ownerId, Name functionName);
+	Id FindChildByName(TAccessRef<CNamespace, CParent> access, Id ownerId, Tag functionName);
 
 	using RemoveAccess = TAccess<TWrite<CChanged>, TWrite<CFileDirty>, TWrite<CStmtInput>,
 	    TWrite<CStmtOutputs>, TWrite<CParent>, TWrite<CChild>, CFileRef>;

@@ -2,7 +2,7 @@
 
 #include "AST/Utils/TransactionUtils.h"
 
-#include "AST/Components/CType.h"
+#include "AST/Components/CDeclType.h"
 
 #include <Pipe/ECS/Filtering.h>
 #include <Pipe/ECS/Utils/Hierarchy.h>

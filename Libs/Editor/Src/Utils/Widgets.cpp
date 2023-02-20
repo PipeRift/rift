@@ -15,16 +15,16 @@ namespace rift::Editor
 	{
 		for (AST::Id id : typeIds)
 		{
-			const auto& type      = access.Get<const AST::CNamespace>(id);
-			const p::String& name = type.name.ToString();
+			const auto& type   = access.Get<const AST::CNamespace>(id);
+			p::StringView name = type.name.AsString();
 
-			if (!searchFilter.PassFilter(name.c_str(), name.c_str() + name.size()))
+			if (!searchFilter.PassFilter(name.data(), name.data() + name.size()))
 			{
 				continue;
 			}
 
 			UI::PushID(u32(id));
-			if (UI::Selectable(name.c_str(), id == selectedId))
+			if (UI::Selectable(name.data(), id == selectedId))
 			{
 				selectedId = id;
 			}
@@ -32,19 +32,19 @@ namespace rift::Editor
 		}
 	}
 
-	bool TypeCombo(p::TAccessRef<AST::CNamespace, AST::CType, AST::CDeclNative, AST::CDeclStruct,
-	                   AST::CDeclClass>
+	bool TypeCombo(p::TAccessRef<AST::CNamespace, AST::CDeclType, AST::CDeclNative,
+	                   AST::CDeclStruct, AST::CDeclClass>
 	                   access,
 	    p::StringView label, AST::Id& selectedId)
 	{
-		p::Name ownerName;
+		p::Tag ownerName;
 		if (!IsNone(selectedId))
 		{
 			ownerName = access.Get<const AST::CNamespace>(selectedId).name;
 		}
 
 		AST::Id lastId = selectedId;
-		if (UI::BeginCombo(label.data(), ownerName.ToString().c_str()))
+		if (UI::BeginCombo(label.data(), ownerName.AsString().data()))
 		{
 			static ImGuiTextFilter filter;
 			if (UI::IsWindowAppearing())
@@ -54,9 +54,12 @@ namespace rift::Editor
 			UI::SetNextItemWidth(-FLT_MIN);
 			filter.Draw("##Filter");
 
-			auto nativeIds = p::ecs::ListAll<AST::CType, AST::CDeclNative, AST::CNamespace>(access);
-			auto structIds = p::ecs::ListAll<AST::CType, AST::CDeclStruct, AST::CNamespace>(access);
-			auto classIds  = p::ecs::ListAll<AST::CType, AST::CDeclClass, AST::CNamespace>(access);
+			auto nativeIds =
+			    p::ecs::ListAll<AST::CDeclType, AST::CDeclNative, AST::CNamespace>(access);
+			auto structIds =
+			    p::ecs::ListAll<AST::CDeclType, AST::CDeclStruct, AST::CNamespace>(access);
+			auto classIds =
+			    p::ecs::ListAll<AST::CDeclType, AST::CDeclClass, AST::CNamespace>(access);
 			if (filter.IsActive())
 			{
 				if (UI::TreeNodeEx("Native##Filtered", ImGuiTreeNodeFlags_DefaultOpen))

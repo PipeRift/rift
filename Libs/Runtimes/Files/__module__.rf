@@ -2,6 +2,6 @@
     "CModule": {
         "dependencies": []
     },
-    "CNativeModule": {
+    "CNativeBinding": {
     }
 }

@@ -12,6 +12,6 @@ namespace rift::AST
 	{
 		STRUCT(SModules, p::Struct)
 
-		p::TMap<p::Name, AST::Id> modulesByPath;
+		p::TMap<p::Tag, AST::Id> modulesByPath;
 	};
 }    // namespace rift::AST

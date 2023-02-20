@@ -10,6 +10,7 @@
 #include "Utils/TypeUtils.h"
 
 #include <AST/Components/CDeclFunction.h>
+#include <AST/Components/CDeclType.h>
 #include <AST/Components/CDeclVariable.h>
 #include <AST/Components/CExprBinaryOperator.h>
 #include <AST/Components/CExprCall.h>
@@ -27,7 +28,6 @@
 #include <AST/Components/CStmtInput.h>
 #include <AST/Components/CStmtOutputs.h>
 #include <AST/Components/CStmtReturn.h>
-#include <AST/Components/CType.h>
 #include <AST/Components/Tags/CInvalid.h>
 #include <AST/Components/Views/CNodePosition.h>
 #include <AST/Utils/Expressions.h>
@@ -164,7 +164,7 @@ namespace rift::Editor::Graph
 				const bool invalid = access.Has<AST::CInvalid>(pinId);
 				BeginExprInput(access, pinId, invalid);
 				auto* ns = access.TryGet<const AST::CNamespace>(pinId);
-				UI::Text(ns ? ns->name.ToString() : "none");
+				UI::Text(ns ? ns->name.AsString() : "none");
 				EndExprInput(invalid);
 			}
 		}
@@ -180,7 +180,7 @@ namespace rift::Editor::Graph
 				const bool invalid = access.Has<AST::CInvalid>(pinId);
 				BeginExprOutput(access, pinId, invalid);
 				auto* ns = access.TryGet<const AST::CNamespace>(pinId);
-				UI::Text(ns ? ns->name.ToString() : "none");
+				UI::Text(ns ? ns->name.AsString() : "none");
 				EndExprOutput(invalid);
 			}
 		}
@@ -345,7 +345,7 @@ namespace rift::Editor::Graph
 	{
 		for (AST::Id functionId : functionDecls)
 		{
-			Name name;
+			Tag name;
 			if (auto* ns = access.TryGet<const AST::CNamespace>(functionId))
 			{
 				name = ns->name;
@@ -357,7 +357,7 @@ namespace rift::Editor::Graph
 			{
 				Nodes::BeginNodeTitleBar();
 				{
-					UI::Text(name.ToString());
+					UI::Text(name.AsString());
 					UI::SameLine();
 
 					PushExecutionPinStyle();
@@ -410,14 +410,14 @@ namespace rift::Editor::Graph
 
 	using CallsAccess = TAccessRef<TWrite<AST::CChanged>, TWrite<AST::CFileDirty>, AST::CChild,
 	    AST::CFileRef, AST::CExprCall, AST::CExprInputs, AST::CExprOutputs, AST::CNamespace,
-	    AST::CExprTypeId, AST::CInvalid, TWrite<CNodePosition>, AST::CType>;
+	    AST::CExprTypeId, AST::CInvalid, TWrite<CNodePosition>, AST::CDeclType>;
 	void DrawCalls(CallsAccess access, AST::Id typeId, const TArray<AST::Id>& childrenIds)
 	{
 		for (AST::Id id : childrenIds)
 		{
 			if (auto* call = access.TryGet<const AST::CExprCall>(id))
 			{
-				StringView functionName = call->function.Last().ToString();
+				StringView functionName = call->function.Last().AsString();
 
 				PushNodeBackgroundColor(rift::UI::GetNeutralColor(0));
 				PushNodeTitleColor(callColor);
@@ -574,7 +574,7 @@ namespace rift::Editor::Graph
 				StringView name = "Invalid";
 				if (ast.IsValid(variableId) && ast.Has<AST::CNamespace>(variableId))
 				{
-					name = ast.Get<const AST::CNamespace>(variableId).name.ToString();
+					name = ast.Get<const AST::CNamespace>(variableId).name.AsString();
 				}
 				UI::Text(name);
 				PopInnerNodeStyle();
@@ -842,7 +842,7 @@ namespace rift::Editor::Graph
 		if (UI::Begin(graphId.c_str(), &typeEditor.showGraph, ImGuiWindowFlags_NoCollapse))
 		{
 			Nodes::SetEditorContext(&typeEditor.nodesEditor);
-			Nodes::GetCurrentContext()->canCreateLinks = AST::CanEditFunctionBodies(ast, typeId);
+			Nodes::GetCurrentContext()->canCreateLinks = AST::HasFunctionBodies(ast, typeId);
 			Nodes::BeginNodeEditor();
 			PushNodeStyle();
 

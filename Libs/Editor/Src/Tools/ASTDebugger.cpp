@@ -89,7 +89,7 @@ namespace rift::Editor
 				{
 					UI::TableNextRow();
 					UI::TableNextColumn();    // Name
-					UI::Text(it.first.ToString());
+					UI::Text(p::ToString(it.first));
 
 					UI::TableNextColumn();    // Id
 
@@ -208,7 +208,7 @@ namespace rift::Editor
 		name.clear();
 		if (const auto* id = access.TryGet<const AST::CNamespace>(nodeId))
 		{
-			name = id->name.ToString();
+			name = id->name.AsString();
 		}
 
 		static String path;
@@ -257,7 +257,7 @@ namespace rift::Editor
 		}
 
 		bool open = false;
-		static Name font{"WorkSans"};
+		static Tag font{"WorkSans"};
 		UI::PushFont(font, UI::FontMode::Bold);
 		if (hasChildren)
 		{

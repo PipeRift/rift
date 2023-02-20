@@ -6,14 +6,15 @@
 #include "Pipe/Core/PlatformProcess.h"
 #include "Pipe/Core/String.h"
 
+#include <AST/Components/CModule.h>
 #include <AST/Components/CNamespace.h>
-#include <AST/Components/CRiftModule.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Pipe/Core/Subprocess.h>
 #include <Pipe/ECS/Filtering.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Reflect/EnumType.h>
+
 
 
 namespace rift::compiler::LLVM
@@ -24,11 +25,11 @@ namespace rift::compiler::LLVM
 		linkerPath.append("/");
 		linkerPath.append(RIFT_LLVM_LINKER_PATH);
 
-		for (AST::Id moduleId : ecs::ListAll<AST::CRiftModule, CIRModule>(compiler.ast))
+		for (AST::Id moduleId : ecs::ListAll<AST::CModule, CIRModule>(compiler.ast))
 		{
-			p::Name moduleName     = AST::GetModuleName(compiler.ast, moduleId);
-			const auto& riftModule = compiler.ast.Get<const AST::CRiftModule>(moduleId);
-			auto& irModule         = compiler.ast.Get<CIRModule>(moduleId);
+			p::Tag moduleName  = AST::GetModuleName(compiler.ast, moduleId);
+			const auto& module = compiler.ast.Get<const AST::CModule>(moduleId);
+			auto& irModule     = compiler.ast.Get<CIRModule>(moduleId);
 			if (p::files::Exists(irModule.objectFile))
 			{
 				TArray<const char*> command;
@@ -36,7 +37,7 @@ namespace rift::compiler::LLVM
 				command.Add(linkerPath.c_str());
 
 				const char* extension = nullptr;
-				switch (riftModule.target)
+				switch (module.target)
 				{
 					case AST::RiftModuleTarget::Executable:
 						command.Add("/entry:main");

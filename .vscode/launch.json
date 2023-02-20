@@ -17,10 +17,10 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Test Core",
+            "name": "Test Pipe",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/Build/Bin/RiftCoreTests.exe",
+            "program": "${workspaceFolder}/Build/Bin/PipeTests.exe",
             "args": [
                 "--reporter=spec"
             ],

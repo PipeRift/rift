@@ -5,6 +5,7 @@
 #include "AST/Components/CDeclClass.h"
 #include "AST/Components/CDeclStatic.h"
 #include "AST/Components/CDeclStruct.h"
+#include "AST/Components/CDeclType.h"
 #include "AST/Components/CDeclVariable.h"
 #include "AST/Components/CExprCall.h"
 #include "AST/Components/CExprDeclRef.h"
@@ -26,6 +27,8 @@
 #include "AST/Utils/Namespaces.h"
 #include "AST/Utils/Paths.h"
 #include "AST/Utils/TransactionUtils.h"
+#include "FrameworkModule.h"
+#include "Rift.h"
 
 #include <Pipe/Core/Checks.h>
 #include <Pipe/Core/Profiler.h>
@@ -44,51 +47,31 @@ namespace rift::AST
 		    CLiteralIntegral, CLiteralString, CStmtIf, CStmtOutput, CStmtOutputs, CStmtInput>();
 	};
 
-	void InitTypeFromCategory(Tree& ast, Id id, RiftType category)
+	void InitTypeFromFileType(Tree& ast, Id id, p::Tag typeId)
 	{
 		if (auto* fileRef = ast.TryGet<CFileRef>(id))
 		{
-			String fileName = p::GetFilename(fileRef->path);
-			fileName        = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
-			ast.Add<CNamespace>(id, {Name{fileName}});
+			p::StringView fileName{p::GetFilename(fileRef->path)};
+			fileName = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
+			ast.Add<CNamespace>(id, {Tag{fileName}});
 		}
 
-		ast.Add<CType>(id);
+		ast.Add<CDeclType>(id, {.typeId = typeId});
 
-		switch (category)
+		if (auto* fileType = FindRiftType(typeId))
 		{
-			case RiftType::Class: ast.Add<CDeclClass>(id); break;
-			case RiftType::Struct: ast.Add<CDeclStruct>(id); break;
-			case RiftType::Static: ast.Add<CDeclStatic>(id); break;
-			default: break;
+			ast.AddDefaulted(fileType->tagType->GetId(), id);
 		}
 	}
 
-	RiftType GetTypeCategory(Tree& ast, Id id)
-	{
-		if (ast.Has<CDeclStruct>(id))
-		{
-			return RiftType::Struct;
-		}
-		else if (ast.Has<CDeclClass>(id))
-		{
-			return RiftType::Class;
-		}
-		else if (ast.Has<CDeclStatic>(id))
-		{
-			return RiftType::Static;
-		}
-		return RiftType::None;
-	}
-
-	Id CreateType(Tree& ast, RiftType type, Name name, const p::Path& path)
+	Id CreateType(Tree& ast, p::Tag typeId, Tag name, StringView path)
 	{
 		Id id = ast.Create();
 		if (!path.empty())
 		{
 			ast.Add<CFileRef>(id, path);
 		}
-		InitTypeFromCategory(ast, id, type);
+		InitTypeFromFileType(ast, id, typeId);
 
 		if (!name.IsNone() && !ast.Has<CNamespace>(id))
 		{
@@ -117,10 +100,16 @@ namespace rift::AST
 	{
 		ZoneScoped;
 
+		if (!Ensure(ast.Has<CDeclType>(id)))
+		{
+			return;
+		}
+
 		JsonFormatWriter writer{};
 		p::ecs::EntityWriter w{writer.GetWriter(), ast};
 		w.BeginObject();
-		w.Next("type", GetTypeCategory(ast, id));
+
+		w.Next("type", ast.Get<CDeclType>(id).typeId);
 		w.SerializeEntity(id, typeComponents);
 
 		data = writer.ToString();
@@ -139,20 +128,20 @@ namespace rift::AST
 		p::ecs::EntityReader r{reader, ast};
 		r.BeginObject();
 
-		RiftType category = RiftType::None;
-		r.Next("type", category);
-		InitTypeFromCategory(ast, id, category);
+		p::Tag typeId;
+		r.Next("type", typeId);
+		InitTypeFromFileType(ast, id, typeId);
 
 		r.SerializeEntity(id, typeComponents);
 	}
 
 
-	Id FindTypeByPath(Tree& ast, const p::Path& path)
+	Id FindTypeByPath(Tree& ast, p::StringView path)
 	{
 		if (auto* types = ast.TryGetStatic<STypes>())
 		{
-			const Name pathName{ToString(path)};
-			if (Id* id = types->typesByPath.Find(pathName))
+			// TODO: Replace once StringView TMap is more stable
+			if (Id* id = types->typesByPath.Find(p::Tag{path}))
 			{
 				return *id;
 			}
@@ -175,23 +164,35 @@ namespace rift::AST
 		return ast.Has<CDeclStatic>(typeId);
 	}
 
-	bool CanContainVariables(const Tree& ast, Id typeId)
+	bool HasVariables(TAccess<CDeclType> access, Id typeId)
 	{
-		return ast.HasAny<CDeclClass, CDeclStruct>(typeId);
+		if (const RiftTypeDescriptor* fileType = FindRiftType(access, typeId))
+		{
+			return fileType->settings.hasVariables;
+		}
+		return false;
 	}
 
-	bool CanContainFunctions(const Tree& ast, Id typeId)
+	bool HasFunctions(TAccess<CDeclType> access, Id typeId)
 	{
-		return ast.HasAny<CDeclClass, CDeclStatic>(typeId);
+		if (const RiftTypeDescriptor* fileType = FindRiftType(access, typeId))
+		{
+			return fileType->settings.hasFunctions;
+		}
+		return false;
 	}
 
-	bool CanEditFunctionBodies(const Tree& ast, Id typeId)
+	bool HasFunctionBodies(TAccess<CDeclType> access, Id typeId)
 	{
-		return ast.HasAny<CDeclClass, CDeclStatic>(typeId);
+		if (const RiftTypeDescriptor* fileType = FindRiftType(access, typeId))
+		{
+			return fileType->settings.hasFunctions && fileType->settings.hasFunctionBodies;
+		}
+		return false;
 	}
 
 
-	Id AddVariable(TypeRef type, Name name)
+	Id AddVariable(TypeRef type, Tag name)
 	{
 		Tree& ast = type.GetContext();
 
@@ -206,7 +207,7 @@ namespace rift::AST
 		return id;
 	}
 
-	Id AddFunction(TypeRef type, Name name)
+	Id AddFunction(TypeRef type, Tag name)
 	{
 		Tree& ast = type.GetContext();
 
@@ -239,7 +240,7 @@ namespace rift::AST
 		return id;
 	}
 
-	Id AddFunctionInput(Tree& ast, Id functionId, Name name)
+	Id AddFunctionInput(Tree& ast, Id functionId, Tag name)
 	{
 		Id id = ast.Create();
 		ast.Add<CNamespace>(id, name);
@@ -250,7 +251,7 @@ namespace rift::AST
 		return id;
 	}
 
-	Id AddFunctionOutput(Tree& ast, Id functionId, Name name)
+	Id AddFunctionOutput(Tree& ast, Id functionId, Tag name)
 	{
 		Id id = ast.Create();
 		ast.Add<CNamespace>(id, name);
@@ -440,7 +441,7 @@ namespace rift::AST
 		return id;
 	}
 
-	Id FindChildByName(TAccessRef<CNamespace, CParent> access, Id ownerId, Name functionName)
+	Id FindChildByName(TAccessRef<CNamespace, CParent> access, Id ownerId, Tag functionName)
 	{
 		if (!IsNone(ownerId))
 		{

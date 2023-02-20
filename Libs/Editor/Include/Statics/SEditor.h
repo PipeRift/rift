@@ -27,8 +27,8 @@ namespace rift::Editor
 
 		ImGuiID dockspaceID = 0;
 		DockSpaceLayout layout;
-		static const Name leftNode;
-		static const Name centralNode;
+		static const Tag leftNode;
+		static const Tag centralNode;
 
 		String currentProjectPath;
 		TArray<AST::Id> pendingTypesToClose;
@@ -44,6 +44,6 @@ namespace rift::Editor
 		bool skipFrameAfterMenu = false;
 	};
 
-	inline const Name SEditor::leftNode{"leftNode"};
-	inline const Name SEditor::centralNode{"centralNode"};
+	inline const Tag SEditor::leftNode{"leftNode"};
+	inline const Tag SEditor::centralNode{"centralNode"};
 }    // namespace rift::Editor
