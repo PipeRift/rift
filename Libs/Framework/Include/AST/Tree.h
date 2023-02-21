@@ -63,7 +63,7 @@ namespace rift::AST
 	void PreAllocPools()
 	{
 		Tree::OnInit().Bind([](const Tree& ast) {
-			(ast.AssurePool<typename T>(), ...);
+			(ast.AssurePool<T>(), ...);
 		});
 	}
 }    // namespace rift::AST
