@@ -20,11 +20,9 @@
 namespace rift::AST
 {
 	static p::TArray<ModuleBinding> moduleBindings;
+	TBroadcast<ecs::EntityReader&> onReadModulePools;
+	TBroadcast<ecs::EntityWriter&> onWriteModulePools;
 
-
-	auto moduleComponents = [](auto& rw) {
-		rw.template SerializeComponents<CNamespace, CModule, CModule>();
-	};
 
 	bool ValidateModulePath(p::String& path, p::String& error)
 	{
@@ -203,7 +201,7 @@ namespace rift::AST
 		JsonFormatWriter writer{};
 		p::ecs::EntityWriter w{writer.GetWriter(), ast};
 		w.BeginObject();
-		w.SerializeSingleEntity(id, moduleComponents);
+		w.SerializeSingleEntity(id, onWriteModulePools);
 		data = writer.ToString();
 	}
 
@@ -215,8 +213,16 @@ namespace rift::AST
 		{
 			p::ecs::EntityReader r{formatReader, ast};
 			r.BeginObject();
-			r.SerializeSingleEntity(id, moduleComponents);
+			r.SerializeSingleEntity(id, onReadModulePools);
 		}
+	}
+	const TBroadcast<ecs::EntityReader&>& OnReadModulePools()
+	{
+		return onReadModulePools;
+	}
+	const TBroadcast<ecs::EntityWriter&>& OnWriteModulePools()
+	{
+		return onWriteModulePools;
 	}
 
 

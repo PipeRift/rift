@@ -135,9 +135,9 @@ namespace rift::Editor
 		{
 			if (UI::BeginMenu("Create type"))
 			{
-				TArray<const RiftTypeDescriptor*> types;
-				types.Reserve(GetRiftTypes().Size());
-				for (const auto& type : GetRiftTypes())
+				TArray<const AST::RiftType*> types;
+				types.Reserve(AST::GetFileTypes().Size());
+				for (const auto& type : AST::GetFileTypes())
 				{
 					types.Add(&type);
 				}

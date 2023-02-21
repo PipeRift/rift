@@ -6,13 +6,13 @@
 #include "Components/CDeclCStruct.h"
 #include "Components/CNativeBinding.h"
 #include "HeaderIterator.h"
-#include "Rift.h"
 
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
 #include <AST/Id.h>
 #include <AST/Tree.h>
 #include <AST/Utils/ModuleUtils.h>
+#include <AST/Utils/TypeUtils.h>
 #include <clang-c/Index.h>
 #include <Pipe/Core/Span.h>
 #include <Pipe/ECS/Filtering.h>
@@ -43,17 +43,24 @@ namespace rift
 
 	void NativeBindingModule::Load()
 	{
+		// Register types
+		AST::RiftTypeSettings typeSettings{.category = "Bindings"};
+		typeSettings.displayName  = "C Struct";
+		typeSettings.hasVariables = true;
+		typeSettings.hasFunctions = false;
+		AST::RegisterFileType<CDeclCStruct>("CStruct", typeSettings);
+		typeSettings.displayName       = "C Static";
+		typeSettings.hasVariables      = true;
+		typeSettings.hasFunctions      = true;
+		typeSettings.hasFunctionBodies = false;
+		AST::RegisterFileType<CDeclCStatic>("CStatic", typeSettings);
+		AST::PreAllocPools<CDeclCStruct, CDeclCStatic>();
+
+		// Register module binding
 		AST::RegisterModuleBinding(
 		    {.id = "C", .tagType = CNativeBinding::GetStaticType(), .displayName = "C"});
-		RegisterRiftType<CDeclCStruct>("CStruct", {.displayName     = "C Struct",
-		                                              .category     = "Bindings",
-		                                              .hasVariables = true,
-		                                              .hasFunctions = false});
-		RegisterRiftType<CDeclCStatic>("CStatic", {.displayName          = "C Static",
-		                                              .category          = "Bindings",
-		                                              .hasVariables      = true,
-		                                              .hasFunctions      = true,
-		                                              .hasFunctionBodies = false});
+		AST::RegisterSerializedModulePools<CNativeBinding>();
+		AST::PreAllocPools<CNativeBinding>();
 	}
 
 	void FindHeaders(AST::Tree& ast, TSpan<ParsedModule> parsedModules)

@@ -40,8 +40,10 @@
 
 namespace rift::AST
 {
+	static p::TArray<RiftType> fileTypes;
+
 	auto typeComponents = [](auto& rw) {
-		rw.template SerializeComponents<CChild, CDeclVariable, CDeclFunction, CExprBinaryOperator,
+		rw.template SerializePools<CChild, CDeclVariable, CDeclFunction, CExprBinaryOperator,
 		    CExprCall, CExprDeclRefId, CExprOutputs, CExprInputs, CStmtReturn, CExprType,
 		    CExprUnaryOperator, CNodePosition, CNamespace, CParent, CLiteralBool, CLiteralFloating,
 		    CLiteralIntegral, CLiteralString, CStmtIf, CStmtOutput, CStmtOutputs, CStmtInput>();
@@ -58,7 +60,7 @@ namespace rift::AST
 
 		ast.Add<CDeclType>(id, {.typeId = typeId});
 
-		if (auto* fileType = FindRiftType(typeId))
+		if (auto* fileType = FindFileType(typeId))
 		{
 			ast.AddDefaulted(fileType->tagType->GetId(), id);
 		}
@@ -166,7 +168,7 @@ namespace rift::AST
 
 	bool HasVariables(TAccess<CDeclType> access, Id typeId)
 	{
-		if (const RiftTypeDescriptor* fileType = FindRiftType(access, typeId))
+		if (const RiftType* fileType = FindFileType(access, typeId))
 		{
 			return fileType->settings.hasVariables;
 		}
@@ -175,7 +177,7 @@ namespace rift::AST
 
 	bool HasFunctions(TAccess<CDeclType> access, Id typeId)
 	{
-		if (const RiftTypeDescriptor* fileType = FindRiftType(access, typeId))
+		if (const RiftType* fileType = FindFileType(access, typeId))
 		{
 			return fileType->settings.hasFunctions;
 		}
@@ -184,7 +186,7 @@ namespace rift::AST
 
 	bool HasFunctionBodies(TAccess<CDeclType> access, Id typeId)
 	{
-		if (const RiftTypeDescriptor* fileType = FindRiftType(access, typeId))
+		if (const RiftType* fileType = FindFileType(access, typeId))
 		{
 			return fileType->settings.hasFunctions && fileType->settings.hasFunctionBodies;
 		}
@@ -484,5 +486,35 @@ namespace rift::AST
 			access.Add<CExprTypeId>(targetPinId, *sourceType);
 		}
 		return true;
+	}
+
+
+	void RegisterFileType(RiftType&& type)
+	{
+		fileTypes.FindOrAddSorted(Move(type));
+	}
+	void UnregisterFileType(p::Tag typeId)
+	{
+		fileTypes.RemoveSorted(typeId);
+	}
+
+	p::TSpan<const RiftType> GetFileTypes()
+	{
+		return fileTypes;
+	}
+
+	const RiftType* FindFileType(p::Tag typeId)
+	{
+		const i32 index = fileTypes.FindSortedEqual(typeId);
+		return index != NO_INDEX ? fileTypes.Data() + index : nullptr;
+	}
+
+	const RiftType* FindFileType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId)
+	{
+		if (const auto* type = access.TryGet<const AST::CDeclType>(typeId))
+		{
+			return FindFileType(type->typeId);
+		}
+		return nullptr;
 	}
 }    // namespace rift::AST

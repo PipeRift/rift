@@ -16,36 +16,6 @@
 
 namespace rift
 {
-	struct RiftTypeSettings
-	{
-		p::String displayName;
-		p::String category;
-		bool hasVariables      = false;
-		bool hasFunctions      = false;
-		bool hasFunctionBodies = true;
-	};
-
-	struct RiftTypeDescriptor
-	{
-		p::Tag id;
-		p::StructType* tagType = nullptr;
-		RiftTypeSettings settings;
-
-		bool operator<(const RiftTypeDescriptor& other) const
-		{
-			return id < other.id;
-		}
-		friend bool operator<(const p::Tag& lhs, const RiftTypeDescriptor& rhs)
-		{
-			return lhs < rhs.id;
-		}
-		friend bool operator<(const RiftTypeDescriptor& lhs, const p::Tag& rhs)
-		{
-			return lhs.id < rhs;
-		}
-	};
-
-
 	void EnableModule(p::ClassType* type);
 	void DisableModule(p::ClassType* type);
 	p::TPtr<class Module> GetModule(p::ClassType* type);
@@ -68,17 +38,4 @@ namespace rift
 	}
 
 	void RegisterView(View view);
-	void RegisterRiftType(RiftTypeDescriptor&& descriptor);
-	void UnregisterRiftType(p::Tag typeId);
-
-	p::TSpan<const RiftTypeDescriptor> GetRiftTypes();
-	const RiftTypeDescriptor* FindRiftType(p::Tag typeId);
-	const RiftTypeDescriptor* FindRiftType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId);
-
-	template<typename TagType>
-	void RegisterRiftType(p::Tag typeId, RiftTypeSettings settings)
-	{
-		RegisterRiftType(
-		    {.id = typeId, .tagType = TagType::GetStaticType(), .settings = p::Move(settings)});
-	}
 }    // namespace rift

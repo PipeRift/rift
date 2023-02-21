@@ -1,5 +1,6 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
+#include <AST/Components/CModule.h>
 #include <AST/Systems/LoadSystem.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <bandit/bandit.h>
