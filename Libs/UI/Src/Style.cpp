@@ -216,6 +216,9 @@ namespace rift::UI
 
 		colors[ImGuiCol_ModalWindowDimBg] = UI::primaryColor.Shade(0.5f).Translucency(0.05f);
 
+		colors[ImGuiCol_TableBorderStrong] = UI::GetNeutralColor(1).Shade(0.2f);
+		colors[ImGuiCol_TableBorderLight]  = UI::GetNeutralColor(1).Shade(0.1f);
+
 		UI::PushButtonColor(UI::GetNeutralColor(3));
 		UI::PushFrameBgColor(UI::GetNeutralColor(2));
 		UI::PushHeaderColor();

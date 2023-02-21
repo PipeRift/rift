@@ -2,6 +2,8 @@
 
 #include "UI/Inspection.h"
 
+#include "imgui.h"
+
 #include <IconsFontAwesome5.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Files/STDFileSystem.h>
@@ -133,11 +135,11 @@ namespace rift::UI
 	void DrawArrayValue(bool open, const ArrayProperty& property, void* instance)
 	{
 		UI::Text(Strings::Format("{} items", property.GetSize(instance)));
-		if (open)    // NOTE: Prevents buttons from being affected by indent
-		{
-			UI::Unindent(20.f);
-		}
-		UI::SameLine(ImGui::GetContentRegionAvailWidth() - 50.f);
+
+		// Ignore indent on buttons
+		const float widthAvailable =
+		    ImGui::GetContentRegionAvailWidth() + UI::GetCurrentWindow()->DC.Indent.x;
+		UI::SameLine(widthAvailable - 50.f);
 		UI::PushStyleCompact();
 		if (UI::Button(ICON_FA_PLUS "##AddItem", v2(16.f, 18.f)))
 		{
@@ -149,15 +151,13 @@ namespace rift::UI
 			property.Clear(instance);
 		}
 		UI::PopStyleCompact();
-		if (open)
-		{
-			UI::Indent(20.f);
-		}
 	}
 
 	void DrawArrayItemButtons(const ArrayProperty& property, void* instance, i32 index)
 	{
-		UI::SameLine(ImGui::GetContentRegionAvailWidth() - 20.f);
+		const float widthAvailable =
+		    ImGui::GetContentRegionAvailWidth() + UI::GetCurrentWindow()->DC.Indent.x;
+		UI::SameLine(widthAvailable - 50.f);
 		UI::PushStyleCompact();
 		static String label;
 		label.clear();
@@ -171,13 +171,13 @@ namespace rift::UI
 
 	void InspectArrayProperty(const ArrayProperty& property, void* instance)
 	{
-		const bool open = BeginInspectHeader(property.GetDisplayName().data());
+		const i32 size  = property.GetSize(instance);
+		const bool open = BeginInspectHeader(property.GetDisplayName().data(), size <= 0);
 		UI::TableSetColumnIndex(1);
 		DrawArrayValue(open, property, instance);
 		if (open)
 		{
-			const i32 size = property.GetSize(instance);
-			auto* type     = property.GetType();
+			auto* type = property.GetType();
 			static String label;
 			if (auto* structType = Cast<StructType>(type))
 			{
@@ -188,13 +188,13 @@ namespace rift::UI
 					const bool open = BeginInspectHeader(label);
 					if (open)
 					{
-						UI::Unindent(20.f);
+						UI::Unindent();
 					}
 					UI::TableSetColumnIndex(1);
 					DrawArrayItemButtons(property, instance, i);
 					if (open)
 					{
-						UI::Indent(20.f);
+						UI::Indent();
 						InspectProperties(property.GetItem(instance, i), structType);
 						EndInspectHeader();
 					}
@@ -277,27 +277,24 @@ namespace rift::UI
 		UI::PopID();
 	}
 
-	bool BeginInspectHeader(StringView label)
+	bool BeginInspectHeader(StringView label, bool isLeaf)
 	{
 		UI::TableNextRow();
 		UI::TableSetColumnIndex(0);
 		UI::PushHeaderColor(UI::GetNeutralColor(1));
 
 		UI::AlignTextToFramePadding();
-		bool isOpen = UI::CollapsingHeader(
-		    label.data(), ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_AllowItemOverlap);
-		UI::PopHeaderColor();
+		const ImGuiTreeNodeFlags flags =
+		    ImGuiTreeNodeFlags_AllowItemOverlap | (isLeaf ? ImGuiTreeNodeFlags_Leaf : 0);
 
-		if (isOpen)
-		{
-			UI::Indent(20.f);
-		}
+		const bool isOpen = UI::TreeNodeEx(label.data(), ImGuiTreeNodeFlags_AllowItemOverlap);
+		UI::PopHeaderColor();
 		return isOpen;
 	}
 
 	void EndInspectHeader()
 	{
-		UI::Unindent(20.f);
+		UI::TreePop();
 	}
 
 	bool BeginInspector(const char* label, v2 size)
@@ -308,9 +305,8 @@ namespace rift::UI
 			return false;
 		}
 
-		static const ImGuiTableFlags flags = ImGuiTableFlags_Resizable
-		                                   | ImGuiTableFlags_SizingStretchProp
-		                                   | ImGuiTableFlags_PadOuterX;
+		const ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp
+		                            | ImGuiTableFlags_PadOuterX;
 		if (UI::BeginTable(label, 2, flags, size))
 		{
 			gCurrentInspector = label;

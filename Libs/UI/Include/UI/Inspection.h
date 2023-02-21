@@ -51,7 +51,7 @@ namespace rift::UI
 		InspectProperties(data, type);
 	}
 
-	bool BeginInspectHeader(StringView label);
+	bool BeginInspectHeader(StringView label, bool isLeaf = false);
 	void EndInspectHeader();
 
 	bool BeginInspector(const char* name, v2 size = v2{0.f, 0.f});
