@@ -1,5 +1,4 @@
 {
-    "CNamespace": "none",
     "CModule": {
         "target": "Executable",
         "dependencies": [

@@ -86,6 +86,7 @@ namespace rift::AST
 		// Create project node (root module)
 		Id projectId = ast.Create();
 		ast.Add<CProject, CModule>(projectId);
+		ast.Add(projectId, CNamespace{p::GetFilename(p::GetParentPath(filePath))});
 		ast.Add(projectId, CFileRef{filePath});
 
 		// Load project module
@@ -125,6 +126,8 @@ namespace rift::AST
 
 		Id moduleId = ast.Create();
 		ast.Add<CModule>(moduleId);
+		ast.Add(moduleId, CNamespace{p::GetFilename(p::GetParentPath(filePath))});
+		ast.Add(moduleId, CFileRef{filePath});
 
 		p::String data;
 		SerializeModule(ast, moduleId, data);
@@ -202,6 +205,7 @@ namespace rift::AST
 		p::ecs::EntityWriter w{writer.GetWriter(), ast};
 		w.BeginObject();
 		w.SerializeSingleEntity(id, onWriteModulePools);
+
 		data = writer.ToString();
 	}
 

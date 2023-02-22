@@ -56,11 +56,15 @@ namespace rift::AST
 		}
 		Tag& Last()
 		{
-			return scopes[Size() - 1];
+			const i32 size      = Size();
+			const i32 lastIndex = size > 0 ? (size - 1) : 0;    // Is Size is 0, last is first
+			return scopes[lastIndex];
 		}
-		Tag Last() const
+		const Tag& Last() const
 		{
-			return scopes[Size() - 1];
+			const i32 size      = Size();
+			const i32 lastIndex = size > 0 ? (size - 1) : 0;    // Is Size is 0, last is first
+			return scopes[lastIndex];
 		}
 		bool operator==(const Namespace& other) const
 		{

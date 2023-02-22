@@ -394,10 +394,10 @@ namespace rift::Editor::EditorSystem
 			if (UI::MenuItem(ICON_FA_SAVE, "CTRL+S"))
 			{
 				auto& file = ast.Get<AST::CFileRef>(moduleId);
-				TPair<Path, String> fileData{file.path, ""};
-				AST::SerializeModule(ast, moduleId, fileData.second);
+				String data;
+				AST::SerializeModule(ast, moduleId, data);
 
-				files::SaveStringFile(fileData.first, fileData.second);
+				files::SaveStringFile(file.path, data);
 				ast.Remove<AST::CFileDirty>(moduleId);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
@@ -444,9 +444,6 @@ namespace rift::Editor::EditorSystem
 
 				if (UI::BeginInspector("ModuleInspector"))
 				{
-					auto& ns = moduleEditors.GetOrAdd<AST::CNamespace>(moduleId);
-					UI::InspectStruct(&ns);
-
 					auto& module = moduleEditors.Get<AST::CModule>(moduleId);
 					UI::InspectStruct(&module);
 
@@ -504,15 +501,16 @@ namespace rift::Editor::EditorSystem
 			if (UI::MenuItem(ICON_FA_SAVE, "CTRL+S"))
 			{
 				auto& file = ast.Get<AST::CFileRef>(typeId);
-				TPair<Path, String> fileData{file.path, ""};
-				AST::SerializeType(ast, typeId, fileData.second);
+				String data;
+				AST::SerializeType(ast, typeId, data);
+
+				files::SaveStringFile(file.path, data);
+				ast.Remove<AST::CFileDirty>(typeId);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
 				    Strings::Format("Saved file {}", p::GetFilename(file.path))});
-
-				files::SaveStringFile(fileData.first, fileData.second);
-				ast.Remove<AST::CFileDirty>(typeId);
 			}
+
 			if (UI::BeginMenu("View"))
 			{
 				if (AST::HasFunctions(ast, typeId))
