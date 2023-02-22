@@ -444,9 +444,6 @@ namespace rift::Editor::EditorSystem
 
 				if (UI::BeginInspector("ModuleInspector"))
 				{
-					auto& ns = moduleEditors.GetOrAdd<AST::CNamespace>(moduleId);
-					UI::InspectStruct(&ns);
-
 					auto& module = moduleEditors.Get<AST::CModule>(moduleId);
 					UI::InspectStruct(&module);
 
