@@ -31,6 +31,6 @@ namespace rift
 		AST::RegisterFileType<AST::CDeclStatic>(
 		    staticType, {.displayName = "Static", .hasVariables = true, .hasFunctions = true});
 
-		AST::RegisterSerializedModulePools<AST::CNamespace, AST::CModule>();
+		AST::RegisterSerializedModulePools<AST::CModule>();
 	}
 }    // namespace rift

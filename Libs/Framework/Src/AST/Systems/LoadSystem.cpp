@@ -87,7 +87,7 @@ namespace rift::AST::LoadSystem
 		TSet<Path> modulePaths;
 
 		TAccess<CModule, CFileRef> access{ast};
-		auto modules = ecs::ListAll<CModule>(access);
+		auto modules = ecs::ListAll<CModule, CFileRef>(access);
 
 		modulePaths.Reserve(modules.Size());
 		for (Id moduleId : modules)
@@ -121,7 +121,8 @@ namespace rift::AST::LoadSystem
 	{
 		ZoneScoped;
 
-		TAccess<TWrite<CModule>, TWrite<CFileRef>, CProject, TWrite<CChild>, TWrite<CParent>>
+		TAccess<TWrite<CModule>, TWrite<CFileRef>, TWrite<CNamespace>, CProject, TWrite<CChild>,
+		    TWrite<CParent>>
 		    access{ast};
 
 		// Remove existing module paths
@@ -144,9 +145,11 @@ namespace rift::AST::LoadSystem
 
 		for (i32 i = 0; i < ids.Size(); ++i)
 		{
-			Id id = ids[i];
+			Id id           = ids[i];
+			p::String& path = paths[i];
 			access.Add<CModule>(id);
-			access.Add(id, CFileRef{Move(paths[i])});
+			access.Add(id, CNamespace{p::GetFilename(p::GetParentPath(path))});
+			access.Add(id, CFileRef{Move(path)});
 		}
 
 		// Link modules to the project

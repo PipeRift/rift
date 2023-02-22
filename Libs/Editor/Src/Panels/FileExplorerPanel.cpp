@@ -79,7 +79,7 @@ namespace rift::Editor
 		UI::BeginChild("Files");
 		if (UI::BeginPopupContextWindow())
 		{
-			String projectPath = p::ToString(AST::GetProjectPath(ast));
+			String projectPath{AST::GetProjectPath(ast)};
 			DrawContextMenu(ast, projectPath, AST::NoId);
 			UI::EndPopup();
 		}
