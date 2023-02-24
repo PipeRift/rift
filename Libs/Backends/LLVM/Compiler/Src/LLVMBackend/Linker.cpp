@@ -2,6 +2,7 @@
 
 #include "LLVMBackend/Linker.h"
 
+#include "Components/CNativeBinding.h"
 #include "LLVMBackend/Components/CIRModule.h"
 #include "Pipe/Core/PlatformProcess.h"
 #include "Pipe/Core/String.h"
@@ -16,14 +17,12 @@
 #include <Pipe/Reflect/EnumType.h>
 
 
-
 namespace rift::compiler::LLVM
 {
 	void Link(Compiler& compiler)
 	{
-		String linkerPath{PlatformProcess::GetExecutablePath()};
-		linkerPath.append("/");
-		linkerPath.append(RIFT_LLVM_LINKER_PATH);
+		String linkerPath{
+		    p::JoinPaths(PlatformProcess::GetExecutablePath(), RIFT_LLVM_LINKER_PATH)};
 
 		for (AST::Id moduleId : ecs::ListAll<AST::CModule, CIRModule>(compiler.ast))
 		{
@@ -33,7 +32,6 @@ namespace rift::compiler::LLVM
 			if (p::files::Exists(irModule.objectFile))
 			{
 				TArray<const char*> command;
-
 				command.Add(linkerPath.c_str());
 
 				const char* extension = nullptr;
@@ -51,6 +49,18 @@ namespace rift::compiler::LLVM
 						command.Add("/lib");
 						extension = "lib";
 						break;
+				}
+
+				p::TArray<p::String> binaryPaths;
+				if (auto* cBinding = compiler.ast.TryGet<CNativeBinding>(moduleId))
+				{
+					p::StringView modulePath = AST::GetModulePath(compiler.ast, moduleId);
+					p::String binaryPath;
+					for (const auto& nativeBinary : cBinding->binaries)
+					{
+						binaryPaths.Add(p::JoinPaths(modulePath, nativeBinary));
+						command.Add(binaryPaths.Last().c_str());
+					}
 				}
 				command.Add(irModule.objectFile.data());
 
