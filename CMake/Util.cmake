@@ -39,13 +39,17 @@ function(rift_runtime_module module)
     # Override output folder with suffix
     set_target_properties(${target}
         PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY  "${CMAKE_BINARY_DIR}/Bin/Runtimes/${module}/Lib"
-        LIBRARY_OUTPUT_DIRECTORY  "${CMAKE_BINARY_DIR}/Bin/Runtimes/${module}/Lib"
-        RUNTIME_OUTPUT_DIRECTORY  "${CMAKE_BINARY_DIR}/Bin/Runtimes/${module}/Bin"
-        INCLUDES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin/Runtimes/${module}/Include"
+        ARCHIVE_OUTPUT_DIRECTORY  "${CMAKE_CURRENT_SOURCE_DIR}/${module}/Lib"
+        LIBRARY_OUTPUT_DIRECTORY  "${CMAKE_CURRENT_SOURCE_DIR}/${module}/Lib"
+        RUNTIME_OUTPUT_DIRECTORY  "${CMAKE_CURRENT_SOURCE_DIR}/${module}/Bin"
+        INCLUDES_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${module}/Include"
     )
     set_target_properties(${target} PROPERTIES OUTPUT_NAME "${module}")
 
+
+    add_custom_command(TARGET ${target} POST_BUILD COMMAND
+        ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/Bin/Runtimes/${module}"
+    )
     add_custom_command(TARGET ${target} POST_BUILD COMMAND
         ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/${module}" "${CMAKE_BINARY_DIR}/Bin/Runtimes/${module}"
     )
