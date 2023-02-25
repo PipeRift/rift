@@ -70,8 +70,14 @@ namespace rift::compiler::LLVM
 				command.Add(outParam.data());
 
 				Log::Info("Linking '{}' from '{}'", p::ToString(filePath), irModule.objectFile);
-				p::RunProcess(command,
-				    SubprocessOptions::TerminateIfDestroyed | SubprocessOptions::CombinedOutErr);
+				auto process   = p::RunProcess(command,
+				      SubprocessOptions::TerminateIfDestroyed | SubprocessOptions::CombinedOutErr);
+				i32 returnCode = 0;
+				p::WaitProcess(process.TryGet(), &returnCode);
+				if (returnCode != 0)
+				{
+					compiler.AddError("Linking failed");
+				}
 			}
 		}
 	}
