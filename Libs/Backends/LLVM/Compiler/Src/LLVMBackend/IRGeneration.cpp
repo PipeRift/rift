@@ -2,6 +2,7 @@
 
 #include "LLVMBackend/IRGeneration.h"
 
+#include "Components/CDeclCStruct.h"
 #include "LLVMBackend/Components/CIRFunction.h"
 #include "LLVMBackend/Components/CIRModule.h"
 #include "LLVMBackend/Components/CIRType.h"
@@ -31,6 +32,8 @@
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Statements.h>
 #include <Compiler/Compiler.h>
+#include <Components/CDeclCStatic.h>
+#include <Components/CDeclCStruct.h>
 #include <llvm/ADT/APInt.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Module.h>
@@ -371,23 +374,34 @@ namespace rift::compiler::LLVM
 		TArray<AST::Id> typeIds;
 		ecs::GetChildren(ast, moduleId, typeIds);
 		ecs::ExcludeIfNot<AST::CDeclType>(ast, typeIds);
-		TArray<AST::Id> structIds = ecs::GetIf<AST::CDeclStruct>(ast, typeIds);
-		TArray<AST::Id> classIds  = ecs::GetIf<AST::CDeclClass>(ast, typeIds);
-		TArray<AST::Id> staticIds = ecs::GetIf<AST::CDeclStatic>(ast, typeIds);
 
-		DeclareStructs(gen, ast, structIds);
-		DeclareStructs(gen, ast, classIds);
+		{    // Native declarations
+			TArray<AST::Id> cStructIds = ecs::GetIf<CDeclCStruct>(ast, typeIds);
+			TArray<AST::Id> cStaticIds = ecs::GetIf<CDeclCStatic>(ast, typeIds);
+			TArray<AST::Id> cFunctionIds;
+			p::ecs::GetChildren(ast, cStaticIds, cFunctionIds);
+			ecs::ExcludeIfNot<AST::CDeclFunction>(ast, cFunctionIds);
+			DeclareStructs(gen, ast, cStructIds);
+			DeclareFunctions(gen, ast, cFunctionIds);
+		}
 
-		TArray<AST::Id> functionIds;
-		p::ecs::GetChildren(ast, classIds, functionIds);
-		p::ecs::GetChildren(ast, staticIds, functionIds);
-		ecs::ExcludeIfNot<AST::CDeclFunction>(ast, functionIds);
-		DeclareFunctions(gen, ast, functionIds);
+		{    // Rift declarations & definitions
+			TArray<AST::Id> structIds = ecs::GetIf<AST::CDeclStruct>(ast, typeIds);
+			TArray<AST::Id> classIds  = ecs::GetIf<AST::CDeclClass>(ast, typeIds);
+			TArray<AST::Id> staticIds = ecs::GetIf<AST::CDeclStatic>(ast, typeIds);
+			TArray<AST::Id> functionIds;
+			p::ecs::GetChildren(ast, classIds, functionIds);
+			p::ecs::GetChildren(ast, staticIds, functionIds);
+			ecs::ExcludeIfNot<AST::CDeclFunction>(ast, functionIds);
 
-		DefineStructs(gen, ast, structIds);
-		DefineStructs(gen, ast, classIds);
+			DeclareStructs(gen, ast, structIds);
+			DeclareStructs(gen, ast, classIds);
+			DeclareFunctions(gen, ast, functionIds);
 
-		DefineFunctions(gen, ast, functionIds);
+			DefineStructs(gen, ast, structIds);
+			DefineStructs(gen, ast, classIds);
+			DefineFunctions(gen, ast, functionIds);
+		}
 
 		if (module.target == AST::RiftModuleTarget::Executable)
 		{

@@ -1,5 +1,6 @@
 {
     "CModule": {
+        "target": "Static",
         "dependencies": []
     },
     "CNativeBinding": {
