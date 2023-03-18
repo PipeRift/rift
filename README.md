@@ -1,11 +1,17 @@
 
-# <p align="center">Rift</p>
+<p align="center">
+  <img src="Tools/Logos/logo_title_light_bg_m.png" />
+</p>
+
+<p align="center">
+  <i>Rift is a programming language that compiles visual representations to machine code focusing on performance and build times.</i>
+  <br/>
+  <img alt="screenshot" src="https://riftlang.org/images/code-sample.png">
+</p>
+
 
 [![build](https://github.com/PipeRift/rift/actions/workflows/build.yml/badge.svg)](https://github.com/PipeRift/rift/actions/workflows/build.yml) [![license](https://img.shields.io/github/license/PipeRift/rift?labelColor=394047)](https://github.com/PipeRift/rift/blob/main/LICENSE) [![Code Quality](https://api.codacy.com/project/badge/Grade/a377314fe8ae4a2bb17159bce8a1ac76)](https://app.codacy.com/gh/PipeRift/rift?utm_source=github.com&utm_medium=referral&utm_content=PipeRift/rift&utm_campaign=Badge_Grade)
 
-Rift is a **compiled**, **typed** and **visual** programming language.
-
-![Fibonacci](https://riftlang.org/images/code-sample.png)
 
 ## [Documentation](https://riftlang.org)
 <br>
