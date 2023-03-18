@@ -3,7 +3,8 @@
   <img src="Tools/Logos/logo_title_light_bg_m.png" />
 </p>
 
-<p align="center"><i>Rift is a visual programming language that compiles to machine code focusing on performance and build times.</i></p>
+#### <p align="center">Rift is a visual programming language that compiles to machine code focusing on performance and build times.</p>
+
 
 <p align="center">
   <img alt="screenshot" src="https://riftlang.org/images/code-sample.png">
