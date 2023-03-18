@@ -5,7 +5,7 @@
 
 <p align="center">
   <i>Rift is a programming language that compiles visual representations to machine code focusing on performance and build times.</i>
-  <br/>
+  <br/><br/>
   <img alt="screenshot" src="https://riftlang.org/images/code-sample.png">
 </p>
 
