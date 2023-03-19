@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="Tools/Logos/logo_title_light_bg_m.png" height="160" />
+  <img src="Tools/Logos/logo_title.png" height="160" />
 </p>
 
 #### <p align="center">Rift is a visual programming language that compiles to machine code focusing on performance and build times</p>
