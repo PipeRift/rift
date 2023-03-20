@@ -8,14 +8,14 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift::compiler
+namespace rift
 {
 	using namespace p;
 
 
-	struct Config : public p::Struct
+	struct CompilerConfig : public p::Struct
 	{
-		STRUCT(Config, p::Struct)
+		STRUCT(CompilerConfig, p::Struct)
 
 		String buildMode{"Release"};
 
@@ -26,4 +26,4 @@ namespace rift::compiler
 
 		void Init(AST::Tree& ast);
 	};
-}    // namespace rift::compiler
+}    // namespace rift

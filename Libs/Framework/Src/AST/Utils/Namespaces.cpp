@@ -13,123 +13,6 @@
 
 namespace rift::AST
 {
-	Namespace::Namespace(StringView value)
-	{
-		i32 size          = 0;
-		const TChar* last = value.data() + value.size();
-		const TChar* curr = value.data();
-
-		if (curr != last && *curr == '@')
-			++curr;
-
-		const TChar* scopeStart = curr;
-		while (curr != last && size < scopeCount)
-		{
-			if (*curr == '.')
-			{
-				scopes[size] = Tag{
-				    StringView{scopeStart, curr}
-                };
-				scopeStart = curr + 1;
-				++size;
-			}
-			++curr;
-		}
-
-		if (scopeStart < curr)    // Add last
-		{
-			scopes[size] = Tag{
-			    StringView{scopeStart, curr}
-            };
-		}
-	}
-
-	bool Namespace::Equals(const Namespace& other) const
-	{
-		for (i32 i = 0; i < scopeCount; ++i)
-		{
-			const Tag scope      = scopes[i];
-			const Tag otherScope = other.scopes[i];
-			if (scope != otherScope)
-			{
-				return false;
-			}
-			else if (scope.IsNone() && otherScope.IsNone())
-			{
-				return true;
-			}
-		}
-		return true;
-	}
-
-	bool Namespace::IsEmpty() const
-	{
-		return First().IsNone();
-	}
-
-	i32 Namespace::Size() const
-	{
-		i32 size = 0;
-		while (size < scopeCount && !scopes[size].IsNone())
-		{
-			++size;
-		}
-		return size;
-	}
-
-	p::String Namespace::ToString(LocalNamespace isLocal) const
-	{
-		p::String ns;
-		if (!isLocal)
-		{
-			ns.append("@");
-			const Tag firstScope = scopes[0];
-			if (!firstScope.IsNone())
-			{
-				ns.append(firstScope.AsString());
-				ns.append(".");
-			}
-		}
-		for (i32 i = 1; i < scopeCount; ++i)
-		{
-			const Tag scope = scopes[i];
-			if (scope.IsNone())
-			{
-				break;
-			}
-			ns.append(scope.AsString());
-			ns.append(".");
-		}
-
-		if (!ns.empty())    // Remove last dot
-		{
-			ns.pop_back();
-		}
-		return Move(ns);
-	}
-
-	void Namespace::Read(p::Reader& ct)
-	{
-		u32 size = 0;
-		ct.BeginArray(size);
-		size = p::math::Min(size, u32(Namespace::scopeCount));
-		for (u32 i = 0; i < size; ++i)
-		{
-			ct.Next(scopes[i]);
-		}
-	}
-
-	void Namespace::Write(p::Writer& ct) const
-	{
-		u32 size = Size();
-		ct.BeginArray(size);
-		for (u32 i = 0; i < size; ++i)
-		{
-			ct.Next(scopes[i]);
-		}
-	}
-
-
 	Namespace GetNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id)
 	{
 		Namespace ns;
@@ -224,7 +107,7 @@ namespace rift::AST
 	}
 
 	p::String GetFullName(
-	    TAccessRef<CNamespace, CChild, CModule> access, Id id, LocalNamespace localNamespace)
+	    TAccessRef<CNamespace, CChild, CModule> access, Id id, bool localNamespace)
 	{
 		return GetNamespace(access, id).ToString(localNamespace);
 	}

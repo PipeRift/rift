@@ -54,7 +54,7 @@ go_bandit([]() {
 			AST::Id classId = AST::CreateType(ast, FrameworkModule::classType, "TestClass");
 			p::ecs::AddChildren(ast, parent, classId);
 			AST::Id functionId = AST::AddFunction({ast, classId}, "TestFunction");
-			p::String ns = AST::GetNamespace(ast, functionId).ToString(AST::LocalNamespace::Yes);
+			p::String ns       = AST::GetNamespace(ast, functionId).ToString(true);
 			AssertThat(ns.c_str(), Equals("TestClass.TestFunction"));
 		});
 

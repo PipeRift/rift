@@ -13,7 +13,7 @@
 #include <Pipe/Files/Files.h>
 
 
-namespace rift::compiler
+namespace rift
 {
 	void Compiler::AddError(StringView str)
 	{
@@ -24,7 +24,7 @@ namespace rift::compiler
 	}
 
 
-	void Build(AST::Tree& ast, const Config& config, TPtr<Backend> backend)
+	void Build(AST::Tree& ast, const CompilerConfig& config, TPtr<Backend> backend)
 	{
 		ZoneScoped;
 		Compiler compiler{ast, config};
@@ -68,7 +68,7 @@ namespace rift::compiler
 		backend->Build(compiler);
 	}
 
-	void Build(AST::Tree& ast, const Config& config, ClassType* backendType)
+	void Build(AST::Tree& ast, const CompilerConfig& config, ClassType* backendType)
 	{
 		if (backendType)
 		{
@@ -76,4 +76,4 @@ namespace rift::compiler
 			Build(ast, config, backend);
 		}
 	}
-}    // namespace rift::compiler
+}    // namespace rift

@@ -10,7 +10,7 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift::compiler
+namespace rift
 {
 	class Backend;
 
@@ -29,12 +29,12 @@ namespace rift::compiler
 		STRUCT(Compiler, p::Struct)
 
 		AST::Tree& ast;
-		Config config;
+		CompilerConfig config;
 		TArray<CompileError> errors;
 
 
 	public:
-		Compiler(AST::Tree& ast, const Config& config) : ast{ast}, config{config} {}
+		Compiler(AST::Tree& ast, const CompilerConfig& config) : ast{ast}, config{config} {}
 
 		// Errors
 		void AddError(StringView str);
@@ -49,13 +49,13 @@ namespace rift::compiler
 	};
 
 
-	void Build(AST::Tree& tree, const Config& config, TPtr<Backend> backend);
+	void Build(AST::Tree& tree, const CompilerConfig& config, TPtr<Backend> backend);
 
-	void Build(AST::Tree& ast, const Config& config, ClassType* backendType);
+	void Build(AST::Tree& ast, const CompilerConfig& config, ClassType* backendType);
 
 	template<typename T>
-	void Build(AST::Tree& ast, const Config& config)
+	void Build(AST::Tree& ast, const CompilerConfig& config)
 	{
 		Build(ast, config, T::GetStaticType());
 	}
-}    // namespace rift::compiler
+}    // namespace rift

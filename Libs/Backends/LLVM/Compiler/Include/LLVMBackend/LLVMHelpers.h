@@ -8,7 +8,7 @@
 #include <Pipe/Core/Tag.h>
 
 
-namespace rift::compiler::LLVM
+namespace rift::LLVM
 {
 	using namespace p::core;
 
@@ -30,4 +30,4 @@ namespace rift::compiler::LLVM
 	{
 		return {array.Data(), sizet(array.Size())};
 	}
-}    // namespace rift::compiler::LLVM
+}    // namespace rift::LLVM

@@ -2,8 +2,8 @@
 #pragma once
 
 #include "AST/Components/CExpression.h"
+#include "AST/Components/CNamespace.h"
 #include "AST/Id.h"
-#include "AST/Utils/Namespaces.h"
 
 #include <Pipe/Reflect/ReflectionFlags.h>
 #include <Pipe/Serialize/SerializationFwd.h>

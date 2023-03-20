@@ -321,14 +321,14 @@ namespace rift::Editor::EditorSystem
 				if (UI::MenuItem("Build current"))
 				{
 					AST::Tree compileAST{ast};    // Intentional copy
-					compiler::Config config;
-					compiler::Build<compiler::LLVMBackend>(compileAST, config);
+					CompilerConfig config;
+					Build<LLVMBackend>(compileAST, config);
 				}
 				if (UI::MenuItem("Build all"))
 				{
 					AST::Tree compileAST{ast};    // Intentional copy
-					compiler::Config config;
-					compiler::Build<compiler::LLVMBackend>(compileAST, config);
+					CompilerConfig config;
+					Build<LLVMBackend>(compileAST, config);
 				}
 				UI::EndMenu();
 			}

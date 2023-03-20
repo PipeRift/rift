@@ -17,7 +17,7 @@
 #include <Pipe/Reflect/EnumType.h>
 
 
-namespace rift::compiler::LLVM
+namespace rift::LLVM
 {
 	void Link(Compiler& compiler)
 	{
@@ -81,4 +81,4 @@ namespace rift::compiler::LLVM
 			}
 		}
 	}
-}    // namespace rift::compiler::LLVM
+}    // namespace rift::LLVM

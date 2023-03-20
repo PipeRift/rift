@@ -20,8 +20,7 @@ using namespace rift;
 
 namespace rift
 {
-	void AddBackendOption(
-	    CLI::App& app, const TArray<TOwnPtr<compiler::Backend>>& backends, String& selected)
+	void AddBackendOption(CLI::App& app, const TArray<TOwnPtr<Backend>>& backends, String& selected)
 	{
 		String desc = "Backend to build with. Available: ";
 		if (!backends.IsEmpty())
@@ -45,10 +44,9 @@ namespace rift
 		app.add_option("-b,--backend", selected, stdDesc, true);
 	}
 
-	TPtr<compiler::Backend> FindBackendByName(
-	    const TArray<TOwnPtr<compiler::Backend>>& backends, Tag name)
+	TPtr<Backend> FindBackendByName(const TArray<TOwnPtr<Backend>>& backends, Tag name)
 	{
-		TOwnPtr<compiler::Backend>* backend = backends.Find([name](const auto& backend) {
+		TOwnPtr<Backend>* backend = backends.Find([name](const auto& backend) {
 			return backend->GetName() == name;
 		});
 		if (backend)
@@ -73,12 +71,12 @@ int main(int argc, char** argv)
 
 
 	String selectedBackendStr;
-	auto availableBackends = compiler::CreateBackends();
+	auto availableBackends = CreateBackends();
 	AddBackendOption(app, availableBackends, selectedBackendStr);
 
 	CLI11_PARSE(app, argc, argv);
 
-	TPtr<compiler::Backend> backend = FindBackendByName(availableBackends, Tag(selectedBackendStr));
+	TPtr<Backend> backend = FindBackendByName(availableBackends, Tag(selectedBackendStr));
 
 	ZoneScopedNC("CLI Execution", 0x459bd1);
 
@@ -91,8 +89,8 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	compiler::Config config;
-	compiler::Build(ast, config, backend);
+	CompilerConfig config;
+	Build(ast, config, backend);
 
 	while (true)
 	{

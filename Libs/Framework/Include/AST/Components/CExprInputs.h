@@ -4,7 +4,6 @@
 #include "AST/Id.h"
 
 #include <Pipe/ECS/Id.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Reflect/Struct.h>
 
 

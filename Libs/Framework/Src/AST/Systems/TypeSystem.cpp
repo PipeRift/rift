@@ -7,6 +7,7 @@
 #include "AST/Id.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Tree.h"
+#include "AST/Utils/Namespaces.h"
 #include "AST/Utils/TypeUtils.h"
 
 #include <Pipe/ECS/Filtering.h>

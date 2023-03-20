@@ -3,7 +3,7 @@
 #include "Compiler/Utils/BackendUtils.h"
 
 
-namespace rift::compiler
+namespace rift
 {
 	TArray<ClassType*> GetBackendTypes()
 	{
@@ -26,4 +26,4 @@ namespace rift::compiler
 		}
 		return Move(backends);
 	}
-}    // namespace rift::compiler
+}    // namespace rift
