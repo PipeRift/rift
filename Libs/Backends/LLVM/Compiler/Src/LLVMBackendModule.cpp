@@ -126,9 +126,13 @@ namespace rift
 
 		Log::Info("Generating LLVM IR");
 		LLVM::GenerateIR(compiler, llvm, builder);
+		if (compiler.HasErrors())
+			return;    // TODO: Report errors here
 
 		Log::Info("Build IR");
 		LLVM::CompileIR(compiler, llvm, builder);
+		if (compiler.HasErrors())
+			return;    // TODO: Report errors here
 
 		Log::Info("Linking");
 		LLVM::Link(compiler);

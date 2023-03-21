@@ -77,7 +77,8 @@ namespace rift::LLVM
 	    ModuleIRGen& gen, IRAccess access, AST::Id id, const CIRFunction& function);
 	void AddCall(ModuleIRGen& gen, AST::Id id, const AST::CExprCallId& call, IRAccess access);
 
-	AST::Id FindMainFunction();
 
-	void CreateMain(ModuleIRGen& gen);
+	AST::Id FindMainFunction(IRAccess access, p::TSpan<AST::Id> functionIds);
+
+	void CreateMain(ModuleIRGen& gen, IRAccess access, AST::Id functionId);
 }    // namespace rift::LLVM

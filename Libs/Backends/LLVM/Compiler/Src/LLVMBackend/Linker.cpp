@@ -38,7 +38,8 @@ namespace rift::LLVM
 				switch (module.target)
 				{
 					case AST::RiftModuleTarget::Executable:
-						command.Add("/entry:main");
+						command.Add("/entry:Main");
+						command.Add("/SUBSYSTEM:CONSOLE");
 						extension = "exe";
 						break;
 					case AST::RiftModuleTarget::Shared:

@@ -6,6 +6,7 @@
 #include "AST/Components/CNamespace.h"
 #include "AST/Components/CProject.h"
 #include "AST/Tree.h"
+#include "Pipe/ECS/Access.h"
 #include "Pipe/ECS/Serialization.h"
 
 #include <Pipe/ECS/Filtering.h>

@@ -1,0 +1,60 @@
+{
+    "type": "Static",
+    "count": 3,
+    "components": {
+        "CChild": {
+            "0": -1,
+            "1": 0,
+            "2": 0
+        },
+        "CDeclFunction": {
+            "1": {}
+        },
+        "CExprCall": {
+            "2": [
+                "IO",
+                "IO",
+                "PrintHelloWorld"
+            ]
+        },
+        "CExprOutputs": {
+            "2": {
+                "pinIds": []
+            }
+        },
+        "CExprInputs": {
+            "2": {
+                "linkedOutputs": [],
+                "pinIds": []
+            }
+        },
+        "CNodePosition": {
+            "1": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "2": {
+                "x": 6.0,
+                "y": 0.0
+            }
+        },
+        "CNamespace": {
+            "0": "Main",
+            "1": "Main"
+        },
+        "CParent": {
+            "0": [
+                1,
+                2
+            ],
+            "1": []
+        },
+        "CStmtOutput": {
+            "1": 2,
+            "2": -1
+        },
+        "CStmtInput": {
+            "2": 1
+        }
+    }
+}

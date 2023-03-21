@@ -3,6 +3,7 @@
 #include "LLVMBackend/IRGeneration.h"
 
 #include "Components/CDeclCStruct.h"
+#include "LLVMBackend/Components/CIRFunction.h"
 #include "LLVMBackend/LLVMHelpers.h"
 
 #include <AST/Id.h>
@@ -47,7 +48,9 @@ namespace rift::LLVM
 
 		ModuleIRGen gen{compiler, *irModule.instance.Get(), llvm, builder};
 
-		// Filter all module rift types
+		AST::Id mainFunctionId = AST::NoId;
+
+		// Get all rift types from the module
 		TArray<AST::Id> typeIds;
 		ecs::GetChildren(ast, moduleId, typeIds);
 		ecs::ExcludeIfNot<AST::CDeclType>(ast, typeIds);
@@ -64,12 +67,17 @@ namespace rift::LLVM
 
 		{    // Rift declarations & definitions
 			TArray<AST::Id> structIds = ecs::GetIf<AST::CDeclStruct>(ast, typeIds);
-			TArray<AST::Id> classIds  = ecs::GetIf<AST::CDeclClass>(ast, typeIds);
 			TArray<AST::Id> staticIds = ecs::GetIf<AST::CDeclStatic>(ast, typeIds);
+			TArray<AST::Id> classIds  = ecs::GetIf<AST::CDeclClass>(ast, typeIds);
+			TArray<AST::Id> staticFunctionIds;
+			TArray<AST::Id> classFunctionIds;
+			p::ecs::GetChildren(ast, staticIds, staticFunctionIds);
+			p::ecs::GetChildren(ast, classIds, classFunctionIds);
+			ecs::ExcludeIfNot<AST::CDeclFunction>(ast, staticFunctionIds);
+			ecs::ExcludeIfNot<AST::CDeclFunction>(ast, classFunctionIds);
 			TArray<AST::Id> functionIds;
-			p::ecs::GetChildren(ast, classIds, functionIds);
-			p::ecs::GetChildren(ast, staticIds, functionIds);
-			ecs::ExcludeIfNot<AST::CDeclFunction>(ast, functionIds);
+			functionIds.Append(staticFunctionIds);
+			functionIds.Append(classFunctionIds);
 
 			DeclareStructs(gen, ast, structIds);
 			DeclareStructs(gen, ast, classIds);
@@ -78,15 +86,15 @@ namespace rift::LLVM
 			DefineStructs(gen, ast, structIds);
 			DefineStructs(gen, ast, classIds);
 			DefineFunctions(gen, ast, functionIds);
+
+			mainFunctionId = FindMainFunction(access, staticFunctionIds);
 		}
 
 		if (module.target == AST::RiftModuleTarget::Executable)
 		{
-			CreateMain(gen);
+			CreateMain(gen, access, mainFunctionId);
 		}
 	}
-
-	AST::Id FindMainFunction() {}
 
 
 	void BindNativeTypes(llvm::LLVMContext& llvm, IRAccess access)
@@ -369,19 +377,38 @@ namespace rift::LLVM
 	}
 
 
-	void CreateMain(ModuleIRGen& gen)
+	AST::Id FindMainFunction(IRAccess access, p::TSpan<AST::Id> functionIds)
 	{
-		AST::Id id = FindMainFunction();
-		if (p::ecs::IsNone(id))
+		static const p::Tag mainFunctionName{"Main"};
+
+		for (AST::Id id : functionIds)
 		{
-			gen.compiler.AddError(Strings::Format("Module is executable but has no main function"));
+			const auto* ns = access.TryGet<const AST::CNamespace>(id);
+			if (ns && ns->name == mainFunctionName)
+			{
+				return id;
+			}
+		}
+		return AST::NoId;
+	}
+
+	void CreateMain(ModuleIRGen& gen, IRAccess access, AST::Id functionId)
+	{
+		if (p::ecs::IsNone(functionId))
+		{
+			gen.compiler.AddError(
+			    Strings::Format("Module is executable but has no \"Main\" function"));
 			return;
 		}
 
-		auto* mainType = llvm::FunctionType::get(gen.builder.getInt32Ty(), false);
-		auto* main =
-		    llvm::Function::Create(mainType, llvm::Function::ExternalLinkage, "main", &gen.module);
-		auto* entry = llvm::BasicBlock::Create(gen.llvm, "entry", main);
+		auto* function = access.Get<const CIRFunction>(functionId).instance;
+
+		// auto* mainType = llvm::FunctionType::get(gen.builder.getInt32Ty(), false);
+		// auto* function =
+		//     llvm::Function::Create(mainType, llvm::Function::ExternalLinkage, "main",
+		//     &gen.module);
+
+		auto* entry = llvm::BasicBlock::Create(gen.llvm, "entry", function);
 		gen.builder.SetInsertPoint(entry);
 
 		gen.builder.CreateRet(llvm::ConstantInt::get(gen.llvm, llvm::APInt(32, 0)));
