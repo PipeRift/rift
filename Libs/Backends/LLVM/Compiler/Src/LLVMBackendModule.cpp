@@ -134,7 +134,6 @@ namespace rift
 		if (compiler.HasErrors())
 			return;    // TODO: Report errors here
 
-		Log::Info("Linking");
 		LLVM::Link(compiler);
 
 		compiler.ast.ClearPool<CIRModule>();

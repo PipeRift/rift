@@ -52,6 +52,12 @@ namespace rift::LLVM
 						break;
 				}
 
+				p::Path filePath =
+				    compiler.config.binariesPath / Strings::Format("{}.{}", moduleName, extension);
+				String outParam = Strings::Format("/out:{}", p::ToString(filePath));
+				Log::Info("Linking '{}' from '{}'", p::ToString(filePath), irModule.objectFile);
+
+				// Native Bindings
 				p::TArray<p::String> binaryPaths;
 				if (auto* cBinding = compiler.ast.TryGet<CNativeBinding>(moduleId))
 				{
@@ -61,16 +67,12 @@ namespace rift::LLVM
 					{
 						binaryPaths.Add(p::JoinPaths(modulePath, nativeBinary));
 						command.Add(binaryPaths.Last().c_str());
+						Log::Info("    and '{}'", binaryPaths.Last().c_str());
 					}
 				}
 				command.Add(irModule.objectFile.data());
-
-				p::Path filePath =
-				    compiler.config.binariesPath / Strings::Format("{}.{}", moduleName, extension);
-				String outParam = Strings::Format("/out:{}", p::ToString(filePath));
 				command.Add(outParam.data());
 
-				Log::Info("Linking '{}' from '{}'", p::ToString(filePath), irModule.objectFile);
 				auto process   = p::RunProcess(command,
 				      SubprocessOptions::TerminateIfDestroyed | SubprocessOptions::CombinedOutErr);
 				i32 returnCode = 0;

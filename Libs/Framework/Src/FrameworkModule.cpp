@@ -30,6 +30,7 @@ namespace rift
 		    classType, {.displayName = "Class", .hasVariables = true, .hasFunctions = true});
 		AST::RegisterFileType<AST::CDeclStatic>(
 		    staticType, {.displayName = "Static", .hasVariables = true, .hasFunctions = true});
+		AST::PreAllocPools<AST::CDeclStruct, AST::CDeclClass, AST::CDeclStatic>();
 
 		AST::RegisterSerializedModulePools<AST::CModule>();
 	}

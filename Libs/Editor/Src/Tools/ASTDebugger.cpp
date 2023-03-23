@@ -52,7 +52,7 @@ namespace rift::Editor
 			if (UI::CollapsingHeader(typeName.c_str(), flags))
 			{
 				UI::Indent();
-				auto* dataType = Cast<AST::DataType>(type);
+				auto* dataType = Cast<p::DataType>(type);
 				if (data && dataType && UI::BeginInspector("EntityInspector"))
 				{
 					UI::InspectProperties(data, dataType);

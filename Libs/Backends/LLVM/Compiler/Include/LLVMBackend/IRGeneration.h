@@ -67,7 +67,8 @@ namespace rift::LLVM
 
 	void DeclareStructs(ModuleIRGen& gen, IRAccess access, p::TSpan<AST::Id> ids);
 	void DefineStructs(ModuleIRGen& gen, IRAccess access, p::TSpan<AST::Id> ids);
-	void DeclareFunctions(ModuleIRGen& gen, IRAccess access, p::TSpan<AST::Id> ids);
+	void DeclareFunctions(
+	    ModuleIRGen& gen, IRAccess access, p::TSpan<AST::Id> ids, bool useFullName = true);
 	void DefineFunctions(ModuleIRGen& gen, IRAccess access, p::TSpan<AST::Id> ids);
 
 	void AddStmtBlock(ModuleIRGen& gen, IRAccess access, AST::Id firstStmtId,

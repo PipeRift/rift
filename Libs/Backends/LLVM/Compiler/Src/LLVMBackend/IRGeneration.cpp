@@ -62,7 +62,7 @@ namespace rift::LLVM
 			p::ecs::GetChildren(ast, cStaticIds, cFunctionIds);
 			ecs::ExcludeIfNot<AST::CDeclFunction>(ast, cFunctionIds);
 			DeclareStructs(gen, ast, cStructIds);
-			DeclareFunctions(gen, ast, cFunctionIds);
+			DeclareFunctions(gen, ast, cFunctionIds, false);
 		}
 
 		{    // Rift declarations & definitions
@@ -189,7 +189,7 @@ namespace rift::LLVM
 		}
 	}
 
-	void DeclareFunctions(ModuleIRGen& gen, IRAccess access, TSpan<AST::Id> ids)
+	void DeclareFunctions(ModuleIRGen& gen, IRAccess access, TSpan<AST::Id> ids, bool useFullName)
 	{
 		ZoneScoped;
 		TArray<AST::Id> inputIds;
@@ -231,7 +231,8 @@ namespace rift::LLVM
 			}
 
 			// Create function
-			p::String name = AST::GetFullName(access, id);
+			p::String name = useFullName ? AST::GetFullName(access, id)
+			                             : p::String{AST::GetName(access, id).AsString()};
 			auto* functionType =
 			    llvm::FunctionType::get(gen.builder.getVoidTy(), ToLLVM(inputTypes), false);
 			functionComp.instance = llvm::Function::Create(
@@ -401,15 +402,16 @@ namespace rift::LLVM
 			return;
 		}
 
-		auto* function = access.Get<const CIRFunction>(functionId).instance;
+		auto* customMainFunction = access.Get<const CIRFunction>(functionId).instance;
 
-		// auto* mainType = llvm::FunctionType::get(gen.builder.getInt32Ty(), false);
-		// auto* function =
-		//     llvm::Function::Create(mainType, llvm::Function::ExternalLinkage, "main",
-		//     &gen.module);
+		auto* mainType = llvm::FunctionType::get(gen.builder.getInt32Ty(), false);
+		auto* function =
+		    llvm::Function::Create(mainType, llvm::Function::ExternalLinkage, "Main", &gen.module);
+
 
 		auto* entry = llvm::BasicBlock::Create(gen.llvm, "entry", function);
 		gen.builder.SetInsertPoint(entry);
+		gen.builder.CreateCall(customMainFunction);
 
 		gen.builder.CreateRet(llvm::ConstantInt::get(gen.llvm, llvm::APInt(32, 0)));
 	}
