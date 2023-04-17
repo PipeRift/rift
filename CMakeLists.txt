@@ -1,7 +1,7 @@
 # Copyright 2015-2023 Piperift - All rights reserved
 
 # CMake version
-cmake_minimum_required (VERSION 3.21)
+cmake_minimum_required (VERSION 3.26)
 MESSAGE(STATUS "CMAKE_ROOT: " ${CMAKE_ROOT})
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
