@@ -55,7 +55,7 @@ namespace rift::LLVM
 				p::Path filePath =
 				    compiler.config.binariesPath / Strings::Format("{}.{}", moduleName, extension);
 				String outParam = Strings::Format("/out:{}", p::ToString(filePath));
-				Log::Info("Linking '{}' from '{}'", p::ToString(filePath), irModule.objectFile);
+				p::Info("Linking '{}' from '{}'", p::ToString(filePath), irModule.objectFile);
 
 				// Native Bindings
 				p::TArray<p::String> binaryPaths;
@@ -67,7 +67,7 @@ namespace rift::LLVM
 					{
 						binaryPaths.Add(p::JoinPaths(modulePath, nativeBinary));
 						command.Add(binaryPaths.Last().c_str());
-						Log::Info("    and '{}'", binaryPaths.Last().c_str());
+						p::Info("    and '{}'", binaryPaths.Last().c_str());
 					}
 				}
 				command.Add(irModule.objectFile.data());

@@ -18,7 +18,7 @@ namespace rift::Editor
 		const ImGuiID originDockNodeId = layout.GetDockNodeId(originNodeId);
 		if (originDockNodeId == 0)
 		{
-			Log::Error("Error splitting node {}. It doesn't exist.", originNodeId.AsString());
+			p::Error("Error splitting node {}. It doesn't exist.", originNodeId.AsString());
 			return false;
 		}
 

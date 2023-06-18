@@ -154,7 +154,7 @@ namespace rift::AST::LoadSystem
 
 		// Link modules to the project
 		const Id projectId = GetProjectId(access);
-		p::ecs::AddChildren(access, projectId, ids);
+		p::ecs::Attach(access, projectId, ids);
 	}
 
 	void CreateTypesFromPaths(Tree& ast, TSpan<ModuleTypePaths> pathsByModule, TArray<Id>& ids)
@@ -191,7 +191,7 @@ namespace rift::AST::LoadSystem
 				ast.Add(id, CFileRef{Move(path)});
 			}
 
-			p::ecs::AddChildren(ast, modulePaths.moduleId, typeIds);
+			p::ecs::Attach(ast, modulePaths.moduleId, typeIds);
 			ids.Append(typeIds);
 		}
 	}
@@ -206,7 +206,7 @@ namespace rift::AST::LoadSystem
 			{
 				if (!files::LoadStringFile(file->path, strings[i], 4))
 				{
-					Log::Error("File could not be loaded from disk ({})", file->path);
+					p::Error("File could not be loaded from disk ({})", file->path);
 					continue;
 				}
 			}

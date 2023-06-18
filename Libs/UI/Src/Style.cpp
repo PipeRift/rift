@@ -29,7 +29,7 @@ namespace rift::UI
 				    return math::NearlyEqual(font.first, size);
 			    }))
 			{
-				Log::Error(
+				p::Error(
 				    "Tried to register the same font with the same size and mode twice (size: {})",
 				    size);
 				return;
@@ -145,7 +145,7 @@ namespace rift::UI
 		ImFont* font = FindFont(name, mode, size);
 		if (!font && !name.IsNone())
 		{
-			Log::Error("Tried to set inexistent font '{}' as default", name);
+			p::Error("Tried to set inexistent font '{}' as default", name);
 		}
 		ImGui::GetIO().FontDefault = font;
 	}
@@ -155,7 +155,7 @@ namespace rift::UI
 		ImFont* font = FindFont(name, mode, size);
 		if (!font && !name.IsNone())
 		{
-			Log::Error("Tried to push inexistent font '{}' (mode: {}, size: {})", name,
+			p::Error("Tried to push inexistent font '{}' (mode: {}, size: {})", name,
 			    GetEnumName(mode), size);
 		}
 		ImGui::PushFont(font);

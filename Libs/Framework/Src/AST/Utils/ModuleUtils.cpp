@@ -59,20 +59,20 @@ namespace rift::AST
 		String error;
 		if (!ValidateModulePath(validatedPath, error))
 		{
-			Log::Error("Can't open project: {}", error);
+			p::Error("Can't open project: {}", error);
 			return false;
 		}
 
 		if (!files::ExistsAsFolder(validatedPath))
 		{
-			Log::Error("Can't open project: Folder doesn't exist");
+			p::Error("Can't open project: Folder doesn't exist");
 			return false;
 		}
 
 		const p::String filePath = p::JoinPaths(validatedPath, moduleFilename);
 		if (!files::ExistsAsFile(filePath))
 		{
-			Log::Error("Can't open project: Folder doesn't contain a '{}' file", moduleFilename);
+			p::Error("Can't open project: Folder doesn't contain a '{}' file", moduleFilename);
 			return false;
 		}
 
@@ -108,7 +108,7 @@ namespace rift::AST
 		String error;
 		if (!ValidateModulePath(validatedPath, error))
 		{
-			Log::Error("Can't create module: {}", error);
+			p::Error("Can't create module: {}", error);
 			return NoId;
 		}
 
@@ -120,7 +120,7 @@ namespace rift::AST
 		const p::String filePath = p::JoinPaths(validatedPath, moduleFilename);
 		if (files::ExistsAsFile(filePath))
 		{
-			Log::Error("Can't create module: Folder already contains a '{}' file", moduleFilename);
+			p::Error("Can't create module: Folder already contains a '{}' file", moduleFilename);
 			return NoId;
 		}
 

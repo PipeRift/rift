@@ -56,7 +56,7 @@ namespace rift
 			auto& irModule      = compiler.ast.Get<CIRModule>(moduleId);
 			irModule.objectFile = Strings::Format(
 			    "{}/{}.o", intermediatesPath, AST::GetModuleName(compiler.ast, moduleId));
-			Log::Info("Creating object '{}'", irModule.objectFile);
+			p::Info("Creating object '{}'", irModule.objectFile);
 
 			irModule.instance->setTargetTriple(ToLLVM(targetTriple));
 			irModule.instance->setDataLayout(targetMachine->createDataLayout());
@@ -124,12 +124,12 @@ namespace rift
 		llvm::LLVMContext llvm;
 		llvm::IRBuilder<> builder(llvm);
 
-		Log::Info("Generating LLVM IR");
+		p::Info("Generating LLVM IR");
 		LLVM::GenerateIR(compiler, llvm, builder);
 		if (compiler.HasErrors())
 			return;    // TODO: Report errors here
 
-		Log::Info("Build IR");
+		p::Info("Build IR");
 		LLVM::CompileIR(compiler, llvm, builder);
 		if (compiler.HasErrors())
 			return;    // TODO: Report errors here
@@ -140,11 +140,11 @@ namespace rift
 
 		if (!compiler.HasErrors())
 		{
-			Log::Info("Build complete.");
+			p::Info("Build complete.");
 		}
 		else
 		{
-			Log::Info("Build failed: {} errors", compiler.GetErrors().Size());
+			p::Info("Build failed: {} errors", compiler.GetErrors().Size());
 		}
 	}
 }    // namespace rift

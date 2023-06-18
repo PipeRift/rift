@@ -48,7 +48,9 @@ namespace rift::AST
 
 		Namespace() = default;
 		template<p::i32 M>
-		Namespace(p::Tag scopes[M]) requires(M <= scopeCount) : scopes{scopes}
+		Namespace(p::Tag scopes[M])
+		    requires(M <= scopeCount)
+		    : scopes{scopes}
 		{}
 		Namespace(p::StringView value);
 		// Prevent initializer list from stealing string constructor

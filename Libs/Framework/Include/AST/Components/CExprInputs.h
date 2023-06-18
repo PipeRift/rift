@@ -3,7 +3,7 @@
 
 #include "AST/Id.h"
 
-#include <Pipe/ECS/Id.h>
+#include <Pipe/PipeECS.h>
 #include <Pipe/Reflect/Struct.h>
 
 

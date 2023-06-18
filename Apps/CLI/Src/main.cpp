@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 
 	if (!AST::HasProject(ast))
 	{
-		Log::Error("Couldn't open project '{}'", p::ToString(path));
+		p::Error("Couldn't open project '{}'", p::ToString(path));
 		return 1;
 	}
 

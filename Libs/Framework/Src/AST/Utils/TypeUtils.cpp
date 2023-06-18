@@ -95,7 +95,7 @@ namespace rift::AST
 				}
 			}
 		}
-		p::ecs::RemoveDeep(access, typeIds);
+		p::ecs::Remove(access, typeIds, true);
 	}
 
 	void SerializeType(Tree& ast, Id id, String& data)
@@ -204,7 +204,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type, id);
+			p::ecs::Attach(ast, type, id);
 		}
 		return id;
 	}
@@ -220,7 +220,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type, id);
+			p::ecs::Attach(ast, type, id);
 		}
 		return id;
 	}
@@ -237,7 +237,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type.GetId(), id);
+			p::ecs::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -248,7 +248,7 @@ namespace rift::AST
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
-		p::ecs::AddChildren(ast, functionId, id);
+		p::ecs::Attach(ast, functionId, id);
 		ast.GetOrAdd<CExprOutputs>(functionId).Add(id);
 		return id;
 	}
@@ -259,7 +259,7 @@ namespace rift::AST
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
-		p::ecs::AddChildren(ast, functionId, id);
+		p::ecs::Attach(ast, functionId, id);
 		ast.GetOrAdd<CExprInputs>(functionId).Add(id);
 		return id;
 	}
@@ -275,17 +275,17 @@ namespace rift::AST
 		const Id valueId = ast.Create();
 		ast.Add<CExprTypeId>(valueId, {.id = ast.GetNativeTypes().boolId});
 		ast.Add<CExprType>(id).type = GetNamespace(ast, ast.GetNativeTypes().boolId);
-		p::ecs::AddChildren(ast, id, valueId);
+		p::ecs::Attach(ast, id, valueId);
 		ast.Add<CExprInputs>(id).Add(valueId);
 
 		TArray<Id> outIds(2);
 		ast.Create(outIds);
-		p::ecs::AddChildren(ast, id, outIds);
+		p::ecs::Attach(ast, id, outIds);
 		ast.Add<CStmtOutputs>(id, Move(outIds));
 
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type.GetId(), id);
+			p::ecs::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -298,7 +298,7 @@ namespace rift::AST
 		ast.Add<CStmtInput>(returnId);
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type.GetId(), returnId);
+			p::ecs::Attach(ast, type.GetId(), returnId);
 		}
 		return returnId;
 	}
@@ -383,7 +383,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type.GetId(), id);
+			p::ecs::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -406,7 +406,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type.GetId(), id);
+			p::ecs::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -420,7 +420,7 @@ namespace rift::AST
 		ast.Add<CExprOutputs>(id).Add(id);
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type.GetId(), id);
+			p::ecs::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -435,10 +435,10 @@ namespace rift::AST
 		auto& inputs = ast.Add<CExprInputs>(id);
 		inputs.Resize(2);
 		ast.Create(inputs.pinIds);
-		p::ecs::AddChildren(ast, id, inputs.pinIds);
+		p::ecs::Attach(ast, id, inputs.pinIds);
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type.GetId(), id);
+			p::ecs::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -464,7 +464,7 @@ namespace rift::AST
 	void RemoveNodes(const RemoveAccess& access, TSpan<Id> ids)
 	{
 		ScopedChange(access, ids);
-		p::ecs::RemoveDeep(access, ids);
+		p::ecs::Remove(access, ids, true);
 	}
 
 	bool CopyExpressionType(TAccessRef<TWrite<CExprTypeId>> access, Id sourcePinId, Id targetPinId)

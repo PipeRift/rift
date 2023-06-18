@@ -7,7 +7,6 @@
 #include <Pipe/Core/Tag.h>
 
 
-
 struct GLFWwindow;
 
 

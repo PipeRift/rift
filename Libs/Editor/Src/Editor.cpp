@@ -49,22 +49,22 @@ namespace rift::Editor
 		FileWatcher::StartAsync();
 
 		// Setup window
-		Log::Info("Initializing editor...");
+		p::Info("Initializing editor...");
 		if (!rift::UI::Init())
 		{
-			Log::Error("Failed to initialize editor");
+			p::Error("Failed to initialize editor");
 			return 1;
 		}
 		Graph::Init();
 		RegisterKeyValueInspections();
-		Log::Info("Editor is ready");
+		p::Info("Editor is ready");
 
 		// Open a project if a path has been provided
 		OpenProject(projectPath, false);
 
 		while (!UI::WantsToClose())
 		{
-			frameTime.Tick();
+			frameTime.PreTick();
 
 			UI::PreFrame();
 			UpdateConfig();

@@ -5,7 +5,7 @@
 #include <Pipe/Core/TypeList.h>
 #include <Pipe/ECS/Components/CChild.h>
 #include <Pipe/ECS/Components/CParent.h>
-#include <Pipe/ECS/Id.h>
+#include <Pipe/PipeECS.h>
 #include <Pipe/Reflect/Builders/NativeTypeBuilder.h>
 #include <Pipe/Serialize/SerializationFwd.h>
 

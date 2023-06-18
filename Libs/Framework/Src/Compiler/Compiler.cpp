@@ -17,7 +17,7 @@ namespace rift
 {
 	void Compiler::AddError(StringView str)
 	{
-		Log::Error(str);
+		p::Error(str);
 		CompileError newError{};
 		newError.text = str;
 		errors.Add(newError);
@@ -40,18 +40,18 @@ namespace rift
 
 			if (!AST::HasProject(ast))
 			{
-				Log::Error("No existing project to build.");
+				p::Error("No existing project to build.");
 				return;
 			}
 			compiler.config.Init(ast);
 
 			if (auto* nativeBindings = GetModule<NativeBindingModule>().Get())
 			{
-				Log::Info("Interpret native modules");
+				p::Info("Interpret native modules");
 				nativeBindings->SyncIncludes(ast);
 			}
 
-			Log::Info("Loading files");
+			p::Info("Loading files");
 			AST::LoadSystem::Run(ast);
 
 			OptimizationSystem::PruneDisconnectedExpressions(ast);
@@ -59,9 +59,9 @@ namespace rift
 			AST::TypeSystem::PropagateExpressionTypes(ast);
 		}
 
-		Log::Info("Building project '{}'", AST::GetProjectName(compiler.ast));
+		p::Info("Building project '{}'", AST::GetProjectName(compiler.ast));
 		// Clean build folders
-		Log::Info("Cleaning previous build");
+		p::Info("Cleaning previous build");
 		files::Delete(compiler.config.binariesPath, true, false);
 		files::CreateFolder(compiler.config.binariesPath, true);
 

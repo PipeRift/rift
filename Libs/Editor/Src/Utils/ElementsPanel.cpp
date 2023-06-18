@@ -281,7 +281,7 @@ namespace rift::Editor
 			// If pin has not been marked for removal, destroy the entity
 			if (!removedPin)
 			{
-				p::ecs::RemoveDeep(ast, editor.pendingDeletePropertyId);
+				p::ecs::Remove(ast, editor.pendingDeletePropertyId, true);
 				editor.pendingDeletePropertyId = AST::NoId;
 			}
 		}

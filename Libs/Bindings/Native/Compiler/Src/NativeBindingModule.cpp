@@ -90,7 +90,7 @@ namespace rift
 				{
 					module.headers.RemoveAt(i, false);
 					--i;
-					Log::Error("Unable to parse module header '{}'", include);
+					p::Error("Unable to parse module header '{}'", include);
 					continue;
 				}
 				module.units.Add(unit);

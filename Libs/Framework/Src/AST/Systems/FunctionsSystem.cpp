@@ -170,7 +170,7 @@ namespace rift::AST::FunctionsSystem
 				{
 					Id id = ast.Create();
 					access.Add<CNamespace>(id, *name);
-					p::ecs::AddChildren(ast, call.id, id);
+					p::ecs::Attach(ast, call.id, id);
 					callOutputs.Add(id);
 				}
 				else
@@ -189,7 +189,7 @@ namespace rift::AST::FunctionsSystem
 					{
 						Id id = ast.Create();
 						access.Add<CNamespace>(id, *name);
-						p::ecs::AddChildren(ast, call.id, id);
+						p::ecs::Attach(ast, call.id, id);
 						callOutputs.Insert(i, id);
 					}
 					else if (callPinIdx > i)
@@ -241,7 +241,7 @@ namespace rift::AST::FunctionsSystem
 				{
 					Id id = ast.Create();
 					access.Add<CNamespace>(id, *name);
-					p::ecs::AddChildren(ast, call.id, id);
+					p::ecs::Attach(ast, call.id, id);
 					callInputs.Add(id);
 				}
 				else
@@ -260,7 +260,7 @@ namespace rift::AST::FunctionsSystem
 					{
 						Id id = ast.Create();
 						access.Add<CNamespace>(id, *name);
-						p::ecs::AddChildren(ast, call.id, id);
+						p::ecs::Attach(ast, call.id, id);
 						callInputs.Insert(i, id);
 					}
 					else if (callPinIdx > i)
