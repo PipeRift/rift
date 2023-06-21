@@ -18,9 +18,9 @@
 #include "AST/Tree.h"
 #include "AST/TypeRef.h"
 
-#include <Pipe/ECS/Access.h>
 #include <Pipe/ECS/Components/CChild.h>
 #include <Pipe/ECS/Components/CParent.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::AST

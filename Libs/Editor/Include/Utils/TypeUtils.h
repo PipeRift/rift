@@ -8,7 +8,7 @@
 #include <AST/Components/CExprBinaryOperator.h>
 #include <AST/Components/CExprUnaryOperator.h>
 #include <AST/Utils/TypeUtils.h>
-#include <Pipe/ECS/Access.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::Editor

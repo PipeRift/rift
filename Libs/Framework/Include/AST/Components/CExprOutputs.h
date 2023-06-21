@@ -24,7 +24,7 @@ namespace rift::AST
 
 		bool IsNone() const
 		{
-			return p::ecs::IsNone(nodeId) || p::ecs::IsNone(pinId);
+			return p::IsNone(nodeId) || p::IsNone(pinId);
 		}
 	};
 

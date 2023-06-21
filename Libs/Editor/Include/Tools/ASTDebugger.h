@@ -10,11 +10,12 @@
 #include <Pipe/Core/StringView.h>
 #include <Pipe/ECS/Components/CChild.h>
 #include <Pipe/ECS/Components/CParent.h>
-#include <Pipe/ECS/Filtering.h>
 #include <Pipe/Math/Vector.h>
 #include <Pipe/Memory/BigBestFitArena.h>
 #include <Pipe/Memory/Block.h>
+#include <Pipe/PipeECS.h>
 #include <UI/UI.h>
+
 
 
 namespace rift::Editor

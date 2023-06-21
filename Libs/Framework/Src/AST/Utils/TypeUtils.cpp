@@ -32,9 +32,9 @@
 
 #include <Pipe/Core/Checks.h>
 #include <Pipe/Core/Profiler.h>
-#include <Pipe/ECS/Serialization.h>
 #include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Files/Files.h>
+#include <Pipe/PipeECS.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
 
@@ -108,7 +108,7 @@ namespace rift::AST
 		}
 
 		JsonFormatWriter writer{};
-		p::ecs::EntityWriter w{writer.GetWriter(), ast};
+		p::EntityWriter w{writer.GetWriter(), ast};
 		w.BeginObject();
 
 		w.Next("type", ast.Get<CDeclType>(id).typeId);
@@ -127,7 +127,7 @@ namespace rift::AST
 			return;
 		}
 
-		p::ecs::EntityReader r{reader, ast};
+		p::EntityReader r{reader, ast};
 		r.BeginObject();
 
 		p::Tag typeId;

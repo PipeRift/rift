@@ -104,13 +104,13 @@ namespace rift
 			    targetTriple, "generic", "", options, llvm::Optional<llvm::Reloc::Model>());
 
 			// Emit LLVM IR to console
-			for (AST::Id moduleId : ecs::ListAll<CIRModule>(compiler.ast))
+			for (AST::Id moduleId : FindAllIdsWith<CIRModule>(compiler.ast))
 			{
 				const auto& irModule = compiler.ast.Get<const CIRModule>(moduleId).instance;
 				irModule->print(llvm::outs(), nullptr);
 			}
 
-			for (AST::Id moduleId : ecs::ListAll<CIRModule>(compiler.ast))
+			for (AST::Id moduleId : FindAllIdsWith<CIRModule>(compiler.ast))
 			{
 				LLVM::SaveModuleObject(compiler, moduleId, targetMachine, targetTriple);
 			}

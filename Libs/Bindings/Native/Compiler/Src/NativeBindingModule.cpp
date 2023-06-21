@@ -15,8 +15,8 @@
 #include <AST/Utils/TypeUtils.h>
 #include <clang-c/Index.h>
 #include <Pipe/Core/Span.h>
-#include <Pipe/ECS/Filtering.h>
 #include <Pipe/Memory/NewDelete.h>
+#include <Pipe/PipeECS.h>
 
 
 // P_OVERRIDE_NEW_DELETE
@@ -101,7 +101,7 @@ namespace rift
 	void NativeBindingModule::SyncIncludes(AST::Tree& ast)
 	{
 		TArray<AST::Id> moduleIds;
-		p::ecs::ListAll<AST::CModule, CNativeBinding>(ast, moduleIds);
+		p::FindAllIdsWith<AST::CModule, CNativeBinding>(ast, moduleIds);
 
 		// Only use automatic native bindings on modules marked as such
 		moduleIds.RemoveIfSwap([ast](auto id) {

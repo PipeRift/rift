@@ -6,9 +6,9 @@
 #include "AST/Id.h"
 #include "Pipe/Core/StringView.h"
 
-#include <Pipe/ECS/Filtering.h>
 #include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Math/Math.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::AST
@@ -54,8 +54,8 @@ namespace rift::AST
 		TArray<Id> localRoots;
 		if (!rootIds)
 		{
-			localRoots = ecs::ListAll<CNamespace>(access);
-			ecs::ExcludeIf<CChild>(access, localRoots);
+			localRoots = FindAllIdsWith<CNamespace>(access);
+			ExcludeIdsWith<CChild>(access, localRoots);
 			rootIds = &localRoots;
 		}
 

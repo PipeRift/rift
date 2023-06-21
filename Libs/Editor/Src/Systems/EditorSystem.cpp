@@ -27,9 +27,9 @@
 #include <IconsFontAwesome5.h>
 #include <LLVMBackendModule.h>
 #include <Pipe/Core/Array.h>
-#include <Pipe/ECS/Filtering.h>
 #include <Pipe/Files/FileDialog.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/PipeECS.h>
 #include <Rift.h>
 #include <UI/Inspection.h>
 #include <UI/Notify.h>
@@ -282,7 +282,7 @@ namespace rift::Editor::EditorSystem
 					TArray<TPair<Path, String>> fileDatas;
 
 					auto dirtyTypeIds =
-					    ecs::ListAll<AST::CDeclType, CTypeEditor, AST::CFileRef, AST::CFileDirty>(
+					    FindAllIdsWith<AST::CDeclType, CTypeEditor, AST::CFileRef, AST::CFileDirty>(
 					        ast);
 					for (AST::Id typeId : dirtyTypeIds)
 					{
@@ -292,7 +292,7 @@ namespace rift::Editor::EditorSystem
 					}
 
 					auto dirtyModuleIds =
-					    ecs::ListAll<AST::CModule, CModuleEditor, AST::CFileRef, AST::CFileDirty>(
+					    FindAllIdsWith<AST::CModule, CModuleEditor, AST::CFileRef, AST::CFileDirty>(
 					        ast);
 					for (AST::Id moduleId : dirtyModuleIds)
 					{
@@ -375,7 +375,7 @@ namespace rift::Editor::EditorSystem
 				{
 					editorData.layout.Reset();
 
-					for (AST::Id typeId : ecs::ListAll<CTypeEditor>(ast))
+					for (AST::Id typeId : FindAllIdsWith<CTypeEditor>(ast))
 					{
 						auto& editor = ast.Get<CTypeEditor>(typeId);
 						editor.layout.Reset();
@@ -412,7 +412,7 @@ namespace rift::Editor::EditorSystem
 		TAccess<TWrite<CModuleEditor>, TWrite<AST::CNamespace>, TWrite<AST::CModule>, AST::CFileRef>
 		    moduleEditors{ast};
 		for (AST::Id moduleId :
-		    ecs::ListAll<AST::CModule, CModuleEditor, AST::CFileRef>(moduleEditors))
+		    FindAllIdsWith<AST::CModule, CModuleEditor, AST::CFileRef>(moduleEditors))
 		{
 			ZoneScopedN("Draw Type");
 
@@ -530,7 +530,7 @@ namespace rift::Editor::EditorSystem
 		ZoneScoped;
 
 		TAccess<TWrite<CTypeEditor>, AST::CDeclType, AST::CFileRef> access{ast};
-		for (AST::Id typeId : ecs::ListAll<AST::CDeclType, CTypeEditor, AST::CFileRef>(access))
+		for (AST::Id typeId : FindAllIdsWith<AST::CDeclType, CTypeEditor, AST::CFileRef>(access))
 		{
 			ZoneScopedN("Draw Type");
 

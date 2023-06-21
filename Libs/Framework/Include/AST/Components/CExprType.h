@@ -32,11 +32,11 @@ namespace rift::AST
 		TypeMode mode = TypeMode::Value;
 	};
 
-	static void Read(Reader& ct, CExprType& val)
+	static void Read(p::Reader& ct, CExprType& val)
 	{
 		ct.Serialize(val.type);
 	}
-	static void Write(Writer& ct, const CExprType& val)
+	static void Write(p::Writer& ct, const CExprType& val)
 	{
 		ct.Serialize(val.type);
 	}

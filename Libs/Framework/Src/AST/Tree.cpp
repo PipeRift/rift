@@ -8,7 +8,7 @@
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
 
-#include <Pipe/ECS/Filtering.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::AST
@@ -22,23 +22,23 @@ namespace rift::AST
 		onInit(*this);
 	}
 
-	Tree::Tree(const Tree& other) noexcept : ecs::Context(other)
+	Tree::Tree(const Tree& other) noexcept : EntityContext(other)
 	{
 		CopyFrom(other);
 	}
-	Tree::Tree(Tree&& other) noexcept : ecs::Context(Move(other))
+	Tree::Tree(Tree&& other) noexcept : EntityContext(Move(other))
 	{
 		MoveFrom(Move(other));
 	}
 	Tree& Tree::operator=(const Tree& other) noexcept
 	{
-		ecs::Context::operator=(other);
+		EntityContext::operator=(other);
 		CopyFrom(other);
 		return *this;
 	}
 	Tree& Tree::operator=(Tree&& other) noexcept
 	{
-		ecs::Context::operator=(Move(other));
+		EntityContext::operator=(Move(other));
 		MoveFrom(Move(other));
 		return *this;
 	}
@@ -51,7 +51,7 @@ namespace rift::AST
 	void Tree::SetupNativeTypes()
 	{
 		// Remove any previous native types
-		Destroy(ListAll<CDeclNative>(*this));
+		Destroy(FindAllIdsWith<CDeclNative>(*this));
 
 		nativeTypes.boolId = Create();
 		Add<CDeclType, CDeclNative>(nativeTypes.boolId);

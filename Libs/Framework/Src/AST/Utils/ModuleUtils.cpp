@@ -10,18 +10,18 @@
 #include "AST/Systems/TypeSystem.h"
 #include "AST/Utils/Paths.h"
 
-#include <Pipe/ECS/Filtering.h>
-#include <Pipe/ECS/Serialization.h>
+#include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/PipeECS.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
 
 namespace rift::AST
 {
 	static p::TArray<ModuleBinding> moduleBindings;
-	TBroadcast<ecs::EntityReader&> onReadModulePools;
-	TBroadcast<ecs::EntityWriter&> onWriteModulePools;
+	TBroadcast<EntityReader&> onReadModulePools;
+	TBroadcast<EntityWriter&> onWriteModulePools;
 
 
 	bool ValidateModulePath(p::String& path, p::String& error)
@@ -137,7 +137,7 @@ namespace rift::AST
 
 	Id GetProjectId(TAccessRef<CProject> access)
 	{
-		return ecs::GetFirst<CProject>(access);
+		return GetFirstId<CProject>(access);
 	}
 
 	Tag GetProjectName(TAccessRef<CProject, CNamespace, CFileRef> access)
@@ -202,7 +202,7 @@ namespace rift::AST
 	{
 		ZoneScoped;
 		JsonFormatWriter writer{};
-		p::ecs::EntityWriter w{writer.GetWriter(), ast};
+		p::EntityWriter w{writer.GetWriter(), ast};
 		w.BeginObject();
 		w.SerializeSingleEntity(id, onWriteModulePools);
 
@@ -215,16 +215,16 @@ namespace rift::AST
 		JsonFormatReader formatReader{data};
 		if (formatReader.IsValid())
 		{
-			p::ecs::EntityReader r{formatReader, ast};
+			p::EntityReader r{formatReader, ast};
 			r.BeginObject();
 			r.SerializeSingleEntity(id, onReadModulePools);
 		}
 	}
-	const TBroadcast<ecs::EntityReader&>& OnReadModulePools()
+	const TBroadcast<EntityReader&>& OnReadModulePools()
 	{
 		return onReadModulePools;
 	}
-	const TBroadcast<ecs::EntityWriter&>& OnWriteModulePools()
+	const TBroadcast<EntityWriter&>& OnWriteModulePools()
 	{
 		return onWriteModulePools;
 	}

@@ -18,8 +18,8 @@
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
 #include <Pipe/Core/EnumFlags.h>
-#include <Pipe/ECS/Filtering.h>
 #include <Pipe/ECS/Utils/Hierarchy.h>
+#include <Pipe/PipeECS.h>
 #include <UI/UI.h>
 
 
@@ -180,7 +180,7 @@ namespace rift::Editor
 			UI::Indent(10.f);
 			TArray<AST::Id> variableIds;
 			p::ecs::GetChildren(access, typeId, variableIds);
-			ecs::ExcludeIfNot<AST::CDeclVariable>(access, variableIds);
+			ExcludeIdsWithout<AST::CDeclVariable>(access, variableIds);
 
 			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
 			bool showTable = UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit);
@@ -225,7 +225,7 @@ namespace rift::Editor
 
 			TArray<AST::Id> functionIds;
 			p::ecs::GetChildren(ast, typeId, functionIds);
-			ecs::ExcludeIfNot<AST::CDeclFunction>(ast, functionIds);
+			ExcludeIdsWithout<AST::CDeclFunction>(ast, functionIds);
 			for (AST::Id functionId : functionIds)
 			{
 				DrawFunction(ast, editor, typeId, functionId);

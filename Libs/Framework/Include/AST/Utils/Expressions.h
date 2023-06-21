@@ -9,7 +9,7 @@
 #include "AST/Tree.h"
 
 #include <Pipe/Core/Span.h>
-#include <Pipe/ECS/Filtering.h>
+#include <Pipe/PipeECS.h>
 
 
 // NOTE: In expression graphs, the Link Id is the Input Pin Id

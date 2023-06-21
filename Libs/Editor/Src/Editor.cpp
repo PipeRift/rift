@@ -26,7 +26,7 @@ namespace rift::Editor
 	void RegisterKeyValueInspections()
 	{
 		UI::RegisterCustomInspection<AST::Id>([](StringView label, void* data, Type* type) {
-			UI::DrawKeyValue(label, data, GetType<ecs::IdTraits<AST::Id>::Entity>());
+			UI::DrawKeyValue(label, data, GetType<IdTraits<AST::Id>::Entity>());
 		});
 
 		UI::RegisterCustomInspection<AST::Namespace>([](StringView label, void* data, Type* type) {

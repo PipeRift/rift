@@ -8,7 +8,7 @@
 #include "AST/Utils/Statements.h"
 
 #include <Pipe/Core/Span.h>
-#include <Pipe/ECS/Filtering.h>
+#include <Pipe/PipeECS.h>
 
 
 // NOTE: In statement graphs, the Link Id is the Input Node Id

@@ -11,7 +11,7 @@
 
 #include <Pipe/Core/Array.h>
 #include <Pipe/Core/Span.h>
-#include <Pipe/ECS/Access.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::AST
@@ -29,13 +29,13 @@ namespace rift::AST::FunctionsSystem
 	    p::TAccessRef<p::TWrite<CExprCallId>, CExprCall, CDeclFunction, CNamespace, CParent, CChild>
 	        access);
 	void PushInvalidPinsBack(
-	    TAccessRef<TWrite<CExprInputs>, TWrite<CExprOutputs>, CInvalid> access);
+	    p::TAccessRef<p::TWrite<CExprInputs>, p::TWrite<CExprOutputs>, CInvalid> access);
 
 	// Marks calls referencing dirty functions as dirty theirselfs
 	void PropagateDirtyIntoCalls(Tree& ast);
 	void SyncCallPinsFromFunction(Tree& ast);
 	using InvalidDisconnectedPinAccess = p::TAccessRef<CInvalid, CExprInputs,
-	    TWrite<CTmpInvalidKeep>, TWrite<CChild>, TWrite<CParent>>;
+	    p::TWrite<CTmpInvalidKeep>, p::TWrite<CChild>, p::TWrite<CParent>>;
 	void RemoveInvalidDisconnectedArgs(InvalidDisconnectedPinAccess access);
 	void ClearAddedTags(Tree& ast);
 }    // namespace rift::AST::FunctionsSystem

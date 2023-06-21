@@ -55,11 +55,11 @@ namespace rift::Editor
 			filter.Draw("##Filter");
 
 			auto nativeIds =
-			    p::ecs::ListAll<AST::CDeclType, AST::CDeclNative, AST::CNamespace>(access);
+			    p::FindAllIdsWith<AST::CDeclType, AST::CDeclNative, AST::CNamespace>(access);
 			auto structIds =
-			    p::ecs::ListAll<AST::CDeclType, AST::CDeclStruct, AST::CNamespace>(access);
+			    p::FindAllIdsWith<AST::CDeclType, AST::CDeclStruct, AST::CNamespace>(access);
 			auto classIds =
-			    p::ecs::ListAll<AST::CDeclType, AST::CDeclClass, AST::CNamespace>(access);
+			    p::FindAllIdsWith<AST::CDeclType, AST::CDeclClass, AST::CNamespace>(access);
 			if (filter.IsActive())
 			{
 				if (UI::TreeNodeEx("Native##Filtered", ImGuiTreeNodeFlags_DefaultOpen))

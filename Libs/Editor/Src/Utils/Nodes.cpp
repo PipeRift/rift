@@ -392,7 +392,7 @@ namespace rift::Nodes
 	void DrawListAddNode(AST::Id nodeId)
 	{
 		gNodes->NodeIdxToSubmissionIdx.SetInt(
-		    static_cast<ImGuiID>(ecs::GetIndex(nodeId)), gNodes->nodeSubmissionOrder.Size);
+		    static_cast<ImGuiID>(GetIdIndex(nodeId)), gNodes->nodeSubmissionOrder.Size);
 		gNodes->nodeSubmissionOrder.push_back(nodeId);
 		ImDrawListGrowChannels(gNodes->CanvasDrawList, 2);
 	}
@@ -432,7 +432,7 @@ namespace rift::Nodes
 	void DrawListActivateNodeBackground(AST::Id nodeId)
 	{
 		const i32 submissionIdx =
-		    gNodes->NodeIdxToSubmissionIdx.GetInt(static_cast<ImGuiID>(ecs::GetIndex(nodeId)), -1);
+		    gNodes->NodeIdxToSubmissionIdx.GetInt(static_cast<ImGuiID>(GetIdIndex(nodeId)), -1);
 		// There is a discrepancy in the submitted node count and the rendered node count! Did
 		// you call one of the following functions
 		// * MoveToNode
@@ -2112,7 +2112,7 @@ namespace rift::Nodes
 		DrawListAddNode(nodeId);
 		DrawListActivateCurrentNodeForeground();
 
-		ImGui::PushID(ecs::GetIndex(nodeId));
+		ImGui::PushID(GetIdIndex(nodeId));
 		ImGui::BeginGroup();
 	}
 

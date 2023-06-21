@@ -6,17 +6,17 @@
 #include "AST/Id.h"
 
 #include <Pipe/Core/GenericEnums.h>
-#include <Pipe/ECS/Access.h>
 #include <Pipe/ECS/Components/CChild.h>
 #include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Math/Math.h>
+#include <Pipe/PipeECS.h>
 #include <Pipe/Reflect/EnumType.h>
 
 
 namespace rift::AST
 {
-	Namespace GetNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id);
-	Namespace GetParentNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id);
+	Namespace GetNamespace(p::TAccessRef<CNamespace, CChild, CModule> access, Id id);
+	Namespace GetParentNamespace(p::TAccessRef<CNamespace, CChild, CModule> access, Id id);
 
 	/**
 	 * Find an id from a given namespace
@@ -25,13 +25,13 @@ namespace rift::AST
 	 * @param rootIds entity ids. If nullptr, roots are resolved from ecs context.
 	 * @return Id found or NoId
 	 */
-	Id FindIdFromNamespace(TAccessRef<CNamespace, CChild, CParent> access, const Namespace& ns,
-	    const TArray<Id>* rootIds = nullptr);
+	Id FindIdFromNamespace(p::TAccessRef<CNamespace, CChild, CParent> access, const Namespace& ns,
+	    const p::TArray<Id>* rootIds = nullptr);
 
-	Tag GetName(TAccessRef<CNamespace> access, Id id);
-	Tag GetNameUnsafe(TAccessRef<CNamespace> access, Id id);
+	p::Tag GetName(p::TAccessRef<CNamespace> access, Id id);
+	p::Tag GetNameUnsafe(p::TAccessRef<CNamespace> access, Id id);
 	p::String GetFullName(
-	    TAccessRef<CNamespace, CChild, CModule> access, Id id, bool localNamespace = false);
+	    p::TAccessRef<CNamespace, CChild, CModule> access, Id id, bool localNamespace = false);
 }    // namespace rift::AST
 
 

@@ -10,7 +10,7 @@
 #include <AST/Tree.h>
 #include <Pipe/Core/Array.h>
 #include <Pipe/Core/String.h>
-#include <Pipe/ECS/Filtering.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::Editor

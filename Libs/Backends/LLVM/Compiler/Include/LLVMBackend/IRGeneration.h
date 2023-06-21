@@ -27,7 +27,7 @@
 #include <AST/Components/Tags/CInvalid.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
-#include <Pipe/ECS/Filtering.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift

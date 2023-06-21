@@ -4,8 +4,8 @@
 
 #include "AST/Components/CDeclType.h"
 
-#include <Pipe/ECS/Filtering.h>
 #include <Pipe/ECS/Utils/Hierarchy.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::AST::Transactions
@@ -48,7 +48,7 @@ namespace rift::AST::Transactions
 		access.AddN<CChanged>(parentIds);
 
 		// Transaction ids can also be files. FindParents doesn't consider them, so we merge it
-		ecs::ExcludeIfNot<CFileRef>(access, parentIds);
+		ExcludeIdsWithout<CFileRef>(access, parentIds);
 		if (!parentIds.IsEmpty())
 		{
 			access.AddN<CFileDirty>(parentIds);

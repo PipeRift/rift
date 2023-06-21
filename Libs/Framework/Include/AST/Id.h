@@ -13,10 +13,9 @@
 namespace rift::AST
 {
 	using namespace p;
+	using Id          = p::Id;
+	constexpr Id NoId = p::NoId;
 
-	using Id          = ecs::Id;
-	constexpr Id NoId = ecs::NoId;
-
-	using CParent = ecs::CParent;
-	using CChild  = ecs::CChild;
+	using CParent = p::ecs::CParent;
+	using CChild  = p::ecs::CChild;
 }    // namespace rift::AST

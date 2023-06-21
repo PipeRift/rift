@@ -28,7 +28,7 @@ namespace rift::LLVM
 		BindNativeTypes(llvm, access);
 		GenerateLiterals(llvm, access);
 
-		for (AST::Id moduleId : ecs::ListAll<AST::CModule>(access))
+		for (AST::Id moduleId : FindAllIdsWith<AST::CModule>(access))
 		{
 			GenerateIRModule(compiler, access, moduleId, llvm, builder);
 		}
@@ -53,28 +53,28 @@ namespace rift::LLVM
 		// Get all rift types from the module
 		TArray<AST::Id> typeIds;
 		ecs::GetChildren(ast, moduleId, typeIds);
-		ecs::ExcludeIfNot<AST::CDeclType>(ast, typeIds);
+		ExcludeIdsWithout<AST::CDeclType>(ast, typeIds);
 
 		{    // Native declarations
-			TArray<AST::Id> cStructIds = ecs::GetIf<CDeclCStruct>(ast, typeIds);
-			TArray<AST::Id> cStaticIds = ecs::GetIf<CDeclCStatic>(ast, typeIds);
+			TArray<AST::Id> cStructIds = FindIdsWith<CDeclCStruct>(ast, typeIds);
+			TArray<AST::Id> cStaticIds = FindIdsWith<CDeclCStatic>(ast, typeIds);
 			TArray<AST::Id> cFunctionIds;
 			p::ecs::GetChildren(ast, cStaticIds, cFunctionIds);
-			ecs::ExcludeIfNot<AST::CDeclFunction>(ast, cFunctionIds);
+			ExcludeIdsWithout<AST::CDeclFunction>(ast, cFunctionIds);
 			DeclareStructs(gen, ast, cStructIds);
 			DeclareFunctions(gen, ast, cFunctionIds, false);
 		}
 
 		{    // Rift declarations & definitions
-			TArray<AST::Id> structIds = ecs::GetIf<AST::CDeclStruct>(ast, typeIds);
-			TArray<AST::Id> staticIds = ecs::GetIf<AST::CDeclStatic>(ast, typeIds);
-			TArray<AST::Id> classIds  = ecs::GetIf<AST::CDeclClass>(ast, typeIds);
+			TArray<AST::Id> structIds = FindIdsWith<AST::CDeclStruct>(ast, typeIds);
+			TArray<AST::Id> staticIds = FindIdsWith<AST::CDeclStatic>(ast, typeIds);
+			TArray<AST::Id> classIds  = FindIdsWith<AST::CDeclClass>(ast, typeIds);
 			TArray<AST::Id> staticFunctionIds;
 			TArray<AST::Id> classFunctionIds;
 			p::ecs::GetChildren(ast, staticIds, staticFunctionIds);
 			p::ecs::GetChildren(ast, classIds, classFunctionIds);
-			ecs::ExcludeIfNot<AST::CDeclFunction>(ast, staticFunctionIds);
-			ecs::ExcludeIfNot<AST::CDeclFunction>(ast, classFunctionIds);
+			ExcludeIdsWithout<AST::CDeclFunction>(ast, staticFunctionIds);
+			ExcludeIdsWithout<AST::CDeclFunction>(ast, classFunctionIds);
 			TArray<AST::Id> functionIds;
 			functionIds.Append(staticFunctionIds);
 			functionIds.Append(classFunctionIds);
@@ -116,20 +116,20 @@ namespace rift::LLVM
 
 	void GenerateLiterals(llvm::LLVMContext& llvm, IRAccess access)
 	{
-		for (AST::Id id : ecs::ListAll<AST::CLiteralBool>(access))
+		for (AST::Id id : FindAllIdsWith<AST::CLiteralBool>(access))
 		{
 			const auto& boolean = access.Get<const AST::CLiteralBool>(id);
 			llvm::Value* value  = llvm::ConstantInt::get(llvm, llvm::APInt(1, boolean.value, true));
 			access.Add(id, CIRValue{value});
 		}
-		for (AST::Id id : ecs::ListAll<AST::CLiteralIntegral>(access))
+		for (AST::Id id : FindAllIdsWith<AST::CLiteralIntegral>(access))
 		{
 			const auto& integral = access.Get<const AST::CLiteralIntegral>(id);
 			llvm::Value* value   = llvm::ConstantInt::get(
-			      llvm, llvm::APInt(integral.GetSize(), integral.value, integral.IsSigned()));
+                llvm, llvm::APInt(integral.GetSize(), integral.value, integral.IsSigned()));
 			access.Add(id, CIRValue{value});
 		}
-		for (AST::Id id : ecs::ListAll<AST::CLiteralFloating>(access))
+		for (AST::Id id : FindAllIdsWith<AST::CLiteralFloating>(access))
 		{
 			const auto& floating = access.Get<const AST::CLiteralFloating>(id);
 			llvm::Value* value =
@@ -138,7 +138,7 @@ namespace rift::LLVM
 			                                                  : floating.value));
 			access.Add(id, CIRValue{value});
 		}
-		for (AST::Id id : ecs::ListAll<AST::CLiteralString>(access))
+		for (AST::Id id : FindAllIdsWith<AST::CLiteralString>(access))
 		{
 			const auto& string = access.Get<const AST::CLiteralString>(id);
 			access.Add(
@@ -169,7 +169,7 @@ namespace rift::LLVM
 			memberIds.Clear(false);
 			memberTypes.Clear(false);
 			p::ecs::GetChildren(access, id, memberIds);
-			ecs::ExcludeIfNot<AST::CDeclVariable>(access, memberIds);
+			ExcludeIdsWithout<AST::CDeclVariable>(access, memberIds);
 			for (AST::Id memberId : memberIds)
 			{
 				const auto& var = access.Get<const AST::CDeclVariable>(memberId);
@@ -395,7 +395,7 @@ namespace rift::LLVM
 
 	void CreateMain(ModuleIRGen& gen, IRAccess access, AST::Id functionId)
 	{
-		if (p::ecs::IsNone(functionId))
+		if (p::IsNone(functionId))
 		{
 			gen.compiler.AddError(
 			    Strings::Format("Module is executable but has no \"Main\" function"));

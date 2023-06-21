@@ -18,6 +18,7 @@
 #include "AST/Utils/TypeUtils.h"
 #include "Pipe/Files/Paths.h"
 
+#include <Pipe/Core/Profiler.h>
 #include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
@@ -87,7 +88,7 @@ namespace rift::AST::LoadSystem
 		TSet<Path> modulePaths;
 
 		TAccess<CModule, CFileRef> access{ast};
-		auto modules = ecs::ListAll<CModule, CFileRef>(access);
+		auto modules = FindAllIdsWith<CModule, CFileRef>(access);
 
 		modulePaths.Reserve(modules.Size());
 		for (Id moduleId : modules)
@@ -126,7 +127,7 @@ namespace rift::AST::LoadSystem
 		    access{ast};
 
 		// Remove existing module paths
-		auto moduleIds = ecs::ListAll<CModule, CFileRef>(access);
+		auto moduleIds = FindAllIdsWith<CModule, CFileRef>(access);
 		paths.RemoveIfSwap([&access, &moduleIds](const p::String& path) {
 			bool moduleExists = false;
 			for (Id id : moduleIds)

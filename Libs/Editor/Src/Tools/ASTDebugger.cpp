@@ -163,9 +163,9 @@ namespace rift::Editor
 						DrawNode(access, root, true);
 					}
 
-					TArray<AST::Id> orphans = p::ecs::ListAll<AST::CNamespace>(access);
-					p::ecs::ExcludeIf<AST::CChild>(access, orphans);
-					p::ecs::ExcludeIf<AST::CParent>(access, orphans);
+					TArray<AST::Id> orphans = p::FindAllIdsWith<AST::CNamespace>(access);
+					p::ExcludeIdsWith<AST::CChild>(access, orphans);
+					p::ExcludeIdsWith<AST::CParent>(access, orphans);
 					for (auto orphan : orphans)
 					{
 						DrawNode(access, orphan, true);
@@ -195,13 +195,13 @@ namespace rift::Editor
 		{
 			idText = "No Id";
 		}
-		else if (auto version = p::ecs::GetVersion(nodeId); version > 0)
+		else if (auto version = p::GetIdVersion(nodeId); version > 0)
 		{
-			Strings::FormatTo(idText, "{} (v{})", p::ecs::GetIndex(nodeId), version);
+			Strings::FormatTo(idText, "{} (v{})", p::GetIdIndex(nodeId), version);
 		}
 		else
 		{
-			Strings::FormatTo(idText, "{}", p::ecs::GetIndex(nodeId));
+			Strings::FormatTo(idText, "{}", p::GetIdIndex(nodeId));
 		}
 
 		static String name;

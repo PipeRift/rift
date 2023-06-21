@@ -11,9 +11,9 @@
 #include <AST/Components/CNamespace.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Pipe/Core/Subprocess.h>
-#include <Pipe/ECS/Filtering.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/PipeECS.h>
 #include <Pipe/Reflect/EnumType.h>
 
 
@@ -24,7 +24,7 @@ namespace rift::LLVM
 		String linkerPath{
 		    p::JoinPaths(PlatformProcess::GetExecutablePath(), RIFT_LLVM_LINKER_PATH)};
 
-		for (AST::Id moduleId : ecs::ListAll<AST::CModule, CIRModule>(compiler.ast))
+		for (AST::Id moduleId : FindAllIdsWith<AST::CModule, CIRModule>(compiler.ast))
 		{
 			p::Tag moduleName  = AST::GetModuleName(compiler.ast, moduleId);
 			const auto& module = compiler.ast.Get<const AST::CModule>(moduleId);

@@ -19,6 +19,7 @@
 #include <imgui_internal.h>
 #include <Pipe/Core/FixedString.h>
 #include <Pipe/Core/PlatformProcess.h>
+#include <Pipe/Core/Profiler.h>
 #include <Pipe/Core/StringView.h>
 #include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Files/FileDialog.h>
@@ -226,7 +227,7 @@ namespace rift::Editor
 		projectModuleId = AST::GetProjectId(access);
 
 		// Create module folders
-		TArray<AST::Id> modules = ecs::ListAll<AST::CModule>(access);
+		TArray<AST::Id> modules = FindAllIdsWith<AST::CModule>(access);
 		TMap<AST::Id, p::StringView> moduleFolders;
 		moduleFolders.Reserve(modules.Size());
 		for (AST::Id moduleId : modules)
@@ -266,7 +267,7 @@ namespace rift::Editor
 		}
 
 		// Create items
-		for (AST::Id typeId : ecs::ListAll<AST::CDeclType, AST::CFileRef>(access))
+		for (AST::Id typeId : FindAllIdsWith<AST::CDeclType, AST::CFileRef>(access))
 		{
 			auto& file = access.Get<const AST::CFileRef>(typeId);
 			if (!file.path.empty())
@@ -400,7 +401,7 @@ namespace rift::Editor
 
 				const StringView parsedNewName = Strings::RemoveFromEnd(renameBuffer, ".rf");
 				const bool nameIsEmpty         = parsedNewName.empty();
-				const ecs::Id sameNameFuncId =
+				const Id sameNameFuncId =
 				    AST::FindChildByName(ast, p::ecs::GetParent(ast, item.id), Tag{parsedNewName});
 				if (nameIsEmpty || (!IsNone(sameNameFuncId) && item.id != sameNameFuncId))
 				{

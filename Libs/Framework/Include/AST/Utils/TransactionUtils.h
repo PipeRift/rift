@@ -6,8 +6,8 @@
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 
-#include <Pipe/ECS/Access.h>
 #include <Pipe/ECS/Components/CChild.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::AST

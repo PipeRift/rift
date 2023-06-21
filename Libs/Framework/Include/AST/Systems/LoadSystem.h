@@ -6,7 +6,7 @@
 
 #include <Pipe/Core/Array.h>
 #include <Pipe/Core/Span.h>
-#include <Pipe/ECS/Filtering.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::AST
@@ -19,7 +19,7 @@ namespace rift::AST::LoadSystem
 	struct ModuleTypePaths
 	{
 		Id moduleId;
-		TArray<p::String> paths;    // p::Paths of module types
+		p::TArray<p::String> paths;    // p::Paths of module types
 	};
 
 	void Init(Tree& ast);

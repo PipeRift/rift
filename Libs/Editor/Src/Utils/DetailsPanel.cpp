@@ -18,9 +18,10 @@
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
 #include <Pipe/Core/EnumFlags.h>
-#include <Pipe/ECS/Filtering.h>
 #include <Pipe/ECS/Utils/Hierarchy.h>
+#include <Pipe/PipeECS.h>
 #include <UI/UI.h>
+
 
 
 namespace rift::Editor
@@ -118,7 +119,7 @@ namespace rift::Editor
 		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
 		if (UI::InputText("##name", functionName, ImGuiInputTextFlags_AutoSelectAll))
 		{
-			ecs::Id sameNameFuncId = AST::FindChildByName(ast, typeId, Tag{functionName});
+			Id sameNameFuncId = AST::FindChildByName(ast, typeId, Tag{functionName});
 			if (!IsNone(sameNameFuncId) && id != sameNameFuncId)
 			{
 				UI::PushTextColor(LinearColor::Red());
