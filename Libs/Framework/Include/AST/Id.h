@@ -3,8 +3,6 @@
 
 #include <Pipe/Core/Platform.h>
 #include <Pipe/Core/TypeList.h>
-#include <Pipe/ECS/Components/CChild.h>
-#include <Pipe/ECS/Components/CParent.h>
 #include <Pipe/PipeECS.h>
 #include <Pipe/Reflect/Builders/NativeTypeBuilder.h>
 #include <Pipe/Serialize/SerializationFwd.h>
@@ -16,6 +14,6 @@ namespace rift::AST
 	using Id          = p::Id;
 	constexpr Id NoId = p::NoId;
 
-	using CParent = p::ecs::CParent;
-	using CChild  = p::ecs::CChild;
+	using CParent = p::CParent;
+	using CChild  = p::CChild;
 }    // namespace rift::AST

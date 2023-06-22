@@ -10,7 +10,6 @@
 #include "AST/Utils/Namespaces.h"
 #include "AST/Utils/TypeUtils.h"
 
-#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/PipeECS.h>
 
 
@@ -170,7 +169,7 @@ namespace rift::AST::FunctionsSystem
 				{
 					Id id = ast.Create();
 					access.Add<CNamespace>(id, *name);
-					p::ecs::Attach(ast, call.id, id);
+					p::Attach(ast, call.id, id);
 					callOutputs.Add(id);
 				}
 				else
@@ -189,7 +188,7 @@ namespace rift::AST::FunctionsSystem
 					{
 						Id id = ast.Create();
 						access.Add<CNamespace>(id, *name);
-						p::ecs::Attach(ast, call.id, id);
+						p::Attach(ast, call.id, id);
 						callOutputs.Insert(i, id);
 					}
 					else if (callPinIdx > i)
@@ -241,7 +240,7 @@ namespace rift::AST::FunctionsSystem
 				{
 					Id id = ast.Create();
 					access.Add<CNamespace>(id, *name);
-					p::ecs::Attach(ast, call.id, id);
+					p::Attach(ast, call.id, id);
 					callInputs.Add(id);
 				}
 				else
@@ -260,7 +259,7 @@ namespace rift::AST::FunctionsSystem
 					{
 						Id id = ast.Create();
 						access.Add<CNamespace>(id, *name);
-						p::ecs::Attach(ast, call.id, id);
+						p::Attach(ast, call.id, id);
 						callInputs.Insert(i, id);
 					}
 					else if (callPinIdx > i)
@@ -330,7 +329,7 @@ namespace rift::AST::FunctionsSystem
 
 		TArray<Id> pinsToRemove = FindAllIdsWith<CInvalid>(access);
 		ExcludeIdsWith<CTmpInvalidKeep>(access, pinsToRemove);
-		p::ecs::Remove(access, pinsToRemove);
+		p::Remove(access, pinsToRemove);
 
 		access.GetPool<CTmpInvalidKeep>()->Clear();
 	}

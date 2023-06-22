@@ -23,7 +23,6 @@
 #include <AST/Utils/TransactionUtils.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <UI/UI.h>
 
 
@@ -196,7 +195,7 @@ namespace rift::Editor::Graph
 			{
 				Tag name = access.Get<const AST::CNamespace>(functionId).name;
 				label.clear();
-				AST::Id funcTypeId = ecs::GetParent(access, functionId);
+				AST::Id funcTypeId = GetParent(access, functionId);
 				if (!IsNone(funcTypeId) && access.Has<AST::CDeclType, AST::CNamespace>(funcTypeId))
 				{
 					Strings::FormatTo(label, "{}   ({})", name,
@@ -223,7 +222,7 @@ namespace rift::Editor::Graph
 			{
 				Tag name = access.Get<const AST::CNamespace>(variableId).name;
 				label.clear();
-				AST::Id typeId = p::ecs::GetParent(access, variableId);
+				AST::Id typeId = p::GetParent(access, variableId);
 				if (!IsNone(typeId) && access.Has<AST::CDeclType, AST::CNamespace>(typeId))
 				{
 					Strings::FormatTo(

@@ -17,7 +17,6 @@
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Verifier.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
 
 
 namespace rift::LLVM
@@ -52,14 +51,14 @@ namespace rift::LLVM
 
 		// Get all rift types from the module
 		TArray<AST::Id> typeIds;
-		ecs::GetChildren(ast, moduleId, typeIds);
+		GetChildren(ast, moduleId, typeIds);
 		ExcludeIdsWithout<AST::CDeclType>(ast, typeIds);
 
 		{    // Native declarations
 			TArray<AST::Id> cStructIds = FindIdsWith<CDeclCStruct>(ast, typeIds);
 			TArray<AST::Id> cStaticIds = FindIdsWith<CDeclCStatic>(ast, typeIds);
 			TArray<AST::Id> cFunctionIds;
-			p::ecs::GetChildren(ast, cStaticIds, cFunctionIds);
+			p::GetChildren(ast, cStaticIds, cFunctionIds);
 			ExcludeIdsWithout<AST::CDeclFunction>(ast, cFunctionIds);
 			DeclareStructs(gen, ast, cStructIds);
 			DeclareFunctions(gen, ast, cFunctionIds, false);
@@ -71,8 +70,8 @@ namespace rift::LLVM
 			TArray<AST::Id> classIds  = FindIdsWith<AST::CDeclClass>(ast, typeIds);
 			TArray<AST::Id> staticFunctionIds;
 			TArray<AST::Id> classFunctionIds;
-			p::ecs::GetChildren(ast, staticIds, staticFunctionIds);
-			p::ecs::GetChildren(ast, classIds, classFunctionIds);
+			p::GetChildren(ast, staticIds, staticFunctionIds);
+			p::GetChildren(ast, classIds, classFunctionIds);
 			ExcludeIdsWithout<AST::CDeclFunction>(ast, staticFunctionIds);
 			ExcludeIdsWithout<AST::CDeclFunction>(ast, classFunctionIds);
 			TArray<AST::Id> functionIds;
@@ -168,7 +167,7 @@ namespace rift::LLVM
 			// Add members
 			memberIds.Clear(false);
 			memberTypes.Clear(false);
-			p::ecs::GetChildren(access, id, memberIds);
+			p::GetChildren(access, id, memberIds);
 			ExcludeIdsWithout<AST::CDeclVariable>(access, memberIds);
 			for (AST::Id memberId : memberIds)
 			{

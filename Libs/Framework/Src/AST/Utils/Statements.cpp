@@ -4,8 +4,6 @@
 
 #include "AST/Id.h"
 
-#include <Pipe/ECS/Utils/Hierarchy.h>
-
 
 namespace rift::AST
 {
@@ -40,7 +38,7 @@ namespace rift::AST
 		}
 		else
 		{
-			outputNode = p::ecs::GetParent(ast, outputPin);
+			outputNode = p::GetParent(ast, outputPin);
 			if (IsNone(outputNode))
 			{
 				return false;
@@ -150,7 +148,7 @@ namespace rift::AST
 	}
 	bool DisconnectStmtFromNext(Tree& ast, AST::Id outputPin)
 	{
-		return DisconnectStmtFromNext(ast, outputPin, p::ecs::GetParent(ast, outputPin));
+		return DisconnectStmtFromNext(ast, outputPin, p::GetParent(ast, outputPin));
 	}
 
 	bool WouldStmtLoop(const Tree& ast, Id outputNode, Id outputPin, Id inputNode)

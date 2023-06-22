@@ -34,7 +34,6 @@
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <GLFW/glfw3.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/PipeECS.h>
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
@@ -700,7 +699,7 @@ namespace rift::Editor::Graph
 			BeginNode(access, id);
 			{
 				pinIds.Clear(false);
-				p::ecs::GetChildren(access, id, pinIds);
+				p::GetChildren(access, id, pinIds);
 				if (!Ensure(pinIds.Size() >= 2))
 				{
 					continue;
@@ -853,7 +852,7 @@ namespace rift::Editor::Graph
 			}
 
 			TArray<AST::Id> children;
-			p::ecs::GetChildren(ast, typeId, children);
+			p::GetChildren(ast, typeId, children);
 
 			// Nodes
 			DrawFunctionDecls(ast, FindIdsWith<AST::CDeclFunction>(ast, children));

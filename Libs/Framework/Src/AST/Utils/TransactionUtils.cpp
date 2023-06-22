@@ -4,7 +4,6 @@
 
 #include "AST/Components/CDeclType.h"
 
-#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/PipeECS.h>
 
 
@@ -42,7 +41,7 @@ namespace rift::AST::Transactions
 
 		// Mark files dirty
 		TArray<Id> parentIds;
-		p::ecs::GetAllParents(access, entityIds, parentIds);
+		p::GetAllParents(access, entityIds, parentIds);
 
 		parentIds.Append(entityIds);
 		access.AddN<CChanged>(parentIds);

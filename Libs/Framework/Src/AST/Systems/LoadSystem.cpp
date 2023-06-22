@@ -19,7 +19,6 @@
 #include "Pipe/Files/Paths.h"
 
 #include <Pipe/Core/Profiler.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
@@ -155,7 +154,7 @@ namespace rift::AST::LoadSystem
 
 		// Link modules to the project
 		const Id projectId = GetProjectId(access);
-		p::ecs::Attach(access, projectId, ids);
+		p::Attach(access, projectId, ids);
 	}
 
 	void CreateTypesFromPaths(Tree& ast, TSpan<ModuleTypePaths> pathsByModule, TArray<Id>& ids)
@@ -192,7 +191,7 @@ namespace rift::AST::LoadSystem
 				ast.Add(id, CFileRef{Move(path)});
 			}
 
-			p::ecs::Attach(ast, modulePaths.moduleId, typeIds);
+			p::Attach(ast, modulePaths.moduleId, typeIds);
 			ids.Append(typeIds);
 		}
 	}

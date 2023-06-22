@@ -21,7 +21,6 @@
 #include <Pipe/Core/PlatformProcess.h>
 #include <Pipe/Core/Profiler.h>
 #include <Pipe/Core/StringView.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Files/FileDialog.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
@@ -402,7 +401,7 @@ namespace rift::Editor
 				const StringView parsedNewName = Strings::RemoveFromEnd(renameBuffer, ".rf");
 				const bool nameIsEmpty         = parsedNewName.empty();
 				const Id sameNameFuncId =
-				    AST::FindChildByName(ast, p::ecs::GetParent(ast, item.id), Tag{parsedNewName});
+				    AST::FindChildByName(ast, p::GetParent(ast, item.id), Tag{parsedNewName});
 				if (nameIsEmpty || (!IsNone(sameNameFuncId) && item.id != sameNameFuncId))
 				{
 					UI::PushTextColor(LinearColor::Red());

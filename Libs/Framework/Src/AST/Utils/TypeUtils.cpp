@@ -32,7 +32,6 @@
 
 #include <Pipe/Core/Checks.h>
 #include <Pipe/Core/Profiler.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/PipeECS.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
@@ -95,7 +94,7 @@ namespace rift::AST
 				}
 			}
 		}
-		p::ecs::Remove(access, typeIds, true);
+		p::Remove(access, typeIds, true);
 	}
 
 	void SerializeType(Tree& ast, Id id, String& data)
@@ -204,7 +203,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::ecs::Attach(ast, type, id);
+			p::Attach(ast, type, id);
 		}
 		return id;
 	}
@@ -220,7 +219,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::ecs::Attach(ast, type, id);
+			p::Attach(ast, type, id);
 		}
 		return id;
 	}
@@ -237,7 +236,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::ecs::Attach(ast, type.GetId(), id);
+			p::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -248,7 +247,7 @@ namespace rift::AST
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
-		p::ecs::Attach(ast, functionId, id);
+		p::Attach(ast, functionId, id);
 		ast.GetOrAdd<CExprOutputs>(functionId).Add(id);
 		return id;
 	}
@@ -259,7 +258,7 @@ namespace rift::AST
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
-		p::ecs::Attach(ast, functionId, id);
+		p::Attach(ast, functionId, id);
 		ast.GetOrAdd<CExprInputs>(functionId).Add(id);
 		return id;
 	}
@@ -275,17 +274,17 @@ namespace rift::AST
 		const Id valueId = ast.Create();
 		ast.Add<CExprTypeId>(valueId, {.id = ast.GetNativeTypes().boolId});
 		ast.Add<CExprType>(id).type = GetNamespace(ast, ast.GetNativeTypes().boolId);
-		p::ecs::Attach(ast, id, valueId);
+		p::Attach(ast, id, valueId);
 		ast.Add<CExprInputs>(id).Add(valueId);
 
 		TArray<Id> outIds(2);
 		ast.Create(outIds);
-		p::ecs::Attach(ast, id, outIds);
+		p::Attach(ast, id, outIds);
 		ast.Add<CStmtOutputs>(id, Move(outIds));
 
 		if (type)
 		{
-			p::ecs::Attach(ast, type.GetId(), id);
+			p::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -298,7 +297,7 @@ namespace rift::AST
 		ast.Add<CStmtInput>(returnId);
 		if (type)
 		{
-			p::ecs::Attach(ast, type.GetId(), returnId);
+			p::Attach(ast, type.GetId(), returnId);
 		}
 		return returnId;
 	}
@@ -383,7 +382,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::ecs::Attach(ast, type.GetId(), id);
+			p::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -396,7 +395,7 @@ namespace rift::AST
 		ast.Add<CExprDeclRef>(id);
 		ast.Add<CExprOutputs>(id).Add(id);    // Types gets resolved by a system later
 
-		const Id typeId = p::ecs::GetParent(ast, declId);
+		const Id typeId = p::GetParent(ast, declId);
 		Check(!IsNone(typeId));
 		auto& declRefExpr           = ast.Add<CExprDeclRef>(id);
 		declRefExpr.ownerName       = ast.Get<CNamespace>(typeId).name;
@@ -406,7 +405,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::ecs::Attach(ast, type.GetId(), id);
+			p::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -420,7 +419,7 @@ namespace rift::AST
 		ast.Add<CExprOutputs>(id).Add(id);
 		if (type)
 		{
-			p::ecs::Attach(ast, type.GetId(), id);
+			p::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -435,10 +434,10 @@ namespace rift::AST
 		auto& inputs = ast.Add<CExprInputs>(id);
 		inputs.Resize(2);
 		ast.Create(inputs.pinIds);
-		p::ecs::Attach(ast, id, inputs.pinIds);
+		p::Attach(ast, id, inputs.pinIds);
 		if (type)
 		{
-			p::ecs::Attach(ast, type.GetId(), id);
+			p::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -448,7 +447,7 @@ namespace rift::AST
 		if (!IsNone(ownerId))
 		{
 			TArray<Id> children;
-			p::ecs::GetChildren(access, ownerId, children);
+			p::GetChildren(access, ownerId, children);
 			for (Id childId : children)
 			{
 				const auto* ns = access.TryGet<const CNamespace>(childId);
@@ -464,7 +463,7 @@ namespace rift::AST
 	void RemoveNodes(const RemoveAccess& access, TSpan<Id> ids)
 	{
 		ScopedChange(access, ids);
-		p::ecs::Remove(access, ids, true);
+		p::Remove(access, ids, true);
 	}
 
 	bool CopyExpressionType(TAccessRef<TWrite<CExprTypeId>> access, Id sourcePinId, Id targetPinId)

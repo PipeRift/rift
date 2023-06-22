@@ -8,7 +8,6 @@
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Paths.h>
 #include <IconsFontAwesome5.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Reflect/TypeRegistry.h>
 #include <UI/Inspection.h>
 #include <UI/UI.h>
@@ -157,7 +156,7 @@ namespace rift::Editor
 				if (showHierarchy && !filter.IsActive())
 				{
 					TArray<AST::Id> roots;
-					p::ecs::GetRoots(access, roots);
+					p::GetRoots(access, roots);
 					for (auto root : roots)
 					{
 						DrawNode(access, root, true);

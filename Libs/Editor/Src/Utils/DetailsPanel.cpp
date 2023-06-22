@@ -18,10 +18,8 @@
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
 #include <Pipe/Core/EnumFlags.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/PipeECS.h>
 #include <UI/UI.h>
-
 
 
 namespace rift::Editor

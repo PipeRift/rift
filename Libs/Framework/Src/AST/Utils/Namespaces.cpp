@@ -6,7 +6,6 @@
 #include "AST/Id.h"
 #include "Pipe/Core/StringView.h"
 
-#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Math/Math.h>
 #include <Pipe/PipeECS.h>
 
@@ -26,7 +25,7 @@ namespace rift::AST
 			{
 				break;
 			}
-			id = p::ecs::GetParent(access, id);
+			id = p::GetParent(access, id);
 		}
 
 		i32 i, scopeIndex = 0;
@@ -43,7 +42,7 @@ namespace rift::AST
 	{
 		if (!IsNone(id))
 		{
-			return GetNamespace(access, p::ecs::GetParent(access, id));
+			return GetNamespace(access, p::GetParent(access, id));
 		}
 		return {};
 	}
@@ -85,7 +84,7 @@ namespace rift::AST
 			if (!IsNone(foundScopeId))
 			{
 				// Found matching name, check next scope
-				scopeIds = p::ecs::GetChildren(access, foundScopeId);
+				scopeIds = p::GetChildren(access, foundScopeId);
 				++depth;
 			}
 			else

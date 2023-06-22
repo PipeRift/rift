@@ -37,7 +37,7 @@ go_bandit([]() {
 			ast.Add<AST::CModule>(parentC);
 			ast.Add(parentC, AST::CNamespace{"SomeScope"});
 			AST::Id classCId = AST::CreateType(ast, FrameworkModule::classType, "TestClass");
-			p::ecs::Attach(ast, parentC, classCId);
+			p::Attach(ast, parentC, classCId);
 			AST::Id functionCId = AST::AddFunction({ast, classCId}, "TestFunction");
 			AssertThat(AST::GetNamespace(ast, functionCId).ToString().c_str(),
 			    Equals("@SomeScope.TestClass.TestFunction"));
@@ -52,7 +52,7 @@ go_bandit([]() {
 			ast.Add<AST::CModule>(parent);
 			ast.Add(parent, AST::CNamespace{"SomeModule"});
 			AST::Id classId = AST::CreateType(ast, FrameworkModule::classType, "TestClass");
-			p::ecs::Attach(ast, parent, classId);
+			p::Attach(ast, parent, classId);
 			AST::Id functionId = AST::AddFunction({ast, classId}, "TestFunction");
 			p::String ns       = AST::GetNamespace(ast, functionId).ToString(true);
 			AssertThat(ns.c_str(), Equals("TestClass.TestFunction"));
@@ -107,10 +107,10 @@ go_bandit([]() {
 			ast.Add(parent, AST::CNamespace{"A"});
 
 			AST::Id classId = AST::CreateType(ast, FrameworkModule::classType, "B");
-			p::ecs::Attach(ast, parent, classId);
+			p::Attach(ast, parent, classId);
 
 			AST::Id class2Id = AST::CreateType(ast, FrameworkModule::classType, "B2");
-			p::ecs::Attach(ast, parent, class2Id);
+			p::Attach(ast, parent, class2Id);
 
 			AST::Id functionId  = AST::AddFunction({ast, classId}, "C");
 			AST::Id function2Id = AST::AddFunction({ast, classId}, "C2");

@@ -6,8 +6,6 @@
 #include "AST/Id.h"
 
 #include <Pipe/Core/GenericEnums.h>
-#include <Pipe/ECS/Components/CChild.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Math/Math.h>
 #include <Pipe/PipeECS.h>
 #include <Pipe/Reflect/EnumType.h>
