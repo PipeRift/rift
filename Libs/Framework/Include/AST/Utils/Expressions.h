@@ -8,7 +8,7 @@
 #include "AST/Id.h"
 #include "AST/Tree.h"
 
-#include <Pipe/Core/Span.h>
+#include <Pipe/Core/View.h>
 #include <Pipe/PipeECS.h>
 
 
@@ -29,7 +29,7 @@ namespace rift::AST
 	 * @param ids
 	 * @param ignoreRoot ignore ids's inputs and outputs and only remove from children
 	 */
-	void DisconnectAllExprDeep(Tree& ast, TSpan<const Id> ids, bool ignoreRoot = false);
+	void DisconnectAllExprDeep(Tree& ast, TView<const Id> ids, bool ignoreRoot = false);
 
 	bool RemoveExprInputPin(TAccessRef<CExprInputs, TWrite<CInvalid>> access, ExprInput id);
 	bool RemoveExprOutputPin(TAccessRef<CExprOutputs, TWrite<CInvalid>> access, ExprOutput id);

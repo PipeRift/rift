@@ -10,7 +10,7 @@
 #include "AST/Tree.h"
 
 #include <Pipe/Core/Array.h>
-#include <Pipe/Core/Span.h>
+#include <Pipe/Core/View.h>
 #include <Pipe/PipeECS.h>
 
 

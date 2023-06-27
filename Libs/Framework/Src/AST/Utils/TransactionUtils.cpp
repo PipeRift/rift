@@ -12,7 +12,7 @@ namespace rift::AST::Transactions
 	// Transaction being recorded
 	static Transaction gActiveTransaction = {};
 
-	ScopedTransaction::ScopedTransaction(const TransactionAccess& access, TSpan<const Id> entityIds)
+	ScopedTransaction::ScopedTransaction(const TransactionAccess& access, TView<const Id> entityIds)
 	{
 		active = PreChange(access, entityIds);
 	}
@@ -29,7 +29,7 @@ namespace rift::AST::Transactions
 		}
 	}
 
-	bool PreChange(const TransactionAccess& access, TSpan<const Id> entityIds)
+	bool PreChange(const TransactionAccess& access, TView<const Id> entityIds)
 	{
 		if (!EnsureMsg(!gActiveTransaction.active,
 		        "Tried to record a transaction while another is already being recorded"))

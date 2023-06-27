@@ -145,7 +145,7 @@ namespace rift::LLVM
 		}
 	}
 
-	void DeclareStructs(ModuleIRGen& gen, IRAccess access, TSpan<AST::Id> ids)
+	void DeclareStructs(ModuleIRGen& gen, IRAccess access, TView<AST::Id> ids)
 	{
 		ZoneScoped;
 		for (AST::Id id : ids)
@@ -155,7 +155,7 @@ namespace rift::LLVM
 		}
 	}
 
-	void DefineStructs(ModuleIRGen& gen, IRAccess access, TSpan<AST::Id> ids)
+	void DefineStructs(ModuleIRGen& gen, IRAccess access, TView<AST::Id> ids)
 	{
 		ZoneScoped;
 		TArray<AST::Id> memberIds;
@@ -188,7 +188,7 @@ namespace rift::LLVM
 		}
 	}
 
-	void DeclareFunctions(ModuleIRGen& gen, IRAccess access, TSpan<AST::Id> ids, bool useFullName)
+	void DeclareFunctions(ModuleIRGen& gen, IRAccess access, TView<AST::Id> ids, bool useFullName)
 	{
 		ZoneScoped;
 		TArray<AST::Id> inputIds;
@@ -254,7 +254,7 @@ namespace rift::LLVM
 		}
 	}
 
-	void DefineFunctions(ModuleIRGen& gen, IRAccess access, TSpan<AST::Id> ids)
+	void DefineFunctions(ModuleIRGen& gen, IRAccess access, TView<AST::Id> ids)
 	{
 		ZoneScoped;
 		for (AST::Id id : ids)
@@ -377,7 +377,7 @@ namespace rift::LLVM
 	}
 
 
-	AST::Id FindMainFunction(IRAccess access, p::TSpan<AST::Id> functionIds)
+	AST::Id FindMainFunction(IRAccess access, p::TView<AST::Id> functionIds)
 	{
 		static const p::Tag mainFunctionName{"Main"};
 

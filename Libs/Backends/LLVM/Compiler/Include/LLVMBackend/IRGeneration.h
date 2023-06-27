@@ -65,11 +65,11 @@ namespace rift::LLVM
 	void BindNativeTypes(llvm::LLVMContext& llvm, IRAccess access);
 	void GenerateLiterals(llvm::LLVMContext& llvm, IRAccess access);
 
-	void DeclareStructs(ModuleIRGen& gen, IRAccess access, p::TSpan<AST::Id> ids);
-	void DefineStructs(ModuleIRGen& gen, IRAccess access, p::TSpan<AST::Id> ids);
+	void DeclareStructs(ModuleIRGen& gen, IRAccess access, p::TView<AST::Id> ids);
+	void DefineStructs(ModuleIRGen& gen, IRAccess access, p::TView<AST::Id> ids);
 	void DeclareFunctions(
-	    ModuleIRGen& gen, IRAccess access, p::TSpan<AST::Id> ids, bool useFullName = true);
-	void DefineFunctions(ModuleIRGen& gen, IRAccess access, p::TSpan<AST::Id> ids);
+	    ModuleIRGen& gen, IRAccess access, p::TView<AST::Id> ids, bool useFullName = true);
+	void DefineFunctions(ModuleIRGen& gen, IRAccess access, p::TView<AST::Id> ids);
 
 	void AddStmtBlock(ModuleIRGen& gen, IRAccess access, AST::Id firstStmtId,
 	    llvm::BasicBlock* block, const CIRFunction& function);
@@ -79,7 +79,7 @@ namespace rift::LLVM
 	void AddCall(ModuleIRGen& gen, AST::Id id, const AST::CExprCallId& call, IRAccess access);
 
 
-	AST::Id FindMainFunction(IRAccess access, p::TSpan<AST::Id> functionIds);
+	AST::Id FindMainFunction(IRAccess access, p::TView<AST::Id> functionIds);
 
 	void CreateMain(ModuleIRGen& gen, IRAccess access, AST::Id functionId);
 }    // namespace rift::LLVM

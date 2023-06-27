@@ -157,7 +157,7 @@ namespace rift::AST::LoadSystem
 		p::Attach(access, projectId, ids);
 	}
 
-	void CreateTypesFromPaths(Tree& ast, TSpan<ModuleTypePaths> pathsByModule, TArray<Id>& ids)
+	void CreateTypesFromPaths(Tree& ast, TView<ModuleTypePaths> pathsByModule, TArray<Id>& ids)
 	{
 		ZoneScoped;
 
@@ -196,7 +196,7 @@ namespace rift::AST::LoadSystem
 		}
 	}
 
-	void LoadFileStrings(TAccessRef<CFileRef> access, TSpan<Id> nodes, TArray<String>& strings)
+	void LoadFileStrings(TAccessRef<CFileRef> access, TView<Id> nodes, TArray<String>& strings)
 	{
 		ZoneScoped;
 		strings.Resize(nodes.Size());
@@ -213,7 +213,7 @@ namespace rift::AST::LoadSystem
 		}
 	}
 
-	void DeserializeModules(Tree& ast, TSpan<Id> moduleIds, TSpan<String> strings)
+	void DeserializeModules(Tree& ast, TView<Id> moduleIds, TView<String> strings)
 	{
 		ZoneScoped;
 		Check(moduleIds.Size() == strings.Size());
@@ -224,7 +224,7 @@ namespace rift::AST::LoadSystem
 		}
 	}
 
-	void DeserializeTypes(Tree& ast, TSpan<Id> typeIds, TSpan<String> strings)
+	void DeserializeTypes(Tree& ast, TView<Id> typeIds, TView<String> strings)
 	{
 		ZoneScoped;
 		Check(typeIds.Size() == strings.Size());

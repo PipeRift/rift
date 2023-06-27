@@ -72,7 +72,7 @@ namespace rift::AST
 	void AddBindingToModule(AST::Tree& ast, AST::Id id, p::Tag bindingId);
 	void RemoveBindingFromModule(AST::Tree& ast, AST::Id id, p::Tag bindingId);
 	const ModuleBinding* FindModuleBinding(p::Tag id);
-	p::TSpan<const ModuleBinding> GetModuleBindings();
+	p::TView<const ModuleBinding> GetModuleBindings();
 
 
 	template<typename... T>

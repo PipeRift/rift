@@ -259,7 +259,7 @@ namespace rift::AST
 		return index != NO_INDEX ? moduleBindings.Data() + index : nullptr;
 	}
 
-	p::TSpan<const ModuleBinding> GetModuleBindings()
+	p::TView<const ModuleBinding> GetModuleBindings()
 	{
 		return moduleBindings;
 	}

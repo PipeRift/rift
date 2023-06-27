@@ -82,7 +82,7 @@ namespace rift::AST
 	}
 
 	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access,
-	    TSpan<Id> typeIds, bool removeFromDisk)
+	    TView<Id> typeIds, bool removeFromDisk)
 	{
 		if (removeFromDisk)
 		{
@@ -460,7 +460,7 @@ namespace rift::AST
 		return NoId;
 	}
 
-	void RemoveNodes(const RemoveAccess& access, TSpan<Id> ids)
+	void RemoveNodes(const RemoveAccess& access, TView<Id> ids)
 	{
 		ScopedChange(access, ids);
 		p::Remove(access, ids, true);
@@ -497,7 +497,7 @@ namespace rift::AST
 		fileTypes.RemoveSorted(typeId);
 	}
 
-	p::TSpan<const RiftType> GetFileTypes()
+	p::TView<const RiftType> GetFileTypes()
 	{
 		return fileTypes;
 	}

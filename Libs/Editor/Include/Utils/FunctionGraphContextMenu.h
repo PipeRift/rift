@@ -7,7 +7,7 @@
 
 namespace rift::Editor::Graph
 {
-	void DrawNodesContextMenu(AST::Tree& ast, AST::Id typeId, p::TSpan<AST::Id> nodeIds);
+	void DrawNodesContextMenu(AST::Tree& ast, AST::Id typeId, p::TView<AST::Id> nodeIds);
 	void DrawGraphContextMenu(AST::Tree& ast, AST::Id typeId, AST::Id hoveredNodeId);
 	void DrawContextMenu(
 	    AST::Tree& ast, AST::Id typeId, AST::Id hoveredNodeId, AST::Id hoveredLinkId);

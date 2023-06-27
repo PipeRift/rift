@@ -25,13 +25,13 @@ namespace rift::AST
 			bool active = false;
 
 			ScopedTransaction() {}
-			ScopedTransaction(const TransactionAccess& access, TSpan<const Id> entityIds);
+			ScopedTransaction(const TransactionAccess& access, TView<const Id> entityIds);
 			ScopedTransaction(ScopedTransaction&& other) noexcept;
 			~ScopedTransaction();
 		};
 
 
-		bool PreChange(const TransactionAccess& access, TSpan<const Id> entityIds);
+		bool PreChange(const TransactionAccess& access, TView<const Id> entityIds);
 		void PostChange();
 	}    // namespace Transactions
 }    // namespace rift::AST

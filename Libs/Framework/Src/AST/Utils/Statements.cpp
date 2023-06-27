@@ -180,7 +180,7 @@ namespace rift::AST
 	}
 
 	void GetPreviousStmts(
-	    TAccessRef<CStmtInput> access, TSpan<const Id> stmtIds, TArray<Id>& prevStmtIds)
+	    TAccessRef<CStmtInput> access, TView<const Id> stmtIds, TArray<Id>& prevStmtIds)
 	{
 		prevStmtIds.ReserveMore(stmtIds.Size());
 		for (const Id stmtId : stmtIds)
@@ -192,7 +192,7 @@ namespace rift::AST
 		}
 	}
 
-	TSpan<Id> GetNextStmts(TAccessRef<CStmtOutputs> access, Id stmtIds)
+	TView<Id> GetNextStmts(TAccessRef<CStmtOutputs> access, Id stmtIds)
 	{
 		if (const auto* output = access.TryGet<const CStmtOutputs>(stmtIds))
 		{
@@ -202,7 +202,7 @@ namespace rift::AST
 	}
 
 	void GetNextStmts(
-	    TAccessRef<CStmtOutputs> access, TSpan<const Id> stmtIds, TArray<Id>& nextStmtIds)
+	    TAccessRef<CStmtOutputs> access, TView<const Id> stmtIds, TArray<Id>& nextStmtIds)
 	{
 		nextStmtIds.ReserveMore(stmtIds.Size());
 		for (const Id stmtId : stmtIds)

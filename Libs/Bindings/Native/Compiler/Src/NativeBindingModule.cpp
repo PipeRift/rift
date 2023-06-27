@@ -14,7 +14,7 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/TypeUtils.h>
 #include <clang-c/Index.h>
-#include <Pipe/Core/Span.h>
+#include <Pipe/Core/View.h>
 #include <Pipe/Memory/NewDelete.h>
 #include <Pipe/PipeECS.h>
 
@@ -63,7 +63,7 @@ namespace rift
 		AST::PreAllocPools<CNativeBinding>();
 	}
 
-	void FindHeaders(AST::Tree& ast, TSpan<ParsedModule> parsedModules)
+	void FindHeaders(AST::Tree& ast, TView<ParsedModule> parsedModules)
 	{
 		p::TAccess<AST::CFileRef> access{ast};
 		for (auto& module : parsedModules)
@@ -76,7 +76,7 @@ namespace rift
 		}
 	}
 
-	void ParseHeaders(AST::Tree& ast, TSpan<ParsedModule> parsedModules)
+	void ParseHeaders(AST::Tree& ast, TView<ParsedModule> parsedModules)
 	{
 		for (auto& module : parsedModules)
 		{

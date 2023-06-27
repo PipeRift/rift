@@ -81,7 +81,7 @@ namespace rift::Editor::Graph
 		return false;
 	}
 
-	void DrawNodesContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> nodeIds)
+	void DrawNodesContextMenu(AST::Tree& ast, AST::Id typeId, TView<AST::Id> nodeIds)
 	{
 		Check(!nodeIds.IsEmpty());
 		const bool canEditBody = AST::HasFunctionBodies(ast, typeId);
@@ -114,7 +114,7 @@ namespace rift::Editor::Graph
 		}
 	}
 
-	void DrawLinksContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> linkIds)
+	void DrawLinksContextMenu(AST::Tree& ast, AST::Id typeId, TView<AST::Id> linkIds)
 	{
 		Check(!linkIds.IsEmpty());
 		const bool canEditBody = AST::HasFunctionBodies(ast, typeId);
