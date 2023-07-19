@@ -232,7 +232,7 @@ namespace rift::AST
 
 	void RegisterModuleBinding(ModuleBinding binding)
 	{
-		moduleBindings.FindOrAddSorted(Move(binding));
+		moduleBindings.AddUniqueSorted(Move(binding));
 	}
 	void UnregisterModuleBinding(p::Tag bindingId)
 	{
@@ -242,7 +242,7 @@ namespace rift::AST
 	{
 		if (const auto* binding = FindModuleBinding(bindingId))
 		{
-			ast.AddDefaulted(binding->tagType->GetId(), id);
+			ast.AddDefault(binding->tagType->GetId(), id);
 		}
 	}
 	void RemoveBindingFromModule(AST::Tree& ast, AST::Id id, p::Tag bindingId)

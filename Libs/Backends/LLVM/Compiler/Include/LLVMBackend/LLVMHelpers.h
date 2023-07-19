@@ -3,9 +3,9 @@
 
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/StringRef.h>
-#include <Pipe/Core/Array.h>
 #include <Pipe/Core/String.h>
 #include <Pipe/Core/Tag.h>
+#include <Pipe/PipeArrays.h>
 
 
 namespace rift::LLVM
@@ -20,13 +20,13 @@ namespace rift::LLVM
 	{
 		return ToLLVM(StringView{string});
 	}
-	inline llvm::StringRef ToLLVM(Tag name)
+	inline llvm::StringRef ToLLVM(p::Tag name)
 	{
 		return ToLLVM(StringView{name.AsString()});
 	}
 
 	template<typename T>
-	inline llvm::ArrayRef<T> ToLLVM(const TArray<T>& array)
+	inline llvm::ArrayRef<T> ToLLVM(const p::IArray<T>& array)
 	{
 		return {array.Data(), sizet(array.Size())};
 	}

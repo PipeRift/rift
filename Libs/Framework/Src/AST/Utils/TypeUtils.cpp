@@ -61,7 +61,7 @@ namespace rift::AST
 
 		if (auto* fileType = FindFileType(typeId))
 		{
-			ast.AddDefaulted(fileType->tagType->GetId(), id);
+			ast.AddDefault(fileType->tagType->GetId(), id);
 		}
 	}
 
@@ -490,7 +490,7 @@ namespace rift::AST
 
 	void RegisterFileType(RiftType&& type)
 	{
-		fileTypes.FindOrAddSorted(Move(type));
+		fileTypes.AddUniqueSorted(Move(type));
 	}
 	void UnregisterFileType(p::Tag typeId)
 	{

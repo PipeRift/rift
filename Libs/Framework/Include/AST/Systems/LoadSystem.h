@@ -4,8 +4,7 @@
 #include "AST/Components/CFileRef.h"
 #include "AST/Tree.h"
 
-#include <Pipe/Core/Array.h>
-#include <Pipe/Core/View.h>
+#include <Pipe/PipeArrays.h>
 #include <Pipe/PipeECS.h>
 
 

@@ -155,14 +155,14 @@ namespace rift::Editor
 				DrawNodeAccess access{ast};
 				if (showHierarchy && !filter.IsActive())
 				{
-					TArray<AST::Id> roots;
+					p::TArray<AST::Id> roots;
 					p::GetRoots(access, roots);
 					for (auto root : roots)
 					{
 						DrawNode(access, root, true);
 					}
 
-					TArray<AST::Id> orphans = p::FindAllIdsWith<AST::CNamespace>(access);
+					p::TArray<AST::Id> orphans = p::FindAllIdsWith<AST::CNamespace>(access);
 					p::ExcludeIdsWith<AST::CChild>(access, orphans);
 					p::ExcludeIdsWith<AST::CParent>(access, orphans);
 					for (auto orphan : orphans)
