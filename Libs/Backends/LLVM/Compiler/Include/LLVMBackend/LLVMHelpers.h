@@ -12,17 +12,17 @@ namespace rift::LLVM
 {
 	using namespace p::core;
 
-	inline llvm::StringRef ToLLVM(StringView string)
+	inline llvm::StringRef ToLLVM(p::StringView string)
 	{
 		return {string.data(), string.size()};
 	}
-	inline llvm::StringRef ToLLVM(const String& string)
+	inline llvm::StringRef ToLLVM(const p::String& string)
 	{
-		return ToLLVM(StringView{string});
+		return ToLLVM(p::StringView{string});
 	}
 	inline llvm::StringRef ToLLVM(p::Tag name)
 	{
-		return ToLLVM(StringView{name.AsString()});
+		return ToLLVM(p::StringView{name.AsString()});
 	}
 
 	template<typename T>

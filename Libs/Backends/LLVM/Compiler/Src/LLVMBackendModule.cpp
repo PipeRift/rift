@@ -16,7 +16,6 @@
 #include <NativeBindingModule.h>
 #include <Pipe/Core/Log.h>
 #include <Pipe/Files/Files.h>
-#include <Pipe/Memory/NewDelete.h>
 
 #if LLVM_VERSION_MAJOR >= 14
 #	include <llvm/MC/TargetRegistry.h>

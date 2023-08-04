@@ -10,10 +10,6 @@
 #include "AST/Utils/ModuleUtils.h"
 #include "AST/Utils/TypeUtils.h"
 
-#include <Pipe/Memory/NewDelete.h>
-
-
-P_OVERRIDE_NEW_DELETE
 
 namespace rift
 {

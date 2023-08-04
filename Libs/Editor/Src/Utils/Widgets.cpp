@@ -7,9 +7,6 @@
 
 namespace rift::Editor
 {
-	using namespace p::core;
-
-
 	void ListTypesFromFilter(p::TAccessRef<AST::CNamespace> access, p::TArray<AST::Id> typeIds,
 	    AST::Id& selectedId, ImGuiTextFilter& searchFilter)
 	{
@@ -23,7 +20,7 @@ namespace rift::Editor
 				continue;
 			}
 
-			UI::PushID(u32(id));
+			UI::PushID(p::u32(id));
 			if (UI::Selectable(name.data(), id == selectedId))
 			{
 				selectedId = id;
@@ -101,7 +98,7 @@ namespace rift::Editor
 		return selectedId != lastId;
 	}
 
-	bool InputLiteralValue(AST::Tree& ast, StringView label, AST::Id literalId)
+	bool InputLiteralValue(AST::Tree& ast, p::StringView label, AST::Id literalId)
 	{
 		return false;
 	}

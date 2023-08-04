@@ -14,7 +14,6 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/TypeUtils.h>
 #include <clang-c/Index.h>
-#include <Pipe/Memory/NewDelete.h>
 #include <Pipe/PipeArrays.h>
 #include <Pipe/PipeECS.h>
 

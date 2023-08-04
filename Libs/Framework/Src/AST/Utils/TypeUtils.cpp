@@ -39,9 +39,9 @@
 
 namespace rift::AST
 {
-	static p::TArray<RiftType> fileTypes;
+	static p::TArray<RiftType> gFileTypes;
 
-	auto typeComponents = [](auto& rw) {
+	auto gTypeComponents = [](auto& rw) {
 		rw.template SerializePools<CChild, CDeclVariable, CDeclFunction, CExprBinaryOperator,
 		    CExprCall, CExprDeclRefId, CExprOutputs, CExprInputs, CStmtReturn, CExprType,
 		    CExprUnaryOperator, CNodePosition, CNamespace, CParent, CLiteralBool, CLiteralFloating,
@@ -111,7 +111,7 @@ namespace rift::AST
 		w.BeginObject();
 
 		w.Next("type", ast.Get<CDeclType>(id).typeId);
-		w.SerializeEntity(id, typeComponents);
+		w.SerializeEntity(id, gTypeComponents);
 
 		data = writer.ToString();
 	}
@@ -133,7 +133,7 @@ namespace rift::AST
 		r.Next("type", typeId);
 		InitTypeFromFileType(ast, id, typeId);
 
-		r.SerializeEntity(id, typeComponents);
+		r.SerializeEntity(id, gTypeComponents);
 	}
 
 
@@ -490,22 +490,22 @@ namespace rift::AST
 
 	void RegisterFileType(RiftType&& type)
 	{
-		fileTypes.AddUniqueSorted(Move(type));
+		gFileTypes.AddUniqueSorted(Move(type));
 	}
 	void UnregisterFileType(p::Tag typeId)
 	{
-		fileTypes.RemoveSorted(typeId);
+		gFileTypes.RemoveSorted(typeId);
 	}
 
 	p::TView<const RiftType> GetFileTypes()
 	{
-		return fileTypes;
+		return gFileTypes;
 	}
 
 	const RiftType* FindFileType(p::Tag typeId)
 	{
-		const i32 index = fileTypes.FindSortedEqual(typeId);
-		return index != NO_INDEX ? fileTypes.Data() + index : nullptr;
+		const i32 index = gFileTypes.FindSortedEqual(typeId);
+		return index != NO_INDEX ? gFileTypes.Data() + index : nullptr;
 	}
 
 	const RiftType* FindFileType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId)

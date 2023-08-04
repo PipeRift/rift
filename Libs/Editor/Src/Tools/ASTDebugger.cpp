@@ -19,10 +19,10 @@ namespace rift::Editor
 
 	void DrawEntityInspector(AST::Tree& ast, AST::Id entityId, bool* open = nullptr)
 	{
-		String name = "Entity Inspector";
+		p::String name = "Entity Inspector";
 		if (!IsNone(entityId))
-			Strings::FormatTo(name, " (id:{})", entityId);
-		Strings::FormatTo(name, "###Entity Inspector");
+			p::Strings::FormatTo(name, " (id:{})", entityId);
+		p::Strings::FormatTo(name, "###Entity Inspector");
 		UI::Begin(name.c_str(), open);
 		if (IsNone(entityId))
 		{
@@ -40,7 +40,7 @@ namespace rift::Editor
 			}
 
 			void* data = poolInstance.GetPool()->TryGetVoid(entityId);
-			static String typeName;
+			static p::String typeName;
 			typeName = type->GetName();
 
 			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
@@ -92,9 +92,9 @@ namespace rift::Editor
 
 					UI::TableNextColumn();    // Id
 
-					static String idText;
+					static p::String idText;
 					idText.clear();
-					Strings::FormatTo(idText, "{}", it.second);
+					p::Strings::FormatTo(idText, "{}", it.second);
 					UI::Text(idText);
 				}
 
@@ -188,7 +188,7 @@ namespace rift::Editor
 
 	void ASTDebugger::DrawNode(DrawNodeAccess access, AST::Id nodeId, bool showChildren)
 	{
-		static String idText;
+		static p::String idText;
 		idText.clear();
 		if (nodeId == AST::NoId)
 		{
@@ -196,28 +196,28 @@ namespace rift::Editor
 		}
 		else if (auto version = p::GetIdVersion(nodeId); version > 0)
 		{
-			Strings::FormatTo(idText, "{} (v{})", p::GetIdIndex(nodeId), version);
+			p::Strings::FormatTo(idText, "{} (v{})", p::GetIdIndex(nodeId), version);
 		}
 		else
 		{
-			Strings::FormatTo(idText, "{}", p::GetIdIndex(nodeId));
+			p::Strings::FormatTo(idText, "{}", p::GetIdIndex(nodeId));
 		}
 
-		static String name;
+		static p::String name;
 		name.clear();
 		if (const auto* id = access.TryGet<const AST::CNamespace>(nodeId))
 		{
 			name = id->name.AsString();
 		}
 
-		static String path;
+		static p::String path;
 		path.clear();
 		if (const auto* file = access.TryGet<const AST::CFileRef>(nodeId))
 		{
 			path = p::ToString(file->path);
 
-			StringView filename = p::GetFilename(path);
-			Strings::FormatTo(name, name.empty() ? "file: {}" : " (file: {})", filename);
+			p::StringView filename = p::GetFilename(path);
+			p::Strings::FormatTo(name, name.empty() ? "file: {}" : " (file: {})", filename);
 		}
 
 		if (!filter.PassFilter(idText.c_str(), idText.c_str() + idText.size())
@@ -228,9 +228,9 @@ namespace rift::Editor
 
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
-		static String inspectLabel;
+		static p::String inspectLabel;
 		inspectLabel.clear();
-		Strings::FormatTo(inspectLabel, ICON_FA_SEARCH "##{}", nodeId);
+		p::Strings::FormatTo(inspectLabel, ICON_FA_SEARCH "##{}", nodeId);
 		UI::PushButtonColor(UI::GetNeutralColor(1));
 		UI::PushTextColor(
 		    selectedNode == nodeId ? UI::whiteTextColor : UI::whiteTextColor.Translucency(0.3f));

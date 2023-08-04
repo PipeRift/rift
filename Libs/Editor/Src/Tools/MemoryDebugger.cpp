@@ -37,7 +37,7 @@ namespace rift::Editor
 
 			if (UI::BeginChild("Allocations"))
 			{
-				const sizet shown = math::Min<sizet>(10000, stats->allocations.size());
+				const sizet shown = math::Min<sizet>(10000, stats->allocations.Size());
 				for (i32 i = 0; i < shown; ++i)
 				{
 					const auto& allocation = stats->allocations[i];
