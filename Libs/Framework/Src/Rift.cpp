@@ -7,30 +7,30 @@
 
 namespace rift
 {
-	static p::TMap<p::ClassType*, p::TOwnPtr<class Module>> modules{};
-	static p::TArray<View> views{};
+	static p::TMap<p::ClassType*, p::TOwnPtr<class Module>> gModules{};
+	static p::TArray<View> gViews{};
 
 
 	void EnableModule(p::ClassType* type)
 	{
 		Check(Module::GetStaticType()->IsParentOf(type));
 
-		if (!modules.Contains(type))
+		if (!gModules.Contains(type))
 		{
 			auto module = MakeOwned<Module>(type);
 			module->DoLoad();
-			modules.Insert(type, Move(module));
+			gModules.Insert(type, Move(module));
 		}
 	}
 
 	void DisableModule(p::ClassType* type)
 	{
-		modules.Remove(type);
+		gModules.Remove(type);
 	}
 
 	p::TPtr<Module> GetModule(p::ClassType* type)
 	{
-		if (auto* module = modules.Find(type))
+		if (auto* module = gModules.Find(type))
 		{
 			return *module;
 		}
@@ -39,6 +39,6 @@ namespace rift
 
 	void RegisterView(View view)
 	{
-		views.Add(Move(view));
+		gViews.Add(Move(view));
 	}
 };    // namespace rift

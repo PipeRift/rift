@@ -8,7 +8,6 @@
 #include "AST/Systems/FunctionsSystem.h"
 #include "AST/Systems/LoadSystem.h"
 #include "AST/Systems/TypeSystem.h"
-#include "AST/Utils/Paths.h"
 
 #include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Files.h>
@@ -19,9 +18,9 @@
 
 namespace rift::AST
 {
-	static p::TArray<ModuleBinding> moduleBindings;
-	TBroadcast<EntityReader&> onReadModulePools;
-	TBroadcast<EntityWriter&> onWriteModulePools;
+	static p::TArray<ModuleBinding> gModuleBindings;
+	TBroadcast<EntityReader&> gOnReadModulePools;
+	TBroadcast<EntityWriter&> gOnWriteModulePools;
 
 
 	bool ValidateModulePath(p::String& path, p::String& error)
@@ -204,7 +203,7 @@ namespace rift::AST
 		JsonFormatWriter writer{};
 		p::EntityWriter w{writer.GetWriter(), ast};
 		w.BeginObject();
-		w.SerializeSingleEntity(id, onWriteModulePools);
+		w.SerializeSingleEntity(id, gOnWriteModulePools);
 
 		data = writer.ToString();
 	}
@@ -217,26 +216,26 @@ namespace rift::AST
 		{
 			p::EntityReader r{formatReader, ast};
 			r.BeginObject();
-			r.SerializeSingleEntity(id, onReadModulePools);
+			r.SerializeSingleEntity(id, gOnReadModulePools);
 		}
 	}
 	const TBroadcast<EntityReader&>& OnReadModulePools()
 	{
-		return onReadModulePools;
+		return gOnReadModulePools;
 	}
 	const TBroadcast<EntityWriter&>& OnWriteModulePools()
 	{
-		return onWriteModulePools;
+		return gOnWriteModulePools;
 	}
 
 
 	void RegisterModuleBinding(ModuleBinding binding)
 	{
-		moduleBindings.AddUniqueSorted(Move(binding));
+		gModuleBindings.AddUniqueSorted(Move(binding));
 	}
 	void UnregisterModuleBinding(p::Tag bindingId)
 	{
-		moduleBindings.RemoveSorted(bindingId);
+		gModuleBindings.RemoveSorted(bindingId);
 	}
 	void AddBindingToModule(AST::Tree& ast, AST::Id id, p::Tag bindingId)
 	{
@@ -255,12 +254,12 @@ namespace rift::AST
 
 	const ModuleBinding* FindModuleBinding(p::Tag id)
 	{
-		const i32 index = moduleBindings.FindSortedEqual(id);
-		return index != NO_INDEX ? moduleBindings.Data() + index : nullptr;
+		const i32 index = gModuleBindings.FindSortedEqual(id);
+		return index != NO_INDEX ? gModuleBindings.Data() + index : nullptr;
 	}
 
 	p::TView<const ModuleBinding> GetModuleBindings()
 	{
-		return moduleBindings;
+		return gModuleBindings;
 	}
 }    // namespace rift::AST

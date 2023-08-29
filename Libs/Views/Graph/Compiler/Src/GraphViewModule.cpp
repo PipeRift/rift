@@ -2,7 +2,6 @@
 
 #include "GraphViewModule.h"
 
-// P_OVERRIDE_NEW_DELETE
 
 namespace rift
 {

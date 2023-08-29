@@ -20,13 +20,13 @@ namespace rift::LLVM
 	{
 		return ToLLVM(p::StringView{string});
 	}
-	inline llvm::StringRef ToLLVM(Tag name)
+	inline llvm::StringRef ToLLVM(p::Tag name)
 	{
 		return ToLLVM(p::StringView{name.AsString()});
 	}
 
 	template<typename T>
-	inline llvm::ArrayRef<T> ToLLVM(const p::TArray<T>& array)
+	inline llvm::ArrayRef<T> ToLLVM(const p::IArray<T>& array)
 	{
 		return {array.Data(), sizet(array.Size())};
 	}

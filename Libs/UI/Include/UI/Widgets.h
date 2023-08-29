@@ -54,9 +54,9 @@ namespace rift::UI
 
 	// ImGui::InputText() with String
 	// Because text input needs dynamic resizing, we need to setup a callback to grow the capacity
-	bool InputText(const char* label, String& str, ImGuiInputTextFlags flags = 0,
+	bool InputText(const char* label, p::String& str, ImGuiInputTextFlags flags = 0,
 	    ImGuiInputTextCallback callback = nullptr, void* userData = nullptr);
-	bool InputTextMultiline(const char* label, String& str, const ImVec2& size = ImVec2(0, 0),
+	bool InputTextMultiline(const char* label, p::String& str, const ImVec2& size = ImVec2(0, 0),
 	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
 	    void* userData = nullptr);
 	bool InputTextWithHint(const char* label, const char* hint, String& str,
@@ -97,8 +97,8 @@ namespace rift::UI
 
 	ImRect GetWorkRect(v2 desiredSize, bool addhalfItemSpacing = true, v2 extent = v2::Zero());
 
-	bool MutableText(StringView label, String& text, ImGuiInputTextFlags flags = 0);
+	bool MutableText(p::StringView label, p::String& text, ImGuiInputTextFlags flags = 0);
 
-	void HelpTooltip(StringView text, float delay = 1.f);
-	void HelpMarker(StringView text);
+	void HelpTooltip(p::StringView text, float delay = 1.f);
+	void HelpMarker(p::StringView text);
 }    // namespace rift::UI
