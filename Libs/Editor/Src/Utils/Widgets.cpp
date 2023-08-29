@@ -101,7 +101,7 @@ namespace rift::Editor
 		return selectedId != lastId;
 	}
 
-	bool InputLiteralValue(AST::Tree& ast, StringView label, AST::Id literalId)
+	bool InputLiteralValue(AST::Tree& ast, p::StringView label, AST::Id literalId)
 	{
 		return false;
 	}

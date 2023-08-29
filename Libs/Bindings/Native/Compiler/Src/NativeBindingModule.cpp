@@ -14,8 +14,7 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/TypeUtils.h>
 #include <clang-c/Index.h>
-#include <Pipe/Core/View.h>
-#include <Pipe/Memory/NewDelete.h>
+#include <Pipe/PipeArrays.h>
 #include <Pipe/PipeECS.h>
 
 
@@ -112,7 +111,7 @@ namespace rift
 		parsedModules.Reserve(moduleIds.Size());
 		for (i32 i = 0; i < moduleIds.Size(); ++i)
 		{
-			auto& parsed = parsedModules.AddDefaultedRef();
+			auto& parsed = parsedModules.AddRef();
 			parsed.id    = moduleIds[i];
 		}
 		FindHeaders(ast, parsedModules);

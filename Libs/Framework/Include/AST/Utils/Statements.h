@@ -7,7 +7,7 @@
 #include "AST/Tree.h"
 #include "AST/Utils/Statements.h"
 
-#include <Pipe/Core/View.h>
+#include <Pipe/PipeArrays.h>
 #include <Pipe/PipeECS.h>
 
 

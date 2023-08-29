@@ -6,12 +6,12 @@
 #include "UI/UIImgui.h"
 
 #include <IconsFontAwesome5.h>
-#include <Pipe/Core/Array.h>
 #include <Pipe/Core/Checks.h>
 #include <Pipe/Core/Log.h>
 #include <Pipe/Core/Tuples.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Math/Math.h>
+#include <Pipe/PipeArrays.h>
 
 
 namespace rift::UI

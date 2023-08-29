@@ -8,10 +8,10 @@
 #include <assert.h>
 #include <AST/Id.h>
 #include <limits.h>
-#include <Pipe/Core/Array.h>
 #include <Pipe/Core/BitArray.h>
 #include <Pipe/Core/EnumFlags.h>
 #include <Pipe/Math/Vector.h>
+#include <Pipe/PipeArrays.h>
 
 
 // the structure of this file:
@@ -104,8 +104,9 @@ namespace rift::Nodes
 	public:
 		T& GetOrAdd(AST::Id id, bool* outAdded = nullptr)
 		{
-			const u32 index  = GetIdIndex(id);
-			const bool added = frameIds.FindOrAddSorted(id).second;
+			const u32 index = GetIdIndex(id);
+			bool added;
+			frameIds.AddUniqueSorted(id, {}, &added);
 			if (added && !lastFrameIds.ContainsSorted(id))
 			{
 				// Id added

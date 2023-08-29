@@ -8,7 +8,7 @@
 #include "View.h"
 
 #include <Pipe/Core/Tag.h>
-#include <Pipe/Core/View.h>
+#include <Pipe/PipeArrays.h>
 #include <Pipe/PipeECS.h>
 #include <Pipe/Reflect/Class.h>
 #include <Pipe/Reflect/ClassType.h>

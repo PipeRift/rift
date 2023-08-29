@@ -7,12 +7,11 @@
 #include <Pipe/Math/Vector.h>
 
 
-#define IM_VEC2_CLASS_EXTRA                                \
-	constexpr ImVec2(p::v2 other) : x(other.x), y(other.y) \
-	{}                                                     \
-	constexpr operator p::v2() const                       \
-	{                                                      \
-		return p::v2{x, y};                                \
+#define IM_VEC2_CLASS_EXTRA                                   \
+	constexpr ImVec2(p::v2 other) : x(other.x), y(other.y) {} \
+	constexpr operator p::v2() const                          \
+	{                                                         \
+		return p::v2{x, y};                                   \
 	}
 
 #define IM_VEC4_CLASS_EXTRA                                                                        \
@@ -22,8 +21,7 @@
 	{                                                                                              \
 		return p::LinearColor{x, y, z, w};                                                         \
 	}                                                                                              \
-	constexpr ImVec4(const p::v4& other) : x(other.x), y(other.y), z(other.z), w(other.w)          \
-	{}                                                                                             \
+	constexpr ImVec4(const p::v4& other) : x(other.x), y(other.y), z(other.z), w(other.w) {}       \
 	constexpr operator p::v4() const                                                               \
 	{                                                                                              \
 		return p::v4{x, y, z, w};                                                                  \

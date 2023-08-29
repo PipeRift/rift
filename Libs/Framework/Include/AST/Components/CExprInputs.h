@@ -41,7 +41,7 @@ namespace rift::AST
 
 		CExprInputs& Add(AST::Id pinId)
 		{
-			linkedOutputs.AddDefaulted();
+			linkedOutputs.Add();
 			pinIds.Add(pinId);
 			return *this;
 		}
@@ -49,7 +49,7 @@ namespace rift::AST
 		CExprInputs& Insert(p::i32 index, AST::Id pinId)
 		{
 			pinIds.Insert(index, pinId);
-			linkedOutputs.Insert(index, {});
+			linkedOutputs.Insert(index);
 			return *this;
 		}
 

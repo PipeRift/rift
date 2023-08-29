@@ -1,11 +1,10 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
-#include "bandit/assertion_frameworks/snowhouse/assert.h"
-
 #include <AST/Components/CNamespace.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/TypeUtils.h>
+#include <bandit/assertion_frameworks/snowhouse/assert.h>
 #include <bandit/bandit.h>
 #include <FrameworkModule.h>
 

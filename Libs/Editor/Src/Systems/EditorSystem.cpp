@@ -26,9 +26,9 @@
 #include <Compiler/Compiler.h>
 #include <IconsFontAwesome5.h>
 #include <LLVMBackendModule.h>
-#include <Pipe/Core/Array.h>
 #include <Pipe/Files/FileDialog.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/PipeArrays.h>
 #include <Pipe/PipeECS.h>
 #include <Rift.h>
 #include <UI/Inspection.h>
