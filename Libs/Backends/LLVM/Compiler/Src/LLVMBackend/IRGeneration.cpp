@@ -64,11 +64,11 @@ namespace rift::LLVM
 			DeclareFunctions(gen, ast, cFunctionIds, false);
 		}
 
+		TArray<AST::Id> staticFunctionIds;
 		{    // Rift declarations & definitions
 			TArray<AST::Id> structIds = FindIdsWith<AST::CDeclStruct>(ast, typeIds);
 			TArray<AST::Id> staticIds = FindIdsWith<AST::CDeclStatic>(ast, typeIds);
 			TArray<AST::Id> classIds  = FindIdsWith<AST::CDeclClass>(ast, typeIds);
-			TArray<AST::Id> staticFunctionIds;
 			TArray<AST::Id> classFunctionIds;
 			p::GetChildren(ast, staticIds, staticFunctionIds);
 			p::GetChildren(ast, classIds, classFunctionIds);
@@ -85,12 +85,11 @@ namespace rift::LLVM
 			DefineStructs(gen, ast, structIds);
 			DefineStructs(gen, ast, classIds);
 			DefineFunctions(gen, ast, functionIds);
-
-			mainFunctionId = FindMainFunction(access, staticFunctionIds);
 		}
 
 		if (module.target == AST::RiftModuleTarget::Executable)
 		{
+			mainFunctionId = FindMainFunction(access, staticFunctionIds);
 			CreateMain(gen, access, mainFunctionId);
 		}
 	}
