@@ -39,7 +39,7 @@ namespace rift::LLVM
 				{
 					case AST::RiftModuleTarget::Executable:
 						command.Add("/entry:Main");
-						command.Add("/SUBSYSTEM:CONSOLE");
+						command.Add("/subsystem:console");
 						extension = "exe";
 						break;
 					case AST::RiftModuleTarget::Shared:

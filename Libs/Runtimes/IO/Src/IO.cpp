@@ -9,7 +9,7 @@ extern "C"
 {
 	void Print(const char* text)
 	{
-		std::cout << text;
+		std::cout << text << std::endl;
 	}
 
 	void PrintHelloWorld()
