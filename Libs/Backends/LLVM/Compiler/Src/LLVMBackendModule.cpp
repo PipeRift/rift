@@ -29,11 +29,6 @@
 #include <llvm/Target/TargetOptions.h>
 
 
-// TODO: Implement define module which checks if building statically. If static, don´t override
-// new/delete
-// P_OVERRIDE_NEW_DELETE
-
-
 namespace rift
 {
 	LLVMBackendModule::LLVMBackendModule()

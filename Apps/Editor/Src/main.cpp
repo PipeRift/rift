@@ -7,6 +7,7 @@
 #include <FrameworkModule.h>
 #include <GraphViewModule.h>
 #include <LLVMBackendModule.h>
+#include <MIRBackendModule.h>
 #include <Pipe/Pipe.h>
 
 #include <iostream>
@@ -24,6 +25,7 @@ int RunEditor(StringView projectPath)
 	p::Initialize("Saved/Logs");
 	EnableModule<FrameworkModule>();
 	EnableModule<LLVMBackendModule>();
+	EnableModule<MIRBackendModule>();
 	EnableModule<GraphViewModule>();
 
 	const int result = Editor::Editor::Get().Run(projectPath);

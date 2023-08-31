@@ -44,3 +44,8 @@ set(TF_BUILD_TESTS OFF CACHE BOOL "Enables builds of tests")
 set(TF_BUILD_EXAMPLES OFF CACHE BOOL "Enables builds of examples")
 add_subdirectory(taskflow)
 pipe_target_disable_all_warnings(Taskflow INTERFACE)
+
+
+add_subdirectory(mir)
+target_include_directories(mir_static PUBLIC mir)
+

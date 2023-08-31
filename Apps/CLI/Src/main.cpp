@@ -9,6 +9,7 @@
 #include <FrameworkModule.h>
 #include <GraphViewModule.h>
 #include <LLVMBackendModule.h>
+#include <MIRBackendModule.h>
 #include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Pipe.h>
@@ -66,6 +67,7 @@ int main(int argc, char** argv)
 	p::Initialize("Saved/Logs");
 	EnableModule<FrameworkModule>();
 	EnableModule<LLVMBackendModule>();
+	EnableModule<MIRBackendModule>();
 	EnableModule<GraphViewModule>();
 
 	CLI::App app{"Rift compiler"};
