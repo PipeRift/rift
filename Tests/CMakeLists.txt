@@ -5,6 +5,6 @@ add_executable(RiftTests ${TESTS_SOURCE_FILES})
 rift_module(RiftTests)
 pipe_target_shared_output_directory(RiftTests)
 target_include_directories(RiftTests PUBLIC .)
-target_link_libraries(RiftTests PUBLIC Rift Bandit)
+target_link_libraries(RiftTests PUBLIC RiftAST Bandit)
 
 add_test(NAME RiftTests COMMAND $<TARGET_FILE:RiftTests>)

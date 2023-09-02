@@ -2,11 +2,12 @@
 
 #pragma once
 
+#include <ASTModule.h>
 #include <Compiler/Backend.h>
-#include <FrameworkModule.h>
 #include <Module.h>
 #include <Pipe/Core/EnumFlags.h>
 #include <View.h>
+
 
 
 namespace rift

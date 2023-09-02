@@ -3,7 +3,7 @@
 add_library(RiftBindingNative STATIC)
 
 
-target_link_libraries(RiftBindingNative PUBLIC Rift)
+target_link_libraries(RiftBindingNative PUBLIC RiftAST)
 target_link_libraries(RiftBindingNative PRIVATE RiftClang)
 
 rift_compiler_module(RiftBindingNative)

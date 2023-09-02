@@ -2,7 +2,7 @@
 
 add_library(RiftViewGraph STATIC)
 rift_compiler_module(RiftViewGraph)
-target_link_libraries(RiftViewGraph PUBLIC Rift)
+target_link_libraries(RiftViewGraph PUBLIC RiftAST)
 
 add_library(RiftViewGraphEditor STATIC)
 rift_editor_module(RiftViewGraphEditor)

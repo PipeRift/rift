@@ -12,9 +12,9 @@ namespace rift
 		class Tree;
 	}
 
-	class FrameworkModule : public Module
+	class ASTModule : public Module
 	{
-		CLASS(FrameworkModule, Module)
+		CLASS(ASTModule, Module)
 
 	public:
 		static const p::Tag structType;

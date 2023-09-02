@@ -7,7 +7,7 @@ file(GLOB_RECURSE RiftEditor_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
 target_sources(RiftEditor PRIVATE ${RiftEditor_SOURCE_FILES})
 
 target_link_libraries(RiftEditor PUBLIC
-    Rift
+    RiftAST
     RiftBackendLLVM
     RiftBackendMIR
     RiftUI
