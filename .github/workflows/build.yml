@@ -76,12 +76,12 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ runner.temp }}/llvm
-          key: llvm-14.0-${{ matrix.os-name }}
+          key: llvm-15.0-${{ matrix.os-name }}
       - name: Install LLVM
         if: ${{ matrix.compiler == 'clang' }}
         uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "14.0"
+          version: "15.0"
           directory: ${{ runner.temp }}/llvm
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
