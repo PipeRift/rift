@@ -3,7 +3,7 @@
 add_library(RiftBackendLLVM STATIC)
 rift_compiler_module(RiftBackendLLVM)
 
-target_link_libraries(RiftBackendLLVM PUBLIC Rift)
+target_link_libraries(RiftBackendLLVM PUBLIC RiftAST)
 target_link_libraries(RiftBackendLLVM PRIVATE
     RiftLLVM
     RiftBindingNative

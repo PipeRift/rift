@@ -9,7 +9,7 @@ namespace rift
 	{
 		RegisterView(View{
 		    .name           = "Graph",
-		    .supportedTypes = {FrameworkModule::classType, FrameworkModule::structType},
+		    .supportedTypes = {ASTModule::classType, ASTModule::structType},
 		    .onDrawEditor   = &GraphViewModule::DrawEditor
         });
 	}

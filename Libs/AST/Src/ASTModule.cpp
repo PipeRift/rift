@@ -1,6 +1,6 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
-#include "FrameworkModule.h"
+#include "ASTModule.h"
 
 #include "AST/Components/CDeclClass.h"
 #include "AST/Components/CDeclStatic.h"
@@ -13,12 +13,12 @@
 
 namespace rift
 {
-	const p::Tag FrameworkModule::structType = "Struct";
-	const p::Tag FrameworkModule::classType  = "Class";
-	const p::Tag FrameworkModule::staticType = "Static";
+	const p::Tag ASTModule::structType = "Struct";
+	const p::Tag ASTModule::classType  = "Class";
+	const p::Tag ASTModule::staticType = "Static";
 
 
-	void FrameworkModule::Load()
+	void ASTModule::Load()
 	{
 		AST::RegisterFileType<AST::CDeclStruct>(
 		    structType, {.displayName = "Struct", .hasVariables = true, .hasFunctions = false});

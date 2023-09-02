@@ -27,7 +27,7 @@
 #include "AST/Utils/Namespaces.h"
 #include "AST/Utils/Paths.h"
 #include "AST/Utils/TransactionUtils.h"
-#include "FrameworkModule.h"
+#include "ASTModule.h"
 #include "Rift.h"
 
 #include <Pipe/Core/Checks.h>

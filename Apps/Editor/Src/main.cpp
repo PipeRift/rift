@@ -3,14 +3,15 @@
 #include <Pipe/Memory/NewDelete.h>
 //  Override as first include
 
+#include <ASTModule.h>
 #include <Editor.h>
-#include <FrameworkModule.h>
 #include <GraphViewModule.h>
 #include <LLVMBackendModule.h>
 #include <MIRBackendModule.h>
 #include <Pipe/Pipe.h>
 
 #include <iostream>
+
 
 
 using namespace rift;
@@ -23,7 +24,7 @@ using namespace rift;
 int RunEditor(StringView projectPath)
 {
 	p::Initialize("Saved/Logs");
-	EnableModule<FrameworkModule>();
+	EnableModule<ASTModule>();
 	EnableModule<LLVMBackendModule>();
 	EnableModule<MIRBackendModule>();
 	EnableModule<GraphViewModule>();

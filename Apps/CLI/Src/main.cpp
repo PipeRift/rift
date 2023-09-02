@@ -4,9 +4,9 @@
 //  Override as first include
 
 #include <AST/Utils/ModuleUtils.h>
+#include <ASTModule.h>
 #include <Compiler/Compiler.h>
 #include <Compiler/Utils/BackendUtils.h>
-#include <FrameworkModule.h>
 #include <GraphViewModule.h>
 #include <LLVMBackendModule.h>
 #include <MIRBackendModule.h>
@@ -17,6 +17,7 @@
 
 #include <chrono>
 #include <CLI/CLI.hpp>
+
 
 
 using namespace rift;
@@ -65,7 +66,7 @@ namespace rift
 int main(int argc, char** argv)
 {
 	p::Initialize("Saved/Logs");
-	EnableModule<FrameworkModule>();
+	EnableModule<ASTModule>();
 	EnableModule<LLVMBackendModule>();
 	EnableModule<MIRBackendModule>();
 	EnableModule<GraphViewModule>();

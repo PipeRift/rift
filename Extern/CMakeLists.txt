@@ -4,6 +4,11 @@ include(FetchContent)
 set(BUILD_SHARED_LIBS OFF)
 
 # Submodule libraries
+
+set(PIPE_BUILD_TESTS ${RIFT_BUILD_TESTS} CACHE BOOL "Build Pipe tests")
+add_subdirectory(Pipe)
+
+
 set(CLI11_BUILD_TESTS OFF CACHE BOOL "Build CLI11 tests")
 set(CMAKE_POLICY_DEFAULT_CMP0054 NEW)
 add_subdirectory(CLI11)

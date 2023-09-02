@@ -31,7 +31,7 @@ option(RIFT_BUILD_TESTS "Build Rift and Core tests" ${RIFT_IS_PROJECT})
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(CMake/DownloadProject.cmake)
-include(Libs/Pipe/CMake/Util.cmake)
+include(Extern/Pipe/CMake/Util.cmake)
 include(CMake/Util.cmake)
 include(CMake/SetIcon.cmake)
 include(CMake/CheckClangTools.cmake)
@@ -56,7 +56,7 @@ if(CLANG_FORMAT_EXE)
     # Additional targets to perform clang-format/clang-tidy
     file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS
         Apps/**/*.cpp Apps/**/*.h
-        Libs/Framework/**/*.cpp Libs/Framework/**/*.h
+        Libs/AST/**/*.cpp Libs/AST/**/*.h
         Libs/UI/**/*.cpp Libs/UI/**/*.h
         Libs/Pipe/Include/**/*.cpp Libs/Pipe/Include/**/*.h
         Libs/Pipe/Src/**/*.cpp Libs/Pipe/Src/**/*.h
@@ -71,7 +71,7 @@ endif()
 if(CLANG_TIDY_EXE)
     file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS
         Apps/**/*.cpp
-        Libs/Framework/**/*.cpp
+        Libs/AST/**/*.cpp
         Libs/UI/**/*.cpp
         Libs/Pipe/Include/**/*.cpp
         Libs/Pipe/Src/**/*.cpp
