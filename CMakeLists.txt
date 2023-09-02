@@ -36,7 +36,6 @@ include(CMake/Util.cmake)
 include(CMake/SetIcon.cmake)
 include(CMake/CheckClangTools.cmake)
 
-include(CMake/LLVM.cmake)
 add_subdirectory(Extern)
 
 add_subdirectory(Libs)

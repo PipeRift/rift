@@ -13,7 +13,6 @@
 #include <AST/Tree.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/TypeUtils.h>
-#include <clang-c/Index.h>
 #include <Pipe/PipeArrays.h>
 #include <Pipe/PipeECS.h>
 
@@ -25,19 +24,8 @@ namespace rift
 {
 	struct ParsedModule
 	{
-		AST::Id id    = AST::NoId;
-		CXIndex index = clang_createIndex(0, 0);
+		AST::Id id = AST::NoId;
 		TArray<String> headers;
-		TArray<CXTranslationUnit> units;
-
-		~ParsedModule()
-		{
-			for (auto unit : units)
-			{
-				clang_disposeTranslationUnit(unit);
-			}
-			clang_disposeIndex(index);
-		}
 	};
 
 	void NativeBindingModule::Load()
@@ -75,28 +63,6 @@ namespace rift
 		}
 	}
 
-	void ParseHeaders(AST::Tree& ast, TView<ParsedModule> parsedModules)
-	{
-		for (auto& module : parsedModules)
-		{
-			for (i32 i = 0; i < module.headers.Size(); ++i)
-			{
-				const StringView include = module.headers[i];
-				const CXTranslationUnit unit =
-				    clang_parseTranslationUnit(module.index, include.data(), nullptr, 0, nullptr, 0,
-				        CXTranslationUnit_DetailedPreprocessingRecord);
-				if (!unit)
-				{
-					module.headers.RemoveAt(i, false);
-					--i;
-					p::Error("Unable to parse module header '{}'", include);
-					continue;
-				}
-				module.units.Add(unit);
-			}
-		}
-	}
-
 	void NativeBindingModule::SyncIncludes(AST::Tree& ast)
 	{
 		TArray<AST::Id> moduleIds;
@@ -115,7 +81,6 @@ namespace rift
 			parsed.id    = moduleIds[i];
 		}
 		FindHeaders(ast, parsedModules);
-		ParseHeaders(ast, parsedModules);
 		// TODO: Generate Rift interface
 	}
 }    // namespace rift

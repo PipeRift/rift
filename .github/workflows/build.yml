@@ -85,15 +85,8 @@ jobs:
           directory: ${{ runner.temp }}/llvm
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
-
-      - name: Download pre-built development LLVM for Rift
-        run: |
-          curl -L -o "${{ runner.temp }}/rift-llvm.zip" https://github.com/piperift/rift-llvm/releases/download/v14.0.5/llvm-${{ matrix.os-name }}-${{ matrix.config }}.zip
-          7z x -o"${{ runner.temp }}/rift" "${{ runner.temp }}/rift-llvm.zip"
-
       - name: Get CMake
         uses: lukka/get-cmake@latest
-
 
       - name: Cache Build
         uses: actions/cache@v2

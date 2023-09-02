@@ -6,12 +6,10 @@
 #include <ASTModule.h>
 #include <Editor.h>
 #include <GraphViewModule.h>
-#include <LLVMBackendModule.h>
 #include <MIRBackendModule.h>
 #include <Pipe/Pipe.h>
 
 #include <iostream>
-
 
 
 using namespace rift;
@@ -25,7 +23,6 @@ int RunEditor(StringView projectPath)
 {
 	p::Initialize("Saved/Logs");
 	EnableModule<ASTModule>();
-	EnableModule<LLVMBackendModule>();
 	EnableModule<MIRBackendModule>();
 	EnableModule<GraphViewModule>();
 

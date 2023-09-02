@@ -8,7 +8,6 @@
 #include <Compiler/Compiler.h>
 #include <Compiler/Utils/BackendUtils.h>
 #include <GraphViewModule.h>
-#include <LLVMBackendModule.h>
 #include <MIRBackendModule.h>
 #include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Paths.h>
@@ -17,7 +16,6 @@
 
 #include <chrono>
 #include <CLI/CLI.hpp>
-
 
 
 using namespace rift;
@@ -67,7 +65,6 @@ int main(int argc, char** argv)
 {
 	p::Initialize("Saved/Logs");
 	EnableModule<ASTModule>();
-	EnableModule<LLVMBackendModule>();
 	EnableModule<MIRBackendModule>();
 	EnableModule<GraphViewModule>();
 

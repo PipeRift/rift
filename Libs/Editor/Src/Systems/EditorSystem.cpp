@@ -25,7 +25,7 @@
 #include <AST/Components/Tags/CDirty.h>
 #include <Compiler/Compiler.h>
 #include <IconsFontAwesome5.h>
-#include <LLVMBackendModule.h>
+#include <MIRBackendModule.h>
 #include <Pipe/Files/FileDialog.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/PipeArrays.h>
@@ -322,13 +322,13 @@ namespace rift::Editor::EditorSystem
 				{
 					AST::Tree compileAST{ast};    // Intentional copy
 					CompilerConfig config;
-					Build<LLVMBackend>(compileAST, config);
+					Build<MIRBackend>(compileAST, config);
 				}
 				if (UI::MenuItem("Build all"))
 				{
 					AST::Tree compileAST{ast};    // Intentional copy
 					CompilerConfig config;
-					Build<LLVMBackend>(compileAST, config);
+					Build<MIRBackend>(compileAST, config);
 				}
 				UI::EndMenu();
 			}

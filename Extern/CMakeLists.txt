@@ -85,4 +85,3 @@ endif()
 add_library(mir_static STATIC)
 target_link_libraries(mir_static PRIVATE mir)
 target_include_directories(mir_static PUBLIC mir)
-
