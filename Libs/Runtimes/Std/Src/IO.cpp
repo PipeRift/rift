@@ -2,14 +2,14 @@
 
 #include "IO.h"
 
-#include <iostream>
+#include <cstdio>
 
 
 extern "C"
 {
 	void Print(const char* text)
 	{
-		std::cout << text << std::endl;
+		printf(text);
 	}
 
 	void PrintHelloWorld()
