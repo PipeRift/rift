@@ -231,5 +231,6 @@
             "--backend",
             "LLVM"
         ]
-    }
+    },
+    "dotnet.defaultSolution": "disable"
 }
