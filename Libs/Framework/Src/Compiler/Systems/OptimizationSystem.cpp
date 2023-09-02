@@ -2,8 +2,6 @@
 
 #include "Compiler/Systems/OptimizationSystem.h"
 
-#include <Pipe/ECS/Utils/Hierarchy.h>
-
 
 namespace rift::OptimizationSystem
 {

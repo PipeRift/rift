@@ -7,9 +7,8 @@
 #include "AST/Tree.h"
 #include "View.h"
 
-#include <Pipe/Core/Span.h>
 #include <Pipe/Core/Tag.h>
-#include <Pipe/ECS/Access.h>
+#include <Pipe/PipeECS.h>
 #include <Pipe/Reflect/Class.h>
 #include <Pipe/Reflect/ClassType.h>
 

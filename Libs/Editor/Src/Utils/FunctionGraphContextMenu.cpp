@@ -23,7 +23,6 @@
 #include <AST/Utils/TransactionUtils.h>
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <UI/UI.h>
 
 
@@ -82,7 +81,7 @@ namespace rift::Editor::Graph
 		return false;
 	}
 
-	void DrawNodesContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> nodeIds)
+	void DrawNodesContextMenu(AST::Tree& ast, AST::Id typeId, TView<AST::Id> nodeIds)
 	{
 		Check(!nodeIds.IsEmpty());
 		const bool canEditBody = AST::HasFunctionBodies(ast, typeId);
@@ -103,7 +102,7 @@ namespace rift::Editor::Graph
 				}
 			}
 		}
-		TArray<AST::Id> calls = ecs::GetIf<AST::CExprCall>(ast, nodeIds);
+		TArray<AST::Id> calls = FindIdsWith<AST::CExprCall>(ast, nodeIds);
 		if (!calls.IsEmpty() && UI::MenuItem("Refresh"))
 		{
 			ast.AddN<AST::CCallDirty>(calls);
@@ -115,7 +114,7 @@ namespace rift::Editor::Graph
 		}
 	}
 
-	void DrawLinksContextMenu(AST::Tree& ast, AST::Id typeId, TSpan<AST::Id> linkIds)
+	void DrawLinksContextMenu(AST::Tree& ast, AST::Id typeId, TView<AST::Id> linkIds)
 	{
 		Check(!linkIds.IsEmpty());
 		const bool canEditBody = AST::HasFunctionBodies(ast, typeId);
@@ -172,7 +171,7 @@ namespace rift::Editor::Graph
 			String makeStr{};
 			auto& typeList = ast.GetStatic<AST::STypes>();
 			TAccess<AST::CDeclType, AST::CNamespace> typesAccess{ast};
-			for (ecs::Id typeId : ecs::ListAll<AST::CDeclType>(typesAccess))
+			for (Id typeId : FindAllIdsWith<AST::CDeclType>(typesAccess))
 			{
 				if (auto* ns = typesAccess.TryGet<const AST::CNamespace>(typeId))
 				{
@@ -192,11 +191,11 @@ namespace rift::Editor::Graph
 		{
 			static String label;
 			TAccess<AST::CDeclFunction, AST::CNamespace, AST::CChild, AST::CDeclType> access{ast};
-			for (AST::Id functionId : ecs::ListAll<AST::CDeclFunction, AST::CNamespace>(access))
+			for (AST::Id functionId : FindAllIdsWith<AST::CDeclFunction, AST::CNamespace>(access))
 			{
 				Tag name = access.Get<const AST::CNamespace>(functionId).name;
 				label.clear();
-				AST::Id funcTypeId = p::ecs::GetParent(access, functionId);
+				AST::Id funcTypeId = GetParent(access, functionId);
 				if (!IsNone(funcTypeId) && access.Has<AST::CDeclType, AST::CNamespace>(funcTypeId))
 				{
 					Strings::FormatTo(label, "{}   ({})", name,
@@ -219,11 +218,11 @@ namespace rift::Editor::Graph
 		{
 			static String label;
 			TAccess<AST::CDeclVariable, AST::CNamespace, AST::CChild, AST::CDeclType> access{ast};
-			for (AST::Id variableId : ecs::ListAll<AST::CDeclVariable, AST::CNamespace>(access))
+			for (AST::Id variableId : FindAllIdsWith<AST::CDeclVariable, AST::CNamespace>(access))
 			{
 				Tag name = access.Get<const AST::CNamespace>(variableId).name;
 				label.clear();
-				AST::Id typeId = p::ecs::GetParent(access, variableId);
+				AST::Id typeId = p::GetParent(access, variableId);
 				if (!IsNone(typeId) && access.Has<AST::CDeclType, AST::CNamespace>(typeId))
 				{
 					Strings::FormatTo(

@@ -18,9 +18,7 @@
 #include "AST/Tree.h"
 #include "AST/TypeRef.h"
 
-#include <Pipe/ECS/Access.h>
-#include <Pipe/ECS/Components/CChild.h>
-#include <Pipe/ECS/Components/CParent.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::AST
@@ -59,7 +57,7 @@ namespace rift::AST
 
 	Id CreateType(Tree& ast, p::Tag typeId, Tag name = Tag::None(), StringView path = {});
 
-	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access, TSpan<Id> types,
+	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access, TView<Id> types,
 	    bool removeFromDisk = false);
 
 	void SerializeType(Tree& ast, Id id, String& data);
@@ -92,7 +90,7 @@ namespace rift::AST
 
 	using RemoveAccess = TAccess<TWrite<CChanged>, TWrite<CFileDirty>, TWrite<CStmtInput>,
 	    TWrite<CStmtOutputs>, TWrite<CParent>, TWrite<CChild>, CFileRef>;
-	void RemoveNodes(const RemoveAccess& access, TSpan<Id> ids);
+	void RemoveNodes(const RemoveAccess& access, TView<Id> ids);
 
 	bool CopyExpressionType(TAccessRef<TWrite<CExprTypeId>> access, Id sourcePinId, Id targetPinId);
 
@@ -100,7 +98,7 @@ namespace rift::AST
 	void RegisterFileType(RiftType&& descriptor);
 	void UnregisterFileType(p::Tag typeId);
 
-	p::TSpan<const RiftType> GetFileTypes();
+	p::TView<const RiftType> GetFileTypes();
 	const RiftType* FindFileType(p::Tag typeId);
 	const RiftType* FindFileType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId);
 

@@ -4,9 +4,8 @@
 #include "AST/Components/CFileRef.h"
 #include "AST/Tree.h"
 
-#include <Pipe/Core/Array.h>
-#include <Pipe/Core/Span.h>
-#include <Pipe/ECS/Filtering.h>
+#include <Pipe/PipeArrays.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::AST
@@ -19,7 +18,7 @@ namespace rift::AST::LoadSystem
 	struct ModuleTypePaths
 	{
 		Id moduleId;
-		TArray<p::String> paths;    // p::Paths of module types
+		p::TArray<p::String> paths;    // p::Paths of module types
 	};
 
 	void Init(Tree& ast);
@@ -38,11 +37,11 @@ namespace rift::AST::LoadSystem
 	void ScanTypes(Tree& ast, TArray<ModuleTypePaths>& pathsByModule);
 
 	void CreateModulesFromPaths(Tree& ast, TArray<String>& paths, TArray<Id>& ids);
-	void CreateTypesFromPaths(Tree& ast, TSpan<ModuleTypePaths> pathsByModule, TArray<Id>& ids);
+	void CreateTypesFromPaths(Tree& ast, TView<ModuleTypePaths> pathsByModule, TArray<Id>& ids);
 
-	void LoadFileStrings(TAccessRef<CFileRef> access, TSpan<Id> nodes, TArray<String>& strings);
+	void LoadFileStrings(TAccessRef<CFileRef> access, TView<Id> nodes, TArray<String>& strings);
 
-	void DeserializeModules(Tree& ast, TSpan<Id> moduleIds, TSpan<String> strings);
-	void DeserializeTypes(Tree& ast, TSpan<Id> typeIds, TSpan<String> strings);
+	void DeserializeModules(Tree& ast, TView<Id> moduleIds, TView<String> strings);
+	void DeserializeTypes(Tree& ast, TView<Id> typeIds, TView<String> strings);
 
 }    // namespace rift::AST::LoadSystem

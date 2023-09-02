@@ -3,31 +3,31 @@
 
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/StringRef.h>
-#include <Pipe/Core/Array.h>
 #include <Pipe/Core/String.h>
 #include <Pipe/Core/Tag.h>
+#include <Pipe/PipeArrays.h>
 
 
-namespace rift::compiler::LLVM
+namespace rift::LLVM
 {
 	using namespace p::core;
 
-	inline llvm::StringRef ToLLVM(StringView string)
+	inline llvm::StringRef ToLLVM(p::StringView string)
 	{
 		return {string.data(), string.size()};
 	}
-	inline llvm::StringRef ToLLVM(const String& string)
+	inline llvm::StringRef ToLLVM(const p::String& string)
 	{
-		return ToLLVM(StringView{string});
+		return ToLLVM(p::StringView{string});
 	}
-	inline llvm::StringRef ToLLVM(Tag name)
+	inline llvm::StringRef ToLLVM(p::Tag name)
 	{
-		return ToLLVM(StringView{name.AsString()});
+		return ToLLVM(p::StringView{name.AsString()});
 	}
 
 	template<typename T>
-	inline llvm::ArrayRef<T> ToLLVM(const TArray<T>& array)
+	inline llvm::ArrayRef<T> ToLLVM(const p::IArray<T>& array)
 	{
 		return {array.Data(), sizet(array.Size())};
 	}
-}    // namespace rift::compiler::LLVM
+}    // namespace rift::LLVM

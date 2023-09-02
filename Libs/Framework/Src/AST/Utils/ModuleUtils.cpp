@@ -8,20 +8,19 @@
 #include "AST/Systems/FunctionsSystem.h"
 #include "AST/Systems/LoadSystem.h"
 #include "AST/Systems/TypeSystem.h"
-#include "AST/Utils/Paths.h"
 
-#include <Pipe/ECS/Filtering.h>
-#include <Pipe/ECS/Serialization.h>
+#include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/PipeECS.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
 
 namespace rift::AST
 {
-	static p::TArray<ModuleBinding> moduleBindings;
-	TBroadcast<ecs::EntityReader&> onReadModulePools;
-	TBroadcast<ecs::EntityWriter&> onWriteModulePools;
+	static p::TArray<ModuleBinding> gModuleBindings;
+	TBroadcast<EntityReader&> gOnReadModulePools;
+	TBroadcast<EntityWriter&> gOnWriteModulePools;
 
 
 	bool ValidateModulePath(p::String& path, p::String& error)
@@ -59,20 +58,20 @@ namespace rift::AST
 		String error;
 		if (!ValidateModulePath(validatedPath, error))
 		{
-			Log::Error("Can't open project: {}", error);
+			p::Error("Can't open project: {}", error);
 			return false;
 		}
 
 		if (!files::ExistsAsFolder(validatedPath))
 		{
-			Log::Error("Can't open project: Folder doesn't exist");
+			p::Error("Can't open project: Folder doesn't exist");
 			return false;
 		}
 
 		const p::String filePath = p::JoinPaths(validatedPath, moduleFilename);
 		if (!files::ExistsAsFile(filePath))
 		{
-			Log::Error("Can't open project: Folder doesn't contain a '{}' file", moduleFilename);
+			p::Error("Can't open project: Folder doesn't contain a '{}' file", moduleFilename);
 			return false;
 		}
 
@@ -108,7 +107,7 @@ namespace rift::AST
 		String error;
 		if (!ValidateModulePath(validatedPath, error))
 		{
-			Log::Error("Can't create module: {}", error);
+			p::Error("Can't create module: {}", error);
 			return NoId;
 		}
 
@@ -120,7 +119,7 @@ namespace rift::AST
 		const p::String filePath = p::JoinPaths(validatedPath, moduleFilename);
 		if (files::ExistsAsFile(filePath))
 		{
-			Log::Error("Can't create module: Folder already contains a '{}' file", moduleFilename);
+			p::Error("Can't create module: Folder already contains a '{}' file", moduleFilename);
 			return NoId;
 		}
 
@@ -137,7 +136,7 @@ namespace rift::AST
 
 	Id GetProjectId(TAccessRef<CProject> access)
 	{
-		return ecs::GetFirst<CProject>(access);
+		return GetFirstId<CProject>(access);
 	}
 
 	Tag GetProjectName(TAccessRef<CProject, CNamespace, CFileRef> access)
@@ -202,9 +201,9 @@ namespace rift::AST
 	{
 		ZoneScoped;
 		JsonFormatWriter writer{};
-		p::ecs::EntityWriter w{writer.GetWriter(), ast};
+		p::EntityWriter w{writer.GetWriter(), ast};
 		w.BeginObject();
-		w.SerializeSingleEntity(id, onWriteModulePools);
+		w.SerializeSingleEntity(id, gOnWriteModulePools);
 
 		data = writer.ToString();
 	}
@@ -215,34 +214,34 @@ namespace rift::AST
 		JsonFormatReader formatReader{data};
 		if (formatReader.IsValid())
 		{
-			p::ecs::EntityReader r{formatReader, ast};
+			p::EntityReader r{formatReader, ast};
 			r.BeginObject();
-			r.SerializeSingleEntity(id, onReadModulePools);
+			r.SerializeSingleEntity(id, gOnReadModulePools);
 		}
 	}
-	const TBroadcast<ecs::EntityReader&>& OnReadModulePools()
+	const TBroadcast<EntityReader&>& OnReadModulePools()
 	{
-		return onReadModulePools;
+		return gOnReadModulePools;
 	}
-	const TBroadcast<ecs::EntityWriter&>& OnWriteModulePools()
+	const TBroadcast<EntityWriter&>& OnWriteModulePools()
 	{
-		return onWriteModulePools;
+		return gOnWriteModulePools;
 	}
 
 
 	void RegisterModuleBinding(ModuleBinding binding)
 	{
-		moduleBindings.FindOrAddSorted(Move(binding));
+		gModuleBindings.AddUniqueSorted(Move(binding));
 	}
 	void UnregisterModuleBinding(p::Tag bindingId)
 	{
-		moduleBindings.RemoveSorted(bindingId);
+		gModuleBindings.RemoveSorted(bindingId);
 	}
 	void AddBindingToModule(AST::Tree& ast, AST::Id id, p::Tag bindingId)
 	{
 		if (const auto* binding = FindModuleBinding(bindingId))
 		{
-			ast.AddDefaulted(binding->tagType->GetId(), id);
+			ast.AddDefault(binding->tagType->GetId(), id);
 		}
 	}
 	void RemoveBindingFromModule(AST::Tree& ast, AST::Id id, p::Tag bindingId)
@@ -255,12 +254,12 @@ namespace rift::AST
 
 	const ModuleBinding* FindModuleBinding(p::Tag id)
 	{
-		const i32 index = moduleBindings.FindSortedEqual(id);
-		return index != NO_INDEX ? moduleBindings.Data() + index : nullptr;
+		const i32 index = gModuleBindings.FindSortedEqual(id);
+		return index != NO_INDEX ? gModuleBindings.Data() + index : nullptr;
 	}
 
-	p::TSpan<const ModuleBinding> GetModuleBindings()
+	p::TView<const ModuleBinding> GetModuleBindings()
 	{
-		return moduleBindings;
+		return gModuleBindings;
 	}
 }    // namespace rift::AST

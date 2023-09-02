@@ -18,7 +18,7 @@
 #include "AST/Utils/TypeUtils.h"
 #include "Pipe/Files/Paths.h"
 
-#include <Pipe/ECS/Utils/Hierarchy.h>
+#include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
@@ -87,7 +87,7 @@ namespace rift::AST::LoadSystem
 		TSet<Path> modulePaths;
 
 		TAccess<CModule, CFileRef> access{ast};
-		auto modules = ecs::ListAll<CModule, CFileRef>(access);
+		auto modules = FindAllIdsWith<CModule, CFileRef>(access);
 
 		modulePaths.Reserve(modules.Size());
 		for (Id moduleId : modules)
@@ -126,7 +126,7 @@ namespace rift::AST::LoadSystem
 		    access{ast};
 
 		// Remove existing module paths
-		auto moduleIds = ecs::ListAll<CModule, CFileRef>(access);
+		auto moduleIds = FindAllIdsWith<CModule, CFileRef>(access);
 		paths.RemoveIfSwap([&access, &moduleIds](const p::String& path) {
 			bool moduleExists = false;
 			for (Id id : moduleIds)
@@ -154,10 +154,10 @@ namespace rift::AST::LoadSystem
 
 		// Link modules to the project
 		const Id projectId = GetProjectId(access);
-		p::ecs::AddChildren(access, projectId, ids);
+		p::Attach(access, projectId, ids);
 	}
 
-	void CreateTypesFromPaths(Tree& ast, TSpan<ModuleTypePaths> pathsByModule, TArray<Id>& ids)
+	void CreateTypesFromPaths(Tree& ast, TView<ModuleTypePaths> pathsByModule, TArray<Id>& ids)
 	{
 		ZoneScoped;
 
@@ -191,12 +191,12 @@ namespace rift::AST::LoadSystem
 				ast.Add(id, CFileRef{Move(path)});
 			}
 
-			p::ecs::AddChildren(ast, modulePaths.moduleId, typeIds);
+			p::Attach(ast, modulePaths.moduleId, typeIds);
 			ids.Append(typeIds);
 		}
 	}
 
-	void LoadFileStrings(TAccessRef<CFileRef> access, TSpan<Id> nodes, TArray<String>& strings)
+	void LoadFileStrings(TAccessRef<CFileRef> access, TView<Id> nodes, TArray<String>& strings)
 	{
 		ZoneScoped;
 		strings.Resize(nodes.Size());
@@ -206,14 +206,14 @@ namespace rift::AST::LoadSystem
 			{
 				if (!files::LoadStringFile(file->path, strings[i], 4))
 				{
-					Log::Error("File could not be loaded from disk ({})", file->path);
+					p::Error("File could not be loaded from disk ({})", file->path);
 					continue;
 				}
 			}
 		}
 	}
 
-	void DeserializeModules(Tree& ast, TSpan<Id> moduleIds, TSpan<String> strings)
+	void DeserializeModules(Tree& ast, TView<Id> moduleIds, TView<String> strings)
 	{
 		ZoneScoped;
 		Check(moduleIds.Size() == strings.Size());
@@ -224,7 +224,7 @@ namespace rift::AST::LoadSystem
 		}
 	}
 
-	void DeserializeTypes(Tree& ast, TSpan<Id> typeIds, TSpan<String> strings)
+	void DeserializeTypes(Tree& ast, TView<Id> typeIds, TView<String> strings)
 	{
 		ZoneScoped;
 		Check(typeIds.Size() == strings.Size());

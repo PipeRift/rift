@@ -14,9 +14,7 @@
 #include <AST/Tree.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <Pipe/Core/StringView.h>
-#include <Pipe/ECS/Components/CParent.h>
-#include <Pipe/ECS/Filtering.h>
-
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::Editor

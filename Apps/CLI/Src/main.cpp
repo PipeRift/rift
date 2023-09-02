@@ -1,11 +1,15 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
+#include <Pipe/Memory/NewDelete.h>
+//  Override as first include
+
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
 #include <Compiler/Utils/BackendUtils.h>
 #include <FrameworkModule.h>
 #include <GraphViewModule.h>
 #include <LLVMBackendModule.h>
+#include <MIRBackendModule.h>
 #include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Pipe.h>
@@ -20,8 +24,7 @@ using namespace rift;
 
 namespace rift
 {
-	void AddBackendOption(
-	    CLI::App& app, const TArray<TOwnPtr<compiler::Backend>>& backends, String& selected)
+	void AddBackendOption(CLI::App& app, const TArray<TOwnPtr<Backend>>& backends, String& selected)
 	{
 		String desc = "Backend to build with. Available: ";
 		if (!backends.IsEmpty())
@@ -45,10 +48,9 @@ namespace rift
 		app.add_option("-b,--backend", selected, stdDesc, true);
 	}
 
-	TPtr<compiler::Backend> FindBackendByName(
-	    const TArray<TOwnPtr<compiler::Backend>>& backends, Tag name)
+	TPtr<Backend> FindBackendByName(const TArray<TOwnPtr<Backend>>& backends, Tag name)
 	{
-		TOwnPtr<compiler::Backend>* backend = backends.Find([name](const auto& backend) {
+		TOwnPtr<Backend>* backend = backends.Find([name](const auto& backend) {
 			return backend->GetName() == name;
 		});
 		if (backend)
@@ -65,6 +67,7 @@ int main(int argc, char** argv)
 	p::Initialize("Saved/Logs");
 	EnableModule<FrameworkModule>();
 	EnableModule<LLVMBackendModule>();
+	EnableModule<MIRBackendModule>();
 	EnableModule<GraphViewModule>();
 
 	CLI::App app{"Rift compiler"};
@@ -73,12 +76,12 @@ int main(int argc, char** argv)
 
 
 	String selectedBackendStr;
-	auto availableBackends = compiler::CreateBackends();
+	auto availableBackends = CreateBackends();
 	AddBackendOption(app, availableBackends, selectedBackendStr);
 
 	CLI11_PARSE(app, argc, argv);
 
-	TPtr<compiler::Backend> backend = FindBackendByName(availableBackends, Tag(selectedBackendStr));
+	TPtr<Backend> backend = FindBackendByName(availableBackends, Tag(selectedBackendStr));
 
 	ZoneScopedNC("CLI Execution", 0x459bd1);
 
@@ -87,12 +90,12 @@ int main(int argc, char** argv)
 
 	if (!AST::HasProject(ast))
 	{
-		Log::Error("Couldn't open project '{}'", p::ToString(path));
+		p::Error("Couldn't open project '{}'", p::ToString(path));
 		return 1;
 	}
 
-	compiler::Config config;
-	compiler::Build(ast, config, backend);
+	CompilerConfig config;
+	Build(ast, config, backend);
 
 	while (true)
 	{

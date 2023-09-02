@@ -4,8 +4,6 @@
 
 #include "AST/Id.h"
 
-#include <Pipe/ECS/Utils/Hierarchy.h>
-
 
 namespace rift::AST
 {
@@ -173,7 +171,7 @@ namespace rift::AST
 		input.nodeId = pinId;
 		if (!IsNone(input.nodeId) && !access.Has<CExprInputs>(input.nodeId))
 		{
-			input.nodeId = p::ecs::GetParent(access, pinId);
+			input.nodeId = p::GetParent(access, pinId);
 		}
 		return input;
 	}
@@ -186,7 +184,7 @@ namespace rift::AST
 		output.nodeId = pinId;
 		if (!IsNone(output.nodeId) && !access.Has<CExprOutputs>(output.nodeId))
 		{
-			output.nodeId = p::ecs::GetParent(access, pinId);
+			output.nodeId = p::GetParent(access, pinId);
 		}
 		return output;
 	}

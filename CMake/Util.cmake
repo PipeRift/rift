@@ -11,6 +11,7 @@ function(rift_compiler_module target)
     rift_module(${target})
 
     target_include_directories(${target} PUBLIC Compiler/Include)
+    target_include_directories(${target} PRIVATE Compiler/Src)
     file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS Compiler/Src/*.cpp Compiler/Src/*.h)
     target_sources(${target} PRIVATE ${SOURCE_FILES})
     set(RIFT_COMPILER_MODULES ${RIFT_COMPILER_MODULES} ${target} PARENT_SCOPE)
@@ -21,17 +22,21 @@ function(rift_editor_module target)
     rift_module(${target})
 
     target_include_directories(${target} PUBLIC Editor/Include)
+    target_include_directories(${target} PRIVATE Editor/Src)
     file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS Editor/Src/*.cpp Editor/Src/*.h)
     target_sources(${target} PRIVATE ${SOURCE_FILES})
     target_link_libraries(RiftEditorModules INTERFACE ${target})
 endfunction(rift_editor_module)
 
 function(rift_runtime_module module)
+    set(RIFT_BINARY_DIR ${CMAKE_BINARY_DIR}/Bin/${CMAKE_CFG_INTDIR})
+
     set(target RiftRuntime${module})
     add_library(${target} STATIC)
     rift_module(${target})
 
     target_include_directories(${target} PUBLIC ${module}/Include)
+    target_include_directories(${target} PRIVATE ${module}/Src)
     file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS ${module}/Src/*.cpp ${module}/Src/*.h)
     target_sources(${target} PRIVATE ${SOURCE_FILES})
     target_link_libraries(RiftRuntimeModules INTERFACE ${target})
@@ -48,18 +53,19 @@ function(rift_runtime_module module)
 
 
     add_custom_command(TARGET ${target} POST_BUILD COMMAND
-        ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/Bin/Runtimes/${module}"
+        ${CMAKE_COMMAND} -E remove_directory "${RIFT_BINARY_DIR}/Runtimes/${module}"
     )
     add_custom_command(TARGET ${target} POST_BUILD COMMAND
-        ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/${module}" "${CMAKE_BINARY_DIR}/Bin/Runtimes/${module}"
+        ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/${module}" "${RIFT_BINARY_DIR}/Runtimes/${module}"
     )
     add_custom_command(TARGET ${target} POST_BUILD COMMAND
-        ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/Bin/Runtimes/${module}/Src"
+        ${CMAKE_COMMAND} -E remove_directory "${RIFT_BINARY_DIR}/Runtimes/${module}/Src"
     )
 endfunction(rift_runtime_module)
 
 function(rift_enable_module_resources target)
+    set(RIFT_BINARY_DIR ${CMAKE_BINARY_DIR}/Bin/${CMAKE_CFG_INTDIR})
     add_custom_command(TARGET ${target} POST_BUILD COMMAND
-        ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Resources" "${CMAKE_BINARY_DIR}/Bin/Resources"
+        ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Resources" "${RIFT_BINARY_DIR}/Resources"
     )
 endfunction(rift_enable_module_resources)

@@ -34,8 +34,7 @@
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <GLFW/glfw3.h>
-#include <Pipe/ECS/Filtering.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
+#include <Pipe/PipeECS.h>
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
 #include <Utils/NodesInternal.h>
@@ -525,7 +524,7 @@ namespace rift::Editor::Graph
 	                     access,
 	    const TArray<AST::Id>& children)
 	{
-		for (AST::Id id : GetIf<AST::CStmtReturn>(access, children))
+		for (AST::Id id : FindIdsWith<AST::CStmtReturn>(access, children))
 		{
 			DrawReturnNode(access, id);
 		}
@@ -533,22 +532,22 @@ namespace rift::Editor::Graph
 
 	void DrawLiterals(AST::Tree& ast, const TArray<AST::Id>& children)
 	{
-		for (AST::Id id : ecs::GetIf<AST::CLiteralBool>(ast, children))
+		for (AST::Id id : FindIdsWith<AST::CLiteralBool>(ast, children))
 		{
 			DrawLiteralBool(ast, id, ast.Get<AST::CLiteralBool>(id).value);
 		}
 
-		for (AST::Id id : ecs::GetIf<AST::CLiteralIntegral>(ast, children))
+		for (AST::Id id : FindIdsWith<AST::CLiteralIntegral>(ast, children))
 		{
 			DrawLiteralIntegral(ast, id, ast.Get<AST::CLiteralIntegral>(id));
 		}
 
-		for (AST::Id id : ecs::GetIf<AST::CLiteralFloating>(ast, children))
+		for (AST::Id id : FindIdsWith<AST::CLiteralFloating>(ast, children))
 		{
 			DrawLiteralFloating(ast, id, ast.Get<AST::CLiteralFloating>(id));
 		}
 
-		for (AST::Id id : ecs::GetIf<AST::CLiteralString>(ast, children))
+		for (AST::Id id : FindIdsWith<AST::CLiteralString>(ast, children))
 		{
 			DrawLiteralString(ast, id, ast.Get<AST::CLiteralString>(id).value);
 		}
@@ -557,7 +556,7 @@ namespace rift::Editor::Graph
 	void DrawVariableRefs(AST::Tree& ast, const TArray<AST::Id>& children)
 	{
 		String name;
-		for (AST::Id id : ecs::GetIf<AST::CExprDeclRefId>(ast, children))
+		for (AST::Id id : FindIdsWith<AST::CExprDeclRefId>(ast, children))
 		{
 			AST::Id variableId = ast.Get<const AST::CExprDeclRefId>(id).declarationId;
 
@@ -595,7 +594,7 @@ namespace rift::Editor::Graph
 		PushNodeBackgroundColor(UI::GetNeutralColor(0));
 		PushNodeTitleColor(flowColor);
 		for (AST::Id id :
-		    ecs::GetIf<AST::CStmtIf, AST::CExprInputs, AST::CStmtOutputs>(access, children))
+		    FindIdsWith<AST::CStmtIf, AST::CExprInputs, AST::CStmtOutputs>(access, children))
 		{
 			BeginNode(access, id);
 			{
@@ -658,7 +657,7 @@ namespace rift::Editor::Graph
 	        access,
 	    const TArray<AST::Id>& children)
 	{
-		for (AST::Id id : ecs::GetIf<AST::CExprUnaryOperator>(access, children))
+		for (AST::Id id : FindIdsWith<AST::CExprUnaryOperator>(access, children))
 		{
 			static constexpr Color color = UI::GetNeutralColor(0);
 
@@ -692,7 +691,7 @@ namespace rift::Editor::Graph
 	    const TArray<AST::Id>& children)
 	{
 		TArray<AST::Id> pinIds;
-		for (AST::Id id : ecs::GetIf<AST::CExprBinaryOperator>(access, children))
+		for (AST::Id id : FindIdsWith<AST::CExprBinaryOperator>(access, children))
 		{
 			static constexpr Color color = UI::GetNeutralColor(0);
 			PushNodeBackgroundColor(color);
@@ -700,7 +699,7 @@ namespace rift::Editor::Graph
 			BeginNode(access, id);
 			{
 				pinIds.Clear(false);
-				p::ecs::GetChildren(access, id, pinIds);
+				p::GetChildren(access, id, pinIds);
 				if (!Ensure(pinIds.Size() >= 2))
 				{
 					continue;
@@ -738,7 +737,7 @@ namespace rift::Editor::Graph
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, UI::Hovered(executionColor));
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, selectedColor);
 
-		for (AST::Id outputId : GetIf<AST::CStmtOutput>(access, children))
+		for (AST::Id outputId : FindIdsWith<AST::CStmtOutput>(access, children))
 		{
 			const auto* output = access.TryGet<const AST::CStmtOutput>(outputId);
 			if (output && access.IsValid(output->linkInputNode))
@@ -749,7 +748,7 @@ namespace rift::Editor::Graph
 			}
 		}
 
-		for (AST::Id outputId : GetIf<AST::CStmtOutputs>(access, children))
+		for (AST::Id outputId : FindIdsWith<AST::CStmtOutputs>(access, children))
 		{
 			if (const auto* outputs = access.TryGet<const AST::CStmtOutputs>(outputId))
 			{
@@ -782,7 +781,7 @@ namespace rift::Editor::Graph
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 1.5f);
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, selectedColor);
 
-		for (AST::Id nodeId : ecs::GetIf<AST::CExprInputs>(access, children))
+		for (AST::Id nodeId : FindIdsWith<AST::CExprInputs>(access, children))
 		{
 			const auto& inputs = access.Get<const AST::CExprInputs>(nodeId);
 			if (!EnsureMsg(inputs.pinIds.Size() == inputs.linkedOutputs.Size(),
@@ -853,10 +852,10 @@ namespace rift::Editor::Graph
 			}
 
 			TArray<AST::Id> children;
-			p::ecs::GetChildren(ast, typeId, children);
+			p::GetChildren(ast, typeId, children);
 
 			// Nodes
-			DrawFunctionDecls(ast, ecs::GetIf<AST::CDeclFunction>(ast, children));
+			DrawFunctionDecls(ast, FindIdsWith<AST::CDeclFunction>(ast, children));
 			DrawReturns(ast, children);
 			DrawCalls(ast, typeId, children);
 			DrawLiterals(ast, children);

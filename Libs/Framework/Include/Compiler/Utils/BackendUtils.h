@@ -9,8 +9,8 @@
 #include <Pipe/Reflect/ClassType.h>
 
 
-namespace rift::compiler
+namespace rift
 {
 	TArray<ClassType*> GetBackendTypes();
 	TArray<TOwnPtr<Backend>> CreateBackends();
-}    // namespace rift::compiler
+}    // namespace rift

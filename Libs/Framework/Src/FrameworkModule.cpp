@@ -10,10 +10,6 @@
 #include "AST/Utils/ModuleUtils.h"
 #include "AST/Utils/TypeUtils.h"
 
-#include <Pipe/Memory/NewDelete.h>
-
-
-P_OVERRIDE_NEW_DELETE
 
 namespace rift
 {
@@ -30,6 +26,7 @@ namespace rift
 		    classType, {.displayName = "Class", .hasVariables = true, .hasFunctions = true});
 		AST::RegisterFileType<AST::CDeclStatic>(
 		    staticType, {.displayName = "Static", .hasVariables = true, .hasFunctions = true});
+		AST::PreAllocPools<AST::CDeclStruct, AST::CDeclClass, AST::CDeclStatic>();
 
 		AST::RegisterSerializedModulePools<AST::CModule>();
 	}

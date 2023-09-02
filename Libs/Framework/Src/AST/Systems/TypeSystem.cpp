@@ -7,10 +7,10 @@
 #include "AST/Id.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Tree.h"
+#include "AST/Utils/Namespaces.h"
 #include "AST/Utils/TypeUtils.h"
 
-#include <Pipe/ECS/Filtering.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::AST::TypeSystem
@@ -46,7 +46,7 @@ namespace rift::AST::TypeSystem
 
 	void PropagateVariableTypes(PropagateVariableTypesAccess access)
 	{
-		for (Id id : ecs::ListAll<CExprDeclRefId>(access))
+		for (Id id : FindAllIdsWith<CExprDeclRefId>(access))
 		{
 			const Id declId = access.Get<const CExprDeclRefId>(id).declarationId;
 			if (access.IsValid(declId))
@@ -87,16 +87,16 @@ namespace rift::AST::TypeSystem
 
 	void PropagateExpressionTypes(PropagateExpressionTypesAccess access)
 	{
-		TArray<Id> dirtyTypeIds = ecs::ListAll<CDeclType, CChanged>(access);
+		TArray<Id> dirtyTypeIds = FindAllIdsWith<CDeclType, CChanged>(access);
 
 		TArray<Id> dirtyNodeIds;
-		p::ecs::GetChildren(access, dirtyTypeIds, dirtyNodeIds);
+		p::GetChildren(access, dirtyTypeIds, dirtyNodeIds);
 
 		// Make sure the nodes have inputs and outputs
-		ecs::ExcludeIfNot<CExprInputs, CExprOutputs>(access, dirtyNodeIds);
+		ExcludeIdsWithout<CExprInputs, CExprOutputs>(access, dirtyNodeIds);
 
 		// Only Unary and Binary operators propagate as of right now
-		ecs::ExcludeIf(dirtyNodeIds, [&access](Id id) {
+		ExcludeIdsWith(dirtyNodeIds, [&access](Id id) {
 			return !access.Has<CExprUnaryOperator>(id) && !access.Has<CExprBinaryOperator>(id);
 		});
 
@@ -137,8 +137,8 @@ namespace rift::AST::TypeSystem
 	void ResolveExprTypeIds(
 	    TAccessRef<TWrite<CExprTypeId>, CExprType, CNamespace, CParent, CChild> access)
 	{
-		auto callExprs = ecs::ListAll<CExprType>(access);
-		ecs::ExcludeIf<CExprTypeId>(access, callExprs);
+		auto callExprs = FindAllIdsWith<CExprType>(access);
+		ExcludeIdsWith<CExprTypeId>(access, callExprs);
 		for (Id id : callExprs)
 		{
 			auto& expr      = access.Get<const CExprType>(id);

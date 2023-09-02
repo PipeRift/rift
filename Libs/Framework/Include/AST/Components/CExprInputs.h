@@ -3,8 +3,7 @@
 
 #include "AST/Id.h"
 
-#include <Pipe/ECS/Id.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
+#include <Pipe/PipeECS.h>
 #include <Pipe/Reflect/Struct.h>
 
 
@@ -25,7 +24,7 @@ namespace rift::AST
 
 		bool IsNone() const
 		{
-			return p::ecs::IsNone(nodeId) || p::ecs::IsNone(pinId);
+			return p::IsNone(nodeId) || p::IsNone(pinId);
 		}
 	};
 
@@ -42,7 +41,7 @@ namespace rift::AST
 
 		CExprInputs& Add(AST::Id pinId)
 		{
-			linkedOutputs.AddDefaulted();
+			linkedOutputs.Add();
 			pinIds.Add(pinId);
 			return *this;
 		}
@@ -50,7 +49,7 @@ namespace rift::AST
 		CExprInputs& Insert(p::i32 index, AST::Id pinId)
 		{
 			pinIds.Insert(index, pinId);
-			linkedOutputs.Insert(index, {});
+			linkedOutputs.Insert(index);
 			return *this;
 		}
 

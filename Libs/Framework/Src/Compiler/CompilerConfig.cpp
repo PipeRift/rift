@@ -5,12 +5,12 @@
 #include <AST/Utils/ModuleUtils.h>
 
 
-namespace rift::compiler
+namespace rift
 {
-	void Config::Init(AST::Tree& ast)
+	void CompilerConfig::Init(AST::Tree& ast)
 	{
 		buildPath         = p::JoinPaths(AST::GetProjectPath(ast), "Build");
 		intermediatesPath = buildPath / "Intermediates";
 		binariesPath      = buildPath / buildMode;
 	}
-}    // namespace rift::compiler
+}    // namespace rift

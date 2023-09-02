@@ -4,7 +4,7 @@
 #include "Compiler/Compiler.h"
 
 
-namespace rift::compiler::LLVM
+namespace rift::LLVM
 {
 	void Link(Compiler& compiler);
-}    // namespace rift::compiler::LLVM
+}    // namespace rift::LLVM

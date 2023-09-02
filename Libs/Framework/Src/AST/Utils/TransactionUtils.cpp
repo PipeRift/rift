@@ -4,8 +4,7 @@
 
 #include "AST/Components/CDeclType.h"
 
-#include <Pipe/ECS/Filtering.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::AST::Transactions
@@ -13,7 +12,7 @@ namespace rift::AST::Transactions
 	// Transaction being recorded
 	static Transaction gActiveTransaction = {};
 
-	ScopedTransaction::ScopedTransaction(const TransactionAccess& access, TSpan<const Id> entityIds)
+	ScopedTransaction::ScopedTransaction(const TransactionAccess& access, TView<const Id> entityIds)
 	{
 		active = PreChange(access, entityIds);
 	}
@@ -30,7 +29,7 @@ namespace rift::AST::Transactions
 		}
 	}
 
-	bool PreChange(const TransactionAccess& access, TSpan<const Id> entityIds)
+	bool PreChange(const TransactionAccess& access, TView<const Id> entityIds)
 	{
 		if (!EnsureMsg(!gActiveTransaction.active,
 		        "Tried to record a transaction while another is already being recorded"))
@@ -42,13 +41,13 @@ namespace rift::AST::Transactions
 
 		// Mark files dirty
 		TArray<Id> parentIds;
-		p::ecs::GetAllParents(access, entityIds, parentIds);
+		p::GetAllParents(access, entityIds, parentIds);
 
 		parentIds.Append(entityIds);
 		access.AddN<CChanged>(parentIds);
 
 		// Transaction ids can also be files. FindParents doesn't consider them, so we merge it
-		ecs::ExcludeIfNot<CFileRef>(access, parentIds);
+		ExcludeIdsWithout<CFileRef>(access, parentIds);
 		if (!parentIds.IsEmpty())
 		{
 			access.AddN<CFileDirty>(parentIds);

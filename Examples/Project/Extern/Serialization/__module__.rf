@@ -1,7 +1,6 @@
 {
-    "name": "none",
-    "target": "Static",
-    "type": "CBinding",
-    "dependencies": [],
-    "libraryFiles": []
+    "CModule": {
+        "target": "Static",
+        "dependencies": []
+    }
 }

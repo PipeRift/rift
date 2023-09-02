@@ -7,9 +7,6 @@
 
 namespace rift::Editor
 {
-	using namespace p::core;
-
-
 	void ListTypesFromFilter(p::TAccessRef<AST::CNamespace> access, p::TArray<AST::Id> typeIds,
 	    AST::Id& selectedId, ImGuiTextFilter& searchFilter)
 	{
@@ -23,7 +20,7 @@ namespace rift::Editor
 				continue;
 			}
 
-			UI::PushID(u32(id));
+			UI::PushID(p::u32(id));
 			if (UI::Selectable(name.data(), id == selectedId))
 			{
 				selectedId = id;
@@ -55,11 +52,11 @@ namespace rift::Editor
 			filter.Draw("##Filter");
 
 			auto nativeIds =
-			    p::ecs::ListAll<AST::CDeclType, AST::CDeclNative, AST::CNamespace>(access);
+			    p::FindAllIdsWith<AST::CDeclType, AST::CDeclNative, AST::CNamespace>(access);
 			auto structIds =
-			    p::ecs::ListAll<AST::CDeclType, AST::CDeclStruct, AST::CNamespace>(access);
+			    p::FindAllIdsWith<AST::CDeclType, AST::CDeclStruct, AST::CNamespace>(access);
 			auto classIds =
-			    p::ecs::ListAll<AST::CDeclType, AST::CDeclClass, AST::CNamespace>(access);
+			    p::FindAllIdsWith<AST::CDeclType, AST::CDeclClass, AST::CNamespace>(access);
 			if (filter.IsActive())
 			{
 				if (UI::TreeNodeEx("Native##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
@@ -101,7 +98,7 @@ namespace rift::Editor
 		return selectedId != lastId;
 	}
 
-	bool InputLiteralValue(AST::Tree& ast, StringView label, AST::Id literalId)
+	bool InputLiteralValue(AST::Tree& ast, p::StringView label, AST::Id literalId)
 	{
 		return false;
 	}

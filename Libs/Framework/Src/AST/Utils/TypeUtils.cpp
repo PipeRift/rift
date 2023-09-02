@@ -32,17 +32,16 @@
 
 #include <Pipe/Core/Checks.h>
 #include <Pipe/Core/Profiler.h>
-#include <Pipe/ECS/Serialization.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
 #include <Pipe/Files/Files.h>
+#include <Pipe/PipeECS.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
 
 namespace rift::AST
 {
-	static p::TArray<RiftType> fileTypes;
+	static p::TArray<RiftType> gFileTypes;
 
-	auto typeComponents = [](auto& rw) {
+	auto gTypeComponents = [](auto& rw) {
 		rw.template SerializePools<CChild, CDeclVariable, CDeclFunction, CExprBinaryOperator,
 		    CExprCall, CExprDeclRefId, CExprOutputs, CExprInputs, CStmtReturn, CExprType,
 		    CExprUnaryOperator, CNodePosition, CNamespace, CParent, CLiteralBool, CLiteralFloating,
@@ -62,7 +61,7 @@ namespace rift::AST
 
 		if (auto* fileType = FindFileType(typeId))
 		{
-			ast.AddDefaulted(fileType->tagType->GetId(), id);
+			ast.AddDefault(fileType->tagType->GetId(), id);
 		}
 	}
 
@@ -83,7 +82,7 @@ namespace rift::AST
 	}
 
 	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access,
-	    TSpan<Id> typeIds, bool removeFromDisk)
+	    TView<Id> typeIds, bool removeFromDisk)
 	{
 		if (removeFromDisk)
 		{
@@ -95,7 +94,7 @@ namespace rift::AST
 				}
 			}
 		}
-		p::ecs::RemoveDeep(access, typeIds);
+		p::Remove(access, typeIds, true);
 	}
 
 	void SerializeType(Tree& ast, Id id, String& data)
@@ -108,11 +107,11 @@ namespace rift::AST
 		}
 
 		JsonFormatWriter writer{};
-		p::ecs::EntityWriter w{writer.GetWriter(), ast};
+		p::EntityWriter w{writer.GetWriter(), ast};
 		w.BeginObject();
 
 		w.Next("type", ast.Get<CDeclType>(id).typeId);
-		w.SerializeEntity(id, typeComponents);
+		w.SerializeEntity(id, gTypeComponents);
 
 		data = writer.ToString();
 	}
@@ -127,14 +126,14 @@ namespace rift::AST
 			return;
 		}
 
-		p::ecs::EntityReader r{reader, ast};
+		p::EntityReader r{reader, ast};
 		r.BeginObject();
 
 		p::Tag typeId;
 		r.Next("type", typeId);
 		InitTypeFromFileType(ast, id, typeId);
 
-		r.SerializeEntity(id, typeComponents);
+		r.SerializeEntity(id, gTypeComponents);
 	}
 
 
@@ -204,7 +203,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type, id);
+			p::Attach(ast, type, id);
 		}
 		return id;
 	}
@@ -220,7 +219,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type, id);
+			p::Attach(ast, type, id);
 		}
 		return id;
 	}
@@ -237,7 +236,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type.GetId(), id);
+			p::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -248,7 +247,7 @@ namespace rift::AST
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
-		p::ecs::AddChildren(ast, functionId, id);
+		p::Attach(ast, functionId, id);
 		ast.GetOrAdd<CExprOutputs>(functionId).Add(id);
 		return id;
 	}
@@ -259,7 +258,7 @@ namespace rift::AST
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
-		p::ecs::AddChildren(ast, functionId, id);
+		p::Attach(ast, functionId, id);
 		ast.GetOrAdd<CExprInputs>(functionId).Add(id);
 		return id;
 	}
@@ -275,17 +274,17 @@ namespace rift::AST
 		const Id valueId = ast.Create();
 		ast.Add<CExprTypeId>(valueId, {.id = ast.GetNativeTypes().boolId});
 		ast.Add<CExprType>(id).type = GetNamespace(ast, ast.GetNativeTypes().boolId);
-		p::ecs::AddChildren(ast, id, valueId);
+		p::Attach(ast, id, valueId);
 		ast.Add<CExprInputs>(id).Add(valueId);
 
 		TArray<Id> outIds(2);
 		ast.Create(outIds);
-		p::ecs::AddChildren(ast, id, outIds);
+		p::Attach(ast, id, outIds);
 		ast.Add<CStmtOutputs>(id, Move(outIds));
 
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type.GetId(), id);
+			p::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -298,7 +297,7 @@ namespace rift::AST
 		ast.Add<CStmtInput>(returnId);
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type.GetId(), returnId);
+			p::Attach(ast, type.GetId(), returnId);
 		}
 		return returnId;
 	}
@@ -383,7 +382,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type.GetId(), id);
+			p::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -396,7 +395,7 @@ namespace rift::AST
 		ast.Add<CExprDeclRef>(id);
 		ast.Add<CExprOutputs>(id).Add(id);    // Types gets resolved by a system later
 
-		const Id typeId = p::ecs::GetParent(ast, declId);
+		const Id typeId = p::GetParent(ast, declId);
 		Check(!IsNone(typeId));
 		auto& declRefExpr           = ast.Add<CExprDeclRef>(id);
 		declRefExpr.ownerName       = ast.Get<CNamespace>(typeId).name;
@@ -406,7 +405,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type.GetId(), id);
+			p::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -420,7 +419,7 @@ namespace rift::AST
 		ast.Add<CExprOutputs>(id).Add(id);
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type.GetId(), id);
+			p::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -435,10 +434,10 @@ namespace rift::AST
 		auto& inputs = ast.Add<CExprInputs>(id);
 		inputs.Resize(2);
 		ast.Create(inputs.pinIds);
-		p::ecs::AddChildren(ast, id, inputs.pinIds);
+		p::Attach(ast, id, inputs.pinIds);
 		if (type)
 		{
-			p::ecs::AddChildren(ast, type.GetId(), id);
+			p::Attach(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -448,7 +447,7 @@ namespace rift::AST
 		if (!IsNone(ownerId))
 		{
 			TArray<Id> children;
-			p::ecs::GetChildren(access, ownerId, children);
+			p::GetChildren(access, ownerId, children);
 			for (Id childId : children)
 			{
 				const auto* ns = access.TryGet<const CNamespace>(childId);
@@ -461,10 +460,10 @@ namespace rift::AST
 		return NoId;
 	}
 
-	void RemoveNodes(const RemoveAccess& access, TSpan<Id> ids)
+	void RemoveNodes(const RemoveAccess& access, TView<Id> ids)
 	{
 		ScopedChange(access, ids);
-		p::ecs::RemoveDeep(access, ids);
+		p::Remove(access, ids, true);
 	}
 
 	bool CopyExpressionType(TAccessRef<TWrite<CExprTypeId>> access, Id sourcePinId, Id targetPinId)
@@ -491,22 +490,22 @@ namespace rift::AST
 
 	void RegisterFileType(RiftType&& type)
 	{
-		fileTypes.FindOrAddSorted(Move(type));
+		gFileTypes.AddUniqueSorted(Move(type));
 	}
 	void UnregisterFileType(p::Tag typeId)
 	{
-		fileTypes.RemoveSorted(typeId);
+		gFileTypes.RemoveSorted(typeId);
 	}
 
-	p::TSpan<const RiftType> GetFileTypes()
+	p::TView<const RiftType> GetFileTypes()
 	{
-		return fileTypes;
+		return gFileTypes;
 	}
 
 	const RiftType* FindFileType(p::Tag typeId)
 	{
-		const i32 index = fileTypes.FindSortedEqual(typeId);
-		return index != NO_INDEX ? fileTypes.Data() + index : nullptr;
+		const i32 index = gFileTypes.FindSortedEqual(typeId);
+		return index != NO_INDEX ? gFileTypes.Data() + index : nullptr;
 	}
 
 	const RiftType* FindFileType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId)

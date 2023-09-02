@@ -3,9 +3,6 @@
 
 #include "AST/Tree.h"
 
-#include <Pipe/Core/Array.h>
-#include <Pipe/Core/Span.h>
-
 
 namespace rift::AST
 {

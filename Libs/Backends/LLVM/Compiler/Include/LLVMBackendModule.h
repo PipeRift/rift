@@ -16,19 +16,16 @@ namespace rift
 	};
 
 
-	namespace compiler
+	class LLVMBackend : public Backend
 	{
-		class LLVMBackend : public Backend
+		CLASS(LLVMBackend, Backend)
+
+	public:
+		Tag GetName() override
 		{
-			CLASS(LLVMBackend, Backend)
+			return "LLVM";
+		}
 
-		public:
-			Tag GetName() override
-			{
-				return "LLVM";
-			}
-
-			void Build(Compiler& compiler) override;
-		};
-	}    // namespace compiler
+		void Build(Compiler& compiler) override;
+	};
 }    // namespace rift

@@ -6,8 +6,7 @@
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 
-#include <Pipe/ECS/Access.h>
-#include <Pipe/ECS/Components/CChild.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::AST
@@ -26,13 +25,13 @@ namespace rift::AST
 			bool active = false;
 
 			ScopedTransaction() {}
-			ScopedTransaction(const TransactionAccess& access, TSpan<const Id> entityIds);
+			ScopedTransaction(const TransactionAccess& access, TView<const Id> entityIds);
 			ScopedTransaction(ScopedTransaction&& other) noexcept;
 			~ScopedTransaction();
 		};
 
 
-		bool PreChange(const TransactionAccess& access, TSpan<const Id> entityIds);
+		bool PreChange(const TransactionAccess& access, TView<const Id> entityIds);
 		void PostChange();
 	}    // namespace Transactions
 }    // namespace rift::AST

@@ -4,8 +4,6 @@
 
 #include "AST/Id.h"
 
-#include <Pipe/ECS/Utils/Hierarchy.h>
-
 
 namespace rift::AST
 {
@@ -40,7 +38,7 @@ namespace rift::AST
 		}
 		else
 		{
-			outputNode = p::ecs::GetParent(ast, outputPin);
+			outputNode = p::GetParent(ast, outputPin);
 			if (IsNone(outputNode))
 			{
 				return false;
@@ -150,7 +148,7 @@ namespace rift::AST
 	}
 	bool DisconnectStmtFromNext(Tree& ast, AST::Id outputPin)
 	{
-		return DisconnectStmtFromNext(ast, outputPin, p::ecs::GetParent(ast, outputPin));
+		return DisconnectStmtFromNext(ast, outputPin, p::GetParent(ast, outputPin));
 	}
 
 	bool WouldStmtLoop(const Tree& ast, Id outputNode, Id outputPin, Id inputNode)
@@ -182,7 +180,7 @@ namespace rift::AST
 	}
 
 	void GetPreviousStmts(
-	    TAccessRef<CStmtInput> access, TSpan<const Id> stmtIds, TArray<Id>& prevStmtIds)
+	    TAccessRef<CStmtInput> access, TView<const Id> stmtIds, TArray<Id>& prevStmtIds)
 	{
 		prevStmtIds.ReserveMore(stmtIds.Size());
 		for (const Id stmtId : stmtIds)
@@ -194,7 +192,7 @@ namespace rift::AST
 		}
 	}
 
-	TSpan<Id> GetNextStmts(TAccessRef<CStmtOutputs> access, Id stmtIds)
+	TView<Id> GetNextStmts(TAccessRef<CStmtOutputs> access, Id stmtIds)
 	{
 		if (const auto* output = access.TryGet<const CStmtOutputs>(stmtIds))
 		{
@@ -204,7 +202,7 @@ namespace rift::AST
 	}
 
 	void GetNextStmts(
-	    TAccessRef<CStmtOutputs> access, TSpan<const Id> stmtIds, TArray<Id>& nextStmtIds)
+	    TAccessRef<CStmtOutputs> access, TView<const Id> stmtIds, TArray<Id>& nextStmtIds)
 	{
 		nextStmtIds.ReserveMore(stmtIds.Size());
 		for (const Id stmtId : stmtIds)

@@ -5,8 +5,8 @@
 #include "Pipe/Core/Broadcast.h"
 
 #include <Pipe/Core/Tag.h>
-#include <Pipe/ECS/Context.h>
 #include <Pipe/Memory/UniquePtr.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::AST
@@ -29,10 +29,10 @@ namespace rift::AST
 	};
 
 
-	struct Tree : public p::ecs::Context
+	struct Tree : public p::EntityContext
 	{
 	private:
-		static TBroadcast<Tree&> onInit;
+		static p::TBroadcast<Tree&> onInit;
 
 		NativeTypeIds nativeTypes;
 
@@ -49,7 +49,7 @@ namespace rift::AST
 			return nativeTypes;
 		}
 
-		static const TBroadcast<Tree&>& OnInit();
+		static const p::TBroadcast<Tree&>& OnInit();
 
 	private:
 		void CopyFrom(const Tree& other);

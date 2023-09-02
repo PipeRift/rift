@@ -9,8 +9,8 @@
 #include "AST/Components/Tags/CInvalid.h"
 #include "AST/Tree.h"
 
-#include <Pipe/Core/Array.h>
-#include <Pipe/Core/Span.h>
+#include <Pipe/PipeArrays.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::AST
@@ -25,16 +25,16 @@ namespace rift::AST::FunctionsSystem
 
 	void Init(Tree& ast);
 	void ResolveCallFunctionIds(
-	    TAccessRef<TWrite<CExprCallId>, CExprCall, CDeclFunction, CNamespace, CParent, CChild>
+	    p::TAccessRef<p::TWrite<CExprCallId>, CExprCall, CDeclFunction, CNamespace, CParent, CChild>
 	        access);
 	void PushInvalidPinsBack(
-	    TAccessRef<TWrite<CExprInputs>, TWrite<CExprOutputs>, CInvalid> access);
+	    p::TAccessRef<p::TWrite<CExprInputs>, p::TWrite<CExprOutputs>, CInvalid> access);
 
 	// Marks calls referencing dirty functions as dirty theirselfs
 	void PropagateDirtyIntoCalls(Tree& ast);
 	void SyncCallPinsFromFunction(Tree& ast);
-	using InvalidDisconnectedPinAccess =
-	    TAccessRef<CInvalid, CExprInputs, TWrite<CTmpInvalidKeep>, TWrite<CChild>, TWrite<CParent>>;
+	using InvalidDisconnectedPinAccess = p::TAccessRef<CInvalid, CExprInputs,
+	    p::TWrite<CTmpInvalidKeep>, p::TWrite<CChild>, p::TWrite<CParent>>;
 	void RemoveInvalidDisconnectedArgs(InvalidDisconnectedPinAccess access);
 	void ClearAddedTags(Tree& ast);
 }    // namespace rift::AST::FunctionsSystem

@@ -8,8 +8,8 @@
 #include "AST/Id.h"
 #include "AST/Tree.h"
 
-#include <Pipe/Core/Span.h>
-#include <Pipe/ECS/Filtering.h>
+#include <Pipe/PipeArrays.h>
+#include <Pipe/PipeECS.h>
 
 
 // NOTE: In expression graphs, the Link Id is the Input Pin Id
@@ -29,7 +29,7 @@ namespace rift::AST
 	 * @param ids
 	 * @param ignoreRoot ignore ids's inputs and outputs and only remove from children
 	 */
-	void DisconnectAllExprDeep(Tree& ast, TSpan<const Id> ids, bool ignoreRoot = false);
+	void DisconnectAllExprDeep(Tree& ast, TView<const Id> ids, bool ignoreRoot = false);
 
 	bool RemoveExprInputPin(TAccessRef<CExprInputs, TWrite<CInvalid>> access, ExprInput id);
 	bool RemoveExprOutputPin(TAccessRef<CExprOutputs, TWrite<CInvalid>> access, ExprOutput id);

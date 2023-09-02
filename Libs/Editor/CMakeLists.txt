@@ -9,6 +9,7 @@ target_sources(RiftEditor PRIVATE ${RiftEditor_SOURCE_FILES})
 target_link_libraries(RiftEditor PUBLIC
     Rift
     RiftBackendLLVM
+    RiftBackendMIR
     RiftUI
     CLI11
 )

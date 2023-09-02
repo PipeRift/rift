@@ -16,3 +16,6 @@
 [submodule "Extern/taskflow"]
 	path = Extern/taskflow
 	url = https://github.com/taskflow/taskflow.git
+[submodule "Extern/mir"]
+	path = Extern/mir
+	url = https://github.com/vnmakarov/mir.git

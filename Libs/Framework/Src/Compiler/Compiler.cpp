@@ -13,18 +13,18 @@
 #include <Pipe/Files/Files.h>
 
 
-namespace rift::compiler
+namespace rift
 {
 	void Compiler::AddError(StringView str)
 	{
-		Log::Error(str);
+		p::Error(str);
 		CompileError newError{};
 		newError.text = str;
 		errors.Add(newError);
 	}
 
 
-	void Build(AST::Tree& ast, const Config& config, TPtr<Backend> backend)
+	void Build(AST::Tree& ast, const CompilerConfig& config, TPtr<Backend> backend)
 	{
 		ZoneScoped;
 		Compiler compiler{ast, config};
@@ -40,18 +40,18 @@ namespace rift::compiler
 
 			if (!AST::HasProject(ast))
 			{
-				Log::Error("No existing project to build.");
+				p::Error("No existing project to build.");
 				return;
 			}
 			compiler.config.Init(ast);
 
 			if (auto* nativeBindings = GetModule<NativeBindingModule>().Get())
 			{
-				Log::Info("Interpret native modules");
+				p::Info("Interpret native modules");
 				nativeBindings->SyncIncludes(ast);
 			}
 
-			Log::Info("Loading files");
+			p::Info("Loading files");
 			AST::LoadSystem::Run(ast);
 
 			OptimizationSystem::PruneDisconnectedExpressions(ast);
@@ -59,16 +59,16 @@ namespace rift::compiler
 			AST::TypeSystem::PropagateExpressionTypes(ast);
 		}
 
-		Log::Info("Building project '{}'", AST::GetProjectName(compiler.ast));
+		p::Info("Building project '{}'", AST::GetProjectName(compiler.ast));
 		// Clean build folders
-		Log::Info("Cleaning previous build");
+		p::Info("Cleaning previous build");
 		files::Delete(compiler.config.binariesPath, true, false);
 		files::CreateFolder(compiler.config.binariesPath, true);
 
 		backend->Build(compiler);
 	}
 
-	void Build(AST::Tree& ast, const Config& config, ClassType* backendType)
+	void Build(AST::Tree& ast, const CompilerConfig& config, ClassType* backendType)
 	{
 		if (backendType)
 		{
@@ -76,4 +76,4 @@ namespace rift::compiler
 			Build(ast, config, backend);
 		}
 	}
-}    // namespace rift::compiler
+}    // namespace rift

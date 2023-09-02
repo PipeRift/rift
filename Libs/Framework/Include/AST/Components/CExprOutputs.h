@@ -3,9 +3,7 @@
 
 #include "AST/Id.h"
 
-#include <Pipe/ECS/Access.h>
-#include <Pipe/ECS/Id.h>
-#include <Pipe/ECS/Utils/Hierarchy.h>
+#include <Pipe/PipeECS.h>
 #include <Pipe/Reflect/Struct.h>
 
 
@@ -26,7 +24,7 @@ namespace rift::AST
 
 		bool IsNone() const
 		{
-			return p::ecs::IsNone(nodeId) || p::ecs::IsNone(pinId);
+			return p::IsNone(nodeId) || p::IsNone(pinId);
 		}
 	};
 

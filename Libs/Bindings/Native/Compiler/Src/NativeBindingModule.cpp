@@ -14,9 +14,8 @@
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/TypeUtils.h>
 #include <clang-c/Index.h>
-#include <Pipe/Core/Span.h>
-#include <Pipe/ECS/Filtering.h>
-#include <Pipe/Memory/NewDelete.h>
+#include <Pipe/PipeArrays.h>
+#include <Pipe/PipeECS.h>
 
 
 // P_OVERRIDE_NEW_DELETE
@@ -63,7 +62,7 @@ namespace rift
 		AST::PreAllocPools<CNativeBinding>();
 	}
 
-	void FindHeaders(AST::Tree& ast, TSpan<ParsedModule> parsedModules)
+	void FindHeaders(AST::Tree& ast, TView<ParsedModule> parsedModules)
 	{
 		p::TAccess<AST::CFileRef> access{ast};
 		for (auto& module : parsedModules)
@@ -76,7 +75,7 @@ namespace rift
 		}
 	}
 
-	void ParseHeaders(AST::Tree& ast, TSpan<ParsedModule> parsedModules)
+	void ParseHeaders(AST::Tree& ast, TView<ParsedModule> parsedModules)
 	{
 		for (auto& module : parsedModules)
 		{
@@ -90,7 +89,7 @@ namespace rift
 				{
 					module.headers.RemoveAt(i, false);
 					--i;
-					Log::Error("Unable to parse module header '{}'", include);
+					p::Error("Unable to parse module header '{}'", include);
 					continue;
 				}
 				module.units.Add(unit);
@@ -101,7 +100,7 @@ namespace rift
 	void NativeBindingModule::SyncIncludes(AST::Tree& ast)
 	{
 		TArray<AST::Id> moduleIds;
-		p::ecs::ListAll<AST::CModule, CNativeBinding>(ast, moduleIds);
+		p::FindAllIdsWith<AST::CModule, CNativeBinding>(ast, moduleIds);
 
 		// Only use automatic native bindings on modules marked as such
 		moduleIds.RemoveIfSwap([ast](auto id) {
@@ -112,7 +111,7 @@ namespace rift
 		parsedModules.Reserve(moduleIds.Size());
 		for (i32 i = 0; i < moduleIds.Size(); ++i)
 		{
-			auto& parsed = parsedModules.AddDefaultedRef();
+			auto& parsed = parsedModules.AddRef();
 			parsed.id    = moduleIds[i];
 		}
 		FindHeaders(ast, parsedModules);

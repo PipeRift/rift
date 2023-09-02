@@ -6,10 +6,9 @@
 #include "AST/Components/CNamespace.h"
 #include "AST/Components/CProject.h"
 #include "AST/Tree.h"
-#include "Pipe/ECS/Serialization.h"
 
-#include <Pipe/ECS/Filtering.h>
 #include <Pipe/Memory/OwnPtr.h>
+#include <Pipe/PipeECS.h>
 
 
 namespace rift::AST
@@ -49,31 +48,31 @@ namespace rift::AST
 
 	Id CreateModule(Tree& ast, StringView path);
 
-	Id GetProjectId(TAccessRef<CProject> access);
+	Id GetProjectId(p::TAccessRef<CProject> access);
 
-	Tag GetProjectName(TAccessRef<CProject, CNamespace, CFileRef> access);
-	p::StringView GetProjectPath(TAccessRef<CFileRef, CProject> access);
-	CModule* GetProjectModule(TAccessRef<CProject, TWrite<CModule>> access);
+	Tag GetProjectName(p::TAccessRef<CProject, CNamespace, CFileRef> access);
+	p::StringView GetProjectPath(p::TAccessRef<CFileRef, CProject> access);
+	CModule* GetProjectModule(p::TAccessRef<CProject, p::TWrite<CModule>> access);
 
 	bool HasProject(Tree& ast);
 
 	// Resolve a module's name
-	Tag GetModuleName(TAccessRef<CNamespace, CFileRef> access, Id moduleId);
+	Tag GetModuleName(p::TAccessRef<CNamespace, CFileRef> access, Id moduleId);
 
 	// Resolve a module's name
-	p::StringView GetModulePath(TAccessRef<CFileRef> access, Id moduleId);
+	p::StringView GetModulePath(p::TAccessRef<CFileRef> access, Id moduleId);
 
 	void SerializeModule(AST::Tree& ast, AST::Id id, String& data);
 	void DeserializeModule(AST::Tree& ast, AST::Id id, const String& data);
-	const TBroadcast<ecs::EntityReader&>& OnReadModulePools();
-	const TBroadcast<ecs::EntityWriter&>& OnWriteModulePools();
+	const TBroadcast<p::EntityReader&>& OnReadModulePools();
+	const TBroadcast<p::EntityWriter&>& OnWriteModulePools();
 
 	void RegisterModuleBinding(ModuleBinding binding);
 	void UnregisterModuleBinding(p::Tag bindingId);
 	void AddBindingToModule(AST::Tree& ast, AST::Id id, p::Tag bindingId);
 	void RemoveBindingFromModule(AST::Tree& ast, AST::Id id, p::Tag bindingId);
 	const ModuleBinding* FindModuleBinding(p::Tag id);
-	p::TSpan<const ModuleBinding> GetModuleBindings();
+	p::TView<const ModuleBinding> GetModuleBindings();
 
 
 	template<typename... T>

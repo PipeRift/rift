@@ -29,7 +29,7 @@ namespace rift::UI
 
 	void OnGl3WError(int error, const char* description)
 	{
-		Log::Error("Glfw Error {}: {}", error, description);
+		p::Error("Glfw Error {}: {}", error, description);
 	}
 
 	bool Init()
@@ -70,7 +70,7 @@ namespace rift::UI
 		// Initialize OpenGL loader
 		if (gl3wInit() != 0)
 		{
-			Log::Error("Failed to initialize OpenGL loader (gl3w)!\n");
+			p::Error("Failed to initialize OpenGL loader (gl3w)!\n");
 			return false;
 		}
 

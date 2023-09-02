@@ -7,8 +7,8 @@
 #include "AST/Tree.h"
 #include "AST/Utils/Statements.h"
 
-#include <Pipe/Core/Span.h>
-#include <Pipe/ECS/Filtering.h>
+#include <Pipe/PipeArrays.h>
+#include <Pipe/PipeECS.h>
 
 
 // NOTE: In statement graphs, the Link Id is the Input Node Id
@@ -29,7 +29,7 @@ namespace rift::AST
 	 * @param ids
 	 * @param ignoreRoot ignore ids's inputs and outputs and only remove from children
 	 */
-	void DisconnectAllStmtDeep(Tree& ast, TSpan<const AST::Id> ids, bool ignoreRoot = false);
+	void DisconnectAllStmtDeep(Tree& ast, TView<const AST::Id> ids, bool ignoreRoot = false);
 
 	// TODO
 	/** Check that a and b are connected (in any direction) */
@@ -48,10 +48,10 @@ namespace rift::AST
 
 	Id GetPreviousStmt(TAccessRef<CStmtInput> access, Id stmtId);
 	void GetPreviousStmts(
-	    TAccessRef<CStmtInput> access, TSpan<const Id> stmtIds, TArray<Id>& prevStmtIds);
-	TSpan<Id> GetNextStmts(TAccessRef<CStmtOutputs> access, Id stmtId);
+	    TAccessRef<CStmtInput> access, TView<const Id> stmtIds, TArray<Id>& prevStmtIds);
+	TView<Id> GetNextStmts(TAccessRef<CStmtOutputs> access, Id stmtId);
 	void GetNextStmts(
-	    TAccessRef<CStmtOutputs> access, TSpan<const Id> stmtIds, TArray<Id>& nextStmtIds);
+	    TAccessRef<CStmtOutputs> access, TView<const Id> stmtIds, TArray<Id>& nextStmtIds);
 
 	void GetStmtChain(TAccessRef<CStmtOutput, CStmtOutputs> access, Id firstStmtId,
 	    TArray<Id>& stmtIds, Id& splitStmtId);
