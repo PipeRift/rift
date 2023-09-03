@@ -13,7 +13,7 @@ namespace rift::AST
 
 	struct STypes : public Struct
 	{
-		STRUCT(STypes, Struct)
+		P_STRUCT(STypes, Struct)
 
 		TMap<Tag, Id> typesByName;
 		// TODO: Use StringView to point to CFileRef component's path.

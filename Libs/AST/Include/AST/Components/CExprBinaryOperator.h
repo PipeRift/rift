@@ -43,9 +43,9 @@ namespace rift::AST
 {
 	struct CExprBinaryOperator : public CExpression
 	{
-		STRUCT(CExprBinaryOperator, CExpression)
+		P_STRUCT(CExprBinaryOperator, CExpression)
 
-		PROP(type)
+		P_PROP(type)
 		BinaryOperatorType type = BinaryOperatorType::Add;
 
 

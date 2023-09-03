@@ -13,7 +13,7 @@ namespace rift::Editor
 {
 	struct CTypeEditor : public p::Struct
 	{
-		STRUCT(CTypeEditor, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(CTypeEditor, p::Struct, p::Struct_NotSerialized)
 
 		static const Tag rightTopNode;
 		static const Tag rightBottomNode;

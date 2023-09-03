@@ -9,7 +9,7 @@ namespace rift
 {
 	class MIRBackendModule : public Module
 	{
-		CLASS(MIRBackendModule, Module)
+		P_CLASS(MIRBackendModule, Module)
 
 	public:
 		MIRBackendModule();
@@ -18,7 +18,7 @@ namespace rift
 
 	class MIRBackend : public Backend
 	{
-		CLASS(MIRBackend, Backend)
+		P_CLASS(MIRBackend, Backend)
 
 	public:
 		Tag GetName() override

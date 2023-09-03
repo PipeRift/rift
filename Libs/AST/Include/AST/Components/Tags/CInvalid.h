@@ -8,6 +8,6 @@ namespace rift::AST
 {
 	struct CInvalid : public p::Struct
 	{
-		STRUCT(CInvalid, p::Struct)
+		P_STRUCT(CInvalid, p::Struct)
 	};
 }    // namespace rift::AST

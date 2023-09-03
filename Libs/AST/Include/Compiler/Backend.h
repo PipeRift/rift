@@ -11,7 +11,7 @@ namespace rift
 {
 	class Backend : public Class
 	{
-		CLASS(Backend, Class)
+		P_CLASS(Backend, Class)
 
 	public:
 		virtual Tag GetName()

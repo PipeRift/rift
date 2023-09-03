@@ -9,9 +9,9 @@ namespace rift::AST
 {
 	struct CNamespace : public p::Struct
 	{
-		STRUCT(CNamespace, p::Struct)
+		P_STRUCT(CNamespace, p::Struct)
 
-		PROP(name);
+		P_PROP(name);
 		p::Tag name;
 
 
@@ -40,7 +40,7 @@ namespace rift::AST
 
 	struct Namespace : public p::Struct
 	{
-		STRUCT(Namespace, p::Struct)
+		P_STRUCT(Namespace, p::Struct)
 
 		static constexpr p::i32 scopeCount = 8;
 		p::Tag scopes[scopeCount];    // TODO: Implement Inline arrays

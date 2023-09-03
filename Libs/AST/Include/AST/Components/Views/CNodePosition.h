@@ -9,9 +9,9 @@ namespace rift
 {
 	struct CNodePosition : public p::Struct
 	{
-		STRUCT(CNodePosition, p::Struct)
+		P_STRUCT(CNodePosition, p::Struct)
 
-		PROP(position)
+		P_PROP(position)
 		p::v2 position;
 
 		CNodePosition() = default;

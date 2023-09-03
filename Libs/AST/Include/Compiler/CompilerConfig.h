@@ -15,7 +15,7 @@ namespace rift
 
 	struct CompilerConfig : public p::Struct
 	{
-		STRUCT(CompilerConfig, p::Struct)
+		P_STRUCT(CompilerConfig, p::Struct)
 
 		String buildMode{"Release"};
 

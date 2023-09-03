@@ -8,9 +8,9 @@ namespace rift::AST
 {
 	struct CLiteralBool : public CLiteral
 	{
-		STRUCT(CLiteralBool, CLiteral)
+		P_STRUCT(CLiteralBool, CLiteral)
 
-		PROP(value)
+		P_PROP(value)
 		bool value = false;
 	};
 }    // namespace rift::AST

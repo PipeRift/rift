@@ -8,6 +8,6 @@ namespace rift::AST
 {
 	struct CStmtFor : public p::Struct
 	{
-		STRUCT(CStmtFor, p::Struct)
+		P_STRUCT(CStmtFor, p::Struct)
 	};
 }    // namespace rift::AST

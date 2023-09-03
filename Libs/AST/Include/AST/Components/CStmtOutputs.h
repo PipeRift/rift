@@ -14,21 +14,21 @@ namespace rift::AST
 
 	struct CStmtOutput : public p::Struct
 	{
-		STRUCT(CStmtOutput, p::Struct)
+		P_STRUCT(CStmtOutput, p::Struct)
 
-		PROP(linkInputNode)
+		P_PROP(linkInputNode)
 		Id linkInputNode = NoId;
 	};
 
 
 	struct CStmtOutputs : public p::Struct
 	{
-		STRUCT(CStmtOutputs, p::Struct)
+		P_STRUCT(CStmtOutputs, p::Struct)
 
 		// Both arrays keep the same index to the input node and the output pin
-		PROP(pinIds)
+		P_PROP(pinIds)
 		TArray<Id> pinIds;
-		PROP(linkInputNodes)
+		P_PROP(linkInputNodes)
 		TArray<Id> linkInputNodes;
 
 

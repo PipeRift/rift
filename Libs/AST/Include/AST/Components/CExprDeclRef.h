@@ -8,20 +8,20 @@ namespace rift::AST
 {
 	struct CExprDeclRef : public CExpression
 	{
-		STRUCT(CExprDeclRef, CExpression)
+		P_STRUCT(CExprDeclRef, CExpression)
 
-		PROP(ownerName)
+		P_PROP(ownerName)
 		p::Tag ownerName;
 
-		PROP(name)
+		P_PROP(name)
 		p::Tag name;
 	};
 
 	struct CExprDeclRefId : public CExpression
 	{
-		STRUCT(CExprDeclRefId, CExpression)
+		P_STRUCT(CExprDeclRefId, CExpression)
 
-		PROP(declarationId)
+		P_PROP(declarationId)
 		Id declarationId;
 	};
 }    // namespace rift::AST

@@ -12,6 +12,6 @@ namespace rift::AST
 	 */
 	struct CStmtReturn : public CExpression
 	{
-		STRUCT(CStmtReturn, CExpression)
+		P_STRUCT(CStmtReturn, CExpression)
 	};
 }    // namespace rift::AST

@@ -22,12 +22,12 @@ namespace rift::AST
 
 	struct CModule : public p::Struct
 	{
-		STRUCT(CModule, p::Struct)
+		P_STRUCT(CModule, p::Struct)
 
-		PROP(target)
+		P_PROP(target)
 		RiftModuleTarget target = RiftModuleTarget::Executable;
 
-		PROP(dependencies)
+		P_PROP(dependencies)
 		p::TArray<p::Tag> dependencies;
 	};
 }    // namespace rift::AST

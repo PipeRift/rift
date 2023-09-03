@@ -15,7 +15,7 @@ namespace rift::AST
 	// Contains loaded string data from disk
 	struct SStringLoad : public Struct
 	{
-		STRUCT(SStringLoad, Struct)
+		P_STRUCT(SStringLoad, Struct)
 
 		// This buffers are always in sync with size
 		// They bind by array index an Id, path and loaded string

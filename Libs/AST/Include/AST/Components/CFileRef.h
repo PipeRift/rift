@@ -15,9 +15,9 @@ namespace rift::AST
 	 */
 	struct CFileRef : public p::Struct
 	{
-		STRUCT(CFileRef, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(CFileRef, p::Struct, p::Struct_NotSerialized)
 
-		PROP(path)
+		P_PROP(path)
 		p::String path;
 
 

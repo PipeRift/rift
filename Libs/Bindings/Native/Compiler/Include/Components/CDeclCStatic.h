@@ -8,6 +8,6 @@ namespace rift
 {
 	struct CDeclCStatic : public AST::CDeclRecord
 	{
-		STRUCT(CDeclCStatic, CDeclRecord)
+		P_STRUCT(CDeclCStatic, CDeclRecord)
 	};
 }    // namespace rift

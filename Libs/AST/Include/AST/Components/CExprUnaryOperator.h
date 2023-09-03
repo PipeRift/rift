@@ -24,9 +24,9 @@ namespace rift::AST
 {
 	struct CExprUnaryOperator : public CExpression
 	{
-		STRUCT(CExprUnaryOperator, CExpression)
+		P_STRUCT(CExprUnaryOperator, CExpression)
 
-		PROP(type)
+		P_PROP(type)
 		UnaryOperatorType type = UnaryOperatorType::Not;
 
 

@@ -11,12 +11,12 @@ namespace rift::AST
 {
 	struct ExprOutput : public p::Struct
 	{
-		STRUCT(ExprOutput, p::Struct)
+		P_STRUCT(ExprOutput, p::Struct)
 
-		PROP(nodeId)
+		P_PROP(nodeId)
 		AST::Id nodeId = AST::NoId;
 
-		PROP(pinId)
+		P_PROP(pinId)
 		AST::Id pinId = AST::NoId;
 
 
@@ -30,12 +30,12 @@ namespace rift::AST
 
 	struct CExprInputs : public p::Struct
 	{
-		STRUCT(CExprInputs, p::Struct)
+		P_STRUCT(CExprInputs, p::Struct)
 
-		PROP(linkedOutputs)
+		P_PROP(linkedOutputs)
 		p::TArray<ExprOutput> linkedOutputs;
 
-		PROP(pinIds)
+		P_PROP(pinIds)
 		p::TArray<AST::Id> pinIds;
 
 

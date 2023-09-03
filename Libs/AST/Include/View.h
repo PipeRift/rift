@@ -11,9 +11,9 @@ namespace rift
 {
 	struct View : public p::Struct
 	{
-		STRUCT(View, p::Struct)
+		P_STRUCT(View, p::Struct)
 
-		PROP(name)
+		P_PROP(name)
 		p::Tag name;
 
 		p::TArray<p::Tag> supportedTypes;

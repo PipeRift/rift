@@ -10,9 +10,9 @@ namespace rift::AST
 {
 	struct CLiteralString : public CLiteral
 	{
-		STRUCT(CLiteralString, CLiteral)
+		P_STRUCT(CLiteralString, CLiteral)
 
-		PROP(value)
+		P_PROP(value)
 		p::String value;
 	};
 }    // namespace rift::AST

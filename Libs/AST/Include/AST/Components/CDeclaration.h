@@ -8,7 +8,7 @@ namespace rift::AST
 {
 	struct CDeclaration : public p::Struct
 	{
-		STRUCT(CDeclaration, p::Struct)
+		P_STRUCT(CDeclaration, p::Struct)
 	};
 
 }    // namespace rift::AST

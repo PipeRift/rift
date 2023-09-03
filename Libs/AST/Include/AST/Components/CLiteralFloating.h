@@ -24,13 +24,13 @@ namespace rift::AST
 {
 	struct CLiteralFloating : public CLiteral
 	{
-		STRUCT(CLiteralFloating, CLiteral)
+		P_STRUCT(CLiteralFloating, CLiteral)
 
 
-		PROP(value)
+		P_PROP(value)
 		double value = 0.;
 
-		PROP(type)
+		P_PROP(type)
 		FloatingType type = FloatingType::F32;
 
 

@@ -23,7 +23,7 @@ namespace rift::Editor
 
 	struct SEditor : public Struct
 	{
-		STRUCT(SEditor, Struct)
+		P_STRUCT(SEditor, Struct)
 
 		ImGuiID dockspaceID = 0;
 		DockSpaceLayout layout;

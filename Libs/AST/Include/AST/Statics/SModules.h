@@ -10,7 +10,7 @@ namespace rift::AST
 {
 	struct SModules : public p::Struct
 	{
-		STRUCT(SModules, p::Struct)
+		P_STRUCT(SModules, p::Struct)
 
 		p::TMap<p::Tag, AST::Id> modulesByPath;
 	};

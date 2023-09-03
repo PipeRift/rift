@@ -13,7 +13,7 @@ namespace rift::Editor
 {
 	struct CDeclRename : public p::Struct
 	{
-		STRUCT(CDeclRename, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(CDeclRename, p::Struct, p::Struct_NotSerialized)
 
 		// Renaming uses this buffer to temporarely store the name being edited
 		p::String buffer;

@@ -23,12 +23,12 @@ namespace rift::AST
 {
 	struct CExprType : public p::Struct
 	{
-		STRUCT(CExprType, p::Struct)
+		P_STRUCT(CExprType, p::Struct)
 
-		PROP(type)
+		P_PROP(type)
 		AST::Namespace type;
 
-		PROP(mode)
+		P_PROP(mode)
 		TypeMode mode = TypeMode::Value;
 	};
 
@@ -44,12 +44,12 @@ namespace rift::AST
 
 	struct CExprTypeId : public p::Struct
 	{
-		STRUCT(CExprTypeId, p::Struct)
+		P_STRUCT(CExprTypeId, p::Struct)
 
-		PROP(id, p::Prop_NotSerialized)
+		P_PROP(id, p::Prop_NotSerialized)
 		AST::Id id = AST::NoId;
 
-		PROP(mode)
+		P_PROP(mode)
 		TypeMode mode = TypeMode::Value;
 	};
 

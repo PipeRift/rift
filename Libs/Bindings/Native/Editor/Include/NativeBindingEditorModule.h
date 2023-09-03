@@ -9,6 +9,6 @@ namespace rift
 {
 	class NativeBindingEditorModule : public Module
 	{
-		CLASS(NativeBindingEditorModule, Module)
+		P_CLASS(NativeBindingEditorModule, Module)
 	};
 }    // namespace rift

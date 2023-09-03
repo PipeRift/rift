@@ -17,16 +17,16 @@ namespace rift
 
 	struct CompileError : public p::Struct
 	{
-		STRUCT(CompileError, p::Struct)
+		P_STRUCT(CompileError, p::Struct)
 
-		PROP(text)
+		P_PROP(text)
 		String text;
 	};
 
 
 	struct Compiler : public p::Struct
 	{
-		STRUCT(Compiler, p::Struct)
+		P_STRUCT(Compiler, p::Struct)
 
 		AST::Tree& ast;
 		CompilerConfig config;

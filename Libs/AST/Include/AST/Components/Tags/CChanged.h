@@ -10,6 +10,6 @@ namespace rift::AST
 	// Gets cleared after one frame
 	struct CChanged : public p::Struct
 	{
-		STRUCT(CChanged, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(CChanged, p::Struct, p::Struct_NotSerialized)
 	};
 }    // namespace rift::AST

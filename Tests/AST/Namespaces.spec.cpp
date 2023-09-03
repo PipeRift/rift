@@ -9,7 +9,6 @@
 #include <bandit/bandit.h>
 
 
-
 using namespace snowhouse;
 using namespace bandit;
 using namespace rift;

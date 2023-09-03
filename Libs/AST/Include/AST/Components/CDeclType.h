@@ -8,9 +8,9 @@ namespace rift::AST
 {
 	struct CDeclType : public p::Struct
 	{
-		STRUCT(CDeclType, p::Struct)
+		P_STRUCT(CDeclType, p::Struct)
 
-		PROP(typeId)
+		P_PROP(typeId)
 		p::Tag typeId;
 	};
 }    // namespace rift::AST

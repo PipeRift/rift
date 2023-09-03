@@ -8,6 +8,6 @@ namespace rift::AST
 {
 	struct CExpression : public p::Struct
 	{
-		STRUCT(CExpression, p::Struct)
+		P_STRUCT(CExpression, p::Struct)
 	};
 }    // namespace rift::AST

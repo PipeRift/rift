@@ -11,9 +11,9 @@ namespace rift::AST
 {
 	struct CDeclVariable : public CDeclaration
 	{
-		STRUCT(CDeclVariable, CDeclaration)
+		P_STRUCT(CDeclVariable, CDeclaration)
 
-		PROP(typeId, p::Prop_NotSerialized)
+		P_PROP(typeId, p::Prop_NotSerialized)
 		Id typeId = NoId;
 	};
 }    // namespace rift::AST

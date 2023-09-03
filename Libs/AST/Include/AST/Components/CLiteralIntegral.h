@@ -40,13 +40,13 @@ namespace rift::AST
 {
 	struct CLiteralIntegral : public CLiteral
 	{
-		STRUCT(CLiteralIntegral, CLiteral)
+		P_STRUCT(CLiteralIntegral, CLiteral)
 
 
-		PROP(value)
+		P_PROP(value)
 		u64 value = 0;
 
-		PROP(type)
+		P_PROP(type)
 		IntegralType type = IntegralType::S32;
 
 

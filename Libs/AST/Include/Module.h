@@ -16,7 +16,7 @@ namespace rift
 
 	class Module : public Class
 	{
-		CLASS(Module, Class)
+		P_CLASS(Module, Class)
 
 		enum class State : u8
 		{

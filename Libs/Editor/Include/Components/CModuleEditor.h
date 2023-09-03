@@ -13,7 +13,7 @@ namespace rift::Editor
 {
 	struct CModuleEditor : public p::Struct
 	{
-		STRUCT(CModuleEditor, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(CModuleEditor, p::Struct, p::Struct_NotSerialized)
 
 		bool pendingFocus = false;
 	};

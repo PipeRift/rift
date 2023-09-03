@@ -8,6 +8,6 @@ namespace rift::AST
 {
 	struct CDeclStatic : public CDeclaration
 	{
-		STRUCT(CDeclStatic, CDeclaration)
+		P_STRUCT(CDeclStatic, CDeclaration)
 	};
 }    // namespace rift::AST

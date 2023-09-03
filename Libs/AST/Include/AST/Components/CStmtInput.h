@@ -12,9 +12,9 @@ namespace rift::AST
 
 	struct CStmtInput : public Struct
 	{
-		STRUCT(CStmtInput, Struct)
+		P_STRUCT(CStmtInput, Struct)
 
-		PROP(linkOutputNode)
+		P_PROP(linkOutputNode)
 		Id linkOutputNode = NoId;
 	};
 

@@ -14,7 +14,7 @@ namespace rift::AST
 	template<typename T>
 	struct TDirty : public p::Struct
 	{
-		STRUCT(TDirty<T>, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(TDirty<T>, p::Struct, p::Struct_NotSerialized)
 	};
 
 	using CDirty = TDirty<void>;

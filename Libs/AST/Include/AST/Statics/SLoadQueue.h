@@ -11,7 +11,7 @@ namespace rift::AST
 	// Keeps a list of entities to load from disk
 	struct SLoadQueue : public p::Struct
 	{
-		STRUCT(SLoadQueue, p::Struct)
+		P_STRUCT(SLoadQueue, p::Struct)
 
 		TArray<Id> pendingSyncLoad;
 		TArray<Id> pendingAsyncLoad;
