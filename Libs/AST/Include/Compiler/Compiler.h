@@ -37,7 +37,7 @@ namespace rift
 		Compiler(AST::Tree& ast, const CompilerConfig& config) : ast{ast}, config{config} {}
 
 		// Errors
-		void AddError(StringView str);
+		void Error(StringView str);
 		const TArray<CompileError>& GetErrors() const
 		{
 			return errors;

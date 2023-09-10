@@ -15,7 +15,7 @@
 
 namespace rift
 {
-	void Compiler::AddError(StringView str)
+	void Compiler::Error(StringView str)
 	{
 		p::Error(str);
 		CompileError newError{};
@@ -31,7 +31,7 @@ namespace rift
 
 		if (!backend)
 		{
-			compiler.AddError("Invalid backend.");
+			compiler.Error("Invalid backend.");
 			return;
 		}
 

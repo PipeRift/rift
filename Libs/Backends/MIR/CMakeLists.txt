@@ -8,4 +8,3 @@ target_link_libraries(RiftBackendMIR PRIVATE
     mir_static
     RiftBindingNative
 )
-
