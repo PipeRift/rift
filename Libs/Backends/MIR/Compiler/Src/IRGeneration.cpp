@@ -226,7 +226,7 @@ namespace rift::MIR
 						    inputName, functionName));
 					}
 				}
-				Strings::RemoveFromEnd(signature, ", ");
+				Strings::RemoveFromEnd(signature, ',');
 			}
 			signature.push_back(')');
 
@@ -293,7 +293,7 @@ namespace rift::MIR
 		const auto& outputs      = access.Get<const AST::CStmtOutputs>(id);
 		const auto& connectedIds = outputs.linkInputNodes;
 		Check(connectedIds.Size() == 2);
-		const auto& exprInputs = access.Get<const AST::CExprInputs>(id);
+		const auto& exprInputs = access.Get<const AST ::CExprInputs>(id);
 		Check(exprInputs.linkedOutputs.Size() == 1);
 
 		code->append("if (");
@@ -307,34 +307,37 @@ namespace rift::MIR
 
 	void CGenerator::AddCall(AST::Id id, const AST::CExprCallId& call)
 	{
-		/*const AST::Id functionId = call.functionId;
+		const AST::Id functionId = call.functionId;
 		if (!access.IsValid(functionId))
 		{
-		    compiler.Error("Call to an unknown function");
-		    return;
+			compiler.Error("Call to an unknown function");
+			return;
 		}
-		const auto* function = access.TryGet<const CIRFunction>(functionId);
-		if (!Ensure(function))
+		if (!Ensure(access.Has<const CMIRFunctionSignature>(functionId)))
 		{
-		    compiler.Error(Strings::Format(
-		        "Call to an invalid function: '{}'", AST::GetName(access, functionId)));
-		    return;
+			compiler.Error(Strings::Format(
+			    "Call to an invalid function: '{}'", AST::GetName(access, functionId)));
+			return;
 		}
 
-		TArray<llvm::Value*> args;
 		if (auto* inputs = access.TryGet<const AST::CExprInputs>(id))
 		{
-		    args.Reserve(inputs->linkedOutputs.Size());
-		    for (i32 i = 0; i < inputs->linkedOutputs.Size(); ++i)
-		    {
-		        AST::ExprOutput output = inputs->linkedOutputs[i];
-		        if (!output.IsNone())
-		        {
-		            args.Add(AddExpr(gen, access, output));
-		        }
-		    }
+			for (i32 i = 0; i < inputs->linkedOutputs.Size(); ++i)
+			{
+				AST::ExprOutput output = inputs->linkedOutputs[i];
+				if (!output.IsNone())
+				{
+					AddExpr(output);
+					code->push_back(',');
+				}
+				else
+				{
+					// TODO: Error? or assign default value?
+				}
+			}
+			Strings::RemoveFromEnd(*code, ", ");
 		}
-		builder.CreateCall(function->instance, ToLLVM(args));*/
+		code->push_back(')');
 	}
 
 	void CGenerator::CreateMain(AST::Id functionId)

@@ -4,9 +4,11 @@
 #include <Compiler/Backend.h>
 #include <Module.h>
 
+struct MIR_context;
 
 namespace rift
 {
+	struct Input;
 	class MIRBackendModule : public Module
 	{
 		P_CLASS(MIRBackendModule, Module)
@@ -27,5 +29,8 @@ namespace rift
 		}
 
 		void Build(Compiler& compiler) override;
+
+	protected:
+		void CToMIR(Compiler& compiler, Input& input, MIR_context* ctx);
 	};
 }    // namespace rift

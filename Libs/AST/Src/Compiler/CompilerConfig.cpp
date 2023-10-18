@@ -11,6 +11,6 @@ namespace rift
 	{
 		buildPath         = p::JoinPaths(AST::GetProjectPath(ast), "Build");
 		intermediatesPath = buildPath / "Intermediates";
-		binariesPath      = buildPath / buildMode;
+		binariesPath      = buildPath / "Binaries";
 	}
 }    // namespace rift

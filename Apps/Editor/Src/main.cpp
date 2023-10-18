@@ -16,7 +16,7 @@ using namespace rift;
 
 
 #ifndef RUN_AS_CLI
-#	define RUN_AS_CLI 1
+	#define RUN_AS_CLI 1
 #endif
 
 int RunEditor(StringView projectPath)
@@ -32,8 +32,8 @@ int RunEditor(StringView projectPath)
 }
 
 #if PLATFORM_WINDOWS && !RUN_AS_CLI
-#	pragma comment(linker, "/subsystem:windows")
-#	include <windows.h>
+	#pragma comment(linker, "/subsystem:windows")
+	#include <windows.h>
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
 {
 	return RunEditor(__argc > 1 ? __argv[1] : StringView{});

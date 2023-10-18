@@ -68,9 +68,14 @@ int main(int argc, char** argv)
 	EnableModule<MIRBackendModule>();
 	EnableModule<GraphViewModule>();
 
+	CompilerConfig config;
+
 	CLI::App app{"Rift compiler"};
 	String path;
 	app.add_option("-p,--project", path, "Project path")->required();
+	app.add_option("-v,--verbose", config.verbose, "Verbose")->required();
+	app.add_flag("-O0{0},-O1{1},-O2{2},-O3{3}", config.optimization, "Optimization")
+	    ->expected(0, 3);
 
 
 	String selectedBackendStr;
@@ -92,7 +97,6 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	CompilerConfig config;
 	Build(ast, config, backend);
 
 	while (true)
