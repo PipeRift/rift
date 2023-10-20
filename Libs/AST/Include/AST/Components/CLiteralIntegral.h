@@ -9,8 +9,6 @@
 
 namespace rift::AST
 {
-	using namespace p::core;
-
 	static constexpr u8 literalUnsignedMask = 1 << 7;    // Last bit marks type as unsigned
 
 	enum class IntegralType : u8

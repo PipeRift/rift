@@ -9,11 +9,10 @@
 #include "AST/Systems/LoadSystem.h"
 #include "AST/Systems/TypeSystem.h"
 
-#include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
-#include <Pipe/PipeECS.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
+#include <PipeECS.h>
 
 
 namespace rift::AST
@@ -199,7 +198,6 @@ namespace rift::AST
 
 	void SerializeModule(AST::Tree& ast, AST::Id id, String& data)
 	{
-		ZoneScoped;
 		JsonFormatWriter writer{};
 		p::EntityWriter w{writer.GetWriter(), ast};
 		w.BeginObject();
@@ -210,7 +208,6 @@ namespace rift::AST
 
 	void DeserializeModule(AST::Tree& ast, AST::Id id, const String& data)
 	{
-		ZoneScoped;
 		JsonFormatReader formatReader{data};
 		if (formatReader.IsValid())
 		{

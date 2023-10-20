@@ -3,7 +3,7 @@
 #include "Utils/TypeUtils.h"
 
 #include <Pipe/Core/Checks.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
 namespace rift::Editor

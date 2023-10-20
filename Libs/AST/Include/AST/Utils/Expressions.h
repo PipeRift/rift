@@ -8,8 +8,8 @@
 #include "AST/Id.h"
 #include "AST/Tree.h"
 
-#include <Pipe/PipeArrays.h>
-#include <Pipe/PipeECS.h>
+#include <PipeArrays.h>
+#include <PipeECS.h>
 
 
 // NOTE: In expression graphs, the Link Id is the Input Pin Id

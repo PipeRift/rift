@@ -195,7 +195,7 @@ namespace rift::Editor::Graph
 			{
 				Tag name = access.Get<const AST::CNamespace>(functionId).name;
 				label.clear();
-				AST::Id funcTypeId = GetParent(access, functionId);
+				AST::Id funcTypeId = p::GetIdParent(access, functionId);
 				if (!IsNone(funcTypeId) && access.Has<AST::CDeclType, AST::CNamespace>(funcTypeId))
 				{
 					Strings::FormatTo(label, "{}   ({})", name,
@@ -222,7 +222,7 @@ namespace rift::Editor::Graph
 			{
 				Tag name = access.Get<const AST::CNamespace>(variableId).name;
 				label.clear();
-				AST::Id typeId = p::GetParent(access, variableId);
+				AST::Id typeId = p::GetIdParent(access, variableId);
 				if (!IsNone(typeId) && access.Has<AST::CDeclType, AST::CNamespace>(typeId))
 				{
 					Strings::FormatTo(

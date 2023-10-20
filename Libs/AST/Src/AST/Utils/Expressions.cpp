@@ -171,7 +171,7 @@ namespace rift::AST
 		input.nodeId = pinId;
 		if (!IsNone(input.nodeId) && !access.Has<CExprInputs>(input.nodeId))
 		{
-			input.nodeId = p::GetParent(access, pinId);
+			input.nodeId = p::GetIdParent(access, pinId);
 		}
 		return input;
 	}
@@ -184,7 +184,7 @@ namespace rift::AST
 		output.nodeId = pinId;
 		if (!IsNone(output.nodeId) && !access.Has<CExprOutputs>(output.nodeId))
 		{
-			output.nodeId = p::GetParent(access, pinId);
+			output.nodeId = p::GetIdParent(access, pinId);
 		}
 		return output;
 	}

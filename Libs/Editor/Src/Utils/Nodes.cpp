@@ -15,7 +15,7 @@
 
 #include <Pipe/Core/Checks.h>
 #include <Pipe/Core/Log.h>
-#include <Pipe/Math/Bezier.h>
+#include <PipeVectors.h>
 
 #include <cassert>
 #include <cstring>    // strlen, strncmp
@@ -87,8 +87,8 @@ namespace rift::Nodes
 
 	Rect GetContainingRectForCubicBezier(const CubicBezier& cb)
 	{
-		const v2 min = v2(math::Min(cb.p0.x, cb.p3.x), math::Min(cb.p0.y, cb.p3.y));
-		const v2 max = v2(math::Max(cb.p0.x, cb.p3.x), math::Max(cb.p0.y, cb.p3.y));
+		const v2 min = v2(p::Min(cb.p0.x, cb.p3.x), p::Min(cb.p0.y, cb.p3.y));
+		const v2 max = v2(p::Max(cb.p0.x, cb.p3.x), p::Max(cb.p0.y, cb.p3.y));
 
 		const float hoverDistance = gNodes->style.LinkHoverDistance;
 

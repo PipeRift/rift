@@ -10,7 +10,7 @@
 #include "AST/Utils/Namespaces.h"
 #include "AST/Utils/TypeUtils.h"
 
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
 namespace rift::AST::TypeSystem
@@ -90,7 +90,7 @@ namespace rift::AST::TypeSystem
 		TArray<Id> dirtyTypeIds = FindAllIdsWith<CDeclType, CChanged>(access);
 
 		TArray<Id> dirtyNodeIds;
-		p::GetChildren(access, dirtyTypeIds, dirtyNodeIds);
+		p::GetIdChildren(access, dirtyTypeIds, dirtyNodeIds);
 
 		// Make sure the nodes have inputs and outputs
 		ExcludeIdsWithout<CExprInputs, CExprOutputs>(access, dirtyNodeIds);

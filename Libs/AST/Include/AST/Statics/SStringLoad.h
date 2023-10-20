@@ -10,8 +10,6 @@
 
 namespace rift::AST
 {
-	using namespace p::core;
-
 	// Contains loaded string data from disk
 	struct SStringLoad : public Struct
 	{

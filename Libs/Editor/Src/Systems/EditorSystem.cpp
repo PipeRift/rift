@@ -28,8 +28,8 @@
 #include <MIRBackendModule.h>
 #include <Pipe/Files/FileDialog.h>
 #include <Pipe/Files/Paths.h>
-#include <Pipe/PipeArrays.h>
-#include <Pipe/PipeECS.h>
+#include <PipeArrays.h>
+#include <PipeECS.h>
 #include <Rift.h>
 #include <UI/Inspection.h>
 #include <UI/Notify.h>
@@ -120,8 +120,6 @@ namespace rift::Editor::EditorSystem
 
 	void Draw(AST::Tree& ast)
 	{
-		ZoneScoped;
-
 		if (AST::HasProject(ast))
 		{
 			DrawProject(ast);
@@ -158,7 +156,6 @@ namespace rift::Editor::EditorSystem
 
 	void CreateRootDockspace(SEditor& editor)
 	{
-		ZoneScoped;
 		ImGuiDockNodeFlags dockingFlags = ImGuiDockNodeFlags_None;
 
 		const auto& viewport = UI::GetMainViewport();
@@ -193,7 +190,6 @@ namespace rift::Editor::EditorSystem
 
 	void CreateTypeDockspace(CTypeEditor& editor, const char* id)
 	{
-		ZoneScoped;
 		ImGuiDockNodeFlags dockingFlags = ImGuiDockNodeFlags_None;
 
 		editor.dockspaceID = UI::GetID(id);
@@ -221,8 +217,6 @@ namespace rift::Editor::EditorSystem
 
 	void DrawProject(AST::Tree& ast)
 	{
-		ZoneScoped;
-
 		if (!Ensure(ast.HasStatic<SEditor>()))
 		{
 			return;
@@ -230,7 +224,7 @@ namespace rift::Editor::EditorSystem
 		auto& editor = ast.GetStatic<SEditor>();
 
 		const auto& path = AST::GetProjectPath(ast);
-		UI::PushID(Hash<Path>()(path));
+		UI::PushID(p::GetHash(path));
 
 		DrawProjectMenuBar(ast, editor);
 
@@ -414,8 +408,6 @@ namespace rift::Editor::EditorSystem
 		for (AST::Id moduleId :
 		    FindAllIdsWith<AST::CModule, CModuleEditor, AST::CFileRef>(moduleEditors))
 		{
-			ZoneScopedN("Draw Type");
-
 			auto& moduleEditor = moduleEditors.Get<CModuleEditor>(moduleId);
 			const auto& file   = moduleEditors.Get<const AST::CFileRef>(moduleId);
 
@@ -527,13 +519,9 @@ namespace rift::Editor::EditorSystem
 
 	void DrawTypes(AST::Tree& ast, SEditor& editor)
 	{
-		ZoneScoped;
-
 		TAccess<TWrite<CTypeEditor>, AST::CDeclType, AST::CFileRef> access{ast};
 		for (AST::Id typeId : FindAllIdsWith<AST::CDeclType, CTypeEditor, AST::CFileRef>(access))
 		{
-			ZoneScopedN("Draw Type");
-
 			auto& typeEditor = access.Get<CTypeEditor>(typeId);
 			const auto& file = access.Get<const AST::CFileRef>(typeId);
 

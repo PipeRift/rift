@@ -6,9 +6,9 @@
 #include "AST/Id.h"
 
 #include <Pipe/Core/GenericEnums.h>
-#include <Pipe/Math/Math.h>
-#include <Pipe/PipeECS.h>
 #include <Pipe/Reflect/EnumType.h>
+#include <PipeECS.h>
+#include <PipeMath.h>
 
 
 namespace rift::AST

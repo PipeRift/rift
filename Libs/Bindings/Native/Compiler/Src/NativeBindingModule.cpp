@@ -13,8 +13,8 @@
 #include <AST/Tree.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/TypeUtils.h>
-#include <Pipe/PipeArrays.h>
-#include <Pipe/PipeECS.h>
+#include <PipeArrays.h>
+#include <PipeECS.h>
 
 
 // P_OVERRIDE_NEW_DELETE

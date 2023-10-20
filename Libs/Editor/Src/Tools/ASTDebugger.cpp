@@ -15,8 +15,6 @@
 
 namespace rift::Editor
 {
-	using namespace p::core;
-
 	void DrawEntityInspector(AST::Tree& ast, AST::Id entityId, bool* open = nullptr)
 	{
 		p::String name = "Entity Inspector";
@@ -77,7 +75,7 @@ namespace rift::Editor
 		if (auto* types = ast.TryGetStatic<AST::STypes>())
 		{
 			UI::BeginChild("typesTableChild",
-			    ImVec2(0.f, p::math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
+			    ImVec2(0.f, p::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
 			if (UI::BeginTable("typesTable", 2, flags, ImVec2(0.f, UI::GetContentRegionAvail().y)))
 			{
 				UI::TableSetupColumn("Name");
@@ -156,7 +154,7 @@ namespace rift::Editor
 				if (showHierarchy && !filter.IsActive())
 				{
 					p::TArray<AST::Id> roots;
-					p::GetRoots(access, roots);
+					p::GetRootIds(access, roots);
 					for (auto root : roots)
 					{
 						DrawNode(access, root, true);
@@ -256,7 +254,7 @@ namespace rift::Editor
 		}
 
 		bool open = false;
-		static Tag font{"WorkSans"};
+		static p::Tag font{"WorkSans"};
 		UI::PushFont(font, UI::FontMode::Bold);
 		if (hasChildren)
 		{

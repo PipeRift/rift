@@ -6,7 +6,7 @@
 
 #include <Pipe/Core/Tag.h>
 #include <Pipe/Memory/UniquePtr.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
 namespace rift::AST

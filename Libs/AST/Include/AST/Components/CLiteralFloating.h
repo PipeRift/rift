@@ -9,8 +9,6 @@
 
 namespace rift::AST
 {
-	using namespace p::core;
-
 	enum class FloatingType : u8
 	{
 		F32 = 32,

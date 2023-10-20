@@ -8,7 +8,7 @@
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
 
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
 namespace rift::AST

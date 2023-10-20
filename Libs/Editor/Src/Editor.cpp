@@ -15,7 +15,6 @@
 #include <AST/Systems/TypeSystem.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Pipe/Core/Log.h>
-#include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Files.h>
 #include <UI/Inspection.h>
 #include <UI/Window.h>
@@ -73,7 +72,6 @@ namespace rift::Editor
 			UI::Render();
 
 			frameTime.PostTick();
-			FrameMark;
 		}
 
 		Graph::Shutdown();

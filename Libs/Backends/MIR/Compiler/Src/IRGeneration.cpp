@@ -28,8 +28,6 @@ namespace rift::MIR
 
 	void CGenerator::GenerateModule(AST::Id moduleId)
 	{
-		ZoneScoped;
-
 		const Tag name        = AST::GetModuleName(compiler.ast, moduleId);
 		CMIRModule& mirModule = compiler.ast.Add<CMIRModule>(moduleId);
 		code                  = &mirModule.code;
@@ -37,14 +35,14 @@ namespace rift::MIR
 
 		// Get all rift types from the module
 		TArray<AST::Id> typeIds;
-		GetChildren(access, moduleId, typeIds);
+		p::GetIdChildren(access, moduleId, typeIds);
 		ExcludeIdsWithout<AST::CDeclType>(access, typeIds);
 
 		{    // Native declarations
 			TArray<AST::Id> cStructIds = FindIdsWith<CDeclCStruct>(access, typeIds);
 			TArray<AST::Id> cStaticIds = FindIdsWith<CDeclCStatic>(access, typeIds);
 			TArray<AST::Id> cFunctionIds;
-			p::GetChildren(access, cStaticIds, cFunctionIds);
+			p::GetIdChildren(access, cStaticIds, cFunctionIds);
 			ExcludeIdsWithout<AST::CDeclFunction>(access, cFunctionIds);
 			DeclareStructs(cStructIds);
 			DeclareFunctions(cFunctionIds, false);
@@ -56,8 +54,8 @@ namespace rift::MIR
 			TArray<AST::Id> staticIds = FindIdsWith<AST::CDeclStatic>(access, typeIds);
 			TArray<AST::Id> classIds  = FindIdsWith<AST::CDeclClass>(access, typeIds);
 			TArray<AST::Id> classFunctionIds;
-			p::GetChildren(access, staticIds, staticFunctionIds);
-			p::GetChildren(access, classIds, classFunctionIds);
+			p::GetIdChildren(access, staticIds, staticFunctionIds);
+			p::GetIdChildren(access, classIds, classFunctionIds);
 			ExcludeIdsWithout<AST::CDeclFunction>(access, staticFunctionIds);
 			ExcludeIdsWithout<AST::CDeclFunction>(access, classFunctionIds);
 			TArray<AST::Id> functionIds;
@@ -138,7 +136,6 @@ namespace rift::MIR
 
 	void CGenerator::DeclareStructs(TView<AST::Id> ids)
 	{
-		ZoneScoped;
 		code->append("// Struct Declarations\n");
 		for (AST::Id id : ids)
 		{
@@ -151,7 +148,6 @@ namespace rift::MIR
 
 	void CGenerator::DefineStructs(TView<AST::Id> ids)
 	{
-		ZoneScoped;
 		code->append("// Struct Definitions\n");
 		p::String membersCode;
 		TArray<AST::Id> memberIds;
@@ -159,7 +155,7 @@ namespace rift::MIR
 		{
 			membersCode.clear();
 			memberIds.Clear(false);
-			p::GetChildren(access, id, memberIds);
+			p::GetIdChildren(access, id, memberIds);
 
 			ExcludeIdsWithout<AST::CDeclVariable>(access, memberIds);
 			for (AST::Id memberId : memberIds)
@@ -187,7 +183,6 @@ namespace rift::MIR
 
 	void CGenerator::DeclareFunctions(TView<AST::Id> ids, bool useFullName)
 	{
-		ZoneScoped;
 		code->append("// Function Declarations\n");
 
 		for (AST::Id id : ids)
@@ -239,7 +234,6 @@ namespace rift::MIR
 
 	void CGenerator::DefineFunctions(TView<AST::Id> ids)
 	{
-		ZoneScoped;
 		code->append("// Function Definitions\n");
 		for (AST::Id id : ids)
 		{
@@ -257,8 +251,6 @@ namespace rift::MIR
 
 	void CGenerator::AddStmtBlock(AST::Id firstStmtId)
 	{
-		ZoneScoped;
-
 		AST::Id splitId = AST::NoId;
 		TArray<AST::Id> stmtIds;
 		AST::GetStmtChain(access, firstStmtId, stmtIds, splitId);

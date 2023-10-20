@@ -3,8 +3,9 @@
 
 #include "AST/Id.h"
 
-#include <Pipe/PipeECS.h>
 #include <Pipe/Reflect/Struct.h>
+#include <PipeECS.h>
+
 
 
 namespace rift::AST

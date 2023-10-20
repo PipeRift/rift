@@ -16,20 +16,19 @@
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
 #include <Pipe/Core/Log.h>
-#include <Pipe/Core/Profiler.h>
-#include <Pipe/Math/Color.h>
+#include <PipeColor.h>
 
 
 namespace rift::UI
 {
-	using namespace p::math;
+	using namespace p;
 
 
 	static GLFWwindow* gWindow = nullptr;
 
 	void OnGl3WError(int error, const char* description)
 	{
-		p::Error("Glfw Error {}: {}", error, description);
+		p::Error("Glfw Error {}: {}", error, p::StringView{description});
 	}
 
 	bool Init()
@@ -117,7 +116,6 @@ namespace rift::UI
 
 	void PreFrame()
 	{
-		ZoneScopedN("PreFrame");
 		glfwPollEvents();
 
 		ImGui_ImplOpenGL3_NewFrame();
@@ -127,8 +125,6 @@ namespace rift::UI
 
 	void Render()
 	{
-		ZoneScopedC(0xA245D1);
-
 		ImGui::Render();
 		i32 displayW, displayH;
 		glfwGetFramebufferSize(gWindow, &displayW, &displayH);

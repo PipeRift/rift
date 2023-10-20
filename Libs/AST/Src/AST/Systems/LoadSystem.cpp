@@ -18,7 +18,6 @@
 #include "AST/Utils/TypeUtils.h"
 #include "Pipe/Files/Paths.h"
 
-#include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
@@ -65,8 +64,6 @@ namespace rift::AST::LoadSystem
 
 	void ScanSubmodules(Tree& ast, TArray<String>& paths)
 	{
-		ZoneScoped;
-
 		paths.Clear();
 
 		Id projectId      = GetProjectId(ast);
@@ -79,8 +76,6 @@ namespace rift::AST::LoadSystem
 
 	void ScanTypes(Tree& ast, TArray<ModuleTypePaths>& pathsByModule)
 	{
-		ZoneScoped;
-
 		pathsByModule.Clear(false);
 
 		// Cache module paths in a Set
@@ -103,7 +98,6 @@ namespace rift::AST::LoadSystem
 			Path path = AST::GetModulePath(access, moduleId);
 
 			auto& paths = pathsByModule.AddRef({moduleId}).paths;
-			ZoneScopedN("Iterate module files");
 			// Iterate all types ignoring other module paths
 			for (const auto& typePath :
 			    AST::TypeIterator(path /*TODO: Ignore paths | , &modulePaths*/))
@@ -119,8 +113,6 @@ namespace rift::AST::LoadSystem
 
 	void CreateModulesFromPaths(Tree& ast, TArray<String>& paths, TArray<Id>& ids)
 	{
-		ZoneScoped;
-
 		TAccess<TWrite<CModule>, TWrite<CFileRef>, TWrite<CNamespace>, CProject, TWrite<CChild>,
 		    TWrite<CParent>>
 		    access{ast};
@@ -154,13 +146,11 @@ namespace rift::AST::LoadSystem
 
 		// Link modules to the project
 		const Id projectId = GetProjectId(access);
-		p::Attach(access, projectId, ids);
+		p::AttachId(access, projectId, ids);
 	}
 
 	void CreateTypesFromPaths(Tree& ast, TView<ModuleTypePaths> pathsByModule, TArray<Id>& ids)
 	{
-		ZoneScoped;
-
 		auto* types = ast.TryGetStatic<STypes>();
 		if (!types)
 		{
@@ -191,14 +181,13 @@ namespace rift::AST::LoadSystem
 				ast.Add(id, CFileRef{Move(path)});
 			}
 
-			p::Attach(ast, modulePaths.moduleId, typeIds);
+			p::AttachId(ast, modulePaths.moduleId, typeIds);
 			ids.Append(typeIds);
 		}
 	}
 
 	void LoadFileStrings(TAccessRef<CFileRef> access, TView<Id> nodes, TArray<String>& strings)
 	{
-		ZoneScoped;
 		strings.Resize(nodes.Size());
 		for (i32 i = 0; i < nodes.Size(); ++i)
 		{
@@ -215,7 +204,6 @@ namespace rift::AST::LoadSystem
 
 	void DeserializeModules(Tree& ast, TView<Id> moduleIds, TView<String> strings)
 	{
-		ZoneScoped;
 		Check(moduleIds.Size() == strings.Size());
 
 		for (i32 i = 0; i < moduleIds.Size(); ++i)
@@ -226,7 +214,6 @@ namespace rift::AST::LoadSystem
 
 	void DeserializeTypes(Tree& ast, TView<Id> typeIds, TView<String> strings)
 	{
-		ZoneScoped;
 		Check(typeIds.Size() == strings.Size());
 
 		for (i32 i = 0; i < typeIds.Size(); ++i)

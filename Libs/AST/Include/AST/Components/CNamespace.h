@@ -57,7 +57,7 @@ namespace rift::AST
 		Namespace(const p::String& value) : Namespace(p::StringView{value}) {}
 		Namespace(std::initializer_list<p::Tag> values)
 		{
-			const p::i32 size = p::math::Min(p::i32(values.size()), scopeCount);
+			const p::i32 size = p::Min(p::i32(values.size()), scopeCount);
 			for (p::i32 i = 0; i < size; ++i)
 			{
 				scopes[i] = *(values.begin() + i);

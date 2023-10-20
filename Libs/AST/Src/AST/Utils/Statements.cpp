@@ -38,7 +38,7 @@ namespace rift::AST
 		}
 		else
 		{
-			outputNode = p::GetParent(ast, outputPin);
+			outputNode = p::GetIdParent(ast, outputPin);
 			if (IsNone(outputNode))
 			{
 				return false;
@@ -148,7 +148,7 @@ namespace rift::AST
 	}
 	bool DisconnectStmtFromNext(Tree& ast, AST::Id outputPin)
 	{
-		return DisconnectStmtFromNext(ast, outputPin, p::GetParent(ast, outputPin));
+		return DisconnectStmtFromNext(ast, outputPin, p::GetIdParent(ast, outputPin));
 	}
 
 	bool WouldStmtLoop(const Tree& ast, Id outputNode, Id outputPin, Id inputNode)

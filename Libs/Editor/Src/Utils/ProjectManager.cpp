@@ -17,8 +17,8 @@ namespace rift::Editor
 
 		v2 viewportSize = UI::GetMainViewport()->Size;
 		v2 modalSize    = v2{600.f, 400.f};
-		modalSize.x     = math::Min(modalSize.x, viewportSize.x - 20.f);
-		modalSize.y     = math::Min(modalSize.y, viewportSize.y - 20.f);
+		modalSize.x     = p::Min(modalSize.x, viewportSize.x - 20.f);
+		modalSize.y     = p::Min(modalSize.y, viewportSize.y - 20.f);
 
 		UI::SetNextWindowSize(modalSize, ImGuiCond_Always);
 

@@ -9,9 +9,6 @@
 
 namespace rift::AST
 {
-	using namespace p::core;
-
-
 	struct CStmtOutput : public p::Struct
 	{
 		P_STRUCT(CStmtOutput, p::Struct)

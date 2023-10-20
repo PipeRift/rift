@@ -7,8 +7,8 @@
 #include "AST/Tree.h"
 #include "AST/Utils/Statements.h"
 
-#include <Pipe/PipeArrays.h>
-#include <Pipe/PipeECS.h>
+#include <PipeArrays.h>
+#include <PipeECS.h>
 
 
 // NOTE: In statement graphs, the Link Id is the Input Node Id

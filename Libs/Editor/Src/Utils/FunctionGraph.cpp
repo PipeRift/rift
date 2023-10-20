@@ -34,7 +34,7 @@
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <GLFW/glfw3.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
 #include <Utils/NodesInternal.h>
@@ -282,7 +282,7 @@ namespace rift::Editor::Graph
 
 			char buf[64];
 			UI::DataTypeFormatString(buf, IM_ARRAYSIZE(buf), dataType, &value.value, format);
-			UI::SetNextItemWidth(5.f + math::Max(UI::CalcTextSize(buf).x, 20.f));
+			UI::SetNextItemWidth(5.f + p::Max(UI::CalcTextSize(buf).x, 20.f));
 			UI::InputScalar("##value", dataType, &value.value, nullptr, nullptr, format);
 
 			PopInnerNodeStyle();
@@ -305,7 +305,7 @@ namespace rift::Editor::Graph
 			const ImGuiDataType dataType = isDouble ? ImGuiDataType_Double : ImGuiDataType_Float;
 			char buf[64];
 			UI::DataTypeFormatString(buf, IM_ARRAYSIZE(buf), dataType, &value.value, "%.15g");
-			UI::SetNextItemWidth(5.f + math::Max(UI::CalcTextSize(buf).x, 20.f));
+			UI::SetNextItemWidth(5.f + p::Max(UI::CalcTextSize(buf).x, 20.f));
 			UI::InputScalar("##value", dataType, &value.value, nullptr, nullptr, "%.15g");
 
 			PopInnerNodeStyle();
@@ -327,7 +327,7 @@ namespace rift::Editor::Graph
 			ImGuiStyle& style     = ImGui::GetStyle();
 			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
 			const v2 minSize{settings.GetGridSize() * 4.f, settings.GetGridSize()};
-			const v2 size{math::Max(minSize.x, textSize.x), math::Max(minSize.y, textSize.y)};
+			const v2 size{p::Max(minSize.x, textSize.x), p::Max(minSize.y, textSize.y)};
 			UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
 			PopInnerNodeStyle();
 			EndExprOutput(false);
@@ -699,7 +699,7 @@ namespace rift::Editor::Graph
 			BeginNode(access, id);
 			{
 				pinIds.Clear(false);
-				p::GetChildren(access, id, pinIds);
+				p::GetIdChildren(access, id, pinIds);
 				if (!Ensure(pinIds.Size() >= 2))
 				{
 					continue;
@@ -852,7 +852,7 @@ namespace rift::Editor::Graph
 			}
 
 			TArray<AST::Id> children;
-			p::GetChildren(ast, typeId, children);
+			p::GetIdChildren(ast, typeId, children);
 
 			// Nodes
 			DrawFunctionDecls(ast, FindIdsWith<AST::CDeclFunction>(ast, children));

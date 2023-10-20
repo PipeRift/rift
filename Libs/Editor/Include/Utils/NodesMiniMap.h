@@ -4,7 +4,7 @@
 
 #include <AST/Id.h>
 #include <Pipe/Core/Platform.h>
-#include <Pipe/Math/Vector.h>
+#include <PipeVectors.h>
 
 
 namespace rift::Nodes

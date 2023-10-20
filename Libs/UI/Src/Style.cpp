@@ -8,10 +8,10 @@
 #include <IconsFontAwesome5.h>
 #include <Pipe/Core/Checks.h>
 #include <Pipe/Core/Log.h>
-#include <Pipe/Core/Tuples.h>
+#include <Pipe/Core/Templates.h>
 #include <Pipe/Files/Paths.h>
-#include <Pipe/Math/Math.h>
-#include <Pipe/PipeArrays.h>
+#include <PipeArrays.h>
+#include <PipeMath.h>
 
 
 namespace rift::UI
@@ -26,7 +26,7 @@ namespace rift::UI
 		void Add(float size, ImFont* imFont)
 		{
 			if (sizes.Contains([size](const auto& font) {
-				    return math::NearlyEqual(font.first, size);
+				    return p::NearlyEqual(font.first, size);
 			    }))
 			{
 				p::Error(
@@ -48,7 +48,7 @@ namespace rift::UI
 				return sizes.First().second;
 			}
 			const TPair<float, ImFont*>* foundFont = sizes.Find([desiredSize](const auto& font) {
-				return math::NearlyEqual(font.first, desiredSize);
+				return p::NearlyEqual(font.first, desiredSize);
 			});
 			return foundFont ? foundFont->second : nullptr;
 		}

@@ -11,7 +11,7 @@
 #include "AST/Components/CExprUnaryOperator.h"
 #include "AST/Components/Tags/CChanged.h"
 
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
 namespace rift::AST

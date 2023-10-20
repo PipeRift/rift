@@ -104,7 +104,7 @@ namespace rift::AST
 	{
 		p::u32 size = 0;
 		ct.BeginArray(size);
-		size = p::math::Min(size, p::u32(Namespace::scopeCount));
+		size = p::Min(size, p::u32(Namespace::scopeCount));
 		for (p::u32 i = 0; i < size; ++i)
 		{
 			ct.Next(scopes[i]);

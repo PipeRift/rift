@@ -7,7 +7,7 @@
 #include <Editor.h>
 #include <GraphViewModule.h>
 #include <MIRBackendModule.h>
-#include <Pipe/Pipe.h>
+#include <Pipe.h>
 
 #include <iostream>
 

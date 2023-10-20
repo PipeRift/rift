@@ -9,8 +9,6 @@
 
 namespace rift::AST
 {
-	using namespace p::core;
-
 	struct STypes : public Struct
 	{
 		P_STRUCT(STypes, Struct)

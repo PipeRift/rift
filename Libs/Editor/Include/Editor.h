@@ -3,7 +3,7 @@
 
 #include <AST/Tree.h>
 #include <Pipe/Files/Paths.h>
-#include <Pipe/Math/FrameTime.h>
+#include <PipeTime.h>
 
 
 namespace rift::Editor

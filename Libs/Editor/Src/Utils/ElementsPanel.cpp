@@ -18,7 +18,7 @@
 #include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
 #include <Pipe/Core/EnumFlags.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 #include <UI/UI.h>
 
 
@@ -178,7 +178,7 @@ namespace rift::Editor
 		{
 			UI::Indent(10.f);
 			TArray<AST::Id> variableIds;
-			p::GetChildren(access, typeId, variableIds);
+			p::GetIdChildren(access, typeId, variableIds);
 			ExcludeIdsWithout<AST::CDeclVariable>(access, variableIds);
 
 			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
@@ -223,7 +223,7 @@ namespace rift::Editor
 			UI::Indent(10.f);
 
 			TArray<AST::Id> functionIds;
-			p::GetChildren(ast, typeId, functionIds);
+			p::GetIdChildren(ast, typeId, functionIds);
 			ExcludeIdsWithout<AST::CDeclFunction>(ast, functionIds);
 			for (AST::Id functionId : functionIds)
 			{
@@ -280,7 +280,7 @@ namespace rift::Editor
 			// If pin has not been marked for removal, destroy the entity
 			if (!removedPin)
 			{
-				p::Remove(ast, editor.pendingDeletePropertyId, true);
+				p::RemoveId(ast, editor.pendingDeletePropertyId, true);
 				editor.pendingDeletePropertyId = AST::NoId;
 			}
 		}

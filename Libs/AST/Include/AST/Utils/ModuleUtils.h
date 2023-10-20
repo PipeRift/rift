@@ -8,7 +8,7 @@
 #include "AST/Tree.h"
 
 #include <Pipe/Memory/OwnPtr.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
 namespace rift::AST
@@ -37,10 +37,6 @@ namespace rift::AST
 			return lhs.id < rhs;
 		}
 	};
-
-
-	using namespace p::core;
-	using namespace p::files;
 
 	bool CreateProject(Tree& ast, StringView path);
 	bool OpenProject(Tree& ast, StringView path);

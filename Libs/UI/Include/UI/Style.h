@@ -2,7 +2,7 @@
 #pragma once
 
 #include <Pipe/Core/Platform.h>
-#include <Pipe/Math/Color.h>
+#include <PipeColor.h>
 
 
 namespace rift::UI

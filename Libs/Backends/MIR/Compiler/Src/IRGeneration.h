@@ -26,7 +26,7 @@
 #include <Components/CDeclCStatic.h>
 #include <Components/CDeclCStruct.h>
 #include <mir.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
 namespace rift

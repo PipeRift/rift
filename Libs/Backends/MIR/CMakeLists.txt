@@ -5,6 +5,6 @@ rift_compiler_module(RiftBackendMIR)
 
 target_link_libraries(RiftBackendMIR PUBLIC RiftAST)
 target_link_libraries(RiftBackendMIR PRIVATE
-    mir_static
+    mir
     RiftBindingNative
 )

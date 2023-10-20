@@ -11,8 +11,7 @@
 #include <NativeBindingModule.h>
 #include <Pipe/Core/Log.h>
 #include <Pipe/Files/Files.h>
-#include <Pipe/Math/DateTime.h>
-#include <Pipe/Math/Timespan.h>
+#include <PipeTime.h>
 #include <stdlib.h>
 
 
@@ -31,8 +30,8 @@ namespace rift
 {
 	struct Lib
 	{
-		char* name    = nullptr;
-		void* handler = nullptr;
+		const char* name = nullptr;
+		void* handler    = nullptr;
 	};
 
 	struct Input
@@ -236,8 +235,6 @@ namespace rift
 	using EntryFunctionPtr = p::i32 (*)();
 	void MIRBackend::Build(Compiler& compiler)
 	{
-		ZoneScopedN("Backend: MIR");
-
 		MIR_context* ctx = MIR_init();
 		c2mir_init(ctx);
 
@@ -308,8 +305,8 @@ namespace rift
 
 	void MIRBackend::CToMIR(Compiler& compiler, Input& input, MIR_context* ctx)
 	{
-		auto getc = [](void* data) -> p::u8 {
-			Input* input = static_cast<Input*>(data);
+		auto getc = [](void* data) -> p::i32 {
+			auto* input = static_cast<Input*>(data);
 			if (input->currentChar < input->code.EndData())
 			{
 				return *(input->currentChar++);
@@ -317,7 +314,7 @@ namespace rift
 			return EOF;
 		};
 
-		if (!c2mir_compile(ctx, &input.options, getc, &input, input.input_name, nullptr))
+		if (!c2mir_compile(ctx, &input.options, getc, &input, input.name, nullptr))
 		{
 			compiler.Error("C to MIR compilation failed");
 		}
@@ -331,24 +328,8 @@ namespace rift
 		options.debug_p = options.verbose_p = options.ignore_warnings_p = FALSE;
 		options.asm_p = options.object_p = options.no_prepro_p = options.prepro_only_p = FALSE;
 		options.syntax_only_p = options.pedantic_p = FALSE;
-		curr_input.code                            = NULL;
-		else if ((incl_p = strncmp(argv[i], "-I", 2) == 0)
-		         || (ldir_p = strncmp(argv[i], "-L", 2) == 0) || strncmp(argv[i], "-l", 2) == 0)
-		{
-			char* arg;
-			const char* dir = strlen(argv[i]) == 2 && i + 1 < argc ? argv[++i] : argv[i] + 2;
 
-			if (*dir == '\0')
-				continue;
-			arg = reg_malloc(strlen(dir) + 1);
-			strcpy(arg, dir);
-			if (incl_p || ldir_p)
-				VARR_PUSH(char_ptr_t, incl_p ? headers : lib_dirs, arg);
-			else
-				process_cmdline_lib(arg);
-		}
-
-		options.options.macro_commands = nullptr;
-		options.macro_commands_num     = 0;
+		options.macro_commands     = nullptr;
+		options.macro_commands_num = 0;
 	}
 }    // namespace rift

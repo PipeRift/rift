@@ -4,7 +4,7 @@
 //  Override as first include
 
 #include <bandit/bandit.h>
-#include <Pipe/Pipe.h>
+#include <Pipe.h>
 
 
 int main(int argc, char* argv[])

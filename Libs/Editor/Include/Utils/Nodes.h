@@ -3,13 +3,13 @@
 
 #include <AST/Id.h>
 #include <Pipe/Core/EnumFlags.h>
-#include <Pipe/Math/Color.h>
-#include <Pipe/Math/Vector.h>
+#include <PipeColor.h>
+#include <PipeVectors.h>
 #include <UI/UIImgui.h>
 
 
 #ifdef IMNODES_USER_CONFIG
-#	include IMNODES_USER_CONFIG
+	#include IMNODES_USER_CONFIG
 #endif
 
 struct ImGuiContext;

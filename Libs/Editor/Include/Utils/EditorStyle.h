@@ -3,9 +3,10 @@
 #pragma once
 
 #include <AST/Tree.h>
-#include <Pipe/Math/Color.h>
 #include <Pipe/Reflect/TypeId.h>
+#include <PipeColor.h>
 #include <UI/Style.h>
+
 
 
 namespace rift::Editor

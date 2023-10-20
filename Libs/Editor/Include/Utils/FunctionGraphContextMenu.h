@@ -2,7 +2,7 @@
 #pragma once
 
 #include <AST/Tree.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
 namespace rift::Editor::Graph

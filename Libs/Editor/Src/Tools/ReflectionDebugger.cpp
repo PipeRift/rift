@@ -14,9 +14,6 @@
 
 namespace rift::Editor
 {
-	// using namespace p::core::EnumOperators;
-
-
 	ReflectionDebugger::ReflectionDebugger() {}
 
 	void ReflectionDebugger::Draw()

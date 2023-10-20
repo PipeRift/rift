@@ -9,9 +9,8 @@
 #include <Compiler/Utils/BackendUtils.h>
 #include <GraphViewModule.h>
 #include <MIRBackendModule.h>
-#include <Pipe/Core/Profiler.h>
+#include <Pipe.h>
 #include <Pipe/Files/Paths.h>
-#include <Pipe/Pipe.h>
 #include <Rift.h>
 
 #include <chrono>
@@ -85,8 +84,6 @@ int main(int argc, char** argv)
 	CLI11_PARSE(app, argc, argv);
 
 	TPtr<Backend> backend = FindBackendByName(availableBackends, Tag(selectedBackendStr));
-
-	ZoneScopedNC("CLI Execution", 0x459bd1);
 
 	AST::Tree ast;
 	AST::OpenProject(ast, path);

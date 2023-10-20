@@ -8,9 +8,6 @@
 
 namespace rift::AST
 {
-	using namespace p::core;
-
-
 	enum class BinaryOperatorType : u8
 	{
 		// Mathematic

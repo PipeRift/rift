@@ -9,8 +9,8 @@
 #include <AST/Components/CNamespace.h>
 #include <AST/Tree.h>
 #include <Pipe/Core/String.h>
-#include <Pipe/PipeArrays.h>
-#include <Pipe/PipeECS.h>
+#include <PipeArrays.h>
+#include <PipeECS.h>
 
 
 namespace rift::Editor

@@ -19,7 +19,6 @@
 #include <imgui_internal.h>
 #include <Pipe/Core/FixedString.h>
 #include <Pipe/Core/PlatformProcess.h>
-#include <Pipe/Core/Profiler.h>
 #include <Pipe/Core/StringView.h>
 #include <Pipe/Files/FileDialog.h>
 #include <Pipe/Files/Files.h>
@@ -70,7 +69,6 @@ namespace rift::Editor
 
 	void FileExplorerPanel::DrawList(AST::Tree& ast)
 	{
-		ZoneScoped;
 		// if (dirty)
 		{
 			CacheProjectFiles(ast);
@@ -85,7 +83,6 @@ namespace rift::Editor
 		}
 
 		{
-			ZoneScopedN("Draw Files");
 			for (auto& item : folders[{}].items)
 			{
 				DrawItem(ast, item);
@@ -215,7 +212,6 @@ namespace rift::Editor
 	void FileExplorerPanel::CacheProjectFiles(
 	    TAccessRef<AST::CProject, AST::CModule, AST::CFileRef, AST::CDeclType> access)
 	{
-		ZoneScoped;
 		dirty = false;
 
 		folders.Clear();
@@ -371,7 +367,7 @@ namespace rift::Editor
 			}
 			else if (Strings::EndsWith(fileName, ".rf"))
 			{
-				text = Strings::Format(ICON_FA_FILE_CODE " {}", fileName.data());
+				text = Strings::Format(ICON_FA_FILE_CODE " {}", fileName);
 			}
 			else
 			{
@@ -401,7 +397,7 @@ namespace rift::Editor
 				const StringView parsedNewName = Strings::RemoveFromEnd(renameBuffer, ".rf");
 				const bool nameIsEmpty         = parsedNewName.empty();
 				const Id sameNameFuncId =
-				    AST::FindChildByName(ast, p::GetParent(ast, item.id), Tag{parsedNewName});
+				    AST::FindChildByName(ast, p::GetIdParent(ast, item.id), Tag{parsedNewName});
 				if (nameIsEmpty || (!IsNone(sameNameFuncId) && item.id != sameNameFuncId))
 				{
 					UI::PushTextColor(LinearColor::Red());

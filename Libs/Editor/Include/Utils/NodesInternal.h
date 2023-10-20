@@ -10,8 +10,8 @@
 #include <limits.h>
 #include <Pipe/Core/BitArray.h>
 #include <Pipe/Core/EnumFlags.h>
-#include <Pipe/Math/Vector.h>
-#include <Pipe/PipeArrays.h>
+#include <PipeArrays.h>
+#include <PipeVectors.h>
 
 
 // the structure of this file:

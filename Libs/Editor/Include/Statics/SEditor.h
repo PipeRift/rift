@@ -17,10 +17,6 @@
 
 namespace rift::Editor
 {
-	using namespace p::core;
-	using namespace p::files;
-
-
 	struct SEditor : public Struct
 	{
 		P_STRUCT(SEditor, Struct)

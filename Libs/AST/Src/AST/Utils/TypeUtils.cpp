@@ -31,10 +31,9 @@
 #include "Rift.h"
 
 #include <Pipe/Core/Checks.h>
-#include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Files.h>
-#include <Pipe/PipeECS.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
+#include <PipeECS.h>
 
 
 namespace rift::AST
@@ -94,13 +93,11 @@ namespace rift::AST
 				}
 			}
 		}
-		p::Remove(access, typeIds, true);
+		p::RemoveId(access, typeIds, true);
 	}
 
 	void SerializeType(Tree& ast, Id id, String& data)
 	{
-		ZoneScoped;
-
 		if (!Ensure(ast.Has<CDeclType>(id)))
 		{
 			return;
@@ -118,8 +115,6 @@ namespace rift::AST
 
 	void DeserializeType(Tree& ast, Id id, const String& data)
 	{
-		ZoneScoped;
-
 		JsonFormatReader reader{data};
 		if (!reader.IsValid())
 		{
@@ -203,7 +198,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::Attach(ast, type, id);
+			p::AttachId(ast, type, id);
 		}
 		return id;
 	}
@@ -219,7 +214,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::Attach(ast, type, id);
+			p::AttachId(ast, type, id);
 		}
 		return id;
 	}
@@ -236,7 +231,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -247,7 +242,7 @@ namespace rift::AST
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
-		p::Attach(ast, functionId, id);
+		p::AttachId(ast, functionId, id);
 		ast.GetOrAdd<CExprOutputs>(functionId).Add(id);
 		return id;
 	}
@@ -258,7 +253,7 @@ namespace rift::AST
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
-		p::Attach(ast, functionId, id);
+		p::AttachId(ast, functionId, id);
 		ast.GetOrAdd<CExprInputs>(functionId).Add(id);
 		return id;
 	}
@@ -274,17 +269,17 @@ namespace rift::AST
 		const Id valueId = ast.Create();
 		ast.Add<CExprTypeId>(valueId, {.id = ast.GetNativeTypes().boolId});
 		ast.Add<CExprType>(id).type = GetNamespace(ast, ast.GetNativeTypes().boolId);
-		p::Attach(ast, id, valueId);
+		p::AttachId(ast, id, valueId);
 		ast.Add<CExprInputs>(id).Add(valueId);
 
 		TArray<Id> outIds(2);
 		ast.Create(outIds);
-		p::Attach(ast, id, outIds);
+		p::AttachId(ast, id, outIds);
 		ast.Add<CStmtOutputs>(id, Move(outIds));
 
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -297,7 +292,7 @@ namespace rift::AST
 		ast.Add<CStmtInput>(returnId);
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), returnId);
+			p::AttachId(ast, type.GetId(), returnId);
 		}
 		return returnId;
 	}
@@ -382,7 +377,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -395,7 +390,7 @@ namespace rift::AST
 		ast.Add<CExprDeclRef>(id);
 		ast.Add<CExprOutputs>(id).Add(id);    // Types gets resolved by a system later
 
-		const Id typeId = p::GetParent(ast, declId);
+		const Id typeId = p::GetIdParent(ast, declId);
 		Check(!IsNone(typeId));
 		auto& declRefExpr           = ast.Add<CExprDeclRef>(id);
 		declRefExpr.ownerName       = ast.Get<CNamespace>(typeId).name;
@@ -405,7 +400,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -419,7 +414,7 @@ namespace rift::AST
 		ast.Add<CExprOutputs>(id).Add(id);
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -434,10 +429,10 @@ namespace rift::AST
 		auto& inputs = ast.Add<CExprInputs>(id);
 		inputs.Resize(2);
 		ast.Create(inputs.pinIds);
-		p::Attach(ast, id, inputs.pinIds);
+		p::AttachId(ast, id, inputs.pinIds);
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -447,7 +442,7 @@ namespace rift::AST
 		if (!IsNone(ownerId))
 		{
 			TArray<Id> children;
-			p::GetChildren(access, ownerId, children);
+			p::GetIdChildren(access, ownerId, children);
 			for (Id childId : children)
 			{
 				const auto* ns = access.TryGet<const CNamespace>(childId);
@@ -463,7 +458,7 @@ namespace rift::AST
 	void RemoveNodes(const RemoveAccess& access, TView<Id> ids)
 	{
 		ScopedChange(access, ids);
-		p::Remove(access, ids, true);
+		p::RemoveId(access, ids, true);
 	}
 
 	bool CopyExpressionType(TAccessRef<TWrite<CExprTypeId>> access, Id sourcePinId, Id targetPinId)

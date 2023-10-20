@@ -26,7 +26,6 @@ namespace rift
 
 	void Build(AST::Tree& ast, const CompilerConfig& config, TPtr<Backend> backend)
 	{
-		ZoneScoped;
 		Compiler compiler{ast, config};
 
 		if (!backend)
@@ -36,8 +35,6 @@ namespace rift
 		}
 
 		{
-			ZoneScopedN("Frontend");
-
 			if (!AST::HasProject(ast))
 			{
 				p::Error("No existing project to build.");
