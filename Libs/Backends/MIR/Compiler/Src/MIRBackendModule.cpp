@@ -5,14 +5,17 @@
 #include "Compiler/CompilerConfig.h"
 
 #include <AST/Utils/ModuleUtils.h>
-#include <c2mir/c2mir.h>
-#include <mir-gen.h>
-#include <mir.h>
 #include <NativeBindingModule.h>
 #include <Pipe/Core/Log.h>
 #include <Pipe/Files/Files.h>
 #include <PipeTime.h>
 #include <stdlib.h>
+extern "C"
+{
+#include <c2mir/c2mir.h>
+#include <mir-gen.h>
+#include <mir.h>
+}
 
 
 #ifndef _WIN32
