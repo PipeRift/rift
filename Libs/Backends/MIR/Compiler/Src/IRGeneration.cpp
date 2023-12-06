@@ -2,7 +2,6 @@
 
 #include "IRGeneration.h"
 
-#include "mir.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
 
@@ -14,7 +13,7 @@
 
 namespace rift::MIR
 {
-	void Generate(Compiler& compiler, MIR_context_t& ctx)
+	void Generate(Compiler& compiler)
 	{
 		MIRAccess access{compiler.ast};
 		CGenerator cGen{compiler, access};

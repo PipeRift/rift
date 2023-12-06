@@ -2,7 +2,9 @@
 
 #include "MIRBackendModule.h"
 
+#include "C2MIR.h"
 #include "Compiler/CompilerConfig.h"
+#include "IRGeneration.h"
 
 #include <AST/Utils/ModuleUtils.h>
 #include <NativeBindingModule.h>
@@ -10,6 +12,8 @@
 #include <Pipe/Files/Files.h>
 #include <PipeTime.h>
 #include <stdlib.h>
+
+
 extern "C"
 {
 #include <c2mir/c2mir.h>
@@ -238,11 +242,12 @@ namespace rift
 	using EntryFunctionPtr = p::i32 (*)();
 	void MIRBackend::Build(Compiler& compiler)
 	{
+		MIR::Generate(compiler);
+
 		MIR_context* ctx = MIR_init();
 		c2mir_init(ctx);
 
-		c2mir_options options;
-
+		MIR::CToMIR(compiler, ctx);
 
 		p::i32 nGen = 1;
 		MIR_item_t func, mainFunc = nullptr;
@@ -304,35 +309,5 @@ namespace rift
 		CloseSTDLibs();
 		c2mir_finish(ctx);
 		MIR_finish(ctx);
-	}
-
-	void MIRBackend::CToMIR(Compiler& compiler, Input& input, MIR_context* ctx)
-	{
-		auto getc = [](void* data) -> p::i32 {
-			auto* input = static_cast<Input*>(data);
-			if (input->currentChar < input->code.EndData())
-			{
-				return *(input->currentChar++);
-			}
-			return EOF;
-		};
-
-		if (!c2mir_compile(ctx, &input.options, getc, &input, input.name, nullptr))
-		{
-			compiler.Error("C to MIR compilation failed");
-		}
-	}
-
-	void InitCToMIROptions(c2mir_options& options)
-	{
-		int incl_p, ldir_p = FALSE; /* to remove an uninitialized warning */
-
-		options.message_file = stderr;
-		options.debug_p = options.verbose_p = options.ignore_warnings_p = FALSE;
-		options.asm_p = options.object_p = options.no_prepro_p = options.prepro_only_p = FALSE;
-		options.syntax_only_p = options.pedantic_p = FALSE;
-
-		options.macro_commands     = nullptr;
-		options.macro_commands_num = 0;
 	}
 }    // namespace rift

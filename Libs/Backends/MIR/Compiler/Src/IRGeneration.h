@@ -25,7 +25,6 @@
 #include <AST/Id.h>
 #include <Components/CDeclCStatic.h>
 #include <Components/CDeclCStruct.h>
-#include <mir.h>
 #include <PipeECS.h>
 
 
@@ -45,7 +44,7 @@ namespace rift::MIR
 	    CDeclCStruct, CDeclCStatic, p::TWrite<CMIRType>, p::TWrite<CMIRFunctionSignature>,
 	    p::TWrite<CMIRLiteral>>;
 
-	void Generate(Compiler& compiler, MIR_context_t& ctx);
+	void Generate(Compiler& compiler);
 
 
 	struct CGenerator
