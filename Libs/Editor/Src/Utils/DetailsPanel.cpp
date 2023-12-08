@@ -15,7 +15,6 @@
 
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/TypeUtils.h>
-#include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
 #include <Pipe/Core/EnumFlags.h>
 #include <PipeECS.h>
@@ -81,7 +80,7 @@ namespace rift::Editor
 
 		if (hovered)
 		{
-			if (UI::IsKeyReleased(GLFW_KEY_DELETE))
+			if (UI::IsKeyReleased(ImGuiKey_Delete))
 			{
 				removePin = true;
 			}
@@ -148,7 +147,7 @@ namespace rift::Editor
 		}
 		UI::PushStyleCompact();
 		UI::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, {0.5f, 0.5f});
-		UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
+		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
 		if (UI::Selectable(ICON_FA_PLUS "##AddInput"))
 		{
 			ScopedChange(ast, id);
@@ -175,7 +174,7 @@ namespace rift::Editor
 		}
 		UI::PushStyleCompact();
 		UI::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
-		UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
+		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
 		if (UI::Selectable(ICON_FA_PLUS "##AddOutput"))
 		{
 			ScopedChange(ast, id);

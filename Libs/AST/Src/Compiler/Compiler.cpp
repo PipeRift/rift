@@ -34,27 +34,27 @@ namespace rift
 			return;
 		}
 
+		if (!AST::HasProject(ast))
 		{
-			if (!AST::HasProject(ast))
-			{
-				p::Error("No existing project to build.");
-				return;
-			}
-			compiler.config.Init(ast);
-
-			if (auto* nativeBindings = GetModule<NativeBindingModule>().Get())
-			{
-				p::Info("Interpret native modules");
-				nativeBindings->SyncIncludes(ast);
-			}
-
-			p::Info("Loading files");
-			AST::LoadSystem::Run(ast);
-
-			OptimizationSystem::PruneDisconnectedExpressions(ast);
-			AST::TypeSystem::PropagateVariableTypes(ast);
-			AST::TypeSystem::PropagateExpressionTypes(ast);
+			p::Error("No existing project to build.");
+			return;
 		}
+
+		compiler.config.Init(ast);
+
+		if (auto* nativeBindings = GetModule<NativeBindingModule>().Get())
+		{
+			p::Info("Interpret native modules");
+			nativeBindings->SyncIncludes(ast);
+		}
+
+		p::Info("Loading files");
+		AST::LoadSystem::Run(ast);
+
+		OptimizationSystem::PruneDisconnectedExpressions(ast);
+		AST::TypeSystem::PropagateVariableTypes(ast);
+		AST::TypeSystem::PropagateExpressionTypes(ast);
+
 
 		p::Info("Building project '{}'", AST::GetProjectName(compiler.ast));
 		// Clean build folders

@@ -26,6 +26,8 @@ namespace rift::MIR
 
 	void CToMIR(Compiler& compiler, MIR_context* ctx)
 	{
+		c2mir_init(ctx);
+
 		c2mir_options options;
 		InitCToMIROptions(options);
 
@@ -35,6 +37,8 @@ namespace rift::MIR
 			auto& mirModule = compiler.ast.Get<CMIRModule>(moduleId);
 			CToMIRModule(compiler, ctx, options, name, mirModule);
 		}
+
+		c2mir_finish(ctx);
 	}
 
 	void CToMIRModule(Compiler& compiler, MIR_context* ctx, c2mir_options& options, p::Tag name,

@@ -16,7 +16,6 @@
 
 extern "C"
 {
-#include <c2mir/c2mir.h>
 #include <mir-gen.h>
 #include <mir.h>
 }
@@ -40,15 +39,6 @@ namespace rift
 		const char* name = nullptr;
 		void* handler    = nullptr;
 	};
-
-	struct Input
-	{
-		const char* name   = nullptr;
-		p::u8* currentChar = nullptr;
-		p::TArray<p::u8> code;
-		struct c2mir_options options;
-	};
-
 
 	// clang-format off
 	static Lib gStdLibs[] {
@@ -242,10 +232,9 @@ namespace rift
 	using EntryFunctionPtr = p::i32 (*)();
 	void MIRBackend::Build(Compiler& compiler)
 	{
-		MIR::Generate(compiler);
+		MIR::GenerateC(compiler);
 
 		MIR_context* ctx = MIR_init();
-		c2mir_init(ctx);
 
 		MIR::CToMIR(compiler, ctx);
 
@@ -307,7 +296,6 @@ namespace rift
 		}
 
 		CloseSTDLibs();
-		c2mir_finish(ctx);
 		MIR_finish(ctx);
 	}
 }    // namespace rift

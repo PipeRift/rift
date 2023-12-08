@@ -378,7 +378,7 @@ namespace rift::Editor
 			{
 				UI::TreeNodeEx(
 				    text.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-				if (UI::IsItemHovered() && UI::IsKeyReleased(GLFW_KEY_F2))
+				if (UI::IsItemHovered() && UI::IsKeyReleased(ImGuiKey_F2))
 				{
 					renameId     = item.id;
 					renameBuffer = Strings::RemoveFromEnd(fileName, ".rf");
@@ -458,7 +458,7 @@ namespace rift::Editor
 
 			if (IsTypeOpen(ast, item.id))
 			{
-				UI::SameLine(ImGui::GetContentRegionAvailWidth(), 0);
+				UI::SameLine(ImGui::GetContentRegionAvail().x, 0);
 				UI::Bullet();
 				UI::NewLine();
 			}

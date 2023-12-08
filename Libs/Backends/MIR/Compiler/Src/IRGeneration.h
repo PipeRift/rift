@@ -44,7 +44,7 @@ namespace rift::MIR
 	    CDeclCStruct, CDeclCStatic, p::TWrite<CMIRType>, p::TWrite<CMIRFunctionSignature>,
 	    p::TWrite<CMIRLiteral>>;
 
-	void Generate(Compiler& compiler);
+	void GenerateC(Compiler& compiler);
 
 
 	struct CGenerator

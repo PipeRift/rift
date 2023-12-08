@@ -138,7 +138,7 @@ namespace rift::UI
 
 		// Ignore indent on buttons
 		const float widthAvailable =
-		    ImGui::GetContentRegionAvailWidth() + UI::GetCurrentWindow()->DC.Indent.x;
+		    ImGui::GetContentRegionAvail().x + UI::GetCurrentWindow()->DC.Indent.x;
 		UI::SameLine(widthAvailable - 50.f);
 		UI::PushStyleCompact();
 		if (UI::Button(ICON_FA_PLUS "##AddItem", v2(16.f, 18.f)))
@@ -156,7 +156,7 @@ namespace rift::UI
 	void DrawArrayItemButtons(const ArrayProperty& property, void* instance, i32 index)
 	{
 		const float widthAvailable =
-		    ImGui::GetContentRegionAvailWidth() + UI::GetCurrentWindow()->DC.Indent.x;
+		    ImGui::GetContentRegionAvail().x + UI::GetCurrentWindow()->DC.Indent.x;
 		UI::SameLine(widthAvailable - 50.f);
 		UI::PushStyleCompact();
 		static String label;

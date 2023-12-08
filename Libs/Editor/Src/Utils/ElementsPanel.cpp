@@ -15,7 +15,6 @@
 
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/TypeUtils.h>
-#include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
 #include <Pipe/Core/EnumFlags.h>
 #include <PipeECS.h>
@@ -61,7 +60,7 @@ namespace rift::Editor
 			{
 				editor.selectedPropertyId = variableId;
 
-				if (UI::IsKeyReleased(GLFW_KEY_DELETE))
+				if (UI::IsKeyReleased(ImGuiKey_Delete))
 				{
 					editor.pendingDeletePropertyId = variableId;
 				}
@@ -254,7 +253,7 @@ namespace rift::Editor
 		const String windowName = Strings::Format("Elements##{}", typeId);
 		if (UI::Begin(windowName.c_str(), &editor.showElements))
 		{
-			UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
+			UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
 			editor.elementsFilter.Draw("##filter");
 
 			if (AST::HasVariables(ast, typeId))

@@ -13,7 +13,7 @@
 
 namespace rift::MIR
 {
-	void Generate(Compiler& compiler)
+	void GenerateC(Compiler& compiler)
 	{
 		MIRAccess access{compiler.ast};
 		CGenerator cGen{compiler, access};

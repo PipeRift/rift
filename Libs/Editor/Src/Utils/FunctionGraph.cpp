@@ -33,7 +33,6 @@
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
-#include <GLFW/glfw3.h>
 #include <PipeECS.h>
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
@@ -872,7 +871,7 @@ namespace rift::Editor::Graph
 			Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
 			PopNodeStyle();
 
-			if (UI::IsKeyReleased(GLFW_KEY_DELETE))
+			if (UI::IsKeyReleased(ImGuiKey_Delete))
 			{
 				AST::RemoveNodes(ast, Nodes::GetSelectedNodes());
 			}

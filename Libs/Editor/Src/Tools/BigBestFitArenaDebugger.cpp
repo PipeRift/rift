@@ -64,7 +64,7 @@ namespace rift::Editor
 		{
 			return -1;
 		}
-		const bool hovered = UI::ItemHoverable(frameBox, id);
+		const bool hovered = UI::ItemHoverable(frameBox, id, ImGuiItemFlags_None);
 
 		UI::RenderFrame(frameBox.Min, frameBox.Max, UI::GetColorU32(ImGuiCol_FrameBg), true,
 		    style.FrameRounding);
@@ -196,13 +196,13 @@ namespace rift::Editor
 					const String usedPctLabel =
 					    Strings::Format("{:.0f}%% used ({})", usedPct * 100.f, used);
 					const float pctFontSize = (UI::GetFontSize() * usedPctLabel.size()) / 2.f;
-					UI::SameLine(UI::GetWindowContentRegionWidth() / 2 - pctFontSize / 2,
+					UI::SameLine(UI::GetContentRegionAvail().x / 2 - pctFontSize / 2,
 					    UI::GetStyle().ItemInnerSpacing.x / 2);
 					UI::Text(usedPctLabel);
 
 					UI::SetItemAllowOverlap();
 					const float usedFontSize = (UI::GetFontSize() * size.size()) / 2.f;
-					UI::SameLine(UI::GetWindowContentRegionWidth() - usedFontSize);
+					UI::SameLine(UI::GetContentRegionAvail().x - usedFontSize);
 					UI::Text(size);
 
 					UI::PopStyleColor(2);
