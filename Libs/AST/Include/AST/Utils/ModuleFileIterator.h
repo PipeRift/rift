@@ -9,14 +9,14 @@
 
 namespace rift::AST
 {
-	class ModuleIterator : public p::LambdaFileIterator<p::RecursiveIterator>
+	class ModuleFileIterator : public p::LambdaFileIterator<p::RecursiveIterator>
 	{
 		using Super = p::LambdaFileIterator<p::RecursiveIterator>;
 
 	public:
 		using Super::Super;
 
-		explicit ModuleIterator(const p::Path& path)
+		explicit ModuleFileIterator(const p::Path& path)
 		    : Super(path, [](const auto& path) {
 			    return path.filename() == moduleFilename;
 		    })
@@ -24,12 +24,12 @@ namespace rift::AST
 	};
 
 
-	inline ModuleIterator begin(ModuleIterator it) noexcept
+	inline ModuleFileIterator begin(ModuleFileIterator it) noexcept
 	{
 		return it;
 	}
 
-	inline ModuleIterator end(ModuleIterator) noexcept
+	inline ModuleFileIterator end(ModuleFileIterator) noexcept
 	{
 		return {};
 	}

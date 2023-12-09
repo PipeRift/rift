@@ -122,4 +122,14 @@ namespace rift::AST
 	{
 		nativeTypes = other.nativeTypes;
 	}
+
+	String Tree::Dump()
+	{
+		String text;
+
+		text.append("Pools: ");
+		for (const auto& Pool : GetPools()) {}
+
+		return text;
+	}
 }    // namespace rift::AST

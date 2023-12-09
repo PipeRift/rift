@@ -12,7 +12,7 @@
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/SStringLoad.h"
 #include "AST/Statics/STypes.h"
-#include "AST/Utils/ModuleIterator.h"
+#include "AST/Utils/ModuleFileIterator.h"
 #include "AST/Utils/ModuleUtils.h"
 #include "AST/Utils/TypeIterator.h"
 #include "AST/Utils/TypeUtils.h"
@@ -68,7 +68,7 @@ namespace rift::AST::LoadSystem
 
 		Id projectId      = GetProjectId(ast);
 		auto& projectFile = ast.Get<CFileRef>(projectId);
-		for (const auto& modulePath : ModuleIterator(p::GetParentPath(projectFile.path)))
+		for (const auto& modulePath : ModuleFileIterator(p::GetParentPath(projectFile.path)))
 		{
 			paths.Add(p::ToString(modulePath));
 		}

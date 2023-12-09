@@ -15,6 +15,9 @@
 
 namespace rift::Editor
 {
+	p::i32 EntityInspector::IndexCounter = 0;
+
+
 	void DrawEntityInspector(AST::Tree& ast, AST::Id entityId, bool* open = nullptr)
 	{
 		p::String name = "Entity Inspector";
@@ -52,7 +55,7 @@ namespace rift::Editor
 				auto* dataType = Cast<p::DataType>(type);
 				if (data && dataType && UI::BeginInspector("EntityInspector"))
 				{
-					UI::InspectProperties(data, dataType);
+					UI::InspectChildrenProperties({data, dataType});
 					UI::EndInspector();
 				}
 				UI::Unindent();

@@ -17,6 +17,12 @@
 
 namespace rift::Editor
 {
+	struct EntityInspector
+	{
+		static p::i32 IndexCounter;
+		p::i32 InternalIndex = ++IndexCounter;
+	};
+
 	struct ASTDebugger
 	{
 		bool open          = false;
@@ -24,6 +30,8 @@ namespace rift::Editor
 
 		AST::Id selectedNode = AST::NoId;
 		ImGuiTextFilter filter;
+
+		p::TArray<EntityInspector> EntityInspectors;
 
 
 		ASTDebugger();

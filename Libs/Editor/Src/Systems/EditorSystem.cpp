@@ -439,17 +439,17 @@ namespace rift::Editor::EditorSystem
 					auto& module = moduleEditors.Get<AST::CModule>(moduleId);
 					UI::InspectStruct(&module);
 
-					if (UI::BeginInspectHeader("Bindings"))
+					if (UI::BeginCategory("Bindings", true))
 					{
 						for (const auto& binding : AST::GetModuleBindings())
 						{
 							auto* pool = ast.GetPool(binding.tagType->GetId());
 							if (void* data = pool ? pool->TryGetVoid(moduleId) : nullptr)
 							{
-								if (UI::BeginInspectHeader(binding.displayName))
+								if (UI::BeginCategory(binding.displayName, true))
 								{
-									UI::InspectProperties(data, binding.tagType);
-									UI::EndInspectHeader();
+									UI::InspectChildrenProperties({data, binding.tagType});
+									UI::EndCategory();
 								}
 							}
 							else
@@ -467,7 +467,7 @@ namespace rift::Editor::EditorSystem
 								UI::PopStyleCompact();
 							}
 						}
-						UI::EndInspectHeader();
+						UI::EndCategory();
 					}
 					UI::EndInspector();
 				}
