@@ -188,6 +188,10 @@ namespace rift::UI
 		else if (auto* custom = gCustomKeyValues.Find(type))
 		{
 			(*custom)(handle.GetDisplayName(), instance, type);
+			if (handle.IsArrayItem())
+			{
+				DrawArrayItemButtons(handle);
+			}
 			UI::PopID();
 			return;
 		}
@@ -198,6 +202,10 @@ namespace rift::UI
 		else
 		{
 			DrawKeyValue(handle.GetDisplayName(), instance, type);
+			if (handle.IsArrayItem())
+			{
+				DrawArrayItemButtons(handle);
+			}
 			UI::PopID();
 			return;
 		}
@@ -209,12 +217,6 @@ namespace rift::UI
 			UI::TableSetColumnIndex(1);
 			DrawArrayValue(*handle.GetArrayProperty(), instance);
 		}
-
-		if (handle.GetIndex())
-		{
-			DrawArrayItemButtons(handle);
-		}
-
 
 		if (bOpen)
 		{

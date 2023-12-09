@@ -17,12 +17,6 @@
 
 namespace rift::Editor
 {
-	struct EntityInspector
-	{
-		static p::i32 IndexCounter;
-		p::i32 InternalIndex = ++IndexCounter;
-	};
-
 	struct ASTDebugger
 	{
 		bool open          = false;
@@ -31,7 +25,9 @@ namespace rift::Editor
 		AST::Id selectedNode = AST::NoId;
 		ImGuiTextFilter filter;
 
-		p::TArray<EntityInspector> EntityInspectors;
+		// First inspector is the main inspector
+		p::TArray<AST::Id> inspectorIds{};
+		p::i32 pendingInspectorFocusIndex = p::NO_INDEX;
 
 
 		ASTDebugger();
@@ -42,5 +38,9 @@ namespace rift::Editor
 		using DrawNodeAccess =
 		    p::TAccessRef<AST::CNamespace, AST::CFileRef, AST::CParent, AST::CChild, AST::CModule>;
 		void DrawNode(DrawNodeAccess access, AST::Id nodeId, bool showChildren);
+
+		void OnInspectEntity(AST::Id id);
+
+		void DrawEntityInspector(AST::Tree& ast, AST::Id entityId, bool* open = nullptr);
 	};
 }    // namespace rift::Editor
