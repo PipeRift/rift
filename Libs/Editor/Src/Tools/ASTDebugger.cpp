@@ -70,7 +70,7 @@ namespace rift::Editor
 		}
 
 		ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_FirstUseEver);
-		UI::Begin("Abstract Syntax Tree", &open);
+		UI::Begin("  " ICON_FA_BUG "  Abstract Syntax Tree", &open);
 
 		DrawTypesDebug(ast);
 
@@ -140,20 +140,17 @@ namespace rift::Editor
 		UI::End();
 
 		// Inspectors
-		for (p::i32 i = 0; i < inspectorIds.Size(); ++i)
-		{
-			if (pendingInspectorFocusIndex == i)
-			{
-				ImGui::SetNextWindowFocus();
-				pendingInspectorFocusIndex = p::NO_INDEX;
-			}
+		DrawEntityInspector(
+		    " " ICON_FA_LIST_ALT "  Inspector", "MainInspector", ast, mainInspector, nullptr);
 
-			bool inspectorOpen = true;
-			DrawEntityInspector(ast, inspectorIds[i], &inspectorOpen);
-			if (!inspectorOpen)
+		for (p::i32 i = 0; i < secondaryInspectors.Size(); ++i)
+		{
+			InspectorPanel& inspector = secondaryInspectors[i];
+			if (inspector.open)
 			{
-				inspectorIds.RemoveAtUnsafe(i, false);
-				--i;
+				p::String id   = p::Strings::Format("SecondaryInspector{}", i);
+				p::String name = p::Strings::Format(" " ICON_FA_LIST "  Inspector {}", i + 1);
+				DrawEntityInspector(name, id, ast, inspector, &inspector.open);
 			}
 		}
 	}
@@ -203,8 +200,9 @@ namespace rift::Editor
 		static p::String inspectLabel;
 		inspectLabel.clear();
 
-		const bool inspected = inspectorIds.Contains(nodeId);
-		const char* icon     = inspected ? ICON_FA_EYE : ICON_FA_EYE_SLASH;
+		const bool inspected =
+		    mainInspector.id == nodeId || secondaryInspectors.Contains(InspectorPanel{nodeId});
+		const char* icon = inspected ? ICON_FA_EYE : ICON_FA_EYE_SLASH;
 		p::Strings::FormatTo(inspectLabel, "{}##{}", icon, nodeId);
 		UI::PushTextColor(inspected ? UI::whiteTextColor : UI::whiteTextColor.Translucency(0.3f));
 		UI::PushButtonColor(UI::GetNeutralColor(1));
@@ -278,43 +276,44 @@ namespace rift::Editor
 		bool bOpenNewInspector = false;
 		if (ImGui::GetIO().KeyCtrl)    // Inspector found and Ctrl? Open a new one
 		{
-			bOpenNewInspector = true;
+			OpenAvailableSecondaryInspector(id);
 		}
 		else
 		{
-			p::i32 inspectorIndex = inspectorIds.FindIndex(id);
-			if (inspectorIndex != p::NO_INDEX)    // At least one inspector has this entity
+			bool wasInspected = secondaryInspectors.RemoveIf([id](const auto& inspector) {
+				return inspector.id == id;
+			}) > 0;
+			if (mainInspector.id == id)
 			{
-				if (ImGui::GetIO().KeyCtrl)    // Inspector found and Ctrl? Open a new one
-				{
-					pendingInspectorFocusIndex = inspectorIndex;
-				}
-				else
-				{
-					inspectorIds.RemoveAtUnsafe(inspectorIndex, false);
-				}
+				mainInspector.id = AST::NoId;
+				wasInspected     = true;
 			}
-			else    // Inspector not found
+
+			if (!wasInspected)
 			{
-				bOpenNewInspector = true;
+				mainInspector.id           = id;
+				mainInspector.pendingFocus = true;
 			}
-		}
-
-
-		if (bOpenNewInspector)
-		{
-			inspectorIds.Add(id);
 		}
 	}
 
-	void ASTDebugger::DrawEntityInspector(AST::Tree& ast, AST::Id entityId, bool* open)
+	void ASTDebugger::DrawEntityInspector(p::StringView label, p::StringView id, AST::Tree& ast,
+	    InspectorPanel& inspector, bool* open)
 	{
-		const bool valid   = ast.IsValid(entityId);
-		const bool removed = ast.WasRemoved(entityId);
+		const bool valid   = ast.IsValid(inspector.id);
+		const bool removed = ast.WasRemoved(inspector.id);
+		bool clone         = false;
+		AST::Id changedId  = inspector.id;
 
-		p::String name = "Inspector: ";
-		p::Strings::FormatTo(name, "{0}{1}###{0}", entityId, removed ? " (removed)" : "");
+		p::String name;
+		p::Strings::FormatTo(
+		    name, "{}: {}{}###{}", label, inspector.id, removed ? " (removed)" : "", id);
 
+		if (inspector.pendingFocus)
+		{
+			ImGui::SetNextWindowFocus();
+			inspector.pendingFocus = false;
+		}
 
 		UI::SetNextWindowPos(ImGui::GetCursorScreenPos() + ImVec2(20, 20), ImGuiCond_Appearing);
 		UI::SetNextWindowSizeConstraints(ImVec2(300.f, 200.f), ImVec2(800, FLT_MAX));
@@ -322,58 +321,93 @@ namespace rift::Editor
 		UI::PushTextColor(valid && !removed ? UI::whiteTextColor : UI::errorColor);
 		ImGui::Begin(name.c_str(), open, ImGuiWindowFlags_MenuBar);
 		UI::PopTextColor();
-		UI::BeginInnerStyle();
 
 		if (ImGui::BeginMenuBar())
 		{
-			// if (ImGui::MenuItem("Clone"))
-			//{
-			//	inspectorIds.Add(entityId);
-			// }
-
-			if (ImGui::BeginMenu("Settings"))
+			if (ImGui::BeginMenu(ICON_FA_BARS))
 			{
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text("Id");
+				ImGui::SameLine();
+				p::String asString = p::ToString(inspector.id);
+				ImGui::SetNextItemWidth(100.f);
+				if (UI::InputText("##IdValue", asString,
+				        ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll))
+				{
+					changedId = p::IdFromString(asString);
+				}
 				ImGui::EndMenu();
+			}
+
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - 40.f);
+			if (ImGui::MenuItem("Clone"))
+			{
+				clone = true;
 			}
 			ImGui::EndMenuBar();
 		}
 
-		if (!valid)
+		UI::BeginInnerStyle();
+
+		if (valid)
 		{
-			UI::End();
-			return;
-		}
-
-		const auto& registry = AST::TypeRegistry::Get();
-		for (const auto& poolInstance : ast.GetPools())
-		{
-			AST::Type* type = registry.FindType(poolInstance.componentId);
-			if (!type || !poolInstance.GetPool()->Has(entityId))
+			const auto& registry = AST::TypeRegistry::Get();
+			for (const auto& poolInstance : ast.GetPools())
 			{
-				continue;
-			}
-
-			void* data = poolInstance.GetPool()->TryGetVoid(entityId);
-			static p::String typeName;
-			typeName = type->GetName();
-
-			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
-			if (!data)
-			{
-				flags |= ImGuiTreeNodeFlags_Leaf;
-			}
-			if (UI::CollapsingHeader(typeName.c_str(), flags))
-			{
-				UI::Indent();
-				auto* dataType = Cast<p::DataType>(type);
-				if (data && dataType && UI::BeginInspector("EntityInspector"))
+				AST::Type* type = registry.FindType(poolInstance.componentId);
+				if (!type || !poolInstance.GetPool()->Has(inspector.id))
 				{
-					UI::InspectChildrenProperties({data, dataType});
-					UI::EndInspector();
+					continue;
 				}
-				UI::Unindent();
+
+				void* data = poolInstance.GetPool()->TryGetVoid(inspector.id);
+				static p::String typeName;
+				typeName = type->GetName();
+
+				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
+				if (!data)
+				{
+					flags |= ImGuiTreeNodeFlags_Leaf;
+				}
+				if (UI::CollapsingHeader(typeName.c_str(), flags))
+				{
+					UI::Indent();
+					auto* dataType = Cast<p::DataType>(type);
+					if (data && dataType && UI::BeginInspector("EntityInspector"))
+					{
+						UI::InspectChildrenProperties({data, dataType});
+						UI::EndInspector();
+					}
+					UI::Unindent();
+				}
 			}
 		}
 		UI::End();
+
+		// Update after drawing
+		if (changedId != inspector.id)
+		{
+			inspector.id = changedId;
+		}
+
+		if (clone)
+		{
+			OpenAvailableSecondaryInspector(inspector.id);
+		}
+	}
+
+	void ASTDebugger::OpenAvailableSecondaryInspector(AST::Id id)
+	{
+		p::i32 availableIndex = secondaryInspectors.FindIndex([](const auto& inspector) {
+			return !inspector.open || inspector.id == AST::NoId;
+		});
+		if (availableIndex != p::NO_INDEX)
+		{
+			secondaryInspectors[availableIndex] = {id};
+		}
+		else
+		{
+			secondaryInspectors.Add({id});
+		}
 	}
 }    // namespace rift::Editor

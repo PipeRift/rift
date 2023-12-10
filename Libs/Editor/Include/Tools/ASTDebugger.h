@@ -17,6 +17,18 @@
 
 namespace rift::Editor
 {
+	struct InspectorPanel
+	{
+		AST::Id id        = AST::NoId;
+		bool pendingFocus = true;
+		bool open         = true;
+
+		bool operator==(const InspectorPanel& other) const
+		{
+			return id == other.id;
+		}
+	};
+
 	struct ASTDebugger
 	{
 		bool open          = false;
@@ -26,8 +38,8 @@ namespace rift::Editor
 		ImGuiTextFilter filter;
 
 		// First inspector is the main inspector
-		p::TArray<AST::Id> inspectorIds{};
-		p::i32 pendingInspectorFocusIndex = p::NO_INDEX;
+		InspectorPanel mainInspector;
+		p::TArray<InspectorPanel> secondaryInspectors;
 
 
 		ASTDebugger();
@@ -41,6 +53,9 @@ namespace rift::Editor
 
 		void OnInspectEntity(AST::Id id);
 
-		void DrawEntityInspector(AST::Tree& ast, AST::Id entityId, bool* open = nullptr);
+		void DrawEntityInspector(p::StringView label, p::StringView id, AST::Tree& ast,
+		    InspectorPanel& inspector, bool* open = nullptr);
+
+		void OpenAvailableSecondaryInspector(AST::Id id);
 	};
 }    // namespace rift::Editor
