@@ -14,6 +14,7 @@
 #include <Rift.h>
 
 #include <chrono>
+#include <thread>
 #include <CLI/CLI.hpp>
 
 

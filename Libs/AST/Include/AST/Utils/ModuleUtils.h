@@ -8,6 +8,7 @@
 #include "AST/Tree.h"
 
 #include <Pipe/Memory/OwnPtr.h>
+#include <Pipe/Core/Tag.h>
 #include <PipeECS.h>
 
 

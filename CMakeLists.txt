@@ -26,6 +26,7 @@ else()
 endif()
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(BUILD_STATIC_LIBS "Build static libraries" ON)
+option(RIFT_BUILD_EDITOR "Build Editor" ON)
 option(RIFT_BUILD_TESTS "Build Rift and Core tests" ${RIFT_IS_PROJECT})
 
 
@@ -42,7 +43,9 @@ add_subdirectory(Libs)
 
 # Executables
 add_subdirectory(Apps/CLI)
-add_subdirectory(Apps/Editor)
+if (RIFT_BUILD_EDITOR)
+    add_subdirectory(Apps/Editor)
+endif()
 
 # Tests
 if(BUILD_TESTING AND RIFT_BUILD_TESTS)

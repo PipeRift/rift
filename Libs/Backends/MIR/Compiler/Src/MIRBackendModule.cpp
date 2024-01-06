@@ -196,19 +196,19 @@ namespace rift
 				return GetProcAddress;
 #else
 			if (strcmp(name, "dlopen") == 0)
-				return dlopen;
+				return (void*)dlopen;
 			if (strcmp(name, "dlerror") == 0)
-				return dlerror;
+				return (void*)dlerror;
 			if (strcmp(name, "dlclose") == 0)
-				return dlclose;
+				return (void*)dlclose;
 			if (strcmp(name, "dlsym") == 0)
-				return dlsym;
+				return (void*)dlsym;
 			if (strcmp(name, "stat") == 0)
-				return stat;
+				return (void*)stat;
 			if (strcmp(name, "lstat") == 0)
-				return lstat;
+				return (void*)lstat;
 			if (strcmp(name, "fstat") == 0)
-				return fstat;
+				return (void*)fstat;
 	#if defined(__APPLE__) && defined(__aarch64__)
 			if (strcmp(name, "__nan") == 0)
 				return __nan;

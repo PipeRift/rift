@@ -10,4 +10,4 @@ sudo apt -y install libx11-dev xorg-dev xlibmesa-glu-dev #libglu1-mesa-devz
 
 sudo apt -y install gdb
 
-sudo apt -y install cmake
+sudo apt -y install cmake ninja-build
