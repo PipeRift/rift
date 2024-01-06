@@ -45,8 +45,8 @@ jobs:
             os: ubuntu-latest
             os-name: linux
             compiler: gcc
-            cxx: g++-10
-            cc: gcc-10
+            cxx: g++-13
+            cc: gcc-13
           - name: macos-clang
             os: macos-latest
             os-name: macos
