@@ -51,7 +51,7 @@ namespace rift::AST
 
 		static const p::TBroadcast<Tree&>& OnInit();
 
-		String Dump();
+		String DumpPools();
 
 	private:
 		void CopyFrom(const Tree& other);

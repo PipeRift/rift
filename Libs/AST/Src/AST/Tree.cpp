@@ -123,12 +123,17 @@ namespace rift::AST
 		nativeTypes = other.nativeTypes;
 	}
 
-	String Tree::Dump()
+	String Tree::DumpPools()
 	{
 		String text;
 
-		text.append("Pools: ");
-		for (const auto& Pool : GetPools()) {}
+		text.append("Pools: \n");
+		for (const auto& pool : GetPools())
+		{
+			p::Type* type = p::TypeRegistry::Get().FindType(pool.GetId());
+			p::Strings::FormatTo(text, "- {} x{}\n",
+			    type ? type->GetName() : p::StringView{"NotReflected"}, pool.GetPool()->Size());
+		}
 
 		return text;
 	}
