@@ -206,9 +206,10 @@ namespace rift::MIR
 
 					Tag inputName = AST::GetName(access, inputId);
 
-					AST::Id typeId     = access.Get<const AST::CExprTypeId>(inputId).id;
-					const auto* irType = access.TryGet<const CMIRType>(typeId);
-					if (irType)
+					auto* exprId = access.TryGet<const AST::CExprTypeId>(inputId);
+					const auto* irType =
+					    exprId ? access.TryGet<const CMIRType>(exprId->id) : nullptr;
+					if (irType) [[likely]]
 					{
 						Strings::FormatTo(signature, "{0} {1}, ", inputName, irType->value);
 					}
@@ -220,7 +221,7 @@ namespace rift::MIR
 						    inputName, functionName));
 					}
 				}
-				Strings::RemoveFromEnd(signature, ',');
+				Strings::RemoveCharFromEnd(signature, ',');
 			}
 			signature.push_back(')');
 

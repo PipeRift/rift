@@ -52,7 +52,6 @@ namespace rift
 		AST::LoadSystem::Run(ast);
 
 		OptimizationSystem::PruneDisconnectedExpressions(ast);
-		p::Info(ast.DumpPools());
 		AST::TypeSystem::PropagateVariableTypes(ast);
 		AST::TypeSystem::PropagateExpressionTypes(ast);
 

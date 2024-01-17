@@ -118,10 +118,11 @@
             "9": [
                 "U32"
             ],
-            "10": [],
+            "10": [
+                "String"
+            ],
             "11": [
-                "TestProject",
-                "TestStruct"
+                "String"
             ]
         },
         "CNodePosition": {
