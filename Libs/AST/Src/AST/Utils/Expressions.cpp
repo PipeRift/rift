@@ -5,7 +5,7 @@
 #include "AST/Id.h"
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	bool WouldExprLoop(
 	    TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access, Id outputNodeId, Id inputNodeId)
@@ -188,4 +188,4 @@ namespace rift::AST
 		}
 		return output;
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

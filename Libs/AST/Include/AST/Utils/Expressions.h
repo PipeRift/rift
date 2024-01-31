@@ -10,9 +10,8 @@
 #include <PipeECS.h>
 
 
-
 // NOTE: In expression graphs, the Link Id is the Input Pin Id
-namespace rift::AST
+namespace rift::ast
 {
 	bool CanConnectExpr(TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access,
 	    ExprOutput output, ExprInput input);
@@ -35,4 +34,4 @@ namespace rift::AST
 
 	ExprInput GetExprInputFromPin(TAccessRef<CExprInputs, CChild> access, Id pinId);
 	ExprOutput GetExprOutputFromPin(TAccessRef<CExprOutputs, CChild> access, Id pinId);
-}    // namespace rift::AST
+}    // namespace rift::ast

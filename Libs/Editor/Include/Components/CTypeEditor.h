@@ -27,8 +27,8 @@ namespace rift::Editor
 		bool showElements = true;
 		bool showDetails  = true;
 
-		AST::Id selectedPropertyId      = AST::NoId;
-		AST::Id pendingDeletePropertyId = AST::NoId;
+		ast::Id selectedPropertyId      = ast::NoId;
+		ast::Id pendingDeletePropertyId = ast::NoId;
 
 		Nodes::EditorContext nodesEditor;
 		ImGuiTextFilter elementsFilter;

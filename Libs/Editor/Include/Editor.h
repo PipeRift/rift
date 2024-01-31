@@ -17,7 +17,7 @@ namespace rift::Editor
 		bool configFileChanged = false;
 		String configFile;
 
-		AST::Tree ast;
+		ast::Tree ast;
 
 	public:
 #if P_DEBUG
@@ -44,7 +44,7 @@ namespace rift::Editor
 			return instance;
 		}
 
-		static AST::Tree& GetContext()
+		static ast::Tree& GetContext()
 		{
 			return Get().ast;
 		}

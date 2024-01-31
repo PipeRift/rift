@@ -8,12 +8,12 @@
 #include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct Tree;
 }
 
-namespace rift::AST::LoadSystem
+namespace rift::ast::LoadSystem
 {
 	struct ModuleTypePaths
 	{
@@ -44,4 +44,4 @@ namespace rift::AST::LoadSystem
 	void DeserializeModules(Tree& ast, TView<Id> moduleIds, TView<String> strings);
 	void DeserializeTypes(Tree& ast, TView<Id> typeIds, TView<String> strings);
 
-}    // namespace rift::AST::LoadSystem
+}    // namespace rift::ast::LoadSystem

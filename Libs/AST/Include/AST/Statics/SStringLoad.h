@@ -8,7 +8,7 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	// Contains loaded string data from disk
 	struct SStringLoad : public Struct
@@ -21,4 +21,4 @@ namespace rift::AST
 		TArray<p::Path> paths;
 		TArray<String> strings;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

@@ -7,7 +7,7 @@
 #include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	enum class UnaryOperatorType : p::u8
 	{
@@ -49,13 +49,13 @@ namespace rift::AST
 		Pointer,
 		PointerToPointer
 	};
-}    // namespace rift::AST
-ENUM(rift::AST::UnaryOperatorType)
-ENUM(rift::AST::BinaryOperatorType)
-ENUM(rift::AST::TypeMode)
+}    // namespace rift::ast
+ENUM(rift::ast::UnaryOperatorType)
+ENUM(rift::ast::BinaryOperatorType)
+ENUM(rift::ast::TypeMode)
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct CExpression : public p::Struct
 	{
@@ -288,4 +288,4 @@ namespace rift::AST
 	{
 		ct.Serialize(val.type);
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

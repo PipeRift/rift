@@ -5,7 +5,7 @@
 #include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct CStmtFor : public p::Struct
 	{
@@ -80,4 +80,4 @@ namespace rift::AST
 	{
 		ct.Serialize(val.linkInputNode);
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

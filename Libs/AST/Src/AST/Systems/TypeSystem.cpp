@@ -13,7 +13,7 @@
 #include <PipeECS.h>
 
 
-namespace rift::AST::TypeSystem
+namespace rift::ast::TypeSystem
 {
 	void Init(Tree& ast)
 	{
@@ -149,4 +149,4 @@ namespace rift::AST::TypeSystem
 			}
 		}
 	}
-}    // namespace rift::AST::TypeSystem
+}    // namespace rift::ast::TypeSystem

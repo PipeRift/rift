@@ -8,7 +8,6 @@
 #include <UI/Style.h>
 
 
-
 namespace rift::Editor
 {
 	using namespace p;
@@ -57,7 +56,7 @@ namespace rift::Editor
 		return Color::Gray();
 	};
 
-	const Color GetTypeColor(const AST::Tree& ast, AST::Id id);
+	const Color GetTypeColor(const ast::Tree& ast, ast::Id id);
 
 
 	void PushNodeTitleColor(Color color);

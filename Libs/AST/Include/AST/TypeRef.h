@@ -7,16 +7,16 @@
 #include <Pipe/Core/Checks.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct TypeRef
 	{
 	private:
 		Tree& ast;
-		AST::Id typeId = AST::NoId;
+		ast::Id typeId = ast::NoId;
 
 	public:
-		TypeRef(Tree& ast, AST::Id typeId) : ast(ast), typeId(typeId)
+		TypeRef(Tree& ast, ast::Id typeId) : ast(ast), typeId(typeId)
 		{
 			if (!IsNone(typeId))
 			{
@@ -33,7 +33,7 @@ namespace rift::AST
 			return ast;
 		}
 
-		AST::Id GetId() const
+		ast::Id GetId() const
 		{
 			return typeId;
 		}
@@ -44,7 +44,7 @@ namespace rift::AST
 		}
 
 
-		operator AST::Id() const
+		operator ast::Id() const
 		{
 			return typeId;
 		}
@@ -53,4 +53,4 @@ namespace rift::AST
 			return IsValid();
 		}
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

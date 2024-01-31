@@ -26,7 +26,7 @@
 
 namespace rift::Editor::Graph
 {
-	void SetPositionAndConnect(AST::Tree& ast, AST::Id id, v2 position)
+	void SetPositionAndConnect(ast::Tree& ast, ast::Id id, v2 position)
 	{
 		if (!IsNone(id))
 		{
@@ -34,18 +34,18 @@ namespace rift::Editor::Graph
 			// TODO: Improve nodes input to handle this correctly
 			TPair<Nodes::Id, Nodes::PinType> linkPin = Nodes::GetDraggedOriginPin();
 
-			const auto linkPinId = AST::Id(linkPin.first);
+			const auto linkPinId = ast::Id(linkPin.first);
 			switch (linkPin.second)
 			{
 				case Nodes::PinType::Output:
-					AST::TryConnectStmt(ast, linkPinId, id);
-					AST::TryConnectExpr(ast, AST::GetExprOutputFromPin(ast, linkPinId),
-					    AST::GetExprInputFromPin(ast, id));
+					ast::TryConnectStmt(ast, linkPinId, id);
+					ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, linkPinId),
+					    ast::GetExprInputFromPin(ast, id));
 					break;
 				case Nodes::PinType::Input:
-					AST::TryConnectStmt(ast, id, linkPinId);
-					AST::TryConnectExpr(ast, AST::GetExprOutputFromPin(ast, id),
-					    AST::GetExprInputFromPin(ast, linkPinId));
+					ast::TryConnectStmt(ast, id, linkPinId);
+					ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, id),
+					    ast::GetExprInputFromPin(ast, linkPinId));
 					break;
 				default: break;
 			}
@@ -79,61 +79,61 @@ namespace rift::Editor::Graph
 		return false;
 	}
 
-	void DrawNodesContextMenu(AST::Tree& ast, AST::Id typeId, TView<AST::Id> nodeIds)
+	void DrawNodesContextMenu(ast::Tree& ast, ast::Id typeId, TView<ast::Id> nodeIds)
 	{
 		Check(!nodeIds.IsEmpty());
-		const bool canEditBody = AST::HasFunctionBodies(ast, typeId);
+		const bool canEditBody = ast::HasFunctionBodies(ast, typeId);
 
-		AST::Id firstNodeId = nodeIds[0];
+		ast::Id firstNodeId = nodeIds[0];
 
-		if (nodeIds.Size() == 1 && ast.Has<AST::CDeclFunction>(firstNodeId))
+		if (nodeIds.Size() == 1 && ast.Has<ast::CDeclFunction>(firstNodeId))
 		{
 			if (canEditBody && UI::MenuItem("Add return node"))
 			{
-				AST::Id newId = AST::AddReturn({ast, typeId});
+				ast::Id newId = ast::AddReturn({ast, typeId});
 				if (!IsNone(newId))
 				{
 					v2 position = ast.Get<CNodePosition>(firstNodeId).position;
 					ast.Add<CNodePosition>(newId, position + v2{10.f, 0.f});
 
-					AST::TryConnectStmt(ast, firstNodeId, newId);
+					ast::TryConnectStmt(ast, firstNodeId, newId);
 				}
 			}
 		}
-		TArray<AST::Id> calls = FindIdsWith<AST::CExprCall>(ast, nodeIds);
+		TArray<ast::Id> calls = FindIdsWith<ast::CExprCall>(ast, nodeIds);
 		if (!calls.IsEmpty() && UI::MenuItem("Refresh"))
 		{
-			ast.AddN<AST::CCallDirty>(calls);
+			ast.AddN<ast::CCallDirty>(calls);
 		}
 
 		if (canEditBody && UI::MenuItem("Delete"))
 		{
-			AST::RemoveNodes(ast, nodeIds);
+			ast::RemoveNodes(ast, nodeIds);
 		}
 	}
 
-	void DrawLinksContextMenu(AST::Tree& ast, AST::Id typeId, TView<AST::Id> linkIds)
+	void DrawLinksContextMenu(ast::Tree& ast, ast::Id typeId, TView<ast::Id> linkIds)
 	{
 		Check(!linkIds.IsEmpty());
-		const bool canEditBody = AST::HasFunctionBodies(ast, typeId);
+		const bool canEditBody = ast::HasFunctionBodies(ast, typeId);
 
-		AST::Id firstLinkId = linkIds[0];
+		ast::Id firstLinkId = linkIds[0];
 
 		if (canEditBody && UI::MenuItem("Delete"))
 		{
 			ScopedChange(ast, linkIds);
-			for (AST::Id linkId : linkIds)
+			for (ast::Id linkId : linkIds)
 			{
-				AST::DisconnectExpr(ast, AST::GetExprInputFromPin(ast, firstLinkId));
-				AST::DisconnectStmtLink(ast, firstLinkId);
+				ast::DisconnectExpr(ast, ast::GetExprInputFromPin(ast, firstLinkId));
+				ast::DisconnectStmtLink(ast, firstLinkId);
 			}
 		}
 	}
 
-	void DrawGraphContextMenu(AST::Tree& ast, AST::Id typeId)
+	void DrawGraphContextMenu(ast::Tree& ast, ast::Id typeId)
 	{
 		static ImGuiTextFilter filter;
-		const bool canEditBody = AST::HasFunctionBodies(ast, typeId);
+		const bool canEditBody = ast::HasFunctionBodies(ast, typeId);
 
 		if (UI::IsWindowAppearing())
 		{
@@ -153,12 +153,12 @@ namespace rift::Editor::Graph
 		{
 			if (ContextItem("Return", filter))
 			{
-				AST::Id newId = AST::AddReturn({ast, typeId});
+				ast::Id newId = ast::AddReturn({ast, typeId});
 				SetPositionAndConnect(ast, newId, gridPos);
 			}
 			if (ContextItem("If", filter))
 			{
-				AST::Id newId = AST::AddIf({ast, typeId});
+				ast::Id newId = ast::AddIf({ast, typeId});
 				SetPositionAndConnect(ast, newId, gridPos);
 			}
 			ContextTreePop(filter);
@@ -167,17 +167,17 @@ namespace rift::Editor::Graph
 		if (ContextTreeNode("Constructors", filter))
 		{
 			String makeStr{};
-			auto& typeList = ast.GetStatic<AST::STypes>();
-			TAccess<AST::CDeclType, AST::CNamespace> typesAccess{ast};
-			for (Id typeId : FindAllIdsWith<AST::CDeclType>(typesAccess))
+			auto& typeList = ast.GetStatic<ast::STypes>();
+			TAccess<ast::CDeclType, ast::CNamespace> typesAccess{ast};
+			for (Id typeId : FindAllIdsWith<ast::CDeclType>(typesAccess))
 			{
-				if (auto* ns = typesAccess.TryGet<const AST::CNamespace>(typeId))
+				if (auto* ns = typesAccess.TryGet<const ast::CNamespace>(typeId))
 				{
 					makeStr.clear();
 					Strings::FormatTo(makeStr, "Make {}", ns->name);
 					if (ContextItem(makeStr, filter))
 					{
-						AST::Id newId = AST::AddLiteral({ast, typeId}, typeId);
+						ast::Id newId = ast::AddLiteral({ast, typeId}, typeId);
 						SetPositionAndConnect(ast, newId, gridPos);
 					}
 				}
@@ -188,16 +188,16 @@ namespace rift::Editor::Graph
 		if (ContextTreeNode("Functions", filter))
 		{
 			static String label;
-			TAccess<AST::CDeclFunction, AST::CNamespace, AST::CChild, AST::CDeclType> access{ast};
-			for (AST::Id functionId : FindAllIdsWith<AST::CDeclFunction, AST::CNamespace>(access))
+			TAccess<ast::CDeclFunction, ast::CNamespace, ast::CChild, ast::CDeclType> access{ast};
+			for (ast::Id functionId : FindAllIdsWith<ast::CDeclFunction, ast::CNamespace>(access))
 			{
-				Tag name = access.Get<const AST::CNamespace>(functionId).name;
+				Tag name = access.Get<const ast::CNamespace>(functionId).name;
 				label.clear();
-				AST::Id funcTypeId = p::GetIdParent(access, functionId);
-				if (!IsNone(funcTypeId) && access.Has<AST::CDeclType, AST::CNamespace>(funcTypeId))
+				ast::Id funcTypeId = p::GetIdParent(access, functionId);
+				if (!IsNone(funcTypeId) && access.Has<ast::CDeclType, ast::CNamespace>(funcTypeId))
 				{
 					Strings::FormatTo(label, "{}   ({})", name,
-					    access.Get<const AST::CNamespace>(funcTypeId).name);
+					    access.Get<const ast::CNamespace>(funcTypeId).name);
 				}
 				else
 				{
@@ -205,7 +205,7 @@ namespace rift::Editor::Graph
 				}
 				if (ContextItem(label, filter))
 				{
-					AST::Id newId = AST::AddCall({ast, typeId}, functionId);
+					ast::Id newId = ast::AddCall({ast, typeId}, functionId);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}
@@ -215,16 +215,16 @@ namespace rift::Editor::Graph
 		if (ContextTreeNode("Variables", filter))
 		{
 			static String label;
-			TAccess<AST::CDeclVariable, AST::CNamespace, AST::CChild, AST::CDeclType> access{ast};
-			for (AST::Id variableId : FindAllIdsWith<AST::CDeclVariable, AST::CNamespace>(access))
+			TAccess<ast::CDeclVariable, ast::CNamespace, ast::CChild, ast::CDeclType> access{ast};
+			for (ast::Id variableId : FindAllIdsWith<ast::CDeclVariable, ast::CNamespace>(access))
 			{
-				Tag name = access.Get<const AST::CNamespace>(variableId).name;
+				Tag name = access.Get<const ast::CNamespace>(variableId).name;
 				label.clear();
-				AST::Id typeId = p::GetIdParent(access, variableId);
-				if (!IsNone(typeId) && access.Has<AST::CDeclType, AST::CNamespace>(typeId))
+				ast::Id typeId = p::GetIdParent(access, variableId);
+				if (!IsNone(typeId) && access.Has<ast::CDeclType, ast::CNamespace>(typeId))
 				{
 					Strings::FormatTo(
-					    label, "{}   ({})", name, access.Get<const AST::CNamespace>(typeId).name);
+					    label, "{}   ({})", name, access.Get<const ast::CNamespace>(typeId).name);
 				}
 				else
 				{
@@ -232,7 +232,7 @@ namespace rift::Editor::Graph
 				}
 				if (ContextItem(label, filter))
 				{
-					AST::Id newId = AST::AddDeclarationReference({ast, typeId}, variableId);
+					ast::Id newId = ast::AddDeclarationReference({ast, typeId}, variableId);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}
@@ -243,7 +243,7 @@ namespace rift::Editor::Graph
 		{
 			static String name;
 			// Unary operators
-			for (auto type : GetEnumValues<AST::UnaryOperatorType>())
+			for (auto type : GetEnumValues<ast::UnaryOperatorType>())
 			{
 				name.clear();
 				StringView shortName = GetUnaryOperatorName(type);
@@ -251,12 +251,12 @@ namespace rift::Editor::Graph
 				Strings::FormatTo(name, "{}   ({})", shortName, longName);
 				if (ContextItem(name, filter))
 				{
-					AST::Id newId = AST::AddUnaryOperator({ast, typeId}, type);
+					ast::Id newId = ast::AddUnaryOperator({ast, typeId}, type);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}
 			// Binary operators
-			for (auto type : GetEnumValues<AST::BinaryOperatorType>())
+			for (auto type : GetEnumValues<ast::BinaryOperatorType>())
 			{
 				name.clear();
 				StringView shortName = GetBinaryOperatorName(type);
@@ -264,7 +264,7 @@ namespace rift::Editor::Graph
 				Strings::FormatTo(name, "{}   ({})", shortName, longName);
 				if (ContextItem(name, filter))
 				{
-					AST::Id newId = AST::AddBinaryOperator({ast, typeId}, type);
+					ast::Id newId = ast::AddBinaryOperator({ast, typeId}, type);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}
@@ -275,7 +275,7 @@ namespace rift::Editor::Graph
 	void DrawLinkContextMenu() {}
 
 	void DrawContextMenu(
-	    AST::Tree& ast, AST::Id typeId, AST::Id hoveredNodeId, AST::Id hoveredLinkId)
+	    ast::Tree& ast, ast::Id typeId, ast::Id hoveredNodeId, ast::Id hoveredLinkId)
 	{
 		if (UI::BeginPopup("ContextMenu"))
 		{
@@ -292,7 +292,7 @@ namespace rift::Editor::Graph
 			}
 			else if (!IsNone(hoveredLinkId))
 			{
-				TArray<AST::Id> selectedLinkIds;
+				TArray<ast::Id> selectedLinkIds;
 				if (Nodes::GetSelectedLinks(selectedLinkIds))
 				{
 					DrawLinksContextMenu(ast, typeId, selectedLinkIds);

@@ -10,8 +10,7 @@
 #include <PipeECS.h>
 
 
-
-namespace rift::AST
+namespace rift::ast
 {
 	TBroadcast<Tree&> Tree::onInit{};
 
@@ -137,4 +136,4 @@ namespace rift::AST
 
 		return text;
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

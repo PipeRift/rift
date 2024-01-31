@@ -24,7 +24,7 @@ namespace rift
 	}
 
 
-	void Build(AST::Tree& ast, const CompilerConfig& config, TPtr<Backend> backend)
+	void Build(ast::Tree& ast, const CompilerConfig& config, TPtr<Backend> backend)
 	{
 		Compiler compiler{ast, config};
 
@@ -34,7 +34,7 @@ namespace rift
 			return;
 		}
 
-		if (!AST::HasProject(ast))
+		if (!ast::HasProject(ast))
 		{
 			p::Error("No existing project to build.");
 			return;
@@ -49,14 +49,14 @@ namespace rift
 		}
 
 		p::Info("Loading files");
-		AST::LoadSystem::Run(ast);
+		ast::LoadSystem::Run(ast);
 
 		OptimizationSystem::PruneDisconnectedExpressions(ast);
-		AST::TypeSystem::PropagateVariableTypes(ast);
-		AST::TypeSystem::PropagateExpressionTypes(ast);
+		ast::TypeSystem::PropagateVariableTypes(ast);
+		ast::TypeSystem::PropagateExpressionTypes(ast);
 
 
-		p::Info("Building project '{}'", AST::GetProjectName(compiler.ast));
+		p::Info("Building project '{}'", ast::GetProjectName(compiler.ast));
 		// Clean build folders
 		p::Info("Cleaning previous build");
 		files::Delete(compiler.config.binariesPath, true, false);
@@ -65,7 +65,7 @@ namespace rift
 		backend->Build(compiler);
 	}
 
-	void Build(AST::Tree& ast, const CompilerConfig& config, ClassType* backendType)
+	void Build(ast::Tree& ast, const CompilerConfig& config, ClassType* backendType)
 	{
 		if (backendType)
 		{

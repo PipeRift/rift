@@ -5,7 +5,7 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	enum class FloatingType : p::u8
 	{
@@ -26,13 +26,13 @@ namespace rift::AST
 		U32 = S32 | literalUnsignedMask,
 		U64 = S64 | literalUnsignedMask
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast
 
-ENUM(rift::AST::FloatingType)
-ENUM(rift::AST::IntegralType)
+ENUM(rift::ast::FloatingType)
+ENUM(rift::ast::IntegralType)
 
 template<>
-struct magic_enum::customize::enum_range<rift::AST::IntegralType>
+struct magic_enum::customize::enum_range<rift::ast::IntegralType>
 {
 	static constexpr int min = 0;
 	static constexpr int max = 256;
@@ -41,7 +41,7 @@ struct magic_enum::customize::enum_range<rift::AST::IntegralType>
 };
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct CLiteralBool : public p::Struct
 	{
@@ -101,4 +101,4 @@ namespace rift::AST
 		P_PROP(value)
 		p::String value;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

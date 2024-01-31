@@ -8,10 +8,9 @@
 #include <Utils/Nodes.h>
 
 
-
 namespace rift::Editor
 {
-	const Color GetTypeColor(const AST::Tree& ast, AST::Id id)
+	const Color GetTypeColor(const ast::Tree& ast, ast::Id id)
 	{
 		if (!ast.IsValid(id))
 		{
@@ -44,11 +43,11 @@ namespace rift::Editor
 		{
 			return GetTypeColor<String>();
 		}
-		else if (ast.Has<AST::CDeclClass>(id))
+		else if (ast.Has<ast::CDeclClass>(id))
 		{
 			return GetTypeColor<Class>();
 		}
-		else if (ast.Has<AST::CDeclStruct>(id))
+		else if (ast.Has<ast::CDeclStruct>(id))
 		{
 			return GetTypeColor<Struct>();
 		}

@@ -7,6 +7,6 @@
 
 namespace rift::Editor
 {
-	void DrawProjectManager(AST::Tree& ast);
+	void DrawProjectManager(ast::Tree& ast);
 	void OpenProjectManager();
 }    // namespace rift::Editor

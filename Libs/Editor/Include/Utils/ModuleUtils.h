@@ -11,7 +11,7 @@
 
 namespace rift::Editor
 {
-	void OpenModuleEditor(TAccessRef<TWrite<CModuleEditor>, AST::CModule> access, AST::Id id);
-	void CloseModuleEditor(TAccessRef<TWrite<CModuleEditor>, AST::CModule> access, AST::Id id);
-	bool IsEditingModule(TAccessRef<CModuleEditor> access, AST::Id id);
+	void OpenModuleEditor(TAccessRef<TWrite<CModuleEditor>, ast::CModule> access, ast::Id id);
+	void CloseModuleEditor(TAccessRef<TWrite<CModuleEditor>, ast::CModule> access, ast::Id id);
+	bool IsEditingModule(TAccessRef<CModuleEditor> access, ast::Id id);
 }    // namespace rift::Editor

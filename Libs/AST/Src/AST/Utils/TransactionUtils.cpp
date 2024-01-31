@@ -7,7 +7,7 @@
 #include <PipeECS.h>
 
 
-namespace rift::AST::Transactions
+namespace rift::ast::Transactions
 {
 	// Transaction being recorded
 	static Transaction gActiveTransaction = {};
@@ -65,4 +65,4 @@ namespace rift::AST::Transactions
 			gActiveTransaction = {};
 		}
 	}
-}    // namespace rift::AST::Transactions
+}    // namespace rift::ast::Transactions

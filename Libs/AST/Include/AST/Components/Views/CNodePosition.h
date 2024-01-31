@@ -5,7 +5,6 @@
 #include <PipeVectors.h>
 
 
-
 namespace rift
 {
 	struct CNodePosition : public p::Struct
@@ -18,6 +17,8 @@ namespace rift
 		CNodePosition() = default;
 		CNodePosition(p::v2 position) : position{position} {}
 	};
+
+
 	static void Read(p::Reader& ct, CNodePosition& val)
 	{
 		ct.Serialize(val.position);

@@ -10,7 +10,7 @@
 #include <PipeMath.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	Namespace GetNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id)
 	{
@@ -111,4 +111,4 @@ namespace rift::AST
 		return GetNamespace(access, id).ToString(localNamespace);
 	}
 
-}    // namespace rift::AST
+}    // namespace rift::ast

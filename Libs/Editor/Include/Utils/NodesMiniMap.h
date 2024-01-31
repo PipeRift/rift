@@ -24,7 +24,7 @@ namespace rift::Nodes
 
 	struct MiniMap
 	{
-		using NodeHoveringCallback         = void (*)(AST::Id, void*);
+		using NodeHoveringCallback         = void (*)(ast::Id, void*);
 		using NodeHoveringCallbackUserData = void*;
 
 
@@ -44,7 +44,7 @@ namespace rift::Nodes
 		bool IsHovered() const;
 		void CalculateLayout();
 
-		void DrawNode(EditorContext& editor, const AST::Id nodeId);
+		void DrawNode(EditorContext& editor, const ast::Id nodeId);
 		void DrawLink(EditorContext& editor, const i32 linkIdx);
 		void Update();
 	};

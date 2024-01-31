@@ -5,7 +5,7 @@
 #include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct CDeclStatic : public p::Struct
 	{
@@ -59,4 +59,4 @@ namespace rift::AST
 		P_PROP(typeId, p::Prop_NotSerialized)
 		p::Id typeId = p::NoId;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

@@ -8,12 +8,12 @@
 #include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct Tree;
 }
 
-namespace rift::AST::TypeSystem
+namespace rift::ast::TypeSystem
 {
 	using namespace p;
 
@@ -30,4 +30,4 @@ namespace rift::AST::TypeSystem
 
 	void ResolveExprTypeIds(
 	    TAccessRef<TWrite<CExprTypeId>, CExprType, CNamespace, CParent, CChild> access);
-}    // namespace rift::AST::TypeSystem
+}    // namespace rift::ast::TypeSystem

@@ -19,7 +19,7 @@
 
 namespace rift::Editor
 {
-	void DrawTypesDebug(AST::Tree& ast)
+	void DrawTypesDebug(ast::Tree& ast)
 	{
 		if (!UI::CollapsingHeader("Types"))
 		{
@@ -29,7 +29,7 @@ namespace rift::Editor
 		static const ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable
 		                                   | ImGuiTableFlags_Hideable
 		                                   | ImGuiTableFlags_SizingStretchProp;
-		if (auto* types = ast.TryGetStatic<AST::STypes>())
+		if (auto* types = ast.TryGetStatic<ast::STypes>())
 		{
 			UI::BeginChild("typesTableChild",
 			    ImVec2(0.f, p::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
@@ -62,7 +62,7 @@ namespace rift::Editor
 
 	ASTDebugger::ASTDebugger() {}
 
-	void ASTDebugger::Draw(AST::Tree& ast)
+	void ASTDebugger::Draw(ast::Tree& ast)
 	{
 		if (!open)
 		{
@@ -111,16 +111,16 @@ namespace rift::Editor
 				DrawNodeAccess access{ast};
 				if (showHierarchy && !filter.IsActive())
 				{
-					p::TArray<AST::Id> roots;
+					p::TArray<ast::Id> roots;
 					p::GetRootIds(access, roots);
 					for (auto root : roots)
 					{
 						DrawNode(access, root, true);
 					}
 
-					p::TArray<AST::Id> orphans = p::FindAllIdsWith<AST::CNamespace>(access);
-					p::ExcludeIdsWith<AST::CChild>(access, orphans);
-					p::ExcludeIdsWith<AST::CParent>(access, orphans);
+					p::TArray<ast::Id> orphans = p::FindAllIdsWith<ast::CNamespace>(access);
+					p::ExcludeIdsWith<ast::CChild>(access, orphans);
+					p::ExcludeIdsWith<ast::CParent>(access, orphans);
 					for (auto orphan : orphans)
 					{
 						DrawNode(access, orphan, true);
@@ -128,7 +128,7 @@ namespace rift::Editor
 				}
 				else
 				{
-					ast.Each([this, &access](AST::Id id) {
+					ast.Each([this, &access](ast::Id id) {
 						DrawNode(access, id, false);
 					});
 				}
@@ -155,11 +155,11 @@ namespace rift::Editor
 		}
 	}
 
-	void ASTDebugger::DrawNode(DrawNodeAccess access, AST::Id nodeId, bool showChildren)
+	void ASTDebugger::DrawNode(DrawNodeAccess access, ast::Id nodeId, bool showChildren)
 	{
 		static p::String idText;
 		idText.clear();
-		if (nodeId == AST::NoId)
+		if (nodeId == ast::NoId)
 		{
 			idText = "No Id";
 		}
@@ -174,14 +174,14 @@ namespace rift::Editor
 
 		static p::String name;
 		name.clear();
-		if (const auto* id = access.TryGet<const AST::CNamespace>(nodeId))
+		if (const auto* id = access.TryGet<const ast::CNamespace>(nodeId))
 		{
 			name = id->name.AsString();
 		}
 
 		static p::String path;
 		path.clear();
-		if (const auto* file = access.TryGet<const AST::CFileRef>(nodeId))
+		if (const auto* file = access.TryGet<const ast::CFileRef>(nodeId))
 		{
 			path = p::ToString(file->path);
 
@@ -216,10 +216,10 @@ namespace rift::Editor
 
 		ImGui::TableNextColumn();
 		bool hasChildren;
-		const AST::CParent* parent = nullptr;
+		const ast::CParent* parent = nullptr;
 		if (showChildren)
 		{
-			parent      = access.TryGet<const AST::CParent>(nodeId);
+			parent      = access.TryGet<const ast::CParent>(nodeId);
 			hasChildren = parent && !parent->children.IsEmpty();
 		}
 		else
@@ -256,13 +256,13 @@ namespace rift::Editor
 
 		if (ImGui::TableNextColumn())
 		{
-			UI::Text(AST::GetParentNamespace(access, nodeId).ToString());
+			UI::Text(ast::GetParentNamespace(access, nodeId).ToString());
 		}
 
 
 		if (hasChildren && open)
 		{
-			for (AST::Id child : parent->children)
+			for (ast::Id child : parent->children)
 			{
 				DrawNode(access, child, true);
 			}
@@ -271,7 +271,7 @@ namespace rift::Editor
 		}
 	}
 
-	void ASTDebugger::OnInspectEntity(AST::Id id)
+	void ASTDebugger::OnInspectEntity(ast::Id id)
 	{
 		bool bOpenNewInspector = false;
 		if (ImGui::GetIO().KeyCtrl)    // Inspector found and Ctrl? Open a new one
@@ -285,7 +285,7 @@ namespace rift::Editor
 			}) > 0;
 			if (mainInspector.id == id)
 			{
-				mainInspector.id = AST::NoId;
+				mainInspector.id = ast::NoId;
 				wasInspected     = true;
 			}
 
@@ -297,13 +297,13 @@ namespace rift::Editor
 		}
 	}
 
-	void ASTDebugger::DrawEntityInspector(p::StringView label, p::StringView id, AST::Tree& ast,
+	void ASTDebugger::DrawEntityInspector(p::StringView label, p::StringView id, ast::Tree& ast,
 	    InspectorPanel& inspector, bool* open)
 	{
 		const bool valid   = ast.IsValid(inspector.id);
 		const bool removed = ast.WasRemoved(inspector.id);
 		bool clone         = false;
-		AST::Id changedId  = inspector.id;
+		ast::Id changedId  = inspector.id;
 
 		p::String name;
 		p::Strings::FormatTo(
@@ -351,10 +351,10 @@ namespace rift::Editor
 
 		if (valid)
 		{
-			const auto& registry = AST::TypeRegistry::Get();
+			const auto& registry = ast::TypeRegistry::Get();
 			for (const auto& poolInstance : ast.GetPools())
 			{
-				AST::Type* type = registry.FindType(poolInstance.componentId);
+				ast::Type* type = registry.FindType(poolInstance.componentId);
 				if (!type || !poolInstance.GetPool()->Has(inspector.id))
 				{
 					continue;
@@ -396,10 +396,10 @@ namespace rift::Editor
 		}
 	}
 
-	void ASTDebugger::OpenAvailableSecondaryInspector(AST::Id id)
+	void ASTDebugger::OpenAvailableSecondaryInspector(ast::Id id)
 	{
 		p::i32 availableIndex = secondaryInspectors.FindIndex([](const auto& inspector) {
-			return !inspector.open || inspector.id == AST::NoId;
+			return !inspector.open || inspector.id == ast::NoId;
 		});
 		if (availableIndex != p::NO_INDEX)
 		{

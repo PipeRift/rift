@@ -11,8 +11,7 @@
 #include <PipeECS.h>
 
 
-
-namespace rift::AST::FunctionsSystem
+namespace rift::ast::FunctionsSystem
 {
 	struct CallToSync
 	{
@@ -337,4 +336,4 @@ namespace rift::AST::FunctionsSystem
 	{
 		ast.AssurePool<CCallDirty>().Clear();
 	}
-}    // namespace rift::AST::FunctionsSystem
+}    // namespace rift::ast::FunctionsSystem

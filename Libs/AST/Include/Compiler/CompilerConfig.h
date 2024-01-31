@@ -39,7 +39,7 @@ namespace rift
 		Path intermediatesPath;
 		Path binariesPath;
 
-		void Init(AST::Tree& ast);
+		void Init(ast::Tree& ast);
 	};
 }    // namespace rift
 ENUM(rift::OptimizationLevel);

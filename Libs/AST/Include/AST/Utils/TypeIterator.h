@@ -7,7 +7,7 @@
 #include <Pipe/Files/LambdaFileIterator.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	class TypeIterator : public p::files::LambdaFileIterator<p::files::RecursiveIterator>
 	{
@@ -33,4 +33,4 @@ namespace rift::AST
 	{
 		return {};
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

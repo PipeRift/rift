@@ -7,7 +7,7 @@
 
 namespace rift
 {
-	namespace AST
+	namespace ast
 	{
 		class Tree;
 	}

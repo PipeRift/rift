@@ -5,7 +5,7 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct CNamespace : public p::Struct
 	{
@@ -123,4 +123,4 @@ namespace rift::AST
 		void Read(p::Reader& ct);
 		void Write(p::Writer& ct) const;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

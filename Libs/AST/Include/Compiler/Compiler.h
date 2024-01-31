@@ -27,13 +27,13 @@ namespace rift
 	{
 		P_STRUCT(Compiler, p::Struct)
 
-		AST::Tree& ast;
+		ast::Tree& ast;
 		CompilerConfig config;
 		TArray<CompileError> errors;
 
 
 	public:
-		Compiler(AST::Tree& ast, const CompilerConfig& config) : ast{ast}, config{config} {}
+		Compiler(ast::Tree& ast, const CompilerConfig& config) : ast{ast}, config{config} {}
 
 		// Errors
 		void Error(StringView str);
@@ -48,12 +48,12 @@ namespace rift
 	};
 
 
-	void Build(AST::Tree& tree, const CompilerConfig& config, TPtr<Backend> backend);
+	void Build(ast::Tree& tree, const CompilerConfig& config, TPtr<Backend> backend);
 
-	void Build(AST::Tree& ast, const CompilerConfig& config, ClassType* backendType);
+	void Build(ast::Tree& ast, const CompilerConfig& config, ClassType* backendType);
 
 	template<typename T>
-	void Build(AST::Tree& ast, const CompilerConfig& config)
+	void Build(ast::Tree& ast, const CompilerConfig& config)
 	{
 		Build(ast, config, T::GetStaticType());
 	}

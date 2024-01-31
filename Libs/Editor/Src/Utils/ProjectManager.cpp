@@ -10,7 +10,7 @@
 
 namespace rift::Editor
 {
-	void DrawProjectManager(AST::Tree& ast)
+	void DrawProjectManager(ast::Tree& ast)
 	{
 		// Center modal when appearing
 		UI::SetNextWindowPos(UI::GetMainViewport()->GetCenter(), ImGuiCond_Always, {0.5f, 0.5f});

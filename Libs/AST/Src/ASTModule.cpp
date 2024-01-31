@@ -9,7 +9,6 @@
 #include "AST/Utils/TypeUtils.h"
 
 
-
 namespace rift
 {
 	const p::Tag ASTModule::structType = "Struct";
@@ -19,14 +18,14 @@ namespace rift
 
 	void ASTModule::Load()
 	{
-		AST::RegisterFileType<AST::CDeclStruct>(
+		ast::RegisterFileType<ast::CDeclStruct>(
 		    structType, {.displayName = "Struct", .hasVariables = true, .hasFunctions = false});
-		AST::RegisterFileType<AST::CDeclClass>(
+		ast::RegisterFileType<ast::CDeclClass>(
 		    classType, {.displayName = "Class", .hasVariables = true, .hasFunctions = true});
-		AST::RegisterFileType<AST::CDeclStatic>(
+		ast::RegisterFileType<ast::CDeclStatic>(
 		    staticType, {.displayName = "Static", .hasVariables = true, .hasFunctions = true});
-		AST::PreAllocPools<AST::CDeclStruct, AST::CDeclClass, AST::CDeclStatic>();
+		ast::PreAllocPools<ast::CDeclStruct, ast::CDeclClass, ast::CDeclStatic>();
 
-		AST::RegisterSerializedModulePools<AST::CModule>();
+		ast::RegisterSerializedModulePools<ast::CModule>();
 	}
 }    // namespace rift

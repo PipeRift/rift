@@ -19,8 +19,7 @@
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 
 
-
-namespace rift::AST::LoadSystem
+namespace rift::ast::LoadSystem
 {
 	void Init(Tree& ast)
 	{
@@ -93,12 +92,12 @@ namespace rift::AST::LoadSystem
 		pathsByModule.Reserve(modules.Size());
 		for (Id moduleId : modules)
 		{
-			Path path = AST::GetModulePath(access, moduleId);
+			Path path = ast::GetModulePath(access, moduleId);
 
 			auto& paths = pathsByModule.AddRef({moduleId}).paths;
 			// Iterate all types ignoring other module paths
 			for (const auto& typePath :
-			    AST::TypeIterator(path /*TODO: Ignore paths | , &modulePaths*/))
+			    ast::TypeIterator(path /*TODO: Ignore paths | , &modulePaths*/))
 			{
 				p::String path = p::ToString(typePath);
 				if (p::GetStem(path) != "__module__")    // Ignore module files
@@ -219,4 +218,4 @@ namespace rift::AST::LoadSystem
 			DeserializeType(ast, typeIds[i], strings[i]);
 		}
 	}
-}    // namespace rift::AST::LoadSystem
+}    // namespace rift::ast::LoadSystem

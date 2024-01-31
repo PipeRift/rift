@@ -91,18 +91,18 @@ namespace rift::Nodes
 	template<typename T>
 	struct TIndexedArray
 	{
-		using Iterator      = TArray<AST::Id>::Iterator;
-		using ConstIterator = TArray<AST::Id>::ConstIterator;
+		using Iterator      = TArray<ast::Id>::Iterator;
+		using ConstIterator = TArray<ast::Id>::ConstIterator;
 
 
-		TArray<AST::Id> frameIds;
+		TArray<ast::Id> frameIds;
 		TArray<T> data;
-		TArray<AST::Id> lastFrameIds;
-		TArray<AST::Id> invalidIds;
+		TArray<ast::Id> lastFrameIds;
+		TArray<ast::Id> invalidIds;
 
 
 	public:
-		T& GetOrAdd(AST::Id id, bool* outAdded = nullptr)
+		T& GetOrAdd(ast::Id id, bool* outAdded = nullptr)
 		{
 			const u32 index = GetIdIndex(id);
 			bool added;
@@ -125,17 +125,17 @@ namespace rift::Nodes
 			return *GetByIndex(index);
 		}
 
-		T& Get(AST::Id id)
+		T& Get(ast::Id id)
 		{
 			return *GetByIndex(GetIdIndex(id));
 		}
 
-		const T& Get(AST::Id id) const
+		const T& Get(ast::Id id) const
 		{
 			return const_cast<TIndexedArray<T>*>(this)->Get(id);
 		}
 
-		T* TryGet(AST::Id id)
+		T* TryGet(ast::Id id)
 		{
 			if (Contains(id))
 			{
@@ -144,16 +144,16 @@ namespace rift::Nodes
 			return nullptr;
 		}
 
-		bool Contains(AST::Id id) const
+		bool Contains(ast::Id id) const
 		{
 			return frameIds.ContainsSorted(id);
 		}
 
-		T& operator[](AST::Id id)
+		T& operator[](ast::Id id)
 		{
 			return Get(id);
 		}
-		const T& operator[](AST::Id id) const
+		const T& operator[](ast::Id id) const
 		{
 			return Get(id);
 		}
@@ -161,7 +161,7 @@ namespace rift::Nodes
 		void CacheInvalidIds()
 		{
 			invalidIds.Clear(false);
-			for (AST::Id id : lastFrameIds)
+			for (ast::Id id : lastFrameIds)
 			{
 				if (!frameIds.ContainsSorted(id))
 				{
@@ -198,10 +198,10 @@ namespace rift::Nodes
 	template<typename T>
 	struct NodeArray : public TIndexedArray<T>
 	{
-		TArray<AST::Id> depthOrder;
+		TArray<ast::Id> depthOrder;
 
 
-		T& GetOrAdd(AST::Id id, bool* outAdded = nullptr)
+		T& GetOrAdd(ast::Id id, bool* outAdded = nullptr)
 		{
 			bool added = false;
 			T& node    = TIndexedArray<T>::GetOrAdd(id, &added);
@@ -217,7 +217,7 @@ namespace rift::Nodes
 			return node;
 		}
 
-		void PushToTheFront(AST::Id id)
+		void PushToTheFront(ast::Id id)
 		{
 			depthOrder.Remove(id, false);
 			depthOrder.Add(id);
@@ -225,7 +225,7 @@ namespace rift::Nodes
 
 		void ClearDepthOrder()
 		{
-			depthOrder.RemoveIf([this](AST::Id id) {
+			depthOrder.RemoveIf([this](ast::Id id) {
 				return TIndexedArray<T>::invalidIds.ContainsSorted(id);
 			});
 		}
@@ -316,7 +316,7 @@ namespace rift::Nodes
 	struct PinData
 	{
 		Id id;
-		AST::Id parentNodeId = AST::NoId;
+		ast::Id parentNodeId = ast::NoId;
 		Rect rect;
 		PinShape Shape = PinShape_CircleFilled;
 		v2 position;    // screen-space coordinates
@@ -405,7 +405,7 @@ namespace rift::Nodes
 		// Nodes::EndNode() call.
 		Rect gridContentBounds;
 
-		TArray<AST::Id> selectedNodeIds;
+		TArray<ast::Id> selectedNodeIds;
 		ImVector<i32> selectedLinkIndices;
 
 		// Relative origins of selected nodes for snapping of dragged nodes
@@ -458,8 +458,8 @@ namespace rift::Nodes
 		// Canvas draw list and helper state
 		ImDrawList* CanvasDrawList;
 		ImGuiStorage NodeIdxToSubmissionIdx;
-		ImVector<AST::Id> nodeSubmissionOrder;
-		ImVector<AST::Id> nodeIdsOverlappingWithMouse;
+		ImVector<ast::Id> nodeSubmissionOrder;
+		ImVector<ast::Id> nodeIdsOverlappingWithMouse;
 		ImVector<PinIdx> occludedPinIndices;
 
 		// Canvas extents
@@ -480,11 +480,11 @@ namespace rift::Nodes
 		ImVector<i32> pinFlagStack;
 
 		// UI element state
-		AST::Id currentNodeId;
+		ast::Id currentNodeId;
 		PinIdx CurrentPinIdx;
 		i32 CurrentPinId;
 
-		AST::Id hoveredNodeId;
+		ast::Id hoveredNodeId;
 		OptionalIndex HoveredLinkIdx;
 		PinIdx HoveredPinIdx;
 

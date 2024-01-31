@@ -9,13 +9,12 @@
 #include <PipeECS.h>
 
 
-
 namespace rift::Editor
 {
-	bool TypeCombo(AST::TAccessRef<AST::CNamespace, AST::CDeclType, AST::CDeclNative,
-	                   AST::CDeclStruct, AST::CDeclClass>
+	bool TypeCombo(ast::TAccessRef<ast::CNamespace, ast::CDeclType, ast::CDeclNative,
+	                   ast::CDeclStruct, ast::CDeclClass>
 	                   access,
-	    p::StringView label, AST::Id& selectedTypeId);
+	    p::StringView label, ast::Id& selectedTypeId);
 
-	bool InputLiteralValue(AST::Tree& ast, p::StringView label, AST::Id literalId);
+	bool InputLiteralValue(ast::Tree& ast, p::StringView label, ast::Id literalId);
 }    // namespace rift::Editor

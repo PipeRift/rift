@@ -4,10 +4,10 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct CInvalid : public p::Struct
 	{
 		P_STRUCT(CInvalid, p::Struct)
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

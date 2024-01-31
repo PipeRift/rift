@@ -7,7 +7,7 @@
 #include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	using namespace p;
 	using Id          = p::Id;
@@ -15,4 +15,4 @@ namespace rift::AST
 
 	using CParent = p::CParent;
 	using CChild  = p::CChild;
-}    // namespace rift::AST
+}    // namespace rift::ast

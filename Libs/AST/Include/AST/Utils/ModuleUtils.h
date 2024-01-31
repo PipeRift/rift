@@ -7,17 +7,17 @@
 #include "AST/Components/CProject.h"
 #include "AST/Tree.h"
 
-#include <Pipe/Memory/OwnPtr.h>
 #include <Pipe/Core/Tag.h>
+#include <Pipe/Memory/OwnPtr.h>
 #include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct CModule;
 }
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct ModuleBinding
 	{
@@ -59,15 +59,15 @@ namespace rift::AST
 	// Resolve a module's name
 	p::StringView GetModulePath(p::TAccessRef<CFileRef> access, Id moduleId);
 
-	void SerializeModule(AST::Tree& ast, AST::Id id, String& data);
-	void DeserializeModule(AST::Tree& ast, AST::Id id, const String& data);
+	void SerializeModule(ast::Tree& ast, ast::Id id, String& data);
+	void DeserializeModule(ast::Tree& ast, ast::Id id, const String& data);
 	const TBroadcast<p::EntityReader&>& OnReadModulePools();
 	const TBroadcast<p::EntityWriter&>& OnWriteModulePools();
 
 	void RegisterModuleBinding(ModuleBinding binding);
 	void UnregisterModuleBinding(p::Tag bindingId);
-	void AddBindingToModule(AST::Tree& ast, AST::Id id, p::Tag bindingId);
-	void RemoveBindingFromModule(AST::Tree& ast, AST::Id id, p::Tag bindingId);
+	void AddBindingToModule(ast::Tree& ast, ast::Id id, p::Tag bindingId);
+	void RemoveBindingFromModule(ast::Tree& ast, ast::Id id, p::Tag bindingId);
 	const ModuleBinding* FindModuleBinding(p::Tag id);
 	p::TView<const ModuleBinding> GetModuleBindings();
 
@@ -81,4 +81,4 @@ namespace rift::AST
 		OnReadModulePools().Bind(components);
 		OnWriteModulePools().Bind(components);
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

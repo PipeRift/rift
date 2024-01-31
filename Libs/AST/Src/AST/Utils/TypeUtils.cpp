@@ -22,7 +22,7 @@
 #include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	static p::TArray<RiftType> gFileTypes;
 
@@ -489,12 +489,12 @@ namespace rift::AST
 		return index != NO_INDEX ? gFileTypes.Data() + index : nullptr;
 	}
 
-	const RiftType* FindFileType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId)
+	const RiftType* FindFileType(p::TAccessRef<ast::CDeclType> access, ast::Id typeId)
 	{
-		if (const auto* type = access.TryGet<const AST::CDeclType>(typeId))
+		if (const auto* type = access.TryGet<const ast::CDeclType>(typeId))
 		{
 			return FindFileType(type->typeId);
 		}
 		return nullptr;
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

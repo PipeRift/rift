@@ -14,8 +14,9 @@
 #include <Rift.h>
 
 #include <chrono>
-#include <thread>
 #include <CLI/CLI.hpp>
+#include <thread>
+
 
 
 using namespace rift;
@@ -86,10 +87,10 @@ int main(int argc, char** argv)
 
 	TPtr<Backend> backend = FindBackendByName(availableBackends, Tag(selectedBackendStr));
 
-	AST::Tree ast;
-	AST::OpenProject(ast, path);
+	ast::Tree ast;
+	ast::OpenProject(ast, path);
 
-	if (!AST::HasProject(ast))
+	if (!ast::HasProject(ast))
 	{
 		p::Error("Couldn't open project '{}'", p::ToString(path));
 		return 1;

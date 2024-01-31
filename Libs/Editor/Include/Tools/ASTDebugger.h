@@ -19,7 +19,7 @@ namespace rift::Editor
 {
 	struct InspectorPanel
 	{
-		AST::Id id        = AST::NoId;
+		ast::Id id        = ast::NoId;
 		bool pendingFocus = true;
 		bool open         = true;
 
@@ -34,7 +34,7 @@ namespace rift::Editor
 		bool open          = false;
 		bool showHierarchy = true;
 
-		AST::Id selectedNode = AST::NoId;
+		ast::Id selectedNode = ast::NoId;
 		ImGuiTextFilter filter;
 
 		// First inspector is the main inspector
@@ -44,18 +44,18 @@ namespace rift::Editor
 
 		ASTDebugger();
 
-		void Draw(AST::Tree& ast);
+		void Draw(ast::Tree& ast);
 
 	private:
 		using DrawNodeAccess =
-		    p::TAccessRef<AST::CNamespace, AST::CFileRef, AST::CParent, AST::CChild, AST::CModule>;
-		void DrawNode(DrawNodeAccess access, AST::Id nodeId, bool showChildren);
+		    p::TAccessRef<ast::CNamespace, ast::CFileRef, ast::CParent, ast::CChild, ast::CModule>;
+		void DrawNode(DrawNodeAccess access, ast::Id nodeId, bool showChildren);
 
-		void OnInspectEntity(AST::Id id);
+		void OnInspectEntity(ast::Id id);
 
-		void DrawEntityInspector(p::StringView label, p::StringView id, AST::Tree& ast,
+		void DrawEntityInspector(p::StringView label, p::StringView id, ast::Tree& ast,
 		    InspectorPanel& inspector, bool* open = nullptr);
 
-		void OpenAvailableSecondaryInspector(AST::Id id);
+		void OpenAvailableSecondaryInspector(ast::Id id);
 	};
 }    // namespace rift::Editor

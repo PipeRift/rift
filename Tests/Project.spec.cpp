@@ -37,23 +37,23 @@ go_bandit([]() {
 		});
 
 		it("Can load empty descriptor", [&]() {
-			files::SaveStringFile(p::JoinPaths(testProjectPath, AST::moduleFilename), "{}");
+			files::SaveStringFile(p::JoinPaths(testProjectPath, ast::moduleFilename), "{}");
 
-			AST::Tree ast;
-			bool result = AST::OpenProject(ast, testProjectPath);
+			ast::Tree ast;
+			bool result = ast::OpenProject(ast, testProjectPath);
 			AssertThat(result, Equals(true));
-			AssertThat(AST::HasProject(ast), Equals(true));
+			AssertThat(ast::HasProject(ast), Equals(true));
 		});
 
 		it("Project name equals the folder", [&]() {
-			files::SaveStringFile(p::JoinPaths(testProjectPath, AST::moduleFilename), "{}");
+			files::SaveStringFile(p::JoinPaths(testProjectPath, ast::moduleFilename), "{}");
 
-			AST::Tree ast;
-			bool result = AST::OpenProject(ast, testProjectPath);
+			ast::Tree ast;
+			bool result = ast::OpenProject(ast, testProjectPath);
 			AssertThat(result, Equals(true));
-			AssertThat(AST::HasProject(ast), Equals(true));
+			AssertThat(ast::HasProject(ast), Equals(true));
 
-			StringView projectName = AST::GetProjectName(ast).AsString();
+			StringView projectName = ast::GetProjectName(ast).AsString();
 			AssertThat(projectName, Equals("TestProject"));
 		});
 
@@ -61,14 +61,14 @@ go_bandit([]() {
 		// the file
 		it("Project name can be overriden", [&]() {
 			files::SaveStringFile(
-			    p::JoinPaths(testProjectPath, AST::moduleFilename), "{\"name\": \"SomeProject\"}");
+			    p::JoinPaths(testProjectPath, ast::moduleFilename), "{\"name\": \"SomeProject\"}");
 
-			AST::Tree ast;
-			bool result = AST::OpenProject(ast, testProjectPath);
+			ast::Tree ast;
+			bool result = ast::OpenProject(ast, testProjectPath);
 			AssertThat(result, Equals(true));
-			AssertThat(AST::HasProject(ast), Equals(true));
+			AssertThat(ast::HasProject(ast), Equals(true));
 
-			StringView projectName = AST::GetProjectName(ast).AsString();
+			StringView projectName = ast::GetProjectName(ast).AsString();
 			AssertThat(projectName, Equals("SomeProject"));
 		});
 	});

@@ -7,7 +7,7 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct STypes : public Struct
 	{
@@ -18,4 +18,4 @@ namespace rift::AST
 		// Current TMap lookup of stringviews seems unconsistent
 		TMap<Tag, Id> typesByPath;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

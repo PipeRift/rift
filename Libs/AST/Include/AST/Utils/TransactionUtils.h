@@ -9,7 +9,7 @@
 #include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	using TransactionAccess = TAccessRef<TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef>;
 
@@ -34,7 +34,7 @@ namespace rift::AST
 		bool PreChange(const TransactionAccess& access, TView<const Id> entityIds);
 		void PostChange();
 	}    // namespace Transactions
-}    // namespace rift::AST
+}    // namespace rift::ast
 
 #define ScopedChange(access, entityIds) \
-	rift::AST::Transactions::ScopedTransaction _transaction{access, entityIds};
+	rift::ast::Transactions::ScopedTransaction _transaction{access, entityIds};

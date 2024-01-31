@@ -31,12 +31,12 @@
 
 namespace rift::Editor
 {
-	void FileExplorerPanel::Draw(AST::Tree& ast)
+	void FileExplorerPanel::Draw(ast::Tree& ast)
 	{
 		// Open recently created types
 		if (!pendingOpenCreatedPath.empty())
 		{
-			AST::Id typeId = AST::FindTypeByPath(ast, pendingOpenCreatedPath);
+			ast::Id typeId = ast::FindTypeByPath(ast, pendingOpenCreatedPath);
 			if (!IsNone(typeId))
 			{
 				OpenType(ast, typeId);
@@ -67,7 +67,7 @@ namespace rift::Editor
 		UI::End();
 	}
 
-	void FileExplorerPanel::DrawList(AST::Tree& ast)
+	void FileExplorerPanel::DrawList(ast::Tree& ast)
 	{
 		// if (dirty)
 		{
@@ -77,8 +77,8 @@ namespace rift::Editor
 		UI::BeginChild("Files");
 		if (UI::BeginPopupContextWindow())
 		{
-			String projectPath{AST::GetProjectPath(ast)};
-			DrawContextMenu(ast, projectPath, AST::NoId);
+			String projectPath{ast::GetProjectPath(ast)};
+			DrawContextMenu(ast, projectPath, ast::NoId);
 			UI::EndPopup();
 		}
 
@@ -91,11 +91,11 @@ namespace rift::Editor
 		UI::EndChild();
 	}
 
-	void FileExplorerPanel::DrawContextMenu(AST::Tree& ast, StringView path, AST::Id itemId)
+	void FileExplorerPanel::DrawContextMenu(ast::Tree& ast, StringView path, ast::Id itemId)
 	{
 		const bool hasId    = ast.IsValid(itemId);
-		const bool isType   = hasId && ast.Has<AST::CDeclType>(itemId);
-		const bool isModule = hasId && ast.Has<AST::CModule>(itemId);
+		const bool isType   = hasId && ast.Has<ast::CDeclType>(itemId);
+		const bool isModule = hasId && ast.Has<ast::CModule>(itemId);
 
 		if (hasId)
 		{
@@ -122,7 +122,7 @@ namespace rift::Editor
 
 			if (isType && UI::MenuItem("Delete"))
 			{
-				AST::RemoveTypes(ast, itemId, true);
+				ast::RemoveTypes(ast, itemId, true);
 			}
 
 			UI::Separator();
@@ -132,9 +132,9 @@ namespace rift::Editor
 		{
 			if (UI::BeginMenu("Create type"))
 			{
-				TArray<const AST::RiftType*> types;
-				types.Reserve(AST::GetFileTypes().Size());
-				for (const auto& type : AST::GetFileTypes())
+				TArray<const ast::RiftType*> types;
+				types.Reserve(ast::GetFileTypes().Size());
+				for (const auto& type : ast::GetFileTypes())
 				{
 					types.Add(&type);
 				}
@@ -198,7 +198,7 @@ namespace rift::Editor
 			parentPath = p::GetParentPath(parentPath);
 			parentName = p::Tag{parentPath};
 
-			const Item newItem{.id = AST::NoId, .path = p::String{lastPath}, .isFolder = true};
+			const Item newItem{.id = ast::NoId, .path = p::String{lastPath}, .isFolder = true};
 			if (Folder* parent = folders.Find(parentName))
 			{
 				parent->items.Add(newItem);
@@ -210,7 +210,7 @@ namespace rift::Editor
 	}
 
 	void FileExplorerPanel::CacheProjectFiles(
-	    TAccessRef<AST::CProject, AST::CModule, AST::CFileRef, AST::CDeclType> access)
+	    TAccessRef<ast::CProject, ast::CModule, ast::CFileRef, ast::CDeclType> access)
 	{
 		dirty = false;
 
@@ -219,27 +219,27 @@ namespace rift::Editor
 		// Set root folder (not displayed)
 		folders.InsertDefaulted({});
 
-		projectModuleId = AST::GetProjectId(access);
+		projectModuleId = ast::GetProjectId(access);
 
 		// Create module folders
-		TArray<AST::Id> modules = FindAllIdsWith<AST::CModule>(access);
-		TMap<AST::Id, p::StringView> moduleFolders;
+		TArray<ast::Id> modules = FindAllIdsWith<ast::CModule>(access);
+		TMap<ast::Id, p::StringView> moduleFolders;
 		moduleFolders.Reserve(modules.Size());
-		for (AST::Id moduleId : modules)
+		for (ast::Id moduleId : modules)
 		{
-			auto& file               = access.Get<const AST::CFileRef>(moduleId);
+			auto& file               = access.Get<const ast::CFileRef>(moduleId);
 			p::StringView folderPath = p::GetParentPath(file.path);
 			folders.InsertDefaulted(p::Tag{folderPath});
 			moduleFolders.Insert(moduleId, folderPath);
 		}
 
 		// Create folders between modules
-		for (AST::Id oneId : modules)
+		for (ast::Id oneId : modules)
 		{
 			bool insideOther         = false;
 			const p::StringView path = moduleFolders[oneId];
 
-			for (AST::Id otherId : modules)
+			for (ast::Id otherId : modules)
 			{
 				if (oneId != otherId
 				    && Strings::StartsWith(path, moduleFolders[otherId]))    // Is relative
@@ -262,9 +262,9 @@ namespace rift::Editor
 		}
 
 		// Create items
-		for (AST::Id typeId : FindAllIdsWith<AST::CDeclType, AST::CFileRef>(access))
+		for (ast::Id typeId : FindAllIdsWith<ast::CDeclType, ast::CFileRef>(access))
 		{
-			auto& file = access.Get<const AST::CFileRef>(typeId);
+			auto& file = access.Get<const ast::CFileRef>(typeId);
 			if (!file.path.empty())
 			{
 				InsertItem(Item{typeId, file.path});
@@ -284,7 +284,7 @@ namespace rift::Editor
 		});
 	}
 
-	void FileExplorerPanel::DrawItem(AST::Tree& ast, const Item& item)
+	void FileExplorerPanel::DrawItem(ast::Tree& ast, const Item& item)
 	{
 		const String path         = p::ToString(item.path);
 		const StringView fileName = p::GetFilename(path);
@@ -297,7 +297,7 @@ namespace rift::Editor
 				flags |= ImGuiTreeNodeFlags_Bullet;
 			}
 
-			auto* module = item.id != AST::NoId ? ast.TryGet<AST::CModule>(item.id) : nullptr;
+			auto* module = item.id != ast::NoId ? ast.TryGet<ast::CModule>(item.id) : nullptr;
 			if (module)
 			{
 				// TODO: Display module name
@@ -361,7 +361,7 @@ namespace rift::Editor
 		else
 		{
 			String text;
-			if (fileName == AST::moduleFilename)
+			if (fileName == ast::moduleFilename)
 			{
 				text = Strings::Format(ICON_FA_FILE_ALT " {}", fileName);
 			}
@@ -397,7 +397,7 @@ namespace rift::Editor
 				const StringView parsedNewName = Strings::RemoveFromEnd(renameBuffer, ".rf");
 				const bool nameIsEmpty         = parsedNewName.empty();
 				const Id sameNameFuncId =
-				    AST::FindChildByName(ast, p::GetIdParent(ast, item.id), Tag{parsedNewName});
+				    ast::FindChildByName(ast, p::GetIdParent(ast, item.id), Tag{parsedNewName});
 				if (nameIsEmpty || (!IsNone(sameNameFuncId) && item.id != sameNameFuncId))
 				{
 					UI::PushTextColor(LinearColor::Red());
@@ -416,25 +416,25 @@ namespace rift::Editor
 					// manual steps
 					if (files::Rename(p::ToPath(path), destination))
 					{
-						if (auto* file = ast.TryGet<AST::CFileRef>(item.id))
+						if (auto* file = ast.TryGet<ast::CFileRef>(item.id))
 						{
 							file->path = destination;
 						}
 
-						auto& types = ast.GetOrSetStatic<AST::STypes>();
+						auto& types = ast.GetOrSetStatic<ast::STypes>();
 						types.typesByPath.Remove(p::Tag{item.path});
 						types.typesByPath.Insert(p::Tag{destination}, item.id);
 
-						ast.Add<AST::CNamespace>(item.id, Tag{parsedNewName});
+						ast.Add<ast::CNamespace>(item.id, Tag{parsedNewName});
 					}
 
-					renameId         = AST::NoId;
+					renameId         = ast::NoId;
 					renameBuffer     = "";
 					renameHasFocused = false;
 				}
 				else if (UI::IsItemDeactivated())
 				{
-					renameId         = AST::NoId;
+					renameId         = ast::NoId;
 					renameBuffer     = "";
 					renameHasFocused = false;
 				}
@@ -465,11 +465,11 @@ namespace rift::Editor
 		}
 	}
 
-	void FileExplorerPanel::DrawModuleActions(AST::Id id, AST::CModule& module) {}
-	void FileExplorerPanel::DrawTypeActions(AST::Id id, AST::CDeclType& type) {}
+	void FileExplorerPanel::DrawModuleActions(ast::Id id, ast::CModule& module) {}
+	void FileExplorerPanel::DrawTypeActions(ast::Id id, ast::CDeclType& type) {}
 
 	void FileExplorerPanel::CreateType(
-	    AST::Tree& ast, StringView title, p::Tag typeId, p::StringView folderPath)
+	    ast::Tree& ast, StringView title, p::Tag typeId, p::StringView folderPath)
 	{
 		const p::String path = files::SaveFileDialog(title, folderPath,
 		    {
@@ -477,10 +477,10 @@ namespace rift::Editor
         },
 		    true);
 
-		AST::Id id = AST::CreateType(ast, typeId, Tag::None(), path);
+		ast::Id id = ast::CreateType(ast, typeId, Tag::None(), path);
 
 		String data;
-		AST::SerializeType(ast, id, data);
+		ast::SerializeType(ast, id, data);
 		files::SaveStringFile(path, data);
 
 		// Destroy the temporal type after saving it

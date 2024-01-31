@@ -31,9 +31,9 @@ namespace rift::MIR
 		c2mir_options options;
 		InitCToMIROptions(options);
 
-		for (AST::Id moduleId : FindAllIdsWith<AST::CModule>(compiler.ast))
+		for (ast::Id moduleId : FindAllIdsWith<ast::CModule>(compiler.ast))
 		{
-			p::Tag name     = AST::GetModuleName(compiler.ast, moduleId);
+			p::Tag name     = ast::GetModuleName(compiler.ast, moduleId);
 			auto& mirModule = compiler.ast.Get<CMIRModule>(moduleId);
 			CToMIRModule(compiler, ctx, options, name, mirModule);
 		}

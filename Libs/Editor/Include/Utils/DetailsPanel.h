@@ -13,5 +13,5 @@
 
 namespace rift::Editor
 {
-	void DrawDetailsPanel(AST::Tree& ast, AST::Id typeId);
+	void DrawDetailsPanel(ast::Tree& ast, ast::Id typeId);
 }    // namespace rift::Editor

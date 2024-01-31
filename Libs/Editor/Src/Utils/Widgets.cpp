@@ -7,12 +7,12 @@
 
 namespace rift::Editor
 {
-	void ListTypesFromFilter(p::TAccessRef<AST::CNamespace> access, p::TArray<AST::Id> typeIds,
-	    AST::Id& selectedId, ImGuiTextFilter& searchFilter)
+	void ListTypesFromFilter(p::TAccessRef<ast::CNamespace> access, p::TArray<ast::Id> typeIds,
+	    ast::Id& selectedId, ImGuiTextFilter& searchFilter)
 	{
-		for (AST::Id id : typeIds)
+		for (ast::Id id : typeIds)
 		{
-			const auto& type   = access.Get<const AST::CNamespace>(id);
+			const auto& type   = access.Get<const ast::CNamespace>(id);
 			p::StringView name = type.name.AsString();
 
 			if (!searchFilter.PassFilter(name.data(), name.data() + name.size()))
@@ -29,18 +29,18 @@ namespace rift::Editor
 		}
 	}
 
-	bool TypeCombo(p::TAccessRef<AST::CNamespace, AST::CDeclType, AST::CDeclNative,
-	                   AST::CDeclStruct, AST::CDeclClass>
+	bool TypeCombo(p::TAccessRef<ast::CNamespace, ast::CDeclType, ast::CDeclNative,
+	                   ast::CDeclStruct, ast::CDeclClass>
 	                   access,
-	    p::StringView label, AST::Id& selectedId)
+	    p::StringView label, ast::Id& selectedId)
 	{
 		p::Tag ownerName;
 		if (!IsNone(selectedId))
 		{
-			ownerName = access.Get<const AST::CNamespace>(selectedId).name;
+			ownerName = access.Get<const ast::CNamespace>(selectedId).name;
 		}
 
-		AST::Id lastId = selectedId;
+		ast::Id lastId = selectedId;
 		if (UI::BeginCombo(label.data(), ownerName.AsString().data()))
 		{
 			static ImGuiTextFilter filter;
@@ -52,11 +52,11 @@ namespace rift::Editor
 			filter.Draw("##Filter");
 
 			auto nativeIds =
-			    p::FindAllIdsWith<AST::CDeclType, AST::CDeclNative, AST::CNamespace>(access);
+			    p::FindAllIdsWith<ast::CDeclType, ast::CDeclNative, ast::CNamespace>(access);
 			auto structIds =
-			    p::FindAllIdsWith<AST::CDeclType, AST::CDeclStruct, AST::CNamespace>(access);
+			    p::FindAllIdsWith<ast::CDeclType, ast::CDeclStruct, ast::CNamespace>(access);
 			auto classIds =
-			    p::FindAllIdsWith<AST::CDeclType, AST::CDeclClass, AST::CNamespace>(access);
+			    p::FindAllIdsWith<ast::CDeclType, ast::CDeclClass, ast::CNamespace>(access);
 			if (filter.IsActive())
 			{
 				if (UI::TreeNodeEx("Native##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
@@ -98,7 +98,7 @@ namespace rift::Editor
 		return selectedId != lastId;
 	}
 
-	bool InputLiteralValue(AST::Tree& ast, p::StringView label, AST::Id literalId)
+	bool InputLiteralValue(ast::Tree& ast, p::StringView label, ast::Id literalId)
 	{
 		return false;
 	}

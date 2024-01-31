@@ -36,10 +36,9 @@
 #include <UI/UI.h>
 
 
-
 namespace rift::Editor::EditorSystem
 {
-	void OnProjectEditorOpen(AST::Tree& ast)
+	void OnProjectEditorOpen(ast::Tree& ast)
 	{
 		auto& editor = ast.GetStatic<SEditor>();
 		editor.layout.OnBuild([](auto& builder) {
@@ -62,7 +61,7 @@ namespace rift::Editor::EditorSystem
 		editor.layout.Reset();
 	}
 
-	void OnTypeEditorOpen(AST::Tree& ast, AST::Id typeId)
+	void OnTypeEditorOpen(ast::Tree& ast, ast::Id typeId)
 	{
 		auto& typeEditor = ast.Get<CTypeEditor>(typeId);
 		typeEditor.layout.OnBuild([](auto& builder) {
@@ -90,13 +89,13 @@ namespace rift::Editor::EditorSystem
 		typeEditor.layout.Reset();
 	}
 
-	void Init(AST::Tree& ast)
+	void Init(ast::Tree& ast)
 	{
 		OnProjectEditorOpen(ast);
 		ast.OnAdd<CTypeEditor>().Bind([](auto& ast, auto ids) {
-			for (AST::Id id : ids)
+			for (ast::Id id : ids)
 			{
-				OnTypeEditorOpen(static_cast<AST::Tree&>(ast), id);
+				OnTypeEditorOpen(static_cast<ast::Tree&>(ast), id);
 			}
 		});
 	}
@@ -105,23 +104,23 @@ namespace rift::Editor::EditorSystem
 	void CreateRootDockspace(SEditor& editor);
 	void CreateTypeDockspace(CTypeEditor& editor, const char* id);
 	void CreateModuleDockspace(CModuleEditor& editor, const char* id);
-	void DrawMenuBar(AST::Tree& ast);
+	void DrawMenuBar(ast::Tree& ast);
 
 	// Project Editor
-	void DrawProject(AST::Tree& ast);
-	void DrawProjectMenuBar(AST::Tree& ast, SEditor& editorData);
+	void DrawProject(ast::Tree& ast);
+	void DrawProjectMenuBar(ast::Tree& ast, SEditor& editorData);
 
 	// Module Editors
-	void DrawModuleEditors(AST::Tree& ast, SEditor& editor);
+	void DrawModuleEditors(ast::Tree& ast, SEditor& editor);
 
 	// Type Editors
-	void DrawTypeMenuBar(AST::Tree& ast, AST::Id typeId);
-	void DrawTypes(AST::Tree& ast, SEditor& editor);
+	void DrawTypeMenuBar(ast::Tree& ast, ast::Id typeId);
+	void DrawTypes(ast::Tree& ast, SEditor& editor);
 
 
-	void Draw(AST::Tree& ast)
+	void Draw(ast::Tree& ast)
 	{
-		if (AST::HasProject(ast))
+		if (ast::HasProject(ast))
 		{
 			DrawProject(ast);
 		}
@@ -198,7 +197,7 @@ namespace rift::Editor::EditorSystem
 		UI::DockSpace(editor.dockspaceID, ImVec2(0.0f, 0.0f), dockingFlags, nullptr);
 	}
 
-	void DrawMenuBar(AST::Tree& ast)
+	void DrawMenuBar(ast::Tree& ast)
 	{
 		if (UI::BeginMainMenuBar())
 		{
@@ -216,7 +215,7 @@ namespace rift::Editor::EditorSystem
 		}
 	}
 
-	void DrawProject(AST::Tree& ast)
+	void DrawProject(ast::Tree& ast)
 	{
 		if (!Ensure(ast.HasStatic<SEditor>()))
 		{
@@ -224,7 +223,7 @@ namespace rift::Editor::EditorSystem
 		}
 		auto& editor = ast.GetStatic<SEditor>();
 
-		const auto& path = AST::GetProjectPath(ast);
+		const auto& path = ast::GetProjectPath(ast);
 		UI::PushID(p::GetHash(path));
 
 		DrawProjectMenuBar(ast, editor);
@@ -242,7 +241,7 @@ namespace rift::Editor::EditorSystem
 		DrawTypes(ast, editor);
 
 		editor.reflectionDebugger.Draw();
-		editor.astDebugger.Draw(ast);
+		editor.ASTDebugger.Draw(ast);
 		editor.memoryDebugger.Draw();
 		editor.fileExplorer.Draw(ast);
 		editor.graphPlayground.Draw(ast, editor.layout);
@@ -250,7 +249,7 @@ namespace rift::Editor::EditorSystem
 		UI::PopID();
 	}
 
-	void DrawProjectMenuBar(AST::Tree& ast, SEditor& editorData)
+	void DrawProjectMenuBar(ast::Tree& ast, SEditor& editorData)
 	{
 		if (UI::BeginMainMenuBar())
 		{
@@ -267,7 +266,7 @@ namespace rift::Editor::EditorSystem
 				}
 				if (UI::MenuItem("Close current"))
 				{
-					AST::CloseProject(ast);
+					ast::CloseProject(ast);
 					editorData.skipFrameAfterMenu = true;
 				}
 				UI::Separator();
@@ -277,23 +276,23 @@ namespace rift::Editor::EditorSystem
 					TArray<TPair<Path, String>> fileDatas;
 
 					auto dirtyTypeIds =
-					    FindAllIdsWith<AST::CDeclType, CTypeEditor, AST::CFileRef, AST::CFileDirty>(
+					    FindAllIdsWith<ast::CDeclType, CTypeEditor, ast::CFileRef, ast::CFileDirty>(
 					        ast);
-					for (AST::Id typeId : dirtyTypeIds)
+					for (ast::Id typeId : dirtyTypeIds)
 					{
-						auto& file     = ast.Get<AST::CFileRef>(typeId);
+						auto& file     = ast.Get<ast::CFileRef>(typeId);
 						auto& fileData = fileDatas.AddRef({file.path, ""});
-						AST::SerializeType(ast, typeId, fileData.second);
+						ast::SerializeType(ast, typeId, fileData.second);
 					}
 
 					auto dirtyModuleIds =
-					    FindAllIdsWith<AST::CModule, CModuleEditor, AST::CFileRef, AST::CFileDirty>(
+					    FindAllIdsWith<ast::CModule, CModuleEditor, ast::CFileRef, ast::CFileDirty>(
 					        ast);
-					for (AST::Id moduleId : dirtyModuleIds)
+					for (ast::Id moduleId : dirtyModuleIds)
 					{
-						auto& file     = ast.Get<AST::CFileRef>(moduleId);
+						auto& file     = ast.Get<ast::CFileRef>(moduleId);
 						auto& fileData = fileDatas.AddRef({file.path, ""});
-						AST::SerializeModule(ast, moduleId, fileData.second);
+						ast::SerializeModule(ast, moduleId, fileData.second);
 					}
 
 					for (auto& fileData : fileDatas)
@@ -301,8 +300,8 @@ namespace rift::Editor::EditorSystem
 						files::SaveStringFile(fileData.first, fileData.second);
 					}
 
-					ast.Remove<AST::CFileDirty>(dirtyTypeIds);
-					ast.Remove<AST::CFileDirty>(dirtyModuleIds);
+					ast.Remove<ast::CFileDirty>(dirtyTypeIds);
+					ast.Remove<ast::CFileDirty>(dirtyModuleIds);
 
 					UI::AddNotification({UI::ToastType::Success, 1.f,
 					    !fileDatas.IsEmpty() ? Strings::Format("Saved {} files", fileDatas.Size())
@@ -315,13 +314,13 @@ namespace rift::Editor::EditorSystem
 			{
 				if (UI::MenuItem("Build current"))
 				{
-					AST::Tree compileAST{ast};    // Intentional copy
+					ast::Tree compileAST{ast};    // Intentional copy
 					CompilerConfig config;
 					Build<MIRBackend>(compileAST, config);
 				}
 				if (UI::MenuItem("Build all"))
 				{
-					AST::Tree compileAST{ast};    // Intentional copy
+					ast::Tree compileAST{ast};    // Intentional copy
 					CompilerConfig config;
 					Build<MIRBackend>(compileAST, config);
 				}
@@ -356,7 +355,7 @@ namespace rift::Editor::EditorSystem
 				if (UI::BeginMenu("Debug"))
 				{
 					UI::MenuItem("Reflection", nullptr, &editorData.reflectionDebugger.open);
-					UI::MenuItem("Abstract Syntax Tree", nullptr, &editorData.astDebugger.open);
+					UI::MenuItem("Abstract Syntax Tree", nullptr, &editorData.ASTDebugger.open);
 					UI::MenuItem("Memory", nullptr, &editorData.memoryDebugger.open);
 					UI::MenuItem("Graph Playground", nullptr, &editorData.graphPlayground.open);
 					UI::EndMenu();
@@ -370,7 +369,7 @@ namespace rift::Editor::EditorSystem
 				{
 					editorData.layout.Reset();
 
-					for (AST::Id typeId : FindAllIdsWith<CTypeEditor>(ast))
+					for (ast::Id typeId : FindAllIdsWith<CTypeEditor>(ast))
 					{
 						auto& editor = ast.Get<CTypeEditor>(typeId);
 						editor.layout.Reset();
@@ -382,18 +381,18 @@ namespace rift::Editor::EditorSystem
 		}
 	}
 
-	void DrawModuleMenuBar(AST::Tree& ast, AST::Id moduleId)
+	void DrawModuleMenuBar(ast::Tree& ast, ast::Id moduleId)
 	{
 		if (UI::BeginMenuBar())
 		{
 			if (UI::MenuItem(ICON_FA_SAVE, "CTRL+S"))
 			{
-				auto& file = ast.Get<AST::CFileRef>(moduleId);
+				auto& file = ast.Get<ast::CFileRef>(moduleId);
 				String data;
-				AST::SerializeModule(ast, moduleId, data);
+				ast::SerializeModule(ast, moduleId, data);
 
 				files::SaveStringFile(file.path, data);
-				ast.Remove<AST::CFileDirty>(moduleId);
+				ast.Remove<ast::CFileDirty>(moduleId);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
 				    Strings::Format("Saved file {}", p::GetFilename(file.path))});
@@ -402,20 +401,20 @@ namespace rift::Editor::EditorSystem
 		}
 	}
 
-	void DrawModuleEditors(AST::Tree& ast, SEditor& editor)
+	void DrawModuleEditors(ast::Tree& ast, SEditor& editor)
 	{
-		TAccess<TWrite<CModuleEditor>, TWrite<AST::CNamespace>, TWrite<AST::CModule>, AST::CFileRef>
+		TAccess<TWrite<CModuleEditor>, TWrite<ast::CNamespace>, TWrite<ast::CModule>, ast::CFileRef>
 		    moduleEditors{ast};
-		for (AST::Id moduleId :
-		    FindAllIdsWith<AST::CModule, CModuleEditor, AST::CFileRef>(moduleEditors))
+		for (ast::Id moduleId :
+		    FindAllIdsWith<ast::CModule, CModuleEditor, ast::CFileRef>(moduleEditors))
 		{
 			auto& moduleEditor = moduleEditors.Get<CModuleEditor>(moduleId);
-			const auto& file   = moduleEditors.Get<const AST::CFileRef>(moduleId);
+			const auto& file   = moduleEditors.Get<const ast::CFileRef>(moduleId);
 
 			bool isOpen               = true;
 			const String path         = p::ToString(file.path);
 			const StringView filename = p::GetFilename(path);
-			const StringView dirty    = ast.Has<AST::CFileDirty>(moduleId) ? "*" : "";
+			const StringView dirty    = ast.Has<ast::CFileDirty>(moduleId) ? "*" : "";
 			const String windowName   = Strings::Format("{}{}###{}", filename, dirty, moduleId);
 
 			if (moduleEditor.pendingFocus)
@@ -437,12 +436,12 @@ namespace rift::Editor::EditorSystem
 
 				if (UI::BeginInspector("ModuleInspector"))
 				{
-					auto& module = moduleEditors.Get<AST::CModule>(moduleId);
+					auto& module = moduleEditors.Get<ast::CModule>(moduleId);
 					UI::InspectStruct(&module);
 
 					if (UI::BeginCategory("Bindings", true))
 					{
-						for (const auto& binding : AST::GetModuleBindings())
+						for (const auto& binding : ast::GetModuleBindings())
 						{
 							auto* pool = ast.GetPool(binding.tagType->GetId());
 							if (void* data = pool ? pool->TryGetVoid(moduleId) : nullptr)
@@ -463,7 +462,7 @@ namespace rift::Editor::EditorSystem
 								if (UI::Button(addText.c_str(), ImVec2(-FLT_MIN, 0.0f)))
 								{
 									ScopedChange(ast, moduleId);
-									AST::AddBindingToModule(ast, moduleId, binding.id);
+									ast::AddBindingToModule(ast, moduleId, binding.id);
 								}
 								UI::PopStyleCompact();
 							}
@@ -486,19 +485,19 @@ namespace rift::Editor::EditorSystem
 		}
 	}
 
-	void DrawTypeMenuBar(AST::Tree& ast, AST::Id typeId)
+	void DrawTypeMenuBar(ast::Tree& ast, ast::Id typeId)
 	{
 		auto& typeEditor = ast.Get<CTypeEditor>(typeId);
 		if (UI::BeginMenuBar())
 		{
 			if (UI::MenuItem(ICON_FA_SAVE, "CTRL+S"))
 			{
-				auto& file = ast.Get<AST::CFileRef>(typeId);
+				auto& file = ast.Get<ast::CFileRef>(typeId);
 				String data;
-				AST::SerializeType(ast, typeId, data);
+				ast::SerializeType(ast, typeId, data);
 
 				files::SaveStringFile(file.path, data);
-				ast.Remove<AST::CFileDirty>(typeId);
+				ast.Remove<ast::CFileDirty>(typeId);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
 				    Strings::Format("Saved file {}", p::GetFilename(file.path))});
@@ -506,7 +505,7 @@ namespace rift::Editor::EditorSystem
 
 			if (UI::BeginMenu("View"))
 			{
-				if (AST::HasFunctions(ast, typeId))
+				if (ast::HasFunctions(ast, typeId))
 				{
 					UI::MenuItem("Graph", nullptr, &typeEditor.showGraph);
 				}
@@ -518,18 +517,18 @@ namespace rift::Editor::EditorSystem
 		}
 	}
 
-	void DrawTypes(AST::Tree& ast, SEditor& editor)
+	void DrawTypes(ast::Tree& ast, SEditor& editor)
 	{
-		TAccess<TWrite<CTypeEditor>, AST::CDeclType, AST::CFileRef> access{ast};
-		for (AST::Id typeId : FindAllIdsWith<AST::CDeclType, CTypeEditor, AST::CFileRef>(access))
+		TAccess<TWrite<CTypeEditor>, ast::CDeclType, ast::CFileRef> access{ast};
+		for (ast::Id typeId : FindAllIdsWith<ast::CDeclType, CTypeEditor, ast::CFileRef>(access))
 		{
 			auto& typeEditor = access.Get<CTypeEditor>(typeId);
-			const auto& file = access.Get<const AST::CFileRef>(typeId);
+			const auto& file = access.Get<const ast::CFileRef>(typeId);
 
 			bool isOpen               = true;
 			const String path         = p::ToString(file.path);
 			const StringView filename = p::GetFilename(path);
-			const StringView dirty    = ast.Has<AST::CFileDirty>(typeId) ? "*" : "";
+			const StringView dirty    = ast.Has<ast::CFileDirty>(typeId) ? "*" : "";
 			const String windowName   = Strings::Format("{}{}###{}", filename, dirty, typeId);
 
 			if (typeEditor.pendingFocus)
@@ -551,12 +550,12 @@ namespace rift::Editor::EditorSystem
 
 				CreateTypeDockspace(typeEditor, windowName.c_str());
 
-				if (AST::HasFunctionBodies(ast, typeId))
+				if (ast::HasFunctionBodies(ast, typeId))
 				{
 					Graph::DrawTypeGraph(ast, typeId, typeEditor);
 				}
 
-				if (AST::HasVariables(ast, typeId) || AST::HasFunctions(ast, typeId))
+				if (ast::HasVariables(ast, typeId) || ast::HasFunctions(ast, typeId))
 				{
 					typeEditor.layout.BindNextWindowToNode(
 					    CTypeEditor::rightBottomNode, ImGuiCond_Appearing);

@@ -6,7 +6,7 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	/**
 	 * This component points an AST node to a file.
@@ -24,4 +24,4 @@ namespace rift::AST
 		CFileRef() {}
 		CFileRef(p::StringView path) : path{path} {}
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

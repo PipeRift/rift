@@ -13,7 +13,6 @@
 #include <PipeECS.h>
 
 
-
 namespace rift::Editor
 {
 	// Forward declarations
@@ -33,7 +32,7 @@ namespace rift::Editor
 
 		struct Item
 		{
-			AST::Id id = AST::NoId;
+			ast::Id id = ast::NoId;
 			p::String path;
 			bool isFolder = false;
 		};
@@ -44,14 +43,14 @@ namespace rift::Editor
 		};
 
 	private:
-		AST::Id projectModuleId = AST::NoId;
+		ast::Id projectModuleId = ast::NoId;
 		p::TMap<p::Tag, Folder> folders;
 
 		bool open  = true;
 		bool dirty = true;
 
 		Filter filter    = Filter::All;
-		AST::Id renameId = AST::NoId;
+		ast::Id renameId = ast::NoId;
 		p::String renameBuffer;
 		bool renameHasFocused = false;
 
@@ -62,26 +61,26 @@ namespace rift::Editor
 		FileExplorerPanel() {}
 
 		void BuildLayout();
-		void Draw(AST::Tree& ast);
+		void Draw(ast::Tree& ast);
 
-		void DrawList(AST::Tree& ast);
+		void DrawList(ast::Tree& ast);
 
-		void DrawContextMenu(AST::Tree& ast, p::StringView path, AST::Id itemId);
+		void DrawContextMenu(ast::Tree& ast, p::StringView path, ast::Id itemId);
 
 		void CacheProjectFiles(
-		    p::TAccessRef<AST::CProject, AST::CModule, AST::CFileRef, AST::CDeclType> access);
+		    p::TAccessRef<ast::CProject, ast::CModule, ast::CFileRef, ast::CDeclType> access);
 
 		void SortFolder(Folder& folder);
 
 	private:
 		void InsertItem(const Item& item);
-		void DrawItem(AST::Tree& ast, const Item& item);
-		// void DrawFile(AST::Tree& ast, File& file);
+		void DrawItem(ast::Tree& ast, const Item& item);
+		// void DrawFile(ast::Tree& ast, File& file);
 
-		void DrawModuleActions(AST::Id id, struct AST::CModule& module);
-		void DrawTypeActions(AST::Id id, struct AST::CDeclType& type);
+		void DrawModuleActions(ast::Id id, struct ast::CModule& module);
+		void DrawTypeActions(ast::Id id, struct ast::CDeclType& type);
 
-		void CreateType(AST::Tree& ast, p::StringView title, p::Tag typeId, p::StringView path);
+		void CreateType(ast::Tree& ast, p::StringView title, p::Tag typeId, p::StringView path);
 	};
 
 

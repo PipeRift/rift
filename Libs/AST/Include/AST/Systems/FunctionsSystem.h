@@ -11,12 +11,12 @@
 #include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct Tree;
 }
 
-namespace rift::AST::FunctionsSystem
+namespace rift::ast::FunctionsSystem
 {
 	struct CTmpInvalidKeep
 	{};
@@ -35,4 +35,4 @@ namespace rift::AST::FunctionsSystem
 	    p::TWrite<CTmpInvalidKeep>, p::TWrite<CChild>, p::TWrite<CParent>>;
 	void RemoveInvalidDisconnectedArgs(InvalidDisconnectedPinAccess access);
 	void ClearAddedTags(Tree& ast);
-}    // namespace rift::AST::FunctionsSystem
+}    // namespace rift::ast::FunctionsSystem

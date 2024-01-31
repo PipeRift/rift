@@ -27,13 +27,13 @@ namespace rift::Editor
 		static const Tag centralNode;
 
 		String currentProjectPath;
-		TArray<AST::Id> pendingTypesToClose;
+		TArray<ast::Id> pendingTypesToClose;
 
 		FileWatcher fileWatcher;
 		FileExplorerPanel fileExplorer{};
 
 		ReflectionDebugger reflectionDebugger;
-		ASTDebugger astDebugger;
+		ASTDebugger ASTDebugger;
 		MemoryDebugger memoryDebugger;
 		GraphPlayground graphPlayground;
 

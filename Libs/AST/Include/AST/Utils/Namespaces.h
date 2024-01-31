@@ -11,7 +11,7 @@
 #include <PipeMath.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	Namespace GetNamespace(p::TAccessRef<CNamespace, CChild, CModule> access, Id id);
 	Namespace GetParentNamespace(p::TAccessRef<CNamespace, CChild, CModule> access, Id id);
@@ -30,13 +30,13 @@ namespace rift::AST
 	p::Tag GetNameUnsafe(p::TAccessRef<CNamespace> access, Id id);
 	p::String GetFullName(
 	    p::TAccessRef<CNamespace, CChild, CModule> access, Id id, bool localNamespace = false);
-}    // namespace rift::AST
+}    // namespace rift::ast
 
 
 namespace p
 {
 	template<>
-	struct TFlags<rift::AST::Namespace> : public DefaultTFlags
+	struct TFlags<rift::ast::Namespace> : public DefaultTFlags
 	{
 		enum
 		{

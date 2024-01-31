@@ -3,7 +3,7 @@
 #include "AST/Components/CNamespace.h"
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	Namespace::Namespace(p::StringView value)
 	{
@@ -120,4 +120,4 @@ namespace rift::AST
 			ct.Next(scopes[i]);
 		}
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

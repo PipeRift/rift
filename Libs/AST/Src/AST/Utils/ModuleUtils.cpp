@@ -15,7 +15,7 @@
 #include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	static p::TArray<ModuleBinding> gModuleBindings;
 	TBroadcast<EntityReader&> gOnReadModulePools;
@@ -196,7 +196,7 @@ namespace rift::AST
 		return {};
 	}
 
-	void SerializeModule(AST::Tree& ast, AST::Id id, String& data)
+	void SerializeModule(ast::Tree& ast, ast::Id id, String& data)
 	{
 		JsonFormatWriter writer{};
 		p::EntityWriter w{writer.GetWriter(), ast};
@@ -206,7 +206,7 @@ namespace rift::AST
 		data = writer.ToString();
 	}
 
-	void DeserializeModule(AST::Tree& ast, AST::Id id, const String& data)
+	void DeserializeModule(ast::Tree& ast, ast::Id id, const String& data)
 	{
 		JsonFormatReader formatReader{data};
 		if (formatReader.IsValid())
@@ -234,14 +234,14 @@ namespace rift::AST
 	{
 		gModuleBindings.RemoveSorted(bindingId);
 	}
-	void AddBindingToModule(AST::Tree& ast, AST::Id id, p::Tag bindingId)
+	void AddBindingToModule(ast::Tree& ast, ast::Id id, p::Tag bindingId)
 	{
 		if (const auto* binding = FindModuleBinding(bindingId))
 		{
 			ast.AddDefault(binding->tagType->GetId(), id);
 		}
 	}
-	void RemoveBindingFromModule(AST::Tree& ast, AST::Id id, p::Tag bindingId)
+	void RemoveBindingFromModule(ast::Tree& ast, ast::Id id, p::Tag bindingId)
 	{
 		if (const auto* binding = FindModuleBinding(bindingId))
 		{
@@ -259,4 +259,4 @@ namespace rift::AST
 	{
 		return gModuleBindings;
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

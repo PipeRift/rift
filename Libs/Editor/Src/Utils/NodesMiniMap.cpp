@@ -87,7 +87,7 @@ namespace rift::Nodes
 		scaling            = miniMapScaling;
 	}
 
-	void MiniMap::DrawNode(EditorContext& editor, const AST::Id nodeId)
+	void MiniMap::DrawNode(EditorContext& editor, const ast::Id nodeId)
 	{
 		const NodeData& node = editor.nodes[nodeId];
 
@@ -199,7 +199,7 @@ namespace rift::Nodes
 			}
 		}
 
-		for (AST::Id nodeId : editor.nodes)
+		for (ast::Id nodeId : editor.nodes)
 		{
 			DrawNode(editor, nodeId);
 		}

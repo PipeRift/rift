@@ -24,9 +24,9 @@ namespace rift::Editor
 {
 	void RegisterKeyValueInspections()
 	{
-		UI::RegisterCustomInspection<AST::Id>([](StringView label, void* data, Type* type) {
-			auto* id = static_cast<AST::Id*>(data);
-			// UI::DrawKeyValue(label, data, GetType<IdTraits<AST::Id>::Entity>());
+		UI::RegisterCustomInspection<ast::Id>([](StringView label, void* data, Type* type) {
+			auto* id = static_cast<ast::Id*>(data);
+			// UI::DrawKeyValue(label, data, GetType<IdTraits<ast::Id>::Entity>());
 			UI::TableNextRow();
 			UI::TableSetColumnIndex(0);
 			UI::AlignTextToFramePadding();
@@ -39,17 +39,17 @@ namespace rift::Editor
 			}
 		});
 
-		UI::RegisterCustomInspection<AST::Namespace>([](StringView label, void* data, Type* type) {
+		UI::RegisterCustomInspection<ast::Namespace>([](StringView label, void* data, Type* type) {
 			UI::TableNextRow();
 			UI::TableSetColumnIndex(0);
 			UI::AlignTextToFramePadding();
 			UI::Text(label);
 			UI::TableSetColumnIndex(1);
-			auto* ns        = static_cast<AST::Namespace*>(data);
+			auto* ns        = static_cast<ast::Namespace*>(data);
 			String asString = ns->ToString();
 			if (UI::InputText("##value", asString))
 			{
-				*ns = AST::Namespace{asString};
+				*ns = ast::Namespace{asString};
 			}
 		});
 	}
@@ -97,21 +97,21 @@ namespace rift::Editor
 
 	void Editor::Tick()
 	{
-		if (AST::HasProject(ast))
+		if (ast::HasProject(ast))
 		{
-			AST::FunctionsSystem::ClearAddedTags(ast);
-			AST::TransactionSystem::ClearTags(ast);
+			ast::FunctionsSystem::ClearAddedTags(ast);
+			ast::TransactionSystem::ClearTags(ast);
 
-			AST::LoadSystem::Run(ast);
-			AST::FunctionsSystem::ResolveCallFunctionIds(ast);
-			AST::TypeSystem::ResolveExprTypeIds(ast);
+			ast::LoadSystem::Run(ast);
+			ast::FunctionsSystem::ResolveCallFunctionIds(ast);
+			ast::TypeSystem::ResolveExprTypeIds(ast);
 
 			EditorSystem::Draw(ast);
-			AST::TypeSystem::PropagateVariableTypes(ast);
-			AST::FunctionsSystem::PropagateDirtyIntoCalls(ast);
-			AST::FunctionsSystem::PushInvalidPinsBack(ast);
-			AST::FunctionsSystem::SyncCallPinsFromFunction(ast);
-			AST::TypeSystem::PropagateExpressionTypes(ast);
+			ast::TypeSystem::PropagateVariableTypes(ast);
+			ast::FunctionsSystem::PropagateDirtyIntoCalls(ast);
+			ast::FunctionsSystem::PushInvalidPinsBack(ast);
+			ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
+			ast::TypeSystem::PropagateExpressionTypes(ast);
 		}
 		else
 		{
@@ -131,16 +131,16 @@ namespace rift::Editor
 
 	bool Editor::CreateProject(p::StringView path, bool closeFirst)
 	{
-		if (!closeFirst && AST::HasProject(ast))
+		if (!closeFirst && ast::HasProject(ast))
 		{
 			return false;
 		}
 
-		if (AST::CreateProject(ast, path) && AST::OpenProject(ast, path))
+		if (ast::CreateProject(ast, path) && ast::OpenProject(ast, path))
 		{
 			ast.SetStatic<SEditor>();
 			EditorSystem::Init(ast);
-			SetUIConfigFile(p::JoinPaths(AST::GetProjectPath(ast), "Saved/UI.ini"));
+			SetUIConfigFile(p::JoinPaths(ast::GetProjectPath(ast), "Saved/UI.ini"));
 			return true;
 		}
 		return false;
@@ -148,16 +148,16 @@ namespace rift::Editor
 
 	bool Editor::OpenProject(p::StringView path, bool closeFirst)
 	{
-		if (!closeFirst && AST::HasProject(ast))
+		if (!closeFirst && ast::HasProject(ast))
 		{
 			return false;
 		}
 
-		if (AST::OpenProject(ast, path))
+		if (ast::OpenProject(ast, path))
 		{
 			ast.SetStatic<SEditor>();
 			EditorSystem::Init(ast);
-			SetUIConfigFile(p::JoinPaths(AST::GetProjectPath(ast), "Saved/UI.ini"));
+			SetUIConfigFile(p::JoinPaths(ast::GetProjectPath(ast), "Saved/UI.ini"));
 			return true;
 		}
 		return false;

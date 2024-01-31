@@ -18,6 +18,6 @@ namespace rift::Editor
 
 		GraphPlayground() {}
 
-		void Draw(AST::Tree& ast, struct DockSpaceLayout& layout);
+		void Draw(ast::Tree& ast, struct DockSpaceLayout& layout);
 	};
 }    // namespace rift::Editor

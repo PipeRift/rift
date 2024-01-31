@@ -15,8 +15,7 @@
 #include <PipeECS.h>
 
 
-
-namespace rift::AST
+namespace rift::ast
 {
 	struct RiftTypeSettings
 	{
@@ -95,7 +94,7 @@ namespace rift::AST
 
 	p::TView<const RiftType> GetFileTypes();
 	const RiftType* FindFileType(p::Tag typeId);
-	const RiftType* FindFileType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId);
+	const RiftType* FindFileType(p::TAccessRef<ast::CDeclType> access, ast::Id typeId);
 
 	template<typename TagType>
 	void RegisterFileType(p::Tag typeId, RiftTypeSettings settings)
@@ -103,4 +102,4 @@ namespace rift::AST
 		RegisterFileType(
 		    {.id = typeId, .tagType = TagType::GetStaticType(), .settings = p::Move(settings)});
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

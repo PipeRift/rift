@@ -16,7 +16,6 @@
 #include <PipeECS.h>
 
 
-
 // P_OVERRIDE_NEW_DELETE
 
 
@@ -24,38 +23,38 @@ namespace rift
 {
 	struct ParsedModule
 	{
-		AST::Id id = AST::NoId;
+		ast::Id id = ast::NoId;
 		TArray<String> headers;
 	};
 
 	void NativeBindingModule::Load()
 	{
 		// Register types
-		AST::RiftTypeSettings typeSettings{.category = "Bindings"};
+		ast::RiftTypeSettings typeSettings{.category = "Bindings"};
 		typeSettings.displayName  = "C Struct";
 		typeSettings.hasVariables = true;
 		typeSettings.hasFunctions = false;
-		AST::RegisterFileType<CDeclCStruct>("CStruct", typeSettings);
+		ast::RegisterFileType<CDeclCStruct>("CStruct", typeSettings);
 		typeSettings.displayName       = "C Static";
 		typeSettings.hasVariables      = true;
 		typeSettings.hasFunctions      = true;
 		typeSettings.hasFunctionBodies = false;
-		AST::RegisterFileType<CDeclCStatic>("CStatic", typeSettings);
-		AST::PreAllocPools<CDeclCStruct, CDeclCStatic>();
+		ast::RegisterFileType<CDeclCStatic>("CStatic", typeSettings);
+		ast::PreAllocPools<CDeclCStruct, CDeclCStatic>();
 
 		// Register module binding
-		AST::RegisterModuleBinding(
+		ast::RegisterModuleBinding(
 		    {.id = "C", .tagType = CNativeBinding::GetStaticType(), .displayName = "C"});
-		AST::RegisterSerializedModulePools<CNativeBinding>();
-		AST::PreAllocPools<CNativeBinding>();
+		ast::RegisterSerializedModulePools<CNativeBinding>();
+		ast::PreAllocPools<CNativeBinding>();
 	}
 
-	void FindHeaders(AST::Tree& ast, TView<ParsedModule> parsedModules)
+	void FindHeaders(ast::Tree& ast, TView<ParsedModule> parsedModules)
 	{
-		p::TAccess<AST::CFileRef> access{ast};
+		p::TAccess<ast::CFileRef> access{ast};
 		for (auto& module : parsedModules)
 		{
-			Path path = AST::GetModulePath(access, module.id);
+			Path path = ast::GetModulePath(access, module.id);
 			for (const auto& headerPath : HeaderIterator(path))
 			{
 				module.headers.Add(p::ToString(headerPath));
@@ -63,10 +62,10 @@ namespace rift
 		}
 	}
 
-	void NativeBindingModule::SyncIncludes(AST::Tree& ast)
+	void NativeBindingModule::SyncIncludes(ast::Tree& ast)
 	{
-		TArray<AST::Id> moduleIds;
-		p::FindAllIdsWith<AST::CModule, CNativeBinding>(ast, moduleIds);
+		TArray<ast::Id> moduleIds;
+		p::FindAllIdsWith<ast::CModule, CNativeBinding>(ast, moduleIds);
 
 		// Only use automatic native bindings on modules marked as such
 		moduleIds.RemoveIfSwap([ast](auto id) {

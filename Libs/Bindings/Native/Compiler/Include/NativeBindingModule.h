@@ -7,7 +7,7 @@
 
 namespace rift
 {
-	namespace AST
+	namespace ast
 	{
 		class Tree;
 	}
@@ -17,6 +17,6 @@ namespace rift
 		P_CLASS(NativeBindingModule, Module)
 
 		void Load() override;
-		void SyncIncludes(AST::Tree& ast);
+		void SyncIncludes(ast::Tree& ast);
 	};
 }    // namespace rift

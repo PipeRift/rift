@@ -12,84 +12,84 @@
 
 namespace rift::Editor
 {
-	void OpenType(TAccessRef<TWrite<CTypeEditor>, AST::CDeclType> access, AST::Id id);
-	void CloseType(TAccessRef<TWrite<CTypeEditor>, AST::CDeclType> access, AST::Id id);
-	bool IsTypeOpen(TAccessRef<CTypeEditor> access, AST::Id id);
+	void OpenType(TAccessRef<TWrite<CTypeEditor>, ast::CDeclType> access, ast::Id id);
+	void CloseType(TAccessRef<TWrite<CTypeEditor>, ast::CDeclType> access, ast::Id id);
+	bool IsTypeOpen(TAccessRef<CTypeEditor> access, ast::Id id);
 
-	constexpr StringView GetUnaryOperatorName(AST::UnaryOperatorType type)
+	constexpr StringView GetUnaryOperatorName(ast::UnaryOperatorType type)
 	{
 		switch (type)
 		{
-			case AST::UnaryOperatorType::Not: return "!";
-			case AST::UnaryOperatorType::Negation: return "-";
-			case AST::UnaryOperatorType::Increment: return "++";
-			case AST::UnaryOperatorType::Decrement: return "--";
-			case AST::UnaryOperatorType::BitNot: return "~";
+			case ast::UnaryOperatorType::Not: return "!";
+			case ast::UnaryOperatorType::Negation: return "-";
+			case ast::UnaryOperatorType::Increment: return "++";
+			case ast::UnaryOperatorType::Decrement: return "--";
+			case ast::UnaryOperatorType::BitNot: return "~";
 		}
 		return "";
 	}
 
-	constexpr StringView GetUnaryOperatorLongName(AST::UnaryOperatorType type)
+	constexpr StringView GetUnaryOperatorLongName(ast::UnaryOperatorType type)
 	{
 		switch (type)
 		{
-			case AST::UnaryOperatorType::Not: return "not";
-			case AST::UnaryOperatorType::Negation: return "negation";
-			case AST::UnaryOperatorType::Increment: return "increment";
-			case AST::UnaryOperatorType::Decrement: return "decrement";
-			case AST::UnaryOperatorType::BitNot: return "bitwise not / one's complement";
+			case ast::UnaryOperatorType::Not: return "not";
+			case ast::UnaryOperatorType::Negation: return "negation";
+			case ast::UnaryOperatorType::Increment: return "increment";
+			case ast::UnaryOperatorType::Decrement: return "decrement";
+			case ast::UnaryOperatorType::BitNot: return "bitwise not / one's complement";
 		}
 		return "";
 	}
 
-	constexpr StringView GetBinaryOperatorName(AST::BinaryOperatorType type)
+	constexpr StringView GetBinaryOperatorName(ast::BinaryOperatorType type)
 	{
 		switch (type)
 		{
-			case AST::BinaryOperatorType::Add: return "+";
-			case AST::BinaryOperatorType::Sub: return "-";
-			case AST::BinaryOperatorType::Mul: return "*";
-			case AST::BinaryOperatorType::Div: return "/";
-			case AST::BinaryOperatorType::Mod: return "%";
+			case ast::BinaryOperatorType::Add: return "+";
+			case ast::BinaryOperatorType::Sub: return "-";
+			case ast::BinaryOperatorType::Mul: return "*";
+			case ast::BinaryOperatorType::Div: return "/";
+			case ast::BinaryOperatorType::Mod: return "%";
 
-			case AST::BinaryOperatorType::Equal: return "==";
-			case AST::BinaryOperatorType::NotEqual: return "!=";
-			case AST::BinaryOperatorType::Greater: return ">";
-			case AST::BinaryOperatorType::Less: return "<";
-			case AST::BinaryOperatorType::GreaterOrEqual: return ">=";
-			case AST::BinaryOperatorType::LessOrEqual: return "<=";
+			case ast::BinaryOperatorType::Equal: return "==";
+			case ast::BinaryOperatorType::NotEqual: return "!=";
+			case ast::BinaryOperatorType::Greater: return ">";
+			case ast::BinaryOperatorType::Less: return "<";
+			case ast::BinaryOperatorType::GreaterOrEqual: return ">=";
+			case ast::BinaryOperatorType::LessOrEqual: return "<=";
 
-			case AST::BinaryOperatorType::And: return "&&";
-			case AST::BinaryOperatorType::Or: return "||";
-			case AST::BinaryOperatorType::BitAnd: return "&";
-			case AST::BinaryOperatorType::BitOr: return "|";
-			case AST::BinaryOperatorType::Xor: return "^";
+			case ast::BinaryOperatorType::And: return "&&";
+			case ast::BinaryOperatorType::Or: return "||";
+			case ast::BinaryOperatorType::BitAnd: return "&";
+			case ast::BinaryOperatorType::BitOr: return "|";
+			case ast::BinaryOperatorType::Xor: return "^";
 		}
 		return "";
 	}
 
-	constexpr StringView GetBinaryOperatorLongName(AST::BinaryOperatorType type)
+	constexpr StringView GetBinaryOperatorLongName(ast::BinaryOperatorType type)
 	{
 		switch (type)
 		{
-			case AST::BinaryOperatorType::Add: return "add";
-			case AST::BinaryOperatorType::Sub: return "subtract";
-			case AST::BinaryOperatorType::Mul: return "multiply";
-			case AST::BinaryOperatorType::Div: return "divide";
-			case AST::BinaryOperatorType::Mod: return "module";
+			case ast::BinaryOperatorType::Add: return "add";
+			case ast::BinaryOperatorType::Sub: return "subtract";
+			case ast::BinaryOperatorType::Mul: return "multiply";
+			case ast::BinaryOperatorType::Div: return "divide";
+			case ast::BinaryOperatorType::Mod: return "module";
 
-			case AST::BinaryOperatorType::Equal: return "equal";
-			case AST::BinaryOperatorType::NotEqual: return "not equal";
-			case AST::BinaryOperatorType::Greater: return "greater";
-			case AST::BinaryOperatorType::Less: return "less";
-			case AST::BinaryOperatorType::GreaterOrEqual: return "greater or equal";
-			case AST::BinaryOperatorType::LessOrEqual: return "less or equal";
+			case ast::BinaryOperatorType::Equal: return "equal";
+			case ast::BinaryOperatorType::NotEqual: return "not equal";
+			case ast::BinaryOperatorType::Greater: return "greater";
+			case ast::BinaryOperatorType::Less: return "less";
+			case ast::BinaryOperatorType::GreaterOrEqual: return "greater or equal";
+			case ast::BinaryOperatorType::LessOrEqual: return "less or equal";
 
-			case AST::BinaryOperatorType::And: return "and";
-			case AST::BinaryOperatorType::Or: return "or";
-			case AST::BinaryOperatorType::BitAnd: return "bitwise and";
-			case AST::BinaryOperatorType::BitOr: return "bitwise or";
-			case AST::BinaryOperatorType::Xor: return "exclusive or";
+			case ast::BinaryOperatorType::And: return "and";
+			case ast::BinaryOperatorType::Or: return "or";
+			case ast::BinaryOperatorType::BitAnd: return "bitwise and";
+			case ast::BinaryOperatorType::BitOr: return "bitwise or";
+			case ast::BinaryOperatorType::Xor: return "exclusive or";
 		}
 		return "";
 	}

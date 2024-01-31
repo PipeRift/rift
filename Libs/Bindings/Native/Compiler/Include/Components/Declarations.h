@@ -6,12 +6,12 @@
 
 namespace rift
 {
-	struct CDeclCStruct : public AST::CDeclRecord
+	struct CDeclCStruct : public ast::CDeclRecord
 	{
 		P_STRUCT(CDeclCStruct, CDeclRecord)
 	};
 
-	struct CDeclCStatic : public AST::CDeclRecord
+	struct CDeclCStatic : public ast::CDeclRecord
 	{
 		P_STRUCT(CDeclCStatic, CDeclRecord)
 	};

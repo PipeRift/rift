@@ -23,14 +23,14 @@ namespace rift::Editor
 	};
 
 	using TVariableAccessRef =
-	    p::TAccessRef<p::TWrite<AST::CDeclVariable>, p::TWrite<AST::CNamespace>, AST::CDeclType,
-	        AST::CDeclNative, AST::CDeclStruct, AST::CDeclClass, AST::CParent>;
+	    p::TAccessRef<p::TWrite<ast::CDeclVariable>, p::TWrite<ast::CNamespace>, ast::CDeclType,
+	        ast::CDeclNative, ast::CDeclStruct, ast::CDeclClass, ast::CParent>;
 
-	void DrawField(AST::Tree& ast, CTypeEditor& editor, AST::Id functionId, AST::Id fieldId,
+	void DrawField(ast::Tree& ast, CTypeEditor& editor, ast::Id functionId, ast::Id fieldId,
 	    DrawFieldFlags flags = DrawFieldFlags::None);
 
-	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, AST::Id variableId);
-	void DrawFunction(AST::Tree& ast, CTypeEditor& editor, AST::Id functionId);
+	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, ast::Id variableId);
+	void DrawFunction(ast::Tree& ast, CTypeEditor& editor, ast::Id functionId);
 
-	void DrawElementsPanel(AST::Tree& ast, AST::Id typeId);
+	void DrawElementsPanel(ast::Tree& ast, ast::Id typeId);
 }    // namespace rift::Editor
