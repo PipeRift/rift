@@ -3,14 +3,15 @@
 
 #include "AST/Components/CProject.h"
 
-#include <AST/Components/CDeclType.h>
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
 #include <AST/Components/CNamespace.h>
+#include <AST/Components/Declarations.h>
 #include <AST/Tree.h>
 #include <Pipe/Core/String.h>
 #include <PipeArrays.h>
 #include <PipeECS.h>
+
 
 
 namespace rift::Editor

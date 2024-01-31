@@ -1,11 +1,9 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Components/CDeclFunction.h"
-#include "AST/Components/CExprCall.h"
-#include "AST/Components/CExprInputs.h"
-#include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CNamespace.h"
+#include "AST/Components/Declarations.h"
+#include "AST/Components/Expressions.h"
 #include "AST/Components/Tags/CInvalid.h"
 #include "AST/Tree.h"
 

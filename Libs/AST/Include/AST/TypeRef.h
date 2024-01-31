@@ -1,7 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Components/CDeclType.h"
+#include "AST/Components/Declarations.h"
 #include "AST/Tree.h"
 
 #include <Pipe/Core/Checks.h>

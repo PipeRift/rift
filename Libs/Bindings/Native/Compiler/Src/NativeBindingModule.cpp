@@ -2,9 +2,8 @@
 
 #include "NativeBindingModule.h"
 
-#include "Components/CDeclCStatic.h"
-#include "Components/CDeclCStruct.h"
 #include "Components/CNativeBinding.h"
+#include "Components/Declarations.h"
 #include "HeaderIterator.h"
 
 #include <AST/Components/CFileRef.h>
@@ -15,6 +14,7 @@
 #include <AST/Utils/TypeUtils.h>
 #include <PipeArrays.h>
 #include <PipeECS.h>
+
 
 
 // P_OVERRIDE_NEW_DELETE

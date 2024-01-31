@@ -19,9 +19,9 @@
 #include "Utils/ProjectManager.h"
 #include "Utils/TypeUtils.h"
 
-#include <AST/Components/CDeclType.h>
 #include <AST/Components/CFileRef.h>
 #include <AST/Components/CModule.h>
+#include <AST/Components/Declarations.h>
 #include <AST/Components/Tags/CDirty.h>
 #include <Compiler/Compiler.h>
 #include <IconsFontAwesome5.h>
@@ -34,6 +34,7 @@
 #include <UI/Inspection.h>
 #include <UI/Notify.h>
 #include <UI/UI.h>
+
 
 
 namespace rift::Editor::EditorSystem

@@ -4,9 +4,8 @@
 
 #include "Components/CTypeEditor.h"
 
-#include <AST/Components/CDeclType.h>
-#include <AST/Components/CExprBinaryOperator.h>
-#include <AST/Components/CExprUnaryOperator.h>
+#include <AST/Components/Declarations.h>
+#include <AST/Components/Expressions.h>
 #include <AST/Utils/TypeUtils.h>
 #include <PipeECS.h>
 

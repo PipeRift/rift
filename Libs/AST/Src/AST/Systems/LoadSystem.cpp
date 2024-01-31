@@ -2,12 +2,9 @@
 
 #include "AST/Systems/LoadSystem.h"
 
-#include "AST/Components/CDeclClass.h"
-#include "AST/Components/CDeclStatic.h"
-#include "AST/Components/CDeclStruct.h"
-#include "AST/Components/CDeclType.h"
 #include "AST/Components/CModule.h"
 #include "AST/Components/CNamespace.h"
+#include "AST/Components/Declarations.h"
 #include "AST/Statics/SLoadQueue.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/SStringLoad.h"
@@ -20,6 +17,7 @@
 
 #include <Pipe/Files/Files.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
+
 
 
 namespace rift::AST::LoadSystem

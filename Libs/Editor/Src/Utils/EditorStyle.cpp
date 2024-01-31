@@ -2,11 +2,11 @@
 
 #include "Utils/EditorStyle.h"
 
-#include "AST/Components/CDeclClass.h"
-#include "AST/Components/CDeclStruct.h"
+#include "AST/Components/Declarations.h"
 
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
+
 
 
 namespace rift::Editor

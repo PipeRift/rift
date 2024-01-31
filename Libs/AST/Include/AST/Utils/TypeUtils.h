@@ -2,23 +2,18 @@
 
 #pragma once
 
-#include "AST/Components/CDeclFunction.h"
-#include "AST/Components/CDeclType.h"
-#include "AST/Components/CExprBinaryOperator.h"
-#include "AST/Components/CExprInputs.h"
-#include "AST/Components/CExprOutputs.h"
-#include "AST/Components/CExprType.h"
-#include "AST/Components/CExprUnaryOperator.h"
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/CNamespace.h"
-#include "AST/Components/CStmtInput.h"
-#include "AST/Components/CStmtOutputs.h"
+#include "AST/Components/Declarations.h"
+#include "AST/Components/Expressions.h"
+#include "AST/Components/Statements.h"
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 #include "AST/Tree.h"
 #include "AST/TypeRef.h"
 
 #include <PipeECS.h>
+
 
 
 namespace rift::AST

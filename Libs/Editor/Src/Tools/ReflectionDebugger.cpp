@@ -2,7 +2,7 @@
 
 #include "Tools/ReflectionDebugger.h"
 
-#include <AST/Components/CStmtOutputs.h>
+#include <AST/Components/Statements.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Paths.h>

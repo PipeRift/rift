@@ -2,15 +2,14 @@
 
 #include "AST/Systems/FunctionsSystem.h"
 
-#include "AST/Components/CExprInputs.h"
-#include "AST/Components/CExprOutputs.h"
-#include "AST/Components/CExprType.h"
+#include "AST/Components/Expressions.h"
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 #include "AST/Utils/Namespaces.h"
 #include "AST/Utils/TypeUtils.h"
 
 #include <PipeECS.h>
+
 
 
 namespace rift::AST::FunctionsSystem

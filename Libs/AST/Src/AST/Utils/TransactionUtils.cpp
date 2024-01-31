@@ -2,7 +2,7 @@
 
 #include "AST/Utils/TransactionUtils.h"
 
-#include "AST/Components/CDeclType.h"
+#include "AST/Components/Declarations.h"
 
 #include <PipeECS.h>
 

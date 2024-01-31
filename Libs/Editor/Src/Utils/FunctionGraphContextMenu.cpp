@@ -11,11 +11,9 @@
 #include "Utils/TypeUtils.h"
 #include "Utils/Widgets.h"
 
-#include <AST/Components/CDeclFunction.h>
-#include <AST/Components/CDeclType.h>
-#include <AST/Components/CDeclVariable.h>
-#include <AST/Components/CExprType.h>
 #include <AST/Components/CNamespace.h>
+#include <AST/Components/Declarations.h>
+#include <AST/Components/Expressions.h>
 #include <AST/Components/Views/CNodePosition.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Utils/Expressions.h>

@@ -3,29 +3,15 @@
 
 #include "Components.h"
 
-#include <AST/Components/CDeclClass.h>
-#include <AST/Components/CDeclFunction.h>
-#include <AST/Components/CDeclStatic.h>
-#include <AST/Components/CDeclStruct.h>
-#include <AST/Components/CDeclType.h>
-#include <AST/Components/CDeclVariable.h>
-#include <AST/Components/CExprCall.h>
-#include <AST/Components/CExprInputs.h>
-#include <AST/Components/CExprOutputs.h>
-#include <AST/Components/CExprType.h>
-#include <AST/Components/CLiteralBool.h>
-#include <AST/Components/CLiteralFloating.h>
-#include <AST/Components/CLiteralIntegral.h>
-#include <AST/Components/CLiteralString.h>
 #include <AST/Components/CModule.h>
-#include <AST/Components/CStmtIf.h>
-#include <AST/Components/CStmtOutputs.h>
-#include <AST/Components/CStmtReturn.h>
+#include <AST/Components/Expressions.h>
+#include <AST/Components/Literals.h>
+#include <AST/Components/Statements.h>
 #include <AST/Components/Tags/CInvalid.h>
 #include <AST/Id.h>
-#include <Components/CDeclCStatic.h>
-#include <Components/CDeclCStruct.h>
+#include <Components/Declarations.h>
 #include <PipeECS.h>
+
 
 
 namespace rift

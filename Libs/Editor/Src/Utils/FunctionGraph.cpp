@@ -9,25 +9,11 @@
 #include "Utils/FunctionGraphContextMenu.h"
 #include "Utils/TypeUtils.h"
 
-#include <AST/Components/CDeclFunction.h>
-#include <AST/Components/CDeclType.h>
-#include <AST/Components/CDeclVariable.h>
-#include <AST/Components/CExprBinaryOperator.h>
-#include <AST/Components/CExprCall.h>
-#include <AST/Components/CExprDeclRef.h>
-#include <AST/Components/CExprInputs.h>
-#include <AST/Components/CExprOutputs.h>
-#include <AST/Components/CExprType.h>
-#include <AST/Components/CExprUnaryOperator.h>
-#include <AST/Components/CLiteralBool.h>
-#include <AST/Components/CLiteralFloating.h>
-#include <AST/Components/CLiteralIntegral.h>
-#include <AST/Components/CLiteralString.h>
 #include <AST/Components/CNamespace.h>
-#include <AST/Components/CStmtIf.h>
-#include <AST/Components/CStmtInput.h>
-#include <AST/Components/CStmtOutputs.h>
-#include <AST/Components/CStmtReturn.h>
+#include <AST/Components/Declarations.h>
+#include <AST/Components/Expressions.h>
+#include <AST/Components/Literals.h>
+#include <AST/Components/Statements.h>
 #include <AST/Components/Tags/CInvalid.h>
 #include <AST/Components/Views/CNodePosition.h>
 #include <AST/Utils/Expressions.h>
@@ -38,6 +24,7 @@
 #include <Utils/Nodes.h>
 #include <Utils/NodesInternal.h>
 #include <Utils/NodesMiniMap.h>
+
 
 
 namespace rift::Editor::Graph

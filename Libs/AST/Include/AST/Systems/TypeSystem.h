@@ -1,14 +1,8 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Components/CDeclType.h"
-#include "AST/Components/CDeclVariable.h"
-#include "AST/Components/CExprBinaryOperator.h"
-#include "AST/Components/CExprDeclRef.h"
-#include "AST/Components/CExprInputs.h"
-#include "AST/Components/CExprOutputs.h"
-#include "AST/Components/CExprType.h"
-#include "AST/Components/CExprUnaryOperator.h"
+#include "AST/Components/Declarations.h"
+#include "AST/Components/Expressions.h"
 #include "AST/Components/Tags/CChanged.h"
 
 #include <PipeECS.h>

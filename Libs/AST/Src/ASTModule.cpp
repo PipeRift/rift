@@ -2,13 +2,12 @@
 
 #include "ASTModule.h"
 
-#include "AST/Components/CDeclClass.h"
-#include "AST/Components/CDeclStatic.h"
-#include "AST/Components/CDeclStruct.h"
 #include "AST/Components/CModule.h"
 #include "AST/Components/CNamespace.h"
+#include "AST/Components/Declarations.h"
 #include "AST/Utils/ModuleUtils.h"
 #include "AST/Utils/TypeUtils.h"
+
 
 
 namespace rift

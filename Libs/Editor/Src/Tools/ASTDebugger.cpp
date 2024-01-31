@@ -5,7 +5,7 @@
 #include "imgui.h"
 #include "UI/Widgets.h"
 
-#include <AST/Components/CStmtOutputs.h>
+#include <AST/Components/Statements.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Namespaces.h>
