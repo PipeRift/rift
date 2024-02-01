@@ -1,0 +1,49 @@
+{
+    "type": "Static",
+    "count": 4,
+    "components": {
+        "CChild": {
+            "0": -1,
+            "1": 0,
+            "2": 0,
+            "3": 0
+        },
+        "CDeclVariable": {
+            "2": {}
+        },
+        "CDeclFunction": {
+            "1": {},
+            "3": {}
+        },
+        "CNodePosition": {
+            "1": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "3": {
+                "x": 0.0,
+                "y": 3.0
+            }
+        },
+        "CNamespace": {
+            "0": "Main",
+            "1": "Main",
+            "2": "NewVariable",
+            "3": "NewFunction"
+        },
+        "CParent": {
+            "0": [
+                1,
+                2,
+                3
+            ],
+            "1": [],
+            "2": [],
+            "3": []
+        },
+        "CStmtOutput": {
+            "1": -1,
+            "3": -1
+        }
+    }
+}

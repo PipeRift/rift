@@ -25,6 +25,48 @@ namespace rift::Editor
 {
 	// using namespace EnumOperators;
 
+	bool CollapsingHeaderWithButton(p::StringView label, bool* add, ImGuiTreeNodeFlags flags)
+	{
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		if (window->SkipItems)
+			return false;
+
+		ImGuiID id = window->GetID(label.data());
+		flags |= ImGuiTreeNodeFlags_CollapsingHeader;
+		if (add)
+			flags |=
+			    ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
+		bool is_open = ImGui::TreeNodeBehavior(id, flags, label.data());
+		if (add != nullptr)
+		{
+			// Create a small overlapping close button
+			// FIXME: We can evolve this into user accessible helpers to add extra buttons on title
+			// bars, headers, etc.
+			// FIXME: CloseButton can overlap into text, need find a way to clip the text somehow.
+			ImGuiContext& g                    = *GImGui;
+			ImGuiLastItemData last_item_backup = g.LastItemData;
+			UI::PushID(id);
+			const float widthAvailable =
+			    ImGui::GetContentRegionAvail().x + UI::GetCurrentWindow()->DC.Indent.x;
+			ImGui::SameLine(widthAvailable - 25.f);
+			UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
+			UI::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
+			float backup_padding_y = g.Style.FramePadding.y;
+			g.Style.FramePadding.y = 0.0f;
+			if (ImGui::ButtonEx(
+			        ICON_FA_PLUS, ImVec2(18.f, 14.f), ImGuiButtonFlags_AlignTextBaseLine))
+			{
+				*add = true;
+			}
+			g.Style.FramePadding.y = backup_padding_y;
+			UI::PopStyleVar(2);
+			UI::PopID();
+			g.LastItemData = last_item_backup;
+		}
+
+		return is_open;
+	}
+
 	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, ast::Id variableId)
 	{
 		auto* ns           = access.TryGet<ast::CNamespace>(variableId);
@@ -140,7 +182,7 @@ namespace rift::Editor
 		}
 
 		UI::PushHeaderColor(callColor);
-		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
+		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 1.f);
 		static String headerId;
 		headerId.clear();
 		Strings::FormatTo(headerId, "{}###{}", name, id);
@@ -173,7 +215,8 @@ namespace rift::Editor
 	void DrawVariables(TVariableAccessRef access, ast::TransactionAccess transAccess,
 	    CTypeEditor& editor, ast::Id typeId)
 	{
-		if (UI::CollapsingHeader("Variables", ImGuiTreeNodeFlags_DefaultOpen))
+		bool add = false;
+		if (CollapsingHeaderWithButton("Variables", &add, ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			UI::Indent(10.f);
 			TArray<ast::Id> variableIds;
@@ -198,26 +241,24 @@ namespace rift::Editor
 				}
 				UI::EndTable();
 			}
-
-			UI::PushStyleCompact();
-			if (UI::Button(ICON_FA_PLUS "##Variable", ImVec2(-FLT_MIN, 0.0f)))
-			{
-				ScopedChange(transAccess, typeId);
-				ast::AddVariable(
-				    {static_cast<ast::Tree&>(access.GetContext()), typeId}, "NewVariable");
-			}
-			UI::PopStyleCompact();
 			UI::Unindent(10.f);
 			UI::Dummy(ImVec2(0.0f, 10.0f));
+		}
+
+		if (add)
+		{
+			ScopedChange(transAccess, typeId);
+			ast::AddVariable({static_cast<ast::Tree&>(access.GetContext()), typeId}, "NewVariable");
 		}
 	}
 
 	void DrawFunctions(ast::Tree& ast, CTypeEditor& editor, ast::Id typeId)
 	{
-		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen
-		                               | ImGuiTreeNodeFlags_AllowItemOverlap
-		                               | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
-		if (UI::CollapsingHeader("Functions", flags))
+		const ImGuiTreeNodeFlags flags =
+		    ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap;
+
+		bool add = false;
+		if (CollapsingHeaderWithButton("Functions", &add, flags))
 		{
 			UI::Indent(10.f);
 
@@ -229,15 +270,14 @@ namespace rift::Editor
 				DrawFunction(ast, editor, typeId, functionId);
 			}
 
-			UI::PushStyleCompact();
-			if (UI::Button(ICON_FA_PLUS "##Function", ImVec2(-FLT_MIN, 0.0f)))
-			{
-				ScopedChange(ast, typeId);
-				ast::AddFunction({ast, typeId}, "NewFunction");
-			}
-			UI::PopStyleCompact();
 			UI::Unindent(10.f);
 			UI::Dummy(ImVec2(0.0f, 10.0f));
+		}
+
+		if (add)
+		{
+			ScopedChange(ast, typeId);
+			ast::AddFunction({ast, typeId}, "NewFunction");
 		}
 	}
 

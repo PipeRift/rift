@@ -119,10 +119,10 @@
                 "U32"
             ],
             "10": [
-                "String"
+                "I64"
             ],
             "11": [
-                "String"
+                "I64"
             ]
         },
         "CNodePosition": {

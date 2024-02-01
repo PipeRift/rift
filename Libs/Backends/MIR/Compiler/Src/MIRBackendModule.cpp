@@ -234,6 +234,11 @@ namespace rift
 	{
 		MIR::GenerateC(compiler);
 
+		if (compiler.HasErrors())
+		{
+			return;
+		}
+
 		MIR_context* ctx = MIR_init();
 
 		MIR::CToMIR(compiler, ctx);
