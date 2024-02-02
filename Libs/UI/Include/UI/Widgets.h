@@ -114,4 +114,10 @@ namespace rift::UI
 
 	void HelpTooltip(p::StringView text, float delay = 1.f);
 	void HelpMarker(p::StringView text);
+
+	bool DrawFilterWithHint(ImGuiTextFilter& filter, const char* label = "Filter (inc,-exc)",
+	    const char* hint = "...", float width = 0.0f);
+
+	bool CollapsingHeaderWithButton(p::StringView label, ImGuiTreeNodeFlags flags,
+	    bool& buttonClicked, p::StringView buttonLabel, p::v2 buttonSize = p::v2(18.f, 14.f));
 }    // namespace rift::UI

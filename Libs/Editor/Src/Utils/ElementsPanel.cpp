@@ -23,50 +23,6 @@
 
 namespace rift::Editor
 {
-	// using namespace EnumOperators;
-
-	bool CollapsingHeaderWithButton(p::StringView label, bool* add, ImGuiTreeNodeFlags flags)
-	{
-		ImGuiWindow* window = ImGui::GetCurrentWindow();
-		if (window->SkipItems)
-			return false;
-
-		ImGuiID id = window->GetID(label.data());
-		flags |= ImGuiTreeNodeFlags_CollapsingHeader;
-		if (add)
-			flags |=
-			    ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
-		bool is_open = ImGui::TreeNodeBehavior(id, flags, label.data());
-		if (add != nullptr)
-		{
-			// Create a small overlapping close button
-			// FIXME: We can evolve this into user accessible helpers to add extra buttons on title
-			// bars, headers, etc.
-			// FIXME: CloseButton can overlap into text, need find a way to clip the text somehow.
-			ImGuiContext& g                    = *GImGui;
-			ImGuiLastItemData last_item_backup = g.LastItemData;
-			UI::PushID(id);
-			const float widthAvailable =
-			    ImGui::GetContentRegionAvail().x + UI::GetCurrentWindow()->DC.Indent.x;
-			ImGui::SameLine(widthAvailable - 25.f);
-			UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
-			UI::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
-			float backup_padding_y = g.Style.FramePadding.y;
-			g.Style.FramePadding.y = 0.0f;
-			if (ImGui::ButtonEx(
-			        ICON_FA_PLUS, ImVec2(18.f, 14.f), ImGuiButtonFlags_AlignTextBaseLine))
-			{
-				*add = true;
-			}
-			g.Style.FramePadding.y = backup_padding_y;
-			UI::PopStyleVar(2);
-			UI::PopID();
-			g.LastItemData = last_item_backup;
-		}
-
-		return is_open;
-	}
-
 	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, ast::Id variableId)
 	{
 		auto* ns           = access.TryGet<ast::CNamespace>(variableId);
@@ -203,11 +159,11 @@ namespace rift::Editor
 
 		if (ImGui::BeginPopupContextItem())
 		{
-			Graph::DrawNodesContextMenu(ast, typeId, id);
 			if (UI::MenuItem("Show in Graph"))
 			{
 				Nodes::MoveToNode(id, v2{150.f, 150.f});
 			}
+			Graph::DrawNodesContextMenu(ast, typeId, id);
 			ImGui::EndPopup();
 		}
 	}
@@ -216,9 +172,10 @@ namespace rift::Editor
 	    CTypeEditor& editor, ast::Id typeId)
 	{
 		bool add = false;
-		if (CollapsingHeaderWithButton("Variables", &add, ImGuiTreeNodeFlags_DefaultOpen))
+		if (UI::CollapsingHeaderWithButton(
+		        "Variables", ImGuiTreeNodeFlags_DefaultOpen, add, ICON_FA_PLUS))
 		{
-			UI::Indent(10.f);
+			UI::Indent();
 			TArray<ast::Id> variableIds;
 			p::GetIdChildren(access, typeId, variableIds);
 			ExcludeIdsWithout<ast::CDeclVariable>(access, variableIds);
@@ -241,7 +198,7 @@ namespace rift::Editor
 				}
 				UI::EndTable();
 			}
-			UI::Unindent(10.f);
+			UI::Unindent();
 			UI::Dummy(ImVec2(0.0f, 10.0f));
 		}
 
@@ -258,9 +215,9 @@ namespace rift::Editor
 		    ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap;
 
 		bool add = false;
-		if (CollapsingHeaderWithButton("Functions", &add, flags))
+		if (UI::CollapsingHeaderWithButton("Functions", flags, add, ICON_FA_PLUS))
 		{
-			UI::Indent(10.f);
+			UI::Indent();
 
 			TArray<ast::Id> functionIds;
 			p::GetIdChildren(ast, typeId, functionIds);
@@ -270,7 +227,7 @@ namespace rift::Editor
 				DrawFunction(ast, editor, typeId, functionId);
 			}
 
-			UI::Unindent(10.f);
+			UI::Unindent();
 			UI::Dummy(ImVec2(0.0f, 10.0f));
 		}
 
@@ -294,7 +251,7 @@ namespace rift::Editor
 		if (UI::Begin(windowName.c_str(), &editor.showElements))
 		{
 			UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
-			editor.elementsFilter.Draw("##filter");
+			UI::DrawFilterWithHint(editor.elementsFilter, "##filter", "Search...");
 
 			if (ast::HasVariables(ast, typeId))
 			{

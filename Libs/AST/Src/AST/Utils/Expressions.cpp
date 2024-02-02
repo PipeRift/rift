@@ -123,9 +123,7 @@ namespace rift::ast
 		auto& inputs = ast.Get<CExprInputs>(input.nodeId);
 
 		// Find pin index
-		const i32 index = inputs.pinIds.FindIndex([&input](Id pinId) {
-			return input.pinId == pinId;
-		});
+		const i32 index = inputs.pinIds.FindIndex(input.pinId);
 		if (index != NO_INDEX && Ensure(index < inputs.linkedOutputs.Size())) [[likely]]
 		{
 			ExprOutput& linked = inputs.linkedOutputs[index];

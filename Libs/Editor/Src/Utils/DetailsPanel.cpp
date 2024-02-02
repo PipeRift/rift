@@ -25,6 +25,11 @@ namespace rift::Editor
 {
 	void EditFunctionPin(ast::Tree& ast, ast::Id ownerId, ast::Id id)
 	{
+		if (!ast.IsValid(id))
+		{
+			return;
+		}
+
 		auto* ns   = ast.TryGet<ast::CNamespace>(id);
 		auto* type = ast.TryGet<ast::CExprType>(id);
 		if (!ns || !type)
@@ -114,7 +119,8 @@ namespace rift::Editor
 
 		String functionName{ns->name.AsString()};
 		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
-		if (UI::InputText("##name", functionName, ImGuiInputTextFlags_AutoSelectAll))
+		if (UI::InputTextWithHint(
+		        "##name", "name...", functionName, ImGuiInputTextFlags_AutoSelectAll))
 		{
 			Id sameNameFuncId = ast::FindChildByName(ast, typeId, Tag{functionName});
 			if (!IsNone(sameNameFuncId) && id != sameNameFuncId)
@@ -131,58 +137,58 @@ namespace rift::Editor
 		}
 		UI::Spacing();
 
-		UI::Text("Inputs");
-		if (UI::BeginTable("##fields", 2, ImGuiTableFlags_SizingFixedFit))
+		bool addInput = false;
+		if (UI::CollapsingHeaderWithButton(
+		        "Inputs", ImGuiTreeNodeFlags_DefaultOpen, addInput, ICON_FA_PLUS))
 		{
-			UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 0.9f);
-			UI::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch, 1.f);
-			if (const auto* exprOutputs = ast.TryGet<const ast::CExprOutputs>(id))
+			UI::Indent();
+			if (UI::BeginTable("##fields", 2, ImGuiTableFlags_SizingFixedFit))
 			{
-				for (ast::Id pinId : exprOutputs->pinIds)
+				UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 0.9f);
+				UI::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch, 1.f);
+				if (const auto* exprOutputs = ast.TryGet<const ast::CExprOutputs>(id))
 				{
-					EditFunctionPin(ast, id, pinId);
+					for (ast::Id pinId : exprOutputs->pinIds)
+					{
+						EditFunctionPin(ast, id, pinId);
+					}
 				}
+				UI::EndTable();
 			}
-			UI::EndTable();
+			UI::Unindent();
 		}
-		UI::PushStyleCompact();
-		UI::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, {0.5f, 0.5f});
-		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
-		if (UI::Selectable(ICON_FA_PLUS "##AddInput"))
+		if (addInput)
 		{
 			ScopedChange(ast, id);
 			ast::AddFunctionInput(ast, id);
 		}
-		UI::HelpTooltip("Adds a new input parameter to a function");
-		UI::PopStyleVar();
-		UI::PopStyleCompact();
 		UI::Spacing();
 
-		UI::Text("Outputs");
-		if (UI::BeginTable("##fields", 2, ImGuiTableFlags_SizingFixedFit))
+		bool addOutput = false;
+		if (UI::CollapsingHeaderWithButton(
+		        "Outputs", ImGuiTreeNodeFlags_DefaultOpen, addOutput, ICON_FA_PLUS))
 		{
-			UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 0.9f);
-			UI::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch, 1.f);
-			if (const auto* exprInputs = ast.TryGet<const ast::CExprInputs>(id))
+			UI::Indent();
+			if (UI::BeginTable("##fields", 2, ImGuiTableFlags_SizingFixedFit))
 			{
-				for (ast::Id pinId : exprInputs->pinIds)
+				UI::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 0.9f);
+				UI::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch, 1.f);
+				if (const auto* exprInputs = ast.TryGet<const ast::CExprInputs>(id))
 				{
-					EditFunctionPin(ast, id, pinId);
+					for (ast::Id pinId : exprInputs->pinIds)
+					{
+						EditFunctionPin(ast, id, pinId);
+					}
 				}
+				UI::EndTable();
 			}
-			UI::EndTable();
+			UI::Unindent();
 		}
-		UI::PushStyleCompact();
-		UI::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
-		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
-		if (UI::Selectable(ICON_FA_PLUS "##AddOutput"))
+		if (addOutput)
 		{
 			ScopedChange(ast, id);
 			ast::AddFunctionOutput(ast, id);
 		}
-		UI::HelpTooltip("Adds a new output parameter to a function");
-		UI::PopStyleVar();
-		UI::PopStyleCompact();
 		UI::Spacing();
 	}
 

@@ -77,6 +77,7 @@ namespace rift::MIR
 			mainFunctionId = FindMainFunction(staticFunctionIds);
 			CreateMain(mainFunctionId);
 		}
+		p::Info(*code);
 	}
 
 	void CGenerator::BindNativeTypes()

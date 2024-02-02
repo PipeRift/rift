@@ -212,4 +212,55 @@ namespace rift::UI
 		ImGui::TextDisabled(ICON_FA_QUESTION_CIRCLE);
 		HelpTooltip(text, 0.f);
 	}
+
+	bool DrawFilterWithHint(
+	    ImGuiTextFilter& filter, const char* label, const char* hint, float width)
+	{
+		if (width != 0.0f)
+			ImGui::SetNextItemWidth(width);
+		bool value_changed =
+		    ImGui::InputTextWithHint(label, hint, filter.InputBuf, IM_ARRAYSIZE(filter.InputBuf));
+		if (value_changed)
+			filter.Build();
+		return value_changed;
+	}
+
+	bool CollapsingHeaderWithButton(p::StringView label, ImGuiTreeNodeFlags flags,
+	    bool& buttonClicked, p::StringView buttonLabel, p::v2 buttonSize)
+	{
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		if (window->SkipItems)
+			return false;
+
+		ImGuiID id = window->GetID(label.data());
+		flags |= ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_AllowOverlap
+		       | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
+		bool isOpen = ImGui::TreeNodeBehavior(id, flags, label.data());
+
+
+		// Create a small overlapping close button
+		// FIXME: We can evolve this into user accessible helpers to add extra buttons on title
+		// bars, headers, etc.
+		// FIXME: CloseButton can overlap into text, need find a way to clip the text somehow.
+		ImGuiContext& g                    = *GImGui;
+		ImGuiLastItemData last_item_backup = g.LastItemData;
+		UI::PushID(id);
+		const float widthAvailable =
+		    ImGui::GetContentRegionAvail().x + UI::GetCurrentWindow()->DC.Indent.x;
+		ImGui::SameLine(widthAvailable - 25.f);
+		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
+		UI::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
+		float backup_padding_y = g.Style.FramePadding.y;
+		g.Style.FramePadding.y = 0.0f;
+		if (ImGui::ButtonEx(buttonLabel.data(), buttonSize, ImGuiButtonFlags_AlignTextBaseLine))
+		{
+			buttonClicked = true;
+		}
+		g.Style.FramePadding.y = backup_padding_y;
+		UI::PopStyleVar(2);
+		UI::PopID();
+		g.LastItemData = last_item_backup;
+
+		return isOpen;
+	}
 }    // namespace rift::UI

@@ -84,8 +84,12 @@ namespace rift::Editor::Graph
 		Check(!nodeIds.IsEmpty());
 		const bool canEditBody = ast::HasFunctionBodies(ast, typeId);
 
-		ast::Id firstNodeId = nodeIds[0];
+		if (canEditBody && UI::MenuItem("Delete"))
+		{
+			ast::RemoveNodes(ast, nodeIds);
+		}
 
+		ast::Id firstNodeId = nodeIds[0];
 		if (nodeIds.Size() == 1 && ast.Has<ast::CDeclFunction>(firstNodeId))
 		{
 			if (canEditBody && UI::MenuItem("Add return node"))
@@ -104,11 +108,6 @@ namespace rift::Editor::Graph
 		if (!calls.IsEmpty() && UI::MenuItem("Refresh"))
 		{
 			ast.AddN<ast::CCallDirty>(calls);
-		}
-
-		if (canEditBody && UI::MenuItem("Delete"))
-		{
-			ast::RemoveNodes(ast, nodeIds);
 		}
 	}
 
