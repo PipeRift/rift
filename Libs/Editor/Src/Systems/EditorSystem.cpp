@@ -414,8 +414,9 @@ namespace rift::Editor::EditorSystem
 			bool isOpen               = true;
 			const String path         = p::ToString(file.path);
 			const StringView filename = p::GetFilename(path);
-			const StringView dirty    = ast.Has<ast::CFileDirty>(moduleId) ? "*" : "";
-			const String windowName   = Strings::Format("{}{}###{}", filename, dirty, moduleId);
+			const StringView dirty    = ast.Has<ast::CFileDirty>(moduleId) ? " *" : "";
+			const String windowName =
+			    Strings::Format(ICON_FA_TH_LARGE " {}{}###{}", filename, dirty, moduleId);
 
 			if (moduleEditor.pendingFocus)
 			{
@@ -519,17 +520,29 @@ namespace rift::Editor::EditorSystem
 
 	void DrawTypes(ast::Tree& ast, SEditor& editor)
 	{
-		TAccess<TWrite<CTypeEditor>, ast::CDeclType, ast::CFileRef> access{ast};
+		TAccess<TWrite<CTypeEditor>, ast::CDeclType, ast::CFileRef, ast::CDeclClass,
+		    ast::CDeclStruct, ast::CDeclStatic>
+		    access{ast};
 		for (ast::Id typeId : FindAllIdsWith<ast::CDeclType, CTypeEditor, ast::CFileRef>(access))
 		{
 			auto& typeEditor = access.Get<CTypeEditor>(typeId);
 			const auto& file = access.Get<const ast::CFileRef>(typeId);
 
+
+			StringView icon;
+			if (ast::IsStructType(access, typeId))
+				icon = ICON_FA_FILE_ALT;
+			else if (ast::IsClassType(access, typeId))
+				icon = ICON_FA_FILE_INVOICE;
+			else if (ast::IsStaticType(access, typeId))
+				icon = ICON_FA_FILE_WORD;
+
 			bool isOpen               = true;
 			const String path         = p::ToString(file.path);
 			const StringView filename = p::GetFilename(path);
-			const StringView dirty    = ast.Has<ast::CFileDirty>(typeId) ? "*" : "";
-			const String windowName   = Strings::Format("{}{}###{}", filename, dirty, typeId);
+			const StringView dirty    = ast.Has<ast::CFileDirty>(typeId) ? " *" : "";
+			const String windowName =
+			    Strings::Format("{} {}{}###{}", icon, filename, dirty, typeId);
 
 			if (typeEditor.pendingFocus)
 			{

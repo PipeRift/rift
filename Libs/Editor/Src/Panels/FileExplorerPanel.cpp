@@ -289,21 +289,19 @@ namespace rift::Editor
 		const String path         = p::ToString(item.path);
 		const StringView fileName = p::GetFilename(path);
 
+		const StringView dirty =
+		    (item.id != ast::NoId && ast.Has<ast::CFileDirty>(item.id)) ? " *" : "";
+
 		if (Folder* folder = folders.Find(p::Tag{item.path}))
 		{
 			ImGuiTreeNodeFlags flags = 0;
-			if (folder->items.IsEmpty())
-			{
-				flags |= ImGuiTreeNodeFlags_Bullet;
-			}
-
 			auto* module = item.id != ast::NoId ? ast.TryGet<ast::CModule>(item.id) : nullptr;
 			if (module)
 			{
 				// TODO: Display module name
-				const String text = Strings::Format(ICON_FA_BOX " {}", fileName);
+				const String text = Strings::Format(ICON_FA_TH_LARGE " {}{}", fileName, dirty);
 
-				UI::PushHeaderColor(UI::primaryColor);
+				UI::PushHeaderColor(UI::GetNeutralColor(1));
 				UI::PushStyleCompact();
 				const bool isProject = item.id == projectModuleId;
 				if (item.id == projectModuleId)    // Is project
@@ -363,11 +361,19 @@ namespace rift::Editor
 			String text;
 			if (fileName == ast::moduleFilename)
 			{
-				text = Strings::Format(ICON_FA_FILE_ALT " {}", fileName);
+				text = Strings::Format(ICON_FA_TH_LARGE " {}{}", fileName, dirty);
 			}
 			else if (Strings::EndsWith(fileName, ".rf"))
 			{
-				text = Strings::Format(ICON_FA_FILE_CODE " {}", fileName);
+				StringView icon;
+				if (ast::IsStructType(ast, item.id))
+					icon = ICON_FA_FILE_ALT;
+				else if (ast::IsClassType(ast, item.id))
+					icon = ICON_FA_FILE_INVOICE;
+				else if (ast::IsStaticType(ast, item.id))
+					icon = ICON_FA_FILE_WORD;
+
+				text = Strings::Format("{} {}{}", icon, fileName, dirty);
 			}
 			else
 			{

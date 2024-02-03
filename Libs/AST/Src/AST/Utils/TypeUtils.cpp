@@ -131,22 +131,22 @@ namespace rift::ast
 		return NoId;
 	}
 
-	bool IsClassType(const Tree& ast, Id typeId)
+	bool IsClassType(TAccessRef<CDeclClass> access, Id typeId)
 	{
-		return ast.Has<CDeclClass>(typeId);
+		return access.Has<CDeclClass>(typeId);
 	}
 
-	bool IsStructType(const Tree& ast, Id typeId)
+	bool IsStructType(TAccessRef<CDeclStruct> access, Id typeId)
 	{
-		return ast.Has<CDeclStruct>(typeId);
+		return access.Has<CDeclStruct>(typeId);
 	}
 
-	bool IsStaticType(const Tree& ast, Id typeId)
+	bool IsStaticType(TAccessRef<CDeclStatic> access, Id typeId)
 	{
-		return ast.Has<CDeclStatic>(typeId);
+		return access.Has<CDeclStatic>(typeId);
 	}
 
-	bool HasVariables(TAccess<CDeclType> access, Id typeId)
+	bool HasVariables(TAccessRef<CDeclType> access, Id typeId)
 	{
 		if (const RiftType* fileType = FindFileType(access, typeId))
 		{
@@ -155,7 +155,7 @@ namespace rift::ast
 		return false;
 	}
 
-	bool HasFunctions(TAccess<CDeclType> access, Id typeId)
+	bool HasFunctions(TAccessRef<CDeclType> access, Id typeId)
 	{
 		if (const RiftType* fileType = FindFileType(access, typeId))
 		{
@@ -164,7 +164,7 @@ namespace rift::ast
 		return false;
 	}
 
-	bool HasFunctionBodies(TAccess<CDeclType> access, Id typeId)
+	bool HasFunctionBodies(TAccessRef<CDeclType> access, Id typeId)
 	{
 		if (const RiftType* fileType = FindFileType(access, typeId))
 		{

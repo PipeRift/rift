@@ -58,12 +58,12 @@ namespace rift::ast
 	void DeserializeType(Tree& ast, Id id, const String& data);
 
 	Id FindTypeByPath(Tree& ast, p::StringView path);
-	bool IsClassType(const Tree& ast, Id typeId);
-	bool IsStructType(const Tree& ast, Id typeId);
-	bool IsStaticType(const Tree& ast, Id typeId);
-	bool HasVariables(TAccess<CDeclType> access, Id typeId);
-	bool HasFunctions(TAccess<CDeclType> access, Id typeId);
-	bool HasFunctionBodies(TAccess<CDeclType> access, Id typeId);
+	bool IsClassType(TAccessRef<CDeclClass> access, Id typeId);
+	bool IsStructType(TAccessRef<CDeclStruct> access, Id typeId);
+	bool IsStaticType(TAccessRef<CDeclStatic> access, Id typeId);
+	bool HasVariables(TAccessRef<CDeclType> access, Id typeId);
+	bool HasFunctions(TAccessRef<CDeclType> access, Id typeId);
+	bool HasFunctionBodies(TAccessRef<CDeclType> access, Id typeId);
 
 	Id AddVariable(TypeRef type, Tag name);
 	Id AddFunction(TypeRef type, Tag name);
