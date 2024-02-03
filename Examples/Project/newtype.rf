@@ -1,0 +1,9 @@
+{
+    "type": "Class",
+    "count": 1,
+    "components": {
+        "CNamespace": {
+            "0": "newtype"
+        }
+    }
+}

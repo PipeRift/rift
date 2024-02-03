@@ -29,7 +29,6 @@ namespace rift::Editor
 		String currentProjectPath;
 		TArray<ast::Id> pendingTypesToClose;
 
-		FileWatcher fileWatcher;
 		FileExplorerPanel fileExplorer{};
 
 		ReflectionDebugger reflectionDebugger;

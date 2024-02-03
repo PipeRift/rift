@@ -1,6 +1,8 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
+#include "Pipe/Files/FileWatcher.h"
+
 #include <AST/Tree.h>
 #include <Pipe/Files/Paths.h>
 #include <PipeTime.h>
@@ -19,7 +21,10 @@ namespace rift::Editor
 
 		ast::Tree ast;
 
+		FileWatcher fileWatcher;
+
 	public:
+		bool bFilesDirty = true;
 #if P_DEBUG
 		bool showDemo    = false;
 		bool showMetrics = false;

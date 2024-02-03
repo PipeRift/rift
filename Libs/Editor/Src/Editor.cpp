@@ -56,7 +56,7 @@ namespace rift::Editor
 
 	int Editor::Run(StringView projectPath)
 	{
-		FileWatcher::StartAsync();
+		fileWatcher.StartAsync();
 
 		// Setup window
 		p::Info("Initializing editor...");
@@ -102,7 +102,11 @@ namespace rift::Editor
 			ast::FunctionsSystem::ClearAddedTags(ast);
 			ast::TransactionSystem::ClearTags(ast);
 
-			ast::LoadSystem::Run(ast);
+			if (bFilesDirty)
+			{
+				ast::LoadSystem::Run(ast);
+				bFilesDirty = false;
+			}
 			ast::FunctionsSystem::ResolveCallFunctionIds(ast);
 			ast::TypeSystem::ResolveExprTypeIds(ast);
 
@@ -157,7 +161,16 @@ namespace rift::Editor
 		{
 			ast.SetStatic<SEditor>();
 			EditorSystem::Init(ast);
-			SetUIConfigFile(p::JoinPaths(ast::GetProjectPath(ast), "Saved/UI.ini"));
+			auto projectPath = ast::GetProjectPath(ast);
+			SetUIConfigFile(p::JoinPaths(projectPath, "Saved/UI.ini"));
+
+			// Start watching the project folder for file changes
+			ast.Add(GetProjectId(ast), fileWatcher.ListenPath(projectPath, true,
+			                               [](StringView path, StringView filename,
+			                                   FileWatchAction action, StringView oldFilename) {
+				Editor::Get().bFilesDirty = true;
+			}));
+
 			return true;
 		}
 		return false;
