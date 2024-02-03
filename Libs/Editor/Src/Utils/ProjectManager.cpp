@@ -15,10 +15,10 @@ namespace rift::Editor
 		// Center modal when appearing
 		UI::SetNextWindowPos(UI::GetMainViewport()->GetCenter(), ImGuiCond_Always, {0.5f, 0.5f});
 
-		v2 viewportSize = UI::GetMainViewport()->Size;
-		v2 modalSize    = v2{600.f, 400.f};
-		modalSize.x     = p::Min(modalSize.x, viewportSize.x - 20.f);
-		modalSize.y     = p::Min(modalSize.y, viewportSize.y - 20.f);
+		p::v2 viewportSize = UI::GetMainViewport()->Size;
+		p::v2 modalSize    = p::v2{600.f, 400.f};
+		modalSize.x        = p::Min(modalSize.x, viewportSize.x - 20.f);
+		modalSize.y        = p::Min(modalSize.y, viewportSize.y - 20.f);
 
 		UI::SetNextWindowSize(modalSize, ImGuiCond_Always);
 
@@ -31,10 +31,10 @@ namespace rift::Editor
 			UI::Separator();
 			UI::Spacing();
 
-			if (UI::Button("Open", v2{-FLT_MIN, 0.0f}))
+			if (UI::Button("Open", p::v2{-FLT_MIN, 0.0f}))
 			{
-				String folder =
-				    files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
+				p::String folder =
+				    p::files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
 				if (Editor::Get().OpenProject(folder))
 				{
 					UI::CloseCurrentPopup();
@@ -42,7 +42,7 @@ namespace rift::Editor
 				else
 				{
 					UI::AddNotification({UI::ToastType::Error, 1.f,
-					    Strings::Format("Failed to open project at '{}'", p::ToString(folder))});
+					    p::Strings::Format("Failed to open project at '{}'", p::ToString(folder))});
 				}
 			}
 			UI::SetItemDefaultFocus();
@@ -87,19 +87,19 @@ namespace rift::Editor
 			UI::AlignTextToFramePadding();
 			UI::Text("Destination");
 			UI::SameLine();
-			static String folder;
+			static p::String folder;
 			UI::PushItemWidth(-32.f);
 			UI::InputText("##path", folder);
 			UI::PopItemWidth();
 			UI::SameLine();
-			if (UI::Button("...", v2{24.f, 0.f}))
+			if (UI::Button("...", p::v2{24.f, 0.f}))
 			{
-				Path selectedFolder =
-				    files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
+				p::Path selectedFolder =
+				    p::files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
 				folder = p::ToString(selectedFolder);
 			}
 
-			if (UI::Button("Create", v2{-FLT_MIN, 0.0f}))
+			if (UI::Button("Create", p::v2{-FLT_MIN, 0.0f}))
 			{
 				if (Editor::Get().CreateProject(folder))
 				{
@@ -109,7 +109,7 @@ namespace rift::Editor
 				else
 				{
 					UI::AddNotification({UI::ToastType::Error, 1.f,
-					    Strings::Format("Failed to create project at '{}'", folder)});
+					    p::Strings::Format("Failed to create project at '{}'", folder)});
 				}
 			}
 

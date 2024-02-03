@@ -10,18 +10,16 @@
 
 namespace rift::Editor
 {
-	using namespace p;
-
 	class Editor
 	{
-		FrameTime frameTime;
+		p::FrameTime frameTime;
 
 		bool configFileChanged = false;
-		String configFile;
+		p::String configFile;
 
 		ast::Tree ast;
 
-		FileWatcher fileWatcher;
+		p::FileWatcher fileWatcher;
 
 	public:
 		bool bFilesDirty = true;
@@ -37,11 +35,11 @@ namespace rift::Editor
 
 		~Editor();
 
-		int Run(StringView projectPath = {});
+		int Run(p::StringView projectPath = {});
 
 		void Tick();
 
-		void SetUIConfigFile(Path path);
+		void SetUIConfigFile(p::Path path);
 
 		static Editor& Get()
 		{
@@ -56,7 +54,9 @@ namespace rift::Editor
 
 		bool CreateProject(p::StringView path, bool closeFirst = true);
 		bool OpenProject(p::StringView path, bool closeFirst = true);
+		void CloseProject();
 
+		// Close the editor
 		void Close();
 
 	protected:

@@ -85,6 +85,9 @@ namespace rift::Editor
 			frameTime.PostTick();
 		}
 
+		// Close the current project (if any)
+		CloseProject();
+
 		Graph::Shutdown();
 		UI::Shutdown();
 		return 0;
@@ -174,6 +177,16 @@ namespace rift::Editor
 			return true;
 		}
 		return false;
+	}
+
+	void Editor::CloseProject()
+	{
+		Id id = GetProjectId(ast);
+		if (ast.IsValid(id) && ast.Has<p::FileListenerId>(id))
+		{
+			fileWatcher.StopListening(ast.Get<p::FileListenerId>(id));
+		}
+		ast::CloseProject(ast);
 	}
 
 	void Editor::Close()

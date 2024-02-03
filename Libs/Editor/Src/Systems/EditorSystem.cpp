@@ -266,7 +266,7 @@ namespace rift::Editor::EditorSystem
 				}
 				if (UI::MenuItem("Close current"))
 				{
-					ast::CloseProject(ast);
+					Editor::Get().CloseProject();
 					editorData.skipFrameAfterMenu = true;
 				}
 				UI::Separator();
