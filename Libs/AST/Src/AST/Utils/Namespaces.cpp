@@ -106,9 +106,9 @@ namespace rift::ast
 	}
 
 	p::String GetFullName(
-	    TAccessRef<CNamespace, CChild, CModule> access, Id id, bool localNamespace)
+	    TAccessRef<CNamespace, CChild, CModule> access, Id id, bool localNamespace, char separator)
 	{
-		return GetNamespace(access, id).ToString(localNamespace);
+		return GetNamespace(access, id).ToString(localNamespace, separator);
 	}
 
 }    // namespace rift::ast

@@ -2,17 +2,19 @@
 
 #include "IRGeneration.h"
 
-#include "Pipe/Core/String.h"
-#include "Pipe/Core/StringView.h"
-
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Statements.h>
 #include <Compiler/Compiler.h>
+#include <Pipe/Core/String.h>
+#include <Pipe/Core/StringView.h>
 
 
 namespace rift::MIR
 {
+	const p::TSet<p::Tag> CGenerator::reservedNames{"class", "struct"};
+
+
 	void GenerateC(Compiler& compiler)
 	{
 		MIRAccess access{compiler.ast};
@@ -163,20 +165,27 @@ namespace rift::MIR
 				const auto& var = access.Get<const ast::CDeclVariable>(memberId);
 
 				const Tag memberName = ast::GetName(access, memberId);
-				if (auto* irType = access.TryGet<const CMIRType>(var.typeId))
-				{
-					Strings::FormatTo(membersCode, "{} {};\n", irType->value, memberName);
-				}
-				else
+				auto* irType         = access.TryGet<const CMIRType>(var.typeId);
+				if (!irType) [[unlikely]]
 				{
 					const Tag typeName = ast::GetName(access, id);
 					compiler.Error(Strings::Format(
 					    "Variable '{}' in struct '{}' has an invalid type", memberName, typeName));
 				}
+				else if (reservedNames.Contains(memberName)) [[unlikely]]
+				{
+					const Tag typeName = ast::GetName(access, id);
+					compiler.Error(Strings::Format(
+					    "Variable name '{}' not allowed in struct '{}' ", memberName, typeName));
+				}
+				else
+				{
+					Strings::FormatTo(membersCode, "{} {};\n", irType->value, memberName);
+				}
 			}
 
 			const auto& type = access.Get<const CMIRType>(id);
-			Strings::FormatTo(*code, "typedef struct {0} {0} {{\n{1}}}\n", type.value, membersCode);
+			Strings::FormatTo(*code, "struct {0} {{\n{1}}};\n", type.value, membersCode);
 		}
 		code->push_back('\n');
 	}
@@ -190,7 +199,7 @@ namespace rift::MIR
 			auto& signature = access.Add<CMIRFunctionSignature>(id).value;
 
 			signature.append("void ");
-			const p::String name = useFullName ? ast::GetFullName(access, id)
+			const p::String name = useFullName ? ast::GetFullName(access, id, false, '_')
 			                                   : p::String{ast::GetName(access, id).AsString()};
 			signature.append(name);
 			signature.push_back('(');
@@ -210,19 +219,26 @@ namespace rift::MIR
 					auto* exprId = access.TryGet<const ast::CExprTypeId>(inputId);
 					const auto* irType =
 					    exprId ? access.TryGet<const CMIRType>(exprId->id) : nullptr;
-					if (irType) [[likely]]
-					{
-						Strings::FormatTo(signature, "{0} {1}, ", inputName, irType->value);
-					}
-					else
+					if (!irType) [[unlikely]]
 					{
 						const String functionName = ast::GetFullName(access, id);
 						compiler.Error(Strings::Format(
 						    "Input '{}' in function '{}' has an invalid type. Using i32 instead.",
 						    inputName, functionName));
 					}
+					else if (reservedNames.Contains(inputName)) [[unlikely]]
+					{
+						const String functionName = ast::GetFullName(access, id);
+						compiler.Error(
+						    Strings::Format("Input name '{}' not allowed in function '{}' ",
+						        inputName, functionName));
+					}
+					else
+					{
+						Strings::FormatTo(signature, "{0} {1}, ", irType->value, inputName);
+					}
 				}
-				Strings::RemoveCharFromEnd(signature, ',');
+				Strings::RemoveFromEnd(signature, ", ");
 			}
 			signature.push_back(')');
 
@@ -309,7 +325,7 @@ namespace rift::MIR
 		if (!Ensure(access.Has<const CMIRFunctionSignature>(functionId)))
 		{
 			compiler.Error(Strings::Format(
-			    "Call to an invalid function: '{}'", ast::GetName(access, functionId)));
+			    "Call to an invalid function: '{}'", ast::GetFullName(access, functionId)));
 			return;
 		}
 
@@ -343,7 +359,7 @@ namespace rift::MIR
 
 		// auto* customMainFunction = access.Get<const CIRFunction>(functionId).instance;
 
-		code->append("void main() {\nMain();\nreturn 0;\n}\n");
+		code->append("int main() {\nProject_Main_Main();\nreturn 0;\n}\n");
 	}
 
 	ast::Id CGenerator::FindMainFunction(p::TView<ast::Id> functionIds)

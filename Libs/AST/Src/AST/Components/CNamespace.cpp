@@ -69,19 +69,23 @@ namespace rift::ast
 		return size;
 	}
 
-	p::String Namespace::ToString(bool isLocal) const
+	p::String Namespace::ToString(bool isLocal, char separator) const
 	{
 		p::String ns;
 		if (!isLocal)
 		{
-			ns.append("@");
 			const p::Tag firstScope = scopes[0];
 			if (!firstScope.IsNone())
 			{
 				ns.append(firstScope.AsString());
-				ns.append(".");
+				ns.push_back(separator);
 			}
 		}
+		else
+		{
+			ns.push_back('#');
+		}
+
 		for (p::i32 i = 1; i < scopeCount; ++i)
 		{
 			const p::Tag scope = scopes[i];
@@ -90,7 +94,7 @@ namespace rift::ast
 				break;
 			}
 			ns.append(scope.AsString());
-			ns.append(".");
+			ns.push_back(separator);
 		}
 
 		if (!ns.empty())    // Remove last dot

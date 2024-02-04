@@ -400,8 +400,9 @@ namespace rift::Editor
 				}
 				UI::InputText("##newname", renameBuffer, ImGuiInputTextFlags_AutoSelectAll);
 
-				const StringView parsedNewName = Strings::RemoveFromEnd(renameBuffer, ".rf");
-				const bool nameIsEmpty         = parsedNewName.empty();
+				const StringView parsedNewName =
+				    Strings::RemoveFromEnd(p::StringView{renameBuffer}, ".rf");
+				const bool nameIsEmpty = parsedNewName.empty();
 				const Id sameNameFuncId =
 				    ast::FindChildByName(ast, p::GetIdParent(ast, item.id), Tag{parsedNewName});
 				if (nameIsEmpty || (!IsNone(sameNameFuncId) && item.id != sameNameFuncId))

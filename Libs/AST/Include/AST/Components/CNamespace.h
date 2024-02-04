@@ -68,7 +68,7 @@ namespace rift::ast
 		bool IsEmpty() const;
 		p::i32 Size() const;
 		bool Contains(const Namespace& other) const;
-		p::String ToString(bool isLocal = false) const;
+		p::String ToString(bool isLocal = false, char separator = '.') const;
 		p::Tag& First()
 		{
 			return scopes[0];

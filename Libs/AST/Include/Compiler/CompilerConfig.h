@@ -33,6 +33,7 @@ namespace rift
 
 		OptimizationLevel optimization = OptimizationLevel::Two;
 
+		bool debug   = true;
 		bool verbose = false;
 
 		Path buildPath;

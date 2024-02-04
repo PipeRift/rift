@@ -10,6 +10,7 @@
 #include <AST/Components/Tags/CInvalid.h>
 #include <AST/Id.h>
 #include <Components/Declarations.h>
+#include <Pipe/Core/Set.h>
 #include <PipeECS.h>
 
 
@@ -34,9 +35,12 @@ namespace rift::MIR
 
 	struct CGenerator
 	{
+		static const p::TSet<p::Tag> reservedNames;
+
 		Compiler& compiler;
 		MIRAccess access;
 		p::String* code = nullptr;
+
 
 		void GenerateModule(ast::Id moduleId);
 

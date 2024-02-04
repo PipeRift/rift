@@ -28,8 +28,8 @@ namespace rift::ast
 
 	p::Tag GetName(p::TAccessRef<CNamespace> access, Id id);
 	p::Tag GetNameUnsafe(p::TAccessRef<CNamespace> access, Id id);
-	p::String GetFullName(
-	    p::TAccessRef<CNamespace, CChild, CModule> access, Id id, bool localNamespace = false);
+	p::String GetFullName(p::TAccessRef<CNamespace, CChild, CModule> access, Id id,
+	    bool localNamespace = false, char separator = '.');
 }    // namespace rift::ast
 
 
