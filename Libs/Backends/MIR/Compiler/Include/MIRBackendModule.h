@@ -31,5 +31,7 @@ namespace rift
 		}
 
 		void Build(Compiler& compiler) override;
+
+		void PrintBuildFinish(Compiler& compiler) const;
 	};
 }    // namespace rift

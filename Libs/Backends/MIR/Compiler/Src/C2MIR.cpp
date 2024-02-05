@@ -83,16 +83,15 @@ namespace rift::MIR
 	    const CMIRModule& module)
 	{
 		auto getCode = [](void* data) -> p::i32 {
-			auto* codeLeft = static_cast<StringView*>(data);
-			if (codeLeft->size() > -1)
+			const char*& codeLeft = *static_cast<const char**>(data);
+			if (*codeLeft == '\0')
 			{
-				*codeLeft = Strings::RemoveFromStart(*codeLeft, 1);
-				return *codeLeft->data();
+				return EOF;
 			}
-			return EOF;
+			return *(codeLeft++);
 		};
 
-		StringView code = module.code;
+		const char* code = module.code.data();
 		if (!c2mir_compile(ctx, &options, getCode, &code, name.Data(), nullptr))
 		{
 			compiler.Error("C to MIR compilation failed");

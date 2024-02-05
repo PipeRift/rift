@@ -236,6 +236,7 @@ namespace rift
 
 		if (compiler.HasErrors())
 		{
+			PrintBuildFinish(compiler);
 			return;
 		}
 
@@ -260,6 +261,17 @@ namespace rift
 				}
 				MIR_load_module(ctx, module);
 			}
+
+			if (!mainFunc)
+			{
+				compiler.Error("Main function not found in MIR generated code.");
+			}
+		}
+
+		if (compiler.HasErrors())
+		{
+			PrintBuildFinish(compiler);
+			return;
 		}
 
 		OpenSTDLibs();
@@ -283,24 +295,29 @@ namespace rift
 
 		p::DateTime startTime = p::DateTime::Now();
 		p::i32 resultCode     = entry();    // Run!
+		MIR_gen_finish(ctx);
+
 		if (compiler.config.verbose)
 		{
 			p::Info("  execution       -- {:.3f}s\n",
 			    (p::DateTime::Now() - startTime).GetTotalSeconds());
 			p::Info("exit code: {}\n", resultCode);
 		}
-		MIR_gen_finish(ctx);
+		PrintBuildFinish(compiler);
 
+		CloseSTDLibs();
+		MIR_finish(ctx);
+	}
+
+	void MIRBackend::PrintBuildFinish(Compiler& compiler) const
+	{
 		if (!compiler.HasErrors())
 		{
 			p::Info("Build complete.");
 		}
 		else
 		{
-			p::Info("Build failed: {} errors", compiler.GetErrors().Size());
+			p::Error("Build failed: {} errors", compiler.GetErrors().Size());
 		}
-
-		CloseSTDLibs();
-		MIR_finish(ctx);
 	}
 }    // namespace rift

@@ -1,10 +1,38 @@
 
-#include <stdbool.h>
+// Struct Declarations
 
-void main()
+// Function Declarations
+
+// Struct Declarations
+typedef struct TestStruct TestStruct;
+
+// Struct Declarations
+typedef struct Welcome Welcome;
+typedef struct TestClass TestClass;
+
+// Function Declarations
+void Project_Main_Main();
+void Project_Welcome_Print(long long in1, long long in2);
+
+// Struct Definitions
+struct TestStruct
+{};
+
+// Struct Definitions
+struct Welcome
+{};
+struct TestClass
+{};
+
+// Function Definitions
+void Project_Main_Main()
 {
-	bool a = true;
-	int q  = sizeof(int);
-	int nn = 2433;
-	printf("%i", q + nn);
+	printf("hola");
+}
+void Project_Welcome_Print(long long in1, long long in2) {}
+
+int main()
+{
+	Project_Main_Main();
+	return 0;
 }
