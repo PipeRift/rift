@@ -22,4 +22,6 @@ namespace rift::UI
 	bool WantsToClose();
 
 	GLFWwindow* GetWindow();
+
+	void SetWindowIcon();
 };    // namespace rift::UI

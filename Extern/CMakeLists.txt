@@ -15,6 +15,10 @@ add_subdirectory(CLI11)
 
 
 if (RIFT_BUILD_EDITOR)
+  add_library(stb_image INTERFACE)
+  target_include_directories(stb_image INTERFACE stb)
+
+
   find_package(OpenGL REQUIRED)
   add_library(gl3w STATIC gl3w/GL/gl3w.c)
   target_include_directories(gl3w PUBLIC gl3w)

@@ -13,6 +13,7 @@ target_link_libraries(RiftUI PUBLIC
     imgui
     IconFontCppHeaders
 )
+target_link_libraries(RiftUI PRIVATE stb_image)
 target_compile_definitions(RiftUI PRIVATE NOMINMAX)
 
 rift_module(RiftUI)

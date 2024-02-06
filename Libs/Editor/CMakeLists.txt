@@ -15,4 +15,3 @@ target_link_libraries(RiftEditor PUBLIC
 
 rift_module(RiftEditor)
 rift_enable_module_resources(RiftEditor)
-set_icon(RiftEditor ../../Resources/Icon.ico)

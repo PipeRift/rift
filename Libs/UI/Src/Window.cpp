@@ -16,7 +16,11 @@
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
 #include <Pipe/Core/Log.h>
+#include <Pipe/Files/Paths.h>
 #include <PipeColor.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 
 namespace rift::UI
@@ -94,6 +98,8 @@ namespace rift::UI
 		ImGui_ImplGlfw_InitForOpenGL(gWindow, true);
 		ImGui_ImplOpenGL3_Init(glslVersion);
 
+		SetWindowIcon();
+
 		RegisterCoreKeyValueInspections();
 		return true;
 	}
@@ -163,5 +169,21 @@ namespace rift::UI
 	GLFWwindow* GetWindow()
 	{
 		return gWindow;
+	}
+
+	void SetWindowIcon()
+	{
+		p::String iconPath = p::JoinPaths(p::GetBasePath(), "Resources/Editor/Icons/Icon.png");
+		GLFWimage image;
+		image.pixels = stbi_load(
+		    iconPath.c_str(), &image.width, &image.height, nullptr, 0);    // rgba channels
+		if (image.pixels == nullptr)
+		{
+			p::Error("Window icon couldn't be loaded");
+			return;
+		}
+		glfwSetWindowIcon(gWindow, 1, &image);
+
+		stbi_image_free(image.pixels);
 	}
 }    // namespace rift::UI
