@@ -173,17 +173,27 @@ namespace rift::UI
 
 	void SetWindowIcon()
 	{
-		p::String iconPath = p::JoinPaths(p::GetBasePath(), "Resources/Editor/Icons/Icon.png");
-		GLFWimage image;
-		image.pixels = stbi_load(
-		    iconPath.c_str(), &image.width, &image.height, nullptr, 0);    // rgba channels
-		if (image.pixels == nullptr)
+		p::String icon64Path = p::JoinPaths(p::GetBasePath(), "Resources/Editor/Icons/Logo_64.png");
+		p::String icon128Path =
+		    p::JoinPaths(p::GetBasePath(), "Resources/Editor/Icons/Logo_128.png");
+		p::String icon256Path =
+		    p::JoinPaths(p::GetBasePath(), "Resources/Editor/Icons/Logo_256.png");
+		GLFWimage images[3];
+		images[0].pixels =
+		    stbi_load(icon64Path.c_str(), &images[0].width, &images[0].height, nullptr, 0);
+		images[1].pixels =
+		    stbi_load(icon128Path.c_str(), &images[1].width, &images[1].height, nullptr, 0);
+		images[2].pixels =
+		    stbi_load(icon256Path.c_str(), &images[2].width, &images[2].height, nullptr, 0);
+		if (!images[0].pixels || !images[1].pixels || !images[2].pixels)
 		{
 			p::Error("Window icon couldn't be loaded");
 			return;
 		}
-		glfwSetWindowIcon(gWindow, 1, &image);
+		glfwSetWindowIcon(gWindow, 3, images);
 
-		stbi_image_free(image.pixels);
+		stbi_image_free(images[0].pixels);
+		stbi_image_free(images[1].pixels);
+		stbi_image_free(images[2].pixels);
 	}
 }    // namespace rift::UI
