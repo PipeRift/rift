@@ -120,6 +120,8 @@ namespace rift::UI
 		    "WorkSans", UI::FontMode::Regular, 14.f, resources / "Fonts/WorkSans-Regular.ttf");
 		AddTextFont(
 		    "WorkSans", UI::FontMode::Regular, 18.f, resources / "Fonts/WorkSans-Regular.ttf");
+		AddTextFont(
+		    "WorkSans", UI::FontMode::Regular, 24.f, resources / "Fonts/WorkSans-Regular.ttf");
 
 		// Karla
 		AddTextFont("Karla", UI::FontMode::Bold, 14.f, resources / "Fonts/Karla-Bold.ttf");
