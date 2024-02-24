@@ -83,7 +83,7 @@ namespace rift::Editor
 				UI::SameLine();
 				if (UI::Button("...", p::v2{24.f, 0.f}))
 				{
-					p::Path selectedFolder =
+					p::String selectedFolder =
 					    p::files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
 					folder = p::ToString(selectedFolder);
 				}

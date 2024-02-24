@@ -363,7 +363,7 @@ namespace rift::UI
 			String str = ToString(*path);
 			if (UI::InputText("##value", str))
 			{
-				*path = p::ToPath(str);
+				*path = p::ToSTDPath(str);
 			}
 		});
 	}

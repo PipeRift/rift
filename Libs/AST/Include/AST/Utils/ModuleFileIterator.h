@@ -16,9 +16,9 @@ namespace rift::ast
 	public:
 		using Super::Super;
 
-		explicit ModuleFileIterator(const p::Path& path)
-		    : Super(path, [](const auto& path) {
-			    return path.filename() == moduleFilename;
+		explicit ModuleFileIterator(p::StringView path)
+		    : Super(path, [](p::StringView path) {
+			    return p::GetFilename(path) == moduleFilename;
 		    })
 		{}
 	};

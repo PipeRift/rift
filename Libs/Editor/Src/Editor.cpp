@@ -126,12 +126,12 @@ namespace rift::Editor
 		}
 	}
 
-	void Editor::SetUIConfigFile(Path path)
+	void Editor::SetUIConfigFile(p::StringView path)
 	{
 		if (UI::GetWindow())
 		{
 			configFileChanged          = true;
-			configFile                 = p::ToString(path);
+			configFile                 = path;
 			ImGui::GetIO().IniFilename = configFile.c_str();
 		}
 	}

@@ -18,7 +18,6 @@
 #include <thread>
 
 
-
 using namespace rift;
 
 
@@ -65,6 +64,7 @@ namespace rift
 int main(int argc, char** argv)
 {
 	p::Initialize("Saved/Logs");
+	p::Info(p::GetUserSettingsPath());
 	EnableModule<ASTModule>();
 	EnableModule<MIRBackendModule>();
 	EnableModule<GraphViewModule>();

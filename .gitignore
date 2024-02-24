@@ -3,7 +3,6 @@
 Build
 Saved
 Testing
-Extern/rift-llvm
 
 .vscode/c_cpp_properties.json
 /compile_commands.json

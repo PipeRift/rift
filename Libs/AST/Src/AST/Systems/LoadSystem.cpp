@@ -92,7 +92,7 @@ namespace rift::ast::LoadSystem
 		pathsByModule.Reserve(modules.Size());
 		for (Id moduleId : modules)
 		{
-			Path path = ast::GetModulePath(access, moduleId);
+			p::StringView path = ast::GetModulePath(access, moduleId);
 
 			auto& paths = pathsByModule.AddRef({moduleId}).paths;
 			// Iterate all types ignoring other module paths

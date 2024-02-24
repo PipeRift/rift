@@ -18,9 +18,9 @@ namespace rift
 
 		static constexpr p::StringView headerExtension = ".h";
 
-		explicit HeaderIterator(const p::Path& path)
-		    : Super(path, [](const auto& path) {
-			    return path.extension() == headerExtension;
+		explicit HeaderIterator(StringView path)
+		    : Super(path, [](StringView path) {
+			    return p::GetExtension(path) == headerExtension;
 		    })
 		{}
 	};

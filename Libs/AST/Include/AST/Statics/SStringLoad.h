@@ -11,14 +11,14 @@
 namespace rift::ast
 {
 	// Contains loaded string data from disk
-	struct SStringLoad : public Struct
+	struct SStringLoad : public p::Struct
 	{
-		P_STRUCT(SStringLoad, Struct)
+		P_STRUCT(SStringLoad, p::Struct)
 
 		// This buffers are always in sync with size
 		// They bind by array index an Id, path and loaded string
-		TArray<Id> entities;
-		TArray<p::Path> paths;
-		TArray<String> strings;
+		TArray<p::Id> entities;
+		TArray<p::String> paths;
+		TArray<p::String> strings;
 	};
 }    // namespace rift::ast

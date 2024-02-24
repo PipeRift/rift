@@ -36,9 +36,9 @@ namespace rift
 		bool debug   = true;
 		bool verbose = false;
 
-		Path buildPath;
-		Path intermediatesPath;
-		Path binariesPath;
+		String buildPath;
+		String intermediatesPath;
+		String binariesPath;
 
 		void Init(ast::Tree& ast);
 	};

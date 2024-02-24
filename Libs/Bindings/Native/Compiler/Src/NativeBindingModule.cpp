@@ -54,7 +54,7 @@ namespace rift
 		p::TAccess<ast::CFileRef> access{ast};
 		for (auto& module : parsedModules)
 		{
-			Path path = ast::GetModulePath(access, module.id);
+			StringView path = ast::GetModulePath(access, module.id);
 			for (const auto& headerPath : HeaderIterator(path))
 			{
 				module.headers.Add(p::ToString(headerPath));

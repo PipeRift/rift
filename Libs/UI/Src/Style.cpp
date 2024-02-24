@@ -71,14 +71,14 @@ namespace rift::UI
 	static TMap<Tag, FontDescriptor> gFonts{};
 
 
-	ImFont* AddFont(Path file, float size, const ImFontConfig* fontConfig = nullptr,
+	ImFont* AddFont(p::StringView file, float size, const ImFontConfig* fontConfig = nullptr,
 	    const ImWchar* glyphRanges = nullptr)
 	{
 		auto& io = ImGui::GetIO();
-		return io.Fonts->AddFontFromFileTTF(ToString(file).data(), size, fontConfig, glyphRanges);
+		return io.Fonts->AddFontFromFileTTF(file.data(), size, fontConfig, glyphRanges);
 	}
 
-	void AddTextFont(Tag name, UI::FontMode mode, float size, p::Path file)
+	void AddTextFont(Tag name, UI::FontMode mode, float size, p::StringView file)
 	{
 		FontDescriptor* font = gFonts.Find(name);
 		if (!font)
@@ -87,7 +87,7 @@ namespace rift::UI
 			font = &gFonts[name];
 		}
 
-		ImFont* imFont = AddFont(ToString(file).data(), size);
+		ImFont* imFont = AddFont(file.data(), size);
 		(*font)[mode].Add(size, imFont);
 
 		// Add Font Awesome icons
@@ -97,7 +97,8 @@ namespace rift::UI
 		iconsConfig.PixelSnapH       = true;
 		iconsConfig.GlyphMinAdvanceX = 14.f;
 		// use FONT_ICON_FILE_NAME_FAR if you want regular instead of solid
-		AddFont(file.parent_path() / FONT_ICON_FILE_NAME_FAS, 14.0f, &iconsConfig, iconsRanges);
+		p::String path = p::JoinPaths(p::GetParentPath(file), FONT_ICON_FILE_NAME_FAS);
+		AddFont(path, 14.0f, &iconsConfig, iconsRanges);
 	}
 
 	void LoadFonts()
@@ -105,33 +106,39 @@ namespace rift::UI
 		auto& io = ImGui::GetIO();
 		io.Fonts->AddFontDefault();
 
-		auto resources = rift::Paths::GetResourcesPath() / "Editor";
+		auto resources = p::JoinPaths(rift::Paths::GetResourcesPath(), "Editor");
 
 		// Work Sans
-		AddTextFont("WorkSans", UI::FontMode::Bold, 14.f, resources / "Fonts/WorkSans-Bold.ttf");
+		AddTextFont("WorkSans", UI::FontMode::Bold, 14.f,
+		    p::JoinPaths(resources, "Fonts/WorkSans-Bold.ttf"));
 		AddTextFont("WorkSans", UI::FontMode::BoldItalic, 14.f,
-		    resources / "Fonts/WorkSans-BoldItalic.ttf");
-		AddTextFont(
-		    "WorkSans", UI::FontMode::Italic, 14.f, resources / "Fonts/WorkSans-Italic.ttf");
-		AddTextFont("WorkSans", UI::FontMode::Light, 14.f, resources / "Fonts/WorkSans-Light.ttf");
+		    p::JoinPaths(resources, "Fonts/WorkSans-BoldItalic.ttf"));
+		AddTextFont("WorkSans", UI::FontMode::Italic, 14.f,
+		    p::JoinPaths(resources, "Fonts/WorkSans-Italic.ttf"));
+		AddTextFont("WorkSans", UI::FontMode::Light, 14.f,
+		    p::JoinPaths(resources, "Fonts/WorkSans-Light.ttf"));
 		AddTextFont("WorkSans", UI::FontMode::LightItalic, 14.f,
-		    resources / "Fonts/WorkSans-LightItalic.ttf");
-		AddTextFont(
-		    "WorkSans", UI::FontMode::Regular, 14.f, resources / "Fonts/WorkSans-Regular.ttf");
-		AddTextFont(
-		    "WorkSans", UI::FontMode::Regular, 18.f, resources / "Fonts/WorkSans-Regular.ttf");
-		AddTextFont(
-		    "WorkSans", UI::FontMode::Regular, 24.f, resources / "Fonts/WorkSans-Regular.ttf");
+		    p::JoinPaths(resources, "Fonts/WorkSans-LightItalic.ttf"));
+		AddTextFont("WorkSans", UI::FontMode::Regular, 14.f,
+		    p::JoinPaths(resources, "Fonts/WorkSans-Regular.ttf"));
+		AddTextFont("WorkSans", UI::FontMode::Regular, 18.f,
+		    p::JoinPaths(resources, "Fonts/WorkSans-Regular.ttf"));
+		AddTextFont("WorkSans", UI::FontMode::Regular, 24.f,
+		    p::JoinPaths(resources, "Fonts/WorkSans-Regular.ttf"));
 
 		// Karla
-		AddTextFont("Karla", UI::FontMode::Bold, 14.f, resources / "Fonts/Karla-Bold.ttf");
 		AddTextFont(
-		    "Karla", UI::FontMode::BoldItalic, 14.f, resources / "Fonts/Karla-BoldItalic.ttf");
-		AddTextFont("Karla", UI::FontMode::Italic, 14.f, resources / "Fonts/Karla-Italic.ttf");
-		AddTextFont("Karla", UI::FontMode::Light, 14.f, resources / "Fonts/Karla-Light.ttf");
+		    "Karla", UI::FontMode::Bold, 14.f, p::JoinPaths(resources, "Fonts/Karla-Bold.ttf"));
+		AddTextFont("Karla", UI::FontMode::BoldItalic, 14.f,
+		    p::JoinPaths(resources, "Fonts/Karla-BoldItalic.ttf"));
 		AddTextFont(
-		    "Karla", UI::FontMode::LightItalic, 14.f, resources / "Fonts/Karla-LightItalic.ttf");
-		AddTextFont("Karla", UI::FontMode::Regular, 14.f, resources / "Fonts/Karla-Regular.ttf");
+		    "Karla", UI::FontMode::Italic, 14.f, p::JoinPaths(resources, "Fonts/Karla-Italic.ttf"));
+		AddTextFont(
+		    "Karla", UI::FontMode::Light, 14.f, p::JoinPaths(resources, "Fonts/Karla-Light.ttf"));
+		AddTextFont("Karla", UI::FontMode::LightItalic, 14.f,
+		    p::JoinPaths(resources, "Fonts/Karla-LightItalic.ttf"));
+		AddTextFont("Karla", UI::FontMode::Regular, 14.f,
+		    p::JoinPaths(resources, "Fonts/Karla-Regular.ttf"));
 
 		io.Fonts->Build();
 	}

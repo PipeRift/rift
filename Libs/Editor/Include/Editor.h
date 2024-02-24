@@ -39,7 +39,7 @@ namespace rift::Editor
 
 		void Tick();
 
-		void SetUIConfigFile(p::Path path);
+		void SetUIConfigFile(p::StringView path);
 
 		static Editor& Get()
 		{

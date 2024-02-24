@@ -169,7 +169,7 @@ namespace rift::Editor
 
 			if (UI::MenuItem("Create folder"))
 			{
-				p::CreateFolder(p::ToPath(path) / "NewFolder");
+				p::CreateFolder(p::JoinPaths(path, "NewFolder"));
 			}
 		}
 
@@ -421,7 +421,7 @@ namespace rift::Editor
 					p::ReplaceExtension(destination, "rf");
 					// TODO: Move this into systems. Renaming a type shouldnt require so many
 					// manual steps
-					if (files::Rename(p::ToPath(path), destination))
+					if (files::Rename(path, destination))
 					{
 						if (auto* file = ast.TryGet<ast::CFileRef>(item.id))
 						{
@@ -488,7 +488,7 @@ namespace rift::Editor
 
 		String data;
 		ast::SerializeType(ast, id, data);
-		files::SaveStringFile(path, data);
+		files::SaveStringFile(StringView{path}, data);
 
 		// Destroy the temporal type after saving it
 		ast.Destroy(id);

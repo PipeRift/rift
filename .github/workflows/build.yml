@@ -10,9 +10,6 @@ on:
   pull_request:
   workflow_call:
 
-env:
-  cache-version: 0
-
 jobs:
   Build:
     name: ${{ matrix.os-name }} (${{ matrix.compiler }}, ${{ matrix.config }})
@@ -32,34 +29,33 @@ jobs:
           - name: windows-clang
             os: windows-latest
             os-name: windows
-            compiler: clang
+            compiler: clang-16
             cxx: clang-cl
             cc: clang-cl
           - name: linux-clang
             os: ubuntu-latest
             os-name: linux
-            compiler: clang
+            compiler: clang-16
             cxx: clang++
             cc: clang
           - name: linux-gcc
             os: ubuntu-latest
             os-name: linux
-            compiler: gcc
-            cxx: g++-13
-            cc: gcc-13
+            compiler: gcc-13
+            cxx: g++
+            cc: gcc
           - name: macos-clang
-            os: macos-latest
+            os: macos-14
             os-name: macos
-            compiler: clang
+            compiler: clang-16
             cxx: clang++
             cc: clang
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Init Submodules
-        uses: snickerbockers/submodules-init@v4
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
 
       - name: Install dependencies
         if: ${{ matrix.os-name == 'linux'}}
@@ -67,42 +63,29 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential xz-utils curl libx11-dev xorg-dev libglu1-mesa-dev
 
-      - uses: ilammy/msvc-dev-cmd@v1
-        if: ${{ matrix.compiler == 'msvc' }}
-
-      - name: Cache LLVM
-        if: ${{ matrix.compiler == 'clang' }}
-        id: cache-llvm
-        uses: actions/cache@v2
+      - name: Setup Cpp
+        uses: aminya/setup-cpp@v1
         with:
-          path: ${{ runner.temp }}/llvm
-          key: llvm-15.0-${{ matrix.os-name }}
-      - name: Install LLVM
-        if: ${{ matrix.compiler == 'clang' }}
-        uses: KyleMayes/install-llvm-action@v1
-        with:
-          version: "15.0"
-          directory: ${{ runner.temp }}/llvm
-          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
-
-      - name: Get CMake
-        uses: lukka/get-cmake@latest
+          compiler: ${{ matrix.compiler }}
+          vcvarsall: ${{ matrix.os-name == 'windows' }}
+          cmake: true
+          ninja: true
 
       - name: Cache Build
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: Build
           key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
 
       - name: Configure
-        run: cmake -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/rift/llvm'
+        run: cmake -GNinja -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DRIFT_LLVM_PATH='${{ runner.temp }}/rift/llvm'
 
       - name: Build
         run: cmake --build Build --config ${{ matrix.config }}
 
       - name: Upload binaries as artifacts
-        uses: actions/upload-artifact@v2
-        if: ${{ matrix.config == 'Release' && matrix.compiler == 'clang' }} # Only clang artifacts are stored
+        uses: actions/upload-artifact@v3
+        if: ${{ matrix.config == 'Release' && contains(matrix.compiler, 'clang') }} # Only clang artifacts are stored
         with:
           name: rift-${{ matrix.os-name }}
           path: Build/Bin

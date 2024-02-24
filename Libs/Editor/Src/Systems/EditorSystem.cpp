@@ -273,7 +273,7 @@ namespace rift::Editor::EditorSystem
 				if (UI::MenuItem("Open File")) {}
 				if (UI::MenuItem(ICON_FA_SAVE " Save All", "CTRL+SHFT+S"))
 				{
-					TArray<TPair<Path, String>> fileDatas;
+					TArray<TPair<String, String>> fileDatas;    // Path to file data
 
 					auto dirtyTypeIds =
 					    FindAllIdsWith<ast::CDeclType, CTypeEditor, ast::CFileRef, ast::CFileDirty>(
@@ -391,7 +391,7 @@ namespace rift::Editor::EditorSystem
 				String data;
 				ast::SerializeModule(ast, moduleId, data);
 
-				files::SaveStringFile(file.path, data);
+				files::SaveStringFile(StringView(file.path), data);
 				ast.Remove<ast::CFileDirty>(moduleId);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
@@ -497,7 +497,7 @@ namespace rift::Editor::EditorSystem
 				String data;
 				ast::SerializeType(ast, typeId, data);
 
-				files::SaveStringFile(file.path, data);
+				files::SaveStringFile(StringView(file.path), data);
 				ast.Remove<ast::CFileDirty>(typeId);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
