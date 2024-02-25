@@ -17,7 +17,9 @@
 #include <GLFW/glfw3.h>
 #include <Pipe/Core/Log.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/Files/PlatformPaths.h>
 #include <PipeColor.h>
+
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -173,11 +175,12 @@ namespace rift::UI
 
 	void SetWindowIcon()
 	{
-		p::String icon64Path = p::JoinPaths(p::GetBasePath(), "Resources/Editor/Icons/Logo_64.png");
+		p::String icon64Path =
+		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_64.png");
 		p::String icon128Path =
-		    p::JoinPaths(p::GetBasePath(), "Resources/Editor/Icons/Logo_128.png");
+		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_128.png");
 		p::String icon256Path =
-		    p::JoinPaths(p::GetBasePath(), "Resources/Editor/Icons/Logo_256.png");
+		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_256.png");
 		GLFWimage images[3];
 		images[0].pixels =
 		    stbi_load(icon64Path.c_str(), &images[0].width, &images[0].height, nullptr, 0);

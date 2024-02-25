@@ -3,7 +3,8 @@
 #include "Editor.h"
 #include "Utils/ElementsPanel.h"
 
-#include <Pipe/Files/FileDialog.h>
+#include <Pipe/Files/PlatformPaths.h>
+#include <PipeFiles.h>
 #include <UI/Notify.h>
 #include <UI/UI.h>
 
@@ -83,8 +84,8 @@ namespace rift::Editor
 				UI::SameLine();
 				if (UI::Button("...", p::v2{24.f, 0.f}))
 				{
-					p::String selectedFolder =
-					    p::files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
+					p::String selectedFolder = p::SelectFolderDialog(
+					    "Select project folder", p::PlatformPaths::GetCurrentPath());
 					folder = p::ToString(selectedFolder);
 				}
 			}
@@ -93,8 +94,8 @@ namespace rift::Editor
 			ImGui::TableNextColumn();
 			if (UI::Button("Open", p::v2{-FLT_MIN, 0.0f}))
 			{
-				p::String folder =
-				    p::files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
+				p::String folder = p::SelectFolderDialog(
+				    "Select project folder", p::PlatformPaths::GetCurrentPath());
 				if (Editor::Get().OpenProject(folder))
 				{
 					UI::CloseCurrentPopup();

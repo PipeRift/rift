@@ -1,7 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Files/FileWatcher.h"
+#include "PipeFiles.h"
 
 #include <AST/Tree.h>
 #include <Pipe/Files/Paths.h>

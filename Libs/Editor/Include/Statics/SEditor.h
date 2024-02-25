@@ -9,10 +9,11 @@
 #include "Tools/MemoryDebugger.h"
 #include "Tools/ReflectionDebugger.h"
 
-#include <Pipe/Files/FileWatcher.h>
 #include <Pipe/Memory/OwnPtr.h>
 #include <Pipe/Reflect/Struct.h>
+#include <PipeFiles.h>
 #include <UI/UI.h>
+
 
 
 namespace rift::Editor

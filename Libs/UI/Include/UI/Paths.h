@@ -8,4 +8,5 @@
 namespace rift::Paths
 {
 	p::String GetResourcesPath();
+	p::String GetUserSettingsPath();
 };    // namespace rift::Paths

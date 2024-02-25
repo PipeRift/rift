@@ -6,10 +6,12 @@
 #include <bandit/bandit.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/Files/PlatformPaths.h>
 #include <Pipe/Memory/OwnPtr.h>
 
 #include <chrono>
 #include <thread>
+
 
 
 using namespace snowhouse;
@@ -18,7 +20,7 @@ using namespace rift;
 using namespace p;
 using namespace std::chrono_literals;
 
-String testProjectPath = p::JoinPaths(GetCurrentPath(), "TestProject");
+String testProjectPath = p::JoinPaths(PlatformPaths::GetCurrentPath(), "TestProject");
 
 
 go_bandit([]() {

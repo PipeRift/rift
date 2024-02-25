@@ -26,10 +26,11 @@
 #include <Compiler/Compiler.h>
 #include <IconsFontAwesome5.h>
 #include <MIRBackendModule.h>
-#include <Pipe/Files/FileDialog.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/Files/PlatformPaths.h>
 #include <PipeArrays.h>
 #include <PipeECS.h>
+#include <PipeFiles.h>
 #include <Rift.h>
 #include <UI/Inspection.h>
 #include <UI/Notify.h>
@@ -257,8 +258,8 @@ namespace rift::Editor::EditorSystem
 			{
 				if (UI::MenuItem("Open Project"))
 				{
-					const p::String folder =
-					    files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
+					const p::String folder = p::SelectFolderDialog(
+					    "Select project folder", p::PlatformPaths::GetCurrentPath());
 					if (Editor::Get().OpenProject(folder))
 					{
 						editorData.skipFrameAfterMenu = true;

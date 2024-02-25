@@ -9,9 +9,9 @@
 
 namespace rift::ast
 {
-	class TypeIterator : public p::LambdaFileIterator<p::RecursiveIterator>
+	class TypeIterator : public p::LambdaFileIterator<p::RecursivePathIterator>
 	{
-		using Super = p::LambdaFileIterator<p::RecursiveIterator>;
+		using Super = p::LambdaFileIterator<p::RecursivePathIterator>;
 
 	public:
 		using Super::Super;

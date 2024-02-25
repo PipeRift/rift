@@ -11,11 +11,13 @@
 #include <MIRBackendModule.h>
 #include <Pipe.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/Files/PlatformPaths.h>
 #include <Rift.h>
 
 #include <chrono>
 #include <CLI/CLI.hpp>
 #include <thread>
+
 
 
 using namespace rift;
@@ -64,7 +66,7 @@ namespace rift
 int main(int argc, char** argv)
 {
 	p::Initialize("Saved/Logs");
-	p::Info(p::GetUserSettingsPath());
+	p::Info(p::PlatformPaths::GetUserSettingsPath());
 	EnableModule<ASTModule>();
 	EnableModule<MIRBackendModule>();
 	EnableModule<GraphViewModule>();

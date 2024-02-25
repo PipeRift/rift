@@ -18,12 +18,12 @@
 #include <IconsFontAwesome5.h>
 #include <imgui_internal.h>
 #include <Pipe/Core/FixedString.h>
-#include <Pipe/Core/PlatformProcess.h>
 #include <Pipe/Core/StringView.h>
-#include <Pipe/Files/FileDialog.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/Files/PlatformPaths.h>
 #include <Pipe/Files/STDFileSystem.h>
+#include <PipeFiles.h>
 #include <Rift.h>
 #include <UI/Style.h>
 #include <UI/UI.h>
@@ -175,7 +175,7 @@ namespace rift::Editor
 
 		if (UI::MenuItem("Show in Explorer"))
 		{
-			PlatformProcess::ShowFolder(path);
+			PlatformPaths::ShowFolder(path);
 		}
 	}
 
@@ -478,7 +478,7 @@ namespace rift::Editor
 	void FileExplorerPanel::CreateType(
 	    ast::Tree& ast, StringView title, p::Tag typeId, p::StringView folderPath)
 	{
-		const p::String path = files::SaveFileDialog(title, folderPath,
+		const p::String path = p::SaveFileDialog(title, folderPath,
 		    {
 		        {"Rift Type", Strings::Format("*.{}", Paths::typeExtension)}
         },
