@@ -26,7 +26,7 @@ int RunEditor(StringView projectPath)
 	EnableModule<MIRBackendModule>();
 	EnableModule<GraphViewModule>();
 
-	const int result = Editor::Editor::Get().Run(projectPath);
+	const int result = editor::Editor::Get().Run(projectPath);
 	p::Shutdown();
 	return result;
 }

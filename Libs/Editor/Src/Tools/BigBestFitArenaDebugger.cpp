@@ -12,7 +12,7 @@
 #include <imgui_internal.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	static constexpr Color gFreeColor{210, 56, 41};    // Red
 	static constexpr Color gUsedColor{56, 210, 41};    // Green
@@ -216,4 +216,4 @@ namespace rift::Editor
 			UI::End();
 		}
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

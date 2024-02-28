@@ -39,30 +39,30 @@ namespace rift::ast
 		}
 	};
 
-	bool CreateProject(Tree& ast, StringView path);
-	bool OpenProject(Tree& ast, StringView path);
+	bool CreateProject(Tree& ast, p::StringView path);
+	bool OpenProject(Tree& ast, p::StringView path);
 	void CloseProject(Tree& ast);
 
-	Id CreateModule(Tree& ast, StringView path);
+	Id CreateModule(Tree& ast, p::StringView path);
 
 	Id GetProjectId(p::TAccessRef<CProject> access);
 
-	Tag GetProjectName(p::TAccessRef<CProject, CNamespace, CFileRef> access);
+	p::Tag GetProjectName(p::TAccessRef<CProject, CNamespace, CFileRef> access);
 	p::StringView GetProjectPath(p::TAccessRef<CFileRef, CProject> access);
 	CModule* GetProjectModule(p::TAccessRef<CProject, p::TWrite<CModule>> access);
 
 	bool HasProject(Tree& ast);
 
 	// Resolve a module's name
-	Tag GetModuleName(p::TAccessRef<CNamespace, CFileRef> access, Id moduleId);
+	p::Tag GetModuleName(p::TAccessRef<CNamespace, CFileRef> access, Id moduleId);
 
 	// Resolve a module's name
 	p::StringView GetModulePath(p::TAccessRef<CFileRef> access, Id moduleId);
 
-	void SerializeModule(ast::Tree& ast, ast::Id id, String& data);
-	void DeserializeModule(ast::Tree& ast, ast::Id id, const String& data);
-	const TBroadcast<p::EntityReader&>& OnReadModulePools();
-	const TBroadcast<p::EntityWriter&>& OnWriteModulePools();
+	void SerializeModule(ast::Tree& ast, ast::Id id, p::String& data);
+	void DeserializeModule(ast::Tree& ast, ast::Id id, const p::String& data);
+	const p::TBroadcast<p::EntityReader&>& OnReadModulePools();
+	const p::TBroadcast<p::EntityWriter&>& OnWriteModulePools();
 
 	void RegisterModuleBinding(ModuleBinding binding);
 	void UnregisterModuleBinding(p::Tag bindingId);

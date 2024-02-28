@@ -16,9 +16,6 @@
 
 namespace rift::UI
 {
-	using namespace p;
-
-
 	struct FontType
 	{
 		TArray<TPair<float, ImFont*>> sizes{};

@@ -13,7 +13,7 @@
 #include <PipeECS.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	// Forward declarations
 	class ProjectEditor;
@@ -88,4 +88,4 @@ namespace rift::Editor
 	{
 		return static_cast<p::u32>(filter);
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

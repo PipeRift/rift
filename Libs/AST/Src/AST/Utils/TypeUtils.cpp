@@ -66,7 +66,7 @@ namespace rift::ast
 		return id;
 	}
 
-	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access,
+	void RemoveTypes(p::TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access,
 	    TView<Id> typeIds, bool removeFromDisk)
 	{
 		if (removeFromDisk)
@@ -75,7 +75,7 @@ namespace rift::ast
 			{
 				if (const auto* file = access.TryGet<const CFileRef>(id))
 				{
-					files::Delete(file->path, true, false);
+					Delete(file->path, true, false);
 				}
 			}
 		}
@@ -131,22 +131,22 @@ namespace rift::ast
 		return NoId;
 	}
 
-	bool IsClassType(TAccessRef<CDeclClass> access, Id typeId)
+	bool IsClassType(p::TAccessRef<CDeclClass> access, Id typeId)
 	{
 		return access.Has<CDeclClass>(typeId);
 	}
 
-	bool IsStructType(TAccessRef<CDeclStruct> access, Id typeId)
+	bool IsStructType(p::TAccessRef<CDeclStruct> access, Id typeId)
 	{
 		return access.Has<CDeclStruct>(typeId);
 	}
 
-	bool IsStaticType(TAccessRef<CDeclStatic> access, Id typeId)
+	bool IsStaticType(p::TAccessRef<CDeclStatic> access, Id typeId)
 	{
 		return access.Has<CDeclStatic>(typeId);
 	}
 
-	bool HasVariables(TAccessRef<CDeclType> access, Id typeId)
+	bool HasVariables(p::TAccessRef<CDeclType> access, Id typeId)
 	{
 		if (const RiftType* fileType = FindFileType(access, typeId))
 		{
@@ -155,7 +155,7 @@ namespace rift::ast
 		return false;
 	}
 
-	bool HasFunctions(TAccessRef<CDeclType> access, Id typeId)
+	bool HasFunctions(p::TAccessRef<CDeclType> access, Id typeId)
 	{
 		if (const RiftType* fileType = FindFileType(access, typeId))
 		{
@@ -164,7 +164,7 @@ namespace rift::ast
 		return false;
 	}
 
-	bool HasFunctionBodies(TAccessRef<CDeclType> access, Id typeId)
+	bool HasFunctionBodies(p::TAccessRef<CDeclType> access, Id typeId)
 	{
 		if (const RiftType* fileType = FindFileType(access, typeId))
 		{
@@ -423,7 +423,7 @@ namespace rift::ast
 		return id;
 	}
 
-	Id FindChildByName(TAccessRef<CNamespace, CParent> access, Id ownerId, Tag functionName)
+	Id FindChildByName(p::TAccessRef<CNamespace, CParent> access, Id ownerId, Tag functionName)
 	{
 		if (!IsNone(ownerId))
 		{
@@ -447,7 +447,8 @@ namespace rift::ast
 		p::RemoveId(access, ids, true);
 	}
 
-	bool CopyExpressionType(TAccessRef<TWrite<CExprTypeId>> access, Id sourcePinId, Id targetPinId)
+	bool CopyExpressionType(
+	    p::TAccessRef<TWrite<CExprTypeId>> access, Id sourcePinId, Id targetPinId)
 	{
 		auto* sourceType = access.TryGet<const CExprTypeId>(sourcePinId);
 		auto* targetType = access.TryGet<CExprTypeId>(targetPinId);

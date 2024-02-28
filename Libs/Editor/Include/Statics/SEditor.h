@@ -15,8 +15,7 @@
 #include <UI/UI.h>
 
 
-
-namespace rift::Editor
+namespace rift::editor
 {
 	struct SEditor : public Struct
 	{
@@ -42,4 +41,4 @@ namespace rift::Editor
 
 	inline const Tag SEditor::leftNode{"leftNode"};
 	inline const Tag SEditor::centralNode{"centralNode"};
-}    // namespace rift::Editor
+}    // namespace rift::editor

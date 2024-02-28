@@ -13,8 +13,8 @@ namespace rift::MIR
 {
 	struct OptionsData
 	{
-		TArray<const char*> headers;
-		TArray<c2mir_macro_command> definitions;
+		p::TArray<const char*> headers;
+		p::TArray<c2mir_macro_command> definitions;
 	};
 
 	void InitCToMIROptions(

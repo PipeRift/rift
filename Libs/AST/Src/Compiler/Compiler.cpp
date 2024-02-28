@@ -59,8 +59,8 @@ namespace rift
 		p::Info("Building project '{}'", ast::GetProjectName(compiler.ast));
 		// Clean build folders
 		p::Info("Cleaning previous build");
-		files::Delete(compiler.config.binariesPath, true, false);
-		files::CreateFolder(compiler.config.binariesPath, true);
+		Delete(compiler.config.binariesPath, true, false);
+		CreateFolder(compiler.config.binariesPath, true);
 
 		backend->Build(compiler);
 	}

@@ -12,8 +12,6 @@
 
 namespace rift
 {
-	using namespace p;
-
 	enum class OptimizationLevel : p::u8
 	{
 		Zero = 0,    // Only register allocator and machine code generator work
@@ -36,9 +34,9 @@ namespace rift
 		bool debug   = true;
 		bool verbose = false;
 
-		String buildPath;
-		String intermediatesPath;
-		String binariesPath;
+		p::String buildPath;
+		p::String intermediatesPath;
+		p::String binariesPath;
 
 		void Init(ast::Tree& ast);
 	};

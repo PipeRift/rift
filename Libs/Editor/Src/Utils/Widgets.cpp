@@ -5,7 +5,7 @@
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	void ListTypesFromFilter(p::TAccessRef<ast::CNamespace> access, p::TArray<ast::Id> typeIds,
 	    ast::Id& selectedId, ImGuiTextFilter& searchFilter)
@@ -102,4 +102,4 @@ namespace rift::Editor
 	{
 		return false;
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

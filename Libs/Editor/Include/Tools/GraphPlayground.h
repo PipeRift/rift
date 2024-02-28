@@ -7,7 +7,7 @@
 #include <Utils/NodesInternal.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	struct GraphPlayground
 	{
@@ -20,4 +20,4 @@ namespace rift::Editor
 
 		void Draw(ast::Tree& ast, struct DockSpaceLayout& layout);
 	};
-}    // namespace rift::Editor
+}    // namespace rift::editor

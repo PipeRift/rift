@@ -13,7 +13,6 @@
 #include <thread>
 
 
-
 using namespace snowhouse;
 using namespace bandit;
 using namespace rift;
@@ -26,20 +25,20 @@ String testProjectPath = p::JoinPaths(PlatformPaths::GetCurrentPath(), "TestProj
 go_bandit([]() {
 	describe("Project", []() {
 		before_each([]() {
-			files::Delete(testProjectPath, true, false);
+			Delete(testProjectPath, true, false);
 
-			if (!files::ExistsAsFolder(testProjectPath))
+			if (!ExistsAsFolder(testProjectPath))
 			{
-				files::CreateFolder(testProjectPath);
+				CreateFolder(testProjectPath);
 			}
 		});
 
 		after_each([]() {
-			files::Delete(testProjectPath);
+			Delete(testProjectPath);
 		});
 
 		it("Can load empty descriptor", [&]() {
-			files::SaveStringFile(p::JoinPaths(testProjectPath, ast::moduleFilename), "{}");
+			SaveStringFile(p::JoinPaths(testProjectPath, ast::moduleFilename), "{}");
 
 			ast::Tree ast;
 			bool result = ast::OpenProject(ast, testProjectPath);
@@ -48,7 +47,7 @@ go_bandit([]() {
 		});
 
 		it("Project name equals the folder", [&]() {
-			files::SaveStringFile(p::JoinPaths(testProjectPath, ast::moduleFilename), "{}");
+			SaveStringFile(p::JoinPaths(testProjectPath, ast::moduleFilename), "{}");
 
 			ast::Tree ast;
 			bool result = ast::OpenProject(ast, testProjectPath);
@@ -62,7 +61,7 @@ go_bandit([]() {
 		// TODO: Fix module loading. They can't load from CFileRef pointing to the folder and not
 		// the file
 		it("Project name can be overriden", [&]() {
-			files::SaveStringFile(
+			SaveStringFile(
 			    p::JoinPaths(testProjectPath, ast::moduleFilename), "{\"name\": \"SomeProject\"}");
 
 			ast::Tree ast;

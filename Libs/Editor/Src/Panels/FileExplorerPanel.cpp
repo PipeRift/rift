@@ -29,7 +29,7 @@
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	void FileExplorerPanel::Draw(ast::Tree& ast)
 	{
@@ -421,7 +421,7 @@ namespace rift::Editor
 					p::ReplaceExtension(destination, "rf");
 					// TODO: Move this into systems. Renaming a type shouldnt require so many
 					// manual steps
-					if (files::Rename(path, destination))
+					if (Rename(path, destination))
 					{
 						if (auto* file = ast.TryGet<ast::CFileRef>(item.id))
 						{
@@ -488,7 +488,7 @@ namespace rift::Editor
 
 		String data;
 		ast::SerializeType(ast, id, data);
-		files::SaveStringFile(StringView{path}, data);
+		SaveStringFile(StringView{path}, data);
 
 		// Destroy the temporal type after saving it
 		ast.Destroy(id);
@@ -496,4 +496,4 @@ namespace rift::Editor
 		// Mark path to be opened later once the type has loaded
 		pendingOpenCreatedPath = path;
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

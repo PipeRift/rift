@@ -11,7 +11,7 @@
 #include <PipeECS.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	void DrawDetailsPanel(ast::Tree& ast, ast::Id typeId);
-}    // namespace rift::Editor
+}    // namespace rift::editor

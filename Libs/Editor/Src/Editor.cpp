@@ -20,7 +20,7 @@
 #include <UI/Window.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	void RegisterKeyValueInspections()
 	{
@@ -204,7 +204,7 @@ namespace rift::Editor
 				return;
 			}
 
-			if (files::ExistsAsFile(configFile))
+			if (ExistsAsFile(configFile))
 			{
 				// FIX: Delay this until new frame (essentially, not while already drawing)
 				ImGui::LoadIniSettingsFromDisk(configFile.c_str());
@@ -216,4 +216,4 @@ namespace rift::Editor
 			configFileChanged = false;
 		}
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

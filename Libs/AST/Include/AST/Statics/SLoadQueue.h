@@ -13,7 +13,7 @@ namespace rift::ast
 	{
 		P_STRUCT(SLoadQueue, p::Struct)
 
-		TArray<Id> pendingSyncLoad;
-		TArray<Id> pendingAsyncLoad;
+		p::TArray<Id> pendingSyncLoad;
+		p::TArray<Id> pendingAsyncLoad;
 	};
 }    // namespace rift::ast

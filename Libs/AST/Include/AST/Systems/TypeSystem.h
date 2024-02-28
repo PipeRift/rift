@@ -15,19 +15,16 @@ namespace rift::ast
 
 namespace rift::ast::TypeSystem
 {
-	using namespace p;
-
-
 	void Init(Tree& ast);
 
 	using PropagateVariableTypesAccess =
-	    TAccessRef<CExprDeclRefId, CDeclVariable, TWrite<CExprTypeId>>;
+	    p::TAccessRef<CExprDeclRefId, CDeclVariable, p::TWrite<CExprTypeId>>;
 	void PropagateVariableTypes(PropagateVariableTypesAccess access);
 
-	using PropagateExpressionTypesAccess = TAccessRef<CDeclType, CChanged, CExprInputs,
-	    CExprOutputs, TWrite<CExprTypeId>, CExprUnaryOperator, CExprBinaryOperator, CParent>;
+	using PropagateExpressionTypesAccess = p::TAccessRef<CDeclType, CChanged, CExprInputs,
+	    CExprOutputs, p::TWrite<CExprTypeId>, CExprUnaryOperator, CExprBinaryOperator, p::CParent>;
 	void PropagateExpressionTypes(PropagateExpressionTypesAccess access);
 
 	void ResolveExprTypeIds(
-	    TAccessRef<TWrite<CExprTypeId>, CExprType, CNamespace, CParent, CChild> access);
+	    p::TAccessRef<p::TWrite<CExprTypeId>, CExprType, CNamespace, p::CParent, p::CChild> access);
 }    // namespace rift::ast::TypeSystem

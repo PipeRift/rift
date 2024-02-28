@@ -8,7 +8,7 @@
 #include <Utils/Nodes.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	const Color GetTypeColor(const ast::Tree& ast, ast::Id id)
 	{
@@ -78,4 +78,4 @@ namespace rift::Editor
 	{
 		Nodes::PopStyleColor(3);
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

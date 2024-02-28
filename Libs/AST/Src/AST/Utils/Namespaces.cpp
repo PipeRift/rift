@@ -12,10 +12,10 @@
 
 namespace rift::ast
 {
-	Namespace GetNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id)
+	Namespace GetNamespace(p::TAccessRef<CNamespace, CChild, CModule> access, Id id)
 	{
 		Namespace ns;
-		TArray<Id> idChain;
+		p::TArray<Id> idChain;
 		idChain.Reserve(Namespace::scopeCount);
 
 		while (!IsNone(id))
@@ -28,7 +28,7 @@ namespace rift::ast
 			id = p::GetIdParent(access, id);
 		}
 
-		i32 i, scopeIndex = 0;
+		p::i32 i, scopeIndex = 0;
 		for (i = idChain.Size() - 1; i >= 0 && scopeIndex < Namespace::scopeCount; --i)
 		{
 			ns.scopes[scopeIndex] = GetName(access, idChain[i]);
@@ -38,7 +38,7 @@ namespace rift::ast
 		return ns;
 	}
 
-	Namespace GetParentNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id)
+	Namespace GetParentNamespace(p::TAccessRef<CNamespace, CChild, CModule> access, Id id)
 	{
 		if (!IsNone(id))
 		{
@@ -47,21 +47,21 @@ namespace rift::ast
 		return {};
 	}
 
-	Id FindIdFromNamespace(TAccessRef<CNamespace, CChild, CParent> access, const Namespace& ns,
-	    const TArray<Id>* rootIds)
+	Id FindIdFromNamespace(p::TAccessRef<CNamespace, CChild, CParent> access, const Namespace& ns,
+	    const p::TArray<Id>* rootIds)
 	{
-		TArray<Id> localRoots;
+		p::TArray<Id> localRoots;
 		if (!rootIds)
 		{
-			localRoots = FindAllIdsWith<CNamespace>(access);
-			ExcludeIdsWith<CChild>(access, localRoots);
+			localRoots = p::FindAllIdsWith<CNamespace>(access);
+			p::ExcludeIdsWith<CChild>(access, localRoots);
 			rootIds = &localRoots;
 		}
 
-		const TArray<Id>* scopeIds = rootIds;
-		Id foundScopeId            = NoId;
-		Tag scopeName;
-		i32 depth = 0;
+		const p::TArray<Id>* scopeIds = rootIds;
+		Id foundScopeId               = NoId;
+		p::Tag scopeName;
+		p::i32 depth = 0;
 		while (scopeIds && depth < Namespace::scopeCount)
 		{
 			scopeName = ns[depth];
@@ -95,18 +95,18 @@ namespace rift::ast
 		return foundScopeId;
 	}
 
-	Tag GetName(TAccessRef<CNamespace> access, Id id)
+	p::Tag GetName(p::TAccessRef<CNamespace> access, Id id)
 	{
 		auto* ns = access.TryGet<const CNamespace>(id);
-		return ns ? ns->name : Tag::None();
+		return ns ? ns->name : p::Tag::None();
 	}
-	Tag GetNameUnsafe(TAccessRef<CNamespace> access, Id id)
+	p::Tag GetNameUnsafe(p::TAccessRef<CNamespace> access, Id id)
 	{
 		return access.Get<const CNamespace>(id).name;
 	}
 
-	p::String GetFullName(
-	    TAccessRef<CNamespace, CChild, CModule> access, Id id, bool localNamespace, char separator)
+	p::String GetFullName(p::TAccessRef<CNamespace, CChild, CModule> access, Id id,
+	    bool localNamespace, char separator)
 	{
 		return GetNamespace(access, id).ToString(localNamespace, separator);
 	}

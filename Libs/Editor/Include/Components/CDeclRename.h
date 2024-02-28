@@ -9,7 +9,7 @@
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	struct CDeclRename : public p::Struct
 	{
@@ -18,4 +18,4 @@ namespace rift::Editor
 		// Renaming uses this buffer to temporarely store the name being edited
 		p::String buffer;
 	};
-}    // namespace rift::Editor
+}    // namespace rift::editor

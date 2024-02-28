@@ -21,7 +21,7 @@
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	void EditFunctionPin(ast::Tree& ast, ast::Id ownerId, ast::Id id)
 	{
@@ -71,7 +71,7 @@ namespace rift::Editor
 		labelId.clear();
 		Strings::FormatTo(labelId, "##Type_{}", id);
 		UI::SetNextItemWidth(-FLT_MIN);
-		if (Editor::TypeCombo(ast, labelId, typeId))
+		if (editor::TypeCombo(ast, labelId, typeId))
 		{
 			ScopedChange(ast, id);
 			ast.GetOrAdd<ast::CExprTypeId>(id).id = typeId;
@@ -217,4 +217,4 @@ namespace rift::Editor
 		}
 		UI::End();
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

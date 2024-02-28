@@ -27,9 +27,6 @@
 
 namespace rift::UI
 {
-	using namespace p;
-
-
 	static GLFWwindow* gWindow = nullptr;
 
 	void OnGl3WError(int error, const char* description)

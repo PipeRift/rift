@@ -8,8 +8,7 @@
 #include <PipeVectors.h>
 
 
-
-namespace rift::Editor
+namespace rift::editor
 {
 	using namespace p;
 
@@ -61,4 +60,4 @@ namespace rift::Editor
 		BigBestFitArenaDebugger();
 		void Draw();
 	};
-}    // namespace rift::Editor
+}    // namespace rift::editor

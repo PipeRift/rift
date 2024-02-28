@@ -35,31 +35,31 @@ namespace rift::ast::LoadSystem
 
 	void LoadSubmodules(Tree& ast)
 	{
-		TArray<String> paths;
+		p::TArray<p::String> paths;
 		ScanSubmodules(ast, paths);
 
-		TArray<Id> idsToLoad;
+		p::TArray<Id> idsToLoad;
 		CreateModulesFromPaths(ast, paths, idsToLoad);
 
-		TArray<String> strings;
+		p::TArray<p::String> strings;
 		LoadFileStrings(ast, idsToLoad, strings);
 		DeserializeModules(ast, idsToLoad, strings);
 	}
 
 	void LoadTypes(Tree& ast)
 	{
-		TArray<ModuleTypePaths> pathsByModule;
+		p::TArray<ModuleTypePaths> pathsByModule;
 		ScanTypes(ast, pathsByModule);
 
-		TArray<Id> idsToLoad;
+		p::TArray<Id> idsToLoad;
 		CreateTypesFromPaths(ast, pathsByModule, idsToLoad);
 
-		TArray<String> strings;
+		p::TArray<p::String> strings;
 		LoadFileStrings(ast, idsToLoad, strings);
 		DeserializeTypes(ast, idsToLoad, strings);
 	}
 
-	void ScanSubmodules(Tree& ast, TArray<String>& paths)
+	void ScanSubmodules(Tree& ast, p::TArray<p::String>& paths)
 	{
 		paths.Clear();
 
@@ -71,14 +71,14 @@ namespace rift::ast::LoadSystem
 		}
 	}
 
-	void ScanTypes(Tree& ast, TArray<ModuleTypePaths>& pathsByModule)
+	void ScanTypes(Tree& ast, p::TArray<ModuleTypePaths>& pathsByModule)
 	{
 		pathsByModule.Clear(false);
 
 		// Cache module paths in a Set
-		TSet<Path> modulePaths;
+		p::TSet<p::StringView> modulePaths;
 
-		TAccess<CModule, CFileRef> access{ast};
+		p::TAccess<CModule, CFileRef> access{ast};
 		auto modules = FindAllIdsWith<CModule, CFileRef>(access);
 
 		modulePaths.Reserve(modules.Size());
@@ -108,14 +108,14 @@ namespace rift::ast::LoadSystem
 		}
 	}
 
-	void CreateModulesFromPaths(Tree& ast, TArray<String>& paths, TArray<Id>& ids)
+	void CreateModulesFromPaths(Tree& ast, p::TArray<p::String>& paths, p::TArray<Id>& ids)
 	{
-		TAccess<TWrite<CModule>, TWrite<CFileRef>, TWrite<CNamespace>, CProject, TWrite<CChild>,
-		    TWrite<CParent>>
+		p::TAccess<p::TWrite<CModule>, p::TWrite<CFileRef>, p::TWrite<CNamespace>, CProject,
+		    p::TWrite<CChild>, p::TWrite<CParent>>
 		    access{ast};
 
 		// Remove existing module paths
-		auto moduleIds = FindAllIdsWith<CModule, CFileRef>(access);
+		auto moduleIds = p::FindAllIdsWith<CModule, CFileRef>(access);
 		paths.RemoveIfSwap([&access, &moduleIds](const p::String& path) {
 			bool moduleExists = false;
 			for (Id id : moduleIds)
@@ -132,13 +132,13 @@ namespace rift::ast::LoadSystem
 		ids.Resize(paths.Size());
 		access.GetContext().Create(ids);
 
-		for (i32 i = 0; i < ids.Size(); ++i)
+		for (p::i32 i = 0; i < ids.Size(); ++i)
 		{
 			Id id           = ids[i];
 			p::String& path = paths[i];
 			access.Add<CModule>(id);
 			access.Add(id, CNamespace{p::GetFilename(p::GetParentPath(path))});
-			access.Add(id, CFileRef{Move(path)});
+			access.Add(id, CFileRef{p::Move(path)});
 		}
 
 		// Link modules to the project
@@ -146,7 +146,8 @@ namespace rift::ast::LoadSystem
 		p::AttachId(access, projectId, ids);
 	}
 
-	void CreateTypesFromPaths(Tree& ast, TView<ModuleTypePaths> pathsByModule, TArray<Id>& ids)
+	void CreateTypesFromPaths(
+	    Tree& ast, p::TView<ModuleTypePaths> pathsByModule, p::TArray<Id>& ids)
 	{
 		auto* types = ast.TryGetStatic<STypes>();
 		if (!types)
@@ -163,19 +164,19 @@ namespace rift::ast::LoadSystem
 		}
 
 		// Create type entities
-		TArray<Id> typeIds;
+		p::TArray<Id> typeIds;
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
 			typeIds.Resize(modulePaths.paths.Size());
 			ast.Create(typeIds);
 
-			for (i32 i = 0; i < typeIds.Size(); ++i)
+			for (p::i32 i = 0; i < typeIds.Size(); ++i)
 			{
-				const Id id  = typeIds[i];
-				String& path = modulePaths.paths[i];
+				const Id id     = typeIds[i];
+				p::String& path = modulePaths.paths[i];
 
 				types->typesByPath.Insert(p::Tag{path}, id);
-				ast.Add(id, CFileRef{Move(path)});
+				ast.Add(id, CFileRef{p::Move(path)});
 			}
 
 			p::AttachId(ast, modulePaths.moduleId, typeIds);
@@ -183,14 +184,15 @@ namespace rift::ast::LoadSystem
 		}
 	}
 
-	void LoadFileStrings(TAccessRef<CFileRef> access, TView<Id> nodes, TArray<String>& strings)
+	void LoadFileStrings(
+	    p::TAccessRef<CFileRef> access, p::TView<Id> nodes, p::TArray<p::String>& strings)
 	{
 		strings.Resize(nodes.Size());
-		for (i32 i = 0; i < nodes.Size(); ++i)
+		for (p::i32 i = 0; i < nodes.Size(); ++i)
 		{
 			if (auto* file = access.TryGet<const CFileRef>(nodes[i])) [[likely]]
 			{
-				if (!files::LoadStringFile(file->path, strings[i], 4))
+				if (!p::LoadStringFile(file->path, strings[i], 4))
 				{
 					p::Error("File could not be loaded from disk ({})", file->path);
 					continue;
@@ -199,21 +201,21 @@ namespace rift::ast::LoadSystem
 		}
 	}
 
-	void DeserializeModules(Tree& ast, TView<Id> moduleIds, TView<String> strings)
+	void DeserializeModules(Tree& ast, p::TView<Id> moduleIds, p::TView<p::String> strings)
 	{
 		Check(moduleIds.Size() == strings.Size());
 
-		for (i32 i = 0; i < moduleIds.Size(); ++i)
+		for (p::i32 i = 0; i < moduleIds.Size(); ++i)
 		{
 			DeserializeModule(ast, moduleIds[i], strings[i]);
 		}
 	}
 
-	void DeserializeTypes(Tree& ast, TView<Id> typeIds, TView<String> strings)
+	void DeserializeTypes(Tree& ast, p::TView<Id> typeIds, p::TView<p::String> strings)
 	{
 		Check(typeIds.Size() == strings.Size());
 
-		for (i32 i = 0; i < typeIds.Size(); ++i)
+		for (p::i32 i = 0; i < typeIds.Size(); ++i)
 		{
 			DeserializeType(ast, typeIds[i], strings[i]);
 		}

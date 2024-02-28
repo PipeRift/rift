@@ -9,7 +9,7 @@
 #include <Utils/NodesInternal.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	struct CTypeEditor : public p::Struct
 	{
@@ -37,4 +37,4 @@ namespace rift::Editor
 	inline const Tag CTypeEditor::rightTopNode{"rightTopNode"};
 	inline const Tag CTypeEditor::rightBottomNode{"rightBottomNode"};
 	inline const Tag CTypeEditor::centralNode{"centralNode"};
-}    // namespace rift::Editor
+}    // namespace rift::editor

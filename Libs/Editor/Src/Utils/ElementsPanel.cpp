@@ -21,7 +21,7 @@
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, ast::Id variableId)
 	{
@@ -107,7 +107,7 @@ namespace rift::Editor
 		{
 			UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 			UI::SetNextItemWidth(-FLT_MIN);
-			Editor::TypeCombo(access, "##type", variableDecl->typeId);
+			editor::TypeCombo(access, "##type", variableDecl->typeId);
 			UI::PopStyleVar();
 		}
 
@@ -281,4 +281,4 @@ namespace rift::Editor
 			}
 		}
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

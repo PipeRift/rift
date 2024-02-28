@@ -9,7 +9,6 @@
 
 namespace rift::ast
 {
-	using namespace p;
 	using Id          = p::Id;
 	constexpr Id NoId = p::NoId;
 

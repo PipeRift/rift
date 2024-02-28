@@ -26,7 +26,7 @@
 #include <Utils/NodesMiniMap.h>
 
 
-namespace rift::Editor::Graph
+namespace rift::editor::Graph
 {
 	static CNodePosition* currentNodeTransform = nullptr;
 
@@ -62,7 +62,7 @@ namespace rift::Editor::Graph
 		return Nodes::ScreenToGridPosition(screenPosition) * GetInvGridSize();
 	}
 
-	void BeginExprInput(TAccessRef<ast::CExprTypeId> access, ast::Id id, const bool& invalid)
+	void BeginExprInput(p::TAccessRef<ast::CExprTypeId> access, ast::Id id, const bool& invalid)
 	{
 		bool isPointer = false;
 		ast::Id typeId = ast::NoId;
@@ -90,7 +90,7 @@ namespace rift::Editor::Graph
 		    i32(id), isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
 	}
 
-	void BeginExprOutput(TAccessRef<ast::CExprTypeId> access, ast::Id id, const bool& invalid)
+	void BeginExprOutput(p::TAccessRef<ast::CExprTypeId> access, ast::Id id, const bool& invalid)
 	{
 		bool isPointer = false;
 		ast::Id typeId = ast::NoId;
@@ -138,7 +138,7 @@ namespace rift::Editor::Graph
 		}
 	}
 
-	void DrawInputs(TAccessRef<ast::CInvalid, ast::CExprTypeId, ast::CNamespace> access,
+	void DrawInputs(p::TAccessRef<ast::CInvalid, ast::CExprTypeId, ast::CNamespace> access,
 	    const ast::CExprInputs& inputs)
 	{
 		for (ast::Id pinId : inputs.pinIds)
@@ -154,7 +154,7 @@ namespace rift::Editor::Graph
 		}
 	}
 
-	void DrawOutputs(TAccessRef<ast::CInvalid, ast::CExprTypeId, ast::CNamespace> access,
+	void DrawOutputs(p::TAccessRef<ast::CInvalid, ast::CExprTypeId, ast::CNamespace> access,
 	    const ast::CExprOutputs& outputs)
 	{
 		for (ast::Id pinId : outputs.pinIds)
@@ -170,7 +170,7 @@ namespace rift::Editor::Graph
 		}
 	}
 
-	void BeginNode(TAccessRef<TWrite<CNodePosition>> access, ast::Id id)
+	void BeginNode(p::TAccessRef<TWrite<CNodePosition>> access, ast::Id id)
 	{
 		currentNodeTransform = &access.GetOrAdd<CNodePosition>(id);
 		auto* context        = Nodes::GetCurrentContext();
@@ -363,7 +363,7 @@ namespace rift::Editor::Graph
 		}
 	}
 
-	void DrawReturnNode(TAccessRef<TWrite<CNodePosition>, TWrite<ast::CChanged>,
+	void DrawReturnNode(p::TAccessRef<TWrite<CNodePosition>, TWrite<ast::CChanged>,
 	                        TWrite<ast::CFileDirty>, ast::CChild, ast::CFileRef>
 	                        access,
 	    ast::Id id)
@@ -504,7 +504,7 @@ namespace rift::Editor::Graph
 		ImGui::PopStyleVar(2);
 	}
 
-	void DrawReturns(TAccessRef<TWrite<CNodePosition>, TWrite<ast::CChanged>,
+	void DrawReturns(p::TAccessRef<TWrite<CNodePosition>, TWrite<ast::CChanged>,
 	                     TWrite<ast::CFileDirty>, ast::CChild, ast::CFileRef, ast::CStmtReturn>
 	                     access,
 	    const TArray<ast::Id>& children)
@@ -570,9 +570,9 @@ namespace rift::Editor::Graph
 		}
 	}
 
-	void DrawIfs(TAccessRef<TWrite<CNodePosition>, TWrite<ast::CChanged>, TWrite<ast::CFileDirty>,
-	                 ast::CChild, ast::CFileRef, ast::CStmtIf, ast::CStmtOutputs, ast::CExprInputs,
-	                 ast::CParent, ast::CExprTypeId>
+	void DrawIfs(p::TAccessRef<TWrite<CNodePosition>, TWrite<ast::CChanged>,
+	                 TWrite<ast::CFileDirty>, ast::CChild, ast::CFileRef, ast::CStmtIf,
+	                 ast::CStmtOutputs, ast::CExprInputs, ast::CParent, ast::CExprTypeId>
 	                 access,
 	    const TArray<ast::Id>& children)
 	{
@@ -656,7 +656,7 @@ namespace rift::Editor::Graph
 				UI::SameLine();
 
 				const auto& op       = access.Get<const ast::CExprUnaryOperator>(id);
-				StringView shortName = Editor::GetUnaryOperatorName(op.type);
+				StringView shortName = editor::GetUnaryOperatorName(op.type);
 				UI::Text(shortName);
 
 				UI::SameLine();
@@ -701,7 +701,7 @@ namespace rift::Editor::Graph
 				UI::SameLine();
 
 				const auto& op       = access.Get<const ast::CExprBinaryOperator>(id);
-				StringView shortName = Editor::GetBinaryOperatorName(op.type);
+				StringView shortName = editor::GetBinaryOperatorName(op.type);
 				UI::Text(shortName);
 
 				UI::SameLine();
@@ -714,7 +714,8 @@ namespace rift::Editor::Graph
 		}
 	}
 
-	void DrawStatementLinks(TAccessRef<ast::CParent, ast::CStmtOutput, ast::CStmtOutputs>& access,
+	void DrawStatementLinks(
+	    p::TAccessRef<ast::CParent, ast::CStmtOutput, ast::CStmtOutputs>& access,
 	    const TArray<ast::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 2.f);
@@ -914,4 +915,4 @@ namespace rift::Editor::Graph
 		const v2 pos = Nodes::GetNodeGridSpacePos(id);
 		return v2{pos.x * settings.GetInvGridSize(), pos.y * settings.GetInvGridSize()}.Floor();
 	}
-}    // namespace rift::Editor::Graph
+}    // namespace rift::editor::Graph

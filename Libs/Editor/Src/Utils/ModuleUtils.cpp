@@ -5,9 +5,9 @@
 #include <Pipe/Core/Checks.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	void OpenModuleEditor(TAccessRef<TWrite<CModuleEditor>, ast::CModule> access, ast::Id id)
+	void OpenModuleEditor(p::TAccessRef<TWrite<CModuleEditor>, ast::CModule> access, ast::Id id)
 	{
 		Check(access.Has<ast::CModule>(id));
 		if (auto* editor = access.TryGet<CModuleEditor>(id))
@@ -20,14 +20,14 @@ namespace rift::Editor
 		}
 	}
 
-	void CloseModuleEditor(TAccessRef<TWrite<CModuleEditor>, ast::CModule> access, ast::Id id)
+	void CloseModuleEditor(p::TAccessRef<TWrite<CModuleEditor>, ast::CModule> access, ast::Id id)
 	{
 		Check(access.Has<ast::CModule>(id));
 		access.Remove<CModuleEditor>(id);
 	}
 
-	bool IsEditingModule(TAccessRef<CModuleEditor> access, ast::Id id)
+	bool IsEditingModule(p::TAccessRef<CModuleEditor> access, ast::Id id)
 	{
 		return access.Has<CModuleEditor>(id);
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

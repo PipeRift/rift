@@ -11,7 +11,7 @@
 #include <PipeECS.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	struct CTypeEditor;
 
@@ -33,4 +33,4 @@ namespace rift::Editor
 	void DrawFunction(ast::Tree& ast, CTypeEditor& editor, ast::Id functionId);
 
 	void DrawElementsPanel(ast::Tree& ast, ast::Id typeId);
-}    // namespace rift::Editor
+}    // namespace rift::editor

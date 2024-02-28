@@ -10,11 +10,11 @@
 #include <PipeECS.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	void OpenType(TAccessRef<TWrite<CTypeEditor>, ast::CDeclType> access, ast::Id id);
-	void CloseType(TAccessRef<TWrite<CTypeEditor>, ast::CDeclType> access, ast::Id id);
-	bool IsTypeOpen(TAccessRef<CTypeEditor> access, ast::Id id);
+	void OpenType(p::TAccessRef<TWrite<CTypeEditor>, ast::CDeclType> access, ast::Id id);
+	void CloseType(p::TAccessRef<TWrite<CTypeEditor>, ast::CDeclType> access, ast::Id id);
+	bool IsTypeOpen(p::TAccessRef<CTypeEditor> access, ast::Id id);
 
 	constexpr StringView GetUnaryOperatorName(ast::UnaryOperatorType type)
 	{
@@ -93,4 +93,4 @@ namespace rift::Editor
 		}
 		return "";
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

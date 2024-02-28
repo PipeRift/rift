@@ -37,7 +37,7 @@
 #include <UI/UI.h>
 
 
-namespace rift::Editor::EditorSystem
+namespace rift::editor::EditorSystem
 {
 	void OnProjectEditorOpen(ast::Tree& ast)
 	{
@@ -298,7 +298,7 @@ namespace rift::Editor::EditorSystem
 
 					for (auto& fileData : fileDatas)
 					{
-						files::SaveStringFile(fileData.first, fileData.second);
+						SaveStringFile(fileData.first, fileData.second);
 					}
 
 					ast.Remove<ast::CFileDirty>(dirtyTypeIds);
@@ -392,7 +392,7 @@ namespace rift::Editor::EditorSystem
 				String data;
 				ast::SerializeModule(ast, moduleId, data);
 
-				files::SaveStringFile(StringView(file.path), data);
+				SaveStringFile(StringView(file.path), data);
 				ast.Remove<ast::CFileDirty>(moduleId);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
@@ -498,7 +498,7 @@ namespace rift::Editor::EditorSystem
 				String data;
 				ast::SerializeType(ast, typeId, data);
 
-				files::SaveStringFile(StringView(file.path), data);
+				SaveStringFile(StringView(file.path), data);
 				ast.Remove<ast::CFileDirty>(typeId);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
@@ -592,4 +592,4 @@ namespace rift::Editor::EditorSystem
 			}
 		}
 	}
-}    // namespace rift::Editor::EditorSystem
+}    // namespace rift::editor::EditorSystem

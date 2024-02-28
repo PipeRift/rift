@@ -11,7 +11,8 @@
 
 namespace rift::ast
 {
-	using TransactionAccess = TAccessRef<TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef>;
+	using TransactionAccess =
+	    p::TAccessRef<p::TWrite<CChanged>, p::TWrite<CFileDirty>, CChild, CFileRef>;
 
 	namespace Transactions
 	{
@@ -25,13 +26,13 @@ namespace rift::ast
 			bool active = false;
 
 			ScopedTransaction() {}
-			ScopedTransaction(const TransactionAccess& access, TView<const Id> entityIds);
+			ScopedTransaction(const TransactionAccess& access, p::TView<const Id> entityIds);
 			ScopedTransaction(ScopedTransaction&& other) noexcept;
 			~ScopedTransaction();
 		};
 
 
-		bool PreChange(const TransactionAccess& access, TView<const Id> entityIds);
+		bool PreChange(const TransactionAccess& access, p::TView<const Id> entityIds);
 		void PostChange();
 	}    // namespace Transactions
 }    // namespace rift::ast

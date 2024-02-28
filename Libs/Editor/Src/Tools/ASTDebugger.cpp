@@ -17,7 +17,7 @@
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	void DrawTypesDebug(ast::Tree& ast)
 	{
@@ -351,10 +351,10 @@ namespace rift::Editor
 
 		if (valid)
 		{
-			const auto& registry = ast::TypeRegistry::Get();
+			const auto& registry = p::TypeRegistry::Get();
 			for (const auto& poolInstance : ast.GetPools())
 			{
-				ast::Type* type = registry.FindType(poolInstance.componentId);
+				p::Type* type = registry.FindType(poolInstance.componentId);
 				if (!type || !poolInstance.GetPool()->Has(inspector.id))
 				{
 					continue;
@@ -410,4 +410,4 @@ namespace rift::Editor
 			secondaryInspectors.Add({id});
 		}
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

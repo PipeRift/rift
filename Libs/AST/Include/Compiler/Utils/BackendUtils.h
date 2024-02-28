@@ -11,6 +11,6 @@
 
 namespace rift
 {
-	TArray<ClassType*> GetBackendTypes();
-	TArray<TOwnPtr<Backend>> CreateBackends();
+	p::TArray<p::ClassType*> GetBackendTypes();
+	p::TArray<p::TOwnPtr<Backend>> CreateBackends();
 }    // namespace rift

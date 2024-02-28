@@ -12,7 +12,7 @@
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	ReflectionDebugger::ReflectionDebugger() {}
 
@@ -107,4 +107,4 @@ namespace rift::Editor
 			}
 		}
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

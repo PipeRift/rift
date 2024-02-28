@@ -16,11 +16,8 @@
 
 namespace rift::UI
 {
-	using namespace p;
-
-
 	// label, data, type
-	using CustomKeyValue = TFunction<void(StringView label, void*, Type*)>;
+	using CustomKeyValue = TFunction<void(p::StringView label, void*, p::Type*)>;
 
 
 	void RegisterCustomInspection(Type* typeId, const CustomKeyValue& custom);
@@ -30,9 +27,9 @@ namespace rift::UI
 		RegisterCustomInspection(GetType<T>(), custom);
 	}
 
-	void DrawEnumValue(void* data, EnumType* type);
-	void DrawNativeValue(void* data, NativeType* type);
-	void DrawKeyValue(StringView label, void* data, Type* type);
+	void DrawEnumValue(void* data, p::EnumType* type);
+	void DrawNativeValue(void* data, p::NativeType* type);
+	void DrawKeyValue(p::StringView label, void* data, p::Type* type);
 
 	void InspectProperty(const ValueHandle& handle);
 	void InspectChildrenProperties(const ValueHandle& handle);
@@ -52,10 +49,10 @@ namespace rift::UI
 		// InspectChildrenProperties(data, type);
 	}
 
-	bool BeginCategory(StringView name, bool isLeaf);
+	bool BeginCategory(p::StringView name, bool isLeaf);
 	void EndCategory();
 
-	bool BeginInspector(const char* name, v2 size = v2{0.f, 0.f});
+	bool BeginInspector(const char* name, p::v2 size = p::v2{0.f, 0.f});
 	void EndInspector();
 
 	void RegisterCoreKeyValueInspections();

@@ -12,10 +12,4 @@ namespace rift::Paths
 		static p::StringView relativeResourcesPath{"Resources"};
 		return p::JoinPaths(p::PlatformPaths::GetBasePath(), relativeResourcesPath);
 	}
-
-	p::String GetUserSettingsPath()
-	{
-		static p::StringView relativeSettingsPath{"Rift"};
-		return p::JoinPaths(p::PlatformPaths::GetUserSettingsPath(), relativeSettingsPath);
-	}
 };    // namespace rift::Paths

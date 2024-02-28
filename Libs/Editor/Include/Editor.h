@@ -8,7 +8,7 @@
 #include <PipeTime.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	class Editor
 	{
@@ -62,4 +62,4 @@ namespace rift::Editor
 	protected:
 		void UpdateConfig();
 	};
-}    // namespace rift::Editor
+}    // namespace rift::editor

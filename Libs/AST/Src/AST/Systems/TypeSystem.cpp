@@ -17,7 +17,7 @@ namespace rift::ast::TypeSystem
 {
 	void Init(Tree& ast)
 	{
-		TAccess<CDeclType, CNamespace> access{ast};
+		p::TAccess<CDeclType, CNamespace> access{ast};
 
 		ast.OnAdd<CFileRef>().Bind([](auto& ast, auto ids) {
 			auto& types = ast.template GetOrSetStatic<STypes>();
@@ -57,7 +57,7 @@ namespace rift::ast::TypeSystem
 		}
 	}
 
-	bool PropagateUnaryOperator(TAccess<CExprInputs, TWrite<CExprTypeId>> access, Id nodeId)
+	bool PropagateUnaryOperator(p::TAccess<CExprInputs, p::TWrite<CExprTypeId>> access, Id nodeId)
 	{
 		const Id outputId  = nodeId;    // Output in unary operator is same as the node itself
 		const auto& inputs = access.Get<const CExprInputs>(nodeId);
@@ -69,7 +69,7 @@ namespace rift::ast::TypeSystem
 		return false;
 	}
 
-	bool PropagateBinaryOperator(TAccess<CExprInputs, TWrite<CExprTypeId>> access, Id nodeId)
+	bool PropagateBinaryOperator(p::TAccess<CExprInputs, p::TWrite<CExprTypeId>> access, Id nodeId)
 	{
 		const auto& inputs = access.Get<const CExprInputs>(nodeId);
 		Id outputId        = nodeId;    // Output in binary operator is same as the node itself
@@ -87,16 +87,16 @@ namespace rift::ast::TypeSystem
 
 	void PropagateExpressionTypes(PropagateExpressionTypesAccess access)
 	{
-		TArray<Id> dirtyTypeIds = FindAllIdsWith<CDeclType, CChanged>(access);
+		p::TArray<Id> dirtyTypeIds = p::FindAllIdsWith<CDeclType, CChanged>(access);
 
-		TArray<Id> dirtyNodeIds;
+		p::TArray<Id> dirtyNodeIds;
 		p::GetIdChildren(access, dirtyTypeIds, dirtyNodeIds);
 
 		// Make sure the nodes have inputs and outputs
-		ExcludeIdsWithout<CExprInputs, CExprOutputs>(access, dirtyNodeIds);
+		p::ExcludeIdsWithout<CExprInputs, CExprOutputs>(access, dirtyNodeIds);
 
 		// Only Unary and Binary operators propagate as of right now
-		ExcludeIdsWith(dirtyNodeIds, [&access](Id id) {
+		p::ExcludeIdsWith(dirtyNodeIds, [&access](Id id) {
 			return !access.Has<CExprUnaryOperator>(id) && !access.Has<CExprBinaryOperator>(id);
 		});
 
@@ -105,7 +105,7 @@ namespace rift::ast::TypeSystem
 		{
 			bool anyPropagated = false;
 			// Propagate all dirty nodes, remove successfully propagated ones
-			for (i32 i = dirtyNodeIds.Size() - 1; i >= 0; --i)
+			for (p::i32 i = dirtyNodeIds.Size() - 1; i >= 0; --i)
 			{
 				const Id nodeId = dirtyNodeIds[i];
 
@@ -135,15 +135,15 @@ namespace rift::ast::TypeSystem
 	}
 
 	void ResolveExprTypeIds(
-	    TAccessRef<TWrite<CExprTypeId>, CExprType, CNamespace, CParent, CChild> access)
+	    p::TAccessRef<p::TWrite<CExprTypeId>, CExprType, CNamespace, CParent, CChild> access)
 	{
-		auto callExprs = FindAllIdsWith<CExprType>(access);
-		ExcludeIdsWith<CExprTypeId>(access, callExprs);
+		auto callExprs = p::FindAllIdsWith<CExprType>(access);
+		p::ExcludeIdsWith<CExprTypeId>(access, callExprs);
 		for (Id id : callExprs)
 		{
 			auto& expr      = access.Get<const CExprType>(id);
 			const Id typeId = FindIdFromNamespace(access, expr.type);
-			if (!IsNone(typeId))
+			if (!p::IsNone(typeId))
 			{
 				access.Add(id, CExprTypeId{.id = typeId, .mode = expr.mode});
 			}

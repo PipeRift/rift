@@ -8,7 +8,7 @@
 #include <UI/Style.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	using namespace p;
 
@@ -64,4 +64,4 @@ namespace rift::Editor
 
 	void PushNodeBackgroundColor(Color color);
 	void PopNodeBackgroundColor();
-}    // namespace rift::Editor
+}    // namespace rift::editor

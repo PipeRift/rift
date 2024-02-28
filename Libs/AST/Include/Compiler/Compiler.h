@@ -19,7 +19,7 @@ namespace rift
 		P_STRUCT(CompileError, p::Struct)
 
 		P_PROP(text)
-		String text;
+		p::String text;
 	};
 
 
@@ -29,15 +29,15 @@ namespace rift
 
 		ast::Tree& ast;
 		CompilerConfig config;
-		TArray<CompileError> errors;
+		p::TArray<CompileError> errors;
 
 
 	public:
 		Compiler(ast::Tree& ast, const CompilerConfig& config) : ast{ast}, config{config} {}
 
 		// Errors
-		void Error(StringView str);
-		const TArray<CompileError>& GetErrors() const
+		void Error(p::StringView str);
+		const p::TArray<CompileError>& GetErrors() const
 		{
 			return errors;
 		}
@@ -48,9 +48,9 @@ namespace rift
 	};
 
 
-	void Build(ast::Tree& tree, const CompilerConfig& config, TPtr<Backend> backend);
+	void Build(ast::Tree& tree, const CompilerConfig& config, p::TPtr<Backend> backend);
 
-	void Build(ast::Tree& ast, const CompilerConfig& config, ClassType* backendType);
+	void Build(ast::Tree& ast, const CompilerConfig& config, p::ClassType* backendType);
 
 	template<typename T>
 	void Build(ast::Tree& ast, const CompilerConfig& config)

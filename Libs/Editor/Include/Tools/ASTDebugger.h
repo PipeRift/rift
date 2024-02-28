@@ -15,7 +15,7 @@
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	struct InspectorPanel
 	{
@@ -58,4 +58,4 @@ namespace rift::Editor
 
 		void OpenAvailableSecondaryInspector(ast::Id id);
 	};
-}    // namespace rift::Editor
+}    // namespace rift::editor

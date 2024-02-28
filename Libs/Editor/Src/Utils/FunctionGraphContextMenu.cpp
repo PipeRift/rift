@@ -24,7 +24,7 @@
 #include <UI/UI.h>
 
 
-namespace rift::Editor::Graph
+namespace rift::editor::Graph
 {
 	void SetPositionAndConnect(ast::Tree& ast, ast::Id id, v2 position)
 	{
@@ -308,4 +308,4 @@ namespace rift::Editor::Graph
 			UI::EndPopup();
 		}
 	}
-}    // namespace rift::Editor::Graph
+}    // namespace rift::editor::Graph

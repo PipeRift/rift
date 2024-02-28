@@ -9,7 +9,7 @@
 #include <Utils/NodesInternal.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	struct CModuleEditor : public p::Struct
 	{
@@ -17,4 +17,4 @@ namespace rift::Editor
 
 		bool pendingFocus = false;
 	};
-}    // namespace rift::Editor
+}    // namespace rift::editor

@@ -9,7 +9,7 @@
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	void TextCentered(const char* text)
 	{
@@ -130,4 +130,4 @@ namespace rift::Editor
 	{
 		UI::OpenPopup("Project Manager");
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

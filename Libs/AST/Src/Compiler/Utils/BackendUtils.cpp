@@ -5,24 +5,23 @@
 
 namespace rift
 {
-	TArray<ClassType*> GetBackendTypes()
+	p::TArray<p::ClassType*> GetBackendTypes()
 	{
-		TArray<ClassType*> types = Backend::GetStaticType()->GetChildren();
-		types.RemoveIf([](ClassType* type) {
-			return !type || type->HasFlag(Class_Abstract);
+		p::TArray<p::ClassType*> types = Backend::GetStaticType()->GetChildren();
+		types.RemoveIf([](p::ClassType* type) {
+			return !type || type->HasFlag(p::Class_Abstract);
 		});
 		return Move(types);
 	}
 
-	TArray<TOwnPtr<Backend>> CreateBackends()
+	p::TArray<p::TOwnPtr<Backend>> CreateBackends()
 	{
-		TArray<TOwnPtr<Backend>> backends;
-
+		p::TArray<p::TOwnPtr<Backend>> backends;
 		auto types = GetBackendTypes();
 		backends.Reserve(types.Size());
 		for (auto* type : types)
 		{
-			backends.Add(MakeOwned<Backend>(type));
+			backends.Add(p::MakeOwned<Backend>(type));
 		}
 		return Move(backends);
 	}

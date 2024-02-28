@@ -3,6 +3,7 @@
 #include "AST/Utils/Statements.h"
 
 #include "AST/Id.h"
+#include "PipeECS.h"
 
 
 namespace rift::ast
@@ -81,8 +82,8 @@ namespace rift::ast
 		else if (auto* outputsComp = ast.TryGet<CStmtOutputs>(outputNode))
 		{
 			// Connect if multiple output
-			const i32 pinIndex = outputsComp->pinIds.FindIndex(outputPin);
-			if (pinIndex != NO_INDEX)
+			const p::i32 pinIndex = outputsComp->pinIds.FindIndex(outputPin);
+			if (pinIndex != p::NO_INDEX)
 			{
 				Id& lastInputNode = outputsComp->linkInputNodes[pinIndex];
 				// Disconnect previous input connected to output if any
@@ -138,8 +139,8 @@ namespace rift::ast
 		// Disconnect()
 		if (auto* outputsComp = ast.TryGet<CStmtOutputs>(outputNode))
 		{
-			i32 pinIndex = outputsComp->pinIds.FindIndex(outputPin);
-			if (pinIndex != NO_INDEX) [[likely]]
+			p::i32 pinIndex = outputsComp->pinIds.FindIndex(outputPin);
+			if (pinIndex != p::NO_INDEX) [[likely]]
 			{
 				return DisconnectStmtLink(ast, outputsComp->linkInputNodes[pinIndex]);
 			}
@@ -170,7 +171,7 @@ namespace rift::ast
 		return false;
 	}
 
-	Id GetPreviousStmt(TAccessRef<CStmtInput> access, Id stmtIds)
+	Id GetPreviousStmt(p::TAccessRef<CStmtInput> access, Id stmtIds)
 	{
 		if (const auto* input = access.TryGet<const CStmtInput>(stmtIds))
 		{
@@ -180,7 +181,7 @@ namespace rift::ast
 	}
 
 	void GetPreviousStmts(
-	    TAccessRef<CStmtInput> access, TView<const Id> stmtIds, TArray<Id>& prevStmtIds)
+	    p::TAccessRef<CStmtInput> access, p::TView<const Id> stmtIds, p::TArray<Id>& prevStmtIds)
 	{
 		prevStmtIds.ReserveMore(stmtIds.Size());
 		for (const Id stmtId : stmtIds)
@@ -192,7 +193,7 @@ namespace rift::ast
 		}
 	}
 
-	TView<Id> GetNextStmts(TAccessRef<CStmtOutputs> access, Id stmtIds)
+	p::TView<Id> GetNextStmts(p::TAccessRef<CStmtOutputs> access, Id stmtIds)
 	{
 		if (const auto* output = access.TryGet<const CStmtOutputs>(stmtIds))
 		{
@@ -202,7 +203,7 @@ namespace rift::ast
 	}
 
 	void GetNextStmts(
-	    TAccessRef<CStmtOutputs> access, TView<const Id> stmtIds, TArray<Id>& nextStmtIds)
+	    p::TAccessRef<CStmtOutputs> access, p::TView<const Id> stmtIds, p::TArray<Id>& nextStmtIds)
 	{
 		nextStmtIds.ReserveMore(stmtIds.Size());
 		for (const Id stmtId : stmtIds)
@@ -214,8 +215,8 @@ namespace rift::ast
 		}
 	}
 
-	void GetStmtChain(TAccessRef<CStmtOutput, CStmtOutputs> access, Id firstStmtId,
-	    TArray<Id>& stmtIds, Id& splitStmtId)
+	void GetStmtChain(p::TAccessRef<CStmtOutput, CStmtOutputs> access, Id firstStmtId,
+	    p::TArray<Id>& stmtIds, Id& splitStmtId)
 	{
 		Id id = firstStmtId;
 		while (id != ast::NoId && access.Has<CStmtOutput>(id))

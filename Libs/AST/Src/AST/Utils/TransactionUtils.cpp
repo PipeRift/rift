@@ -12,7 +12,8 @@ namespace rift::ast::Transactions
 	// Transaction being recorded
 	static Transaction gActiveTransaction = {};
 
-	ScopedTransaction::ScopedTransaction(const TransactionAccess& access, TView<const Id> entityIds)
+	ScopedTransaction::ScopedTransaction(
+	    const TransactionAccess& access, p::TView<const Id> entityIds)
 	{
 		active = PreChange(access, entityIds);
 	}
@@ -29,7 +30,7 @@ namespace rift::ast::Transactions
 		}
 	}
 
-	bool PreChange(const TransactionAccess& access, TView<const Id> entityIds)
+	bool PreChange(const TransactionAccess& access, p::TView<const Id> entityIds)
 	{
 		if (!EnsureMsg(!gActiveTransaction.active,
 		        "Tried to record a transaction while another is already being recorded"))
@@ -40,7 +41,7 @@ namespace rift::ast::Transactions
 		gActiveTransaction = Transaction{true};
 
 		// Mark files dirty
-		TArray<Id> parentIds;
+		p::TArray<Id> parentIds;
 		p::GetAllIdParents(access, entityIds, parentIds);
 
 		parentIds.Append(entityIds);
