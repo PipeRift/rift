@@ -6,11 +6,11 @@
 #include <Pipe/Files/PlatformPaths.h>
 
 
-namespace rift::ast
+namespace rift
 {
 	p::String GetUserSettingsPath()
 	{
 		static p::StringView relativeSettingsPath{"Rift"};
 		return p::JoinPaths(p::PlatformPaths::GetUserSettingsPath(), relativeSettingsPath);
 	}
-}    // namespace rift::ast
+}    // namespace rift

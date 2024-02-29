@@ -1,8 +1,10 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #include "Editor.h"
+#include "Statics/EditorSettings.h"
 #include "Utils/ElementsPanel.h"
 
+#include <AST/Utils/Settings.h>
 #include <Pipe/Files/PlatformPaths.h>
 #include <PipeFiles.h>
 #include <UI/Notify.h>
@@ -56,16 +58,29 @@ namespace rift::editor
 				UI::SetItemDefaultFocus();
 				{
 					UI::Text("Recent projects:");
+					auto& editorSettings = rift::GetUserSettings<EditorSettings>();
 					static const char* recentProjects[]{"Project.rift"};
 					static int selectedN = 0;
 					UI::SetNextItemWidth(-FLT_MIN);
 
-					for (int n = 0; n < IM_ARRAYSIZE(recentProjects); ++n)
+					for (int n = 0; n < editorSettings.recentProjects.Size(); ++n)
 					{
 						const bool isSelected = (selectedN == n);
-						UI::BulletText(recentProjects[n]);
+						p::StringView path    = editorSettings.recentProjects[n];
+						UI::BulletText(path.data());
 						UI::SameLine(ImGui::GetContentRegionAvail().x - 30.f);
-						if (UI::SmallButton("open")) {}
+						if (UI::SmallButton("open"))
+						{
+							if (Editor::Get().OpenProject(path))
+							{
+								UI::CloseCurrentPopup();
+							}
+							else
+							{
+								UI::AddNotification({UI::ToastType::Error, 1.f,
+								    p::Strings::Format("Failed to open project at '{}'", path)});
+							}
+						}
 					}
 				}
 				UI::Dummy({10.f, 40.f});
@@ -84,9 +99,8 @@ namespace rift::editor
 				UI::SameLine();
 				if (UI::Button("...", p::v2{24.f, 0.f}))
 				{
-					p::String selectedFolder = p::SelectFolderDialog(
+					folder = p::SelectFolderDialog(
 					    "Select project folder", p::PlatformPaths::GetCurrentPath());
-					folder = p::ToString(selectedFolder);
 				}
 			}
 
