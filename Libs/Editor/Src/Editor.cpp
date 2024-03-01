@@ -4,6 +4,8 @@
 
 #include "AST/Systems/FunctionsSystem.h"
 #include "AST/Utils/Namespaces.h"
+#include "AST/Utils/Settings.h"
+#include "Statics/EditorSettings.h"
 #include "Statics/SEditor.h"
 #include "Systems/EditorSystem.h"
 #include "Utils/FunctionGraph.h"
@@ -174,6 +176,10 @@ namespace rift::editor
 				Editor::Get().bFilesDirty = true;
 			}));
 
+
+			auto& editorSettings = GetUserSettings<EditorSettings>();
+			editorSettings.recentProjects.AddUnique(p::String(projectPath));
+			SaveUserSettings<EditorSettings>();
 			return true;
 		}
 		return false;

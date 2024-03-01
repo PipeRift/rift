@@ -8,9 +8,12 @@
 
 namespace rift
 {
-	p::String GetUserSettingsPath()
+	p::String GetUserSettingsPath(p::StringView name)
 	{
 		static p::StringView relativeSettingsPath{"Rift"};
-		return p::JoinPaths(p::PlatformPaths::GetUserSettingsPath(), relativeSettingsPath);
+		p::String path =
+		    p::JoinPaths(p::PlatformPaths::GetUserSettingsPath(), relativeSettingsPath, name);
+		path.append(".json");
+		return p::Move(path);
 	}
 }    // namespace rift

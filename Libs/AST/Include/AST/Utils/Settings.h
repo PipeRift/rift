@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "AST/Utils/Settings.h"
+#include "Pipe/Files/Paths.h"
+
 #include <Pipe/Core/String.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
@@ -11,7 +14,7 @@
 
 namespace rift
 {
-	p::String GetUserSettingsPath();
+	p::String GetUserSettingsPath(p::StringView name);
 
 	template<typename T>
 	T& GetUserSettings()
@@ -21,26 +24,37 @@ namespace rift
 		{
 			instance = p::MakeOwned<T>();
 
-			p::String path = GetUserSettingsPath();
-			if (!p::Exists(path))
+			p::String filePath = GetUserSettingsPath(p::GetTypeName<T>(false));
+			if (!p::Exists(filePath))
 			{
-				p::CreateFolder(path);
+				SaveUserSettings<T>();
 			}
-
-			p::AppendToPath(path, p::GetTypeName<T>(false));
-			path.append(".json");
-			if (!p::Exists(path))
+			else
 			{
-				p::SaveStringFile(path, "{}");
-			}
-
-			p::String data;
-			if (p::LoadStringFile(path, data))
-			{
-				p::JsonFormatReader reader{data};
-				reader.GetReader().Serialize(*instance);
+				p::String data;
+				if (p::LoadStringFile(filePath, data))
+				{
+					p::JsonFormatReader reader{data};
+					reader.GetReader().Serialize(*instance);
+				}
 			}
 		}
 		return *instance.Get();
+	}
+
+	template<typename T>
+	void SaveUserSettings()
+	{
+		auto& instance = GetUserSettings<T>();
+		p::JsonFormatWriter writer{};
+		writer.GetWriter().Serialize(instance);
+
+		p::String filePath       = GetUserSettingsPath(p::GetTypeName<T>(false));
+		p::StringView folderPath = p::GetParentPath(filePath);
+		if (!p::Exists(folderPath))
+		{
+			p::CreateFolder(folderPath);
+		}
+		p::SaveStringFile(filePath, writer.ToString());
 	}
 }    // namespace rift
