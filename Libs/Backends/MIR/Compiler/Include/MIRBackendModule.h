@@ -4,12 +4,16 @@
 #include <Compiler/Backend.h>
 #include <Module.h>
 
+struct MIR_context;
+struct c2mir_options;
+
 
 namespace rift
 {
+	struct Input;
 	class MIRBackendModule : public Module
 	{
-		CLASS(MIRBackendModule, Module)
+		P_CLASS(MIRBackendModule, Module)
 
 	public:
 		MIRBackendModule();
@@ -18,7 +22,7 @@ namespace rift
 
 	class MIRBackend : public Backend
 	{
-		CLASS(MIRBackend, Backend)
+		P_CLASS(MIRBackend, Backend)
 
 	public:
 		Tag GetName() override
@@ -27,5 +31,7 @@ namespace rift
 		}
 
 		void Build(Compiler& compiler) override;
+
+		void PrintBuildFinish(Compiler& compiler) const;
 	};
 }    // namespace rift

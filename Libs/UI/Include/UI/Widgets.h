@@ -63,8 +63,7 @@ namespace rift::UI
 	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
 	    void* userData = nullptr);
 
-
-	static bool Begin(const char* name, bool* pOpen = nullptr, ImGuiWindowFlags flags = 0)
+	static void BeginOuterStyle()
 	{
 		LinearColor titleColor = UI::GetNeutralColor(0);
 		UI::PushStyleColor(ImGuiCol_TitleBg, titleColor);
@@ -79,20 +78,34 @@ namespace rift::UI
 		UI::PushStyleColor(ImGuiCol_TabUnfocusedActive, tabColorActive);
 		UI::PushStyleColor(ImGuiCol_TabHovered, UI::Hovered(tabColorActive));
 		UI::PushTextColor(UI::GetNeutralTextColor(1));
-
-		const bool value = ImGui::Begin(name, pOpen, flags);
-
+	}
+	static void BeginInnerStyle()
+	{
 		UI::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.f, 3.f));
+	}
+	static void EndOuterStyle()
+	{
+		UI::PopTextColor();
+		UI::PopStyleColor(8);
+	}
+	static void EndInnerStyle()
+	{
+		UI::PopStyleVar();
+	}
+
+	static bool Begin(const char* name, bool* pOpen = nullptr, ImGuiWindowFlags flags = 0)
+	{
+		BeginOuterStyle();
+		const bool value = ImGui::Begin(name, pOpen, flags);
+		BeginInnerStyle();
 		return value;
 	}
 
 	static void End()
 	{
-		UI::PopStyleVar();
+		EndInnerStyle();
 		ImGui::End();
-		UI::PopTextColor();
-		UI::PopStyleColor(5);
-		UI::PopStyleColor(3);
+		EndOuterStyle();
 	}
 
 	ImRect GetWorkRect(v2 desiredSize, bool addhalfItemSpacing = true, v2 extent = v2::Zero());
@@ -101,4 +114,10 @@ namespace rift::UI
 
 	void HelpTooltip(p::StringView text, float delay = 1.f);
 	void HelpMarker(p::StringView text);
+
+	bool DrawFilterWithHint(ImGuiTextFilter& filter, const char* label = "Filter (inc,-exc)",
+	    const char* hint = "...", float width = 0.0f);
+
+	bool CollapsingHeaderWithButton(p::StringView label, ImGuiTreeNodeFlags flags,
+	    bool& buttonClicked, p::StringView buttonLabel, p::v2 buttonSize = p::v2(18.f, 14.f));
 }    // namespace rift::UI

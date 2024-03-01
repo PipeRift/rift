@@ -5,13 +5,13 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct CNamespace : public p::Struct
 	{
-		STRUCT(CNamespace, p::Struct)
+		P_STRUCT(CNamespace, p::Struct)
 
-		PROP(name);
+		P_PROP(name);
 		p::Tag name;
 
 
@@ -40,7 +40,7 @@ namespace rift::AST
 
 	struct Namespace : public p::Struct
 	{
-		STRUCT(Namespace, p::Struct)
+		P_STRUCT(Namespace, p::Struct)
 
 		static constexpr p::i32 scopeCount = 8;
 		p::Tag scopes[scopeCount];    // TODO: Implement Inline arrays
@@ -57,7 +57,7 @@ namespace rift::AST
 		Namespace(const p::String& value) : Namespace(p::StringView{value}) {}
 		Namespace(std::initializer_list<p::Tag> values)
 		{
-			const p::i32 size = p::math::Min(p::i32(values.size()), scopeCount);
+			const p::i32 size = p::Min(p::i32(values.size()), scopeCount);
 			for (p::i32 i = 0; i < size; ++i)
 			{
 				scopes[i] = *(values.begin() + i);
@@ -68,7 +68,7 @@ namespace rift::AST
 		bool IsEmpty() const;
 		p::i32 Size() const;
 		bool Contains(const Namespace& other) const;
-		p::String ToString(bool isLocal = false) const;
+		p::String ToString(bool isLocal = false, char separator = '.') const;
 		p::Tag& First()
 		{
 			return scopes[0];
@@ -123,4 +123,4 @@ namespace rift::AST
 		void Read(p::Reader& ct);
 		void Write(p::Writer& ct) const;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

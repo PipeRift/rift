@@ -2,26 +2,12 @@
 
 #include "AST/Utils/TypeUtils.h"
 
-#include "AST/Components/CDeclClass.h"
-#include "AST/Components/CDeclStatic.h"
-#include "AST/Components/CDeclStruct.h"
-#include "AST/Components/CDeclType.h"
-#include "AST/Components/CDeclVariable.h"
-#include "AST/Components/CExprCall.h"
-#include "AST/Components/CExprDeclRef.h"
-#include "AST/Components/CExprInputs.h"
-#include "AST/Components/CExprOutputs.h"
-#include "AST/Components/CExprType.h"
 #include "AST/Components/CFileRef.h"
-#include "AST/Components/CLiteralBool.h"
-#include "AST/Components/CLiteralFloating.h"
-#include "AST/Components/CLiteralIntegral.h"
-#include "AST/Components/CLiteralString.h"
 #include "AST/Components/CNamespace.h"
-#include "AST/Components/CStmtIf.h"
-#include "AST/Components/CStmtInput.h"
-#include "AST/Components/CStmtOutputs.h"
-#include "AST/Components/CStmtReturn.h"
+#include "AST/Components/Declarations.h"
+#include "AST/Components/Expressions.h"
+#include "AST/Components/Literals.h"
+#include "AST/Components/Statements.h"
 #include "AST/Components/Views/CNodePosition.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Utils/Namespaces.h"
@@ -31,13 +17,12 @@
 #include "Rift.h"
 
 #include <Pipe/Core/Checks.h>
-#include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Files.h>
-#include <Pipe/PipeECS.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
+#include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	static p::TArray<RiftType> gFileTypes;
 
@@ -81,7 +66,7 @@ namespace rift::AST
 		return id;
 	}
 
-	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access,
+	void RemoveTypes(p::TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access,
 	    TView<Id> typeIds, bool removeFromDisk)
 	{
 		if (removeFromDisk)
@@ -90,17 +75,15 @@ namespace rift::AST
 			{
 				if (const auto* file = access.TryGet<const CFileRef>(id))
 				{
-					files::Delete(file->path, true, false);
+					Delete(file->path, true, false);
 				}
 			}
 		}
-		p::Remove(access, typeIds, true);
+		p::RemoveId(access, typeIds, true);
 	}
 
 	void SerializeType(Tree& ast, Id id, String& data)
 	{
-		ZoneScoped;
-
 		if (!Ensure(ast.Has<CDeclType>(id)))
 		{
 			return;
@@ -118,8 +101,6 @@ namespace rift::AST
 
 	void DeserializeType(Tree& ast, Id id, const String& data)
 	{
-		ZoneScoped;
-
 		JsonFormatReader reader{data};
 		if (!reader.IsValid())
 		{
@@ -150,22 +131,22 @@ namespace rift::AST
 		return NoId;
 	}
 
-	bool IsClassType(const Tree& ast, Id typeId)
+	bool IsClassType(p::TAccessRef<CDeclClass> access, Id typeId)
 	{
-		return ast.Has<CDeclClass>(typeId);
+		return access.Has<CDeclClass>(typeId);
 	}
 
-	bool IsStructType(const Tree& ast, Id typeId)
+	bool IsStructType(p::TAccessRef<CDeclStruct> access, Id typeId)
 	{
-		return ast.Has<CDeclStruct>(typeId);
+		return access.Has<CDeclStruct>(typeId);
 	}
 
-	bool IsStaticType(const Tree& ast, Id typeId)
+	bool IsStaticType(p::TAccessRef<CDeclStatic> access, Id typeId)
 	{
-		return ast.Has<CDeclStatic>(typeId);
+		return access.Has<CDeclStatic>(typeId);
 	}
 
-	bool HasVariables(TAccess<CDeclType> access, Id typeId)
+	bool HasVariables(p::TAccessRef<CDeclType> access, Id typeId)
 	{
 		if (const RiftType* fileType = FindFileType(access, typeId))
 		{
@@ -174,7 +155,7 @@ namespace rift::AST
 		return false;
 	}
 
-	bool HasFunctions(TAccess<CDeclType> access, Id typeId)
+	bool HasFunctions(p::TAccessRef<CDeclType> access, Id typeId)
 	{
 		if (const RiftType* fileType = FindFileType(access, typeId))
 		{
@@ -183,7 +164,7 @@ namespace rift::AST
 		return false;
 	}
 
-	bool HasFunctionBodies(TAccess<CDeclType> access, Id typeId)
+	bool HasFunctionBodies(p::TAccessRef<CDeclType> access, Id typeId)
 	{
 		if (const RiftType* fileType = FindFileType(access, typeId))
 		{
@@ -203,7 +184,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::Attach(ast, type, id);
+			p::AttachId(ast, type, id);
 		}
 		return id;
 	}
@@ -219,7 +200,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::Attach(ast, type, id);
+			p::AttachId(ast, type, id);
 		}
 		return id;
 	}
@@ -236,7 +217,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -247,7 +228,7 @@ namespace rift::AST
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
-		p::Attach(ast, functionId, id);
+		p::AttachId(ast, functionId, id);
 		ast.GetOrAdd<CExprOutputs>(functionId).Add(id);
 		return id;
 	}
@@ -258,7 +239,7 @@ namespace rift::AST
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
-		p::Attach(ast, functionId, id);
+		p::AttachId(ast, functionId, id);
 		ast.GetOrAdd<CExprInputs>(functionId).Add(id);
 		return id;
 	}
@@ -274,17 +255,17 @@ namespace rift::AST
 		const Id valueId = ast.Create();
 		ast.Add<CExprTypeId>(valueId, {.id = ast.GetNativeTypes().boolId});
 		ast.Add<CExprType>(id).type = GetNamespace(ast, ast.GetNativeTypes().boolId);
-		p::Attach(ast, id, valueId);
+		p::AttachId(ast, id, valueId);
 		ast.Add<CExprInputs>(id).Add(valueId);
 
 		TArray<Id> outIds(2);
 		ast.Create(outIds);
-		p::Attach(ast, id, outIds);
+		p::AttachId(ast, id, outIds);
 		ast.Add<CStmtOutputs>(id, Move(outIds));
 
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -297,7 +278,7 @@ namespace rift::AST
 		ast.Add<CStmtInput>(returnId);
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), returnId);
+			p::AttachId(ast, type.GetId(), returnId);
 		}
 		return returnId;
 	}
@@ -382,7 +363,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -395,7 +376,7 @@ namespace rift::AST
 		ast.Add<CExprDeclRef>(id);
 		ast.Add<CExprOutputs>(id).Add(id);    // Types gets resolved by a system later
 
-		const Id typeId = p::GetParent(ast, declId);
+		const Id typeId = p::GetIdParent(ast, declId);
 		Check(!IsNone(typeId));
 		auto& declRefExpr           = ast.Add<CExprDeclRef>(id);
 		declRefExpr.ownerName       = ast.Get<CNamespace>(typeId).name;
@@ -405,7 +386,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -419,7 +400,7 @@ namespace rift::AST
 		ast.Add<CExprOutputs>(id).Add(id);
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -434,20 +415,20 @@ namespace rift::AST
 		auto& inputs = ast.Add<CExprInputs>(id);
 		inputs.Resize(2);
 		ast.Create(inputs.pinIds);
-		p::Attach(ast, id, inputs.pinIds);
+		p::AttachId(ast, id, inputs.pinIds);
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
 
-	Id FindChildByName(TAccessRef<CNamespace, CParent> access, Id ownerId, Tag functionName)
+	Id FindChildByName(p::TAccessRef<CNamespace, CParent> access, Id ownerId, Tag functionName)
 	{
 		if (!IsNone(ownerId))
 		{
 			TArray<Id> children;
-			p::GetChildren(access, ownerId, children);
+			p::GetIdChildren(access, ownerId, children);
 			for (Id childId : children)
 			{
 				const auto* ns = access.TryGet<const CNamespace>(childId);
@@ -463,10 +444,11 @@ namespace rift::AST
 	void RemoveNodes(const RemoveAccess& access, TView<Id> ids)
 	{
 		ScopedChange(access, ids);
-		p::Remove(access, ids, true);
+		p::RemoveId(access, ids, true);
 	}
 
-	bool CopyExpressionType(TAccessRef<TWrite<CExprTypeId>> access, Id sourcePinId, Id targetPinId)
+	bool CopyExpressionType(
+	    p::TAccessRef<TWrite<CExprTypeId>> access, Id sourcePinId, Id targetPinId)
 	{
 		auto* sourceType = access.TryGet<const CExprTypeId>(sourcePinId);
 		auto* targetType = access.TryGet<CExprTypeId>(targetPinId);
@@ -508,12 +490,12 @@ namespace rift::AST
 		return index != NO_INDEX ? gFileTypes.Data() + index : nullptr;
 	}
 
-	const RiftType* FindFileType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId)
+	const RiftType* FindFileType(p::TAccessRef<ast::CDeclType> access, ast::Id typeId)
 	{
-		if (const auto* type = access.TryGet<const AST::CDeclType>(typeId))
+		if (const auto* type = access.TryGet<const ast::CDeclType>(typeId))
 		{
 			return FindFileType(type->typeId);
 		}
 		return nullptr;
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

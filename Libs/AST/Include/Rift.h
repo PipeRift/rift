@@ -2,15 +2,15 @@
 
 #pragma once
 
-#include "AST/Components/CDeclType.h"
+#include "AST/Components/Declarations.h"
 #include "AST/Id.h"
 #include "AST/Tree.h"
 #include "View.h"
 
 #include <Pipe/Core/Tag.h>
-#include <Pipe/PipeECS.h>
 #include <Pipe/Reflect/Class.h>
 #include <Pipe/Reflect/ClassType.h>
+#include <PipeECS.h>
 
 
 namespace rift

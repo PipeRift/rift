@@ -8,3 +8,5 @@ target_include_directories(RiftTests PUBLIC .)
 target_link_libraries(RiftTests PUBLIC RiftAST Bandit)
 
 add_test(NAME RiftTests COMMAND $<TARGET_FILE:RiftTests>)
+
+set_icon(RiftTests Icon.ico)

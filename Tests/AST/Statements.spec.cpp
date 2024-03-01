@@ -14,77 +14,77 @@ using namespace rift;
 go_bandit([]() {
 	describe("AST.Statements", []() {
 		it("Initializes outputs correctly", [&]() {
-			AST::Tree ast;
+			ast::Tree ast;
 
-			AST::Id functionId = AST::AddFunction({ast, AST::NoId}, "TestFunction");
-			AssertThat(ast.Has<AST::CStmtOutput>(functionId), Equals(true));
+			ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
+			AssertThat(ast.Has<ast::CStmtOutput>(functionId), Equals(true));
 
-			AST::Id callId = AST::AddCall({ast, AST::NoId}, functionId);
-			AssertThat(ast.Has<AST::CStmtOutput>(callId), Equals(true));
+			ast::Id callId = ast::AddCall({ast, ast::NoId}, functionId);
+			AssertThat(ast.Has<ast::CStmtOutput>(callId), Equals(true));
 
-			AST::Id ifId = AST::AddIf({ast, AST::NoId});
-			AssertThat(ast.Has<AST::CStmtOutputs>(ifId), Equals(true));
-			AssertThat(ast.Get<AST::CStmtOutputs>(ifId).pinIds.Size(), Equals(2));
+			ast::Id ifId = ast::AddIf({ast, ast::NoId});
+			AssertThat(ast.Has<ast::CStmtOutputs>(ifId), Equals(true));
+			AssertThat(ast.Get<ast::CStmtOutputs>(ifId).pinIds.Size(), Equals(2));
 		});
 
 		it("Initializes inputs correctly", [&]() {
-			AST::Tree ast;
+			ast::Tree ast;
 
-			AST::Id functionId = AST::AddFunction({ast, AST::NoId}, "TestFunction");
-			AssertThat(ast.Has<AST::CStmtInput>(functionId), Equals(false));
+			ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
+			AssertThat(ast.Has<ast::CStmtInput>(functionId), Equals(false));
 
-			AST::Id callId = AST::AddCall({ast, AST::NoId}, functionId);
-			AssertThat(ast.Has<AST::CStmtInput>(callId), Equals(true));
+			ast::Id callId = ast::AddCall({ast, ast::NoId}, functionId);
+			AssertThat(ast.Has<ast::CStmtInput>(callId), Equals(true));
 
-			AST::Id ifId = AST::AddIf({ast, AST::NoId});
-			AssertThat(ast.Has<AST::CStmtInput>(ifId), Equals(true));
+			ast::Id ifId = ast::AddIf({ast, ast::NoId});
+			AssertThat(ast.Has<ast::CStmtInput>(ifId), Equals(true));
 		});
 
 		it("Can connect with single output", [&]() {
-			AST::Tree ast;
+			ast::Tree ast;
 
-			AST::Id functionId = AST::AddFunction({ast, AST::NoId}, "TestFunction");
-			AST::Id callId     = AST::AddCall({ast, AST::NoId}, functionId);
-			AST::Id ifId       = AST::AddIf({ast, AST::NoId});
+			ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
+			ast::Id callId     = ast::AddCall({ast, ast::NoId}, functionId);
+			ast::Id ifId       = ast::AddIf({ast, ast::NoId});
 
-			AssertThat(AST::TryConnectStmt(ast, functionId, callId), Equals(true));
+			AssertThat(ast::TryConnectStmt(ast, functionId, callId), Equals(true));
 
 			// Can't connect to self
-			AssertThat(AST::TryConnectStmt(ast, functionId, functionId), Equals(false));
+			AssertThat(ast::TryConnectStmt(ast, functionId, functionId), Equals(false));
 
 			// Can't connect in loops
-			AssertThat(AST::TryConnectStmt(ast, callId, ifId), Equals(true));
-			AssertThat(AST::TryConnectStmt(ast, ifId, callId), Equals(false));
+			AssertThat(ast::TryConnectStmt(ast, callId, ifId), Equals(true));
+			AssertThat(ast::TryConnectStmt(ast, ifId, callId), Equals(false));
 
 			// Can replace a connection
-			AssertThat(AST::TryConnectStmt(ast, functionId, ifId), Equals(true));
+			AssertThat(ast::TryConnectStmt(ast, functionId, ifId), Equals(true));
 		});
 
 		it("Can connect with multiple outputs", [&]() {
-			AST::Tree ast;
+			ast::Tree ast;
 
-			AST::Id functionId = AST::AddFunction({ast, AST::NoId}, "TestFunction");
+			ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
 
-			AST::Id ifId    = AST::AddIf({ast, AST::NoId});
-			AST::Id call1Id = AST::AddCall({ast, AST::NoId}, functionId);
-			AST::Id call2Id = AST::AddCall({ast, AST::NoId}, functionId);
+			ast::Id ifId    = ast::AddIf({ast, ast::NoId});
+			ast::Id call1Id = ast::AddCall({ast, ast::NoId}, functionId);
+			ast::Id call2Id = ast::AddCall({ast, ast::NoId}, functionId);
 
 			AssertThat(
-			    AST::TryConnectStmt(ast, ast.Get<AST::CStmtOutputs>(ifId).pinIds[0], call2Id),
+			    ast::TryConnectStmt(ast, ast.Get<ast::CStmtOutputs>(ifId).pinIds[0], call2Id),
 			    Equals(true));
-			AssertThat(ast.Get<AST::CStmtOutputs>(ifId).linkInputNodes[0], Equals(call2Id));
+			AssertThat(ast.Get<ast::CStmtOutputs>(ifId).linkInputNodes[0], Equals(call2Id));
 
 			// Can replace a connection
 			AssertThat(
-			    AST::TryConnectStmt(ast, ast.Get<AST::CStmtOutputs>(ifId).pinIds[0], call1Id),
+			    ast::TryConnectStmt(ast, ast.Get<ast::CStmtOutputs>(ifId).pinIds[0], call1Id),
 			    Equals(true));
-			AssertThat(ast.Get<AST::CStmtOutputs>(ifId).linkInputNodes[0], Equals(call1Id));
+			AssertThat(ast.Get<ast::CStmtOutputs>(ifId).linkInputNodes[0], Equals(call1Id));
 
 			// Can connect to a different pin
 			AssertThat(
-			    AST::TryConnectStmt(ast, ast.Get<AST::CStmtOutputs>(ifId).pinIds[1], call2Id),
+			    ast::TryConnectStmt(ast, ast.Get<ast::CStmtOutputs>(ifId).pinIds[1], call2Id),
 			    Equals(true));
-			AssertThat(ast.Get<AST::CStmtOutputs>(ifId).linkInputNodes[1], Equals(call2Id));
+			AssertThat(ast.Get<ast::CStmtOutputs>(ifId).linkInputNodes[1], Equals(call2Id));
 		});
 	});
 });

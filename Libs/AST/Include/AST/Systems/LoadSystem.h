@@ -4,16 +4,16 @@
 #include "AST/Components/CFileRef.h"
 #include "AST/Tree.h"
 
-#include <Pipe/PipeArrays.h>
-#include <Pipe/PipeECS.h>
+#include <PipeArrays.h>
+#include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct Tree;
 }
 
-namespace rift::AST::LoadSystem
+namespace rift::ast::LoadSystem
 {
 	struct ModuleTypePaths
 	{
@@ -30,18 +30,20 @@ namespace rift::AST::LoadSystem
 	/**
 	 * @param paths of all currently unloaded modules
 	 */
-	void ScanSubmodules(Tree& ast, TArray<String>& paths);
+	void ScanSubmodules(Tree& ast, p::TArray<p::String>& paths);
 	/**
 	 * @param paths of all currently unloaded types
 	 */
-	void ScanTypes(Tree& ast, TArray<ModuleTypePaths>& pathsByModule);
+	void ScanTypes(Tree& ast, p::TArray<ModuleTypePaths>& pathsByModule);
 
-	void CreateModulesFromPaths(Tree& ast, TArray<String>& paths, TArray<Id>& ids);
-	void CreateTypesFromPaths(Tree& ast, TView<ModuleTypePaths> pathsByModule, TArray<Id>& ids);
+	void CreateModulesFromPaths(Tree& ast, p::TArray<p::String>& paths, p::TArray<Id>& ids);
+	void CreateTypesFromPaths(
+	    Tree& ast, p::TView<ModuleTypePaths> pathsByModule, p::TArray<Id>& ids);
 
-	void LoadFileStrings(TAccessRef<CFileRef> access, TView<Id> nodes, TArray<String>& strings);
+	void LoadFileStrings(
+	    p::TAccessRef<CFileRef> access, p::TView<Id> nodes, p::TArray<p::String>& strings);
 
-	void DeserializeModules(Tree& ast, TView<Id> moduleIds, TView<String> strings);
-	void DeserializeTypes(Tree& ast, TView<Id> typeIds, TView<String> strings);
+	void DeserializeModules(Tree& ast, p::TView<Id> moduleIds, p::TView<p::String> strings);
+	void DeserializeTypes(Tree& ast, p::TView<Id> typeIds, p::TView<p::String> strings);
 
-}    // namespace rift::AST::LoadSystem
+}    // namespace rift::ast::LoadSystem

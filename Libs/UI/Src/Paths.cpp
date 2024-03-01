@@ -2,11 +2,14 @@
 
 #include "UI/Paths.h"
 
+#include <Pipe/Files/PlatformPaths.h>
+
+
 namespace rift::Paths
 {
-	Path GetResourcesPath()
+	p::String GetResourcesPath()
 	{
-		static p::Path relativeResourcesPath{"./Resources"};
-		return GetBasePath() / relativeResourcesPath;
+		static p::StringView relativeResourcesPath{"Resources"};
+		return p::JoinPaths(p::PlatformPaths::GetBasePath(), relativeResourcesPath);
 	}
 };    // namespace rift::Paths

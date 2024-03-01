@@ -4,7 +4,7 @@
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Reflect/Struct.h>
 
-namespace rift::AST
+namespace rift::ast
 {
 	enum class RiftModuleTarget : p::u8
 	{
@@ -12,22 +12,22 @@ namespace rift::AST
 		Shared,
 		Static
 	};
-}    // namespace rift::AST
-ENUM(rift::AST::RiftModuleTarget)
+}    // namespace rift::ast
+ENUM(rift::ast::RiftModuleTarget)
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	static constexpr p::StringView moduleFilename = "__module__.rf";
 
 	struct CModule : public p::Struct
 	{
-		STRUCT(CModule, p::Struct)
+		P_STRUCT(CModule, p::Struct)
 
-		PROP(target)
+		P_PROP(target)
 		RiftModuleTarget target = RiftModuleTarget::Executable;
 
-		PROP(dependencies)
+		P_PROP(dependencies)
 		p::TArray<p::Tag> dependencies;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

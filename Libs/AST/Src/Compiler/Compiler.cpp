@@ -15,7 +15,7 @@
 
 namespace rift
 {
-	void Compiler::AddError(StringView str)
+	void Compiler::Error(StringView str)
 	{
 		p::Error(str);
 		CompileError newError{};
@@ -24,51 +24,48 @@ namespace rift
 	}
 
 
-	void Build(AST::Tree& ast, const CompilerConfig& config, TPtr<Backend> backend)
+	void Build(ast::Tree& ast, const CompilerConfig& config, TPtr<Backend> backend)
 	{
-		ZoneScoped;
 		Compiler compiler{ast, config};
 
 		if (!backend)
 		{
-			compiler.AddError("Invalid backend.");
+			compiler.Error("Invalid backend.");
 			return;
 		}
 
+		if (!ast::HasProject(ast))
 		{
-			ZoneScopedN("Frontend");
-
-			if (!AST::HasProject(ast))
-			{
-				p::Error("No existing project to build.");
-				return;
-			}
-			compiler.config.Init(ast);
-
-			if (auto* nativeBindings = GetModule<NativeBindingModule>().Get())
-			{
-				p::Info("Interpret native modules");
-				nativeBindings->SyncIncludes(ast);
-			}
-
-			p::Info("Loading files");
-			AST::LoadSystem::Run(ast);
-
-			OptimizationSystem::PruneDisconnectedExpressions(ast);
-			AST::TypeSystem::PropagateVariableTypes(ast);
-			AST::TypeSystem::PropagateExpressionTypes(ast);
+			p::Error("No existing project to build.");
+			return;
 		}
 
-		p::Info("Building project '{}'", AST::GetProjectName(compiler.ast));
+		compiler.config.Init(ast);
+
+		if (auto* nativeBindings = GetModule<NativeBindingModule>().Get())
+		{
+			p::Info("Interpret native modules");
+			nativeBindings->SyncIncludes(ast);
+		}
+
+		p::Info("Loading files");
+		ast::LoadSystem::Run(ast);
+
+		OptimizationSystem::PruneDisconnectedExpressions(ast);
+		ast::TypeSystem::PropagateVariableTypes(ast);
+		ast::TypeSystem::PropagateExpressionTypes(ast);
+
+
+		p::Info("Building project '{}'", ast::GetProjectName(compiler.ast));
 		// Clean build folders
 		p::Info("Cleaning previous build");
-		files::Delete(compiler.config.binariesPath, true, false);
-		files::CreateFolder(compiler.config.binariesPath, true);
+		Delete(compiler.config.binariesPath, true, false);
+		CreateFolder(compiler.config.binariesPath, true);
 
 		backend->Build(compiler);
 	}
 
-	void Build(AST::Tree& ast, const CompilerConfig& config, ClassType* backendType)
+	void Build(ast::Tree& ast, const CompilerConfig& config, ClassType* backendType)
 	{
 		if (backendType)
 		{

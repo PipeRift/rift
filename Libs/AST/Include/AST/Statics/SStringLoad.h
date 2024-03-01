@@ -8,19 +8,17 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	using namespace p::core;
-
 	// Contains loaded string data from disk
-	struct SStringLoad : public Struct
+	struct SStringLoad : public p::Struct
 	{
-		STRUCT(SStringLoad, Struct)
+		P_STRUCT(SStringLoad, p::Struct)
 
 		// This buffers are always in sync with size
 		// They bind by array index an Id, path and loaded string
-		TArray<Id> entities;
-		TArray<p::Path> paths;
-		TArray<String> strings;
+		p::TArray<p::Id> entities;
+		p::TArray<p::String> paths;
+		p::TArray<p::String> strings;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

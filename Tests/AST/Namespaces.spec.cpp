@@ -9,68 +9,66 @@
 #include <bandit/bandit.h>
 
 
-
 using namespace snowhouse;
 using namespace bandit;
 using namespace rift;
-using namespace p::core;
 
 
 go_bandit([]() {
 	describe("AST.Namespaces", []() {
 		it("Can get namespaces", [&]() {
-			AST::Tree ast;
+			ast::Tree ast;
 
-			AST::Id functionId = AST::AddFunction({ast, AST::NoId}, "TestFunction");
+			ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
 			AssertThat(
-			    AST::GetNamespace(ast, functionId).ToString().c_str(), Equals("@TestFunction"));
-			AssertThat(AST::GetParentNamespace(ast, functionId).ToString().c_str(), Equals(""));
+			    ast::GetNamespace(ast, functionId).ToString().c_str(), Equals("@TestFunction"));
+			AssertThat(ast::GetParentNamespace(ast, functionId).ToString().c_str(), Equals(""));
 
-			AST::Id classBId    = AST::CreateType(ast, ASTModule::classType, "TestClass");
-			AST::Id functionBId = AST::AddFunction({ast, classBId}, "TestFunction");
-			AssertThat(AST::GetNamespace(ast, functionBId).ToString().c_str(),
+			ast::Id classBId    = ast::CreateType(ast, ASTModule::classType, "TestClass");
+			ast::Id functionBId = ast::AddFunction({ast, classBId}, "TestFunction");
+			AssertThat(ast::GetNamespace(ast, functionBId).ToString().c_str(),
 			    Equals("@TestClass.TestFunction"));
 			AssertThat(
-			    AST::GetParentNamespace(ast, functionBId).ToString().c_str(), Equals("@TestClass"));
+			    ast::GetParentNamespace(ast, functionBId).ToString().c_str(), Equals("@TestClass"));
 
-			AST::Id parentC = ast.Create();
-			ast.Add<AST::CModule>(parentC);
-			ast.Add(parentC, AST::CNamespace{"SomeScope"});
-			AST::Id classCId = AST::CreateType(ast, ASTModule::classType, "TestClass");
-			p::Attach(ast, parentC, classCId);
-			AST::Id functionCId = AST::AddFunction({ast, classCId}, "TestFunction");
-			AssertThat(AST::GetNamespace(ast, functionCId).ToString().c_str(),
+			ast::Id parentC = ast.Create();
+			ast.Add<ast::CModule>(parentC);
+			ast.Add(parentC, ast::CNamespace{"SomeScope"});
+			ast::Id classCId = ast::CreateType(ast, ASTModule::classType, "TestClass");
+			p::AttachId(ast, parentC, classCId);
+			ast::Id functionCId = ast::AddFunction({ast, classCId}, "TestFunction");
+			AssertThat(ast::GetNamespace(ast, functionCId).ToString().c_str(),
 			    Equals("@SomeScope.TestClass.TestFunction"));
-			AssertThat(AST::GetParentNamespace(ast, functionCId).ToString().c_str(),
+			AssertThat(ast::GetParentNamespace(ast, functionCId).ToString().c_str(),
 			    Equals("@SomeScope.TestClass"));
 		});
 
 		it("Can get local namespaces", [&]() {
-			AST::Tree ast;
+			ast::Tree ast;
 
-			AST::Id parent = ast.Create();
-			ast.Add<AST::CModule>(parent);
-			ast.Add(parent, AST::CNamespace{"SomeModule"});
-			AST::Id classId = AST::CreateType(ast, ASTModule::classType, "TestClass");
-			p::Attach(ast, parent, classId);
-			AST::Id functionId = AST::AddFunction({ast, classId}, "TestFunction");
-			p::String ns       = AST::GetNamespace(ast, functionId).ToString(true);
+			ast::Id parent = ast.Create();
+			ast.Add<ast::CModule>(parent);
+			ast.Add(parent, ast::CNamespace{"SomeModule"});
+			ast::Id classId = ast::CreateType(ast, ASTModule::classType, "TestClass");
+			p::AttachId(ast, parent, classId);
+			ast::Id functionId = ast::AddFunction({ast, classId}, "TestFunction");
+			p::String ns       = ast::GetNamespace(ast, functionId).ToString(true);
 			AssertThat(ns.c_str(), Equals("TestClass.TestFunction"));
 		});
 
 		it("Can initialize", [&]() {
-			AST::Namespace ns0{};
+			ast::Namespace ns0{};
 			AssertThat(ns0.scopes[0].IsNone(), Equals(true));
 			AssertThat(ns0.Size(), Equals(0));
 			AssertThat(ns0.IsEmpty(), Equals(true));
 
-			AST::Namespace ns1{"A"};
+			ast::Namespace ns1{"A"};
 			AssertThat(ns1.scopes[0].AsString().data(), Equals("A"));
 			AssertThat(ns1.scopes[1].IsNone(), Equals(true));
 			AssertThat(ns1.Size(), Equals(1));
 			AssertThat(ns1.IsEmpty(), Equals(false));
 
-			AST::Namespace ns2{"A", "B"};
+			ast::Namespace ns2{"A", "B"};
 			AssertThat(ns2.scopes[0].AsString().data(), Equals("A"));
 			AssertThat(ns2.scopes[1].AsString().data(), Equals("B"));
 			AssertThat(ns2.scopes[2].IsNone(), Equals(true));
@@ -79,19 +77,19 @@ go_bandit([]() {
 		});
 
 		it("Can iterate", [&]() {
-			AST::Namespace ns0{};
+			ast::Namespace ns0{};
 			for (const Tag& name : ns0)
 			{
 				Assert();
 			}
 
-			AST::Namespace ns1{"C"};
+			ast::Namespace ns1{"C"};
 			for (const Tag& name : ns1)
 			{
 				AssertThat(name.AsString().data(), Equals("C"));
 			}
 
-			AST::Namespace ns2{"A", "B"};
+			ast::Namespace ns2{"A", "B"};
 			i32 i = 0;
 			for (const Tag& name : ns2)
 			{
@@ -101,29 +99,29 @@ go_bandit([]() {
 		});
 
 		it("Can find id from namespace", [&]() {
-			AST::Tree ast;
-			AST::Id parent = ast.Create();
-			ast.Add<AST::CModule>(parent);
-			ast.Add(parent, AST::CNamespace{"A"});
+			ast::Tree ast;
+			ast::Id parent = ast.Create();
+			ast.Add<ast::CModule>(parent);
+			ast.Add(parent, ast::CNamespace{"A"});
 
-			AST::Id classId = AST::CreateType(ast, ASTModule::classType, "B");
-			p::Attach(ast, parent, classId);
+			ast::Id classId = ast::CreateType(ast, ASTModule::classType, "B");
+			p::AttachId(ast, parent, classId);
 
-			AST::Id class2Id = AST::CreateType(ast, ASTModule::classType, "B2");
-			p::Attach(ast, parent, class2Id);
+			ast::Id class2Id = ast::CreateType(ast, ASTModule::classType, "B2");
+			p::AttachId(ast, parent, class2Id);
 
-			AST::Id functionId  = AST::AddFunction({ast, classId}, "C");
-			AST::Id function2Id = AST::AddFunction({ast, classId}, "C2");
+			ast::Id functionId  = ast::AddFunction({ast, classId}, "C");
+			ast::Id function2Id = ast::AddFunction({ast, classId}, "C2");
 
 
-			AssertThat(AST::FindIdFromNamespace(ast, {"A"}), Equals(parent));
-			AssertThat(AST::FindIdFromNamespace(ast, {"A", "B"}), Equals(classId));
-			AssertThat(AST::FindIdFromNamespace(ast, {"A", "B2"}), Equals(class2Id));
-			AssertThat(AST::FindIdFromNamespace(ast, {"A", "B", "C"}), Equals(functionId));
-			AssertThat(AST::FindIdFromNamespace(ast, {"A", "B", "C2"}), Equals(function2Id));
+			AssertThat(ast::FindIdFromNamespace(ast, {"A"}), Equals(parent));
+			AssertThat(ast::FindIdFromNamespace(ast, {"A", "B"}), Equals(classId));
+			AssertThat(ast::FindIdFromNamespace(ast, {"A", "B2"}), Equals(class2Id));
+			AssertThat(ast::FindIdFromNamespace(ast, {"A", "B", "C"}), Equals(functionId));
+			AssertThat(ast::FindIdFromNamespace(ast, {"A", "B", "C2"}), Equals(function2Id));
 
-			AssertThat(AST::FindIdFromNamespace(ast, {"N"}), Equals(AST::NoId));
-			AssertThat(AST::FindIdFromNamespace(ast, {"A", "N"}), Equals(AST::NoId));
+			AssertThat(ast::FindIdFromNamespace(ast, {"N"}), Equals(ast::NoId));
+			AssertThat(ast::FindIdFromNamespace(ast, {"A", "N"}), Equals(ast::NoId));
 		});
 	});
 });

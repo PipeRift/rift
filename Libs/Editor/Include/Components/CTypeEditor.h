@@ -9,11 +9,11 @@
 #include <Utils/NodesInternal.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	struct CTypeEditor : public p::Struct
 	{
-		STRUCT(CTypeEditor, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(CTypeEditor, p::Struct, p::Struct_NotSerialized)
 
 		static const Tag rightTopNode;
 		static const Tag rightBottomNode;
@@ -27,8 +27,8 @@ namespace rift::Editor
 		bool showElements = true;
 		bool showDetails  = true;
 
-		AST::Id selectedPropertyId      = AST::NoId;
-		AST::Id pendingDeletePropertyId = AST::NoId;
+		ast::Id selectedPropertyId      = ast::NoId;
+		ast::Id pendingDeletePropertyId = ast::NoId;
 
 		Nodes::EditorContext nodesEditor;
 		ImGuiTextFilter elementsFilter;
@@ -37,4 +37,4 @@ namespace rift::Editor
 	inline const Tag CTypeEditor::rightTopNode{"rightTopNode"};
 	inline const Tag CTypeEditor::rightBottomNode{"rightBottomNode"};
 	inline const Tag CTypeEditor::centralNode{"centralNode"};
-}    // namespace rift::Editor
+}    // namespace rift::editor

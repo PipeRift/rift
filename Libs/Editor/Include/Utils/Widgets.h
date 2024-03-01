@@ -2,22 +2,19 @@
 
 #pragma once
 
-#include <AST/Components/CDeclClass.h>
-#include <AST/Components/CDeclNative.h>
-#include <AST/Components/CDeclStruct.h>
-#include <AST/Components/CDeclType.h>
 #include <AST/Components/CNamespace.h>
+#include <AST/Components/Declarations.h>
 #include <AST/Tree.h>
 #include <Pipe/Core/StringView.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	bool TypeCombo(AST::TAccessRef<AST::CNamespace, AST::CDeclType, AST::CDeclNative,
-	                   AST::CDeclStruct, AST::CDeclClass>
+	bool TypeCombo(p::TAccessRef<ast::CNamespace, ast::CDeclType, ast::CDeclNative,
+	                   ast::CDeclStruct, ast::CDeclClass>
 	                   access,
-	    p::StringView label, AST::Id& selectedTypeId);
+	    p::StringView label, ast::Id& selectedTypeId);
 
-	bool InputLiteralValue(AST::Tree& ast, p::StringView label, AST::Id literalId);
-}    // namespace rift::Editor
+	bool InputLiteralValue(ast::Tree& ast, p::StringView label, ast::Id literalId);
+}    // namespace rift::editor

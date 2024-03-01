@@ -7,8 +7,5 @@
 
 namespace rift::Paths
 {
-	using namespace p;
-
-
-	Path GetResourcesPath();
+	p::String GetResourcesPath();
 };    // namespace rift::Paths

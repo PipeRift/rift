@@ -3,7 +3,7 @@
 #include "AST/Components/CNamespace.h"
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	Namespace::Namespace(p::StringView value)
 	{
@@ -69,19 +69,23 @@ namespace rift::AST
 		return size;
 	}
 
-	p::String Namespace::ToString(bool isLocal) const
+	p::String Namespace::ToString(bool isLocal, char separator) const
 	{
 		p::String ns;
 		if (!isLocal)
 		{
-			ns.append("@");
 			const p::Tag firstScope = scopes[0];
 			if (!firstScope.IsNone())
 			{
 				ns.append(firstScope.AsString());
-				ns.append(".");
+				ns.push_back(separator);
 			}
 		}
+		else
+		{
+			ns.push_back('#');
+		}
+
 		for (p::i32 i = 1; i < scopeCount; ++i)
 		{
 			const p::Tag scope = scopes[i];
@@ -90,7 +94,7 @@ namespace rift::AST
 				break;
 			}
 			ns.append(scope.AsString());
-			ns.append(".");
+			ns.push_back(separator);
 		}
 
 		if (!ns.empty())    // Remove last dot
@@ -104,7 +108,7 @@ namespace rift::AST
 	{
 		p::u32 size = 0;
 		ct.BeginArray(size);
-		size = p::math::Min(size, p::u32(Namespace::scopeCount));
+		size = p::Min(size, p::u32(Namespace::scopeCount));
 		for (p::u32 i = 0; i < size; ++i)
 		{
 			ct.Next(scopes[i]);
@@ -120,4 +124,4 @@ namespace rift::AST
 			ct.Next(scopes[i]);
 		}
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

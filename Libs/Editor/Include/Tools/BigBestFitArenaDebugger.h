@@ -3,12 +3,12 @@
 
 #include <Pipe/Core/Platform.h>
 #include <Pipe/Core/StringView.h>
-#include <Pipe/Math/Vector.h>
 #include <Pipe/Memory/BigBestFitArena.h>
 #include <Pipe/Memory/Block.h>
+#include <PipeVectors.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	using namespace p;
 
@@ -60,4 +60,4 @@ namespace rift::Editor
 		BigBestFitArenaDebugger();
 		void Draw();
 	};
-}    // namespace rift::Editor
+}    // namespace rift::editor

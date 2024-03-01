@@ -8,15 +8,15 @@
 #include <Compiler/Compiler.h>
 #include <Compiler/Utils/BackendUtils.h>
 #include <GraphViewModule.h>
-#include <LLVMBackendModule.h>
 #include <MIRBackendModule.h>
-#include <Pipe/Core/Profiler.h>
+#include <Pipe.h>
 #include <Pipe/Files/Paths.h>
-#include <Pipe/Pipe.h>
+#include <Pipe/Files/PlatformPaths.h>
 #include <Rift.h>
 
 #include <chrono>
 #include <CLI/CLI.hpp>
+#include <thread>
 
 
 
@@ -66,14 +66,19 @@ namespace rift
 int main(int argc, char** argv)
 {
 	p::Initialize("Saved/Logs");
+	p::Info(p::PlatformPaths::GetUserSettingsPath());
 	EnableModule<ASTModule>();
-	EnableModule<LLVMBackendModule>();
 	EnableModule<MIRBackendModule>();
 	EnableModule<GraphViewModule>();
+
+	CompilerConfig config;
 
 	CLI::App app{"Rift compiler"};
 	String path;
 	app.add_option("-p,--project", path, "Project path")->required();
+	app.add_option("-v,--verbose", config.verbose, "Verbose")->required();
+	app.add_flag("-O0{0},-O1{1},-O2{2},-O3{3}", config.optimization, "Optimization")
+	    ->expected(0, 3);
 
 
 	String selectedBackendStr;
@@ -84,18 +89,15 @@ int main(int argc, char** argv)
 
 	TPtr<Backend> backend = FindBackendByName(availableBackends, Tag(selectedBackendStr));
 
-	ZoneScopedNC("CLI Execution", 0x459bd1);
+	ast::Tree ast;
+	ast::OpenProject(ast, path);
 
-	AST::Tree ast;
-	AST::OpenProject(ast, path);
-
-	if (!AST::HasProject(ast))
+	if (!ast::HasProject(ast))
 	{
 		p::Error("Couldn't open project '{}'", p::ToString(path));
 		return 1;
 	}
 
-	CompilerConfig config;
 	Build(ast, config, backend);
 
 	while (true)

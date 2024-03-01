@@ -1,24 +1,22 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Components/CDeclFunction.h"
-#include "AST/Components/CExprCall.h"
-#include "AST/Components/CExprInputs.h"
-#include "AST/Components/CExprOutputs.h"
 #include "AST/Components/CNamespace.h"
+#include "AST/Components/Declarations.h"
+#include "AST/Components/Expressions.h"
 #include "AST/Components/Tags/CInvalid.h"
 #include "AST/Tree.h"
 
-#include <Pipe/PipeArrays.h>
-#include <Pipe/PipeECS.h>
+#include <PipeArrays.h>
+#include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct Tree;
 }
 
-namespace rift::AST::FunctionsSystem
+namespace rift::ast::FunctionsSystem
 {
 	struct CTmpInvalidKeep
 	{};
@@ -37,4 +35,4 @@ namespace rift::AST::FunctionsSystem
 	    p::TWrite<CTmpInvalidKeep>, p::TWrite<CChild>, p::TWrite<CParent>>;
 	void RemoveInvalidDisconnectedArgs(InvalidDisconnectedPinAccess access);
 	void ClearAddedTags(Tree& ast);
-}    // namespace rift::AST::FunctionsSystem
+}    // namespace rift::ast::FunctionsSystem

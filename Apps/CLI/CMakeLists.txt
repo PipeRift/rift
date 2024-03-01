@@ -14,4 +14,4 @@ target_link_libraries(RiftCLIExe PUBLIC
 
 rift_module(RiftCLIExe)
 set_target_properties(RiftCLIExe PROPERTIES OUTPUT_NAME "Rift")
-set_icon(RiftCLIExe ../../Resources/Icon.ico)
+set_icon(RiftCLIExe Icon.ico)

@@ -6,7 +6,7 @@
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	using namespace p;
 
@@ -27,4 +27,4 @@ namespace rift::Editor
 	private:
 		void DrawType(Type* type);
 	};
-}    // namespace rift::Editor
+}    // namespace rift::editor

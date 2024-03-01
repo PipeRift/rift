@@ -2,13 +2,13 @@
 #pragma once
 
 #include <AST/Tree.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::Editor::Graph
+namespace rift::editor::Graph
 {
-	void DrawNodesContextMenu(AST::Tree& ast, AST::Id typeId, p::TView<AST::Id> nodeIds);
-	void DrawGraphContextMenu(AST::Tree& ast, AST::Id typeId, AST::Id hoveredNodeId);
+	void DrawNodesContextMenu(ast::Tree& ast, ast::Id typeId, p::TView<ast::Id> nodeIds);
+	void DrawGraphContextMenu(ast::Tree& ast, ast::Id typeId, ast::Id hoveredNodeId);
 	void DrawContextMenu(
-	    AST::Tree& ast, AST::Id typeId, AST::Id hoveredNodeId, AST::Id hoveredLinkId);
-}    // namespace rift::Editor::Graph
+	    ast::Tree& ast, ast::Id typeId, ast::Id hoveredNodeId, ast::Id hoveredLinkId);
+}    // namespace rift::editor::Graph

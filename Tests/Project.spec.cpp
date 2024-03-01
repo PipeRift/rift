@@ -6,6 +6,7 @@
 #include <bandit/bandit.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/Files/PlatformPaths.h>
 #include <Pipe/Memory/OwnPtr.h>
 
 #include <chrono>
@@ -18,57 +19,57 @@ using namespace rift;
 using namespace p;
 using namespace std::chrono_literals;
 
-String testProjectPath = p::JoinPaths(GetCurrentPath(), "TestProject");
+String testProjectPath = p::JoinPaths(PlatformPaths::GetCurrentPath(), "TestProject");
 
 
 go_bandit([]() {
 	describe("Project", []() {
 		before_each([]() {
-			files::Delete(testProjectPath, true, false);
+			Delete(testProjectPath, true, false);
 
-			if (!files::ExistsAsFolder(testProjectPath))
+			if (!ExistsAsFolder(testProjectPath))
 			{
-				files::CreateFolder(testProjectPath);
+				CreateFolder(testProjectPath);
 			}
 		});
 
 		after_each([]() {
-			files::Delete(testProjectPath);
+			Delete(testProjectPath);
 		});
 
 		it("Can load empty descriptor", [&]() {
-			files::SaveStringFile(p::JoinPaths(testProjectPath, AST::moduleFilename), "{}");
+			SaveStringFile(p::JoinPaths(testProjectPath, ast::moduleFilename), "{}");
 
-			AST::Tree ast;
-			bool result = AST::OpenProject(ast, testProjectPath);
+			ast::Tree ast;
+			bool result = ast::OpenProject(ast, testProjectPath);
 			AssertThat(result, Equals(true));
-			AssertThat(AST::HasProject(ast), Equals(true));
+			AssertThat(ast::HasProject(ast), Equals(true));
 		});
 
 		it("Project name equals the folder", [&]() {
-			files::SaveStringFile(p::JoinPaths(testProjectPath, AST::moduleFilename), "{}");
+			SaveStringFile(p::JoinPaths(testProjectPath, ast::moduleFilename), "{}");
 
-			AST::Tree ast;
-			bool result = AST::OpenProject(ast, testProjectPath);
+			ast::Tree ast;
+			bool result = ast::OpenProject(ast, testProjectPath);
 			AssertThat(result, Equals(true));
-			AssertThat(AST::HasProject(ast), Equals(true));
+			AssertThat(ast::HasProject(ast), Equals(true));
 
-			StringView projectName = AST::GetProjectName(ast).AsString();
+			StringView projectName = ast::GetProjectName(ast).AsString();
 			AssertThat(projectName, Equals("TestProject"));
 		});
 
 		// TODO: Fix module loading. They can't load from CFileRef pointing to the folder and not
 		// the file
 		it("Project name can be overriden", [&]() {
-			files::SaveStringFile(
-			    p::JoinPaths(testProjectPath, AST::moduleFilename), "{\"name\": \"SomeProject\"}");
+			SaveStringFile(
+			    p::JoinPaths(testProjectPath, ast::moduleFilename), "{\"name\": \"SomeProject\"}");
 
-			AST::Tree ast;
-			bool result = AST::OpenProject(ast, testProjectPath);
+			ast::Tree ast;
+			bool result = ast::OpenProject(ast, testProjectPath);
 			AssertThat(result, Equals(true));
-			AssertThat(AST::HasProject(ast), Equals(true));
+			AssertThat(ast::HasProject(ast), Equals(true));
 
-			StringView projectName = AST::GetProjectName(ast).AsString();
+			StringView projectName = ast::GetProjectName(ast).AsString();
 			AssertThat(projectName, Equals("SomeProject"));
 		});
 	});

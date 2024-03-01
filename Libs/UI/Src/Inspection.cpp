@@ -132,13 +132,13 @@ namespace rift::UI
 		}
 	}
 
-	void DrawArrayValue(bool open, const ArrayProperty& property, void* instance)
+	void DrawArrayValue(const ArrayProperty& property, void* instance)
 	{
 		UI::Text(Strings::Format("{} items", property.GetSize(instance)));
 
 		// Ignore indent on buttons
 		const float widthAvailable =
-		    ImGui::GetContentRegionAvailWidth() + UI::GetCurrentWindow()->DC.Indent.x;
+		    ImGui::GetContentRegionAvail().x + UI::GetCurrentWindow()->DC.Indent.x;
 		UI::SameLine(widthAvailable - 50.f);
 		UI::PushStyleCompact();
 		if (UI::Button(ICON_FA_PLUS "##AddItem", v2(16.f, 18.f)))
@@ -153,78 +153,23 @@ namespace rift::UI
 		UI::PopStyleCompact();
 	}
 
-	void DrawArrayItemButtons(const ArrayProperty& property, void* instance, i32 index)
+	void DrawArrayItemButtons(const ValueHandle& handle)
 	{
 		const float widthAvailable =
-		    ImGui::GetContentRegionAvailWidth() + UI::GetCurrentWindow()->DC.Indent.x;
+		    ImGui::GetContentRegionAvail().x + UI::GetCurrentWindow()->DC.Indent.x;
 		UI::SameLine(widthAvailable - 50.f);
 		UI::PushStyleCompact();
 		static String label;
 		label.clear();
-		Strings::FormatTo(label, ICON_FA_TIMES "##removeItem_{}", index);
+		Strings::FormatTo(label, ICON_FA_TIMES "##removeItem_{}", handle.GetIndex());
 		if (UI::Button(label.c_str(), v2(18.f, 18.f)))
 		{
-			property.RemoveItem(instance, index);
+			handle.GetArrayProperty()->RemoveItem(handle.GetContainerPtr(), handle.GetIndex());
 		}
 		UI::PopStyleCompact();
 	}
 
-	void InspectArrayProperty(const ArrayProperty& property, void* instance)
-	{
-		const i32 size  = property.GetSize(instance);
-		const bool open = BeginInspectHeader(property.GetDisplayName().data(), size <= 0);
-		UI::TableSetColumnIndex(1);
-		DrawArrayValue(open, property, instance);
-		if (open)
-		{
-			auto* type = property.GetType();
-			static String label;
-			if (auto* structType = Cast<StructType>(type))
-			{
-				for (i32 i = 0; i < size; ++i)
-				{
-					label.clear();
-					Strings::FormatTo(label, "{}", i);
-					const bool open = BeginInspectHeader(label);
-					if (open)
-					{
-						UI::Unindent();
-					}
-					UI::TableSetColumnIndex(1);
-					DrawArrayItemButtons(property, instance, i);
-					if (open)
-					{
-						UI::Indent();
-						InspectProperties(property.GetItem(instance, i), structType);
-						EndInspectHeader();
-					}
-				}
-			}
-			else if (auto* custom = gCustomKeyValues.Find(type))
-			{
-				for (i32 i = 0; i < size; ++i)
-				{
-					label.clear();
-					Strings::FormatTo(label, "{}", i);
-					(*custom)(label, property.GetItem(instance, i), type);
-					DrawArrayItemButtons(property, instance, i);
-				}
-			}
-			else
-			{
-				for (i32 i = 0; i < size; ++i)
-				{
-					label.clear();
-					Strings::FormatTo(label, "{}", i);
-					DrawKeyValue(label, property.GetItem(instance, i), type);
-					DrawArrayItemButtons(property, instance, i);
-				}
-			}
-			EndInspectHeader();
-		}
-	}
-
-	void InspectProperty(const PropertyHandle& handle)
+	void InspectProperty(const ValueHandle& handle)
 	{
 		auto* type = handle.GetType();
 		if (!type)
@@ -234,30 +179,54 @@ namespace rift::UI
 
 		void* instance = handle.GetPtr();
 		UI::PushID(instance);
-		if (auto* arrayProperty = handle.GetArrayProperty())
+
+		bool isLeaf = false;
+		if (handle.IsArray())
 		{
-			InspectArrayProperty(*arrayProperty, instance);
+			isLeaf = handle.GetArrayProperty()->GetSize(instance) > 0;
 		}
 		else if (auto* custom = gCustomKeyValues.Find(type))
 		{
 			(*custom)(handle.GetDisplayName(), instance, type);
+			if (handle.IsArrayItem())
+			{
+				DrawArrayItemButtons(handle);
+			}
+			UI::PopID();
+			return;
 		}
 		else if (auto* structType = Cast<StructType>(type))
 		{
-			if (BeginInspectHeader(handle.GetDisplayName()))
-			{
-				InspectProperties(instance, structType);
-				EndInspectHeader();
-			}
+			isLeaf = !structType->IsEmpty();
 		}
 		else
 		{
 			DrawKeyValue(handle.GetDisplayName(), instance, type);
+			if (handle.IsArrayItem())
+			{
+				DrawArrayItemButtons(handle);
+			}
+			UI::PopID();
+			return;
+		}
+
+		bool bOpen = BeginCategory(handle.GetDisplayName(), isLeaf);
+
+		if (handle.IsArray())
+		{
+			UI::TableSetColumnIndex(1);
+			DrawArrayValue(*handle.GetArrayProperty(), instance);
+		}
+
+		if (bOpen)
+		{
+			InspectChildrenProperties(handle);
+			EndCategory();
 		}
 		UI::PopID();
 	}
 
-	void InspectProperties(void* container, DataType* type)
+	void InspectChildrenProperties(const ValueHandle& handle)
 	{
 		if (!EnsureMsg(gCurrentInspector,
 		        "Make sure to call Begin/EndInspector around reflection widgets."))
@@ -265,34 +234,48 @@ namespace rift::UI
 			return;
 		}
 
-		UI::PushID(container);
-
-		TArray<Property*> properties;
-		type->GetProperties(properties);
-		for (auto* prop : properties)
+		const auto* type = handle.GetType();
+		if (!type)
 		{
-			InspectProperty(PropertyHandle{*prop, container});
+			return;
 		}
 
-		UI::PopID();
+		if (auto* structType = Cast<StructType>(type))
+		{
+			void* instance = handle.GetPtr();
+			TArray<Property*> properties;
+			structType->GetProperties(properties);
+			for (auto* prop : properties)
+			{
+				InspectProperty({instance, prop});
+			}
+		}
+		else if (handle.IsArray())
+		{
+			auto* arrayProperty = handle.GetArrayProperty();
+			void* instance      = handle.GetPtr();
+			const i32 size      = arrayProperty->GetSize(instance);
+			for (i32 i = 0; i < size; ++i)
+			{
+				InspectProperty({handle, i});
+			}
+		}
 	}
 
-	bool BeginInspectHeader(StringView label, bool isLeaf)
+	bool BeginCategory(StringView name, bool isLeaf)
 	{
 		UI::TableNextRow();
 		UI::TableSetColumnIndex(0);
 		UI::PushHeaderColor(UI::GetNeutralColor(1));
-
 		UI::AlignTextToFramePadding();
 		const ImGuiTreeNodeFlags flags =
 		    ImGuiTreeNodeFlags_AllowItemOverlap | (isLeaf ? ImGuiTreeNodeFlags_Leaf : 0);
 
-		const bool isOpen = UI::TreeNodeEx(label.data(), ImGuiTreeNodeFlags_AllowItemOverlap);
+		bool bOpen = UI::TreeNodeEx(name.data(), ImGuiTreeNodeFlags_AllowItemOverlap);
 		UI::PopHeaderColor();
-		return isOpen;
+		return bOpen;
 	}
-
-	void EndInspectHeader()
+	void EndCategory()
 	{
 		UI::TreePop();
 	}
@@ -376,11 +359,11 @@ namespace rift::UI
 			UI::AlignTextToFramePadding();
 			UI::Text(label);
 			UI::TableSetColumnIndex(1);
-			UI::SetNextItemWidth(math::Min(300.f, UI::GetContentRegionAvail().x));
+			UI::SetNextItemWidth(p::Min(300.f, UI::GetContentRegionAvail().x));
 			String str = ToString(*path);
 			if (UI::InputText("##value", str))
 			{
-				*path = p::ToPath(str);
+				*path = p::ToSTDPath(str);
 			}
 		});
 	}

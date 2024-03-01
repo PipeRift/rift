@@ -3,8 +3,8 @@
 #include "Tools/BigBestFitArenaDebugger.h"
 
 #include <Pipe/Core/String.h>
-#include <Pipe/Math/Math.h>
 #include <Pipe/Memory/Alloc.h>
+#include <PipeMath.h>
 #include <UI/UI.h>
 
 
@@ -12,7 +12,7 @@
 #include <imgui_internal.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	static constexpr Color gFreeColor{210, 56, 41};    // Red
 	static constexpr Color gUsedColor{56, 210, 41};    // Green
@@ -51,7 +51,7 @@ namespace rift::Editor
 		}
 
 		grid.UpdateGridScale(graphSize.x);
-		graphSize.y = math::Max(graphSize.y, grid.GetHeight());
+		graphSize.y = p::Max(graphSize.y, grid.GetHeight());
 
 		const ImRect frameBox(window->DC.CursorPos, ImVec2(v2(window->DC.CursorPos) + graphSize));
 
@@ -64,7 +64,7 @@ namespace rift::Editor
 		{
 			return -1;
 		}
-		const bool hovered = UI::ItemHoverable(frameBox, id);
+		const bool hovered = UI::ItemHoverable(frameBox, id, ImGuiItemFlags_None);
 
 		UI::RenderFrame(frameBox.Min, frameBox.Max, UI::GetColorU32(ImGuiCol_FrameBg), true,
 		    style.FrameRounding);
@@ -85,7 +85,7 @@ namespace rift::Editor
 				const u32 startX        = grid.GetX(startOffset);
 				const u32 endX          = grid.GetX(endOffset);
 				const u32 startY        = grid.GetY(startOffset);
-				const u32 endY          = math::Min(grid.GetY(endOffset), grid.numRows - 1);
+				const u32 endY          = p::Min(grid.GetY(endOffset), grid.numRows - 1);
 
 				// Draw incomplete rows
 				if (startY != endY)
@@ -134,11 +134,11 @@ namespace rift::Editor
 	void MemoryGrid::Draw(const TArray<BigBestFitArena::Slot>& freeSlots)
 	{
 		String scaleStr      = Strings::ParseMemorySize(memoryScale);
-		u32 scaleMultiplier  = u32(math::Log2(memoryScale));
+		u32 scaleMultiplier  = u32(p::Log2(memoryScale));
 		static const u32 min = 2, max = 8;
 		UI::SliderScalar(
 		    "Scale", ImGuiDataType_U32, (void*)&scaleMultiplier, &min, &max, scaleStr.c_str());
-		memoryScale = math::Pow(2, scaleMultiplier);
+		memoryScale = p::Pow(2, scaleMultiplier);
 
 		UI::BeginChild("##memoryblock", ImVec2(0.f, 450.f), false);
 		UI::SetNextItemWidth(-FLT_MIN);
@@ -196,13 +196,13 @@ namespace rift::Editor
 					const String usedPctLabel =
 					    Strings::Format("{:.0f}%% used ({})", usedPct * 100.f, used);
 					const float pctFontSize = (UI::GetFontSize() * usedPctLabel.size()) / 2.f;
-					UI::SameLine(UI::GetWindowContentRegionWidth() / 2 - pctFontSize / 2,
+					UI::SameLine(UI::GetContentRegionAvail().x / 2 - pctFontSize / 2,
 					    UI::GetStyle().ItemInnerSpacing.x / 2);
 					UI::Text(usedPctLabel);
 
 					UI::SetItemAllowOverlap();
 					const float usedFontSize = (UI::GetFontSize() * size.size()) / 2.f;
-					UI::SameLine(UI::GetWindowContentRegionWidth() - usedFontSize);
+					UI::SameLine(UI::GetContentRegionAvail().x - usedFontSize);
 					UI::Text(size);
 
 					UI::PopStyleColor(2);
@@ -216,4 +216,4 @@ namespace rift::Editor
 			UI::End();
 		}
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

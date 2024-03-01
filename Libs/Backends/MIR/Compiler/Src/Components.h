@@ -7,6 +7,20 @@
 
 namespace rift
 {
-	using CMIRModule = MIR_module_t;
-	using CMIRType   = MIR_type_t;
+	struct CMIRModule
+	{
+		p::String code;
+	};
+	struct CMIRType
+	{
+		p::Tag value;
+	};
+	struct CMIRLiteral
+	{
+		p::Tag value;
+	};
+	struct CMIRFunctionSignature
+	{
+		p::String value;
+	};
 }    // namespace rift

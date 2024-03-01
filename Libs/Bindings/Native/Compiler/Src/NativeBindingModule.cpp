@@ -2,9 +2,8 @@
 
 #include "NativeBindingModule.h"
 
-#include "Components/CDeclCStatic.h"
-#include "Components/CDeclCStruct.h"
 #include "Components/CNativeBinding.h"
+#include "Components/Declarations.h"
 #include "HeaderIterator.h"
 
 #include <AST/Components/CFileRef.h>
@@ -13,9 +12,8 @@
 #include <AST/Tree.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/TypeUtils.h>
-#include <clang-c/Index.h>
-#include <Pipe/PipeArrays.h>
-#include <Pipe/PipeECS.h>
+#include <PipeArrays.h>
+#include <PipeECS.h>
 
 
 // P_OVERRIDE_NEW_DELETE
@@ -25,49 +23,38 @@ namespace rift
 {
 	struct ParsedModule
 	{
-		AST::Id id    = AST::NoId;
-		CXIndex index = clang_createIndex(0, 0);
+		ast::Id id = ast::NoId;
 		TArray<String> headers;
-		TArray<CXTranslationUnit> units;
-
-		~ParsedModule()
-		{
-			for (auto unit : units)
-			{
-				clang_disposeTranslationUnit(unit);
-			}
-			clang_disposeIndex(index);
-		}
 	};
 
 	void NativeBindingModule::Load()
 	{
 		// Register types
-		AST::RiftTypeSettings typeSettings{.category = "Bindings"};
+		ast::RiftTypeSettings typeSettings{.category = "Bindings"};
 		typeSettings.displayName  = "C Struct";
 		typeSettings.hasVariables = true;
 		typeSettings.hasFunctions = false;
-		AST::RegisterFileType<CDeclCStruct>("CStruct", typeSettings);
+		ast::RegisterFileType<CDeclCStruct>("CStruct", typeSettings);
 		typeSettings.displayName       = "C Static";
 		typeSettings.hasVariables      = true;
 		typeSettings.hasFunctions      = true;
 		typeSettings.hasFunctionBodies = false;
-		AST::RegisterFileType<CDeclCStatic>("CStatic", typeSettings);
-		AST::PreAllocPools<CDeclCStruct, CDeclCStatic>();
+		ast::RegisterFileType<CDeclCStatic>("CStatic", typeSettings);
+		ast::PreAllocPools<CDeclCStruct, CDeclCStatic>();
 
 		// Register module binding
-		AST::RegisterModuleBinding(
+		ast::RegisterModuleBinding(
 		    {.id = "C", .tagType = CNativeBinding::GetStaticType(), .displayName = "C"});
-		AST::RegisterSerializedModulePools<CNativeBinding>();
-		AST::PreAllocPools<CNativeBinding>();
+		ast::RegisterSerializedModulePools<CNativeBinding>();
+		ast::PreAllocPools<CNativeBinding>();
 	}
 
-	void FindHeaders(AST::Tree& ast, TView<ParsedModule> parsedModules)
+	void FindHeaders(ast::Tree& ast, TView<ParsedModule> parsedModules)
 	{
-		p::TAccess<AST::CFileRef> access{ast};
+		p::TAccess<ast::CFileRef> access{ast};
 		for (auto& module : parsedModules)
 		{
-			Path path = AST::GetModulePath(access, module.id);
+			StringView path = ast::GetModulePath(access, module.id);
 			for (const auto& headerPath : HeaderIterator(path))
 			{
 				module.headers.Add(p::ToString(headerPath));
@@ -75,32 +62,10 @@ namespace rift
 		}
 	}
 
-	void ParseHeaders(AST::Tree& ast, TView<ParsedModule> parsedModules)
+	void NativeBindingModule::SyncIncludes(ast::Tree& ast)
 	{
-		for (auto& module : parsedModules)
-		{
-			for (i32 i = 0; i < module.headers.Size(); ++i)
-			{
-				const StringView include = module.headers[i];
-				const CXTranslationUnit unit =
-				    clang_parseTranslationUnit(module.index, include.data(), nullptr, 0, nullptr, 0,
-				        CXTranslationUnit_DetailedPreprocessingRecord);
-				if (!unit)
-				{
-					module.headers.RemoveAt(i, false);
-					--i;
-					p::Error("Unable to parse module header '{}'", include);
-					continue;
-				}
-				module.units.Add(unit);
-			}
-		}
-	}
-
-	void NativeBindingModule::SyncIncludes(AST::Tree& ast)
-	{
-		TArray<AST::Id> moduleIds;
-		p::FindAllIdsWith<AST::CModule, CNativeBinding>(ast, moduleIds);
+		TArray<ast::Id> moduleIds;
+		p::FindAllIdsWith<ast::CModule, CNativeBinding>(ast, moduleIds);
 
 		// Only use automatic native bindings on modules marked as such
 		moduleIds.RemoveIfSwap([ast](auto id) {
@@ -115,7 +80,6 @@ namespace rift
 			parsed.id    = moduleIds[i];
 		}
 		FindHeaders(ast, parsedModules);
-		ParseHeaders(ast, parsedModules);
 		// TODO: Generate Rift interface
 	}
 }    // namespace rift

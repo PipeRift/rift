@@ -4,6 +4,8 @@
 
 #include "AST/Systems/FunctionsSystem.h"
 #include "AST/Utils/Namespaces.h"
+#include "AST/Utils/Settings.h"
+#include "Statics/EditorSettings.h"
 #include "Statics/SEditor.h"
 #include "Systems/EditorSystem.h"
 #include "Utils/FunctionGraph.h"
@@ -15,38 +17,48 @@
 #include <AST/Systems/TypeSystem.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Pipe/Core/Log.h>
-#include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Files.h>
 #include <UI/Inspection.h>
 #include <UI/Window.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	void RegisterKeyValueInspections()
 	{
-		UI::RegisterCustomInspection<AST::Id>([](StringView label, void* data, Type* type) {
-			UI::DrawKeyValue(label, data, GetType<IdTraits<AST::Id>::Entity>());
-		});
-
-		UI::RegisterCustomInspection<AST::Namespace>([](StringView label, void* data, Type* type) {
+		UI::RegisterCustomInspection<ast::Id>([](StringView label, void* data, Type* type) {
+			auto* id = static_cast<ast::Id*>(data);
+			// UI::DrawKeyValue(label, data, GetType<IdTraits<ast::Id>::Entity>());
 			UI::TableNextRow();
 			UI::TableSetColumnIndex(0);
 			UI::AlignTextToFramePadding();
 			UI::Text(label);
 			UI::TableSetColumnIndex(1);
-			auto* ns        = static_cast<AST::Namespace*>(data);
+			String asString = p::ToString(*id);
+			if (UI::InputText("##value", asString))
+			{
+				*id = p::IdFromString(asString);
+			}
+		});
+
+		UI::RegisterCustomInspection<ast::Namespace>([](StringView label, void* data, Type* type) {
+			UI::TableNextRow();
+			UI::TableSetColumnIndex(0);
+			UI::AlignTextToFramePadding();
+			UI::Text(label);
+			UI::TableSetColumnIndex(1);
+			auto* ns        = static_cast<ast::Namespace*>(data);
 			String asString = ns->ToString();
 			if (UI::InputText("##value", asString))
 			{
-				*ns = AST::Namespace{asString};
+				*ns = ast::Namespace{asString};
 			}
 		});
 	}
 
 	int Editor::Run(StringView projectPath)
 	{
-		FileWatcher::StartAsync();
+		fileWatcher.StartAsync();
 
 		// Setup window
 		p::Info("Initializing editor...");
@@ -73,8 +85,10 @@ namespace rift::Editor
 			UI::Render();
 
 			frameTime.PostTick();
-			FrameMark;
 		}
+
+		// Close the current project (if any)
+		CloseProject();
 
 		Graph::Shutdown();
 		UI::Shutdown();
@@ -88,21 +102,25 @@ namespace rift::Editor
 
 	void Editor::Tick()
 	{
-		if (AST::HasProject(ast))
+		if (ast::HasProject(ast))
 		{
-			AST::FunctionsSystem::ClearAddedTags(ast);
-			AST::TransactionSystem::ClearTags(ast);
+			ast::FunctionsSystem::ClearAddedTags(ast);
+			ast::TransactionSystem::ClearTags(ast);
 
-			AST::LoadSystem::Run(ast);
-			AST::FunctionsSystem::ResolveCallFunctionIds(ast);
-			AST::TypeSystem::ResolveExprTypeIds(ast);
+			if (bFilesDirty)
+			{
+				ast::LoadSystem::Run(ast);
+				bFilesDirty = false;
+			}
+			ast::FunctionsSystem::ResolveCallFunctionIds(ast);
+			ast::TypeSystem::ResolveExprTypeIds(ast);
 
 			EditorSystem::Draw(ast);
-			AST::TypeSystem::PropagateVariableTypes(ast);
-			AST::FunctionsSystem::PropagateDirtyIntoCalls(ast);
-			AST::FunctionsSystem::PushInvalidPinsBack(ast);
-			AST::FunctionsSystem::SyncCallPinsFromFunction(ast);
-			AST::TypeSystem::PropagateExpressionTypes(ast);
+			ast::TypeSystem::PropagateVariableTypes(ast);
+			ast::FunctionsSystem::PropagateDirtyIntoCalls(ast);
+			ast::FunctionsSystem::PushInvalidPinsBack(ast);
+			ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
+			ast::TypeSystem::PropagateExpressionTypes(ast);
 		}
 		else
 		{
@@ -110,28 +128,28 @@ namespace rift::Editor
 		}
 	}
 
-	void Editor::SetUIConfigFile(Path path)
+	void Editor::SetUIConfigFile(p::StringView path)
 	{
 		if (UI::GetWindow())
 		{
 			configFileChanged          = true;
-			configFile                 = p::ToString(path);
+			configFile                 = path;
 			ImGui::GetIO().IniFilename = configFile.c_str();
 		}
 	}
 
 	bool Editor::CreateProject(p::StringView path, bool closeFirst)
 	{
-		if (!closeFirst && AST::HasProject(ast))
+		if (!closeFirst && ast::HasProject(ast))
 		{
 			return false;
 		}
 
-		if (AST::CreateProject(ast, path) && AST::OpenProject(ast, path))
+		if (ast::CreateProject(ast, path) && ast::OpenProject(ast, path))
 		{
 			ast.SetStatic<SEditor>();
 			EditorSystem::Init(ast);
-			SetUIConfigFile(p::JoinPaths(AST::GetProjectPath(ast), "Saved/UI.ini"));
+			SetUIConfigFile(p::JoinPaths(ast::GetProjectPath(ast), "Saved/UI.ini"));
 			return true;
 		}
 		return false;
@@ -139,19 +157,42 @@ namespace rift::Editor
 
 	bool Editor::OpenProject(p::StringView path, bool closeFirst)
 	{
-		if (!closeFirst && AST::HasProject(ast))
+		if (!closeFirst && ast::HasProject(ast))
 		{
 			return false;
 		}
 
-		if (AST::OpenProject(ast, path))
+		if (ast::OpenProject(ast, path))
 		{
 			ast.SetStatic<SEditor>();
 			EditorSystem::Init(ast);
-			SetUIConfigFile(p::JoinPaths(AST::GetProjectPath(ast), "Saved/UI.ini"));
+			auto projectPath = ast::GetProjectPath(ast);
+			SetUIConfigFile(p::JoinPaths(projectPath, "Saved/UI.ini"));
+
+			// Start watching the project folder for file changes
+			ast.Add(GetProjectId(ast), fileWatcher.ListenPath(projectPath, true,
+			                               [](StringView path, StringView filename,
+			                                   FileWatchAction action, StringView oldFilename) {
+				Editor::Get().bFilesDirty = true;
+			}));
+
+
+			auto& editorSettings = GetUserSettings<EditorSettings>();
+			editorSettings.recentProjects.AddUnique(p::String(projectPath));
+			SaveUserSettings<EditorSettings>();
 			return true;
 		}
 		return false;
+	}
+
+	void Editor::CloseProject()
+	{
+		Id id = GetProjectId(ast);
+		if (ast.IsValid(id) && ast.Has<p::FileListenerId>(id))
+		{
+			fileWatcher.StopListening(ast.Get<p::FileListenerId>(id));
+		}
+		ast::CloseProject(ast);
 	}
 
 	void Editor::Close()
@@ -169,7 +210,7 @@ namespace rift::Editor
 				return;
 			}
 
-			if (files::ExistsAsFile(configFile))
+			if (ExistsAsFile(configFile))
 			{
 				// FIX: Delay this until new frame (essentially, not while already drawing)
 				ImGui::LoadIniSettingsFromDisk(configFile.c_str());
@@ -181,4 +222,4 @@ namespace rift::Editor
 			configFileChanged = false;
 		}
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

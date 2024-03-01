@@ -3,12 +3,12 @@
 #pragma once
 
 #include <AST/Tree.h>
-#include <Pipe/Math/Color.h>
 #include <Pipe/Reflect/TypeId.h>
+#include <PipeColor.h>
 #include <UI/Style.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	using namespace p;
 
@@ -56,7 +56,7 @@ namespace rift::Editor
 		return Color::Gray();
 	};
 
-	const Color GetTypeColor(const AST::Tree& ast, AST::Id id);
+	const Color GetTypeColor(const ast::Tree& ast, ast::Id id);
 
 
 	void PushNodeTitleColor(Color color);
@@ -64,4 +64,4 @@ namespace rift::Editor
 
 	void PushNodeBackgroundColor(Color color);
 	void PopNodeBackgroundColor();
-}    // namespace rift::Editor
+}    // namespace rift::editor

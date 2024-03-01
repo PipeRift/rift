@@ -9,14 +9,14 @@
 
 namespace rift
 {
-	class Backend : public Class
+	class Backend : public p::Class
 	{
-		CLASS(Backend, Class)
+		P_CLASS(Backend, p::Class)
 
 	public:
-		virtual Tag GetName()
+		virtual p::Tag GetName()
 		{
-			return Tag::None();
+			return p::Tag::None();
 		}
 
 		virtual void Build(Compiler& compiler)

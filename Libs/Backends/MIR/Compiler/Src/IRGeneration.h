@@ -3,33 +3,16 @@
 
 #include "Components.h"
 
-#include <AST/Components/CDeclClass.h>
-#include <AST/Components/CDeclFunction.h>
-#include <AST/Components/CDeclStatic.h>
-#include <AST/Components/CDeclStruct.h>
-#include <AST/Components/CDeclType.h>
-#include <AST/Components/CDeclVariable.h>
-#include <AST/Components/CExprCall.h>
-#include <AST/Components/CExprInputs.h>
-#include <AST/Components/CExprOutputs.h>
-#include <AST/Components/CExprType.h>
-#include <AST/Components/CLiteralBool.h>
-#include <AST/Components/CLiteralFloating.h>
-#include <AST/Components/CLiteralIntegral.h>
-#include <AST/Components/CLiteralString.h>
 #include <AST/Components/CModule.h>
-#include <AST/Components/CStmtIf.h>
-#include <AST/Components/CStmtOutputs.h>
-#include <AST/Components/CStmtReturn.h>
+#include <AST/Components/Expressions.h>
+#include <AST/Components/Literals.h>
+#include <AST/Components/Statements.h>
 #include <AST/Components/Tags/CInvalid.h>
-#include <mir.h>
-#include <Pipe/PipeECS.h>
+#include <AST/Id.h>
+#include <Components/Declarations.h>
+#include <Pipe/Core/Set.h>
+#include <PipeECS.h>
 
-
-namespace rift
-{
-	struct CIRFunction;
-}
 
 namespace rift
 {
@@ -39,23 +22,42 @@ namespace rift
 namespace rift::MIR
 {
 	// Defines a single ecs access dfor the entire IR generation
-	using MIRAccess = p::TAccessRef<AST::CStmtOutput, AST::CStmtOutputs, AST::CExprInputs,
-	    AST::CStmtIf, AST::CExprCallId, AST::CExprTypeId, AST::CExprOutputs, AST::CNamespace,
-	    AST::CDeclType, AST::CDeclVariable, AST::CParent, AST::CInvalid, AST::CChild, AST::CModule,
-	    p::TWrite<CMIRType>, AST::CLiteralBool, AST::CLiteralIntegral, AST::CLiteralFloating,
-	    AST::CLiteralString>;
+	using MIRAccess = p::TAccessRef<ast::CStmtOutput, ast::CStmtOutputs, ast::CExprInputs,
+	    ast::CStmtIf, ast::CExprCallId, ast::CExprTypeId, ast::CExprOutputs, ast::CNamespace,
+	    ast::CDeclType, ast::CDeclVariable, ast::CDeclStruct, ast::CDeclClass, ast::CDeclStatic,
+	    ast::CParent, ast::CInvalid, ast::CChild, ast::CModule, ast::CLiteralBool,
+	    ast::CLiteralIntegral, ast::CLiteralFloating, ast::CLiteralString, ast::CDeclFunction,
+	    CDeclCStruct, CDeclCStatic, p::TWrite<CMIRType>, p::TWrite<CMIRFunctionSignature>,
+	    p::TWrite<CMIRLiteral>>;
 
-	struct ModuleIRGen
+	void GenerateC(Compiler& compiler);
+
+
+	struct CGenerator
 	{
+		static const p::TSet<p::Tag> reservedNames;
+
 		Compiler& compiler;
-		MIR_context_t& ctx;
-		MIR_module_t& module;
+		MIRAccess access;
+		p::String* code = nullptr;
+
+
+		void GenerateModule(ast::Id moduleId);
+
+		void BindNativeTypes();
+		void GenerateLiterals();
+
+		void DeclareStructs(p::TView<ast::Id> ids);
+		void DefineStructs(p::TView<ast::Id> ids);
+		void DeclareFunctions(p::TView<ast::Id> ids, bool useFullName = true);
+		void DefineFunctions(p::TView<ast::Id> ids);
+
+		void AddStmtBlock(ast::Id firstStmtId);
+		void AddStmtIf(ast::Id id);
+		void AddExpr(const ast::ExprOutput& output);
+		void AddCall(ast::Id id, const ast::CExprCallId& call);
+		void CreateMain(ast::Id functionId);
+		ast::Id FindMainFunction(p::TView<ast::Id> functionIds);
 	};
 
-	void GenerateIR(Compiler& compiler, MIR_context_t& ctx);
-
-	void GenerateIRModule(
-	    Compiler& compiler, MIRAccess access, AST::Id moduleId, MIR_context_t& ctx);
-
-	void BindNativeTypes(MIR_context_t& ctx, MIRAccess access);
 }    // namespace rift::MIR

@@ -2,17 +2,18 @@
 
 #include "AST/Utils/TransactionUtils.h"
 
-#include "AST/Components/CDeclType.h"
+#include "AST/Components/Declarations.h"
 
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::AST::Transactions
+namespace rift::ast::Transactions
 {
 	// Transaction being recorded
 	static Transaction gActiveTransaction = {};
 
-	ScopedTransaction::ScopedTransaction(const TransactionAccess& access, TView<const Id> entityIds)
+	ScopedTransaction::ScopedTransaction(
+	    const TransactionAccess& access, p::TView<const Id> entityIds)
 	{
 		active = PreChange(access, entityIds);
 	}
@@ -29,7 +30,7 @@ namespace rift::AST::Transactions
 		}
 	}
 
-	bool PreChange(const TransactionAccess& access, TView<const Id> entityIds)
+	bool PreChange(const TransactionAccess& access, p::TView<const Id> entityIds)
 	{
 		if (!EnsureMsg(!gActiveTransaction.active,
 		        "Tried to record a transaction while another is already being recorded"))
@@ -40,8 +41,8 @@ namespace rift::AST::Transactions
 		gActiveTransaction = Transaction{true};
 
 		// Mark files dirty
-		TArray<Id> parentIds;
-		p::GetAllParents(access, entityIds, parentIds);
+		p::TArray<Id> parentIds;
+		p::GetAllIdParents(access, entityIds, parentIds);
 
 		parentIds.Append(entityIds);
 		access.AddN<CChanged>(parentIds);
@@ -65,4 +66,4 @@ namespace rift::AST::Transactions
 			gActiveTransaction = {};
 		}
 	}
-}    // namespace rift::AST::Transactions
+}    // namespace rift::ast::Transactions

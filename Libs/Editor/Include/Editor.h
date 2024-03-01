@@ -1,25 +1,28 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
+#include "PipeFiles.h"
+
 #include <AST/Tree.h>
 #include <Pipe/Files/Paths.h>
-#include <Pipe/Math/FrameTime.h>
+#include <PipeTime.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	using namespace p;
-
 	class Editor
 	{
-		FrameTime frameTime;
+		p::FrameTime frameTime;
 
 		bool configFileChanged = false;
-		String configFile;
+		p::String configFile;
 
-		AST::Tree ast;
+		ast::Tree ast;
+
+		p::FileWatcher fileWatcher;
 
 	public:
+		bool bFilesDirty = true;
 #if P_DEBUG
 		bool showDemo    = false;
 		bool showMetrics = false;
@@ -32,11 +35,11 @@ namespace rift::Editor
 
 		~Editor();
 
-		int Run(StringView projectPath = {});
+		int Run(p::StringView projectPath = {});
 
 		void Tick();
 
-		void SetUIConfigFile(Path path);
+		void SetUIConfigFile(p::StringView path);
 
 		static Editor& Get()
 		{
@@ -44,17 +47,19 @@ namespace rift::Editor
 			return instance;
 		}
 
-		static AST::Tree& GetContext()
+		static ast::Tree& GetContext()
 		{
 			return Get().ast;
 		}
 
 		bool CreateProject(p::StringView path, bool closeFirst = true);
 		bool OpenProject(p::StringView path, bool closeFirst = true);
+		void CloseProject();
 
+		// Close the editor
 		void Close();
 
 	protected:
 		void UpdateConfig();
 	};
-}    // namespace rift::Editor
+}    // namespace rift::editor

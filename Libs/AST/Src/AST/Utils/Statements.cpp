@@ -3,9 +3,10 @@
 #include "AST/Utils/Statements.h"
 
 #include "AST/Id.h"
+#include "PipeECS.h"
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	bool CanConnectStmt(const Tree& ast, Id outputNode, Id outputPin, Id inputNode)
 	{
@@ -31,14 +32,14 @@ namespace rift::AST
 		}
 
 		// Resolve output node. Sometimes the output pin itself is the node
-		Id outputNode = AST::NoId;
+		Id outputNode = ast::NoId;
 		if (ast.Has<CStmtOutput>(outputPin))
 		{
 			outputNode = outputPin;
 		}
 		else
 		{
-			outputNode = p::GetParent(ast, outputPin);
+			outputNode = p::GetIdParent(ast, outputPin);
 			if (IsNone(outputNode))
 			{
 				return false;
@@ -52,16 +53,16 @@ namespace rift::AST
 
 
 		auto& inputComp = ast.Get<CStmtInput>(inputNode);
-		if (inputComp.linkOutputNode != AST::NoId)
+		if (inputComp.linkOutputNode != ast::NoId)
 		{
 			// Disconnect previous output connected to input if any
 			if (auto* lastOutputComp = ast.TryGet<CStmtOutput>(inputComp.linkOutputNode))
 			{
-				lastOutputComp->linkInputNode = AST::NoId;
+				lastOutputComp->linkInputNode = ast::NoId;
 			}
 			else if (auto* lastOutputsComp = ast.TryGet<CStmtOutputs>(inputComp.linkOutputNode))
 			{
-				lastOutputsComp->linkInputNodes.FindRef(inputNode) = AST::NoId;
+				lastOutputsComp->linkInputNodes.FindRef(inputNode) = ast::NoId;
 			}
 		}
 		inputComp.linkOutputNode = outputNode;
@@ -72,23 +73,23 @@ namespace rift::AST
 			// Connect if single output
 			Id& lastInputNode = outputComp->linkInputNode;
 			// Disconnect previous input connected to output if any
-			if (lastInputNode != AST::NoId && ast.Has<CStmtInput>(lastInputNode))
+			if (lastInputNode != ast::NoId && ast.Has<CStmtInput>(lastInputNode))
 			{
-				ast.Get<CStmtInput>(lastInputNode).linkOutputNode = AST::NoId;
+				ast.Get<CStmtInput>(lastInputNode).linkOutputNode = ast::NoId;
 			}
 			lastInputNode = inputNode;
 		}
 		else if (auto* outputsComp = ast.TryGet<CStmtOutputs>(outputNode))
 		{
 			// Connect if multiple output
-			const i32 pinIndex = outputsComp->pinIds.FindIndex(outputPin);
-			if (pinIndex != NO_INDEX)
+			const p::i32 pinIndex = outputsComp->pinIds.FindIndex(outputPin);
+			if (pinIndex != p::NO_INDEX)
 			{
 				Id& lastInputNode = outputsComp->linkInputNodes[pinIndex];
 				// Disconnect previous input connected to output if any
-				if (lastInputNode != AST::NoId && ast.Has<CStmtInput>(lastInputNode))
+				if (lastInputNode != ast::NoId && ast.Has<CStmtInput>(lastInputNode))
 				{
-					ast.Get<CStmtInput>(lastInputNode).linkOutputNode = AST::NoId;
+					ast.Get<CStmtInput>(lastInputNode).linkOutputNode = ast::NoId;
 				}
 				lastInputNode = inputNode;
 			}
@@ -119,41 +120,41 @@ namespace rift::AST
 			auto& outputsComp = ast.Get<CStmtOutputs>(inputComp->linkOutputNode);
 			if (Id* lastInputNode = outputsComp.linkInputNodes.Find(linkId)) [[likely]]
 			{
-				*lastInputNode = AST::NoId;
+				*lastInputNode = ast::NoId;
 			}
-			inputComp->linkOutputNode = AST::NoId;
+			inputComp->linkOutputNode = ast::NoId;
 			return true;
 		}
 		return false;
 	}
 
-	bool DisconnectStmtFromPrevious(Tree& ast, AST::Id inputPin)
+	bool DisconnectStmtFromPrevious(Tree& ast, ast::Id inputPin)
 	{
 		// NOTE: Input pin ids equal input node ids
 		return DisconnectStmtLink(ast, inputPin);
 	}
-	bool DisconnectStmtFromNext(Tree& ast, AST::Id outputPin, AST::Id outputNode)
+	bool DisconnectStmtFromNext(Tree& ast, ast::Id outputPin, ast::Id outputNode)
 	{
 		// NOTE: Can be optimized if needed since outputs is accessed twice counting
 		// Disconnect()
 		if (auto* outputsComp = ast.TryGet<CStmtOutputs>(outputNode))
 		{
-			i32 pinIndex = outputsComp->pinIds.FindIndex(outputPin);
-			if (pinIndex != NO_INDEX) [[likely]]
+			p::i32 pinIndex = outputsComp->pinIds.FindIndex(outputPin);
+			if (pinIndex != p::NO_INDEX) [[likely]]
 			{
 				return DisconnectStmtLink(ast, outputsComp->linkInputNodes[pinIndex]);
 			}
 		}
 		return false;
 	}
-	bool DisconnectStmtFromNext(Tree& ast, AST::Id outputPin)
+	bool DisconnectStmtFromNext(Tree& ast, ast::Id outputPin)
 	{
-		return DisconnectStmtFromNext(ast, outputPin, p::GetParent(ast, outputPin));
+		return DisconnectStmtFromNext(ast, outputPin, p::GetIdParent(ast, outputPin));
 	}
 
 	bool WouldStmtLoop(const Tree& ast, Id outputNode, Id outputPin, Id inputNode)
 	{
-		AST::Id currentNode = outputNode;
+		ast::Id currentNode = outputNode;
 		while (!IsNone(currentNode))
 		{
 			const auto* input = ast.TryGet<CStmtInput>(currentNode);
@@ -170,7 +171,7 @@ namespace rift::AST
 		return false;
 	}
 
-	Id GetPreviousStmt(TAccessRef<CStmtInput> access, Id stmtIds)
+	Id GetPreviousStmt(p::TAccessRef<CStmtInput> access, Id stmtIds)
 	{
 		if (const auto* input = access.TryGet<const CStmtInput>(stmtIds))
 		{
@@ -180,7 +181,7 @@ namespace rift::AST
 	}
 
 	void GetPreviousStmts(
-	    TAccessRef<CStmtInput> access, TView<const Id> stmtIds, TArray<Id>& prevStmtIds)
+	    p::TAccessRef<CStmtInput> access, p::TView<const Id> stmtIds, p::TArray<Id>& prevStmtIds)
 	{
 		prevStmtIds.ReserveMore(stmtIds.Size());
 		for (const Id stmtId : stmtIds)
@@ -192,7 +193,7 @@ namespace rift::AST
 		}
 	}
 
-	TView<Id> GetNextStmts(TAccessRef<CStmtOutputs> access, Id stmtIds)
+	p::TView<Id> GetNextStmts(p::TAccessRef<CStmtOutputs> access, Id stmtIds)
 	{
 		if (const auto* output = access.TryGet<const CStmtOutputs>(stmtIds))
 		{
@@ -202,7 +203,7 @@ namespace rift::AST
 	}
 
 	void GetNextStmts(
-	    TAccessRef<CStmtOutputs> access, TView<const Id> stmtIds, TArray<Id>& nextStmtIds)
+	    p::TAccessRef<CStmtOutputs> access, p::TView<const Id> stmtIds, p::TArray<Id>& nextStmtIds)
 	{
 		nextStmtIds.ReserveMore(stmtIds.Size());
 		for (const Id stmtId : stmtIds)
@@ -214,11 +215,11 @@ namespace rift::AST
 		}
 	}
 
-	void GetStmtChain(TAccessRef<CStmtOutput, CStmtOutputs> access, Id firstStmtId,
-	    TArray<Id>& stmtIds, Id& splitStmtId)
+	void GetStmtChain(p::TAccessRef<CStmtOutput, CStmtOutputs> access, Id firstStmtId,
+	    p::TArray<Id>& stmtIds, Id& splitStmtId)
 	{
 		Id id = firstStmtId;
-		while (id != AST::NoId && access.Has<CStmtOutput>(id))
+		while (id != ast::NoId && access.Has<CStmtOutput>(id))
 		{
 			stmtIds.Add(id);
 			id = access.Get<const CStmtOutput>(id).linkInputNode;
@@ -229,4 +230,4 @@ namespace rift::AST
 			splitStmtId = id;
 		}
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

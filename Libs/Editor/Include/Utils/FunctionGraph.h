@@ -5,7 +5,7 @@
 #include "Components/CTypeEditor.h"
 
 #include <AST/Tree.h>
-#include <Pipe/Math/Vector.h>
+#include <PipeVectors.h>
 
 
 namespace rift
@@ -13,7 +13,7 @@ namespace rift
 	struct DockSpaceLayout;
 }
 
-namespace rift::Editor::Graph
+namespace rift::editor::Graph
 {
 	struct Settings
 	{
@@ -37,12 +37,12 @@ namespace rift::Editor::Graph
 	inline Settings settings{};
 
 
-	void DrawLiteralBool(AST::Tree& ast, AST::Id id, bool& value);
-	void DrawLiteralInt(AST::Tree& ast, AST::Id id, String& value);
-	void DrawLiteralString(AST::Tree& ast, AST::Id id, String& value);
+	void DrawLiteralBool(ast::Tree& ast, ast::Id id, bool& value);
+	void DrawLiteralInt(ast::Tree& ast, ast::Id id, String& value);
+	void DrawLiteralString(ast::Tree& ast, ast::Id id, String& value);
 
-	void DrawFunctionDecl(AST::Tree& ast, AST::Id functionId);
-	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView ownerName);
+	void DrawFunctionDecl(ast::Tree& ast, ast::Id functionId);
+	void DrawCallNode(ast::Tree& ast, ast::Id id, StringView name, StringView ownerName);
 
 	void Init();
 	void Shutdown();
@@ -52,10 +52,10 @@ namespace rift::Editor::Graph
 	void PushInnerNodeStyle();
 	void PopInnerNodeStyle();
 
-	void DrawTypeGraph(AST::Tree& ast, AST::Id typeId, CTypeEditor& typeEditor);
+	void DrawTypeGraph(ast::Tree& ast, ast::Id typeId, CTypeEditor& typeEditor);
 
-	void SetNodePosition(AST::Id id, v2 position);
-	v2 GetNodePosition(AST::Id id);
+	void SetNodePosition(ast::Id id, v2 position);
+	v2 GetNodePosition(ast::Id id);
 
 	void SnapNodeDimensionsToGrid();
-}    // namespace rift::Editor::Graph
+}    // namespace rift::editor::Graph

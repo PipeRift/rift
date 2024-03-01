@@ -2,22 +2,16 @@
 
 #pragma once
 
-#include <AST/Components/CDeclClass.h>
-#include <AST/Components/CDeclFunction.h>
-#include <AST/Components/CDeclNative.h>
-#include <AST/Components/CDeclStatic.h>
-#include <AST/Components/CDeclStruct.h>
-#include <AST/Components/CDeclType.h>
-#include <AST/Components/CDeclVariable.h>
-#include <AST/Components/CExprType.h>
 #include <AST/Components/CNamespace.h>
+#include <AST/Components/Declarations.h>
+#include <AST/Components/Expressions.h>
 #include <AST/Tree.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <Pipe/Core/StringView.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	struct CTypeEditor;
 
@@ -29,14 +23,14 @@ namespace rift::Editor
 	};
 
 	using TVariableAccessRef =
-	    p::TAccessRef<p::TWrite<AST::CDeclVariable>, p::TWrite<AST::CNamespace>, AST::CDeclType,
-	        AST::CDeclNative, AST::CDeclStruct, AST::CDeclClass, AST::CParent>;
+	    p::TAccessRef<p::TWrite<ast::CDeclVariable>, p::TWrite<ast::CNamespace>, ast::CDeclType,
+	        ast::CDeclNative, ast::CDeclStruct, ast::CDeclClass, ast::CParent>;
 
-	void DrawField(AST::Tree& ast, CTypeEditor& editor, AST::Id functionId, AST::Id fieldId,
+	void DrawField(ast::Tree& ast, CTypeEditor& editor, ast::Id functionId, ast::Id fieldId,
 	    DrawFieldFlags flags = DrawFieldFlags::None);
 
-	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, AST::Id variableId);
-	void DrawFunction(AST::Tree& ast, CTypeEditor& editor, AST::Id functionId);
+	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, ast::Id variableId);
+	void DrawFunction(ast::Tree& ast, CTypeEditor& editor, ast::Id functionId);
 
-	void DrawElementsPanel(AST::Tree& ast, AST::Id typeId);
-}    // namespace rift::Editor
+	void DrawElementsPanel(ast::Tree& ast, ast::Id typeId);
+}    // namespace rift::editor

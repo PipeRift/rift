@@ -2,18 +2,17 @@
 
 #include "AST/Tree.h"
 
-#include "AST/Components/CDeclNative.h"
-#include "AST/Components/CDeclType.h"
 #include "AST/Components/CNamespace.h"
+#include "AST/Components/Declarations.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
 
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	TBroadcast<Tree&> Tree::onInit{};
+	p::TBroadcast<Tree&> Tree::onInit{};
 
 
 	Tree::Tree()
@@ -22,28 +21,28 @@ namespace rift::AST
 		onInit(*this);
 	}
 
-	Tree::Tree(const Tree& other) noexcept : EntityContext(other)
+	Tree::Tree(const Tree& other) noexcept : p::EntityContext(other)
 	{
 		CopyFrom(other);
 	}
-	Tree::Tree(Tree&& other) noexcept : EntityContext(Move(other))
+	Tree::Tree(Tree&& other) noexcept : p::EntityContext(p::Move(other))
 	{
-		MoveFrom(Move(other));
+		MoveFrom(p::Move(other));
 	}
 	Tree& Tree::operator=(const Tree& other) noexcept
 	{
-		EntityContext::operator=(other);
+		p::EntityContext::operator=(other);
 		CopyFrom(other);
 		return *this;
 	}
 	Tree& Tree::operator=(Tree&& other) noexcept
 	{
-		EntityContext::operator=(Move(other));
-		MoveFrom(Move(other));
+		EntityContext::operator=(p::Move(other));
+		MoveFrom(p::Move(other));
 		return *this;
 	}
 
-	const TBroadcast<Tree&>& Tree::OnInit()
+	const p::TBroadcast<Tree&>& Tree::OnInit()
 	{
 		return onInit;
 	}
@@ -51,7 +50,7 @@ namespace rift::AST
 	void Tree::SetupNativeTypes()
 	{
 		// Remove any previous native types
-		Destroy(FindAllIdsWith<CDeclNative>(*this));
+		Destroy(p::FindAllIdsWith<CDeclNative>(*this));
 
 		nativeTypes.boolId = Create();
 		Add<CDeclType, CDeclNative>(nativeTypes.boolId);
@@ -122,4 +121,19 @@ namespace rift::AST
 	{
 		nativeTypes = other.nativeTypes;
 	}
-}    // namespace rift::AST
+
+	p::String Tree::DumpPools()
+	{
+		p::String text;
+
+		text.append("Pools: \n");
+		for (const auto& pool : GetPools())
+		{
+			p::Type* type = p::TypeRegistry::Get().FindType(pool.GetId());
+			p::Strings::FormatTo(text, "- {} x{}\n",
+			    type ? type->GetName() : p::StringView{"NotReflected"}, pool.GetPool()->Size());
+		}
+
+		return text;
+	}
+}    // namespace rift::ast

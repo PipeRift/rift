@@ -2,69 +2,24 @@
 
 #include "Tools/ASTDebugger.h"
 
-#include <AST/Components/CStmtOutputs.h>
+#include "imgui.h"
+#include "UI/Widgets.h"
+
+#include <AST/Components/Statements.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Paths.h>
 #include <IconsFontAwesome5.h>
+#include <Pipe/Core/PlatformMisc.h>
 #include <Pipe/Reflect/TypeRegistry.h>
 #include <UI/Inspection.h>
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	using namespace p::core;
-
-	void DrawEntityInspector(AST::Tree& ast, AST::Id entityId, bool* open = nullptr)
-	{
-		p::String name = "Entity Inspector";
-		if (!IsNone(entityId))
-			p::Strings::FormatTo(name, " (id:{})", entityId);
-		p::Strings::FormatTo(name, "###Entity Inspector");
-		UI::Begin(name.c_str(), open);
-		if (IsNone(entityId))
-		{
-			UI::End();
-			return;
-		}
-
-		const auto& registry = AST::TypeRegistry::Get();
-		for (const auto& poolInstance : ast.GetPools())
-		{
-			AST::Type* type = registry.FindType(poolInstance.componentId);
-			if (!type || !poolInstance.GetPool()->Has(entityId))
-			{
-				continue;
-			}
-
-			void* data = poolInstance.GetPool()->TryGetVoid(entityId);
-			static p::String typeName;
-			typeName = type->GetName();
-
-			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
-			if (!data)
-			{
-				flags |= ImGuiTreeNodeFlags_Leaf;
-			}
-			if (UI::CollapsingHeader(typeName.c_str(), flags))
-			{
-				UI::Indent();
-				auto* dataType = Cast<p::DataType>(type);
-				if (data && dataType && UI::BeginInspector("EntityInspector"))
-				{
-					UI::InspectProperties(data, dataType);
-					UI::EndInspector();
-				}
-				UI::Unindent();
-			}
-		}
-
-		UI::End();
-	}
-
-	void DrawTypesDebug(AST::Tree& ast)
+	void DrawTypesDebug(ast::Tree& ast)
 	{
 		if (!UI::CollapsingHeader("Types"))
 		{
@@ -74,10 +29,10 @@ namespace rift::Editor
 		static const ImGuiTableFlags flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable
 		                                   | ImGuiTableFlags_Hideable
 		                                   | ImGuiTableFlags_SizingStretchProp;
-		if (auto* types = ast.TryGetStatic<AST::STypes>())
+		if (auto* types = ast.TryGetStatic<ast::STypes>())
 		{
 			UI::BeginChild("typesTableChild",
-			    ImVec2(0.f, p::math::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
+			    ImVec2(0.f, p::Min(250.f, UI::GetContentRegionAvail().y - 20.f)));
 			if (UI::BeginTable("typesTable", 2, flags, ImVec2(0.f, UI::GetContentRegionAvail().y)))
 			{
 				UI::TableSetupColumn("Name");
@@ -107,14 +62,15 @@ namespace rift::Editor
 
 	ASTDebugger::ASTDebugger() {}
 
-	void ASTDebugger::Draw(AST::Tree& ast)
+	void ASTDebugger::Draw(ast::Tree& ast)
 	{
 		if (!open)
 		{
 			return;
 		}
 
-		UI::Begin("Abstract Syntax Tree", &open);
+		ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_FirstUseEver);
+		UI::Begin("  " ICON_FA_BUG "  Abstract Syntax Tree", &open);
 
 		DrawTypesDebug(ast);
 
@@ -155,16 +111,16 @@ namespace rift::Editor
 				DrawNodeAccess access{ast};
 				if (showHierarchy && !filter.IsActive())
 				{
-					p::TArray<AST::Id> roots;
-					p::GetRoots(access, roots);
+					p::TArray<ast::Id> roots;
+					p::GetRootIds(access, roots);
 					for (auto root : roots)
 					{
 						DrawNode(access, root, true);
 					}
 
-					p::TArray<AST::Id> orphans = p::FindAllIdsWith<AST::CNamespace>(access);
-					p::ExcludeIdsWith<AST::CChild>(access, orphans);
-					p::ExcludeIdsWith<AST::CParent>(access, orphans);
+					p::TArray<ast::Id> orphans = p::FindAllIdsWith<ast::CNamespace>(access);
+					p::ExcludeIdsWith<ast::CChild>(access, orphans);
+					p::ExcludeIdsWith<ast::CParent>(access, orphans);
 					for (auto orphan : orphans)
 					{
 						DrawNode(access, orphan, true);
@@ -172,7 +128,7 @@ namespace rift::Editor
 				}
 				else
 				{
-					ast.Each([this, &access](AST::Id id) {
+					ast.Each([this, &access](ast::Id id) {
 						DrawNode(access, id, false);
 					});
 				}
@@ -183,14 +139,27 @@ namespace rift::Editor
 		}
 		UI::End();
 
-		DrawEntityInspector(ast, selectedNode, &open);
+		// Inspectors
+		DrawEntityInspector(
+		    " " ICON_FA_LIST_ALT "  Inspector", "MainInspector", ast, mainInspector, nullptr);
+
+		for (p::i32 i = 0; i < secondaryInspectors.Size(); ++i)
+		{
+			InspectorPanel& inspector = secondaryInspectors[i];
+			if (inspector.open)
+			{
+				p::String id   = p::Strings::Format("SecondaryInspector{}", i);
+				p::String name = p::Strings::Format(" " ICON_FA_LIST "  Inspector {}", i + 1);
+				DrawEntityInspector(name, id, ast, inspector, &inspector.open);
+			}
+		}
 	}
 
-	void ASTDebugger::DrawNode(DrawNodeAccess access, AST::Id nodeId, bool showChildren)
+	void ASTDebugger::DrawNode(DrawNodeAccess access, ast::Id nodeId, bool showChildren)
 	{
 		static p::String idText;
 		idText.clear();
-		if (nodeId == AST::NoId)
+		if (nodeId == ast::NoId)
 		{
 			idText = "No Id";
 		}
@@ -205,14 +174,14 @@ namespace rift::Editor
 
 		static p::String name;
 		name.clear();
-		if (const auto* id = access.TryGet<const AST::CNamespace>(nodeId))
+		if (const auto* id = access.TryGet<const ast::CNamespace>(nodeId))
 		{
 			name = id->name.AsString();
 		}
 
 		static p::String path;
 		path.clear();
-		if (const auto* file = access.TryGet<const AST::CFileRef>(nodeId))
+		if (const auto* file = access.TryGet<const ast::CFileRef>(nodeId))
 		{
 			path = p::ToString(file->path);
 
@@ -230,24 +199,27 @@ namespace rift::Editor
 		ImGui::TableNextColumn();
 		static p::String inspectLabel;
 		inspectLabel.clear();
-		p::Strings::FormatTo(inspectLabel, ICON_FA_SEARCH "##{}", nodeId);
+
+		const bool inspected =
+		    mainInspector.id == nodeId || secondaryInspectors.Contains(InspectorPanel{nodeId});
+		const char* icon = inspected ? ICON_FA_EYE : ICON_FA_EYE_SLASH;
+		p::Strings::FormatTo(inspectLabel, "{}##{}", icon, nodeId);
+		UI::PushTextColor(inspected ? UI::whiteTextColor : UI::whiteTextColor.Translucency(0.3f));
 		UI::PushButtonColor(UI::GetNeutralColor(1));
-		UI::PushTextColor(
-		    selectedNode == nodeId ? UI::whiteTextColor : UI::whiteTextColor.Translucency(0.3f));
 		if (UI::Button(inspectLabel.c_str()))
 		{
-			selectedNode = nodeId;
+			OnInspectEntity(nodeId);
 		}
-		UI::PopTextColor();
 		UI::PopButtonColor();
+		UI::PopTextColor();
 
 
 		ImGui::TableNextColumn();
 		bool hasChildren;
-		const AST::CParent* parent = nullptr;
+		const ast::CParent* parent = nullptr;
 		if (showChildren)
 		{
-			parent      = access.TryGet<const AST::CParent>(nodeId);
+			parent      = access.TryGet<const ast::CParent>(nodeId);
 			hasChildren = parent && !parent->children.IsEmpty();
 		}
 		else
@@ -256,7 +228,7 @@ namespace rift::Editor
 		}
 
 		bool open = false;
-		static Tag font{"WorkSans"};
+		static p::Tag font{"WorkSans"};
 		UI::PushFont(font, UI::FontMode::Bold);
 		if (hasChildren)
 		{
@@ -284,13 +256,13 @@ namespace rift::Editor
 
 		if (ImGui::TableNextColumn())
 		{
-			UI::Text(AST::GetParentNamespace(access, nodeId).ToString());
+			UI::Text(ast::GetParentNamespace(access, nodeId).ToString());
 		}
 
 
 		if (hasChildren && open)
 		{
-			for (AST::Id child : parent->children)
+			for (ast::Id child : parent->children)
 			{
 				DrawNode(access, child, true);
 			}
@@ -298,4 +270,144 @@ namespace rift::Editor
 			UI::TreePop();
 		}
 	}
-}    // namespace rift::Editor
+
+	void ASTDebugger::OnInspectEntity(ast::Id id)
+	{
+		bool bOpenNewInspector = false;
+		if (ImGui::GetIO().KeyCtrl)    // Inspector found and Ctrl? Open a new one
+		{
+			OpenAvailableSecondaryInspector(id);
+		}
+		else
+		{
+			bool wasInspected = secondaryInspectors.RemoveIf([id](const auto& inspector) {
+				return inspector.id == id;
+			}) > 0;
+			if (mainInspector.id == id)
+			{
+				mainInspector.id = ast::NoId;
+				wasInspected     = true;
+			}
+
+			if (!wasInspected)
+			{
+				mainInspector.id           = id;
+				mainInspector.pendingFocus = true;
+			}
+		}
+	}
+
+	void ASTDebugger::DrawEntityInspector(p::StringView label, p::StringView id, ast::Tree& ast,
+	    InspectorPanel& inspector, bool* open)
+	{
+		const bool valid   = ast.IsValid(inspector.id);
+		const bool removed = ast.WasRemoved(inspector.id);
+		bool clone         = false;
+		ast::Id changedId  = inspector.id;
+
+		p::String name;
+		p::Strings::FormatTo(
+		    name, "{}: {}{}###{}", label, inspector.id, removed ? " (removed)" : "", id);
+
+		if (inspector.pendingFocus)
+		{
+			ImGui::SetNextWindowFocus();
+			inspector.pendingFocus = false;
+		}
+
+		UI::SetNextWindowPos(ImGui::GetCursorScreenPos() + ImVec2(20, 20), ImGuiCond_Appearing);
+		UI::SetNextWindowSizeConstraints(ImVec2(300.f, 200.f), ImVec2(800, FLT_MAX));
+		UI::BeginOuterStyle();
+		UI::PushTextColor(valid && !removed ? UI::whiteTextColor : UI::errorColor);
+		ImGui::Begin(name.c_str(), open, ImGuiWindowFlags_MenuBar);
+		UI::PopTextColor();
+
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu(ICON_FA_BARS))
+			{
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text("Id");
+				ImGui::SameLine();
+				p::String asString = p::ToString(inspector.id);
+				ImGui::SetNextItemWidth(100.f);
+				if (UI::InputText("##IdValue", asString,
+				        ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll))
+				{
+					changedId = p::IdFromString(asString);
+				}
+				ImGui::EndMenu();
+			}
+
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - 40.f);
+			if (ImGui::MenuItem("Clone"))
+			{
+				clone = true;
+			}
+			ImGui::EndMenuBar();
+		}
+
+		UI::BeginInnerStyle();
+
+		if (valid)
+		{
+			const auto& registry = p::TypeRegistry::Get();
+			for (const auto& poolInstance : ast.GetPools())
+			{
+				p::Type* type = registry.FindType(poolInstance.componentId);
+				if (!type || !poolInstance.GetPool()->Has(inspector.id))
+				{
+					continue;
+				}
+
+				void* data = poolInstance.GetPool()->TryGetVoid(inspector.id);
+				static p::String typeName;
+				typeName = type->GetName();
+
+				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
+				if (!data)
+				{
+					flags |= ImGuiTreeNodeFlags_Leaf;
+				}
+				if (UI::CollapsingHeader(typeName.c_str(), flags))
+				{
+					UI::Indent();
+					auto* dataType = Cast<p::DataType>(type);
+					if (data && dataType && UI::BeginInspector("EntityInspector"))
+					{
+						UI::InspectChildrenProperties({data, dataType});
+						UI::EndInspector();
+					}
+					UI::Unindent();
+				}
+			}
+		}
+		UI::End();
+
+		// Update after drawing
+		if (changedId != inspector.id)
+		{
+			inspector.id = changedId;
+		}
+
+		if (clone)
+		{
+			OpenAvailableSecondaryInspector(inspector.id);
+		}
+	}
+
+	void ASTDebugger::OpenAvailableSecondaryInspector(ast::Id id)
+	{
+		p::i32 availableIndex = secondaryInspectors.FindIndex([](const auto& inspector) {
+			return !inspector.open || inspector.id == ast::NoId;
+		});
+		if (availableIndex != p::NO_INDEX)
+		{
+			secondaryInspectors[availableIndex] = {id};
+		}
+		else
+		{
+			secondaryInspectors.Add({id});
+		}
+	}
+}    // namespace rift::editor

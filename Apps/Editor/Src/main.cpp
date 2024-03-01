@@ -6,37 +6,34 @@
 #include <ASTModule.h>
 #include <Editor.h>
 #include <GraphViewModule.h>
-#include <LLVMBackendModule.h>
 #include <MIRBackendModule.h>
-#include <Pipe/Pipe.h>
+#include <Pipe.h>
 
 #include <iostream>
-
 
 
 using namespace rift;
 
 
 #ifndef RUN_AS_CLI
-#	define RUN_AS_CLI 1
+	#define RUN_AS_CLI 1
 #endif
 
 int RunEditor(StringView projectPath)
 {
 	p::Initialize("Saved/Logs");
 	EnableModule<ASTModule>();
-	EnableModule<LLVMBackendModule>();
 	EnableModule<MIRBackendModule>();
 	EnableModule<GraphViewModule>();
 
-	const int result = Editor::Editor::Get().Run(projectPath);
+	const int result = editor::Editor::Get().Run(projectPath);
 	p::Shutdown();
 	return result;
 }
 
 #if PLATFORM_WINDOWS && !RUN_AS_CLI
-#	pragma comment(linker, "/subsystem:windows")
-#	include <windows.h>
+	#pragma comment(linker, "/subsystem:windows")
+	#include <windows.h>
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
 {
 	return RunEditor(__argc > 1 ? __argv[1] : StringView{});

@@ -4,8 +4,8 @@
 #include <AST/Tree.h>
 
 
-namespace rift::Editor::EditorSystem
+namespace rift::editor::EditorSystem
 {
-	void Init(AST::Tree& ast);
-	void Draw(AST::Tree& ast);
-}    // namespace rift::Editor::EditorSystem
+	void Init(ast::Tree& ast);
+	void Draw(ast::Tree& ast);
+}    // namespace rift::editor::EditorSystem

@@ -1,40 +1,115 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #include "Editor.h"
+#include "Statics/EditorSettings.h"
 #include "Utils/ElementsPanel.h"
 
-#include <Pipe/Files/FileDialog.h>
+#include <AST/Utils/Settings.h>
+#include <Pipe/Files/PlatformPaths.h>
+#include <PipeFiles.h>
 #include <UI/Notify.h>
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	void DrawProjectManager(AST::Tree& ast)
+	void TextCentered(const char* text)
+	{
+		auto windowWidth = ImGui::GetWindowSize().x;
+		auto textWidth   = ImGui::CalcTextSize(text).x;
+
+		ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
+		ImGui::Text(text);
+	}
+
+	void DrawProjectManager(ast::Tree& ast)
 	{
 		// Center modal when appearing
 		UI::SetNextWindowPos(UI::GetMainViewport()->GetCenter(), ImGuiCond_Always, {0.5f, 0.5f});
 
-		v2 viewportSize = UI::GetMainViewport()->Size;
-		v2 modalSize    = v2{600.f, 400.f};
-		modalSize.x     = math::Min(modalSize.x, viewportSize.x - 20.f);
-		modalSize.y     = math::Min(modalSize.y, viewportSize.y - 20.f);
+		p::v2 viewportSize = UI::GetMainViewport()->Size;
+		p::v2 modalSize    = p::v2{600.f, 0.f};
+		modalSize.x        = p::Min(modalSize.x, viewportSize.x - 20.f);
+		modalSize.y        = p::Min(modalSize.y, viewportSize.y - 20.f);
 
 		UI::SetNextWindowSize(modalSize, ImGuiCond_Always);
 
 		if (UI::BeginPopupModal("Project Manager", nullptr,
-		        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize))
+		        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
 		{
-			UI::PushFont("WorkSans", UI::FontMode::Regular, 18.f);
-			UI::Text("Projects");
+			UI::PushFont("WorkSans", UI::FontMode::Regular, 24.f);
+			TextCentered("Projects");
 			UI::PopFont();
-			UI::Separator();
+
+			UI::Spacing();
 			UI::Spacing();
 
-			if (UI::Button("Open", v2{-FLT_MIN, 0.0f}))
+			static p::String folder;
+
+			ImGui::BeginTable("table", 2);
+			ImGui::TableNextColumn();
 			{
-				String folder =
-				    files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
+				UI::PushFont("WorkSans", UI::FontMode::Regular, 18.f);
+				UI::Text("Open");
+				UI::PopFont();
+				UI::Separator();
+				UI::Spacing();
+
+				UI::SetItemDefaultFocus();
+				{
+					UI::Text("Recent projects:");
+					auto& editorSettings = rift::GetUserSettings<EditorSettings>();
+					static const char* recentProjects[]{"Project.rift"};
+					static int selectedN = 0;
+					UI::SetNextItemWidth(-FLT_MIN);
+
+					for (int n = 0; n < editorSettings.recentProjects.Size(); ++n)
+					{
+						const bool isSelected = (selectedN == n);
+						p::StringView path    = editorSettings.recentProjects[n];
+						UI::BulletText(path.data());
+						UI::SameLine(ImGui::GetContentRegionAvail().x - 30.f);
+						if (UI::SmallButton("open"))
+						{
+							if (Editor::Get().OpenProject(path))
+							{
+								UI::CloseCurrentPopup();
+							}
+							else
+							{
+								UI::AddNotification({UI::ToastType::Error, 1.f,
+								    p::Strings::Format("Failed to open project at '{}'", path)});
+							}
+						}
+					}
+				}
+				UI::Dummy({10.f, 40.f});
+			}
+			ImGui::TableNextColumn();
+			{
+				UI::PushFont("WorkSans", UI::FontMode::Regular, 18.f);
+				UI::Text("Create");
+				UI::PopFont();
+				UI::Separator();
+				UI::Spacing();
+
+				UI::PushItemWidth(-32.f);
+				UI::InputTextWithHint("##path", "project path...", folder);
+				UI::PopItemWidth();
+				UI::SameLine();
+				if (UI::Button("...", p::v2{24.f, 0.f}))
+				{
+					folder = p::SelectFolderDialog(
+					    "Select project folder", p::PlatformPaths::GetCurrentPath());
+				}
+			}
+
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			if (UI::Button("Open", p::v2{-FLT_MIN, 0.0f}))
+			{
+				p::String folder = p::SelectFolderDialog(
+				    "Select project folder", p::PlatformPaths::GetCurrentPath());
 				if (Editor::Get().OpenProject(folder))
 				{
 					UI::CloseCurrentPopup();
@@ -42,64 +117,11 @@ namespace rift::Editor
 				else
 				{
 					UI::AddNotification({UI::ToastType::Error, 1.f,
-					    Strings::Format("Failed to open project at '{}'", p::ToString(folder))});
+					    p::Strings::Format("Failed to open project at '{}'", p::ToString(folder))});
 				}
 			}
-			UI::SetItemDefaultFocus();
-			{
-				UI::Text("Recent Projects");
-				static const char* recentProjects[]{"One recent project"};
-				static int selectedN = 0;
-				UI::SetNextItemWidth(-FLT_MIN);
-				if (UI::BeginListBox("##RecentProjects"))
-				{
-					for (int n = 0; n < IM_ARRAYSIZE(recentProjects); ++n)
-					{
-						const bool isSelected = (selectedN == n);
-						if (UI::Selectable(recentProjects[n], isSelected))
-						{
-							selectedN = n;
-						}
-
-						// Set the initial focus when opening the combo (scrolling + keyboard
-						// navigation focus)
-						if (isSelected)
-						{
-							UI::SetItemDefaultFocus();
-						}
-					}
-					UI::EndListBox();
-				}
-			}
-
-
-			UI::Spacing();
-			UI::Spacing();
-			UI::Spacing();
-			UI::Spacing();
-
-			UI::PushFont("WorkSans", UI::FontMode::Regular, 18.f);
-			UI::Text("New");
-			UI::PopFont();
-			UI::Separator();
-			UI::Spacing();
-
-			UI::AlignTextToFramePadding();
-			UI::Text("Destination");
-			UI::SameLine();
-			static String folder;
-			UI::PushItemWidth(-32.f);
-			UI::InputText("##path", folder);
-			UI::PopItemWidth();
-			UI::SameLine();
-			if (UI::Button("...", v2{24.f, 0.f}))
-			{
-				Path selectedFolder =
-				    files::SelectFolderDialog("Select project folder", p::GetCurrentPath());
-				folder = p::ToString(selectedFolder);
-			}
-
-			if (UI::Button("Create", v2{-FLT_MIN, 0.0f}))
+			ImGui::TableNextColumn();
+			if (UI::Button("Create", p::v2{-FLT_MIN, 0.0f}))
 			{
 				if (Editor::Get().CreateProject(folder))
 				{
@@ -109,9 +131,10 @@ namespace rift::Editor
 				else
 				{
 					UI::AddNotification({UI::ToastType::Error, 1.f,
-					    Strings::Format("Failed to create project at '{}'", folder)});
+					    p::Strings::Format("Failed to create project at '{}'", folder)});
 				}
 			}
+			ImGui::EndTable();
 
 			UI::EndPopup();
 		}
@@ -121,4 +144,4 @@ namespace rift::Editor
 	{
 		UI::OpenPopup("Project Manager");
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

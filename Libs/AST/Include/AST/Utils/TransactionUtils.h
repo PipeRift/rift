@@ -6,12 +6,13 @@
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	using TransactionAccess = TAccessRef<TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef>;
+	using TransactionAccess =
+	    p::TAccessRef<p::TWrite<CChanged>, p::TWrite<CFileDirty>, CChild, CFileRef>;
 
 	namespace Transactions
 	{
@@ -25,16 +26,16 @@ namespace rift::AST
 			bool active = false;
 
 			ScopedTransaction() {}
-			ScopedTransaction(const TransactionAccess& access, TView<const Id> entityIds);
+			ScopedTransaction(const TransactionAccess& access, p::TView<const Id> entityIds);
 			ScopedTransaction(ScopedTransaction&& other) noexcept;
 			~ScopedTransaction();
 		};
 
 
-		bool PreChange(const TransactionAccess& access, TView<const Id> entityIds);
+		bool PreChange(const TransactionAccess& access, p::TView<const Id> entityIds);
 		void PostChange();
 	}    // namespace Transactions
-}    // namespace rift::AST
+}    // namespace rift::ast
 
 #define ScopedChange(access, entityIds) \
-	rift::AST::Transactions::ScopedTransaction _transaction{access, entityIds};
+	rift::ast::Transactions::ScopedTransaction _transaction{access, entityIds};

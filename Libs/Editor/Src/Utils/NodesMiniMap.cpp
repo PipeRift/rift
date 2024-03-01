@@ -5,8 +5,8 @@
 #include "Utils/Nodes.h"
 #include "Utils/NodesInternal.h"
 
-#include <Pipe/Math/Math.h>
-#include <Pipe/Math/Vector.h>
+#include <PipeMath.h>
+#include <PipeVectors.h>
 
 
 namespace rift::Nodes
@@ -87,7 +87,7 @@ namespace rift::Nodes
 		scaling            = miniMapScaling;
 	}
 
-	void MiniMap::DrawNode(EditorContext& editor, const AST::Id nodeId)
+	void MiniMap::DrawNode(EditorContext& editor, const ast::Id nodeId)
 	{
 		const NodeData& node = editor.nodes[nodeId];
 
@@ -95,7 +95,7 @@ namespace rift::Nodes
 		    ScreenToMiniMapPosition(editor, node.rect.max)};
 
 		// Round to near whole pixel value for corner-rounding to prevent visual glitches
-		const float miniMapNodeRounding = math::Floor(node.LayoutStyle.CornerRounding * scaling);
+		const float miniMapNodeRounding = p::Floor(node.LayoutStyle.CornerRounding * scaling);
 
 		Color miniMapNodeBackground;
 		if (editor.clickInteraction.type == ClickInteractionType_None
@@ -199,7 +199,7 @@ namespace rift::Nodes
 			}
 		}
 
-		for (AST::Id nodeId : editor.nodes)
+		for (ast::Id nodeId : editor.nodes)
 		{
 			DrawNode(editor, nodeId);
 		}

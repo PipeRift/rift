@@ -9,21 +9,17 @@
 #include "Tools/MemoryDebugger.h"
 #include "Tools/ReflectionDebugger.h"
 
-#include <Pipe/Files/FileWatcher.h>
 #include <Pipe/Memory/OwnPtr.h>
 #include <Pipe/Reflect/Struct.h>
+#include <PipeFiles.h>
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	using namespace p::core;
-	using namespace p::files;
-
-
 	struct SEditor : public Struct
 	{
-		STRUCT(SEditor, Struct)
+		P_STRUCT(SEditor, Struct)
 
 		ImGuiID dockspaceID = 0;
 		DockSpaceLayout layout;
@@ -31,13 +27,12 @@ namespace rift::Editor
 		static const Tag centralNode;
 
 		String currentProjectPath;
-		TArray<AST::Id> pendingTypesToClose;
+		TArray<ast::Id> pendingTypesToClose;
 
-		FileWatcher fileWatcher;
 		FileExplorerPanel fileExplorer{};
 
 		ReflectionDebugger reflectionDebugger;
-		ASTDebugger astDebugger;
+		ASTDebugger ASTDebugger;
 		MemoryDebugger memoryDebugger;
 		GraphPlayground graphPlayground;
 
@@ -46,4 +41,4 @@ namespace rift::Editor
 
 	inline const Tag SEditor::leftNode{"leftNode"};
 	inline const Tag SEditor::centralNode{"centralNode"};
-}    // namespace rift::Editor
+}    // namespace rift::editor

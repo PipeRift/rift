@@ -1,20 +1,20 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "AST/Components/CExprCall.h"
 #include "AST/Components/CFileRef.h"
+#include "AST/Components/Expressions.h"
 
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	// Dirty tags are cleaned manually by the respective systems. CChanged instead gets cleared
 	// after one frame
 	template<typename T>
 	struct TDirty : public p::Struct
 	{
-		STRUCT(TDirty<T>, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(TDirty<T>, p::Struct, p::Struct_NotSerialized)
 	};
 
 	using CDirty = TDirty<void>;
@@ -24,4 +24,4 @@ namespace rift::AST
 
 	// Marks a type as dirty, meaning is has been modified
 	using CCallDirty = TDirty<CExprCallId>;
-}    // namespace rift::AST
+}    // namespace rift::ast

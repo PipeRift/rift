@@ -2,16 +2,15 @@
 
 #include "Utils/EditorStyle.h"
 
-#include "AST/Components/CDeclClass.h"
-#include "AST/Components/CDeclStruct.h"
+#include "AST/Components/Declarations.h"
 
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	const Color GetTypeColor(const AST::Tree& ast, AST::Id id)
+	const Color GetTypeColor(const ast::Tree& ast, ast::Id id)
 	{
 		if (!ast.IsValid(id))
 		{
@@ -44,11 +43,11 @@ namespace rift::Editor
 		{
 			return GetTypeColor<String>();
 		}
-		else if (ast.Has<AST::CDeclClass>(id))
+		else if (ast.Has<ast::CDeclClass>(id))
 		{
 			return GetTypeColor<Class>();
 		}
-		else if (ast.Has<AST::CDeclStruct>(id))
+		else if (ast.Has<ast::CDeclStruct>(id))
 		{
 			return GetTypeColor<Struct>();
 		}
@@ -79,4 +78,4 @@ namespace rift::Editor
 	{
 		Nodes::PopStyleColor(3);
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

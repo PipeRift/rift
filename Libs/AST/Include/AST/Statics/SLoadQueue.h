@@ -6,14 +6,14 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	// Keeps a list of entities to load from disk
 	struct SLoadQueue : public p::Struct
 	{
-		STRUCT(SLoadQueue, p::Struct)
+		P_STRUCT(SLoadQueue, p::Struct)
 
-		TArray<Id> pendingSyncLoad;
-		TArray<Id> pendingAsyncLoad;
+		p::TArray<Id> pendingSyncLoad;
+		p::TArray<Id> pendingAsyncLoad;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

@@ -2,7 +2,7 @@
 
 #include "Tools/ReflectionDebugger.h"
 
-#include <AST/Components/CStmtOutputs.h>
+#include <AST/Components/Statements.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Paths.h>
@@ -12,11 +12,8 @@
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	// using namespace p::core::EnumOperators;
-
-
 	ReflectionDebugger::ReflectionDebugger() {}
 
 	void ReflectionDebugger::Draw()
@@ -110,4 +107,4 @@ namespace rift::Editor
 			}
 		}
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

@@ -7,9 +7,8 @@
 
 #include <IconsFontAwesome5.h>
 #include <Pipe/Core/String.h>
-#include <Pipe/Math/DateTime.h>
-#include <Pipe/Math/Timespan.h>
-#include <Pipe/Math/Vector.h>
+#include <PipeTime.h>
+#include <PipeVectors.h>
 
 
 #define NOTIFY_USE_SEPARATOR

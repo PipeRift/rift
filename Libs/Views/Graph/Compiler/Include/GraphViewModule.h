@@ -9,12 +9,11 @@
 #include <View.h>
 
 
-
 namespace rift
 {
 	class GraphViewModule : public Module
 	{
-		CLASS(GraphViewModule, Module)
+		P_CLASS(GraphViewModule, Module)
 
 	public:
 		void Load() override;

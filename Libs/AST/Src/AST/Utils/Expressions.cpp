@@ -5,13 +5,13 @@
 #include "AST/Id.h"
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	bool WouldExprLoop(
-	    TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access, Id outputNodeId, Id inputNodeId)
+	bool WouldExprLoop(p::TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access,
+	    Id outputNodeId, Id inputNodeId)
 	{
-		TArray<Id> currentNodeIds{outputNodeId};
-		TArray<Id> nextNodeIds{};
+		p::TArray<Id> currentNodeIds{outputNodeId};
+		p::TArray<Id> nextNodeIds{};
 		while (!currentNodeIds.IsEmpty())
 		{
 			for (Id id : currentNodeIds)
@@ -38,7 +38,7 @@ namespace rift::AST
 		return false;
 	}
 
-	bool CanConnectExpr(TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access,
+	bool CanConnectExpr(p::TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access,
 	    ExprOutput output, ExprInput input)
 	{
 		if (output.IsNone() || input.IsNone())
@@ -91,7 +91,7 @@ namespace rift::AST
 		return !WouldExprLoop(access, output.nodeId, input.nodeId);
 	}
 
-	bool TryConnectExpr(TAccessRef<TWrite<CExprInputs>, CExprOutputs, CExprTypeId> access,
+	bool TryConnectExpr(p::TAccessRef<p::TWrite<CExprInputs>, CExprOutputs, CExprTypeId> access,
 	    ExprOutput output, ExprInput input)
 	{
 		if (!CanConnectExpr(access, output, input))
@@ -102,10 +102,10 @@ namespace rift::AST
 		auto& inputs = access.Get<CExprInputs>(input.nodeId);
 
 		// Find pin index
-		const i32 index = inputs.pinIds.FindIndex([&input](Id pinId) {
+		const p::i32 index = inputs.pinIds.FindIndex([&input](Id pinId) {
 			return input.pinId == pinId;
 		});
-		if (index != NO_INDEX && Ensure(index < inputs.linkedOutputs.Size()))
+		if (index != p::NO_INDEX && Ensure(index < inputs.linkedOutputs.Size()))
 		{
 			inputs.linkedOutputs[index] = output;
 			return true;
@@ -123,10 +123,8 @@ namespace rift::AST
 		auto& inputs = ast.Get<CExprInputs>(input.nodeId);
 
 		// Find pin index
-		const i32 index = inputs.pinIds.FindIndex([&input](Id pinId) {
-			return input.pinId == pinId;
-		});
-		if (index != NO_INDEX && Ensure(index < inputs.linkedOutputs.Size())) [[likely]]
+		const p::i32 index = inputs.pinIds.FindIndex(input.pinId);
+		if (index != p::NO_INDEX && Ensure(index < inputs.linkedOutputs.Size())) [[likely]]
 		{
 			ExprOutput& linked = inputs.linkedOutputs[index];
 			linked             = {};
@@ -136,12 +134,12 @@ namespace rift::AST
 	}
 
 
-	bool RemoveExprInputPin(TAccessRef<CExprInputs, TWrite<CInvalid>> access, ExprInput input)
+	bool RemoveExprInputPin(p::TAccessRef<CExprInputs, p::TWrite<CInvalid>> access, ExprInput input)
 	{
 		if (!input.IsNone())
 		{
 			const auto* inputs = access.TryGet<const CExprInputs>(input.nodeId);
-			if (inputs && inputs->pinIds.FindIndex(input.pinId) != NO_INDEX)
+			if (inputs && inputs->pinIds.FindIndex(input.pinId) != p::NO_INDEX)
 			{
 				access.Add<CInvalid>(input.pinId);
 				return true;
@@ -150,7 +148,8 @@ namespace rift::AST
 		return false;
 	}
 
-	bool RemoveExprOutputPin(TAccessRef<CExprOutputs, TWrite<CInvalid>> access, ExprOutput output)
+	bool RemoveExprOutputPin(
+	    p::TAccessRef<CExprOutputs, p::TWrite<CInvalid>> access, ExprOutput output)
 	{
 		if (!output.IsNone())
 		{
@@ -163,7 +162,7 @@ namespace rift::AST
 		return false;
 	}
 
-	ExprInput GetExprInputFromPin(TAccessRef<CExprInputs, CChild> access, Id pinId)
+	ExprInput GetExprInputFromPin(p::TAccessRef<CExprInputs, CChild> access, Id pinId)
 	{
 		ExprInput input{};
 		input.pinId = pinId;
@@ -171,12 +170,12 @@ namespace rift::AST
 		input.nodeId = pinId;
 		if (!IsNone(input.nodeId) && !access.Has<CExprInputs>(input.nodeId))
 		{
-			input.nodeId = p::GetParent(access, pinId);
+			input.nodeId = p::GetIdParent(access, pinId);
 		}
 		return input;
 	}
 
-	ExprOutput GetExprOutputFromPin(TAccessRef<CExprOutputs, CChild> access, Id pinId)
+	ExprOutput GetExprOutputFromPin(p::TAccessRef<CExprOutputs, CChild> access, Id pinId)
 	{
 		ExprOutput output{};
 		output.pinId = pinId;
@@ -184,8 +183,8 @@ namespace rift::AST
 		output.nodeId = pinId;
 		if (!IsNone(output.nodeId) && !access.Has<CExprOutputs>(output.nodeId))
 		{
-			output.nodeId = p::GetParent(access, pinId);
+			output.nodeId = p::GetIdParent(access, pinId);
 		}
 		return output;
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

@@ -232,5 +232,8 @@
             "LLVM"
         ]
     },
-    "dotnet.defaultSolution": "disable"
+    "dotnet.defaultSolution": "disable",
+    "search.exclude": {
+        "**/.git": true
+    }
 }

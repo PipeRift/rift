@@ -16,20 +16,22 @@
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
 #include <Pipe/Core/Log.h>
-#include <Pipe/Core/Profiler.h>
-#include <Pipe/Math/Color.h>
+#include <Pipe/Files/Paths.h>
+#include <Pipe/Files/PlatformPaths.h>
+#include <PipeColor.h>
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 
 namespace rift::UI
 {
-	using namespace p::math;
-
-
 	static GLFWwindow* gWindow = nullptr;
 
 	void OnGl3WError(int error, const char* description)
 	{
-		p::Error("Glfw Error {}: {}", error, description);
+		p::Error("Glfw Error {}: {}", error, p::StringView{description});
 	}
 
 	bool Init()
@@ -95,6 +97,8 @@ namespace rift::UI
 		ImGui_ImplGlfw_InitForOpenGL(gWindow, true);
 		ImGui_ImplOpenGL3_Init(glslVersion);
 
+		SetWindowIcon();
+
 		RegisterCoreKeyValueInspections();
 		return true;
 	}
@@ -117,7 +121,6 @@ namespace rift::UI
 
 	void PreFrame()
 	{
-		ZoneScopedN("PreFrame");
 		glfwPollEvents();
 
 		ImGui_ImplOpenGL3_NewFrame();
@@ -127,8 +130,6 @@ namespace rift::UI
 
 	void Render()
 	{
-		ZoneScopedC(0xA245D1);
-
 		ImGui::Render();
 		i32 displayW, displayH;
 		glfwGetFramebufferSize(gWindow, &displayW, &displayH);
@@ -167,5 +168,32 @@ namespace rift::UI
 	GLFWwindow* GetWindow()
 	{
 		return gWindow;
+	}
+
+	void SetWindowIcon()
+	{
+		p::String icon64Path =
+		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_64.png");
+		p::String icon128Path =
+		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_128.png");
+		p::String icon256Path =
+		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_256.png");
+		GLFWimage images[3];
+		images[0].pixels =
+		    stbi_load(icon64Path.c_str(), &images[0].width, &images[0].height, nullptr, 0);
+		images[1].pixels =
+		    stbi_load(icon128Path.c_str(), &images[1].width, &images[1].height, nullptr, 0);
+		images[2].pixels =
+		    stbi_load(icon256Path.c_str(), &images[2].width, &images[2].height, nullptr, 0);
+		if (!images[0].pixels || !images[1].pixels || !images[2].pixels)
+		{
+			p::Error("Window icon couldn't be loaded");
+			return;
+		}
+		glfwSetWindowIcon(gWindow, 3, images);
+
+		stbi_image_free(images[0].pixels);
+		stbi_image_free(images[1].pixels);
+		stbi_image_free(images[2].pixels);
 	}
 }    // namespace rift::UI

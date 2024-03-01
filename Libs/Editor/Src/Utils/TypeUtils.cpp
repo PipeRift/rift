@@ -3,14 +3,14 @@
 #include "Utils/TypeUtils.h"
 
 #include <Pipe/Core/Checks.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	void OpenType(TAccessRef<TWrite<CTypeEditor>, AST::CDeclType> access, AST::Id id)
+	void OpenType(p::TAccessRef<TWrite<CTypeEditor>, ast::CDeclType> access, ast::Id id)
 	{
-		Check(access.Has<AST::CDeclType>(id));
+		Check(access.Has<ast::CDeclType>(id));
 		if (auto* editor = access.TryGet<CTypeEditor>(id))
 		{
 			editor->pendingFocus = true;
@@ -21,14 +21,14 @@ namespace rift::Editor
 		}
 	}
 
-	void CloseType(TAccessRef<TWrite<CTypeEditor>, AST::CDeclType> access, AST::Id id)
+	void CloseType(p::TAccessRef<TWrite<CTypeEditor>, ast::CDeclType> access, ast::Id id)
 	{
-		Check(access.Has<AST::CDeclType>(id));
+		Check(access.Has<ast::CDeclType>(id));
 		access.Remove<CTypeEditor>(id);
 	}
 
-	bool IsTypeOpen(TAccessRef<CTypeEditor> access, AST::Id id)
+	bool IsTypeOpen(p::TAccessRef<CTypeEditor> access, ast::Id id)
 	{
 		return access.Has<CTypeEditor>(id);
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

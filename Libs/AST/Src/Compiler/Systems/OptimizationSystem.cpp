@@ -5,12 +5,12 @@
 
 namespace rift::OptimizationSystem
 {
-	void PruneDisconnectedStatements(AST::Tree& ast)
+	void PruneDisconnectedStatements(ast::Tree& ast)
 	{
 		// TODO
 	}
 
-	void PruneDisconnectedExpressions(AST::Tree& ast)
+	void PruneDisconnectedExpressions(ast::Tree& ast)
 	{
 		// TODO
 	}

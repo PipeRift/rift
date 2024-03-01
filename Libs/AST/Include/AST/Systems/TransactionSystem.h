@@ -4,14 +4,14 @@
 #include "AST/Tree.h"
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct Tree;
 }
 
-namespace rift::AST::TransactionSystem
+namespace rift::ast::TransactionSystem
 {
 	void Init(Tree& ast);
 
 	void ClearTags(Tree& ast);
-}    // namespace rift::AST::TransactionSystem
+}    // namespace rift::ast::TransactionSystem

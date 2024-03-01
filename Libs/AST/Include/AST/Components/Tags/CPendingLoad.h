@@ -8,6 +8,6 @@ namespace rift
 {
 	struct CPendingLoad : public p::Struct
 	{
-		STRUCT(CPendingLoad, p::Struct)
+		P_STRUCT(CPendingLoad, p::Struct)
 	};
 }    // namespace rift

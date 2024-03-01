@@ -8,7 +8,6 @@ target_sources(RiftEditor PRIVATE ${RiftEditor_SOURCE_FILES})
 
 target_link_libraries(RiftEditor PUBLIC
     RiftAST
-    RiftBackendLLVM
     RiftBackendMIR
     RiftUI
     CLI11
@@ -16,4 +15,3 @@ target_link_libraries(RiftEditor PUBLIC
 
 rift_module(RiftEditor)
 rift_enable_module_resources(RiftEditor)
-set_icon(RiftEditor ../../Resources/Icon.ico)

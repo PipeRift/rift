@@ -7,16 +7,17 @@
 #include "AST/Components/CProject.h"
 #include "AST/Tree.h"
 
+#include <Pipe/Core/Tag.h>
 #include <Pipe/Memory/OwnPtr.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct CModule;
 }
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct ModuleBinding
 	{
@@ -38,39 +39,35 @@ namespace rift::AST
 		}
 	};
 
-
-	using namespace p::core;
-	using namespace p::files;
-
-	bool CreateProject(Tree& ast, StringView path);
-	bool OpenProject(Tree& ast, StringView path);
+	bool CreateProject(Tree& ast, p::StringView path);
+	bool OpenProject(Tree& ast, p::StringView path);
 	void CloseProject(Tree& ast);
 
-	Id CreateModule(Tree& ast, StringView path);
+	Id CreateModule(Tree& ast, p::StringView path);
 
 	Id GetProjectId(p::TAccessRef<CProject> access);
 
-	Tag GetProjectName(p::TAccessRef<CProject, CNamespace, CFileRef> access);
+	p::Tag GetProjectName(p::TAccessRef<CProject, CNamespace, CFileRef> access);
 	p::StringView GetProjectPath(p::TAccessRef<CFileRef, CProject> access);
 	CModule* GetProjectModule(p::TAccessRef<CProject, p::TWrite<CModule>> access);
 
 	bool HasProject(Tree& ast);
 
 	// Resolve a module's name
-	Tag GetModuleName(p::TAccessRef<CNamespace, CFileRef> access, Id moduleId);
+	p::Tag GetModuleName(p::TAccessRef<CNamespace, CFileRef> access, Id moduleId);
 
 	// Resolve a module's name
 	p::StringView GetModulePath(p::TAccessRef<CFileRef> access, Id moduleId);
 
-	void SerializeModule(AST::Tree& ast, AST::Id id, String& data);
-	void DeserializeModule(AST::Tree& ast, AST::Id id, const String& data);
-	const TBroadcast<p::EntityReader&>& OnReadModulePools();
-	const TBroadcast<p::EntityWriter&>& OnWriteModulePools();
+	void SerializeModule(ast::Tree& ast, ast::Id id, p::String& data);
+	void DeserializeModule(ast::Tree& ast, ast::Id id, const p::String& data);
+	const p::TBroadcast<p::EntityReader&>& OnReadModulePools();
+	const p::TBroadcast<p::EntityWriter&>& OnWriteModulePools();
 
 	void RegisterModuleBinding(ModuleBinding binding);
 	void UnregisterModuleBinding(p::Tag bindingId);
-	void AddBindingToModule(AST::Tree& ast, AST::Id id, p::Tag bindingId);
-	void RemoveBindingFromModule(AST::Tree& ast, AST::Id id, p::Tag bindingId);
+	void AddBindingToModule(ast::Tree& ast, ast::Id id, p::Tag bindingId);
+	void RemoveBindingFromModule(ast::Tree& ast, ast::Id id, p::Tag bindingId);
 	const ModuleBinding* FindModuleBinding(p::Tag id);
 	p::TView<const ModuleBinding> GetModuleBindings();
 
@@ -84,4 +81,4 @@ namespace rift::AST
 		OnReadModulePools().Bind(components);
 		OnWriteModulePools().Bind(components);
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

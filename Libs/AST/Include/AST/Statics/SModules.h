@@ -6,12 +6,12 @@
 #include <Pipe/Reflect/Struct.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct SModules : public p::Struct
 	{
-		STRUCT(SModules, p::Struct)
+		P_STRUCT(SModules, p::Struct)
 
-		p::TMap<p::Tag, AST::Id> modulesByPath;
+		p::TMap<p::Tag, ast::Id> modulesByPath;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

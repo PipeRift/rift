@@ -7,14 +7,14 @@
 
 namespace rift
 {
-	namespace AST
+	namespace ast
 	{
 		class Tree;
 	}
 
 	class ASTModule : public Module
 	{
-		CLASS(ASTModule, Module)
+		P_CLASS(ASTModule, Module)
 
 	public:
 		static const p::Tag structType;

@@ -15,21 +15,18 @@
 
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/TypeUtils.h>
-#include <GLFW/glfw3.h>
 #include <IconsFontAwesome5.h>
 #include <Pipe/Core/EnumFlags.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	// using namespace EnumOperators;
-
-	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, AST::Id variableId)
+	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, ast::Id variableId)
 	{
-		auto* ns           = access.TryGet<AST::CNamespace>(variableId);
-		auto* variableDecl = access.TryGet<AST::CDeclVariable>(variableId);
+		auto* ns           = access.TryGet<ast::CNamespace>(variableId);
+		auto* variableDecl = access.TryGet<ast::CDeclVariable>(variableId);
 		if (!ns || !variableDecl)
 		{
 			return;
@@ -43,7 +40,7 @@ namespace rift::Editor
 		ImGui::PushID(ns);
 
 		const Color color =
-		    GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), variableDecl->typeId);
+		    GetTypeColor(static_cast<ast::Tree&>(access.GetContext()), variableDecl->typeId);
 		static constexpr float frameHeight = 20.f;
 
 		UI::TableNextColumn();
@@ -61,14 +58,14 @@ namespace rift::Editor
 			{
 				editor.selectedPropertyId = variableId;
 
-				if (UI::IsKeyReleased(GLFW_KEY_DELETE))
+				if (UI::IsKeyReleased(ImGuiKey_Delete))
 				{
 					editor.pendingDeletePropertyId = variableId;
 				}
 			}
 			else if (editor.selectedPropertyId == variableId)    // If not selected but WAS selected
 			{
-				editor.selectedPropertyId = AST::NoId;
+				editor.selectedPropertyId = ast::NoId;
 			}
 
 			Color bgColor = color;
@@ -110,7 +107,7 @@ namespace rift::Editor
 		{
 			UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 			UI::SetNextItemWidth(-FLT_MIN);
-			Editor::TypeCombo(access, "##type", variableDecl->typeId);
+			editor::TypeCombo(access, "##type", variableDecl->typeId);
 			UI::PopStyleVar();
 		}
 
@@ -127,9 +124,9 @@ namespace rift::Editor
 		UI::PopID();
 	}
 
-	void DrawFunction(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId, AST::Id id)
+	void DrawFunction(ast::Tree& ast, CTypeEditor& editor, ast::Id typeId, ast::Id id)
 	{
-		auto* ns = ast.TryGet<AST::CNamespace>(id);
+		auto* ns = ast.TryGet<ast::CNamespace>(id);
 		if (!ns)
 		{
 			return;
@@ -141,7 +138,7 @@ namespace rift::Editor
 		}
 
 		UI::PushHeaderColor(callColor);
-		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
+		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 1.f);
 		static String headerId;
 		headerId.clear();
 		Strings::FormatTo(headerId, "{}###{}", name, id);
@@ -162,24 +159,26 @@ namespace rift::Editor
 
 		if (ImGui::BeginPopupContextItem())
 		{
-			Graph::DrawNodesContextMenu(ast, typeId, id);
 			if (UI::MenuItem("Show in Graph"))
 			{
 				Nodes::MoveToNode(id, v2{150.f, 150.f});
 			}
+			Graph::DrawNodesContextMenu(ast, typeId, id);
 			ImGui::EndPopup();
 		}
 	}
 
-	void DrawVariables(TVariableAccessRef access, AST::TransactionAccess transAccess,
-	    CTypeEditor& editor, AST::Id typeId)
+	void DrawVariables(TVariableAccessRef access, ast::TransactionAccess transAccess,
+	    CTypeEditor& editor, ast::Id typeId)
 	{
-		if (UI::CollapsingHeader("Variables", ImGuiTreeNodeFlags_DefaultOpen))
+		bool add = false;
+		if (UI::CollapsingHeaderWithButton(
+		        "Variables", ImGuiTreeNodeFlags_DefaultOpen, add, ICON_FA_PLUS))
 		{
-			UI::Indent(10.f);
-			TArray<AST::Id> variableIds;
-			p::GetChildren(access, typeId, variableIds);
-			ExcludeIdsWithout<AST::CDeclVariable>(access, variableIds);
+			UI::Indent();
+			TArray<ast::Id> variableIds;
+			p::GetIdChildren(access, typeId, variableIds);
+			ExcludeIdsWithout<ast::CDeclVariable>(access, variableIds);
 
 			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
 			bool showTable = UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit);
@@ -189,9 +188,9 @@ namespace rift::Editor
 				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.45f);
 				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.25f);
 				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.30f);
-				for (AST::Id child : variableIds)
+				for (ast::Id child : variableIds)
 				{
-					if (access.Has<AST::CDeclVariable>(child))
+					if (access.Has<ast::CDeclVariable>(child))
 					{
 						UI::TableNextRow();
 						DrawVariable(access, editor, child);
@@ -199,50 +198,47 @@ namespace rift::Editor
 				}
 				UI::EndTable();
 			}
-
-			UI::PushStyleCompact();
-			if (UI::Button(ICON_FA_PLUS "##Variable", ImVec2(-FLT_MIN, 0.0f)))
-			{
-				ScopedChange(transAccess, typeId);
-				AST::AddVariable(
-				    {static_cast<AST::Tree&>(access.GetContext()), typeId}, "NewVariable");
-			}
-			UI::PopStyleCompact();
-			UI::Unindent(10.f);
+			UI::Unindent();
 			UI::Dummy(ImVec2(0.0f, 10.0f));
+		}
+
+		if (add)
+		{
+			ScopedChange(transAccess, typeId);
+			ast::AddVariable({static_cast<ast::Tree&>(access.GetContext()), typeId}, "NewVariable");
 		}
 	}
 
-	void DrawFunctions(AST::Tree& ast, CTypeEditor& editor, AST::Id typeId)
+	void DrawFunctions(ast::Tree& ast, CTypeEditor& editor, ast::Id typeId)
 	{
-		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen
-		                               | ImGuiTreeNodeFlags_AllowItemOverlap
-		                               | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
-		if (UI::CollapsingHeader("Functions", flags))
-		{
-			UI::Indent(10.f);
+		const ImGuiTreeNodeFlags flags =
+		    ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap;
 
-			TArray<AST::Id> functionIds;
-			p::GetChildren(ast, typeId, functionIds);
-			ExcludeIdsWithout<AST::CDeclFunction>(ast, functionIds);
-			for (AST::Id functionId : functionIds)
+		bool add = false;
+		if (UI::CollapsingHeaderWithButton("Functions", flags, add, ICON_FA_PLUS))
+		{
+			UI::Indent();
+
+			TArray<ast::Id> functionIds;
+			p::GetIdChildren(ast, typeId, functionIds);
+			ExcludeIdsWithout<ast::CDeclFunction>(ast, functionIds);
+			for (ast::Id functionId : functionIds)
 			{
 				DrawFunction(ast, editor, typeId, functionId);
 			}
 
-			UI::PushStyleCompact();
-			if (UI::Button(ICON_FA_PLUS "##Function", ImVec2(-FLT_MIN, 0.0f)))
-			{
-				ScopedChange(ast, typeId);
-				AST::AddFunction({ast, typeId}, "NewFunction");
-			}
-			UI::PopStyleCompact();
-			UI::Unindent(10.f);
+			UI::Unindent();
 			UI::Dummy(ImVec2(0.0f, 10.0f));
+		}
+
+		if (add)
+		{
+			ScopedChange(ast, typeId);
+			ast::AddFunction({ast, typeId}, "NewFunction");
 		}
 	}
 
-	void DrawElementsPanel(AST::Tree& ast, AST::Id typeId)
+	void DrawElementsPanel(ast::Tree& ast, ast::Id typeId)
 	{
 		auto& editor = ast.Get<CTypeEditor>(typeId);
 
@@ -254,15 +250,15 @@ namespace rift::Editor
 		const String windowName = Strings::Format("Elements##{}", typeId);
 		if (UI::Begin(windowName.c_str(), &editor.showElements))
 		{
-			UI::SetNextItemWidth(UI::GetContentRegionAvailWidth());
-			editor.elementsFilter.Draw("##filter");
+			UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
+			UI::DrawFilterWithHint(editor.elementsFilter, "##filter", "Search...");
 
-			if (AST::HasVariables(ast, typeId))
+			if (ast::HasVariables(ast, typeId))
 			{
 				DrawVariables(ast, ast, editor, typeId);
 			}
 
-			if (AST::HasFunctions(ast, typeId))
+			if (ast::HasFunctions(ast, typeId))
 			{
 				DrawFunctions(ast, editor, typeId);
 			}
@@ -272,17 +268,17 @@ namespace rift::Editor
 		if (!IsNone(editor.pendingDeletePropertyId))
 		{
 			ScopedChange(ast, editor.pendingDeletePropertyId);
-			bool removedPin = AST::RemoveExprInputPin(
-			    ast, AST::GetExprInputFromPin(ast, editor.pendingDeletePropertyId));
-			removedPin |= AST::RemoveExprOutputPin(
-			    ast, AST::GetExprOutputFromPin(ast, editor.pendingDeletePropertyId));
+			bool removedPin = ast::RemoveExprInputPin(
+			    ast, ast::GetExprInputFromPin(ast, editor.pendingDeletePropertyId));
+			removedPin |= ast::RemoveExprOutputPin(
+			    ast, ast::GetExprOutputFromPin(ast, editor.pendingDeletePropertyId));
 
 			// If pin has not been marked for removal, destroy the entity
 			if (!removedPin)
 			{
-				p::Remove(ast, editor.pendingDeletePropertyId, true);
-				editor.pendingDeletePropertyId = AST::NoId;
+				p::RemoveId(ast, editor.pendingDeletePropertyId, true);
+				editor.pendingDeletePropertyId = ast::NoId;
 			}
 		}
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

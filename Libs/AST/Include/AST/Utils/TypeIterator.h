@@ -7,18 +7,18 @@
 #include <Pipe/Files/LambdaFileIterator.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	class TypeIterator : public p::files::LambdaFileIterator<p::files::RecursiveIterator>
+	class TypeIterator : public p::LambdaFileIterator<p::RecursivePathIterator>
 	{
-		using Super = p::files::LambdaFileIterator<p::files::RecursiveIterator>;
+		using Super = p::LambdaFileIterator<p::RecursivePathIterator>;
 
 	public:
 		using Super::Super;
 
-		explicit TypeIterator(const p::Path& path)
-		    : Super(path, [](const auto& path) {
-			    return path.extension() == Paths::typeExtension;
+		explicit TypeIterator(p::StringView path)
+		    : Super(path, [](p::StringView path) {
+			    return p::GetExtension(path) == Paths::typeExtension;
 		    })
 		{}
 	};
@@ -33,4 +33,4 @@ namespace rift::AST
 	{
 		return {};
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

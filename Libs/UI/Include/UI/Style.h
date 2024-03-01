@@ -2,44 +2,41 @@
 #pragma once
 
 #include <Pipe/Core/Platform.h>
-#include <Pipe/Math/Color.h>
+#include <PipeColor.h>
 
 
 namespace rift::UI
 {
-	using namespace p;
+	constexpr p::LinearColor primaryColor = p::LinearColor::FromHEX(0xD6863B);
+
+	constexpr p::LinearColor whiteTextColor = p::LinearColor::White().Shade(0.05f);
+	constexpr p::LinearColor blackTextColor = p::LinearColor::Black().Tint(0.05f);
+
+	constexpr p::LinearColor infoColor    = p::LinearColor::FromHEX(0x2B8ED6);
+	constexpr p::LinearColor successColor = p::LinearColor::FromHEX(0x4DD62B);
+	constexpr p::LinearColor warningColor = p::LinearColor::FromHEX(0xD6AB2B);
+	constexpr p::LinearColor errorColor   = p::LinearColor::FromHEX(0xD62B2B);
 
 
-	constexpr LinearColor primaryColor = LinearColor::FromHEX(0xD6863B);
-
-	constexpr LinearColor whiteTextColor = LinearColor::White().Shade(0.05f);
-	constexpr LinearColor blackTextColor = LinearColor::Black().Tint(0.05f);
-
-	constexpr LinearColor infoColor    = LinearColor::FromHEX(0x2B8ED6);
-	constexpr LinearColor successColor = LinearColor::FromHEX(0x4DD62B);
-	constexpr LinearColor warningColor = LinearColor::FromHEX(0xD6AB2B);
-	constexpr LinearColor errorColor   = LinearColor::FromHEX(0xD62B2B);
-
-
-	constexpr LinearColor GetNeutralColor(u8 level)
+	constexpr p::LinearColor GetNeutralColor(p::u8 level)
 	{
 		switch (level)
 		{
 			default:
-			case 0: return LinearColor::FromHEX(0x222222);
-			case 1: return LinearColor::FromHEX(0x3B3B3B);
-			case 2: return LinearColor::FromHEX(0x464646);
-			case 3: return LinearColor::FromHEX(0x515151);
-			case 4: return LinearColor::FromHEX(0x626262);
-			case 5: return LinearColor::FromHEX(0x6E6E6E);
-			case 6: return LinearColor::FromHEX(0x9E9E9E);
-			case 7: return LinearColor::FromHEX(0xB1B1B1);
-			case 8: return LinearColor::FromHEX(0xCFCFCF);
-			case 9: return LinearColor::FromHEX(0xE1E1E1);
-			case 10: return LinearColor::FromHEX(0xF7F7F7);
+			case 0: return p::LinearColor::FromHEX(0x222222);
+			case 1: return p::LinearColor::FromHEX(0x3B3B3B);
+			case 2: return p::LinearColor::FromHEX(0x464646);
+			case 3: return p::LinearColor::FromHEX(0x515151);
+			case 4: return p::LinearColor::FromHEX(0x626262);
+			case 5: return p::LinearColor::FromHEX(0x6E6E6E);
+			case 6: return p::LinearColor::FromHEX(0x9E9E9E);
+			case 7: return p::LinearColor::FromHEX(0xB1B1B1);
+			case 8: return p::LinearColor::FromHEX(0xCFCFCF);
+			case 9: return p::LinearColor::FromHEX(0xE1E1E1);
+			case 10: return p::LinearColor::FromHEX(0xF7F7F7);
 		}
 	}
-	inline LinearColor GetNeutralTextColor(u8 level)
+	inline p::LinearColor GetNeutralTextColor(p::u8 level)
 	{
 		return level <= 5 ? whiteTextColor : blackTextColor;
 	}
@@ -76,24 +73,24 @@ namespace rift::UI
 	void PushStyleCompact();
 	void PopStyleCompact();
 
-	void PushFrameBgColor(LinearColor color);
+	void PushFrameBgColor(p::LinearColor color);
 	void PopFrameBgColor();
-	void PushButtonColor(LinearColor color);
+	void PushButtonColor(p::LinearColor color);
 	void PopButtonColor();
-	void PushHeaderColor(LinearColor color = GetNeutralColor(2));
+	void PushHeaderColor(p::LinearColor color = GetNeutralColor(2));
 	void PopHeaderColor();
 
-	void PushTextColor(LinearColor color);
+	void PushTextColor(p::LinearColor color);
 	void PopTextColor();
 
 	template<p::ColorMode mode>
-	TColor<mode> Hovered(const TColor<mode>& color)
+	p::TColor<mode> Hovered(const p::TColor<mode>& color)
 	{
 		return color.Shade(0.1f);
 	}
 
-	template<ColorMode mode>
-	TColor<mode> Disabled(const TColor<mode>& color)
+	template<p::ColorMode mode>
+	p::TColor<mode> Disabled(const p::TColor<mode>& color)
 	{
 		return color.Shade(0.2f);
 	}
