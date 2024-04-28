@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #include "AST/Systems/LoadSystem.h"
 
@@ -13,10 +13,9 @@
 #include "AST/Utils/ModuleUtils.h"
 #include "AST/Utils/TypeIterator.h"
 #include "AST/Utils/TypeUtils.h"
-#include "Pipe/Files/Paths.h"
 
 #include <Pipe/Files/Files.h>
-#include <Pipe/Serialize/Formats/JsonFormat.h>
+#include <Pipe/Files/Paths.h>
 
 
 namespace rift::ast::LoadSystem

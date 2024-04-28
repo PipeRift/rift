@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #pragma once
 
@@ -7,9 +7,8 @@
 
 #include <Pipe/Core/String.h>
 #include <Pipe/Files/Files.h>
-#include <Pipe/Serialize/Formats/JsonFormat.h>
-#include <Pipe/Serialize/Serialization.h>
 #include <PipeECS.h>
+#include <PipeSerialize.h>
 
 
 namespace rift

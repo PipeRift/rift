@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
 #include "Components.h"
@@ -12,7 +12,6 @@
 #include <Components/Declarations.h>
 #include <mir.h>
 #include <PipeECS.h>
-
 
 
 struct c2mir_options;

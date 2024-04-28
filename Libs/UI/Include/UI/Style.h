@@ -1,21 +1,22 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
 #include <Pipe/Core/Platform.h>
+#include <Pipe/Core/Tag.h>
 #include <PipeColor.h>
 
 
 namespace rift::UI
 {
-	constexpr p::LinearColor primaryColor = p::LinearColor::FromHEX(0xD6863B);
+	constexpr p::LinearColor primaryColor = p::LinearColor::FromHex(0xD6863B);
 
 	constexpr p::LinearColor whiteTextColor = p::LinearColor::White().Shade(0.05f);
 	constexpr p::LinearColor blackTextColor = p::LinearColor::Black().Tint(0.05f);
 
-	constexpr p::LinearColor infoColor    = p::LinearColor::FromHEX(0x2B8ED6);
-	constexpr p::LinearColor successColor = p::LinearColor::FromHEX(0x4DD62B);
-	constexpr p::LinearColor warningColor = p::LinearColor::FromHEX(0xD6AB2B);
-	constexpr p::LinearColor errorColor   = p::LinearColor::FromHEX(0xD62B2B);
+	constexpr p::LinearColor infoColor    = p::LinearColor::FromHex(0x2B8ED6);
+	constexpr p::LinearColor successColor = p::LinearColor::FromHex(0x4DD62B);
+	constexpr p::LinearColor warningColor = p::LinearColor::FromHex(0xD6AB2B);
+	constexpr p::LinearColor errorColor   = p::LinearColor::FromHex(0xD62B2B);
 
 
 	constexpr p::LinearColor GetNeutralColor(p::u8 level)
@@ -23,17 +24,17 @@ namespace rift::UI
 		switch (level)
 		{
 			default:
-			case 0: return p::LinearColor::FromHEX(0x222222);
-			case 1: return p::LinearColor::FromHEX(0x3B3B3B);
-			case 2: return p::LinearColor::FromHEX(0x464646);
-			case 3: return p::LinearColor::FromHEX(0x515151);
-			case 4: return p::LinearColor::FromHEX(0x626262);
-			case 5: return p::LinearColor::FromHEX(0x6E6E6E);
-			case 6: return p::LinearColor::FromHEX(0x9E9E9E);
-			case 7: return p::LinearColor::FromHEX(0xB1B1B1);
-			case 8: return p::LinearColor::FromHEX(0xCFCFCF);
-			case 9: return p::LinearColor::FromHEX(0xE1E1E1);
-			case 10: return p::LinearColor::FromHEX(0xF7F7F7);
+			case 0: return p::LinearColor::FromHex(0x222222);
+			case 1: return p::LinearColor::FromHex(0x3B3B3B);
+			case 2: return p::LinearColor::FromHex(0x464646);
+			case 3: return p::LinearColor::FromHex(0x515151);
+			case 4: return p::LinearColor::FromHex(0x626262);
+			case 5: return p::LinearColor::FromHex(0x6E6E6E);
+			case 6: return p::LinearColor::FromHex(0x9E9E9E);
+			case 7: return p::LinearColor::FromHex(0xB1B1B1);
+			case 8: return p::LinearColor::FromHex(0xCFCFCF);
+			case 9: return p::LinearColor::FromHex(0xE1E1E1);
+			case 10: return p::LinearColor::FromHex(0xF7F7F7);
 		}
 	}
 	inline p::LinearColor GetNeutralTextColor(p::u8 level)

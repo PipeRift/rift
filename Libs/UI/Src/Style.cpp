@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #include "UI/Style.h"
 
@@ -10,6 +10,7 @@
 #include <Pipe/Core/Log.h>
 #include <Pipe/Core/Templates.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/Reflect/EnumType.h>
 #include <PipeArrays.h>
 #include <PipeMath.h>
 

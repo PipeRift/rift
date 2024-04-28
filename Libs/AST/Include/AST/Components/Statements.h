@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
 #include <Pipe/Reflect/Struct.h>
@@ -53,6 +53,7 @@ namespace rift::ast
 		    : pinIds{Move(pins)}, linkInputNodes(pinIds.Size(), p::NoId)
 		{}
 	};
+
 
 	/** Represents a return expression of a function
 	 * Return arguments are dynamically populated depending on the function this expression is

@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #include <Pipe/Memory/NewDelete.h>
 //  Override as first include
@@ -17,7 +17,6 @@
 #include <chrono>
 #include <CLI/CLI.hpp>
 #include <thread>
-
 
 
 using namespace rift;

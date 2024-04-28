@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #pragma once
 
@@ -13,45 +13,45 @@ namespace rift::editor
 	using namespace p;
 
 
-	constexpr Color selectedColor{Color::FromHEX(0xdba43f)};
-	constexpr Color executionColor{Color::FromHEX(0xdbdbdb)};
+	constexpr Color selectedColor{Color::FromHex(0xdba43f)};
+	constexpr Color executionColor{Color::FromHex(0xdbdbdb)};
 
-	constexpr Color functionColor{Color::FromHEX(0xCC3D33)};
+	constexpr Color functionColor{Color::FromHex(0xCC3D33)};
 	constexpr Color returnColor{functionColor.Shade(0.1f)};
-	constexpr Color callColor{Color::FromHEX(0x3366CC)};
+	constexpr Color callColor{Color::FromHex(0x3366CC)};
 	constexpr Color flowColor{UI::GetNeutralColor(4)};
-	constexpr Color invalidColor{Color::FromHEX(0xF95040)};
+	constexpr Color invalidColor{Color::FromHex(0xF95040)};
 
 	template<typename T>
 	constexpr Color GetTypeColor()
 	{
 		if constexpr (IsSame<T, bool>)
 		{
-			return Color::FromHEX(0xBF4A41);
+			return Color::FromHex(0xBF4A41);
 		}
 		else if constexpr (FloatingPoint<T>)
 		{
-			return Color::FromHEX(0x54BFA6);
+			return Color::FromHex(0x54BFA6);
 		}
 		else if constexpr (SignedIntegral<T>)
 		{
-			return Color::FromHEX(0x63BF54);
+			return Color::FromHex(0x63BF54);
 		}
 		else if constexpr (UnsignedIntegral<T>)
 		{
-			return Color::FromHEX(0x54BF79);
+			return Color::FromHex(0x54BF79);
 		}
 		else if constexpr (IsSame<T, String>)
 		{
-			return Color::FromHEX(0xBF54AE);
+			return Color::FromHex(0xBF54AE);
 		}
 		else if constexpr (IsSame<T, Class>)
 		{
-			return Color::FromHEX(0x545FBF);
+			return Color::FromHex(0x545FBF);
 		}
 		else if constexpr (IsSame<T, Struct>)
 		{
-			return Color::FromHEX(0x548CBF);
+			return Color::FromHex(0x548CBF);
 		}
 		return Color::Gray();
 	};
