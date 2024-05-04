@@ -9,7 +9,7 @@ namespace rift::editor
 {
 	void OpenModuleEditor(p::TAccessRef<TWrite<CModuleEditor>, ast::CModule> access, ast::Id id)
 	{
-		Check(access.Has<ast::CModule>(id));
+		P_Check(access.Has<ast::CModule>(id));
 		if (auto* editor = access.TryGet<CModuleEditor>(id))
 		{
 			editor->pendingFocus = true;
@@ -22,7 +22,7 @@ namespace rift::editor
 
 	void CloseModuleEditor(p::TAccessRef<TWrite<CModuleEditor>, ast::CModule> access, ast::Id id)
 	{
-		Check(access.Has<ast::CModule>(id));
+		P_Check(access.Has<ast::CModule>(id));
 		access.Remove<CModuleEditor>(id);
 	}
 

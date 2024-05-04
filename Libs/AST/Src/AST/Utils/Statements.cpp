@@ -26,7 +26,7 @@ namespace rift::ast
 
 	bool TryConnectStmt(Tree& ast, Id outputPin, Id inputNode)
 	{
-		if (!Ensure(!IsNone(outputPin) && !IsNone(inputNode)))
+		if (!P_Ensure(!IsNone(outputPin) && !IsNone(inputNode)))
 		{
 			return false;
 		}
@@ -113,7 +113,7 @@ namespace rift::ast
 		// Input node is always the same id as linkId
 		auto* inputComp = ast.TryGet<CStmtInput>(linkId);
 		if (inputComp
-		    && EnsureMsg(!IsNone(inputComp->linkOutputNode),
+		    && P_EnsureMsg(!IsNone(inputComp->linkOutputNode),
 		        "Trying to disconnect a unexistant link")) [[likely]]
 		{
 			// We expect the other side to have outputs component

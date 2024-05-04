@@ -43,7 +43,7 @@ namespace rift
 		template<typename ModuleType>
 		void AddDependency()
 		{
-			EnsureMsg(state == State::Uninitialized,
+			P_EnsureMsg(state == State::Uninitialized,
 			    "Should not add dependencies outside of the constructor");
 
 			EnableModule<ModuleType>();

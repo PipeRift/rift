@@ -29,7 +29,7 @@ namespace rift::Nodes
 	EditorContext& GetEditorContext()
 	{
 		// No editor context was set! Did you forget to call Nodes::CreateContext()?
-		Check(gNodes->EditorCtx != nullptr);
+		P_Check(gNodes->EditorCtx != nullptr);
 		return *gNodes->EditorCtx;
 	}
 
@@ -58,7 +58,7 @@ namespace rift::Nodes
 	// Calculates the closest point along each bezier curve segment.
 	v2 GetClosestPointOnCubicBezier(const i32 numSegments, const v2& p, const CubicBezier& cb)
 	{
-		Ensure(numSegments > 0);
+		P_Ensure(numSegments > 0);
 		v2 pLast = cb.p0;
 		v2 pClosest;
 		float pClosestDist = FLT_MAX;
@@ -2545,7 +2545,7 @@ namespace rift::Nodes
 
 	bool IsPinActive()
 	{
-		Check(HasFlag(gNodes->currentScope, Scope::Node));
+		P_Check(HasFlag(gNodes->currentScope, Scope::Node));
 
 		if (!gNodes->activePin)
 		{
@@ -2557,7 +2557,7 @@ namespace rift::Nodes
 
 	bool IsAnyPinActive(Id* const pinId)
 	{
-		Check(!HasAnyFlags(gNodes->currentScope, (Scope::Node | Scope::Pin)));
+		P_Check(!HasAnyFlags(gNodes->currentScope, (Scope::Node | Scope::Pin)));
 
 		if (!gNodes->activePin)
 		{
@@ -2599,8 +2599,8 @@ namespace rift::Nodes
 	bool IsLinkDropped(Id* outputId, Id* inputId, bool includingDetachedLinks)
 	{
 		// Call this function after EndNodeEditor()!
-		Check(gNodes->currentScope != Scope::None);
-		Check(outputId != nullptr);
+		P_Check(gNodes->currentScope != Scope::None);
+		P_Check(outputId != nullptr);
 
 		const EditorContext& editor = GetEditorContext();
 
@@ -2628,7 +2628,7 @@ namespace rift::Nodes
 
 	bool IsLinkCreated(Id& outputPinId, Id& inputPinId, bool* createdFromSnap)
 	{
-		Check(gNodes->currentScope == Scope::None);
+		P_Check(gNodes->currentScope == Scope::None);
 
 		if ((gNodes->UIState & UIState_LinkCreated) != 0)
 		{
@@ -2654,7 +2654,7 @@ namespace rift::Nodes
 	bool IsLinkCreated(ast::Id& outputNodeId, Id& outputPinId, ast::Id& inputNodeId, Id& inputPinId,
 	    bool* createdFromSnap)
 	{
-		Check(gNodes->currentScope == Scope::None);
+		P_Check(gNodes->currentScope == Scope::None);
 
 		if ((gNodes->UIState & UIState_LinkCreated) != 0)
 		{
@@ -2681,7 +2681,7 @@ namespace rift::Nodes
 
 	bool IsLinkDestroyed(Id& linkId)
 	{
-		Check(gNodes->currentScope == Scope::None);
+		P_Check(gNodes->currentScope == Scope::None);
 
 		const bool linkDestroyed = gNodes->DeletedLinkIdx.IsValid();
 		if (linkDestroyed)

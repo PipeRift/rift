@@ -81,7 +81,7 @@ namespace rift::editor::Graph
 
 	void DrawNodesContextMenu(ast::Tree& ast, ast::Id typeId, TView<ast::Id> nodeIds)
 	{
-		Check(!nodeIds.IsEmpty());
+		P_Check(!nodeIds.IsEmpty());
 		const bool canEditBody = ast::HasFunctionBodies(ast, typeId);
 
 		if (canEditBody && UI::MenuItem("Delete"))
@@ -113,7 +113,7 @@ namespace rift::editor::Graph
 
 	void DrawLinksContextMenu(ast::Tree& ast, ast::Id typeId, TView<ast::Id> linkIds)
 	{
-		Check(!linkIds.IsEmpty());
+		P_Check(!linkIds.IsEmpty());
 		const bool canEditBody = ast::HasFunctionBodies(ast, typeId);
 
 		ast::Id firstLinkId = linkIds[0];

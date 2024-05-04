@@ -202,7 +202,7 @@ namespace rift::ast::LoadSystem
 
 	void DeserializeModules(Tree& ast, p::TView<Id> moduleIds, p::TView<p::String> strings)
 	{
-		Check(moduleIds.Size() == strings.Size());
+		P_Check(moduleIds.Size() == strings.Size());
 
 		for (p::i32 i = 0; i < moduleIds.Size(); ++i)
 		{
@@ -212,7 +212,7 @@ namespace rift::ast::LoadSystem
 
 	void DeserializeTypes(Tree& ast, p::TView<Id> typeIds, p::TView<p::String> strings)
 	{
-		Check(typeIds.Size() == strings.Size());
+		P_Check(typeIds.Size() == strings.Size());
 
 		for (p::i32 i = 0; i < typeIds.Size(); ++i)
 		{

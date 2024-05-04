@@ -10,7 +10,7 @@ namespace rift::editor
 {
 	void OpenType(p::TAccessRef<TWrite<CTypeEditor>, ast::CDeclType> access, ast::Id id)
 	{
-		Check(access.Has<ast::CDeclType>(id));
+		P_Check(access.Has<ast::CDeclType>(id));
 		if (auto* editor = access.TryGet<CTypeEditor>(id))
 		{
 			editor->pendingFocus = true;
@@ -23,7 +23,7 @@ namespace rift::editor
 
 	void CloseType(p::TAccessRef<TWrite<CTypeEditor>, ast::CDeclType> access, ast::Id id)
 	{
-		Check(access.Has<ast::CDeclType>(id));
+		P_Check(access.Has<ast::CDeclType>(id));
 		access.Remove<CTypeEditor>(id);
 	}
 

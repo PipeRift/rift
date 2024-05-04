@@ -20,7 +20,7 @@ namespace rift::ast
 		{
 			if (!IsNone(typeId))
 			{
-				Ensure(ast.Has<CDeclType>(typeId));
+				P_Ensure(ast.Has<CDeclType>(typeId));
 			}
 		}
 

@@ -83,7 +83,7 @@ namespace rift::ast
 
 	void SerializeType(Tree& ast, Id id, String& data)
 	{
-		if (!Ensure(ast.Has<CDeclType>(id)))
+		if (!P_Ensure(ast.Has<CDeclType>(id)))
 		{
 			return;
 		}
@@ -376,7 +376,7 @@ namespace rift::ast
 		ast.Add<CExprOutputs>(id).Add(id);    // Types gets resolved by a system later
 
 		const Id typeId = p::GetIdParent(ast, declId);
-		Check(!IsNone(typeId));
+		P_Check(!IsNone(typeId));
 		auto& declRefExpr           = ast.Add<CExprDeclRef>(id);
 		declRefExpr.ownerName       = ast.Get<CNamespace>(typeId).name;
 		declRefExpr.name            = ast.Get<CNamespace>(declId).name;

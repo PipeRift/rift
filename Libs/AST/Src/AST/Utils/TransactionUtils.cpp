@@ -32,7 +32,7 @@ namespace rift::ast::Transactions
 
 	bool PreChange(const TransactionAccess& access, p::TView<const Id> entityIds)
 	{
-		if (!EnsureMsg(!gActiveTransaction.active,
+		if (!P_EnsureMsg(!gActiveTransaction.active,
 		        "Tried to record a transaction while another is already being recorded"))
 		{
 			return false;
@@ -60,7 +60,7 @@ namespace rift::ast::Transactions
 
 	void PostChange()
 	{
-		if (EnsureMsg(gActiveTransaction.active,
+		if (P_EnsureMsg(gActiveTransaction.active,
 		        "Cant finish a transaction while none is being recorded"))
 		{
 			gActiveTransaction = {};

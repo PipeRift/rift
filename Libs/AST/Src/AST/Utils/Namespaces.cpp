@@ -34,7 +34,7 @@ namespace rift::ast
 			ns.scopes[scopeIndex] = GetName(access, idChain[i]);
 			++scopeIndex;
 		}
-		CheckMsg(i < 0, "Not enough scopes to cover this namespace");
+		P_CheckMsg(i < 0, "Not enough scopes to cover this namespace");
 		return ns;
 	}
 

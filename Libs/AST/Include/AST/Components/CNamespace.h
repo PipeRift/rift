@@ -95,7 +95,7 @@ namespace rift::ast
 		}
 		p::Tag operator[](p::i32 index) const
 		{
-			Check(index >= 0 && index < scopeCount);
+			P_Check(index >= 0 && index < scopeCount);
 			return scopes[index];
 		}
 		operator bool() const

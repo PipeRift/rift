@@ -228,7 +228,7 @@ namespace rift::UI
 
 	void InspectChildrenProperties(const ValueHandle& handle)
 	{
-		if (!EnsureMsg(gCurrentInspector,
+		if (!P_EnsureMsg(gCurrentInspector,
 		        "Make sure to call Begin/EndInspector around reflection widgets."))
 		{
 			return;
@@ -282,7 +282,7 @@ namespace rift::UI
 
 	bool BeginInspector(const char* label, v2 size)
 	{
-		if (!EnsureMsg(!gCurrentInspector,
+		if (!P_EnsureMsg(!gCurrentInspector,
 		        "Called BeginInspector() twice without calling EndInspector() first."))
 		{
 			return false;
@@ -302,7 +302,7 @@ namespace rift::UI
 
 	void EndInspector()
 	{
-		if (!EnsureMsg(gCurrentInspector, "Called EndInspector() but no inspector was drawing."))
+		if (!P_EnsureMsg(gCurrentInspector, "Called EndInspector() but no inspector was drawing."))
 		{
 			return;
 		}

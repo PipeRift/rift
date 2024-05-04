@@ -13,7 +13,7 @@ namespace rift
 
 	void EnableModule(p::ClassType* type)
 	{
-		Check(Module::GetStaticType()->IsParentOf(type));
+		P_Check(Module::GetStaticType()->IsParentOf(type));
 
 		if (!gModules.Contains(type))
 		{

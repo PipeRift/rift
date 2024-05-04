@@ -105,7 +105,7 @@ namespace rift::ast
 		const p::i32 index = inputs.pinIds.FindIndex([&input](Id pinId) {
 			return input.pinId == pinId;
 		});
-		if (index != p::NO_INDEX && Ensure(index < inputs.linkedOutputs.Size()))
+		if (index != p::NO_INDEX && P_Ensure(index < inputs.linkedOutputs.Size()))
 		{
 			inputs.linkedOutputs[index] = output;
 			return true;
@@ -124,7 +124,7 @@ namespace rift::ast
 
 		// Find pin index
 		const p::i32 index = inputs.pinIds.FindIndex(input.pinId);
-		if (index != p::NO_INDEX && Ensure(index < inputs.linkedOutputs.Size())) [[likely]]
+		if (index != p::NO_INDEX && P_Ensure(index < inputs.linkedOutputs.Size())) [[likely]]
 		{
 			ExprOutput& linked = inputs.linkedOutputs[index];
 			linked             = {};

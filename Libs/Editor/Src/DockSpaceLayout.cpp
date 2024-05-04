@@ -34,14 +34,14 @@ namespace rift::editor
 	ImGuiDockNodeFlags& DockSpaceLayout::Builder::GetNodeLocalFlags(Tag nodeId)
 	{
 		const ImGuiID dockNodeId = layout.GetDockNodeId(nodeId);
-		Check(dockNodeId > 0);
+		P_Check(dockNodeId > 0);
 		return ImGui::DockBuilderGetNode(dockNodeId)->LocalFlags;
 	}
 
 	ImGuiDockNodeFlags& DockSpaceLayout::Builder::GetNodeSharedFlags(Tag nodeId)
 	{
 		const ImGuiID dockNodeId = layout.GetDockNodeId(nodeId);
-		Check(dockNodeId > 0);
+		P_Check(dockNodeId > 0);
 		return ImGui::DockBuilderGetNode(dockNodeId)->SharedFlags;
 	}
 

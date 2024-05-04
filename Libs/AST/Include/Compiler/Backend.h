@@ -21,7 +21,7 @@ namespace rift
 
 		virtual void Build(Compiler& compiler)
 		{
-			CheckMsg(false, "Backend '{}' tried to run but Build() is not implemented.",
+			P_CheckMsg(false, "Backend '{}' tried to run but Build() is not implemented.",
 			    GetName().AsString());
 		}
 	};

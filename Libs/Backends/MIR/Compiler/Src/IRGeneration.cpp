@@ -301,9 +301,9 @@ namespace rift::MIR
 	{
 		const auto& outputs      = access.Get<const ast::CStmtOutputs>(id);
 		const auto& connectedIds = outputs.linkInputNodes;
-		Check(connectedIds.Size() == 2);
+		P_Check(connectedIds.Size() == 2);
 		const auto& exprInputs = access.Get<const ast::CExprInputs>(id);
-		Check(exprInputs.linkedOutputs.Size() == 1);
+		P_Check(exprInputs.linkedOutputs.Size() == 1);
 
 		code->append("if (");
 		AddExpr(exprInputs.linkedOutputs.First());
@@ -322,7 +322,7 @@ namespace rift::MIR
 			compiler.Error("Call to an unknown function");
 			return;
 		}
-		if (!Ensure(access.Has<const CMIRFunctionSignature>(functionId)))
+		if (!P_Ensure(access.Has<const CMIRFunctionSignature>(functionId)))
 		{
 			compiler.Error(p::Strings::Format(
 			    "Call to an invalid function: '{}'", ast::GetFullName(access, functionId)));

@@ -218,7 +218,7 @@ namespace rift::editor::EditorSystem
 
 	void DrawProject(ast::Tree& ast)
 	{
-		if (!Ensure(ast.HasStatic<SEditor>()))
+		if (!P_Ensure(ast.HasStatic<SEditor>()))
 		{
 			return;
 		}

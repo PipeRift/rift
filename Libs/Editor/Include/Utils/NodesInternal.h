@@ -190,7 +190,7 @@ namespace rift::Nodes
 	private:
 		T* GetByIndex(u32 index)
 		{
-			Check(data.IsValidIndex(index));
+			P_Check(data.IsValidIndex(index));
 			return data.Data() + index;
 		}
 	};
@@ -561,7 +561,7 @@ namespace rift::Nodes
 			if (objects.availableIds.IsEmpty())
 			{
 				index = objects.pool.Size();
-				Check(objects.pool.Size() == objects.inUse.Size());
+				P_Check(objects.pool.Size() == objects.inUse.Size());
 				const i32 newSize = objects.pool.Size() + 1;
 				objects.pool.Resize(newSize);
 				objects.inUse.Resize(newSize);

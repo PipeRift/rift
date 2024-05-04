@@ -594,7 +594,7 @@ namespace rift::editor::Graph
 						PopExecutionPinStyle();
 
 						auto& inputs = access.Get<const ast::CExprInputs>(id);
-						if (!Ensure(inputs.pinIds.Size() == 1))
+						if (!P_Ensure(inputs.pinIds.Size() == 1))
 						{
 							continue;
 						}
@@ -613,7 +613,7 @@ namespace rift::editor::Graph
 					UI::BeginGroup();
 					{
 						auto& outputs = access.Get<const ast::CStmtOutputs>(id);
-						if (!Ensure(outputs.pinIds.Size() == 2))
+						if (!P_Ensure(outputs.pinIds.Size() == 2))
 						{
 							continue;
 						}
@@ -685,7 +685,7 @@ namespace rift::editor::Graph
 			{
 				pinIds.Clear(false);
 				p::GetIdChildren(access, id, pinIds);
-				if (!Ensure(pinIds.Size() >= 2))
+				if (!P_Ensure(pinIds.Size() >= 2))
 				{
 					continue;
 				}
@@ -738,7 +738,7 @@ namespace rift::editor::Graph
 		{
 			if (const auto* outputs = access.TryGet<const ast::CStmtOutputs>(outputId))
 			{
-				if (EnsureMsg(outputs->linkInputNodes.Size() == outputs->pinIds.Size(),
+				if (P_EnsureMsg(outputs->linkInputNodes.Size() == outputs->pinIds.Size(),
 				        "Inputs and pins must match. Graph might be corrupted."))
 				{
 					for (i32 i = 0; i < outputs->linkInputNodes.Size(); ++i)
@@ -770,7 +770,7 @@ namespace rift::editor::Graph
 		for (ast::Id nodeId : FindIdsWith<ast::CExprInputs>(access, children))
 		{
 			const auto& inputs = access.Get<const ast::CExprInputs>(nodeId);
-			if (!EnsureMsg(inputs.pinIds.Size() == inputs.linkedOutputs.Size(),
+			if (!P_EnsureMsg(inputs.pinIds.Size() == inputs.linkedOutputs.Size(),
 			        "Inputs are invalid. The graph might be corrupted.")) [[likely]]
 			{
 				continue;
