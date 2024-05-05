@@ -9,7 +9,7 @@ extern "C"
 {
 	void Print(const char* text)
 	{
-		printf(text);
+		printf("%s", text);
 	}
 
 	void PrintHelloWorld()
