@@ -2,14 +2,14 @@
 #pragma once
 
 #include <Pipe/Core/Tag.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
 namespace rift::ast
 {
-	struct CNamespace : public p::Struct
+	struct CNamespace
 	{
-		P_STRUCT(CNamespace, p::Struct)
+		P_STRUCT(CNamespace)
 
 		P_PROP(name);
 		p::Tag name;
@@ -38,9 +38,9 @@ namespace rift::ast
 	}
 
 
-	struct Namespace : public p::Struct
+	struct Namespace
 	{
-		P_STRUCT(Namespace, p::Struct)
+		P_STRUCT(Namespace)
 
 		static constexpr p::i32 scopeCount = 8;
 		p::Tag scopes[scopeCount];    // TODO: Implement Inline arrays

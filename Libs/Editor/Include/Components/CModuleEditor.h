@@ -4,16 +4,16 @@
 #include "DockSpaceLayout.h"
 
 #include <AST/Id.h>
-#include <Pipe/Reflect/Struct.h>
 #include <UI/UI.h>
 #include <Utils/NodesInternal.h>
 
 
+
 namespace rift::editor
 {
-	struct CModuleEditor : public p::Struct
+	struct CModuleEditor
 	{
-		P_STRUCT(CModuleEditor, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(CModuleEditor, p::TF_NotSerialized)
 
 		bool pendingFocus = false;
 	};

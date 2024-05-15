@@ -10,16 +10,15 @@
 #include "Tools/ReflectionDebugger.h"
 
 #include <Pipe/Memory/OwnPtr.h>
-#include <Pipe/Reflect/Struct.h>
 #include <PipeFiles.h>
 #include <UI/UI.h>
 
 
 namespace rift::editor
 {
-	struct SEditor : public Struct
+	struct SEditor
 	{
-		P_STRUCT(SEditor, Struct)
+		P_STRUCT(SEditor)
 
 		ImGuiID dockspaceID = 0;
 		DockSpaceLayout layout;

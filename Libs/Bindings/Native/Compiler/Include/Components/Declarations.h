@@ -2,17 +2,20 @@
 #pragma once
 
 #include <AST/Components/Declarations.h>
+#include <PipeReflect.h>
 
 
 namespace rift
 {
 	struct CDeclCStruct : public ast::CDeclRecord
 	{
-		P_STRUCT(CDeclCStruct, CDeclRecord)
+		using Super = CDeclRecord;
+		P_STRUCT(CDeclCStruct)
 	};
 
 	struct CDeclCStatic : public ast::CDeclRecord
 	{
-		P_STRUCT(CDeclCStatic, CDeclRecord)
+		using Super = CDeclRecord;
+		P_STRUCT(CDeclCStatic)
 	};
 }    // namespace rift

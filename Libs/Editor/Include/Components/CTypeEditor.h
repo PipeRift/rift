@@ -4,16 +4,16 @@
 #include "DockSpaceLayout.h"
 
 #include <AST/Id.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 #include <UI/UI.h>
 #include <Utils/NodesInternal.h>
 
 
 namespace rift::editor
 {
-	struct CTypeEditor : public p::Struct
+	struct CTypeEditor
 	{
-		P_STRUCT(CTypeEditor, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(CTypeEditor, p::TF_NotSerialized)
 
 		static const Tag rightTopNode;
 		static const Tag rightBottomNode;

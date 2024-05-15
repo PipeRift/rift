@@ -2,9 +2,11 @@
 
 #pragma once
 
+#include "Pipe/Core/TypeTraits.h"
+
 #include <AST/Tree.h>
-#include <Pipe/Reflect/TypeId.h>
 #include <PipeColor.h>
+#include <PipeReflect.h>
 #include <UI/Style.h>
 
 
@@ -45,11 +47,11 @@ namespace rift::editor
 		{
 			return Color::FromHex(0xBF54AE);
 		}
-		else if constexpr (IsSame<T, Class>)
+		else if constexpr (IsObject<T>)
 		{
 			return Color::FromHex(0x545FBF);
 		}
-		else if constexpr (IsSame<T, Struct>)
+		else if constexpr (IsStructOrClass<T>)
 		{
 			return Color::FromHex(0x548CBF);
 		}

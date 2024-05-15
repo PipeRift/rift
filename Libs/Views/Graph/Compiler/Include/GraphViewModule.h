@@ -13,7 +13,9 @@ namespace rift
 {
 	class GraphViewModule : public Module
 	{
-		P_CLASS(GraphViewModule, Module)
+	public:
+		using Super = Module;
+		P_CLASS(GraphViewModule)
 
 	public:
 		void Load() override;

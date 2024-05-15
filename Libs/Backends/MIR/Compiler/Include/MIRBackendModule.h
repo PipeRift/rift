@@ -13,7 +13,9 @@ namespace rift
 	struct Input;
 	class MIRBackendModule : public Module
 	{
-		P_CLASS(MIRBackendModule, Module)
+	public:
+		using Super = Module;
+		P_CLASS(MIRBackendModule)
 
 	public:
 		MIRBackendModule();
@@ -22,7 +24,8 @@ namespace rift
 
 	class MIRBackend : public Backend
 	{
-		P_CLASS(MIRBackend, Backend)
+		using Super = Backend;
+		P_CLASS(MIRBackend)
 
 	public:
 		Tag GetName() override

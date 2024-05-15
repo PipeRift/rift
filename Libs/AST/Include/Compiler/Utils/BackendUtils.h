@@ -6,11 +6,11 @@
 #include "Compiler/Compiler.h"
 
 #include <Pipe/Memory/OwnPtr.h>
-#include <Pipe/Reflect/ClassType.h>
+#include <PipeReflect.h>
 
 
 namespace rift
 {
-	p::TArray<p::ClassType*> GetBackendTypes();
+	p::TArray<p::TypeId> GetBackendTypes();
 	p::TArray<p::TOwnPtr<Backend>> CreateBackends();
 }    // namespace rift

@@ -445,7 +445,7 @@ namespace rift::editor::EditorSystem
 					{
 						for (const auto& binding : ast::GetModuleBindings())
 						{
-							auto* pool = ast.GetPool(binding.tagType->GetId());
+							auto* pool = ast.GetPool(binding.tagType);
 							if (void* data = pool ? pool->TryGetVoid(moduleId) : nullptr)
 							{
 								if (UI::BeginCategory(binding.displayName, true))

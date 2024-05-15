@@ -8,32 +8,30 @@
 #include "View.h"
 
 #include <Pipe/Core/Tag.h>
-#include <Pipe/Reflect/Class.h>
-#include <Pipe/Reflect/ClassType.h>
 #include <PipeECS.h>
 
 
 namespace rift
 {
-	void EnableModule(p::ClassType* type);
-	void DisableModule(p::ClassType* type);
-	p::TPtr<class Module> GetModule(p::ClassType* type);
+	void EnableModule(p::TypeId type);
+	void DisableModule(p::TypeId type);
+	p::TPtr<class Module> GetModule(p::TypeId type);
 
 
 	template<typename T>
 	void EnableModule()
 	{
-		EnableModule(T::GetStaticType());
+		EnableModule(GetTypeId<T>());
 	}
 	template<typename T>
 	void DisableModule()
 	{
-		DisableModule(T::GetStaticType());
+		DisableModule(GetTypeId<T>());
 	}
 	template<typename T>
 	p::TPtr<T> GetModule()
 	{
-		return GetModule(T::GetStaticType()).template Cast<T>();
+		return GetModule(GetTypeId<T>()).template Cast<T>();
 	}
 
 	void RegisterView(View view);

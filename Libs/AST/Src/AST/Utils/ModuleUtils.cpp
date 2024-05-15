@@ -237,20 +237,20 @@ namespace rift::ast
 	{
 		if (const auto* binding = FindModuleBinding(bindingId))
 		{
-			ast.AddDefault(binding->tagType->GetId(), id);
+			ast.AddDefault(binding->tagType, id);
 		}
 	}
 	void RemoveBindingFromModule(ast::Tree& ast, ast::Id id, p::Tag bindingId)
 	{
 		if (const auto* binding = FindModuleBinding(bindingId))
 		{
-			ast.Remove(binding->tagType->GetId(), id);
+			ast.Remove(binding->tagType, id);
 		}
 	}
 
 	const ModuleBinding* FindModuleBinding(p::Tag id)
 	{
-		const p::i32 index = gModuleBindings.FindSortedEqual(id);
+		const p::i32 index = gModuleBindings.FindSorted(id);
 		return index != p::NO_INDEX ? gModuleBindings.Data() + index : nullptr;
 	}
 

@@ -4,14 +4,14 @@
 #include "AST/Components/Declarations.h"
 
 #include <Pipe/Core/Function.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
 namespace rift
 {
-	struct View : public p::Struct
+	struct View
 	{
-		P_STRUCT(View, p::Struct)
+		P_STRUCT(View)
 
 		P_PROP(name)
 		p::Tag name;

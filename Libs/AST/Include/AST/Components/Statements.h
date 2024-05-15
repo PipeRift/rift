@@ -1,45 +1,46 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
-#include <Pipe/Reflect/Struct.h>
+
 #include <PipeECS.h>
+#include <PipeReflect.h>
 
 
 namespace rift::ast
 {
-	struct CStmtFor : public p::Struct
+	struct CStmtFor
 	{
-		P_STRUCT(CStmtFor, p::Struct)
+		P_STRUCT(CStmtFor)
 	};
 
 
-	struct CStmtIf : public p::Struct
+	struct CStmtIf
 	{
-		P_STRUCT(CStmtIf, p::Struct)
+		P_STRUCT(CStmtIf)
 	};
 
 
-	struct CStmtInput : public p::Struct
+	struct CStmtInput
 	{
-		P_STRUCT(CStmtInput, p::Struct)
+		P_STRUCT(CStmtInput)
 
 		P_PROP(linkOutputNode)
 		p::Id linkOutputNode = p::NoId;
 	};
 
 
-	struct CStmtOutput : public p::Struct
+	struct CStmtOutput
 	{
-		P_STRUCT(CStmtOutput, p::Struct)
+		P_STRUCT(CStmtOutput)
 
 		P_PROP(linkInputNode)
 		p::Id linkInputNode = p::NoId;
 	};
 
 
-	struct CStmtOutputs : public p::Struct
+	struct CStmtOutputs
 	{
-		P_STRUCT(CStmtOutputs, p::Struct)
+		P_STRUCT(CStmtOutputs)
 
 		// Both arrays keep the same index to the input node and the output pin
 		P_PROP(pinIds)
@@ -59,9 +60,9 @@ namespace rift::ast
 	 * Return arguments are dynamically populated depending on the function this expression is
 	 * connected to.
 	 */
-	struct CStmtReturn : public p::Struct
+	struct CStmtReturn
 	{
-		P_STRUCT(CStmtReturn, p::Struct)
+		P_STRUCT(CStmtReturn)
 	};
 
 

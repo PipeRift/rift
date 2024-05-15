@@ -3,6 +3,7 @@
 #include "Tools/ASTDebugger.h"
 
 #include "imgui.h"
+#include "PipeReflect.h"
 #include "UI/Widgets.h"
 
 #include <AST/Components/Statements.h>
@@ -12,9 +13,13 @@
 #include <AST/Utils/Paths.h>
 #include <IconsFontAwesome5.h>
 #include <Pipe/Core/PlatformMisc.h>
-#include <Pipe/Reflect/TypeRegistry.h>
 #include <UI/Inspection.h>
 #include <UI/UI.h>
+
+
+#define P_IMGUI_IMPLEMENTATION
+#define P_DEBUG_IMPLEMENTATION
+#include <Misc/PipeDebug.h>
 
 
 namespace rift::editor
@@ -142,6 +147,17 @@ namespace rift::editor
 		// Inspectors
 		DrawEntityInspector(
 		    " " ICON_FA_LIST_ALT "  Inspector", "MainInspector", ast, mainInspector, nullptr);
+
+
+		{
+			static p::ECSDebugContext testContext;
+			testContext.ctx = &ast;
+			p::BeginECSDebug(testContext);
+			static p::ECSDebugInspector testInspector;
+			testInspector.id = mainInspector.id;
+			p::DrawEntityInspector("Test", testInspector);
+			p::EndECSDebug();
+		}
 
 		for (p::i32 i = 0; i < secondaryInspectors.Size(); ++i)
 		{
@@ -351,18 +367,17 @@ namespace rift::editor
 
 		if (valid)
 		{
-			const auto& registry = p::TypeRegistry::Get();
 			for (const auto& poolInstance : ast.GetPools())
 			{
-				p::Type* type = registry.FindType(poolInstance.componentId);
-				if (!type || !poolInstance.GetPool()->Has(inspector.id))
+				p::TypeId type = poolInstance.componentId;
+				if (!type.IsValid() || !poolInstance.GetPool()->Has(inspector.id))
 				{
 					continue;
 				}
 
 				void* data = poolInstance.GetPool()->TryGetVoid(inspector.id);
 				static p::String typeName;
-				typeName = type->GetName();
+				typeName = p::GetTypeName(type);
 
 				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
 				if (!data)
@@ -372,10 +387,10 @@ namespace rift::editor
 				if (UI::CollapsingHeader(typeName.c_str(), flags))
 				{
 					UI::Indent();
-					auto* dataType = Cast<p::DataType>(type);
-					if (data && dataType && UI::BeginInspector("EntityInspector"))
+					if (p::HasTypeFlags(type, p::TF_Struct)
+					    && UI::BeginInspector("EntityInspector"))
 					{
-						UI::InspectChildrenProperties({data, dataType});
+						UI::InspectChildrenProperties({data, type});
 						UI::EndInspector();
 					}
 					UI::Unindent();

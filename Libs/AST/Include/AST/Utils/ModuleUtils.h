@@ -22,7 +22,7 @@ namespace rift::ast
 	struct ModuleBinding
 	{
 		p::Tag id;
-		p::StructType* tagType = nullptr;
+		p::TypeId tagType;
 		p::String displayName;
 
 		bool operator<(const ModuleBinding& other) const

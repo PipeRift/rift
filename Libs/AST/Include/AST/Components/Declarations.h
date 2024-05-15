@@ -1,39 +1,42 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
-#include <Pipe/Reflect/Struct.h>
+
 #include <PipeECS.h>
+#include <PipeReflect.h>
 
 
 namespace rift::ast
 {
-	struct CDeclStatic : public p::Struct
+	struct CDeclStatic
 	{
-		P_STRUCT(CDeclStatic, p::Struct)
+		P_STRUCT(CDeclStatic)
 	};
 
 
-	struct CDeclRecord : public p::Struct
+	struct CDeclRecord
 	{
-		P_STRUCT(CDeclRecord, p::Struct)
+		P_STRUCT(CDeclRecord)
 	};
 
 
 	struct CDeclStruct : public CDeclRecord
 	{
-		P_STRUCT(CDeclStruct, CDeclRecord, )
+		using Super = CDeclRecord;
+		P_STRUCT(CDeclStruct)
 	};
 
 
 	struct CDeclClass : public CDeclRecord
 	{
-		P_STRUCT(CDeclClass, CDeclRecord)
+		using Super = CDeclRecord;
+		P_STRUCT(CDeclClass)
 	};
 
 
-	struct CDeclType : public p::Struct
+	struct CDeclType
 	{
-		P_STRUCT(CDeclType, p::Struct)
+		P_STRUCT(CDeclType)
 
 		P_PROP(typeId)
 		p::Tag typeId;
@@ -42,21 +45,22 @@ namespace rift::ast
 
 	struct CDeclNative : public CDeclRecord
 	{
-		P_STRUCT(CDeclNative, CDeclRecord)
+		using Super = CDeclRecord;
+		P_STRUCT(CDeclNative)
 	};
 
 
-	struct CDeclFunction : public p::Struct
+	struct CDeclFunction
 	{
-		P_STRUCT(CDeclFunction, p::Struct)
+		P_STRUCT(CDeclFunction)
 	};
 
 
-	struct CDeclVariable : public p::Struct
+	struct CDeclVariable
 	{
-		P_STRUCT(CDeclVariable, p::Struct)
+		P_STRUCT(CDeclVariable)
 
-		P_PROP(typeId, p::Prop_NotSerialized)
+		P_PROP(typeId, p::PF_NotSerialized)
 		p::Id typeId = p::NoId;
 	};
 }    // namespace rift::ast

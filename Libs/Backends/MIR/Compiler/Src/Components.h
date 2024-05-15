@@ -2,7 +2,7 @@
 #pragma once
 
 #include <mir.h>
-#include <Pipe/Reflect/Struct.h>
+#include <Pipe/Core/Tag.h>
 
 
 namespace rift

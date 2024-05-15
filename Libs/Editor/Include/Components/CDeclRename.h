@@ -5,15 +5,15 @@
 #include "DockSpaceLayout.h"
 #include "NodeGraph/NodeGraphPanel.h"
 
-#include <Pipe/Reflect/Struct.h>
 #include <UI/UI.h>
+
 
 
 namespace rift::editor
 {
-	struct CDeclRename : public p::Struct
+	struct CDeclRename
 	{
-		P_STRUCT(CDeclRename, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(CDeclRename, p::TF_NotSerialized)
 
 		// Renaming uses this buffer to temporarely store the name being edited
 		p::String buffer;

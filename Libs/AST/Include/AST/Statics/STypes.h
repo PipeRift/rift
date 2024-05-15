@@ -4,14 +4,14 @@
 #include "AST/Id.h"
 
 #include <Pipe/Files/Paths.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
 namespace rift::ast
 {
-	struct STypes : public p::Struct
+	struct STypes
 	{
-		P_STRUCT(STypes, p::Struct)
+		P_STRUCT(STypes)
 
 		p::TMap<p::Tag, Id> typesByName;
 		// TODO: Use StringView to point to CFileRef component's path.

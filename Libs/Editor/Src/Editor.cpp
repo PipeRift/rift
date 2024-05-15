@@ -26,7 +26,7 @@ namespace rift::editor
 {
 	void RegisterKeyValueInspections()
 	{
-		UI::RegisterCustomInspection<ast::Id>([](StringView label, void* data, Type* type) {
+		UI::RegisterCustomInspection<ast::Id>([](p::StringView label, void* data, p::TypeId type) {
 			auto* id = static_cast<ast::Id*>(data);
 			// UI::DrawKeyValue(label, data, GetType<IdTraits<ast::Id>::Entity>());
 			UI::TableNextRow();
@@ -41,7 +41,8 @@ namespace rift::editor
 			}
 		});
 
-		UI::RegisterCustomInspection<ast::Namespace>([](StringView label, void* data, Type* type) {
+		UI::RegisterCustomInspection<ast::Namespace>(
+		    [](p::StringView label, void* data, p::TypeId type) {
 			UI::TableNextRow();
 			UI::TableSetColumnIndex(0);
 			UI::AlignTextToFramePadding();

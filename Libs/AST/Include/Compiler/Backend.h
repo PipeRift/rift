@@ -4,14 +4,15 @@
 
 #include "Compiler/Compiler.h"
 
-#include <Pipe/Reflect/Class.h>
+#include <PipeReflect.h>
 
 
 namespace rift
 {
-	class Backend : public p::Class
+	class Backend : public p::Object
 	{
-		P_CLASS(Backend, p::Class)
+		using Super = p::Object;
+		P_CLASS(Backend)
 
 	public:
 		virtual p::Tag GetName()

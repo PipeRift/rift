@@ -3,8 +3,8 @@
 
 #include "AST/Components/CNamespace.h"
 
-#include <Pipe/Reflect/Struct.h>
 #include <PipeECS.h>
+#include <PipeReflect.h>
 
 
 namespace rift::ast
@@ -50,22 +50,23 @@ namespace rift::ast
 		PointerToPointer
 	};
 }    // namespace rift::ast
-ENUM(rift::ast::UnaryOperatorType)
-ENUM(rift::ast::BinaryOperatorType)
-ENUM(rift::ast::TypeMode)
+P_ENUM(rift::ast::UnaryOperatorType)
+P_ENUM(rift::ast::BinaryOperatorType)
+P_ENUM(rift::ast::TypeMode)
 
 
 namespace rift::ast
 {
-	struct CExpression : public p::Struct
+	struct CExpression
 	{
-		P_STRUCT(CExpression, p::Struct)
+		P_STRUCT(CExpression)
 	};
 
 
 	struct CExprCall : public CExpression
 	{
-		P_STRUCT(CExprCall, CExpression)
+		using Super = CExpression;
+		P_STRUCT(CExprCall)
 
 		P_PROP(function)
 		Namespace function;
@@ -75,7 +76,8 @@ namespace rift::ast
 	// Data pointing to the id of the function from CExprCall's type and function names
 	struct CExprCallId : public CExpression
 	{
-		P_STRUCT(CExprCallId, CExpression, p::Struct_NotSerialized)
+		using Super = CExpression;
+		P_STRUCT(CExprCallId, p::TF_NotSerialized)
 
 		// Id pointing to the function declaration
 		P_PROP(functionId)
@@ -88,7 +90,8 @@ namespace rift::ast
 
 	struct CExprUnaryOperator : public CExpression
 	{
-		P_STRUCT(CExprUnaryOperator, CExpression)
+		using Super = CExpression;
+		P_STRUCT(CExprUnaryOperator)
 
 		P_PROP(type)
 		UnaryOperatorType type = UnaryOperatorType::Not;
@@ -101,7 +104,8 @@ namespace rift::ast
 
 	struct CExprBinaryOperator : public CExpression
 	{
-		P_STRUCT(CExprBinaryOperator, CExpression)
+		using Super = CExpression;
+		P_STRUCT(CExprBinaryOperator)
 
 		P_PROP(type)
 		BinaryOperatorType type = BinaryOperatorType::Add;
@@ -114,7 +118,8 @@ namespace rift::ast
 
 	struct CExprDeclRef : public CExpression
 	{
-		P_STRUCT(CExprDeclRef, CExpression)
+		using Super = CExpression;
+		P_STRUCT(CExprDeclRef)
 
 		P_PROP(ownerName)
 		p::Tag ownerName;
@@ -126,16 +131,17 @@ namespace rift::ast
 
 	struct CExprDeclRefId : public CExpression
 	{
-		P_STRUCT(CExprDeclRefId, CExpression)
+		using Super = CExpression;
+		P_STRUCT(CExprDeclRefId)
 
 		P_PROP(declarationId)
 		p::Id declarationId = p::NoId;
 	};
 
 
-	struct ExprInput : public p::Struct
+	struct ExprInput
 	{
-		P_STRUCT(ExprInput, p::Struct)
+		P_STRUCT(ExprInput)
 
 		P_PROP(nodeId)
 		p::Id nodeId = p::NoId;
@@ -153,9 +159,9 @@ namespace rift::ast
 	};
 
 
-	struct ExprOutput : public p::Struct
+	struct ExprOutput
 	{
-		P_STRUCT(ExprOutput, p::Struct)
+		P_STRUCT(ExprOutput)
 
 		P_PROP(nodeId)
 		p::Id nodeId = p::NoId;
@@ -173,9 +179,9 @@ namespace rift::ast
 	};
 
 
-	struct CExprInputs : public p::Struct
+	struct CExprInputs
 	{
-		P_STRUCT(CExprInputs, p::Struct)
+		P_STRUCT(CExprInputs)
 
 		P_PROP(linkedOutputs)
 		p::TArray<ExprOutput> linkedOutputs;
@@ -213,9 +219,9 @@ namespace rift::ast
 	};
 
 
-	struct CExprOutputs : public p::Struct
+	struct CExprOutputs
 	{
-		P_STRUCT(CExprOutputs, p::Struct)
+		P_STRUCT(CExprOutputs)
 
 		P_PROP(pinIds)
 		p::TArray<p::Id> pinIds;
@@ -247,9 +253,9 @@ namespace rift::ast
 	};
 
 
-	struct CExprType : public p::Struct
+	struct CExprType
 	{
-		P_STRUCT(CExprType, p::Struct)
+		P_STRUCT(CExprType)
 
 		P_PROP(type)
 		Namespace type;
@@ -259,11 +265,11 @@ namespace rift::ast
 	};
 
 
-	struct CExprTypeId : public p::Struct
+	struct CExprTypeId
 	{
-		P_STRUCT(CExprTypeId, p::Struct)
+		P_STRUCT(CExprTypeId)
 
-		P_PROP(id, p::Prop_NotSerialized)
+		P_PROP(id, p::PF_NotSerialized)
 		p::Id id = p::NoId;
 
 		P_PROP(mode)

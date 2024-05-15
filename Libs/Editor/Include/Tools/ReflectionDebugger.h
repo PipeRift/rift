@@ -2,6 +2,7 @@
 #pragma once
 
 #include "AST/Tree.h"
+#include "PipeReflect.h"
 
 #include <UI/UI.h>
 
@@ -15,9 +16,9 @@ namespace rift::editor
 	{
 		bool open = false;
 
-		Type* selectedType = nullptr;
+		TypeId selectedType;
 		ImGuiTextFilter filter;
-		TypeCategory categoryFilter = TypeCategory::All;
+		TypeFlags typeFlagsFilter = p::TF_Native | p::TF_Enum | p::TF_Struct | p::TF_Object;
 
 
 		ReflectionDebugger();
@@ -25,6 +26,6 @@ namespace rift::editor
 		void Draw();
 
 	private:
-		void DrawType(Type* type);
+		void DrawType(TypeId type);
 	};
 }    // namespace rift::editor

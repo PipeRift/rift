@@ -8,11 +8,12 @@
 #include <IconsFontAwesome5.h>
 #include <Pipe/Core/Checks.h>
 #include <Pipe/Core/Log.h>
+#include <Pipe/Core/Map.h>
 #include <Pipe/Core/Templates.h>
 #include <Pipe/Files/Paths.h>
-#include <Pipe/Reflect/EnumType.h>
 #include <PipeArrays.h>
 #include <PipeMath.h>
+#include <PipeReflect.h>
 
 
 namespace rift::UI

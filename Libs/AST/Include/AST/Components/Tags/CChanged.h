@@ -1,15 +1,14 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
-#include <Pipe/Reflect/Struct.h>
-
+#include <PipeReflect.h>
 
 namespace rift::ast
 {
 	// Asigned to entities that have been modified during the last frame
 	// Gets cleared after one frame
-	struct CChanged : public p::Struct
+	struct CChanged
 	{
-		P_STRUCT(CChanged, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(CChanged, p::TF_NotSerialized)
 	};
 }    // namespace rift::ast

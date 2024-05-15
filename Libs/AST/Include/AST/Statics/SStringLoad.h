@@ -5,15 +5,15 @@
 
 #include <Pipe/Core/String.h>
 #include <Pipe/Files/Paths.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
 namespace rift::ast
 {
 	// Contains loaded string data from disk
-	struct SStringLoad : public p::Struct
+	struct SStringLoad
 	{
-		P_STRUCT(SStringLoad, p::Struct)
+		P_STRUCT(SStringLoad)
 
 		// This buffers are always in sync with size
 		// They bind by array index an Id, path and loaded string

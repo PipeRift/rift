@@ -2,7 +2,7 @@
 #pragma once
 
 #include <Pipe/Core/EnumFlags.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
 namespace rift::ast
@@ -28,8 +28,8 @@ namespace rift::ast
 	};
 }    // namespace rift::ast
 
-ENUM(rift::ast::FloatingType)
-ENUM(rift::ast::IntegralType)
+P_ENUM(rift::ast::FloatingType)
+P_ENUM(rift::ast::IntegralType)
 
 template<>
 struct magic_enum::customize::enum_range<rift::ast::IntegralType>
@@ -43,18 +43,18 @@ struct magic_enum::customize::enum_range<rift::ast::IntegralType>
 
 namespace rift::ast
 {
-	struct CLiteralBool : public p::Struct
+	struct CLiteralBool
 	{
-		P_STRUCT(CLiteralBool, p::Struct)
+		P_STRUCT(CLiteralBool)
 
 		P_PROP(value)
 		bool value = false;
 	};
 
 
-	struct CLiteralFloating : public p::Struct
+	struct CLiteralFloating
 	{
-		P_STRUCT(CLiteralFloating, p::Struct)
+		P_STRUCT(CLiteralFloating)
 
 
 		P_PROP(value)
@@ -71,9 +71,9 @@ namespace rift::ast
 	};
 
 
-	struct CLiteralIntegral : public p::Struct
+	struct CLiteralIntegral
 	{
-		P_STRUCT(CLiteralIntegral, p::Struct)
+		P_STRUCT(CLiteralIntegral)
 
 
 		P_PROP(value)
@@ -94,9 +94,9 @@ namespace rift::ast
 	};
 
 
-	struct CLiteralString : public p::Struct
+	struct CLiteralString
 	{
-		P_STRUCT(CLiteralString, p::Struct)
+		P_STRUCT(CLiteralString)
 
 		P_PROP(value)
 		p::String value;

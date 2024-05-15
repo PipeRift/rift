@@ -45,11 +45,11 @@ namespace rift::editor
 		}
 		else if (ast.Has<ast::CDeclClass>(id))
 		{
-			return GetTypeColor<Class>();
+			return GetTypeColor<Object>();
 		}
 		else if (ast.Has<ast::CDeclStruct>(id))
 		{
-			return GetTypeColor<Struct>();
+			return GetTypeColor<ast::CDeclStruct>();    // Pass any struct to get struct color
 		}
 		return GetTypeColor<void>();
 	}

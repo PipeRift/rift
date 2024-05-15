@@ -9,6 +9,8 @@ namespace rift
 {
 	class GraphViewEditorModule : public Module
 	{
-		P_CLASS(GraphViewEditorModule, Module)
+	public:
+		using Super = Module;
+		P_CLASS(GraphViewEditorModule)
 	};
 }    // namespace rift

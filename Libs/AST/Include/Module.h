@@ -6,7 +6,7 @@
 #include "Rift.h"
 
 #include <Pipe/Memory/OwnPtr.h>
-#include <Pipe/Reflect/Class.h>
+#include <PipeReflect.h>
 
 
 namespace rift
@@ -14,9 +14,10 @@ namespace rift
 	using namespace p;
 
 
-	class Module : public Class
+	class Module : public Object
 	{
-		P_CLASS(Module, Class)
+		using Super = Object;
+		P_CLASS(Module)
 
 		enum class State : u8
 		{

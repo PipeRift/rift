@@ -2,12 +2,13 @@
 
 #include "Tools/ReflectionDebugger.h"
 
+#include "PipeReflect.h"
+
 #include <AST/Components/Statements.h>
 #include <AST/Statics/STypes.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Paths.h>
 #include <IconsFontAwesome5.h>
-#include <Pipe/Reflect/TypeRegistry.h>
 #include <UI/Inspection.h>
 #include <UI/UI.h>
 
@@ -23,16 +24,15 @@ namespace rift::editor
 			return;
 		}
 
-		const auto& registry = TypeRegistry::Get();
-
 		UI::Begin("Reflection", &open);
 
 		if (UI::BeginPopup("Filter"))
 		{
-			UI::CheckboxFlags("Native", (u32*)&categoryFilter, u32(TypeCategory::Native));
-			UI::CheckboxFlags("Enum", (u32*)&categoryFilter, u32(TypeCategory::Enum));
-			UI::CheckboxFlags("Class", (u32*)&categoryFilter, u32(TypeCategory::Class));
-			UI::CheckboxFlags("Struct", (u32*)&categoryFilter, u32(TypeCategory::Struct));
+			UI::CheckboxFlags("Native", &typeFlagsFilter, u64(p::TF_Native));
+			UI::CheckboxFlags("Enum", &typeFlagsFilter, u64(p::TF_Enum));
+			UI::CheckboxFlags("Struct", &typeFlagsFilter, u64(p::TF_Struct));
+			UI::CheckboxFlags("Object", &typeFlagsFilter, u64(p::TF_Object));
+			UI::CheckboxFlags("Container", &typeFlagsFilter, u64(p::TF_Container));
 			UI::EndPopup();
 		}
 		if (UI::Button("Filter"))
@@ -50,14 +50,14 @@ namespace rift::editor
 		if (UI::BeginTable("typesTable", 4, flags))
 		{
 			UI::TableSetupColumn("Id", ImGuiTableColumnFlags_IndentEnable);
-			UI::TableSetupColumn("Category");
 			UI::TableSetupColumn("Name");
+			UI::TableSetupColumn("Flags");
 			UI::TableSetupColumn("Parent");
 			UI::TableHeadersRow();
 
-			for (auto it : registry)
+			for (p::TypeId type : p::GetRegisteredTypeIds())
 			{
-				DrawType(it.second);
+				DrawType(type);
 			}
 			UI::EndTable();
 		}
@@ -66,20 +66,20 @@ namespace rift::editor
 		UI::End();
 	}
 
-	void ReflectionDebugger::DrawType(Type* type)
+	void ReflectionDebugger::DrawType(TypeId type)
 	{
-		if (!HasAllFlags(categoryFilter, type->GetCategory()))
+		if (!HasAnyTypeFlags(type, typeFlagsFilter))
 		{
 			return;
 		}
 
 		static String idText;
 		idText.clear();
-		Strings::FormatTo(idText, "{}", type->GetId());
+		Strings::FormatTo(idText, "{}", type);
 
-		StringView name = type->GetName();
+		StringView rawName = p::GetTypeName(type);
 		if (!filter.PassFilter(idText.c_str(), idText.c_str() + idText.size())
-		    && !filter.PassFilter(name.data(), name.data() + name.size()))
+		    && !filter.PassFilter(rawName.data(), rawName.data() + rawName.size()))
 		{
 			return;
 		}
@@ -89,22 +89,36 @@ namespace rift::editor
 		UI::TableSetColumnIndex(0);    // Id
 		UI::Text(idText);
 
-		UI::TableSetColumnIndex(1);    // Category
-		static String categories;
-		categories.clear();
-		GetEnumFlagName<TypeCategory>(type->GetCategory(), categories);
-		UI::Text(categories);
-
-		UI::TableSetColumnIndex(2);    // Name
+		UI::TableSetColumnIndex(1);    // Name
+		StringView ns;
+		StringView name = p::RemoveNamespace(rawName, ns);
+		UI::PushStyleCompact();
+		UI::PushTextColor(UI::GetNeutralTextColor(1).Shade(0.3f));
+		UI::Text(ns);
+		UI::PopTextColor();
+		UI::PopStyleCompact();
+		UI::SameLine(0, 10.f);
 		UI::Text(name);
 
-		if (const auto* dataType = Cast<DataType>(type))
+		UI::TableSetColumnIndex(2);    // Flags
+		static String flags;
+		flags.clear();
+		GetEnumFlagName<TypeFlags_>(TypeFlags_(GetTypeFlags(type)), flags);
+		UI::Text(flags);
+
+		TypeId parentId = p::GetTypeParent(type);
+		if (parentId.IsValid())
 		{
-			if (const DataType* parent = dataType->GetParent())
-			{
-				UI::TableSetColumnIndex(3);    // Parent
-				UI::Text(parent->GetName());
-			}
+			UI::TableSetColumnIndex(3);    // Parent
+			rawName = p::GetTypeName(parentId);
+			name    = p::RemoveNamespace(rawName, ns);
+			UI::PushStyleCompact();
+			UI::PushTextColor(UI::GetNeutralTextColor(1).Shade(0.3f));
+			UI::Text(ns);
+			UI::PopTextColor();
+			UI::PopStyleCompact();
+			UI::SameLine(0, 10.f);
+			UI::Text(name);
 		}
 	}
 }    // namespace rift::editor

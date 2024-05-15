@@ -5,9 +5,7 @@
 #include "AST/Tree.h"
 #include "Pipe/Core/Platform.h"
 
-#include <Pipe/Reflect/Builders/EnumTypeBuilder.h>
-#include <Pipe/Reflect/Reflection.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
 namespace rift
@@ -25,9 +23,9 @@ namespace rift
 		              // speed on level 2 is ~50% faster than on level 3
 	};
 
-	struct CompilerConfig : public p::Struct
+	struct CompilerConfig
 	{
-		P_STRUCT(CompilerConfig, p::Struct)
+		P_STRUCT(CompilerConfig)
 
 		OptimizationLevel optimization = OptimizationLevel::Two;
 
@@ -41,4 +39,4 @@ namespace rift
 		void Init(ast::Tree& ast);
 	};
 }    // namespace rift
-ENUM(rift::OptimizationLevel);
+P_ENUM(rift::OptimizationLevel);

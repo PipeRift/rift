@@ -2,7 +2,6 @@
 #pragma once
 
 #include <Pipe/Core/Platform.h>
-#include <Pipe/Reflect/Builders/NativeTypeBuilder.h>
 #include <PipeECS.h>
 
 

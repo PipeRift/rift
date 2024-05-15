@@ -2,14 +2,16 @@
 
 #include "Compiler/Utils/BackendUtils.h"
 
+#include "PipeReflect.h"
+
 
 namespace rift
 {
-	p::TArray<p::ClassType*> GetBackendTypes()
+	p::TArray<p::TypeId> GetBackendTypes()
 	{
-		p::TArray<p::ClassType*> types = Backend::GetStaticType()->GetChildren();
-		types.RemoveIf([](p::ClassType* type) {
-			return !type || type->HasFlag(p::Class_Abstract);
+		p::TArray<p::TypeId> types;    // = Backend::GetStaticType()->GetChildren();
+		types.RemoveIf([](p::TypeId type) {
+			return !type.IsValid() || p::HasTypeFlags(type, p::TF_Abstract);
 		});
 		return Move(types);
 	}
@@ -19,7 +21,7 @@ namespace rift
 		p::TArray<p::TOwnPtr<Backend>> backends;
 		auto types = GetBackendTypes();
 		backends.Reserve(types.Size());
-		for (auto* type : types)
+		for (p::TypeId type : types)
 		{
 			backends.Add(p::MakeOwned<Backend>(type));
 		}

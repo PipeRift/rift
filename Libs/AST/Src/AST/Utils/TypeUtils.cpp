@@ -45,7 +45,7 @@ namespace rift::ast
 
 		if (auto* fileType = FindFileType(typeId))
 		{
-			ast.AddDefault(fileType->tagType->GetId(), id);
+			ast.AddDefault(fileType->tagType, id);
 		}
 	}
 
@@ -485,7 +485,7 @@ namespace rift::ast
 
 	const RiftType* FindFileType(p::Tag typeId)
 	{
-		const i32 index = gFileTypes.FindSortedEqual(typeId);
+		const i32 index = gFileTypes.FindSorted(typeId);
 		return index != NO_INDEX ? gFileTypes.Data() + index : nullptr;
 	}
 

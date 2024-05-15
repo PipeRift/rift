@@ -44,7 +44,7 @@ namespace rift
 
 		// Register module binding
 		ast::RegisterModuleBinding(
-		    {.id = "C", .tagType = CNativeBinding::GetStaticType(), .displayName = "C"});
+		    {.id = "C", .tagType = p::GetTypeId<CNativeBinding>(), .displayName = "C"});
 		ast::RegisterSerializedModulePools<CNativeBinding>();
 		ast::PreAllocPools<CNativeBinding>();
 	}

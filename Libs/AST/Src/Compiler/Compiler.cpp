@@ -15,7 +15,7 @@
 
 namespace rift
 {
-	void Compiler::Error(StringView str)
+	void Compiler::Error(p::StringView str)
 	{
 		p::Error(str);
 		CompileError newError{};
@@ -24,7 +24,7 @@ namespace rift
 	}
 
 
-	void Build(ast::Tree& ast, const CompilerConfig& config, TPtr<Backend> backend)
+	void Build(ast::Tree& ast, const CompilerConfig& config, p::TPtr<Backend> backend)
 	{
 		Compiler compiler{ast, config};
 
@@ -65,11 +65,11 @@ namespace rift
 		backend->Build(compiler);
 	}
 
-	void Build(ast::Tree& ast, const CompilerConfig& config, ClassType* backendType)
+	void Build(ast::Tree& ast, const CompilerConfig& config, p::TypeId backendType)
 	{
-		if (backendType)
+		if (backendType.IsValid())
 		{
-			TOwnPtr<Backend> backend = MakeOwned<Backend>(backendType);
+			p::TOwnPtr<Backend> backend = p::MakeOwned<Backend>(backendType);
 			Build(ast, config, backend);
 		}
 	}

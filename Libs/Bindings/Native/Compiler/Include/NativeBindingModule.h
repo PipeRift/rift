@@ -14,7 +14,9 @@ namespace rift
 
 	class NativeBindingModule : public Module
 	{
-		P_CLASS(NativeBindingModule, Module)
+	public:
+		using Super = Module;
+		P_CLASS(NativeBindingModule)
 
 		void Load() override;
 		void SyncIncludes(ast::Tree& ast);

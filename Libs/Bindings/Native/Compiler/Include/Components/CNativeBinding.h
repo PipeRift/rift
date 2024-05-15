@@ -2,14 +2,14 @@
 #pragma once
 
 #include <Pipe/Files/Paths.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
 namespace rift
 {
-	struct CNativeBinding : public p::Struct
+	struct CNativeBinding
 	{
-		P_STRUCT(CNativeBinding, p::Struct)
+		P_STRUCT(CNativeBinding)
 
 		P_PROP(binaries)
 		p::TArray<p::String> binaries;

@@ -2,7 +2,8 @@
 #pragma once
 
 #include <Pipe/Files/Paths.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
+
 
 namespace rift::ast
 {
@@ -13,16 +14,16 @@ namespace rift::ast
 		Static
 	};
 }    // namespace rift::ast
-ENUM(rift::ast::RiftModuleTarget)
+P_ENUM(rift::ast::RiftModuleTarget)
 
 
 namespace rift::ast
 {
 	static constexpr p::StringView moduleFilename = "__module__.rf";
 
-	struct CModule : public p::Struct
+	struct CModule
 	{
-		P_STRUCT(CModule, p::Struct)
+		P_STRUCT(CModule)
 
 		P_PROP(target)
 		RiftModuleTarget target = RiftModuleTarget::Executable;

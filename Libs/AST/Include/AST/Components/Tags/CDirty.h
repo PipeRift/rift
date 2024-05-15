@@ -4,7 +4,7 @@
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/Expressions.h"
 
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
 namespace rift::ast
@@ -12,9 +12,9 @@ namespace rift::ast
 	// Dirty tags are cleaned manually by the respective systems. CChanged instead gets cleared
 	// after one frame
 	template<typename T>
-	struct TDirty : public p::Struct
+	struct TDirty
 	{
-		P_STRUCT(TDirty<T>, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(TDirty<T>, p::TF_NotSerialized)
 	};
 
 	using CDirty = TDirty<void>;

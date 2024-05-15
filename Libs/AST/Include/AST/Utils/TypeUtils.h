@@ -29,7 +29,7 @@ namespace rift::ast
 	struct RiftType
 	{
 		p::Tag id;
-		p::StructType* tagType = nullptr;
+		p::TypeId tagType;
 		RiftTypeSettings settings;
 
 		bool operator<(const RiftType& other) const
@@ -102,6 +102,6 @@ namespace rift::ast
 	void RegisterFileType(p::Tag typeId, RiftTypeSettings settings)
 	{
 		RegisterFileType(
-		    {.id = typeId, .tagType = TagType::GetStaticType(), .settings = p::Move(settings)});
+		    {.id = typeId, .tagType = p::GetTypeId<TagType>(), .settings = p::Move(settings)});
 	}
 }    // namespace rift::ast

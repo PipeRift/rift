@@ -5,8 +5,7 @@
 #include "Compiler/CompilerConfig.h"
 
 #include <Pipe/Core/String.h>
-#include <Pipe/Reflect/Reflection.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
 namespace rift
@@ -14,18 +13,18 @@ namespace rift
 	class Backend;
 
 
-	struct CompileError : public p::Struct
+	struct CompileError
 	{
-		P_STRUCT(CompileError, p::Struct)
+		P_STRUCT(CompileError)
 
 		P_PROP(text)
 		p::String text;
 	};
 
 
-	struct Compiler : public p::Struct
+	struct Compiler
 	{
-		P_STRUCT(Compiler, p::Struct)
+		P_STRUCT(Compiler)
 
 		ast::Tree& ast;
 		CompilerConfig config;
@@ -50,11 +49,11 @@ namespace rift
 
 	void Build(ast::Tree& tree, const CompilerConfig& config, p::TPtr<Backend> backend);
 
-	void Build(ast::Tree& ast, const CompilerConfig& config, p::ClassType* backendType);
+	void Build(ast::Tree& ast, const CompilerConfig& config, p::TypeId backendType);
 
 	template<typename T>
 	void Build(ast::Tree& ast, const CompilerConfig& config)
 	{
-		Build(ast, config, T::GetStaticType());
+		Build(ast, config, p::GetTypeId<T>());
 	}
 }    // namespace rift

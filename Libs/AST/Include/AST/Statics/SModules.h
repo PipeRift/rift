@@ -3,14 +3,14 @@
 
 #include "AST/Id.h"
 
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
 namespace rift::ast
 {
-	struct SModules : public p::Struct
+	struct SModules
 	{
-		P_STRUCT(SModules, p::Struct)
+		P_STRUCT(SModules)
 
 		p::TMap<p::Tag, ast::Id> modulesByPath;
 	};

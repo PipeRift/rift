@@ -14,7 +14,9 @@ namespace rift
 
 	class ASTModule : public Module
 	{
-		P_CLASS(ASTModule, Module)
+	public:
+		using Super = Module;
+		P_CLASS(ASTModule)
 
 	public:
 		static const p::Tag structType;

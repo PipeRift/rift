@@ -3,7 +3,7 @@
 
 #include <AST/Tree.h>
 #include <Pipe/Files/Paths.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
 namespace rift::ast
@@ -13,9 +13,9 @@ namespace rift::ast
 	 * Some examples are Class, p::Struct and Function Library declarations pointing to their
 	 * files
 	 */
-	struct CFileRef : public p::Struct
+	struct CFileRef
 	{
-		P_STRUCT(CFileRef, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(CFileRef, p::TF_NotSerialized)
 
 		P_PROP(path)
 		p::String path;

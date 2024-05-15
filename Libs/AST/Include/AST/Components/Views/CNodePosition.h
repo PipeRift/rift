@@ -1,15 +1,16 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
-#include <Pipe/Reflect/Struct.h>
+
+#include <PipeReflect.h>
 #include <PipeVectors.h>
 
 
 namespace rift
 {
-	struct CNodePosition : public p::Struct
+	struct CNodePosition
 	{
-		P_STRUCT(CNodePosition, p::Struct)
+		P_STRUCT(CNodePosition)
 
 		P_PROP(position)
 		p::v2 position;
