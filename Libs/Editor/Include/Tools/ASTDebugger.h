@@ -47,10 +47,6 @@ namespace rift::editor
 		void Draw(ast::Tree& ast);
 
 	private:
-		using DrawNodeAccess =
-		    p::TAccessRef<ast::CNamespace, ast::CFileRef, ast::CParent, ast::CChild, ast::CModule>;
-		void DrawNode(DrawNodeAccess access, ast::Id nodeId, bool showChildren);
-
 		void OnInspectEntity(ast::Id id);
 
 		void DrawEntityInspector(p::StringView label, p::StringView id, ast::Tree& ast,

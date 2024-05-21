@@ -15,23 +15,23 @@ namespace rift::UI
 	struct AnimatedSprite
 	{
 		ImTextureID textureId;
-		v2 size{};
+		p::v2 size{};
 		float rate = 1.f / 24.f;
 		// Number of frames in each row
-		TArray<u32> numFrames{};
+		p::TArray<p::u32> numFrames{};
 
-		v2_u32 currentFrame{};
+		p::v2_u32 currentFrame{};
 		float currentFrameRemainingTime = 0.f;
 
 
-		void SetAnimation(u32 id);
+		void SetAnimation(p::u32 id);
 		void NextFrame(float deltaTime);
 
-		v2 GetUV() const;
+		p::v2 GetUV() const;
 	};
 
-	static bool SpriteButton(AnimatedSprite& sprite, i32 framePadding, const LinearColor& bgColor,
-	    const LinearColor& tintColor);
+	static bool SpriteButton(AnimatedSprite& sprite, p::i32 framePadding,
+	    const p::LinearColor& bgColor, const p::LinearColor& tintColor);
 
 	inline bool InputText(const char* label, char* buf, size_t buf_size,
 	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
@@ -59,24 +59,24 @@ namespace rift::UI
 	bool InputTextMultiline(const char* label, p::String& str, const ImVec2& size = ImVec2(0, 0),
 	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
 	    void* userData = nullptr);
-	bool InputTextWithHint(const char* label, const char* hint, String& str,
+	bool InputTextWithHint(const char* label, const char* hint, p::String& str,
 	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
 	    void* userData = nullptr);
 
 	static void BeginOuterStyle()
 	{
-		LinearColor titleColor = UI::GetNeutralColor(0);
+		p::LinearColor titleColor = UI::GetNeutralColor(0);
 		UI::PushStyleColor(ImGuiCol_TitleBg, titleColor);
 		UI::PushStyleColor(ImGuiCol_TitleBgActive, titleColor);
-		UI::PushStyleColor(ImGuiCol_TitleBgCollapsed, UI::Disabled(titleColor));
+		UI::PushStyleColor(ImGuiCol_TitleBgCollapsed, UI::ToDisabled(titleColor));
 
-		LinearColor tabColorActive = UI::GetNeutralColor(1);
-		LinearColor tabColor       = UI::Disabled(tabColorActive);
+		p::LinearColor tabColorActive = UI::GetNeutralColor(1);
+		p::LinearColor tabColor       = UI::ToDisabled(tabColorActive);
 		UI::PushStyleColor(ImGuiCol_Tab, tabColor);
 		UI::PushStyleColor(ImGuiCol_TabActive, tabColorActive);
 		UI::PushStyleColor(ImGuiCol_TabUnfocused, tabColor);
 		UI::PushStyleColor(ImGuiCol_TabUnfocusedActive, tabColorActive);
-		UI::PushStyleColor(ImGuiCol_TabHovered, UI::Hovered(tabColorActive));
+		UI::PushStyleColor(ImGuiCol_TabHovered, UI::ToHovered(tabColorActive));
 		UI::PushTextColor(UI::GetNeutralTextColor(1));
 	}
 	static void BeginInnerStyle()
@@ -108,7 +108,8 @@ namespace rift::UI
 		EndOuterStyle();
 	}
 
-	ImRect GetWorkRect(v2 desiredSize, bool addhalfItemSpacing = true, v2 extent = v2::Zero());
+	ImRect GetWorkRect(
+	    p::v2 desiredSize, bool addhalfItemSpacing = true, p::v2 extent = p::v2::Zero());
 
 	bool MutableText(p::StringView label, p::String& text, ImGuiInputTextFlags flags = 0);
 

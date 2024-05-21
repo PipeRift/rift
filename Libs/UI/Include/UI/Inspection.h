@@ -15,42 +15,42 @@ namespace rift::UI
 	{
 	protected:
 		void* container = nullptr;
-		TypeId containerType;
-		const TypeProperty* property = nullptr;
-		i32 index                    = NO_INDEX;
+		p::TypeId containerType;
+		const p::TypeProperty* property = nullptr;
+		p::i32 index                    = p::NO_INDEX;
 
 
 	public:
-		ValueHandle(void* container, TypeId containerType)
+		ValueHandle(void* container, p::TypeId containerType)
 		    : container{container}, containerType{containerType}
 		{}
-		ValueHandle(void* container, TypeId containerType, const TypeProperty& property)
+		ValueHandle(void* container, p::TypeId containerType, const p::TypeProperty& property)
 		    : container{container}, containerType{containerType}, property{&property}
 		{}
-		ValueHandle(void* data, const TypeProperty* property, i32 index)
+		ValueHandle(void* data, const p::TypeProperty* property, p::i32 index)
 		    : container{data}, property{property}, index{index}
 		{
 			// P_Check(GetArrayProperty());
 		}
-		ValueHandle(const ValueHandle& container, i32 index)
+		ValueHandle(const ValueHandle& container, p::i32 index)
 		    : ValueHandle(container.GetPtr(), container.GetProperty(), index)
 		{}
 
 		ValueHandle(const ValueHandle& other)            = default;
 		ValueHandle& operator=(const ValueHandle& other) = default;
 
-		const TypeProperty* GetProperty() const
+		const p::TypeProperty* GetProperty() const
 		{
 			return property;
 		}
 
 		bool IsArray() const
 		{
-			return !IsArrayItem() && property && property->HasFlag(PF_Array);
+			return !IsArrayItem() && property && property->HasFlag(p::PF_Array);
 		}
 		bool IsArrayItem() const
 		{
-			return index != NO_INDEX;
+			return index != p::NO_INDEX;
 		}
 
 		// const ArrayProperty* GetArrayProperty() const
@@ -62,30 +62,30 @@ namespace rift::UI
 		//	return nullptr;
 		// }
 
-		virtual void GetDisplayName(String& name) const
+		virtual void GetDisplayName(p::String& name) const
 		{
-			if (index != NO_INDEX)
+			if (index != p::NO_INDEX)
 			{
-				Strings::FormatTo(name, "{}", index);
+				p::Strings::FormatTo(name, "{}", index);
 			}
 			else if (property)
 			{
-				name.append(Strings::ToSentenceCase(property->name.AsString()));
+				name.append(p::Strings::ToSentenceCase(property->name.AsString()));
 			}
 		}
 
-		TypeId GetType() const
+		p::TypeId GetType() const
 		{
 			return containerType;
 		}
 
 		void* GetContainer() const
 		{
-			P_Check(index != NO_INDEX);
+			P_Check(index != p::NO_INDEX);
 			return container;
 		}
 
-		i32 GetIndex() const
+		p::i32 GetIndex() const
 		{
 			return index;
 		}
@@ -112,14 +112,14 @@ namespace rift::UI
 	};
 
 
-	using CustomKeyValue = TFunction<void(p::StringView label, void* data, p::TypeId type)>;
+	using CustomKeyValue = p::TFunction<void(p::StringView label, void* data, p::TypeId type)>;
 
 
 	void RegisterCustomInspection(p::TypeId type, const CustomKeyValue& custom);
 	template<typename T>
 	void RegisterCustomInspection(const CustomKeyValue& custom)
 	{
-		RegisterCustomInspection(GetTypeId<T>(), custom);
+		RegisterCustomInspection(p::GetTypeId<T>(), custom);
 	}
 
 	void DrawEnumValue(void* data, p::TypeId type);
@@ -131,7 +131,7 @@ namespace rift::UI
 
 	inline void InspectStruct(void* data, p::TypeId type)
 	{
-		if (p::HasTypeFlags(type, TF_Struct))
+		if (p::HasTypeFlags(type, p::TF_Struct))
 		{
 			InspectChildrenProperties({data, type});
 		}

@@ -241,7 +241,7 @@ namespace rift::editor::EditorSystem
 		DrawModuleEditors(ast, editor);
 		DrawTypes(ast, editor);
 
-		editor.reflectionDebugger.Draw();
+		editor.reflectionDebugger.Draw(ast);
 		editor.ASTDebugger.Draw(ast);
 		editor.memoryDebugger.Draw();
 		editor.fileExplorer.Draw(ast);
@@ -356,7 +356,8 @@ namespace rift::editor::EditorSystem
 				if (UI::BeginMenu("Debug"))
 				{
 					UI::MenuItem("Reflection", nullptr, &editorData.reflectionDebugger.open);
-					UI::MenuItem("Abstract Syntax Tree", nullptr, &editorData.ASTDebugger.open);
+					UI::MenuItem(
+					    "  " ICON_FA_BUG "  AST Debugger", nullptr, &editorData.ASTDebugger.open);
 					UI::MenuItem("Memory", nullptr, &editorData.memoryDebugger.open);
 					UI::MenuItem("Graph Playground", nullptr, &editorData.graphPlayground.open);
 					UI::EndMenu();

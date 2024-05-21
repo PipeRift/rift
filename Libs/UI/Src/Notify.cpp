@@ -18,14 +18,14 @@ namespace rift::UI
 {
 	struct Notification
 	{
-		enum class Phase : u8
+		enum class Phase : p::u8
 		{
 			FadeIn,
 			Wait,
 			FadeOut,
 			Expired
 		};
-		enum class Corner : u8
+		enum class Corner : p::u8
 		{
 			TopLeft,
 			TopRight,
@@ -35,12 +35,12 @@ namespace rift::UI
 
 		Toast toast;
 
-		DateTime creationTime = DateTime::Now();
+		p::DateTime creationTime = p::DateTime::Now();
 
 		static constexpr float opacity         = 1.f;
 		static constexpr float fadeInDuration  = 0.1f;
 		static constexpr float fadeOutDuration = 0.15f;
-		static constexpr v2 padding{20.f, 20.f};
+		static constexpr p::v2 padding{20.f, 20.f};
 		static constexpr Corner corner     = Corner::BottomRight;
 		static constexpr float separationY = 10.f;    // Padding between notifications
 		static constexpr ImGuiWindowFlags flags =
@@ -70,9 +70,9 @@ namespace rift::UI
 			}
 		}
 
-		Timespan GetElapsedTime() const
+		p::Timespan GetElapsedTime() const
 		{
-			return DateTime::Now() - creationTime;
+			return p::DateTime::Now() - creationTime;
 		}
 
 		const char* GetIcon() const
@@ -88,7 +88,7 @@ namespace rift::UI
 			}
 		}
 
-		Color GetColor()
+		p::Color GetColor()
 		{
 			switch (toast.type)
 			{
@@ -97,7 +97,7 @@ namespace rift::UI
 				case ToastType::Error: return UI::errorColor;
 				case ToastType::Info: return UI::infoColor;
 				case ToastType::None:
-				default: return Color::White();
+				default: return p::Color::White();
 			}
 		}
 
@@ -120,21 +120,23 @@ namespace rift::UI
 			return 1.f * opacity;
 		}
 
-		void GetPositionAndPivot(float height, v2& position, v2& pivot)
+		void GetPositionAndPivot(float height, p::v2& position, p::v2& pivot)
 		{
-			v2 pad{padding.x, padding.y + height};
+			p::v2 pad{padding.x, padding.y + height};
 
 			const ImGuiViewport* viewport = ImGui::GetMainViewport();
-			v2 workPos                    = viewport->WorkPos;
-			v2 workSize                   = viewport->WorkSize;
-			position.x = (u8(corner) & 1) ? (workPos.x + workSize.x - pad.x) : (workPos.x + pad.x);
-			position.y = (u8(corner) & 2) ? (workPos.y + workSize.y - pad.y) : (workPos.y + pad.y);
-			pivot.x    = (u8(corner) & 1) ? 1.0f : 0.0f;
-			pivot.y    = (u8(corner) & 2) ? 1.0f : 0.0f;
+			p::v2 workPos                 = viewport->WorkPos;
+			p::v2 workSize                = viewport->WorkSize;
+			position.x =
+			    (p::u8(corner) & 1) ? (workPos.x + workSize.x - pad.x) : (workPos.x + pad.x);
+			position.y =
+			    (p::u8(corner) & 2) ? (workPos.y + workSize.y - pad.y) : (workPos.y + pad.y);
+			pivot.x = (p::u8(corner) & 1) ? 1.0f : 0.0f;
+			pivot.y = (p::u8(corner) & 2) ? 1.0f : 0.0f;
 		}
 	};
 
-	static TArray<Notification> gNotifications;
+	static p::TArray<Notification> gNotifications;
 
 
 	void AddNotification(Toast toast)
@@ -148,7 +150,7 @@ namespace rift::UI
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, UI::GetNeutralColor(0));
 
 		float height = 0.f;
-		for (i32 i = 0; i < gNotifications.Size(); ++i)
+		for (p::i32 i = 0; i < gNotifications.Size(); ++i)
 		{
 			auto& notification = gNotifications[i];
 
@@ -160,17 +162,17 @@ namespace rift::UI
 				continue;
 			}
 
-			const float opacity   = notification.GetFadePercent();
-			LinearColor textColor = notification.GetColor();
-			textColor.a           = opacity;
+			const float opacity      = notification.GetFadePercent();
+			p::LinearColor textColor = notification.GetColor();
+			textColor.a              = opacity;
 
 			// ImGui::PushStyleColor(ImGuiCol_Text, textColor);
 			ImGui::SetNextWindowBgAlpha(opacity);
 
-			v2 position, pivot;
+			p::v2 position, pivot;
 			notification.GetPositionAndPivot(height, position, pivot);
 			ImGui::SetNextWindowPos(position, ImGuiCond_Always, pivot);
-			String windowName = Strings::Format("##Notification_{}", i);
+			p::String windowName = p::Strings::Format("##Notification_{}", i);
 			ImGui::Begin(windowName.c_str(), nullptr, Notification::flags);
 
 			// Here we render the toast content
@@ -178,7 +180,7 @@ namespace rift::UI
 				// We want to support multi-line text, this will
 				// wrap the text after 1/3 of the screen width
 
-				const v2 workSize = UI::GetMainViewport()->WorkSize;
+				const p::v2 workSize = UI::GetMainViewport()->WorkSize;
 				ImGui::PushTextWrapPos(workSize.x / 3.f);
 
 				bool wasTitleRendered = false;
@@ -191,7 +193,7 @@ namespace rift::UI
 				}
 
 				// If a title is set
-				const String& title = notification.toast.title;
+				const p::String& title = notification.toast.title;
 				if (!title.empty())
 				{
 					// If a title and an icon is set, we want to render on same line
@@ -206,7 +208,7 @@ namespace rift::UI
 
 				// In case ANYTHING was rendered in the top, we want to add a small padding
 				// so the text (or icon) looks centered vertically
-				const String& message = notification.toast.message;
+				const p::String& message = notification.toast.message;
 				if (wasTitleRendered && !message.empty())
 				{
 					ImGui::SetCursorPosY(

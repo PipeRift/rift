@@ -84,7 +84,7 @@ namespace rift::editor::Graph
 		}
 
 		Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::Hovered(pinColor));
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::ToHovered(pinColor));
 
 		Nodes::BeginInput(
 		    i32(id), isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
@@ -112,7 +112,7 @@ namespace rift::editor::Graph
 		}
 
 		Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::Hovered(pinColor));
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::ToHovered(pinColor));
 
 		Nodes::BeginOutput(
 		    i32(id), isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
@@ -214,7 +214,7 @@ namespace rift::editor::Graph
 	{
 		static constexpr Color color = executionColor;
 		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::Hovered(color));
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::ToHovered(color));
 	}
 
 	void PopExecutionPinStyle()
@@ -494,9 +494,9 @@ namespace rift::editor::Graph
 		const float padding =
 		    (settings.GetSpaceHeight(1) - GImGui->FontSize) * 0.5f - settings.verticalPadding;
 
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {style.FramePadding.x, padding});
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, p::v2{style.FramePadding.x, padding});
 		ImGui::PushStyleVar(
-		    ImGuiStyleVar_ItemSpacing, {style.ItemSpacing.x, settings.verticalPadding});
+		    ImGuiStyleVar_ItemSpacing, p::v2{style.ItemSpacing.x, settings.verticalPadding});
 	}
 
 	void PopInnerNodeStyle()
@@ -720,7 +720,7 @@ namespace rift::editor::Graph
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 2.f);
 		Nodes::PushStyleColor(Nodes::ColorVar_Link, executionColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, UI::Hovered(executionColor));
+		Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, UI::ToHovered(executionColor));
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, selectedColor);
 
 		for (ast::Id outputId : FindIdsWith<ast::CStmtOutput>(access, children))
@@ -800,7 +800,7 @@ namespace rift::editor::Graph
 				}
 
 				Nodes::PushStyleColor(Nodes::ColorVar_Link, color);
-				Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, UI::Hovered(color));
+				Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, UI::ToHovered(color));
 
 				Nodes::Link(i32(inputId), i32(output.pinId), i32(inputId));
 

@@ -23,9 +23,6 @@ namespace rift::editor
 
 		ReflectionDebugger();
 
-		void Draw();
-
-	private:
-		void DrawType(TypeId type);
+		void Draw(ast::Tree& ast);
 	};
 }    // namespace rift::editor

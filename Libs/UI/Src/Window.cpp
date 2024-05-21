@@ -131,11 +131,11 @@ namespace rift::UI
 	void Render()
 	{
 		ImGui::Render();
-		i32 displayW, displayH;
+		p::i32 displayW, displayH;
 		glfwGetFramebufferSize(gWindow, &displayW, &displayH);
 		glViewport(0, 0, displayW, displayH);
 
-		static constexpr LinearColor clearColor{0.1f, 0.1f, 0.1f, 1.00f};
+		static constexpr p::LinearColor clearColor{0.1f, 0.1f, 0.1f, 1.00f};
 		glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 		glClear(GL_COLOR_BUFFER_BIT);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

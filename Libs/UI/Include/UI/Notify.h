@@ -9,7 +9,7 @@
 
 namespace rift::UI
 {
-	enum class ToastType : u8
+	enum class ToastType : p::u8
 	{
 		None = 0,
 		Success,
@@ -22,8 +22,8 @@ namespace rift::UI
 	{
 		ToastType type     = ToastType::None;
 		float durationTime = 3.f;
-		String title;
-		String message;
+		p::String title;
+		p::String message;
 	};
 
 	void AddNotification(Toast toast);

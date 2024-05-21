@@ -58,7 +58,7 @@ namespace rift::editor
 	void PushNodeTitleColor(Color color)
 	{
 		Nodes::PushStyleColor(Nodes::ColorVar_TitleBar, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, UI::Hovered(color));
+		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, UI::ToHovered(color));
 		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarSelected, color);
 	}
 
@@ -70,7 +70,7 @@ namespace rift::editor
 	void PushNodeBackgroundColor(Color color)
 	{
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, UI::Hovered(color));
+		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, UI::ToHovered(color));
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, color);
 	}
 

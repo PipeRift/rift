@@ -70,29 +70,4 @@ namespace rift::UI
 
 	void PushGeneralStyle();
 	void PopGeneralStyle();
-
-	void PushStyleCompact();
-	void PopStyleCompact();
-
-	void PushFrameBgColor(p::LinearColor color);
-	void PopFrameBgColor();
-	void PushButtonColor(p::LinearColor color);
-	void PopButtonColor();
-	void PushHeaderColor(p::LinearColor color = GetNeutralColor(2));
-	void PopHeaderColor();
-
-	void PushTextColor(p::LinearColor color);
-	void PopTextColor();
-
-	template<p::ColorMode mode>
-	p::TColor<mode> Hovered(const p::TColor<mode>& color)
-	{
-		return color.Shade(0.1f);
-	}
-
-	template<p::ColorMode mode>
-	p::TColor<mode> Disabled(const p::TColor<mode>& color)
-	{
-		return color.Shade(0.2f);
-	}
 };    // namespace rift::UI

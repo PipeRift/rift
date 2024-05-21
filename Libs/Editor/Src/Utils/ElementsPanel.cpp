@@ -75,7 +75,7 @@ namespace rift::editor
 			}
 			else if (UI::IsItemHovered())
 			{
-				bgColor = UI::Hovered(color);
+				bgColor = UI::ToHovered(color);
 			}
 			UI::RenderFrame(bb.Min, bb.Max, bgColor.DWColor(), false, 2.f);
 
@@ -180,7 +180,7 @@ namespace rift::editor
 			p::GetIdChildren(access, typeId, variableIds);
 			ExcludeIdsWithout<ast::CDeclVariable>(access, variableIds);
 
-			UI::PushStyleVar(ImGuiStyleVar_CellPadding, {1.f, 3.f});
+			UI::PushStyleVar(ImGuiStyleVar_CellPadding, p::v2{1.f, 3.f});
 			bool showTable = UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit);
 			UI::PopStyleVar();
 			if (showTable)

@@ -20,7 +20,7 @@ namespace rift::UI
 {
 	struct FontType
 	{
-		TArray<TPair<float, ImFont*>> sizes{};
+		p::TArray<p::TPair<float, ImFont*>> sizes{};
 
 		void Add(float size, ImFont* imFont)
 		{
@@ -46,7 +46,7 @@ namespace rift::UI
 			{
 				return sizes.First().second;
 			}
-			const TPair<float, ImFont*>* foundFont = sizes.Find([desiredSize](const auto& font) {
+			const p::TPair<float, ImFont*>* foundFont = sizes.Find([desiredSize](const auto& font) {
 				return p::NearlyEqual(font.first, desiredSize);
 			});
 			return foundFont ? foundFont->second : nullptr;
@@ -55,19 +55,19 @@ namespace rift::UI
 
 	struct FontDescriptor
 	{
-		std::array<FontType, GetEnumSize<UI::FontMode>()> modes{};
+		std::array<FontType, p::GetEnumSize<UI::FontMode>()> modes{};
 
 		FontType& operator[](UI::FontMode mode)
 		{
-			return modes[u8(mode)];
+			return modes[p::u8(mode)];
 		}
 		const FontType& operator[](UI::FontMode mode) const
 		{
-			return modes[u8(mode)];
+			return modes[p::u8(mode)];
 		}
 	};
 
-	static TMap<Tag, FontDescriptor> gFonts{};
+	static p::TMap<p::Tag, FontDescriptor> gFonts{};
 
 
 	ImFont* AddFont(p::StringView file, float size, const ImFontConfig* fontConfig = nullptr,
@@ -77,7 +77,7 @@ namespace rift::UI
 		return io.Fonts->AddFontFromFileTTF(file.data(), size, fontConfig, glyphRanges);
 	}
 
-	void AddTextFont(Tag name, UI::FontMode mode, float size, p::StringView file)
+	void AddTextFont(p::Tag name, UI::FontMode mode, float size, p::StringView file)
 	{
 		FontDescriptor* font = gFonts.Find(name);
 		if (!font)
@@ -142,13 +142,13 @@ namespace rift::UI
 		io.Fonts->Build();
 	}
 
-	ImFont* FindFont(Tag name, UI::FontMode mode, float size)
+	ImFont* FindFont(p::Tag name, UI::FontMode mode, float size)
 	{
 		const FontDescriptor* const font = gFonts.Find(name);
 		return font ? (*font)[mode].Get(size) : nullptr;
 	}
 
-	void SetDefaultFont(Tag name, UI::FontMode mode, float size)
+	void SetDefaultFont(p::Tag name, UI::FontMode mode, float size)
 	{
 		ImFont* font = FindFont(name, mode, size);
 		if (!font && !name.IsNone())
@@ -158,13 +158,13 @@ namespace rift::UI
 		ImGui::GetIO().FontDefault = font;
 	}
 
-	void PushFont(Tag name, UI::FontMode mode, float size)
+	void PushFont(p::Tag name, UI::FontMode mode, float size)
 	{
 		ImFont* font = FindFont(name, mode, size);
 		if (!font && !name.IsNone())
 		{
 			p::Error("Tried to push inexistent font '{}' (mode: {}, size: {})", name,
-			    GetEnumName(mode), size);
+			    p::GetEnumName(mode), size);
 		}
 		ImGui::PushFont(font);
 	}
@@ -189,10 +189,10 @@ namespace rift::UI
 
 		ImVec4* colors = style.Colors;
 
-		LinearColor titleColor            = UI::GetNeutralColor(0);
+		p::LinearColor titleColor         = UI::GetNeutralColor(0);
 		colors[ImGuiCol_TitleBg]          = titleColor.Shade(0.2f);
 		colors[ImGuiCol_TitleBgActive]    = titleColor;
-		colors[ImGuiCol_TitleBgCollapsed] = UI::Disabled(titleColor);
+		colors[ImGuiCol_TitleBgCollapsed] = UI::ToDisabled(titleColor);
 
 		colors[ImGuiCol_WindowBg] = UI::GetNeutralColor(1);
 		colors[ImGuiCol_Border]   = UI::GetNeutralColor(0);
@@ -202,17 +202,17 @@ namespace rift::UI
 		colors[ImGuiCol_SliderGrab]       = UI::GetNeutralColor(4);
 
 
-		LinearColor separatorColor        = UI::GetNeutralColor(1);
-		colors[ImGuiCol_SeparatorHovered] = UI::Hovered(separatorColor);
+		p::LinearColor separatorColor     = UI::GetNeutralColor(1);
+		colors[ImGuiCol_SeparatorHovered] = UI::ToHovered(separatorColor);
 		colors[ImGuiCol_SeparatorActive]  = separatorColor;
 
-		LinearColor resizeGripColor        = UI::GetNeutralColor(1);
+		p::LinearColor resizeGripColor     = UI::GetNeutralColor(1);
 		colors[ImGuiCol_ResizeGrip]        = resizeGripColor.Shade(0.3f);
-		colors[ImGuiCol_ResizeGripHovered] = UI::Hovered(resizeGripColor);
+		colors[ImGuiCol_ResizeGripHovered] = UI::ToHovered(resizeGripColor);
 		colors[ImGuiCol_ResizeGripActive]  = resizeGripColor;
 
 		colors[ImGuiCol_DockingPreview] = UI::GetNeutralColor(2);
-		colors[ImGuiCol_DockingEmptyBg] = LinearColor::White().Shade(0.97f);
+		colors[ImGuiCol_DockingEmptyBg] = p::LinearColor::White().Shade(0.97f);
 		colors[ImGuiCol_TextSelectedBg] = UI::primaryColor.Shade(0.1f);
 
 		colors[ImGuiCol_NavHighlight] = UI::primaryColor;
@@ -229,73 +229,11 @@ namespace rift::UI
 
 		UI::PushButtonColor(UI::GetNeutralColor(3));
 		UI::PushFrameBgColor(UI::GetNeutralColor(2));
-		UI::PushHeaderColor();
+		UI::PushHeaderColor(UI::GetNeutralColor(2));
 
 		LoadFonts();
 		UI::SetDefaultFont("WorkSans");
 	}
 
 	void PopGeneralStyle() {}
-
-	// Make the UI compact because there are so many fields
-	void PushStyleCompact()
-	{
-		ImGuiStyle& style = ImGui::GetStyle();
-		UI::PushStyleVar(ImGuiStyleVar_FramePadding,
-		    ImVec2(style.FramePadding.x, (float)(int)(style.FramePadding.y * 0.60f)));
-		UI::PushStyleVar(ImGuiStyleVar_ItemSpacing,
-		    ImVec2(style.ItemSpacing.x, (float)(int)(style.ItemSpacing.y * 0.60f)));
-	}
-
-	void PopStyleCompact()
-	{
-		UI::PopStyleVar(2);
-	}
-
-	void PushFrameBgColor(LinearColor color)
-	{
-		UI::PushStyleColor(ImGuiCol_FrameBg, color.Shade(0.3f));
-		UI::PushStyleColor(ImGuiCol_FrameBgHovered, UI::Hovered(color));
-		UI::PushStyleColor(ImGuiCol_FrameBgActive, color);
-	}
-
-	void PopFrameBgColor()
-	{
-		UI::PopStyleColor(3);
-	}
-
-	void PushButtonColor(LinearColor color)
-	{
-		UI::PushStyleColor(ImGuiCol_Button, color);
-		UI::PushStyleColor(ImGuiCol_ButtonHovered, UI::Hovered(color));
-		UI::PushStyleColor(ImGuiCol_ButtonActive, color.Tint(0.1f));
-	}
-
-	void PopButtonColor()
-	{
-		UI::PopStyleColor(3);
-	}
-
-	void PushHeaderColor(LinearColor color)
-	{
-		UI::PushStyleColor(ImGuiCol_Header, color);
-		UI::PushStyleColor(ImGuiCol_HeaderHovered, UI::Hovered(color));
-		UI::PushStyleColor(ImGuiCol_HeaderActive, color.Tint(0.1f));
-	}
-
-	void PopHeaderColor()
-	{
-		UI::PopStyleColor(3);
-	}
-
-	void PushTextColor(LinearColor color)
-	{
-		UI::PushStyleColor(ImGuiCol_Text, color);
-		UI::PushStyleColor(ImGuiCol_TextDisabled, color.Shade(0.15f));
-	}
-
-	void PopTextColor()
-	{
-		UI::PopStyleColor(2);
-	}
 }    // namespace rift::UI

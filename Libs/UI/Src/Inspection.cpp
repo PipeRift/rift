@@ -14,7 +14,7 @@ namespace rift::UI
 {
 	static const char* gCurrentInspector = nullptr;
 
-	static TMap<p::TypeId, CustomKeyValue> gCustomKeyValues;
+	static p::TMap<p::TypeId, CustomKeyValue> gCustomKeyValues;
 
 
 	void RegisterCustomInspection(p::TypeId type, const CustomKeyValue& custom)
@@ -27,9 +27,9 @@ namespace rift::UI
 
 	void DrawEnumValue(void* data, p::TypeId type)
 	{
-		static String label;
+		static p::String label;
 		label.clear();
-		Strings::FormatTo(label, "##{}", sizet(data));
+		p::Strings::FormatTo(label, "##{}", p::sizet(data));
 		/*
 		const i32 currentIndex = type->GetIndexFromValue(data);
 		if (UI::BeginCombo(label.c_str(), type->GetNameByIndex(currentIndex).AsString().data()))
@@ -56,68 +56,68 @@ namespace rift::UI
 
 	void DrawNativeValue(void* data, p::TypeId type)
 	{
-		static String label;
+		static p::String label;
 		label.clear();
-		Strings::FormatTo(label, "##{}", sizet(data));
+		p::Strings::FormatTo(label, "##{}", p::sizet(data));
 
 		switch (type.GetId())
 		{
-			case GetTypeId<bool>().GetId():
+			case p::GetTypeId<bool>().GetId():
 				UI::Checkbox(label.c_str(), static_cast<bool*>(data));
 				break;
-			case GetTypeId<u8>().GetId():
+			case p::GetTypeId<p::u8>().GetId():
 				UI::InputScalar(label.c_str(), ImGuiDataType_U8, data);
 				break;
-			case GetTypeId<i32>().GetId():
+			case p::GetTypeId<p::i32>().GetId():
 				UI::InputScalar(label.c_str(), ImGuiDataType_S32, data);
 				break;
-			case GetTypeId<u32>().GetId():
+			case p::GetTypeId<p::u32>().GetId():
 				UI::InputScalar(label.c_str(), ImGuiDataType_U32, data);
 				break;
-			case GetTypeId<i64>().GetId():
+			case p::GetTypeId<p::i64>().GetId():
 				UI::InputScalar(label.c_str(), ImGuiDataType_S64, data);
 				break;
-			case GetTypeId<u64>().GetId():
+			case p::GetTypeId<p::u64>().GetId():
 				UI::InputScalar(label.c_str(), ImGuiDataType_U64, data);
 				break;
-			case GetTypeId<float>().GetId():
+			case p::GetTypeId<float>().GetId():
 				UI::InputScalar(label.c_str(), ImGuiDataType_Float, data);
 				break;
-			case GetTypeId<double>().GetId():
+			case p::GetTypeId<double>().GetId():
 				UI::InputScalar(label.c_str(), ImGuiDataType_Double, data);
 				break;
-			case GetTypeId<v2>().GetId():
+			case p::GetTypeId<p::v2>().GetId():
 				UI::InputFloat2(label.c_str(), static_cast<float*>(data));
 				break;
-			case GetTypeId<v3>().GetId():
+			case p::GetTypeId<p::v3>().GetId():
 				UI::InputFloat3(label.c_str(), static_cast<float*>(data));
 				break;
-			case GetTypeId<String>().GetId():
-				UI::InputText(label.c_str(), *static_cast<String*>(data));
+			case p::GetTypeId<p::String>().GetId():
+				UI::InputText(label.c_str(), *static_cast<p::String*>(data));
 				break;
-			case GetTypeId<Tag>().GetId(): {
-				Tag& name = *static_cast<Tag*>(data);
-				String text{name.AsString()};
+			case p::GetTypeId<p::Tag>().GetId(): {
+				auto& name = *static_cast<p::Tag*>(data);
+				p::String text{name.AsString()};
 				if (UI::InputText(label.c_str(), text))
 				{
-					name = Tag{text};
+					name = p::Tag{text};
 				}
 			}
 		}
 	}
 
-	void DrawKeyValue(StringView label, void* data, p::TypeId type)
+	void DrawKeyValue(p::StringView label, void* data, p::TypeId type)
 	{
 		UI::TableNextRow();
 		UI::TableSetColumnIndex(0);
 		UI::AlignTextToFramePadding();
 		UI::Text(label);
 		UI::TableSetColumnIndex(1);
-		if (p::HasTypeFlags(type, TF_Native))
+		if (p::HasTypeFlags(type, p::TF_Native))
 		{
 			DrawNativeValue(data, type);
 		}
-		else if (p::HasTypeFlags(type, TF_Enum))
+		else if (p::HasTypeFlags(type, p::TF_Enum))
 		{
 			DrawEnumValue(data, type);
 		}
@@ -125,25 +125,25 @@ namespace rift::UI
 
 	void DrawArrayValue(p::TypeId type, void* instance)
 	{
-		const ContainerTypeOps* ops = p::GetTypeContainerOps(type);
+		const p::ContainerTypeOps* ops = p::GetTypeContainerOps(type);
 		if (!ops)
 		{
 			return;
 		}
 
-		UI::Text(Strings::Format("{} items", ops->GetSize(instance)));
+		UI::Text(p::Strings::Format("{} items", ops->GetSize(instance)));
 
 		// Ignore indent on buttons
 		const float widthAvailable =
 		    ImGui::GetContentRegionAvail().x + UI::GetCurrentWindow()->DC.Indent.x;
 		UI::SameLine(widthAvailable - 50.f);
 		UI::PushStyleCompact();
-		if (UI::Button(ICON_FA_PLUS "##AddItem", v2(16.f, 18.f)))
+		if (UI::Button(ICON_FA_PLUS "##AddItem", p::v2(16.f, 18.f)))
 		{
 			ops->AddItem(instance, nullptr);
 		}
 		UI::SameLine();
-		if (UI::Button(ICON_FA_TRASH_ALT "##Empty", v2(16.f, 18.f)))
+		if (UI::Button(ICON_FA_TRASH_ALT "##Empty", p::v2(16.f, 18.f)))
 		{
 			ops->Clear(instance);
 		}
@@ -156,10 +156,10 @@ namespace rift::UI
 		    ImGui::GetContentRegionAvail().x + UI::GetCurrentWindow()->DC.Indent.x;
 		UI::SameLine(widthAvailable - 50.f);
 		UI::PushStyleCompact();
-		static String label;
+		static p::String label;
 		label.clear();
-		Strings::FormatTo(label, ICON_FA_TIMES "##removeItem_{}", handle.GetIndex());
-		if (UI::Button(label.c_str(), v2(18.f, 18.f)))
+		p::Strings::FormatTo(label, ICON_FA_TIMES "##removeItem_{}", handle.GetIndex());
+		if (UI::Button(label.c_str(), p::v2(18.f, 18.f)))
 		{
 			// handle.GetArrayProperty()->RemoveItem(handle.GetContainerPtr(), handle.GetIndex());
 		}
@@ -177,7 +177,7 @@ namespace rift::UI
 		void* instance = handle.GetPtr();
 		UI::PushID(instance);
 
-		String displayName;
+		p::String displayName;
 		handle.GetDisplayName(displayName);
 
 		bool isLeaf = false;
@@ -240,10 +240,10 @@ namespace rift::UI
 			return;
 		}
 
-		if (p::HasTypeFlags(type, TF_Struct))
+		if (p::HasTypeFlags(type, p::TF_Struct))
 		{
-			void* instance                    = handle.GetPtr();
-			p::TView<TypeProperty> properties = p::GetTypeProperties(type);
+			void* instance                       = handle.GetPtr();
+			p::TView<p::TypeProperty> properties = p::GetTypeProperties(type);
 			for (const auto& prop : properties)
 			{
 				InspectProperty({instance, type, prop});
@@ -261,7 +261,7 @@ namespace rift::UI
 		}
 	}
 
-	bool BeginCategory(StringView name, bool isLeaf)
+	bool BeginCategory(p::StringView name, bool isLeaf)
 	{
 		UI::TableNextRow();
 		UI::TableSetColumnIndex(0);
@@ -279,7 +279,7 @@ namespace rift::UI
 		UI::TreePop();
 	}
 
-	bool BeginInspector(const char* label, v2 size)
+	bool BeginInspector(const char* label, p::v2 size)
 	{
 		if (!P_EnsureMsg(!gCurrentInspector,
 		        "Called BeginInspector() twice without calling EndInspector() first."))
@@ -310,7 +310,7 @@ namespace rift::UI
 	}
 
 
-	bool DrawColorKeyValue(StringView label, LinearColor& color, ImGuiColorEditFlags flags)
+	bool DrawColorKeyValue(p::StringView label, p::LinearColor& color, ImGuiColorEditFlags flags)
 	{
 		auto* data =
 		    reinterpret_cast<float*>(&color);    // LinearColor* can be interpreted as float*
@@ -324,42 +324,44 @@ namespace rift::UI
 
 	void RegisterCoreKeyValueInspections()
 	{
-		UI::RegisterCustomInspection<LinearColor>([](StringView label, void* data, p::TypeId type) {
-			DrawColorKeyValue(label, *reinterpret_cast<LinearColor*>(data),
+		UI::RegisterCustomInspection<p::LinearColor>(
+		    [](p::StringView label, void* data, p::TypeId type) {
+			DrawColorKeyValue(label, *reinterpret_cast<p::LinearColor*>(data),
 			    ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaPreviewHalf);
 		});
 
-		UI::RegisterCustomInspection<HSVColor>([](StringView label, void* data, p::TypeId type) {
-			auto* color = reinterpret_cast<HSVColor*>(data);
-			LinearColor lColor{*color};
+		UI::RegisterCustomInspection<p::HSVColor>(
+		    [](p::StringView label, void* data, p::TypeId type) {
+			auto* color = reinterpret_cast<p::HSVColor*>(data);
+			p::LinearColor lColor{*color};
 			if (DrawColorKeyValue(label, lColor,
 			        ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV
 			            | ImGuiColorEditFlags_AlphaPreviewHalf))
 			{
-				*color = HSVColor{lColor};
+				*color = p::HSVColor{lColor};
 			}
 		});
 
-		UI::RegisterCustomInspection<Color>([](StringView label, void* data, p::TypeId type) {
-			auto* color = reinterpret_cast<Color*>(data);
-			LinearColor lColor{*color};
+		UI::RegisterCustomInspection<p::Color>([](p::StringView label, void* data, p::TypeId type) {
+			auto* color = reinterpret_cast<p::Color*>(data);
+			p::LinearColor lColor{*color};
 			if (DrawColorKeyValue(label, lColor,
 			        ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayRGB
 			            | ImGuiColorEditFlags_AlphaPreviewHalf))
 			{
-				*color = Color{lColor};
+				*color = p::Color{lColor};
 			}
 		});
 
-		UI::RegisterCustomInspection<Path>([](StringView label, void* data, p::TypeId type) {
-			auto* path = reinterpret_cast<Path*>(data);
+		UI::RegisterCustomInspection<p::Path>([](p::StringView label, void* data, p::TypeId type) {
+			auto* path = reinterpret_cast<p::Path*>(data);
 			UI::TableNextRow();
 			UI::TableSetColumnIndex(0);
 			UI::AlignTextToFramePadding();
 			UI::Text(label);
 			UI::TableSetColumnIndex(1);
 			UI::SetNextItemWidth(p::Min(300.f, UI::GetContentRegionAvail().x));
-			String str = ToString(*path);
+			p::String str = p::ToString(*path);
 			if (UI::InputText("##value", str))
 			{
 				*path = p::ToSTDPath(str);

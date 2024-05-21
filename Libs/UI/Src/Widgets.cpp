@@ -8,9 +8,9 @@
 
 namespace rift::UI
 {
-	void AnimatedSprite::SetAnimation(u32 id)
+	void AnimatedSprite::SetAnimation(p::u32 id)
 	{
-		currentFrame              = {0, p::Clamp(id, 0u, u32(numFrames.Size() - 1))};
+		currentFrame              = {0, p::Clamp(id, 0u, p::u32(numFrames.Size() - 1))};
 		currentFrameRemainingTime = rate;
 	}
 
@@ -21,7 +21,7 @@ namespace rift::UI
 		if (currentFrameRemainingTime <= 0.f)
 		{
 			++currentFrame.x;
-			if (currentFrame.x >= numFrames[i32(currentFrame.y)])
+			if (currentFrame.x >= numFrames[p::i32(currentFrame.y)])
 			{
 				currentFrame.x = 0;
 			}
@@ -29,16 +29,16 @@ namespace rift::UI
 		}
 	}
 
-	v2 AnimatedSprite::GetUV() const
+	p::v2 AnimatedSprite::GetUV() const
 	{
 		return size * currentFrame;
 	}
 
 
-	bool SpriteButton(AnimatedSprite& sprite, i32 framePadding, const LinearColor& bgColor,
-	    const LinearColor& tintColor)
+	bool SpriteButton(AnimatedSprite& sprite, p::i32 framePadding, const p::LinearColor& bgColor,
+	    const p::LinearColor& tintColor)
 	{
-		const v2 uv = sprite.GetUV();
+		const p::v2 uv = sprite.GetUV();
 		return UI::ImageButton(
 		    sprite.textureId, sprite.size, uv, uv + sprite.size, framePadding, bgColor, tintColor);
 	}
@@ -46,7 +46,7 @@ namespace rift::UI
 
 	struct InputTextCallbackStringUserData
 	{
-		String* str;
+		p::String* str;
 		ImGuiInputTextCallback chainCallback;
 		void* chainCallbackUserData;
 	};
@@ -59,7 +59,7 @@ namespace rift::UI
 			// Resize string callback
 			// If for some reason we refuse the new length (BufTextLen) and/or capacity (BufSize) we
 			// need to set them back to what we want.
-			String* str = userData->str;
+			p::String* str = userData->str;
 			IM_ASSERT(data->Buf == str->c_str());
 			str->resize(data->BufTextLen);
 			data->Buf = (char*)str->c_str();
@@ -74,7 +74,7 @@ namespace rift::UI
 	}
 
 
-	bool InputText(const char* label, String& str, ImGuiInputTextFlags flags,
+	bool InputText(const char* label, p::String& str, ImGuiInputTextFlags flags,
 	    ImGuiInputTextCallback callback, void* userData)
 	{
 		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
@@ -88,7 +88,7 @@ namespace rift::UI
 		    label, (char*)str.c_str(), str.capacity() + 1, flags, InputTextCallback, &cbUserData);
 	}
 
-	bool InputTextMultiline(const char* label, String& str, const ImVec2& size,
+	bool InputTextMultiline(const char* label, p::String& str, const ImVec2& size,
 	    ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* userData)
 	{
 		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
@@ -102,7 +102,7 @@ namespace rift::UI
 		    InputTextCallback, &cbUserData);
 	}
 
-	bool InputTextWithHint(const char* label, const char* hint, String& str,
+	bool InputTextWithHint(const char* label, const char* hint, p::String& str,
 	    ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* userData)
 	{
 		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
@@ -116,7 +116,7 @@ namespace rift::UI
 		    InputTextCallback, &cbUserData);
 	}
 
-	ImRect GetWorkRect(v2 desiredSize, bool addhalfItemSpacing, v2 extent)
+	ImRect GetWorkRect(p::v2 desiredSize, bool addhalfItemSpacing, p::v2 extent)
 	{
 		auto& style  = ImGui::GetStyle();
 		auto* window = UI::GetCurrentWindow();
@@ -149,13 +149,13 @@ namespace rift::UI
 
 	static ImGuiID gPendingEditingId = 0;
 
-	bool MutableText(StringView label, String& text, ImGuiInputTextFlags flags)
+	bool MutableText(p::StringView label, p::String& text, ImGuiInputTextFlags flags)
 	{
 		const ImGuiID id     = UI::GetID(label);
 		const bool isEditing = UI::GetActiveID() == id;
 		if (!isEditing)    // Is editing
 		{
-			UI::PushStyleColor(ImGuiCol_FrameBg, LinearColor::Transparent());
+			UI::PushStyleColor(ImGuiCol_FrameBg, p::LinearColor::Transparent());
 		}
 
 		const bool valueChanged = UI::InputText(label.data(), text, flags);
@@ -166,7 +166,7 @@ namespace rift::UI
 		return valueChanged;
 	}
 
-	void HelpTooltip(StringView text, float delay)
+	void HelpTooltip(p::StringView text, float delay)
 	{
 		static ImGuiID currentHelpItemId = 0;
 
@@ -176,8 +176,8 @@ namespace rift::UI
 			bool show = true;
 			if (delay > 0.f)
 			{
-				static DateTime hoverStartTime;
-				const DateTime now = DateTime::Now();
+				static p::DateTime hoverStartTime;
+				const p::DateTime now = p::DateTime::Now();
 				if (itemId != currentHelpItemId)
 				{
 					// Reset help tooltip countdown
@@ -189,12 +189,12 @@ namespace rift::UI
 
 			if (show)
 			{
-				UI::PushStyleVar(ImGuiStyleVar_WindowPadding, v2{4.f, 3.f});
+				UI::PushStyleVar(ImGuiStyleVar_WindowPadding, p::v2{4.f, 3.f});
 				ImGui::BeginTooltip();
 				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-				static String finalText;
+				static p::String finalText;
 				finalText.clear();
-				Strings::FormatTo(finalText, "{} {}", ICON_FA_QUESTION_CIRCLE, text);
+				p::Strings::FormatTo(finalText, "{} {}", ICON_FA_QUESTION_CIRCLE, text);
 				UI::AlignTextToFramePadding();
 				ImGui::TextUnformatted(finalText.c_str());
 				ImGui::PopTextWrapPos();
@@ -207,7 +207,7 @@ namespace rift::UI
 			currentHelpItemId = 0;
 		}
 	}
-	void HelpMarker(StringView text)
+	void HelpMarker(p::StringView text)
 	{
 		ImGui::TextDisabled(ICON_FA_QUESTION_CIRCLE);
 		HelpTooltip(text, 0.f);
