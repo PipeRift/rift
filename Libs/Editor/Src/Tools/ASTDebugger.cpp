@@ -77,9 +77,6 @@ namespace rift::editor
 		dbgContext.ctx   = &ast;
 		p::BeginDebug(dbgContext);
 		p::DrawIdRegistry("  " ICON_FA_BUG "  AST Debugger", &open);
-		static p::ECSDebugInspector testInspector;
-		testInspector.id = mainInspector.id;
-		p::DrawEntityInspector("Test", testInspector);
 		p::EndDebug();
 	}
 
@@ -146,7 +143,7 @@ namespace rift::editor
 				if (UI::InputText("##IdValue", asString,
 				        ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll))
 				{
-					changedId = p::IdFromString(asString);
+					changedId = p::IdFromString(asString, &ast);
 				}
 				ImGui::EndMenu();
 			}

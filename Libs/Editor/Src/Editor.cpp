@@ -37,7 +37,7 @@ namespace rift::editor
 			String asString = p::ToString(*id);
 			if (UI::InputText("##value", asString))
 			{
-				*id = p::IdFromString(asString);
+				*id = p::IdFromString(asString, nullptr);
 			}
 		});
 
