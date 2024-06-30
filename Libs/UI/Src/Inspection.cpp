@@ -242,11 +242,11 @@ namespace rift::UI
 
 		if (p::HasTypeFlags(type, p::TF_Struct))
 		{
-			void* instance                       = handle.GetPtr();
-			p::TView<p::TypeProperty> properties = p::GetTypeProperties(type);
-			for (const auto& prop : properties)
+			void* instance                              = handle.GetPtr();
+			p::TView<const p::TypeProperty*> properties = p::GetTypeProperties(type);
+			for (const auto* prop : properties)
 			{
-				InspectProperty({instance, type, prop});
+				InspectProperty({instance, type, *prop});
 			}
 		}
 		else if (handle.IsArray())

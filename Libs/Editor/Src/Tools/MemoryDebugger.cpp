@@ -4,6 +4,7 @@
 
 #include <Pipe/Core/String.h>
 #include <Pipe/Memory/Alloc.h>
+#include <Pipe/Memory/HeapArena.h>
 #include <Pipe/Memory/MemoryStats.h>
 #include <PipeMath.h>
 #include <UI/UI.h>
@@ -32,7 +33,7 @@ namespace rift::editor
 		if (UI::Begin("Memory", &open))
 		{
 			String label;
-			auto* stats = GetHeapStats();
+			auto* stats = GetHeapArena().GetStats();
 			UI::Text(Strings::Format("Used: {}", Strings::ParseMemorySize(stats->used)));
 
 			if (UI::BeginChild("Allocations"))

@@ -11,7 +11,7 @@ namespace rift::ast
 	{
 		P_STRUCT(CNamespace)
 
-		P_PROP(name);
+		P_PROP(name, p::PF_Edit);
 		p::Tag name;
 
 

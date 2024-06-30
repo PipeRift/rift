@@ -113,9 +113,6 @@ namespace rift::UI
 
 	bool MutableText(p::StringView label, p::String& text, ImGuiInputTextFlags flags = 0);
 
-	void HelpTooltip(p::StringView text, float delay = 1.f);
-	void HelpMarker(p::StringView text);
-
 	bool DrawFilterWithHint(ImGuiTextFilter& filter, const char* label = "Filter (inc,-exc)",
 	    const char* hint = "...", float width = 0.0f);
 

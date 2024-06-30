@@ -28,7 +28,7 @@ namespace rift::ast
 		P_PROP(target)
 		RiftModuleTarget target = RiftModuleTarget::Executable;
 
-		P_PROP(dependencies)
+		P_PROP(dependencies, p::PF_Edit)
 		p::TArray<p::Tag> dependencies;
 	};
 }    // namespace rift::ast
