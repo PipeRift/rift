@@ -13,6 +13,10 @@
 
 namespace rift
 {
+	template<typename T>
+	void SaveUserSettings();
+
+
 	p::String GetUserSettingsPath(p::StringView name);
 
 	template<typename T>

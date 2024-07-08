@@ -21,17 +21,17 @@ namespace rift
 	template<typename T>
 	void EnableModule()
 	{
-		EnableModule(GetTypeId<T>());
+		EnableModule(p::GetTypeId<T>());
 	}
 	template<typename T>
 	void DisableModule()
 	{
-		DisableModule(GetTypeId<T>());
+		DisableModule(p::GetTypeId<T>());
 	}
 	template<typename T>
 	p::TPtr<T> GetModule()
 	{
-		return GetModule(GetTypeId<T>()).template Cast<T>();
+		return GetModule(p::GetTypeId<T>()).template Cast<T>();
 	}
 
 	void RegisterView(View view);
