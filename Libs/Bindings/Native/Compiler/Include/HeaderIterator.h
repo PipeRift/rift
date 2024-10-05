@@ -9,9 +9,9 @@
 
 namespace rift
 {
-	class HeaderIterator : public p::LambdaFileIterator<p::RecursivePathIterator>
+	class HeaderIterator : public p::LambdaFileIterator<p::RecursiveDirectoryIterator>
 	{
-		using Super = p::LambdaFileIterator<p::RecursivePathIterator>;
+		using Super = p::LambdaFileIterator<p::RecursiveDirectoryIterator>;
 
 	public:
 		using Super::Super;

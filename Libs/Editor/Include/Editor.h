@@ -22,7 +22,7 @@ namespace rift::editor
 		p::FileWatcher fileWatcher;
 
 	public:
-		bool bFilesDirty = true;
+		bool filesDirty = true;
 #if P_DEBUG
 		bool showDemo    = false;
 		bool showMetrics = false;

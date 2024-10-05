@@ -59,7 +59,7 @@ namespace rift::editor
 
 	int Editor::Run(StringView projectPath)
 	{
-		fileWatcher.StartAsync();
+		fileWatcher.StartWatchingAsync();
 
 		// Setup window
 		p::Info("Initializing editor...");
@@ -108,10 +108,10 @@ namespace rift::editor
 			ast::FunctionsSystem::ClearAddedTags(ast);
 			ast::TransactionSystem::ClearTags(ast);
 
-			if (bFilesDirty)
+			if (filesDirty)
 			{
 				ast::LoadSystem::Run(ast);
-				bFilesDirty = false;
+				filesDirty = false;
 			}
 			ast::FunctionsSystem::ResolveCallFunctionIds(ast);
 			ast::TypeSystem::ResolveExprTypeIds(ast);
@@ -172,9 +172,9 @@ namespace rift::editor
 
 			// Start watching the project folder for file changes
 			ast.Add(GetProjectId(ast), fileWatcher.ListenPath(projectPath, true,
-			                               [](StringView path, StringView filename,
+			                               [](FileWatchId id, StringView path, StringView filename,
 			                                   FileWatchAction action, StringView oldFilename) {
-				Editor::Get().bFilesDirty = true;
+				Editor::Get().filesDirty = true;
 			}));
 
 
@@ -189,9 +189,9 @@ namespace rift::editor
 	void Editor::CloseProject()
 	{
 		Id id = GetProjectId(ast);
-		if (ast.IsValid(id) && ast.Has<p::FileListenerId>(id))
+		if (ast.IsValid(id) && ast.Has<p::FileWatchId>(id))
 		{
-			fileWatcher.StopListening(ast.Get<p::FileListenerId>(id));
+			fileWatcher.StopListening(ast.Get<p::FileWatchId>(id));
 		}
 		ast::CloseProject(ast);
 	}
