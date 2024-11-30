@@ -12,6 +12,7 @@
 #include <Pipe.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Files/PlatformPaths.h>
+#include <PipeTime.h>
 #include <Rift.h>
 
 #include <chrono>
@@ -44,7 +45,7 @@ namespace rift
 		const Tag def = backends.IsEmpty() ? Tag::None() : backends[0]->GetName();
 		selected      = def.AsString();
 
-		auto stdDesc = Strings::Convert<std::string, TChar>(desc);
+		auto stdDesc = Strings::Convert<std::string, char>(desc);
 		app.add_option("-b,--backend", selected, stdDesc, true);
 	}
 
@@ -64,7 +65,27 @@ namespace rift
 
 int main(int argc, char** argv)
 {
-	p::Initialize("Saved/Logs");
+	p::Logger logger = p::Logger{.infoCallback = [](StringView msg) {
+		String text;
+		auto now = p::DateTime::Now();
+		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
+		p::Strings::FormatTo(text, "[Info] {}\n", msg);
+		std::cout << text;
+	}, .warningCallback = [](StringView msg) {
+		String text;
+		auto now = p::DateTime::Now();
+		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
+		p::Strings::FormatTo(text, "[Warning] {}\n", msg);
+		std::cout << text;
+	}, .errorCallback = [](StringView msg) {
+		String text;
+		auto now = p::DateTime::Now();
+		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
+		p::Strings::FormatTo(text, "[Error] {}\n", msg);
+		std::cout << text;
+	}};
+
+	p::Initialize(&logger);
 	p::Info(p::PlatformPaths::GetUserSettingsPath());
 	EnableModule<ASTModule>();
 	EnableModule<MIRBackendModule>();

@@ -8,12 +8,12 @@
 #include <GraphViewModule.h>
 #include <MIRBackendModule.h>
 #include <Pipe.h>
+#include <PipeTime.h>
 
 #include <iostream>
 
 
 using namespace rift;
-
 
 #ifndef RUN_AS_CLI
 	#define RUN_AS_CLI 1
@@ -21,7 +21,27 @@ using namespace rift;
 
 int RunEditor(StringView projectPath)
 {
-	p::Initialize("Saved/Logs");
+	p::Logger logger = p::Logger{.infoCallback = [](StringView msg) {
+		String text;
+		auto now = p::DateTime::Now();
+		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
+		p::Strings::FormatTo(text, "[Info] {}\n", msg);
+		std::cout << text;
+	}, .warningCallback = [](StringView msg) {
+		String text;
+		auto now = p::DateTime::Now();
+		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
+		p::Strings::FormatTo(text, "[Warning] {}\n", msg);
+		std::cout << text;
+	}, .errorCallback = [](StringView msg) {
+		String text;
+		auto now = p::DateTime::Now();
+		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
+		p::Strings::FormatTo(text, "[Error] {}\n", msg);
+		std::cout << text;
+	}};
+
+	p::Initialize(&logger);
 	EnableModule<ASTModule>();
 	EnableModule<MIRBackendModule>();
 	EnableModule<GraphViewModule>();

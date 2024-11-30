@@ -9,6 +9,7 @@
 
 #include <Pipe/Core/Tag.h>
 #include <PipeECS.h>
+#include <PipeReflect.h>
 
 
 namespace rift
@@ -31,7 +32,7 @@ namespace rift
 	template<typename T>
 	p::TPtr<T> GetModule()
 	{
-		return GetModule(p::GetTypeId<T>()).template Cast<T>();
+		return Cast<T>(GetModule(p::GetTypeId<T>()));
 	}
 
 	void RegisterView(View view);

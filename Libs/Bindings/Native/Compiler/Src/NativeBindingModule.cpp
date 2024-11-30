@@ -16,9 +16,6 @@
 #include <PipeECS.h>
 
 
-// P_OVERRIDE_NEW_DELETE
-
-
 namespace rift
 {
 	struct ParsedModule

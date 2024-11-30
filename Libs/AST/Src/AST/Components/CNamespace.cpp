@@ -8,13 +8,13 @@ namespace rift::ast
 	Namespace::Namespace(p::StringView value)
 	{
 		p::i32 size          = 0;
-		const p::TChar* last = value.data() + value.size();
-		const p::TChar* curr = value.data();
+		const char* last = value.data() + value.size();
+		const char* curr = value.data();
 
 		if (curr != last && *curr == '@')
 			++curr;
 
-		const p::TChar* scopeStart = curr;
+		const char* scopeStart = curr;
 		while (curr != last && size < scopeCount)
 		{
 			if (*curr == '.')

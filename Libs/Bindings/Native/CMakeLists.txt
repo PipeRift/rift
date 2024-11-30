@@ -1,12 +1,12 @@
 # Copyright 2015-2023 Piperift - All rights reserved
 
-add_library(RiftBindingNative STATIC)
+add_library(RiftBindingNativeLib STATIC)
 
 
-target_link_libraries(RiftBindingNative PUBLIC RiftAST)
+target_link_libraries(RiftBindingNativeLib PUBLIC RiftASTLib)
 
-rift_compiler_module(RiftBindingNative)
+rift_compiler_module(RiftBindingNativeLib)
 
-add_library(RiftBindingNativeEditor STATIC)
-rift_editor_module(RiftBindingNativeEditor)
-target_link_libraries(RiftBindingNativeEditor PUBLIC RiftEditor RiftBindingNative)
+add_library(RiftBindingNativeEditorLib STATIC)
+rift_editor_module(RiftBindingNativeEditorLib)
+target_link_libraries(RiftBindingNativeEditorLib PUBLIC RiftEditorLib RiftBindingNativeLib)
