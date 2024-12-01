@@ -3,6 +3,7 @@
     "cmake.configureOnOpen": true,
     "cmake.buildDirectory": "${workspaceFolder}/Build",
     "files.associations": {
+        "*.tmpl": "html",
         "cmath": "cpp",
         "algorithm": "cpp",
         "any": "cpp",
@@ -155,7 +156,10 @@
         "splines": "cpp",
         "typeindex": "cpp",
         "qtalignedmalloc": "cpp",
-        "*.traits": "cpp"
+        "*.traits": "cpp",
+        "span": "cpp",
+        "stdfloat": "cpp",
+        "cuchar": "cpp"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "banditTestExplorer.testsuites": [

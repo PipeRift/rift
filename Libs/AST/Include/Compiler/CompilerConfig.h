@@ -3,8 +3,8 @@
 #pragma once
 
 #include "AST/Tree.h"
-#include "Pipe/Core/Platform.h"
 
+#include <PipePlatform.h>
 #include <PipeReflect.h>
 
 

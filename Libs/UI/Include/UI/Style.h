@@ -1,9 +1,9 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
-#include <Pipe/Core/Platform.h>
 #include <Pipe/Core/Tag.h>
 #include <PipeColor.h>
+#include <PipePlatform.h>
 
 
 namespace rift::UI

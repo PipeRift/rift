@@ -3,8 +3,8 @@
 #pragma once
 
 #include <Pipe/Core/Function.h>
-#include <Pipe/Core/Platform.h>
 #include <Pipe/Core/Tag.h>
+#include <PipePlatform.h>
 
 
 struct GLFWwindow;

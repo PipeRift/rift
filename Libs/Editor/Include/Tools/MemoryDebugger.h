@@ -1,10 +1,10 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
-#include <Pipe/Core/Platform.h>
 #include <Pipe/Core/StringView.h>
 #include <Pipe/Memory/BigBestFitArena.h>
 #include <Pipe/Memory/Block.h>
+#include <PipePlatform.h>
 #include <PipeVectors.h>
 
 

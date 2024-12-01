@@ -3,7 +3,7 @@
 #pragma once
 
 #include <AST/Id.h>
-#include <Pipe/Core/Platform.h>
+#include <PipePlatform.h>
 #include <PipeVectors.h>
 
 
