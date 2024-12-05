@@ -12,7 +12,7 @@
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Paths.h>
 #include <IconsFontAwesome5.h>
-#include <Pipe/Core/PlatformMisc.h>
+#include <PipePlatform.h>
 #include <UI/Inspection.h>
 #include <UI/UI.h>
 

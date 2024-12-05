@@ -3,10 +3,9 @@
 #include "Tools/MemoryDebugger.h"
 
 #include <Pipe/Core/String.h>
-#include <Pipe/Memory/Alloc.h>
-#include <Pipe/Memory/HeapArena.h>
 #include <Pipe/Memory/MemoryStats.h>
 #include <PipeMath.h>
+#include <PipeMemoryArenas.h>
 #include <UI/UI.h>
 #include <UI/UIImgui.h>
 
