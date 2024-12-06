@@ -7,8 +7,8 @@
 #include <AST/Components/CModule.h>
 #include <AST/Components/CNamespace.h>
 #include <Pipe/Core/StringView.h>
-#include <Pipe/Memory/Block.h>
 #include <PipeECS.h>
+#include <PipeMemory.h>
 #include <PipePlatform.h>
 #include <PipeVectors.h>
 #include <UI/UI.h>
