@@ -24,6 +24,7 @@ namespace rift
 
 	class MIRBackend : public Backend
 	{
+	public:
 		using Super = Backend;
 		P_CLASS(MIRBackend)
 

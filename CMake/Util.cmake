@@ -4,6 +4,7 @@ function(rift_module target)
     pipe_target_define_platform(${target})
     pipe_target_shared_output_directory(${target})
     pipe_target_enable_CPP20(${target})
+    pipe_target_disable_rtti(${target} PRIVATE)
     set_target_properties(${target} PROPERTIES FOLDER Rift)
 endfunction(rift_module)
 
