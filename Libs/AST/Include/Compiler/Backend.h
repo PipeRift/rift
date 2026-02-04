@@ -11,10 +11,10 @@ namespace rift
 {
 	class Backend : public p::Object
 	{
+	public:
 		using Super = p::Object;
 		P_CLASS(Backend)
 
-	public:
 		virtual p::Tag GetName()
 		{
 			return p::Tag::None();
