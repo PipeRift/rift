@@ -1,6 +1,6 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 
-#include <Pipe/Memory/NewDelete.h>
+#include <PipeNewDelete.h>
 //  Override as first include
 
 #include <ASTModule.h>
@@ -21,25 +21,29 @@ using namespace rift;
 
 int RunEditor(StringView projectPath)
 {
-	p::Logger logger = p::Logger{.infoCallback = [](StringView msg) {
+	p::Logger logger = p::Logger{.infoCallback =
+	                                 [](StringView msg) {
 		String text;
 		auto now = p::DateTime::Now();
 		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
 		p::Strings::FormatTo(text, "[Info] {}\n", msg);
 		std::cout << text;
-	}, .warningCallback = [](StringView msg) {
+	                             },
+	    .warningCallback =
+	        [](StringView msg) {
 		String text;
 		auto now = p::DateTime::Now();
 		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
 		p::Strings::FormatTo(text, "[Warning] {}\n", msg);
 		std::cout << text;
-	}, .errorCallback = [](StringView msg) {
-		String text;
-		auto now = p::DateTime::Now();
-		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		p::Strings::FormatTo(text, "[Error] {}\n", msg);
-		std::cout << text;
-	}};
+	    },
+	    .errorCallback = [](StringView msg) {
+		    String text;
+		    auto now = p::DateTime::Now();
+		    now.ToString("[%Y/%m/%d %H:%M:%S]", text);
+		    p::Strings::FormatTo(text, "[Error] {}\n", msg);
+		    std::cout << text;
+	    }};
 
 	p::Initialize(&logger);
 	EnableModule<ASTModule>();

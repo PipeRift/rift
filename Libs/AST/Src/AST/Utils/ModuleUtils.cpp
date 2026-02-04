@@ -81,7 +81,7 @@ namespace rift::ast
 		FunctionsSystem::Init(ast);
 
 		// Create project node (root module)
-		Id projectId = ast.Create();
+		Id projectId = p::AddId(ast);
 		ast.Add<CProject, CModule>(projectId);
 		ast.Add(projectId, CNamespace{p::GetFilename(p::GetParentPath(filePath))});
 		ast.Add(projectId, CFileRef{filePath});
@@ -121,7 +121,7 @@ namespace rift::ast
 			return NoId;
 		}
 
-		Id moduleId = ast.Create();
+		Id moduleId = p::AddId(ast);
 		ast.Add<CModule>(moduleId);
 		ast.Add(moduleId, CNamespace{p::GetFilename(p::GetParentPath(filePath))});
 		ast.Add(moduleId, CFileRef{filePath});

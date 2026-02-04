@@ -206,7 +206,7 @@ namespace rift::editor
 
 	void ASTDebugger::OpenAvailableSecondaryInspector(ast::Id id)
 	{
-		p::i32 availableIndex = secondaryInspectors.FindIndex([](const auto& inspector) {
+		p::i32 availableIndex = secondaryInspectors.FindIndexIf([](const auto& inspector) {
 			return !inspector.open || inspector.id == ast::NoId;
 		});
 		if (availableIndex != p::NO_INDEX)

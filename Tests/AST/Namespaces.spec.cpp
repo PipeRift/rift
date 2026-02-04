@@ -31,7 +31,7 @@ go_bandit([]() {
 			AssertThat(
 			    ast::GetParentNamespace(ast, functionBId).ToString().c_str(), Equals("@TestClass"));
 
-			ast::Id parentC = ast.Create();
+			ast::Id parentC = p::AddId(ast);
 			ast.Add<ast::CModule>(parentC);
 			ast.Add(parentC, ast::CNamespace{"SomeScope"});
 			ast::Id classCId = ast::CreateType(ast, ASTModule::classType, "TestClass");
@@ -46,7 +46,7 @@ go_bandit([]() {
 		it("Can get local namespaces", [&]() {
 			ast::Tree ast;
 
-			ast::Id parent = ast.Create();
+			ast::Id parent = p::AddId(ast);
 			ast.Add<ast::CModule>(parent);
 			ast.Add(parent, ast::CNamespace{"SomeModule"});
 			ast::Id classId = ast::CreateType(ast, ASTModule::classType, "TestClass");
@@ -100,7 +100,7 @@ go_bandit([]() {
 
 		it("Can find id from namespace", [&]() {
 			ast::Tree ast;
-			ast::Id parent = ast.Create();
+			ast::Id parent = p::AddId(ast);
 			ast.Add<ast::CModule>(parent);
 			ast.Add(parent, ast::CNamespace{"A"});
 

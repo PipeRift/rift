@@ -30,7 +30,7 @@ namespace rift::ast::FunctionsSystem
 
 	void Init(Tree& ast)
 	{
-		ast.OnAdd<CExprCallId>().Bind([](auto& ast, auto ids) {
+		ast.OnAdd<CExprCallId>().Bind([&ast](auto ids) {
 			ast.template AddN<CCallDirty>(ids);
 		});
 	}
@@ -166,7 +166,7 @@ namespace rift::ast::FunctionsSystem
 
 				if (i >= callOutputs.pinIds.Size())
 				{
-					Id id = ast.Create();
+					Id id = p::AddId(ast);
 					access.Add<CNamespace>(id, *name);
 					p::AttachId(ast, call.id, id);
 					callOutputs.Add(id);
@@ -180,12 +180,14 @@ namespace rift::ast::FunctionsSystem
 						const Id outputPinId    = callOutputs.pinIds[callPinIdx];
 						const auto* callPinName = access.TryGet<const CNamespace>(outputPinId);
 						if (callPinName && *callPinName == *name)
+						{
 							break;    // Found existing pin
+						}
 						++callPinIdx;
 					}
 					if (callPinIdx == callOutputs.pinIds.Size())    // Pin not found, insert it
 					{
-						Id id = ast.Create();
+						Id id = p::AddId(ast);
 						access.Add<CNamespace>(id, *name);
 						p::AttachId(ast, call.id, id);
 						callOutputs.Insert(i, id);
@@ -237,7 +239,7 @@ namespace rift::ast::FunctionsSystem
 
 				if (i >= callInputs.pinIds.Size())
 				{
-					Id id = ast.Create();
+					Id id = p::AddId(ast);
 					access.Add<CNamespace>(id, *name);
 					p::AttachId(ast, call.id, id);
 					callInputs.Add(id);
@@ -251,12 +253,14 @@ namespace rift::ast::FunctionsSystem
 						const Id pinId          = callInputs.pinIds[callPinIdx];
 						const auto* callPinName = access.TryGet<const CNamespace>(pinId);
 						if (callPinName && *callPinName == *name)
+						{
 							break;    // Found existing pin
+						}
 						++callPinIdx;
 					}
 					if (callPinIdx == callInputs.pinIds.Size())    // Pin not found, insert it
 					{
-						Id id = ast.Create();
+						Id id = p::AddId(ast);
 						access.Add<CNamespace>(id, *name);
 						p::AttachId(ast, call.id, id);
 						callInputs.Insert(i, id);
@@ -328,7 +332,7 @@ namespace rift::ast::FunctionsSystem
 
 		p::TArray<Id> pinsToRemove = p::FindAllIdsWith<CInvalid>(access);
 		ExcludeIdsWith<CTmpInvalidKeep>(access, pinsToRemove);
-		p::RemoveId(access, pinsToRemove);
+		p::RmId(access.GetContext(), pinsToRemove);
 
 		access.GetPool<CTmpInvalidKeep>()->Clear();
 	}

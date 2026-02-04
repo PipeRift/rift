@@ -24,7 +24,7 @@ namespace rift::UI
 
 		void Add(float size, ImFont* imFont)
 		{
-			if (sizes.Contains([size](const auto& font) {
+			if (sizes.ContainsIf([size](const auto& font) {
 				    return p::NearlyEqual(font.first, size);
 			    }))
 			{
@@ -46,9 +46,10 @@ namespace rift::UI
 			{
 				return sizes.First().second;
 			}
-			const p::TPair<float, ImFont*>* foundFont = sizes.Find([desiredSize](const auto& font) {
-				return p::NearlyEqual(font.first, desiredSize);
-			});
+			const p::TPair<float, ImFont*>* foundFont =
+			    sizes.FindIf([desiredSize](const auto& font) {
+				    return p::NearlyEqual(font.first, desiredSize);
+			    });
 			return foundFont ? foundFont->second : nullptr;
 		}
 	};

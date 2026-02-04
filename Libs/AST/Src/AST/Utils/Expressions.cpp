@@ -102,7 +102,7 @@ namespace rift::ast
 		auto& inputs = access.Get<CExprInputs>(input.nodeId);
 
 		// Find pin index
-		const p::i32 index = inputs.pinIds.FindIndex([&input](Id pinId) {
+		const p::i32 index = inputs.pinIds.FindIndexIf([&input](Id pinId) {
 			return input.pinId == pinId;
 		});
 		if (index != p::NO_INDEX && P_Ensure(index < inputs.linkedOutputs.Size()))

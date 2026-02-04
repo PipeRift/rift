@@ -31,7 +31,7 @@ namespace rift::editor
 
 			if (UI::IsWindowAppearing())
 			{
-				Graph::SetNodePosition(ast::Id(0), v2::Zero());
+				Graph::SetNodePosition(ast::Id::MakeRaw(0), v2::Zero());
 			}
 
 			static bool boolValue = false;

@@ -129,7 +129,7 @@ namespace rift::ast::LoadSystem
 		});
 
 		ids.Resize(paths.Size());
-		access.GetContext().Create(ids);
+		p::AddId(access.GetContext(), ids);
 
 		for (p::i32 i = 0; i < ids.Size(); ++i)
 		{
@@ -167,7 +167,7 @@ namespace rift::ast::LoadSystem
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
 			typeIds.Resize(modulePaths.paths.Size());
-			ast.Create(typeIds);
+			p::AddId(ast, typeIds);
 
 			for (p::i32 i = 0; i < typeIds.Size(); ++i)
 			{

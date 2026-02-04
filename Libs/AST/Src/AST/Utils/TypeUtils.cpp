@@ -51,7 +51,7 @@ namespace rift::ast
 
 	Id CreateType(Tree& ast, p::Tag typeId, Tag name, StringView path)
 	{
-		Id id = ast.Create();
+		Id id = p::AddId(ast);
 		if (!path.empty())
 		{
 			ast.Add<CFileRef>(id, path);
@@ -78,7 +78,7 @@ namespace rift::ast
 				}
 			}
 		}
-		p::RemoveId(access, typeIds, true);
+		p::RmId(access.GetContext(), typeIds, p::RmIdFlags::RemoveChildren);
 	}
 
 	void SerializeType(Tree& ast, Id id, String& data)
@@ -177,7 +177,7 @@ namespace rift::ast
 	{
 		Tree& ast = type.GetContext();
 
-		Id id = ast.Create();
+		Id id = p::AddId(ast);
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CDeclVariable, CParent>(id);
 
@@ -192,7 +192,7 @@ namespace rift::ast
 	{
 		Tree& ast = type.GetContext();
 
-		Id id = ast.Create();
+		Id id = p::AddId(ast);
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CDeclFunction, CParent>(id);
 		ast.Add<CStmtOutput>(id);
@@ -207,7 +207,7 @@ namespace rift::ast
 	Id AddCall(TypeRef type, Id functionId)
 	{
 		Tree& ast   = type.GetContext();
-		const Id id = ast.Create();
+		const Id id = p::AddId(ast);
 
 		ast.Add<CStmtInput, CStmtOutput, CExprOutputs, CExprInputs>(id);
 
@@ -223,7 +223,7 @@ namespace rift::ast
 
 	Id AddFunctionInput(Tree& ast, Id functionId, Tag name)
 	{
-		Id id = ast.Create();
+		Id id = p::AddId(ast);
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
@@ -234,7 +234,7 @@ namespace rift::ast
 
 	Id AddFunctionOutput(Tree& ast, Id functionId, Tag name)
 	{
-		Id id = ast.Create();
+		Id id = p::AddId(ast);
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CExprTypeId>(id);
 		ast.Add<CExprType>(id);
@@ -246,19 +246,19 @@ namespace rift::ast
 	Id AddIf(TypeRef type)
 	{
 		Tree& ast   = type.GetContext();
-		const Id id = ast.Create();
+		const Id id = p::AddId(ast);
 		ast.Add<CStmtIf>(id);
 		ast.Add<CStmtInput>(id);
 
 		// Bool input
-		const Id valueId = ast.Create();
+		const Id valueId = p::AddId(ast);
 		ast.Add<CExprTypeId>(valueId, {.id = ast.GetNativeTypes().boolId});
 		ast.Add<CExprType>(id).type = GetNamespace(ast, ast.GetNativeTypes().boolId);
 		p::AttachId(ast, id, valueId);
 		ast.Add<CExprInputs>(id).Add(valueId);
 
 		TArray<Id> outIds(2);
-		ast.Create(outIds);
+		p::AddId(ast, outIds);
 		p::AttachId(ast, id, outIds);
 		ast.Add<CStmtOutputs>(id, Move(outIds));
 
@@ -272,7 +272,7 @@ namespace rift::ast
 	Id AddReturn(TypeRef type)
 	{
 		Tree& ast         = type.GetContext();
-		const Id returnId = ast.Create();
+		const Id returnId = p::AddId(ast);
 		ast.Add<CStmtReturn>(returnId);
 		ast.Add<CStmtInput>(returnId);
 		if (type)
@@ -285,7 +285,7 @@ namespace rift::ast
 	Id AddLiteral(TypeRef type, Id literalTypeId)
 	{
 		Tree& ast   = type.GetContext();
-		const Id id = ast.Create();
+		const Id id = p::AddId(ast);
 		ast.Add<CExprTypeId>(id, {.id = literalTypeId});
 		ast.Add<CExprType>(id).type = GetNamespace(ast, literalTypeId);
 		ast.Add<CExprOutputs>(id).Add(id);
@@ -356,7 +356,7 @@ namespace rift::ast
 
 		if (!created)
 		{
-			ast.Destroy(id);
+			p::RmId(ast, id);
 			return NoId;
 		}
 
@@ -370,7 +370,7 @@ namespace rift::ast
 	Id AddDeclarationReference(TypeRef type, Id declId)
 	{
 		Tree& ast   = type.GetContext();
-		const Id id = ast.Create();
+		const Id id = p::AddId(ast);
 
 		ast.Add<CExprDeclRef>(id);
 		ast.Add<CExprOutputs>(id).Add(id);    // Types gets resolved by a system later
@@ -393,7 +393,7 @@ namespace rift::ast
 	Id AddUnaryOperator(TypeRef type, UnaryOperatorType operatorType)
 	{
 		Tree& ast   = type.GetContext();
-		const Id id = ast.Create();
+		const Id id = p::AddId(ast);
 		ast.Add<CExprUnaryOperator>(id, {operatorType});
 		ast.Add<CExprInputs>(id).Add(id);
 		ast.Add<CExprOutputs>(id).Add(id);
@@ -407,13 +407,13 @@ namespace rift::ast
 	Id AddBinaryOperator(TypeRef type, BinaryOperatorType operatorType)
 	{
 		Tree& ast   = type.GetContext();
-		const Id id = ast.Create();
+		const Id id = p::AddId(ast);
 		ast.Add<CExprBinaryOperator>(id, {operatorType});
 		ast.Add<CExprOutputs>(id).Add(id);
 
 		auto& inputs = ast.Add<CExprInputs>(id);
 		inputs.Resize(2);
-		ast.Create(inputs.pinIds);
+		p::AddId(ast, inputs.pinIds);
 		p::AttachId(ast, id, inputs.pinIds);
 		if (type)
 		{
@@ -443,7 +443,7 @@ namespace rift::ast
 	void RemoveNodes(const RemoveAccess& access, TView<Id> ids)
 	{
 		ScopedChange(access, ids);
-		p::RemoveId(access, ids, true);
+		p::RmId(access.GetContext(), ids, p::RmIdFlags::RemoveChildren);
 	}
 
 	bool CopyExpressionType(

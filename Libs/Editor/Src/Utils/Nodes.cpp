@@ -392,7 +392,7 @@ namespace rift::Nodes
 	void DrawListAddNode(ast::Id nodeId)
 	{
 		gNodes->NodeIdxToSubmissionIdx.SetInt(
-		    static_cast<ImGuiID>(GetIdIndex(nodeId)), gNodes->nodeSubmissionOrder.Size);
+		    static_cast<ImGuiID>(nodeId.GetIndex()), gNodes->nodeSubmissionOrder.Size);
 		gNodes->nodeSubmissionOrder.push_back(nodeId);
 		ImDrawListGrowChannels(gNodes->CanvasDrawList, 2);
 	}
@@ -432,7 +432,7 @@ namespace rift::Nodes
 	void DrawListActivateNodeBackground(ast::Id nodeId)
 	{
 		const i32 submissionIdx =
-		    gNodes->NodeIdxToSubmissionIdx.GetInt(static_cast<ImGuiID>(GetIdIndex(nodeId)), -1);
+		    gNodes->NodeIdxToSubmissionIdx.GetInt(static_cast<ImGuiID>(nodeId.GetIndex()), -1);
 		// There is a discrepancy in the submitted node count and the rendered node count! Did
 		// you call one of the following functions
 		// * MoveToNode
@@ -559,7 +559,9 @@ namespace rift::Nodes
 		{
 			editor.selectedLinkIndices.clear();
 			if (!gNodes->multipleSelectModifier)
+			{
 				editor.selectedNodeIds.Clear();
+			}
 			editor.selectedNodeIds.Add(nodeId);
 
 			// Ensure that individually selected nodes get rendered on top
@@ -1642,7 +1644,9 @@ namespace rift::Nodes
 	{
 		auto* ctx = IM_NEW(Context)();
 		if (gNodes == nullptr)
+		{
 			SetCurrentContext(ctx);
+		}
 		Initialize(ctx);
 		return ctx;
 	}
@@ -1650,10 +1654,14 @@ namespace rift::Nodes
 	void DestroyContext(Context* ctx)
 	{
 		if (ctx == nullptr)
+		{
 			ctx = gNodes;
+		}
 		Shutdown(ctx);
 		if (gNodes == ctx)
+		{
 			SetCurrentContext(nullptr);
+		}
 		IM_DELETE(ctx);
 	}
 
@@ -2112,7 +2120,7 @@ namespace rift::Nodes
 		DrawListAddNode(nodeId);
 		DrawListActivateCurrentNodeForeground();
 
-		ImGui::PushID(GetIdIndex(nodeId));
+		ImGui::PushID(nodeId.GetIndex());
 		ImGui::BeginGroup();
 	}
 
@@ -2416,7 +2424,7 @@ namespace rift::Nodes
 		if (gNodes->HoveredLinkIdx.IsValid())
 		{
 			const EditorContext& editor = GetEditorContext();
-			return ast::Id(editor.links.pool[gNodes->HoveredLinkIdx.Value()].id);
+			return ast::Id::MakeRaw(editor.links.pool[gNodes->HoveredLinkIdx.Value()].id);
 		}
 		return ast::NoId;
 	}
@@ -2433,7 +2441,7 @@ namespace rift::Nodes
 
 		const EditorContext& editor = GetEditorContext();
 		return gNodes->HoveredLinkIdx.IsValid()
-		    && linkId == ast::Id(editor.links.pool[gNodes->HoveredLinkIdx.Value()].id);
+		    && linkId == ast::Id::MakeRaw(editor.links.pool[gNodes->HoveredLinkIdx.Value()].id);
 	}
 
 	bool IsPinHovered(Id* const pin)
@@ -2478,7 +2486,7 @@ namespace rift::Nodes
 		for (i32 i = 0; i < editor.selectedLinkIndices.size(); ++i)
 		{
 			const i32 linkIdx = editor.selectedLinkIndices[i];
-			linkIds[i]        = ast::Id(editor.links.pool[linkIdx].id);
+			linkIds[i]        = ast::Id::MakeRaw(editor.links.pool[linkIdx].id);
 		}
 		return !linkIds.IsEmpty();
 	}

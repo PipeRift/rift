@@ -34,7 +34,7 @@ namespace rift::editor::Graph
 			// TODO: Improve nodes input to handle this correctly
 			TPair<Nodes::Id, Nodes::PinType> linkPin = Nodes::GetDraggedOriginPin();
 
-			const auto linkPinId = ast::Id(linkPin.first);
+			const auto linkPinId = ast::Id::MakeRaw(linkPin.first);
 			switch (linkPin.second)
 			{
 				case Nodes::PinType::Output:

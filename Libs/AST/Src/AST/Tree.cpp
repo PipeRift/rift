@@ -50,53 +50,53 @@ namespace rift::ast
 	void Tree::SetupNativeTypes()
 	{
 		// Remove any previous native types
-		Destroy(p::FindAllIdsWith<CDeclNative>(*this));
+		RmId(*this, p::FindAllIdsWith<CDeclNative>(*this));
 
-		nativeTypes.boolId = Create();
+		nativeTypes.boolId = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.boolId);
 		Add(nativeTypes.boolId, CNamespace{"Bool"});
 
-		nativeTypes.floatId = Create();
+		nativeTypes.floatId = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.floatId);
 		Add(nativeTypes.floatId, CNamespace{"Float"});
 
-		nativeTypes.doubleId = Create();
+		nativeTypes.doubleId = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.doubleId);
 		Add(nativeTypes.doubleId, CNamespace{"Double"});
 
-		nativeTypes.u8Id = Create();
+		nativeTypes.u8Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.u8Id);
 		Add(nativeTypes.u8Id, CNamespace{"U8"});
 
-		nativeTypes.i8Id = Create();
+		nativeTypes.i8Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.i8Id);
 		Add(nativeTypes.i8Id, CNamespace{"I8"});
 
-		nativeTypes.u16Id = Create();
+		nativeTypes.u16Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.u16Id);
 		Add(nativeTypes.u16Id, CNamespace{"U16"});
 
-		nativeTypes.i16Id = Create();
+		nativeTypes.i16Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.i16Id);
 		Add(nativeTypes.i16Id, CNamespace{"I16"});
 
-		nativeTypes.u32Id = Create();
+		nativeTypes.u32Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.u32Id);
 		Add(nativeTypes.u32Id, CNamespace{"U32"});
 
-		nativeTypes.i32Id = Create();
+		nativeTypes.i32Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.i32Id);
 		Add(nativeTypes.i32Id, CNamespace{"I32"});
 
-		nativeTypes.u64Id = Create();
+		nativeTypes.u64Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.u64Id);
 		Add(nativeTypes.u64Id, CNamespace{"U64"});
 
-		nativeTypes.i64Id = Create();
+		nativeTypes.i64Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.i64Id);
 		Add(nativeTypes.i64Id, CNamespace{"I64"});
 
-		nativeTypes.stringId = Create();
+		nativeTypes.stringId = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.stringId);
 		Add(nativeTypes.stringId, CNamespace{"String"});
 	}

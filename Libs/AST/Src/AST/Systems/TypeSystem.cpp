@@ -19,7 +19,7 @@ namespace rift::ast::TypeSystem
 	{
 		p::TAccess<CDeclType, CNamespace> access{ast};
 
-		ast.OnAdd<CFileRef>().Bind([](auto& ast, auto ids) {
+		ast.OnAdd<CFileRef>().Bind([&ast](auto ids) {
 			auto& types = ast.template GetOrSetStatic<STypes>();
 			for (Id id : ids)
 			{
@@ -31,7 +31,7 @@ namespace rift::ast::TypeSystem
 			}
 		});
 
-		ast.OnRemove<CFileRef>().Bind([](auto& ast, auto ids) {
+		ast.OnRemove<CFileRef>().Bind([&ast](auto ids) {
 			auto& types = ast.template GetOrSetStatic<STypes>();
 			for (Id id : ids)
 			{

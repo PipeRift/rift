@@ -189,31 +189,55 @@ namespace rift
 		{
 #ifdef _WIN32
 			if (strcmp(name, "LoadLibrary") == 0)
+			{
 				return LoadLibrary;
+			}
 			if (strcmp(name, "FreeLibrary") == 0)
+			{
 				return FreeLibrary;
+			}
 			if (strcmp(name, "GetProcAddress") == 0)
+			{
 				return GetProcAddress;
+			}
 #else
 			if (strcmp(name, "dlopen") == 0)
+			{
 				return (void*)dlopen;
+			}
 			if (strcmp(name, "dlerror") == 0)
+			{
 				return (void*)dlerror;
+			}
 			if (strcmp(name, "dlclose") == 0)
+			{
 				return (void*)dlclose;
+			}
 			if (strcmp(name, "dlsym") == 0)
+			{
 				return (void*)dlsym;
+			}
 			if (strcmp(name, "stat") == 0)
+			{
 				return (void*)stat;
+			}
 			if (strcmp(name, "lstat") == 0)
+			{
 				return (void*)lstat;
+			}
 			if (strcmp(name, "fstat") == 0)
+			{
 				return (void*)fstat;
+			}
 	#if defined(__APPLE__) && defined(__aarch64__)
 			if (strcmp(name, "__nan") == 0)
+			{
 				return __nan;
+			}
 			if (strcmp(name, "_MIR_set_code") == 0)
+			{
 				return _MIR_set_code;
+			}
 	#endif
 #endif
 			fprintf(stderr, "can not load symbol %s\n", name);
@@ -244,7 +268,6 @@ namespace rift
 
 		MIR::CToMIR(compiler, ctx);
 
-		p::i32 nGen = 1;
 		MIR_item_t func, mainFunc = nullptr;
 
 		{    // Find main
@@ -275,23 +298,21 @@ namespace rift
 		}
 
 		OpenSTDLibs();
-		MIR_gen_init(ctx, nGen);
-		for (p::i32 i = 0; i < nGen; ++i)
-		{
-			if (compiler.config.optimization != OptimizationLevel::Zero)
-			{
-				MIR_gen_set_optimize_level(ctx, i, (unsigned)compiler.config.optimization);
-			}
-			// if (gen_debug_level >= 0)
-			//{
-			//	MIR_gen_set_debug_file(ctx, i, stderr);
-			//	MIR_gen_set_debug_level(ctx, i, gen_debug_level);
-			// }
-		}
-		MIR_link(
-		    ctx, nGen > 1 ? MIR_set_parallel_gen_interface : MIR_set_gen_interface, ImportResolver);
+		MIR_gen_init(ctx);
 
-		auto entry = EntryFunctionPtr(nGen > 1 ? MIR_gen(ctx, 0, mainFunc) : mainFunc->addr);
+		if (compiler.config.optimization != OptimizationLevel::Zero)
+		{
+			MIR_gen_set_optimize_level(ctx, (unsigned)compiler.config.optimization);
+		}
+		// if (gen_debug_level >= 0)
+		//{
+		//	MIR_gen_set_debug_file(ctx, i, stderr);
+		//	MIR_gen_set_debug_level(ctx, i, gen_debug_level);
+		// }
+
+		MIR_link(ctx, MIR_set_gen_interface, ImportResolver);
+
+		auto entry = EntryFunctionPtr(MIR_gen(ctx, mainFunc));
 
 		p::DateTime startTime = p::DateTime::Now();
 		p::i32 resultCode     = entry();    // Run!

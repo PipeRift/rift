@@ -15,11 +15,11 @@ namespace rift::editor
 	{
 		static constexpr v2 unitSize{4.f, 4.f};    // Size of each grid point
 
-		u32 memoryScale               = 8;    // Each gridpoint will equal N bytes
-		u32 numColumns                = 0;
-		u32 bytesPerRow               = 0;
-		u32 numRows                   = 0;
-		const p::Memory::Block* block = nullptr;
+		u32 memoryScale            = 8;    // Each gridpoint will equal N bytes
+		u32 numColumns             = 0;
+		u32 bytesPerRow            = 0;
+		u32 numRows                = 0;
+		const p::ArenaBlock* block = nullptr;
 
 
 		MemoryGrid() = default;

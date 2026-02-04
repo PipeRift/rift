@@ -104,7 +104,7 @@ namespace rift::Nodes
 	public:
 		T& GetOrAdd(ast::Id id, bool* outAdded = nullptr)
 		{
-			const u32 index = GetIdIndex(id);
+			const u32 index = id.GetIndex();
 			bool added;
 			frameIds.AddUniqueSorted(id, {}, &added);
 			if (added && !lastFrameIds.ContainsSorted(id))
@@ -127,7 +127,7 @@ namespace rift::Nodes
 
 		T& Get(ast::Id id)
 		{
-			return *GetByIndex(GetIdIndex(id));
+			return *GetByIndex(id.GetIndex());
 		}
 
 		const T& Get(ast::Id id) const
@@ -139,7 +139,7 @@ namespace rift::Nodes
 		{
 			if (Contains(id))
 			{
-				return GetByIndex(GetIdIndex(id));
+				return GetByIndex(id.GetIndex());
 			}
 			return nullptr;
 		}

@@ -367,11 +367,17 @@ namespace rift::editor
 			{
 				StringView icon;
 				if (ast::IsStructType(ast, item.id))
+				{
 					icon = ICON_FA_FILE_ALT;
+				}
 				else if (ast::IsClassType(ast, item.id))
+				{
 					icon = ICON_FA_FILE_INVOICE;
+				}
 				else if (ast::IsStaticType(ast, item.id))
+				{
 					icon = ICON_FA_FILE_WORD;
+				}
 
 				text = Strings::Format("{} {}{}", icon, fileName, dirty);
 			}
@@ -491,7 +497,7 @@ namespace rift::editor
 		SaveStringFile(StringView{path}, data);
 
 		// Destroy the temporal type after saving it
-		ast.Destroy(id);
+		p::RmId(ast, id);
 
 		// Mark path to be opened later once the type has loaded
 		pendingOpenCreatedPath = path;

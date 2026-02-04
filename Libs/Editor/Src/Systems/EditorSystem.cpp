@@ -93,7 +93,7 @@ namespace rift::editor::EditorSystem
 	void Init(ast::Tree& ast)
 	{
 		OnProjectEditorOpen(ast);
-		ast.OnAdd<CTypeEditor>().Bind([](auto& ast, auto ids) {
+		ast.OnAdd<CTypeEditor>().Bind([&ast](auto ids) {
 			for (ast::Id id : ids)
 			{
 				OnTypeEditorOpen(static_cast<ast::Tree&>(ast), id);
@@ -533,11 +533,17 @@ namespace rift::editor::EditorSystem
 
 			StringView icon;
 			if (ast::IsStructType(access, typeId))
+			{
 				icon = ICON_FA_FILE_ALT;
+			}
 			else if (ast::IsClassType(access, typeId))
+			{
 				icon = ICON_FA_FILE_INVOICE;
+			}
 			else if (ast::IsStaticType(access, typeId))
+			{
 				icon = ICON_FA_FILE_WORD;
+			}
 
 			bool isOpen               = true;
 			const String path         = p::ToString(file.path);

@@ -86,8 +86,8 @@ namespace rift::editor::Graph
 		Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
 		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::ToHovered(pinColor));
 
-		Nodes::BeginInput(
-		    i32(id), isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
+		Nodes::BeginInput(i32(id.value),
+		    isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
 	}
 
 	void BeginExprOutput(p::TAccessRef<ast::CExprTypeId> access, ast::Id id, const bool& invalid)
@@ -114,8 +114,8 @@ namespace rift::editor::Graph
 		Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
 		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::ToHovered(pinColor));
 
-		Nodes::BeginOutput(
-		    i32(id), isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
+		Nodes::BeginOutput(i32(id.value),
+		    isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
 	}
 
 	void EndExprInput(const bool& invalid)
@@ -345,7 +345,7 @@ namespace rift::editor::Graph
 					UI::SameLine();
 
 					PushExecutionPinStyle();
-					Nodes::BeginOutput(i32(functionId), Nodes::PinShape_QuadFilled);
+					Nodes::BeginOutput(i32(functionId.value), Nodes::PinShape_QuadFilled);
 					UI::Text("");
 					Nodes::EndOutput();
 					PopExecutionPinStyle();
@@ -375,7 +375,7 @@ namespace rift::editor::Graph
 			Nodes::BeginNodeTitleBar();
 			{
 				PushExecutionPinStyle();
-				Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
+				Nodes::BeginInput(i32(id.value), Nodes::PinShape_QuadFilled);
 				UI::TextUnformatted("");
 				Nodes::EndInput();
 				UI::SameLine();
@@ -411,7 +411,7 @@ namespace rift::editor::Graph
 					{
 						PushExecutionPinStyle();
 
-						Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
+						Nodes::BeginInput(i32(id.value), Nodes::PinShape_QuadFilled);
 						UI::TextUnformatted("");
 						Nodes::EndInput();
 						UI::SameLine();
@@ -421,7 +421,7 @@ namespace rift::editor::Graph
 						UI::EndGroup();
 
 						UI::SameLine();
-						Nodes::BeginOutput(i32(id), Nodes::PinShape_QuadFilled);
+						Nodes::BeginOutput(i32(id.value), Nodes::PinShape_QuadFilled);
 						UI::TextUnformatted("");
 						Nodes::EndOutput();
 
@@ -588,7 +588,7 @@ namespace rift::editor::Graph
 					UI::BeginGroup();
 					{
 						PushExecutionPinStyle();
-						Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
+						Nodes::BeginInput(i32(id.value), Nodes::PinShape_QuadFilled);
 						UI::TextUnformatted("");
 						Nodes::EndInput();
 						PopExecutionPinStyle();
@@ -618,10 +618,12 @@ namespace rift::editor::Graph
 							continue;
 						}
 						PushExecutionPinStyle();
-						Nodes::BeginOutput(i32(outputs.pinIds[0]), Nodes::PinShape_QuadFilled);
+						Nodes::BeginOutput(
+						    i32(outputs.pinIds[0].value), Nodes::PinShape_QuadFilled);
 						UI::TextUnformatted("true");
 						Nodes::EndOutput();
-						Nodes::BeginOutput(i32(outputs.pinIds[1]), Nodes::PinShape_QuadFilled);
+						Nodes::BeginOutput(
+						    i32(outputs.pinIds[1].value), Nodes::PinShape_QuadFilled);
 						UI::TextUnformatted("false");
 						Nodes::EndOutput();
 						PopExecutionPinStyle();
@@ -730,7 +732,8 @@ namespace rift::editor::Graph
 			{
 				// Input pin ids equal input node ids
 				// Output pin ids equal output node ids
-				Nodes::Link(i32(output->linkInputNode), i32(outputId), i32(output->linkInputNode));
+				Nodes::Link(i32(output->linkInputNode.value), i32(outputId.value),
+				    i32(output->linkInputNode.value));
 			}
 		}
 
@@ -750,7 +753,8 @@ namespace rift::editor::Graph
 							// Input pin ids equal input node ids
 							// TODO: Execution pin ids atm are the same as the node id.
 							// Implement proper output pin support
-							Nodes::Link(i32(inputNodeId), i32(outputPinId), i32(inputNodeId));
+							Nodes::Link(i32(inputNodeId.value), i32(outputPinId.value),
+							    i32(inputNodeId.value));
 						}
 					}
 				}
@@ -802,7 +806,7 @@ namespace rift::editor::Graph
 				Nodes::PushStyleColor(Nodes::ColorVar_Link, color);
 				Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, UI::ToHovered(color));
 
-				Nodes::Link(i32(inputId), i32(output.pinId), i32(inputId));
+				Nodes::Link(i32(inputId.value), i32(output.pinId.value), i32(inputId.value));
 
 				Nodes::PopStyleColor(2);
 			}
@@ -869,19 +873,20 @@ namespace rift::editor::Graph
 			Nodes::Id inputPin;
 			if (Nodes::IsLinkCreated(outputPin, inputPin))
 			{
-				ast::Id pinIds[2]{ast::Id(outputPin), ast::Id(inputPin)};
+				ast::Id pinIds[2]{ast::Id::MakeRaw(outputPin), ast::Id::MakeRaw(inputPin)};
 				ScopedChange(ast, pinIds);
-				ast::TryConnectStmt(ast, ast::Id(outputPin), ast::Id(inputPin));
-				ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, ast::Id(outputPin)),
-				    ast::GetExprInputFromPin(ast, ast::Id(inputPin)));
+				ast::TryConnectStmt(ast, ast::Id::MakeRaw(outputPin), ast::Id::MakeRaw(inputPin));
+				ast::TryConnectExpr(ast,
+				    ast::GetExprOutputFromPin(ast, ast::Id::MakeRaw(outputPin)),
+				    ast::GetExprInputFromPin(ast, ast::Id::MakeRaw(inputPin)));
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))
 			{
-				ScopedChange(ast, ast::Id(linkId));
+				ScopedChange(ast, ast::Id::MakeRaw(linkId));
 				// linkId is always the outputId
-				ast::DisconnectStmtLink(ast, ast::Id(linkId));
-				ast::DisconnectExpr(ast, ast::GetExprInputFromPin(ast, ast::Id(linkId)));
+				ast::DisconnectStmtLink(ast, ast::Id::MakeRaw(linkId));
+				ast::DisconnectExpr(ast, ast::GetExprInputFromPin(ast, ast::Id::MakeRaw(linkId)));
 			}
 
 			ast::Id hoveredNodeId = Nodes::GetHoveredNode();

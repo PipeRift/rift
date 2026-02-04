@@ -20,7 +20,7 @@ namespace rift::editor
 				continue;
 			}
 
-			UI::PushID(p::u32(id));
+			UI::PushID(id.value);
 			if (UI::Selectable(name.data(), id == selectedId))
 			{
 				selectedId = id;
