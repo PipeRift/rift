@@ -1,4 +1,4 @@
-// Copyright 2015-2024 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include "DockSpaceLayout.h"
@@ -6,7 +6,6 @@
 #include <AST/Id.h>
 #include <UI/UI.h>
 #include <Utils/NodesInternal.h>
-
 
 
 namespace rift::editor

@@ -1,4 +1,4 @@
-// Copyright 2015-2024 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "AST/Components/CNamespace.h"
 
@@ -7,12 +7,14 @@ namespace rift::ast
 {
 	Namespace::Namespace(p::StringView value)
 	{
-		p::i32 size          = 0;
+		p::i32 size      = 0;
 		const char* last = value.data() + value.size();
 		const char* curr = value.data();
 
 		if (curr != last && *curr == '@')
+		{
 			++curr;
+		}
 
 		const char* scopeStart = curr;
 		while (curr != last && size < scopeCount)

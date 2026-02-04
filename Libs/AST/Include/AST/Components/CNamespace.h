@@ -1,4 +1,4 @@
-// Copyright 2015-2024 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include <Pipe/Core/Tag.h>
@@ -48,8 +48,7 @@ namespace rift::ast
 
 		Namespace() = default;
 		template<p::i32 M>
-		Namespace(p::Tag scopes[M])
-		    requires(M <= scopeCount)
+		Namespace(p::Tag scopes[M]) requires(M <= scopeCount)
 		    : scopes{scopes}
 		{}
 		Namespace(p::StringView value);

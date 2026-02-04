@@ -1,4 +1,4 @@
-// Copyright 2015-2024 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "UI/Widgets.h"
 
@@ -217,11 +217,15 @@ namespace rift::UI
 	    ImGuiTextFilter& filter, const char* label, const char* hint, float width)
 	{
 		if (width != 0.0f)
+		{
 			ImGui::SetNextItemWidth(width);
+		}
 		bool value_changed =
 		    ImGui::InputTextWithHint(label, hint, filter.InputBuf, IM_ARRAYSIZE(filter.InputBuf));
 		if (value_changed)
+		{
 			filter.Build();
+		}
 		return value_changed;
 	}
 
@@ -230,7 +234,9 @@ namespace rift::UI
 	{
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
 		if (window->SkipItems)
+		{
 			return false;
+		}
 
 		ImGuiID id = window->GetID(label.data());
 		flags |= ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_AllowOverlap

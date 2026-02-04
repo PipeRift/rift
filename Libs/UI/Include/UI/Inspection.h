@@ -1,4 +1,4 @@
-// Copyright 2015-2024 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
@@ -137,8 +137,7 @@ namespace rift::UI
 		}
 	}
 	template<typename T>
-	inline void InspectStruct(T* data)
-	    requires(p::IsStructOrClass<T>)
+	inline void InspectStruct(T* data) requires(p::IsStructOrClass<T>)
 	{
 		InspectStruct(data, GetTypeId<T>());
 	}

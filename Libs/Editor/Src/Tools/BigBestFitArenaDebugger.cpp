@@ -1,4 +1,4 @@
-// Copyright 2015-2024 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Tools/BigBestFitArenaDebugger.h"
 
@@ -6,7 +6,6 @@
 #include <PipeMath.h>
 #include <PipeMemory.h>
 #include <UI/UI.h>
-
 
 
 // External
