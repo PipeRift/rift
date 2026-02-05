@@ -46,7 +46,7 @@ namespace rift
 		selected      = def.AsString();
 
 		auto stdDesc = Strings::Convert<std::string, char>(desc);
-		app.add_option("-b,--backend", selected, stdDesc, true);
+		app.add_option("-b,--backend", selected, stdDesc)->capture_default_str();
 	}
 
 	TPtr<Backend> FindBackendByName(const TArray<TOwnPtr<Backend>>& backends, Tag name)

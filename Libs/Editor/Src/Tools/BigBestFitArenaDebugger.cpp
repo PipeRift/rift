@@ -4,7 +4,8 @@
 
 #include <Pipe/Core/String.h>
 #include <PipeMath.h>
-#include <PipeMemory.h>
+#include <PipeMemoryArenas.h>
+#include <PipeReflect.h>
 #include <UI/UI.h>
 
 
@@ -146,32 +147,13 @@ namespace rift::editor
 		UI::EndChild();
 	}
 
-	BigBestFitArenaDebugger::BigBestFitArenaDebugger()
-	{
-		// TODO: Remove this. Testing the debugger
-		if (auto* arena = dynamic_cast<BigBestFitArena*>(&GetCurrentArena()))
-		{
-			void* a = arena->Alloc(120);
-			void* b = arena->Alloc(234);
-			void* c = arena->Alloc(68);
-			void* d = arena->Alloc(234);
-			void* e = arena->Alloc(1522);
-			void* f = arena->Alloc(344);
-			void* g = arena->Alloc(33445);
-
-			arena->Free(a, 120);
-			arena->Free(c, 68);
-			arena->Free(e, 1522);
-
-			void* h = arena->Alloc(894345, 64);
-		}
-	}
+	BigBestFitArenaDebugger::BigBestFitArenaDebugger() {}
 
 	void BigBestFitArenaDebugger::Draw()
 	{
 		if (open)
 		{
-			auto* arena = dynamic_cast<BigBestFitArena*>(&GetCurrentArena());
+			auto* arena = p::Cast<BigBestFitArena>(&GetCurrentArena());
 			UI::Begin("Memory", &open);
 			if (arena)
 			{
