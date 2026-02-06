@@ -78,7 +78,7 @@ namespace rift::ast
 				}
 			}
 		}
-		p::RmId(access.GetContext(), typeIds, p::RmIdFlags::RemoveChildren);
+		p::RmId(access.GetContext(), typeIds);
 	}
 
 	void SerializeType(Tree& ast, Id id, String& data)
@@ -443,7 +443,7 @@ namespace rift::ast
 	void RemoveNodes(const RemoveAccess& access, TView<Id> ids)
 	{
 		ScopedChange(access, ids);
-		p::RmId(access.GetContext(), ids, p::RmIdFlags::RemoveChildren);
+		p::RmId(access.GetContext(), ids);
 	}
 
 	bool CopyExpressionType(
