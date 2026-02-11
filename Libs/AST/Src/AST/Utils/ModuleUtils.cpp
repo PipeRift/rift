@@ -134,7 +134,7 @@ namespace rift::ast
 
 	Id GetProjectId(p::TAccessRef<CProject> access)
 	{
-		return GetFirstId<CProject>(access);
+		return GetFirstIdWith<CProject>(access);
 	}
 
 	p::Tag GetProjectName(p::TAccessRef<CProject, CNamespace, CFileRef> access)
