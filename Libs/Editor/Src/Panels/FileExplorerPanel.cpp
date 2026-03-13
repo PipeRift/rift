@@ -210,7 +210,7 @@ namespace rift::editor
 	}
 
 	void FileExplorerPanel::CacheProjectFiles(
-	    TAccessRef<ast::CProject, ast::CModule, ast::CFileRef, ast::CDeclType> access)
+	    TIdScopeRef<ast::CProject, ast::CModule, ast::CFileRef, ast::CDeclType> scope)
 	{
 		dirty = false;
 
@@ -219,15 +219,15 @@ namespace rift::editor
 		// Set root folder (not displayed)
 		folders.InsertDefaulted({});
 
-		projectModuleId = ast::GetProjectId(access);
+		projectModuleId = ast::GetProjectId(scope);
 
 		// Create module folders
-		TArray<ast::Id> modules = FindAllIdsWith<ast::CModule>(access);
+		TArray<ast::Id> modules = FindAllIdsWith<ast::CModule>(scope);
 		TMap<ast::Id, p::StringView> moduleFolders;
 		moduleFolders.Reserve(modules.Size());
 		for (ast::Id moduleId : modules)
 		{
-			auto& file               = access.Get<const ast::CFileRef>(moduleId);
+			auto& file               = scope.Get<const ast::CFileRef>(moduleId);
 			p::StringView folderPath = p::GetParentPath(file.path);
 			folders.InsertDefaulted(p::Tag{folderPath});
 			moduleFolders.Insert(moduleId, folderPath);
@@ -262,9 +262,9 @@ namespace rift::editor
 		}
 
 		// Create items
-		for (ast::Id typeId : FindAllIdsWith<ast::CDeclType, ast::CFileRef>(access))
+		for (ast::Id typeId : FindAllIdsWith<ast::CDeclType, ast::CFileRef>(scope))
 		{
-			auto& file = access.Get<const ast::CFileRef>(typeId);
+			auto& file = scope.Get<const ast::CFileRef>(typeId);
 			if (!file.path.empty())
 			{
 				InsertItem(Item{typeId, file.path});

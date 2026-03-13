@@ -29,7 +29,7 @@ namespace rift::ast
 	};
 
 
-	struct Tree : public p::EntityContext
+	struct Tree : public p::IdContext
 	{
 	private:
 		static p::TBroadcast<Tree&> onInit;

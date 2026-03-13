@@ -13,9 +13,9 @@ namespace rift::ast::Transactions
 	static Transaction gActiveTransaction = {};
 
 	ScopedTransaction::ScopedTransaction(
-	    const TransactionAccess& access, p::TView<const Id> entityIds)
+	    const TransactionScope& scope, p::TView<const Id> entityIds)
 	{
-		active = PreChange(access, entityIds);
+		active = PreChange(scope, entityIds);
 	}
 	ScopedTransaction::ScopedTransaction(ScopedTransaction&& other) noexcept
 	{
@@ -30,7 +30,7 @@ namespace rift::ast::Transactions
 		}
 	}
 
-	bool PreChange(const TransactionAccess& access, p::TView<const Id> entityIds)
+	bool PreChange(const TransactionScope& scope, p::TView<const Id> entityIds)
 	{
 		if (!P_EnsureMsg(!gActiveTransaction.active,
 		        "Tried to record a transaction while another is already being recorded"))
@@ -42,16 +42,16 @@ namespace rift::ast::Transactions
 
 		// Mark files dirty
 		p::TArray<Id> parentIds;
-		p::GetAllIdParents(access, entityIds, parentIds);
+		p::GetAllIdParents(scope, entityIds, parentIds);
 
 		parentIds.Append(entityIds);
-		access.AddN<CChanged>(parentIds);
+		scope.AddN<CChanged>(parentIds);
 
 		// Transaction ids can also be files. FindParents doesn't consider them, so we merge it
-		ExcludeIdsWithout<CFileRef>(access, parentIds);
+		ExcludeIdsWithout<CFileRef>(scope, parentIds);
 		if (!parentIds.IsEmpty())
 		{
-			access.AddN<CFileDirty>(parentIds);
+			scope.AddN<CFileDirty>(parentIds);
 		}
 
 		// TODO: Capture AST state

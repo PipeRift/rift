@@ -21,23 +21,23 @@ namespace rift::ast
 		onInit(*this);
 	}
 
-	Tree::Tree(const Tree& other) noexcept : p::EntityContext(other)
+	Tree::Tree(const Tree& other) noexcept : p::IdContext(other)
 	{
 		CopyFrom(other);
 	}
-	Tree::Tree(Tree&& other) noexcept : p::EntityContext(p::Move(other))
+	Tree::Tree(Tree&& other) noexcept : p::IdContext(p::Move(other))
 	{
 		MoveFrom(p::Move(other));
 	}
 	Tree& Tree::operator=(const Tree& other) noexcept
 	{
-		p::EntityContext::operator=(other);
+		p::IdContext::operator=(other);
 		CopyFrom(other);
 		return *this;
 	}
 	Tree& Tree::operator=(Tree&& other) noexcept
 	{
-		EntityContext::operator=(p::Move(other));
+		IdContext::operator=(p::Move(other));
 		MoveFrom(p::Move(other));
 		return *this;
 	}

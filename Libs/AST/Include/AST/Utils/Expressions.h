@@ -13,10 +13,10 @@
 // NOTE: In expression graphs, the Link Id is the Input Pin Id
 namespace rift::ast
 {
-	bool CanConnectExpr(p::TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access,
+	bool CanConnectExpr(p::TIdScopeRef<CExprInputs, CExprOutputs, CExprTypeId> scope,
 	    ExprOutput output, ExprInput input);
 
-	bool TryConnectExpr(p::TAccessRef<p::TWrite<CExprInputs>, CExprOutputs, CExprTypeId> access,
+	bool TryConnectExpr(p::TIdScopeRef<p::Writes<CExprInputs>, CExprOutputs, CExprTypeId> scope,
 	    ExprOutput output, ExprInput input);
 	// Disconnects a particular link. (Note: link ids are the same as input nodes)
 	bool DisconnectExpr(Tree& ast, ExprInput input);
@@ -29,10 +29,10 @@ namespace rift::ast
 	 */
 	void DisconnectAllExprDeep(Tree& ast, p::TView<const Id> ids, bool ignoreRoot = false);
 
-	bool RemoveExprInputPin(p::TAccessRef<CExprInputs, p::TWrite<CInvalid>> access, ExprInput id);
+	bool RemoveExprInputPin(p::TIdScopeRef<p::Writes<CInvalid>, CExprInputs> scope, ExprInput id);
 	bool RemoveExprOutputPin(
-	    p::TAccessRef<CExprOutputs, p::TWrite<CInvalid>> access, ExprOutput id);
+	    p::TIdScopeRef<p::Writes<CInvalid>, CExprOutputs> scope, ExprOutput id);
 
-	ExprInput GetExprInputFromPin(p::TAccessRef<CExprInputs, CChild> access, Id pinId);
-	ExprOutput GetExprOutputFromPin(p::TAccessRef<CExprOutputs, CChild> access, Id pinId);
+	ExprInput GetExprInputFromPin(p::TIdScopeRef<CExprInputs, CChild> scope, Id pinId);
+	ExprOutput GetExprOutputFromPin(p::TIdScopeRef<CExprOutputs, CChild> scope, Id pinId);
 }    // namespace rift::ast

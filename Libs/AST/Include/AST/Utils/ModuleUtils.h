@@ -45,19 +45,19 @@ namespace rift::ast
 
 	Id CreateModule(Tree& ast, p::StringView path);
 
-	Id GetProjectId(p::TAccessRef<CProject> access);
+	Id GetProjectId(p::TIdScopeRef<CProject> scope);
 
-	p::Tag GetProjectName(p::TAccessRef<CProject, CNamespace, CFileRef> access);
-	p::StringView GetProjectPath(p::TAccessRef<CFileRef, CProject> access);
-	CModule* GetProjectModule(p::TAccessRef<CProject, p::TWrite<CModule>> access);
+	p::Tag GetProjectName(p::TIdScopeRef<CProject, CNamespace, CFileRef> scope);
+	p::StringView GetProjectPath(p::TIdScopeRef<CFileRef, CProject> scope);
+	CModule* GetProjectModule(p::TIdScopeRef<p::Writes<CModule>, CProject> scope);
 
 	bool HasProject(Tree& ast);
 
 	// Resolve a module's name
-	p::Tag GetModuleName(p::TAccessRef<CNamespace, CFileRef> access, Id moduleId);
+	p::Tag GetModuleName(p::TIdScopeRef<CNamespace, CFileRef> scope, Id moduleId);
 
 	// Resolve a module's name
-	p::StringView GetModulePath(p::TAccessRef<CFileRef> access, Id moduleId);
+	p::StringView GetModulePath(p::TIdScopeRef<CFileRef> scope, Id moduleId);
 
 	void SerializeModule(ast::Tree& ast, ast::Id id, p::String& data);
 	void DeserializeModule(ast::Tree& ast, ast::Id id, const p::String& data);

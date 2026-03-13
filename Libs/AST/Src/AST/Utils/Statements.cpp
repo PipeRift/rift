@@ -135,7 +135,7 @@ namespace rift::ast
 	}
 	bool DisconnectStmtFromNext(Tree& ast, ast::Id outputPin, ast::Id outputNode)
 	{
-		// NOTE: Can be optimized if needed since outputs is accessed twice counting
+		// NOTE: Can be optimized if needed since outputs is scopeed twice counting
 		// Disconnect()
 		if (auto* outputsComp = ast.TryGet<CStmtOutputs>(outputNode))
 		{
@@ -171,9 +171,9 @@ namespace rift::ast
 		return false;
 	}
 
-	Id GetPreviousStmt(p::TAccessRef<CStmtInput> access, Id stmtIds)
+	Id GetPreviousStmt(p::TIdScopeRef<CStmtInput> scope, Id stmtIds)
 	{
-		if (const auto* input = access.TryGet<const CStmtInput>(stmtIds))
+		if (const auto* input = scope.TryGet<const CStmtInput>(stmtIds))
 		{
 			return input->linkOutputNode;
 		}
@@ -181,21 +181,21 @@ namespace rift::ast
 	}
 
 	void GetPreviousStmts(
-	    p::TAccessRef<CStmtInput> access, p::TView<const Id> stmtIds, p::TArray<Id>& prevStmtIds)
+	    p::TIdScopeRef<CStmtInput> scope, p::TView<const Id> stmtIds, p::TArray<Id>& prevStmtIds)
 	{
 		prevStmtIds.ReserveMore(stmtIds.Size());
 		for (const Id stmtId : stmtIds)
 		{
-			if (const auto* input = access.TryGet<const CStmtInput>(stmtId))
+			if (const auto* input = scope.TryGet<const CStmtInput>(stmtId))
 			{
 				prevStmtIds.Add(input->linkOutputNode);
 			}
 		}
 	}
 
-	p::TView<Id> GetNextStmts(p::TAccessRef<CStmtOutputs> access, Id stmtIds)
+	p::TView<Id> GetNextStmts(p::TIdScopeRef<CStmtOutputs> scope, Id stmtIds)
 	{
-		if (const auto* output = access.TryGet<const CStmtOutputs>(stmtIds))
+		if (const auto* output = scope.TryGet<const CStmtOutputs>(stmtIds))
 		{
 			return output->linkInputNodes;
 		}
@@ -203,29 +203,29 @@ namespace rift::ast
 	}
 
 	void GetNextStmts(
-	    p::TAccessRef<CStmtOutputs> access, p::TView<const Id> stmtIds, p::TArray<Id>& nextStmtIds)
+	    p::TIdScopeRef<CStmtOutputs> scope, p::TView<const Id> stmtIds, p::TArray<Id>& nextStmtIds)
 	{
 		nextStmtIds.ReserveMore(stmtIds.Size());
 		for (const Id stmtId : stmtIds)
 		{
-			if (const auto* output = access.TryGet<const CStmtOutputs>(stmtId))
+			if (const auto* output = scope.TryGet<const CStmtOutputs>(stmtId))
 			{
 				nextStmtIds.Append(output->linkInputNodes);
 			}
 		}
 	}
 
-	void GetStmtChain(p::TAccessRef<CStmtOutput, CStmtOutputs> access, Id firstStmtId,
+	void GetStmtChain(p::TIdScopeRef<CStmtOutput, CStmtOutputs> scope, Id firstStmtId,
 	    p::TArray<Id>& stmtIds, Id& splitStmtId)
 	{
 		Id id = firstStmtId;
-		while (id != ast::NoId && access.Has<CStmtOutput>(id))
+		while (id != ast::NoId && scope.Has<CStmtOutput>(id))
 		{
 			stmtIds.Add(id);
-			id = access.Get<const CStmtOutput>(id).linkInputNode;
+			id = scope.Get<const CStmtOutput>(id).linkInputNode;
 		}
 
-		if (access.Has<CStmtOutputs>(id))
+		if (scope.Has<CStmtOutputs>(id))
 		{
 			splitStmtId = id;
 		}

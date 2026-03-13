@@ -107,7 +107,7 @@ namespace rift::editor::Graph
 		TArray<ast::Id> calls = FindIdsWith<ast::CExprCall>(ast, nodeIds);
 		if (!calls.IsEmpty() && UI::MenuItem("Refresh"))
 		{
-			ast.AddN<ast::CCallDirty>(calls);
+			ast.AddN<CMdfd<ast::CExprCallId>>(calls);
 		}
 	}
 
@@ -167,10 +167,10 @@ namespace rift::editor::Graph
 		{
 			String makeStr{};
 			auto& typeList = ast.GetStatic<ast::STypes>();
-			TAccess<ast::CDeclType, ast::CNamespace> typesAccess{ast};
-			for (Id typeId : FindAllIdsWith<ast::CDeclType>(typesAccess))
+			TIdScope<ast::CDeclType, ast::CNamespace> typesScope{ast};
+			for (Id typeId : FindAllIdsWith<ast::CDeclType>(typesScope))
 			{
-				if (auto* ns = typesAccess.TryGet<const ast::CNamespace>(typeId))
+				if (auto* ns = typesScope.TryGet<const ast::CNamespace>(typeId))
 				{
 					makeStr.clear();
 					Strings::FormatTo(makeStr, "Make {}", ns->name);
@@ -187,16 +187,16 @@ namespace rift::editor::Graph
 		if (ContextTreeNode("Functions", filter))
 		{
 			static String label;
-			TAccess<ast::CDeclFunction, ast::CNamespace, ast::CChild, ast::CDeclType> access{ast};
-			for (ast::Id functionId : FindAllIdsWith<ast::CDeclFunction, ast::CNamespace>(access))
+			TIdScope<ast::CDeclFunction, ast::CNamespace, ast::CChild, ast::CDeclType> scope{ast};
+			for (ast::Id functionId : FindAllIdsWith<ast::CDeclFunction, ast::CNamespace>(scope))
 			{
-				Tag name = access.Get<const ast::CNamespace>(functionId).name;
+				Tag name = scope.Get<const ast::CNamespace>(functionId).name;
 				label.clear();
-				ast::Id funcTypeId = p::GetIdParent(access, functionId);
-				if (!IsNone(funcTypeId) && access.Has<ast::CDeclType, ast::CNamespace>(funcTypeId))
+				ast::Id funcTypeId = p::GetIdParent(scope, functionId);
+				if (!IsNone(funcTypeId) && scope.Has<ast::CDeclType, ast::CNamespace>(funcTypeId))
 				{
 					Strings::FormatTo(label, "{}   ({})", name,
-					    access.Get<const ast::CNamespace>(funcTypeId).name);
+					    scope.Get<const ast::CNamespace>(funcTypeId).name);
 				}
 				else
 				{
@@ -214,16 +214,16 @@ namespace rift::editor::Graph
 		if (ContextTreeNode("Variables", filter))
 		{
 			static String label;
-			TAccess<ast::CDeclVariable, ast::CNamespace, ast::CChild, ast::CDeclType> access{ast};
-			for (ast::Id variableId : FindAllIdsWith<ast::CDeclVariable, ast::CNamespace>(access))
+			TIdScope<ast::CDeclVariable, ast::CNamespace, ast::CChild, ast::CDeclType> scope{ast};
+			for (ast::Id variableId : FindAllIdsWith<ast::CDeclVariable, ast::CNamespace>(scope))
 			{
-				Tag name = access.Get<const ast::CNamespace>(variableId).name;
+				Tag name = scope.Get<const ast::CNamespace>(variableId).name;
 				label.clear();
-				ast::Id typeId = p::GetIdParent(access, variableId);
-				if (!IsNone(typeId) && access.Has<ast::CDeclType, ast::CNamespace>(typeId))
+				ast::Id typeId = p::GetIdParent(scope, variableId);
+				if (!IsNone(typeId) && scope.Has<ast::CDeclType, ast::CNamespace>(typeId))
 				{
 					Strings::FormatTo(
-					    label, "{}   ({})", name, access.Get<const ast::CNamespace>(typeId).name);
+					    label, "{}   ({})", name, scope.Get<const ast::CNamespace>(typeId).name);
 				}
 				else
 				{

@@ -23,10 +23,10 @@
 
 namespace rift::editor
 {
-	void DrawVariable(TVariableAccessRef access, CTypeEditor& editor, ast::Id variableId)
+	void DrawVariable(TVariableScopeRef scope, CTypeEditor& editor, ast::Id variableId)
 	{
-		auto* ns           = access.TryGet<ast::CNamespace>(variableId);
-		auto* variableDecl = access.TryGet<ast::CDeclVariable>(variableId);
+		auto* ns           = scope.TryGet<ast::CNamespace>(variableId);
+		auto* variableDecl = scope.TryGet<ast::CDeclVariable>(variableId);
 		if (!ns || !variableDecl)
 		{
 			return;
@@ -40,7 +40,7 @@ namespace rift::editor
 		ImGui::PushID(ns);
 
 		const Color color =
-		    GetTypeColor(static_cast<ast::Tree&>(access.GetContext()), variableDecl->typeId);
+		    GetTypeColor(static_cast<ast::Tree&>(scope.GetContext()), variableDecl->typeId);
 		static constexpr float frameHeight = 20.f;
 
 		UI::TableNextColumn();
@@ -107,7 +107,7 @@ namespace rift::editor
 		{
 			UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 			UI::SetNextItemWidth(-FLT_MIN);
-			editor::TypeCombo(access, "##type", variableDecl->typeId);
+			editor::TypeCombo(scope, "##type", variableDecl->typeId);
 			UI::PopStyleVar();
 		}
 
@@ -168,7 +168,7 @@ namespace rift::editor
 		}
 	}
 
-	void DrawVariables(TVariableAccessRef access, ast::TransactionAccess transAccess,
+	void DrawVariables(TVariableScopeRef scope, ast::TransactionScope transScope,
 	    CTypeEditor& editor, ast::Id typeId)
 	{
 		bool add = false;
@@ -177,8 +177,8 @@ namespace rift::editor
 		{
 			UI::Indent();
 			TArray<ast::Id> variableIds;
-			p::GetIdChildren(access, typeId, variableIds);
-			ExcludeIdsWithout<ast::CDeclVariable>(access, variableIds);
+			p::GetIdChildren(scope, typeId, variableIds);
+			ExcludeIdsWithout<ast::CDeclVariable>(scope, variableIds);
 
 			UI::PushStyleVar(ImGuiStyleVar_CellPadding, p::v2{1.f, 3.f});
 			bool showTable = UI::BeginTable("##variableTable", 3, ImGuiTableFlags_SizingFixedFit);
@@ -190,10 +190,10 @@ namespace rift::editor
 				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.30f);
 				for (ast::Id child : variableIds)
 				{
-					if (access.Has<ast::CDeclVariable>(child))
+					if (scope.Has<ast::CDeclVariable>(child))
 					{
 						UI::TableNextRow();
-						DrawVariable(access, editor, child);
+						DrawVariable(scope, editor, child);
 					}
 				}
 				UI::EndTable();
@@ -204,8 +204,8 @@ namespace rift::editor
 
 		if (add)
 		{
-			ScopedChange(transAccess, typeId);
-			ast::AddVariable({static_cast<ast::Tree&>(access.GetContext()), typeId}, "NewVariable");
+			ScopedChange(transScope, typeId);
+			ast::AddVariable({static_cast<ast::Tree&>(scope.GetContext()), typeId}, "NewVariable");
 		}
 	}
 

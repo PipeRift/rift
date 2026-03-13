@@ -4,6 +4,7 @@
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/Expressions.h"
 
+#include <PipeECS.h>
 #include <PipeReflect.h>
 
 
@@ -17,11 +18,9 @@ namespace rift::ast
 		P_STRUCT(TDirty<T>, p::TF_NotSerialized)
 	};
 
-	using CDirty = TDirty<void>;
+	using CDirty = p::CMdfd<void>;
 
 	// Marks a type as dirty, meaning is has been modified
-	using CFileDirty = TDirty<CFileRef>;
+	using CFileDirty = p::CMdfd<CFileRef>;
 
-	// Marks a type as dirty, meaning is has been modified
-	using CCallDirty = TDirty<CExprCallId>;
 }    // namespace rift::ast

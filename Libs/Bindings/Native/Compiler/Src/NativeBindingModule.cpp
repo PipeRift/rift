@@ -48,10 +48,10 @@ namespace rift
 
 	void FindHeaders(ast::Tree& ast, TView<ParsedModule> parsedModules)
 	{
-		p::TAccess<ast::CFileRef> access{ast};
+		p::TIdScope<ast::CFileRef> scope{ast};
 		for (auto& module : parsedModules)
 		{
-			StringView path = ast::GetModulePath(access, module.id);
+			StringView path = ast::GetModulePath(scope, module.id);
 			for (const auto& headerPath : HeaderIterator(path))
 			{
 				module.headers.Add(p::ToString(headerPath));

@@ -21,14 +21,13 @@ namespace rift
 
 namespace rift::MIR
 {
-	// Defines a single ecs access dfor the entire IR generation
-	using MIRAccess = p::TAccessRef<ast::CStmtOutput, ast::CStmtOutputs, ast::CExprInputs,
-	    ast::CStmtIf, ast::CExprCallId, ast::CExprTypeId, ast::CExprOutputs, ast::CNamespace,
-	    ast::CDeclType, ast::CDeclVariable, ast::CDeclStruct, ast::CDeclClass, ast::CDeclStatic,
-	    ast::CParent, ast::CInvalid, ast::CChild, ast::CModule, ast::CLiteralBool,
-	    ast::CLiteralIntegral, ast::CLiteralFloating, ast::CLiteralString, ast::CDeclFunction,
-	    CDeclCStruct, CDeclCStatic, p::TWrite<CMIRType>, p::TWrite<CMIRFunctionSignature>,
-	    p::TWrite<CMIRLiteral>>;
+	// Defines a single ecs scope dfor the entire IR generation
+	using MIRScope = p::TIdScopeRef<p::Writes<CMIRType, CMIRFunctionSignature, CMIRLiteral>,
+	    ast::CStmtOutput, ast::CStmtOutputs, ast::CExprInputs, ast::CStmtIf, ast::CExprCallId,
+	    ast::CExprTypeId, ast::CExprOutputs, ast::CNamespace, ast::CDeclType, ast::CDeclVariable,
+	    ast::CDeclStruct, ast::CDeclClass, ast::CDeclStatic, ast::CParent, ast::CInvalid,
+	    ast::CChild, ast::CModule, ast::CLiteralBool, ast::CLiteralIntegral, ast::CLiteralFloating,
+	    ast::CLiteralString, ast::CDeclFunction, CDeclCStruct, CDeclCStatic>;
 
 	void GenerateC(Compiler& compiler);
 
@@ -38,7 +37,7 @@ namespace rift::MIR
 		static const p::TSet<p::Tag> reservedNames;
 
 		Compiler& compiler;
-		MIRAccess access;
+		MIRScope scope;
 		p::String* code = nullptr;
 
 

@@ -45,13 +45,13 @@ namespace rift::ast
 	// If two pins were to be connected, would they create a loop?
 	bool WouldStmtLoop(const Tree& ast, Id outputNode, Id outputPin, Id inputNode);
 
-	Id GetPreviousStmt(p::TAccessRef<CStmtInput> access, Id stmtId);
+	Id GetPreviousStmt(p::TIdScopeRef<CStmtInput> scope, Id stmtId);
 	void GetPreviousStmts(
-	    p::TAccessRef<CStmtInput> access, p::TView<const Id> stmtIds, p::TArray<Id>& prevStmtIds);
-	p::TView<Id> GetNextStmts(p::TAccessRef<CStmtOutputs> access, Id stmtId);
+	    p::TIdScopeRef<CStmtInput> scope, p::TView<const Id> stmtIds, p::TArray<Id>& prevStmtIds);
+	p::TView<Id> GetNextStmts(p::TIdScopeRef<CStmtOutputs> scope, Id stmtId);
 	void GetNextStmts(
-	    p::TAccessRef<CStmtOutputs> access, p::TView<const Id> stmtIds, p::TArray<Id>& nextStmtIds);
+	    p::TIdScopeRef<CStmtOutputs> scope, p::TView<const Id> stmtIds, p::TArray<Id>& nextStmtIds);
 
-	void GetStmtChain(p::TAccessRef<CStmtOutput, CStmtOutputs> access, Id firstStmtId,
+	void GetStmtChain(p::TIdScopeRef<CStmtOutput, CStmtOutputs> scope, Id firstStmtId,
 	    p::TArray<Id>& stmtIds, Id& splitStmtId);
 }    // namespace rift::ast

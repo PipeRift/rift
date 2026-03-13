@@ -245,7 +245,7 @@ namespace rift::UI
 
 
 		// Create a small overlapping close button
-		// FIXME: We can evolve this into user accessible helpers to add extra buttons on title
+		// FIXME: We can evolve this into user scopeible helpers to add extra buttons on title
 		// bars, headers, etc.
 		// FIXME: CloseButton can overlap into text, need find a way to clip the text somehow.
 		ImGuiContext& g                    = *GImGui;

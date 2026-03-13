@@ -12,7 +12,7 @@
 
 namespace rift::ast
 {
-	Namespace GetNamespace(p::TAccessRef<CNamespace, CChild, CModule> access, Id id)
+	Namespace GetNamespace(p::TIdScopeRef<CNamespace, CChild, CModule> scope, Id id)
 	{
 		Namespace ns;
 		p::TArray<Id> idChain;
@@ -21,40 +21,40 @@ namespace rift::ast
 		while (!IsNone(id))
 		{
 			idChain.Add(id);
-			if (access.Has<CModule>(id))
+			if (scope.Has<CModule>(id))
 			{
 				break;
 			}
-			id = p::GetIdParent(access, id);
+			id = p::GetIdParent(scope, id);
 		}
 
 		p::i32 i, scopeIndex = 0;
 		for (i = idChain.Size() - 1; i >= 0 && scopeIndex < Namespace::scopeCount; --i)
 		{
-			ns.scopes[scopeIndex] = GetName(access, idChain[i]);
+			ns.scopes[scopeIndex] = GetName(scope, idChain[i]);
 			++scopeIndex;
 		}
 		P_CheckMsg(i < 0, "Not enough scopes to cover this namespace");
 		return ns;
 	}
 
-	Namespace GetParentNamespace(p::TAccessRef<CNamespace, CChild, CModule> access, Id id)
+	Namespace GetParentNamespace(p::TIdScopeRef<CNamespace, CChild, CModule> scope, Id id)
 	{
 		if (!IsNone(id))
 		{
-			return GetNamespace(access, p::GetIdParent(access, id));
+			return GetNamespace(scope, p::GetIdParent(scope, id));
 		}
 		return {};
 	}
 
-	Id FindIdFromNamespace(p::TAccessRef<CNamespace, CChild, CParent> access, const Namespace& ns,
+	Id FindIdFromNamespace(p::TIdScopeRef<CNamespace, CChild, CParent> scope, const Namespace& ns,
 	    const p::TArray<Id>* rootIds)
 	{
 		p::TArray<Id> localRoots;
 		if (!rootIds)
 		{
-			localRoots = p::FindAllIdsWith<CNamespace>(access);
-			p::ExcludeIdsWith<CChild>(access, localRoots);
+			localRoots = p::FindAllIdsWith<CNamespace>(scope);
+			p::ExcludeIdsWith<CChild>(scope, localRoots);
 			rootIds = &localRoots;
 		}
 
@@ -73,7 +73,7 @@ namespace rift::ast
 			foundScopeId = NoId;
 			for (Id id : *scopeIds)
 			{
-				auto* rootName = access.TryGet<const CNamespace>(id);
+				auto* rootName = scope.TryGet<const CNamespace>(id);
 				if (rootName && rootName->name == scopeName)
 				{
 					foundScopeId = id;
@@ -84,7 +84,7 @@ namespace rift::ast
 			if (!IsNone(foundScopeId))
 			{
 				// Found matching name, check next scope
-				scopeIds = p::GetIdChildren(access, foundScopeId);
+				scopeIds = p::GetIdChildren(scope, foundScopeId);
 				++depth;
 			}
 			else
@@ -95,20 +95,20 @@ namespace rift::ast
 		return foundScopeId;
 	}
 
-	p::Tag GetName(p::TAccessRef<CNamespace> access, Id id)
+	p::Tag GetName(p::TIdScopeRef<CNamespace> scope, Id id)
 	{
-		auto* ns = access.TryGet<const CNamespace>(id);
+		auto* ns = scope.TryGet<const CNamespace>(id);
 		return ns ? ns->name : p::Tag::None();
 	}
-	p::Tag GetNameUnsafe(p::TAccessRef<CNamespace> access, Id id)
+	p::Tag GetNameUnsafe(p::TIdScopeRef<CNamespace> scope, Id id)
 	{
-		return access.Get<const CNamespace>(id).name;
+		return scope.Get<const CNamespace>(id).name;
 	}
 
-	p::String GetFullName(p::TAccessRef<CNamespace, CChild, CModule> access, Id id,
+	p::String GetFullName(p::TIdScopeRef<CNamespace, CChild, CModule> scope, Id id,
 	    bool localNamespace, char separator)
 	{
-		return GetNamespace(access, id).ToString(localNamespace, separator);
+		return GetNamespace(scope, id).ToString(localNamespace, separator);
 	}
 
 }    // namespace rift::ast

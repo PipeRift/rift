@@ -12,22 +12,22 @@
 
 namespace rift::ast
 {
-	Namespace GetNamespace(p::TAccessRef<CNamespace, CChild, CModule> access, Id id);
-	Namespace GetParentNamespace(p::TAccessRef<CNamespace, CChild, CModule> access, Id id);
+	Namespace GetNamespace(p::TIdScopeRef<CNamespace, CChild, CModule> scope, Id id);
+	Namespace GetParentNamespace(p::TIdScopeRef<CNamespace, CChild, CModule> scope, Id id);
 
 	/**
 	 * Find an id from a given namespace
-	 * @param access access to the needed components
+	 * @param scope scope to the needed components
 	 * @param ns namespace to find the id to
 	 * @param rootIds entity ids. If nullptr, roots are resolved from ecs context.
 	 * @return Id found or NoId
 	 */
-	Id FindIdFromNamespace(p::TAccessRef<CNamespace, CChild, CParent> access, const Namespace& ns,
+	Id FindIdFromNamespace(p::TIdScopeRef<CNamespace, CChild, CParent> scope, const Namespace& ns,
 	    const p::TArray<Id>* rootIds = nullptr);
 
-	p::Tag GetName(p::TAccessRef<CNamespace> access, Id id);
-	p::Tag GetNameUnsafe(p::TAccessRef<CNamespace> access, Id id);
-	p::String GetFullName(p::TAccessRef<CNamespace, CChild, CModule> access, Id id,
+	p::Tag GetName(p::TIdScopeRef<CNamespace> scope, Id id);
+	p::Tag GetNameUnsafe(p::TIdScopeRef<CNamespace> scope, Id id);
+	p::String GetFullName(p::TIdScopeRef<CNamespace, CChild, CModule> scope, Id id,
 	    bool localNamespace = false, char separator = '.');
 }    // namespace rift::ast
 

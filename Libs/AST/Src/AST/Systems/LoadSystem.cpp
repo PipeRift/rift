@@ -77,13 +77,13 @@ namespace rift::ast::LoadSystem
 		// Cache module paths in a Set
 		p::TSet<p::StringView> modulePaths;
 
-		p::TAccess<CModule, CFileRef> access{ast};
-		auto modules = FindAllIdsWith<CModule, CFileRef>(access);
+		p::TIdScope<CModule, CFileRef> scope{ast};
+		auto modules = FindAllIdsWith<CModule, CFileRef>(scope);
 
 		modulePaths.Reserve(modules.Size());
 		for (Id moduleId : modules)
 		{
-			const auto& moduleFile = access.Get<const CFileRef>(moduleId);
+			const auto& moduleFile = scope.Get<const CFileRef>(moduleId);
 			modulePaths.Insert(p::GetParentPath(moduleFile.path));
 		}
 
@@ -91,7 +91,7 @@ namespace rift::ast::LoadSystem
 		pathsByModule.Reserve(modules.Size());
 		for (Id moduleId : modules)
 		{
-			p::StringView path = ast::GetModulePath(access, moduleId);
+			p::StringView path = ast::GetModulePath(scope, moduleId);
 
 			auto& paths = pathsByModule.AddRef({moduleId}).paths;
 			// Iterate all types ignoring other module paths
@@ -109,17 +109,15 @@ namespace rift::ast::LoadSystem
 
 	void CreateModulesFromPaths(Tree& ast, p::TArray<p::String>& paths, p::TArray<Id>& ids)
 	{
-		p::TAccess<p::TWrite<CModule>, p::TWrite<CFileRef>, p::TWrite<CNamespace>, CProject,
-		    p::TWrite<CChild>, p::TWrite<CParent>>
-		    access{ast};
+		p::TIdScope<p::Writes<CModule, CFileRef, CNamespace, CChild, CParent>, CProject> scope{ast};
 
 		// Remove existing module paths
-		auto moduleIds = p::FindAllIdsWith<CModule, CFileRef>(access);
-		paths.RemoveIfSwap([&access, &moduleIds](const p::String& path) {
+		auto moduleIds = p::FindAllIdsWith<CModule, CFileRef>(scope);
+		paths.RemoveIfSwap([&scope, &moduleIds](const p::String& path) {
 			bool moduleExists = false;
 			for (Id id : moduleIds)
 			{
-				if (path == access.Get<const CFileRef>(id).path)
+				if (path == scope.Get<const CFileRef>(id).path)
 				{
 					moduleExists = true;
 					break;
@@ -129,20 +127,20 @@ namespace rift::ast::LoadSystem
 		});
 
 		ids.Resize(paths.Size());
-		p::AddId(access.GetContext(), ids);
+		p::AddId(scope.GetContext(), ids);
 
 		for (p::i32 i = 0; i < ids.Size(); ++i)
 		{
 			Id id           = ids[i];
 			p::String& path = paths[i];
-			access.Add<CModule>(id);
-			access.Add(id, CNamespace{p::GetFilename(p::GetParentPath(path))});
-			access.Add(id, CFileRef{p::Move(path)});
+			scope.Add<CModule>(id);
+			scope.Add(id, CNamespace{p::GetFilename(p::GetParentPath(path))});
+			scope.Add(id, CFileRef{p::Move(path)});
 		}
 
 		// Link modules to the project
-		const Id projectId = GetProjectId(access);
-		p::AttachId(access, projectId, ids);
+		const Id projectId = GetProjectId(scope);
+		p::AttachId(scope, projectId, ids);
 	}
 
 	void CreateTypesFromPaths(
@@ -184,12 +182,12 @@ namespace rift::ast::LoadSystem
 	}
 
 	void LoadFileStrings(
-	    p::TAccessRef<CFileRef> access, p::TView<Id> nodes, p::TArray<p::String>& strings)
+	    p::TIdScopeRef<CFileRef> scope, p::TView<Id> nodes, p::TArray<p::String>& strings)
 	{
 		strings.Resize(nodes.Size());
 		for (p::i32 i = 0; i < nodes.Size(); ++i)
 		{
-			if (auto* file = access.TryGet<const CFileRef>(nodes[i])) [[likely]]
+			if (auto* file = scope.TryGet<const CFileRef>(nodes[i])) [[likely]]
 			{
 				if (!p::LoadStringFile(file->path, strings[i], 4))
 				{

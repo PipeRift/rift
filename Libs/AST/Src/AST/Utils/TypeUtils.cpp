@@ -45,7 +45,7 @@ namespace rift::ast
 
 		if (auto* fileType = FindFileType(typeId))
 		{
-			ast.AddDefault(fileType->tagType, id);
+			ast.AddByTypeId(fileType->tagType, id);
 		}
 	}
 
@@ -65,20 +65,20 @@ namespace rift::ast
 		return id;
 	}
 
-	void RemoveTypes(p::TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access,
-	    TView<Id> typeIds, bool removeFromDisk)
+	void RemoveTypes(p::TIdScopeRef<Writes<CChild, CParent>, CFileRef> scope, TView<Id> typeIds,
+	    bool removeFromDisk)
 	{
 		if (removeFromDisk)
 		{
 			for (Id id : typeIds)
 			{
-				if (const auto* file = access.TryGet<const CFileRef>(id))
+				if (const auto* file = scope.TryGet<const CFileRef>(id))
 				{
 					Delete(file->path, true, false);
 				}
 			}
 		}
-		p::RmId(access.GetContext(), typeIds);
+		p::RmId(scope.GetContext(), typeIds);
 	}
 
 	void SerializeType(Tree& ast, Id id, String& data)
@@ -130,42 +130,42 @@ namespace rift::ast
 		return NoId;
 	}
 
-	bool IsClassType(p::TAccessRef<CDeclClass> access, Id typeId)
+	bool IsClassType(p::TIdScopeRef<CDeclClass> scope, Id typeId)
 	{
-		return access.Has<CDeclClass>(typeId);
+		return scope.Has<CDeclClass>(typeId);
 	}
 
-	bool IsStructType(p::TAccessRef<CDeclStruct> access, Id typeId)
+	bool IsStructType(p::TIdScopeRef<CDeclStruct> scope, Id typeId)
 	{
-		return access.Has<CDeclStruct>(typeId);
+		return scope.Has<CDeclStruct>(typeId);
 	}
 
-	bool IsStaticType(p::TAccessRef<CDeclStatic> access, Id typeId)
+	bool IsStaticType(p::TIdScopeRef<CDeclStatic> scope, Id typeId)
 	{
-		return access.Has<CDeclStatic>(typeId);
+		return scope.Has<CDeclStatic>(typeId);
 	}
 
-	bool HasVariables(p::TAccessRef<CDeclType> access, Id typeId)
+	bool HasVariables(p::TIdScopeRef<CDeclType> scope, Id typeId)
 	{
-		if (const RiftType* fileType = FindFileType(access, typeId))
+		if (const RiftType* fileType = FindFileType(scope, typeId))
 		{
 			return fileType->settings.hasVariables;
 		}
 		return false;
 	}
 
-	bool HasFunctions(p::TAccessRef<CDeclType> access, Id typeId)
+	bool HasFunctions(p::TIdScopeRef<CDeclType> scope, Id typeId)
 	{
-		if (const RiftType* fileType = FindFileType(access, typeId))
+		if (const RiftType* fileType = FindFileType(scope, typeId))
 		{
 			return fileType->settings.hasFunctions;
 		}
 		return false;
 	}
 
-	bool HasFunctionBodies(p::TAccessRef<CDeclType> access, Id typeId)
+	bool HasFunctionBodies(p::TIdScopeRef<CDeclType> scope, Id typeId)
 	{
-		if (const RiftType* fileType = FindFileType(access, typeId))
+		if (const RiftType* fileType = FindFileType(scope, typeId))
 		{
 			return fileType->settings.hasFunctions && fileType->settings.hasFunctionBodies;
 		}
@@ -422,15 +422,15 @@ namespace rift::ast
 		return id;
 	}
 
-	Id FindChildByName(p::TAccessRef<CNamespace, CParent> access, Id ownerId, Tag functionName)
+	Id FindChildByName(p::TIdScopeRef<CNamespace, CParent> scope, Id ownerId, Tag functionName)
 	{
 		if (!IsNone(ownerId))
 		{
 			TArray<Id> children;
-			p::GetIdChildren(access, ownerId, children);
+			p::GetIdChildren(scope, ownerId, children);
 			for (Id childId : children)
 			{
-				const auto* ns = access.TryGet<const CNamespace>(childId);
+				const auto* ns = scope.TryGet<const CNamespace>(childId);
 				if (ns && ns->name == functionName)
 				{
 					return childId;
@@ -440,17 +440,17 @@ namespace rift::ast
 		return NoId;
 	}
 
-	void RemoveNodes(const RemoveAccess& access, TView<Id> ids)
+	void RemoveNodes(const RemoveScope& scope, TView<Id> ids)
 	{
-		ScopedChange(access, ids);
-		p::RmId(access.GetContext(), ids);
+		ScopedChange(scope, ids);
+		p::RmId(scope.GetContext(), ids);
 	}
 
 	bool CopyExpressionType(
-	    p::TAccessRef<TWrite<CExprTypeId>> access, Id sourcePinId, Id targetPinId)
+	    p::TIdScopeRef<Writes<CExprTypeId>> scope, Id sourcePinId, Id targetPinId)
 	{
-		auto* sourceType = access.TryGet<const CExprTypeId>(sourcePinId);
-		auto* targetType = access.TryGet<CExprTypeId>(targetPinId);
+		auto* sourceType = scope.TryGet<const CExprTypeId>(sourcePinId);
+		auto* targetType = scope.TryGet<CExprTypeId>(targetPinId);
 		if (!sourceType || IsNone(sourceType->id)
 		    || (targetType && sourceType->id == targetType->id))
 		{
@@ -463,7 +463,7 @@ namespace rift::ast
 		}
 		else
 		{
-			access.Add<CExprTypeId>(targetPinId, *sourceType);
+			scope.Add<CExprTypeId>(targetPinId, *sourceType);
 		}
 		return true;
 	}
@@ -489,9 +489,9 @@ namespace rift::ast
 		return index != NO_INDEX ? gFileTypes.Data() + index : nullptr;
 	}
 
-	const RiftType* FindFileType(p::TAccessRef<ast::CDeclType> access, ast::Id typeId)
+	const RiftType* FindFileType(p::TIdScopeRef<ast::CDeclType> scope, ast::Id typeId)
 	{
-		if (const auto* type = access.TryGet<const ast::CDeclType>(typeId))
+		if (const auto* type = scope.TryGet<const ast::CDeclType>(typeId))
 		{
 			return FindFileType(type->typeId);
 		}

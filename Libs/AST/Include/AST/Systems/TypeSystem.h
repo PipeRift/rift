@@ -17,14 +17,14 @@ namespace rift::ast::TypeSystem
 {
 	void Init(Tree& ast);
 
-	using PropagateVariableTypesAccess =
-	    p::TAccessRef<CExprDeclRefId, CDeclVariable, p::TWrite<CExprTypeId>>;
-	void PropagateVariableTypes(PropagateVariableTypesAccess access);
+	using PropagateVariableTypesScope =
+	    p::TIdScopeRef<p::Writes<CExprTypeId>, CExprDeclRefId, CDeclVariable>;
+	void PropagateVariableTypes(PropagateVariableTypesScope scope);
 
-	using PropagateExpressionTypesAccess = p::TAccessRef<CDeclType, CChanged, CExprInputs,
-	    CExprOutputs, p::TWrite<CExprTypeId>, CExprUnaryOperator, CExprBinaryOperator, p::CParent>;
-	void PropagateExpressionTypes(PropagateExpressionTypesAccess access);
+	using PropagateExpressionTypesScope = p::TIdScopeRef<p::Writes<CExprTypeId>, CDeclType,
+	    CChanged, CExprInputs, CExprOutputs, CExprUnaryOperator, CExprBinaryOperator, p::CParent>;
+	void PropagateExpressionTypes(PropagateExpressionTypesScope scope);
 
 	void ResolveExprTypeIds(
-	    p::TAccessRef<p::TWrite<CExprTypeId>, CExprType, CNamespace, p::CParent, p::CChild> access);
+	    p::TIdScopeRef<p::Writes<CExprTypeId>, CExprType, CNamespace, p::CParent, p::CChild> scope);
 }    // namespace rift::ast::TypeSystem

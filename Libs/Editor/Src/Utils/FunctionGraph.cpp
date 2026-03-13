@@ -62,11 +62,11 @@ namespace rift::editor::Graph
 		return Nodes::ScreenToGridPosition(screenPosition) * GetInvGridSize();
 	}
 
-	void BeginExprInput(p::TAccessRef<ast::CExprTypeId> access, ast::Id id, const bool& invalid)
+	void BeginExprInput(p::TIdScopeRef<ast::CExprTypeId> scope, ast::Id id, const bool& invalid)
 	{
 		bool isPointer = false;
 		ast::Id typeId = ast::NoId;
-		if (auto* type = access.TryGet<const ast::CExprTypeId>(id))
+		if (auto* type = scope.TryGet<const ast::CExprTypeId>(id))
 		{
 			typeId    = type->id;
 			isPointer = type->mode != ast::TypeMode::Value;
@@ -80,7 +80,7 @@ namespace rift::editor::Graph
 		}
 		else
 		{
-			pinColor = GetTypeColor(static_cast<ast::Tree&>(access.GetContext()), typeId);
+			pinColor = GetTypeColor(static_cast<ast::Tree&>(scope.GetContext()), typeId);
 		}
 
 		Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
@@ -90,11 +90,11 @@ namespace rift::editor::Graph
 		    isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
 	}
 
-	void BeginExprOutput(p::TAccessRef<ast::CExprTypeId> access, ast::Id id, const bool& invalid)
+	void BeginExprOutput(p::TIdScopeRef<ast::CExprTypeId> scope, ast::Id id, const bool& invalid)
 	{
 		bool isPointer = false;
 		ast::Id typeId = ast::NoId;
-		if (auto* type = access.TryGet<const ast::CExprTypeId>(id))
+		if (auto* type = scope.TryGet<const ast::CExprTypeId>(id))
 		{
 			typeId    = type->id;
 			isPointer = type->mode != ast::TypeMode::Value;
@@ -108,7 +108,7 @@ namespace rift::editor::Graph
 		}
 		else
 		{
-			pinColor = GetTypeColor(static_cast<ast::Tree&>(access.GetContext()), typeId);
+			pinColor = GetTypeColor(static_cast<ast::Tree&>(scope.GetContext()), typeId);
 		}
 
 		Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
@@ -138,41 +138,41 @@ namespace rift::editor::Graph
 		}
 	}
 
-	void DrawInputs(p::TAccessRef<ast::CInvalid, ast::CExprTypeId, ast::CNamespace> access,
+	void DrawInputs(p::TIdScopeRef<ast::CInvalid, ast::CExprTypeId, ast::CNamespace> scope,
 	    const ast::CExprInputs& inputs)
 	{
 		for (ast::Id pinId : inputs.pinIds)
 		{
-			if (access.IsValid(pinId))
+			if (scope.IsValid(pinId))
 			{
-				const bool invalid = access.Has<ast::CInvalid>(pinId);
-				BeginExprInput(access, pinId, invalid);
-				auto* ns = access.TryGet<const ast::CNamespace>(pinId);
+				const bool invalid = scope.Has<ast::CInvalid>(pinId);
+				BeginExprInput(scope, pinId, invalid);
+				auto* ns = scope.TryGet<const ast::CNamespace>(pinId);
 				UI::Text(ns ? ns->name.AsString() : "none");
 				EndExprInput(invalid);
 			}
 		}
 	}
 
-	void DrawOutputs(p::TAccessRef<ast::CInvalid, ast::CExprTypeId, ast::CNamespace> access,
+	void DrawOutputs(p::TIdScopeRef<ast::CInvalid, ast::CExprTypeId, ast::CNamespace> scope,
 	    const ast::CExprOutputs& outputs)
 	{
 		for (ast::Id pinId : outputs.pinIds)
 		{
-			if (access.IsValid(pinId))
+			if (scope.IsValid(pinId))
 			{
-				const bool invalid = access.Has<ast::CInvalid>(pinId);
-				BeginExprOutput(access, pinId, invalid);
-				auto* ns = access.TryGet<const ast::CNamespace>(pinId);
+				const bool invalid = scope.Has<ast::CInvalid>(pinId);
+				BeginExprOutput(scope, pinId, invalid);
+				auto* ns = scope.TryGet<const ast::CNamespace>(pinId);
 				UI::Text(ns ? ns->name.AsString() : "none");
 				EndExprOutput(invalid);
 			}
 		}
 	}
 
-	void BeginNode(p::TAccessRef<TWrite<CNodePosition>> access, ast::Id id)
+	void BeginNode(p::TIdScopeRef<Writes<CNodePosition>> scope, ast::Id id)
 	{
-		currentNodeTransform = &access.GetOrAdd<CNodePosition>(id);
+		currentNodeTransform = &scope.GetOrAdd<CNodePosition>(id);
 		auto* context        = Nodes::GetCurrentContext();
 		if (UI::IsWindowAppearing()
 		    || (!context->leftMouseDragging && !context->leftMouseReleased
@@ -185,7 +185,7 @@ namespace rift::editor::Graph
 		Nodes::BeginNode(id);
 	}
 
-	void EndNode(const ast::TransactionAccess& access)
+	void EndNode(const ast::TransactionScope& scope)
 	{
 		// Selection outline
 		const auto* context = Nodes::GetCurrentContext();
@@ -203,7 +203,7 @@ namespace rift::editor::Graph
 			v2 newPosition   = GetNodePosition(id);
 			if (!newPosition.Equals(currentNodeTransform->position, 0.1f))
 			{
-				ScopedChange(access, id);
+				ScopedChange(scope, id);
 				currentNodeTransform->position = newPosition;
 			}
 		}
@@ -322,22 +322,22 @@ namespace rift::editor::Graph
 		PopNodeBackgroundColor();
 	}
 
-	using FunctionDeclsAccess = p::TAccessRef<ast::CExprOutputs, ast::CInvalid, ast::CExprTypeId,
-	    ast::CNamespace, p::TWrite<ast::CChanged>, p::TWrite<ast::CFileDirty>, ast::CChild,
-	    ast::CFileRef, p::TWrite<CNodePosition>>;
-	void DrawFunctionDecls(FunctionDeclsAccess access, const TArray<ast::Id>& functionDecls)
+	using FunctionDeclsScope =
+	    p::TIdScopeRef<p::Writes<ast::CChanged, ast::CFileDirty, CNodePosition>, ast::CExprOutputs,
+	        ast::CInvalid, ast::CExprTypeId, ast::CNamespace, ast::CChild, ast::CFileRef>;
+	void DrawFunctionDecls(FunctionDeclsScope scope, const TArray<ast::Id>& functionDecls)
 	{
 		for (ast::Id functionId : functionDecls)
 		{
 			Tag name;
-			if (auto* ns = access.TryGet<const ast::CNamespace>(functionId))
+			if (auto* ns = scope.TryGet<const ast::CNamespace>(functionId))
 			{
 				name = ns->name;
 			}
 
 			PushNodeBackgroundColor(UI::GetNeutralColor(0));
 			PushNodeTitleColor(functionColor);
-			BeginNode(access, functionId);
+			BeginNode(scope, functionId);
 			{
 				Nodes::BeginNodeTitleBar();
 				{
@@ -352,25 +352,25 @@ namespace rift::editor::Graph
 				}
 				Nodes::EndNodeTitleBar();
 
-				if (auto* outputs = access.TryGet<const ast::CExprOutputs>(functionId))
+				if (auto* outputs = scope.TryGet<const ast::CExprOutputs>(functionId))
 				{
-					DrawOutputs(access, *outputs);
+					DrawOutputs(scope, *outputs);
 				}
 			}
-			EndNode(access);
+			EndNode(scope);
 			PopNodeTitleColor();
 			PopNodeBackgroundColor();
 		}
 	}
 
-	void DrawReturnNode(p::TAccessRef<TWrite<CNodePosition>, TWrite<ast::CChanged>,
-	                        TWrite<ast::CFileDirty>, ast::CChild, ast::CFileRef>
-	                        access,
+	void DrawReturnNode(p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>,
+	                        ast::CChild, ast::CFileRef>
+	                        scope,
 	    ast::Id id)
 	{
 		PushNodeBackgroundColor(rift::UI::GetNeutralColor(0));
 		PushNodeTitleColor(returnColor);
-		BeginNode(access, id);
+		BeginNode(scope, id);
 		{
 			Nodes::BeginNodeTitleBar();
 			{
@@ -387,25 +387,25 @@ namespace rift::editor::Graph
 			}
 			Nodes::EndNodeTitleBar();
 		}
-		EndNode(access);
+		EndNode(scope);
 		PopNodeTitleColor();
 		PopNodeBackgroundColor();
 	}
 
-	using CallsAccess = TAccessRef<TWrite<ast::CChanged>, TWrite<ast::CFileDirty>, ast::CChild,
-	    ast::CFileRef, ast::CExprCall, ast::CExprInputs, ast::CExprOutputs, ast::CNamespace,
-	    ast::CExprTypeId, ast::CInvalid, TWrite<CNodePosition>, ast::CDeclType>;
-	void DrawCalls(CallsAccess access, ast::Id typeId, const TArray<ast::Id>& childrenIds)
+	using CallsScope = TIdScopeRef<Writes<ast::CChanged, ast::CFileDirty, CNodePosition>,
+	    ast::CChild, ast::CFileRef, ast::CExprCall, ast::CExprInputs, ast::CExprOutputs,
+	    ast::CNamespace, ast::CExprTypeId, ast::CInvalid, ast::CDeclType>;
+	void DrawCalls(CallsScope scope, ast::Id typeId, const TArray<ast::Id>& childrenIds)
 	{
 		for (ast::Id id : childrenIds)
 		{
-			if (auto* call = access.TryGet<const ast::CExprCall>(id))
+			if (auto* call = scope.TryGet<const ast::CExprCall>(id))
 			{
 				StringView functionName = call->function.Last().AsString();
 
 				PushNodeBackgroundColor(rift::UI::GetNeutralColor(0));
 				PushNodeTitleColor(callColor);
-				BeginNode(access, id);
+				BeginNode(scope, id);
 				{
 					Nodes::BeginNodeTitleBar();
 					{
@@ -431,22 +431,22 @@ namespace rift::editor::Graph
 
 					// Inputs
 					UI::BeginGroup();
-					if (const auto* inputs = access.TryGet<const ast::CExprInputs>(id))
+					if (const auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
 					{
-						DrawInputs(access, *inputs);
+						DrawInputs(scope, *inputs);
 					}
 					UI::EndGroup();
 					UI::SameLine();
 
 					// Outputs
 					UI::BeginGroup();
-					if (const auto* outputs = access.TryGet<const ast::CExprOutputs>(id))
+					if (const auto* outputs = scope.TryGet<const ast::CExprOutputs>(id))
 					{
-						DrawOutputs(access, *outputs);
+						DrawOutputs(scope, *outputs);
 					}
 					UI::EndGroup();
 				}
-				EndNode(access);
+				EndNode(scope);
 				PopNodeTitleColor();
 				PopNodeBackgroundColor();
 			}
@@ -504,14 +504,14 @@ namespace rift::editor::Graph
 		ImGui::PopStyleVar(2);
 	}
 
-	void DrawReturns(p::TAccessRef<TWrite<CNodePosition>, TWrite<ast::CChanged>,
-	                     TWrite<ast::CFileDirty>, ast::CChild, ast::CFileRef, ast::CStmtReturn>
-	                     access,
+	void DrawReturns(p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>,
+	                     ast::CChild, ast::CFileRef, ast::CStmtReturn>
+	                     scope,
 	    const TArray<ast::Id>& children)
 	{
-		for (ast::Id id : FindIdsWith<ast::CStmtReturn>(access, children))
+		for (ast::Id id : FindIdsWith<ast::CStmtReturn>(scope, children))
 		{
-			DrawReturnNode(access, id);
+			DrawReturnNode(scope, id);
 		}
 	}
 
@@ -570,18 +570,18 @@ namespace rift::editor::Graph
 		}
 	}
 
-	void DrawIfs(p::TAccessRef<TWrite<CNodePosition>, TWrite<ast::CChanged>,
-	                 TWrite<ast::CFileDirty>, ast::CChild, ast::CFileRef, ast::CStmtIf,
-	                 ast::CStmtOutputs, ast::CExprInputs, ast::CParent, ast::CExprTypeId>
-	                 access,
+	void DrawIfs(p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
+	                 ast::CFileRef, ast::CStmtIf, ast::CStmtOutputs, ast::CExprInputs, ast::CParent,
+	                 ast::CExprTypeId>
+	                 scope,
 	    const TArray<ast::Id>& children)
 	{
 		PushNodeBackgroundColor(UI::GetNeutralColor(0));
 		PushNodeTitleColor(flowColor);
 		for (ast::Id id :
-		    FindIdsWith<ast::CStmtIf, ast::CExprInputs, ast::CStmtOutputs>(access, children))
+		    FindIdsWith<ast::CStmtIf, ast::CExprInputs, ast::CStmtOutputs>(scope, children))
 		{
-			BeginNode(access, id);
+			BeginNode(scope, id);
 			{
 				Nodes::BeginNodeTitleBar();
 				{
@@ -593,12 +593,12 @@ namespace rift::editor::Graph
 						Nodes::EndInput();
 						PopExecutionPinStyle();
 
-						auto& inputs = access.Get<const ast::CExprInputs>(id);
+						auto& inputs = scope.Get<const ast::CExprInputs>(id);
 						if (!P_Ensure(inputs.pinIds.Size() == 1))
 						{
 							continue;
 						}
-						BeginExprInput(access, inputs.pinIds[0], false);
+						BeginExprInput(scope, inputs.pinIds[0], false);
 						UI::TextUnformatted("");
 						EndExprInput(false);
 					}
@@ -612,7 +612,7 @@ namespace rift::editor::Graph
 					UI::SameLine();
 					UI::BeginGroup();
 					{
-						auto& outputs = access.Get<const ast::CStmtOutputs>(id);
+						auto& outputs = scope.Get<const ast::CStmtOutputs>(id);
 						if (!P_Ensure(outputs.pinIds.Size() == 2))
 						{
 							continue;
@@ -632,92 +632,92 @@ namespace rift::editor::Graph
 				}
 				Nodes::EndNodeTitleBar();
 			}
-			EndNode(access);
+			EndNode(scope);
 		}
 		PopNodeTitleColor();
 		PopNodeBackgroundColor();
 	}
 
 	void DrawUnaryOperators(
-	    TAccessRef<TWrite<CNodePosition>, TWrite<ast::CChanged>, TWrite<ast::CFileDirty>,
-	        ast::CChild, ast::CParent, ast::CFileRef, ast::CExprUnaryOperator, ast::CExprTypeId>
-	        access,
+	    TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
+	        ast::CParent, ast::CFileRef, ast::CExprUnaryOperator, ast::CExprTypeId>
+	        scope,
 	    const TArray<ast::Id>& children)
 	{
-		for (ast::Id id : FindIdsWith<ast::CExprUnaryOperator>(access, children))
+		for (ast::Id id : FindIdsWith<ast::CExprUnaryOperator>(scope, children))
 		{
 			static constexpr Color color = UI::GetNeutralColor(0);
 
 			PushNodeBackgroundColor(color);
 
-			BeginNode(access, id);
+			BeginNode(scope, id);
 			{
-				BeginExprInput(access, id, false);
+				BeginExprInput(scope, id, false);
 				UI::TextUnformatted("");
 				EndExprInput(false);
 				UI::SameLine();
 
-				const auto& op       = access.Get<const ast::CExprUnaryOperator>(id);
+				const auto& op       = scope.Get<const ast::CExprUnaryOperator>(id);
 				StringView shortName = editor::GetUnaryOperatorName(op.type);
 				UI::Text(shortName);
 
 				UI::SameLine();
-				BeginExprOutput(access, id, false);
+				BeginExprOutput(scope, id, false);
 				UI::TextUnformatted("");
 				EndExprOutput(false);
 			}
-			EndNode(access);
+			EndNode(scope);
 			PopNodeBackgroundColor();
 		}
 	}
 
 	void DrawBinaryOperators(
-	    TAccessRef<TWrite<CNodePosition>, TWrite<ast::CChanged>, TWrite<ast::CFileDirty>,
-	        ast::CChild, ast::CParent, ast::CFileRef, ast::CExprBinaryOperator, ast::CExprTypeId>
-	        access,
+	    TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
+	        ast::CParent, ast::CFileRef, ast::CExprBinaryOperator, ast::CExprTypeId>
+	        scope,
 	    const TArray<ast::Id>& children)
 	{
 		TArray<ast::Id> pinIds;
-		for (ast::Id id : FindIdsWith<ast::CExprBinaryOperator>(access, children))
+		for (ast::Id id : FindIdsWith<ast::CExprBinaryOperator>(scope, children))
 		{
 			static constexpr Color color = UI::GetNeutralColor(0);
 			PushNodeBackgroundColor(color);
 
-			BeginNode(access, id);
+			BeginNode(scope, id);
 			{
 				pinIds.Clear(false);
-				p::GetIdChildren(access, id, pinIds);
+				p::GetIdChildren(scope, id, pinIds);
 				if (!P_Ensure(pinIds.Size() >= 2))
 				{
 					continue;
 				}
 				UI::BeginGroup();
-				BeginExprInput(access, pinIds[0], false);
+				BeginExprInput(scope, pinIds[0], false);
 				UI::TextUnformatted("");
 				EndExprInput(false);
 
-				BeginExprInput(access, pinIds[1], false);
+				BeginExprInput(scope, pinIds[1], false);
 				UI::TextUnformatted("");
 				EndExprInput(false);
 				UI::EndGroup();
 				UI::SameLine();
 
-				const auto& op       = access.Get<const ast::CExprBinaryOperator>(id);
+				const auto& op       = scope.Get<const ast::CExprBinaryOperator>(id);
 				StringView shortName = editor::GetBinaryOperatorName(op.type);
 				UI::Text(shortName);
 
 				UI::SameLine();
-				BeginExprOutput(access, id, false);
+				BeginExprOutput(scope, id, false);
 				UI::TextUnformatted("");
 				EndExprOutput(false);
 			}
-			EndNode(access);
+			EndNode(scope);
 			PopNodeBackgroundColor();
 		}
 	}
 
 	void DrawStatementLinks(
-	    p::TAccessRef<ast::CParent, ast::CStmtOutput, ast::CStmtOutputs>& access,
+	    p::TIdScopeRef<ast::CParent, ast::CStmtOutput, ast::CStmtOutputs>& scope,
 	    const TArray<ast::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 2.f);
@@ -725,10 +725,10 @@ namespace rift::editor::Graph
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, UI::ToHovered(executionColor));
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, selectedColor);
 
-		for (ast::Id outputId : FindIdsWith<ast::CStmtOutput>(access, children))
+		for (ast::Id outputId : FindIdsWith<ast::CStmtOutput>(scope, children))
 		{
-			const auto* output = access.TryGet<const ast::CStmtOutput>(outputId);
-			if (output && access.IsValid(output->linkInputNode))
+			const auto* output = scope.TryGet<const ast::CStmtOutput>(outputId);
+			if (output && scope.IsValid(output->linkInputNode))
 			{
 				// Input pin ids equal input node ids
 				// Output pin ids equal output node ids
@@ -737,9 +737,9 @@ namespace rift::editor::Graph
 			}
 		}
 
-		for (ast::Id outputId : FindIdsWith<ast::CStmtOutputs>(access, children))
+		for (ast::Id outputId : FindIdsWith<ast::CStmtOutputs>(scope, children))
 		{
-			if (const auto* outputs = access.TryGet<const ast::CStmtOutputs>(outputId))
+			if (const auto* outputs = scope.TryGet<const ast::CStmtOutputs>(outputId))
 			{
 				if (P_EnsureMsg(outputs->linkInputNodes.Size() == outputs->pinIds.Size(),
 				        "Inputs and pins must match. Graph might be corrupted."))
@@ -748,7 +748,7 @@ namespace rift::editor::Graph
 					{
 						const ast::Id outputPinId = outputs->pinIds[i];
 						const ast::Id inputNodeId = outputs->linkInputNodes[i];
-						if (access.IsValid(outputPinId) && access.IsValid(inputNodeId))
+						if (scope.IsValid(outputPinId) && scope.IsValid(inputNodeId))
 						{
 							// Input pin ids equal input node ids
 							// TODO: Execution pin ids atm are the same as the node id.
@@ -765,15 +765,15 @@ namespace rift::editor::Graph
 	}
 
 	void DrawExpressionLinks(
-	    TAccessRef<ast::CParent, ast::CExprInputs, ast::CExprTypeId, ast::CInvalid>& access,
+	    TIdScopeRef<ast::CParent, ast::CExprInputs, ast::CExprTypeId, ast::CInvalid>& scope,
 	    const TArray<ast::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 1.5f);
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, selectedColor);
 
-		for (ast::Id nodeId : FindIdsWith<ast::CExprInputs>(access, children))
+		for (ast::Id nodeId : FindIdsWith<ast::CExprInputs>(scope, children))
 		{
-			const auto& inputs = access.Get<const ast::CExprInputs>(nodeId);
+			const auto& inputs = scope.Get<const ast::CExprInputs>(nodeId);
 			if (!P_EnsureMsg(inputs.pinIds.Size() == inputs.linkedOutputs.Size(),
 			        "Inputs are invalid. The graph might be corrupted.")) [[likely]]
 			{
@@ -784,23 +784,23 @@ namespace rift::editor::Graph
 			{
 				ast::Id inputId        = inputs.pinIds[i];
 				ast::ExprOutput output = inputs.linkedOutputs[i];
-				if (!access.IsValid(inputId) || !access.IsValid(output.pinId))
+				if (!scope.IsValid(inputId) || !scope.IsValid(output.pinId))
 				{
 					continue;
 				}
 
 				Color color = GetTypeColor<void>();
-				if (access.Has<ast::CInvalid>(inputId) || access.Has<ast::CInvalid>(output.pinId))
+				if (scope.Has<ast::CInvalid>(inputId) || scope.Has<ast::CInvalid>(output.pinId))
 				{
 					color = invalidColor;
 				}
-				else if (const auto* type = access.TryGet<const ast::CExprTypeId>(output.pinId))
+				else if (const auto* type = scope.TryGet<const ast::CExprTypeId>(output.pinId))
 				{
-					color = GetTypeColor(static_cast<ast::Tree&>(access.GetContext()), type->id);
+					color = GetTypeColor(static_cast<ast::Tree&>(scope.GetContext()), type->id);
 				}
-				else if (const auto* type = access.TryGet<const ast::CExprTypeId>(inputId))
+				else if (const auto* type = scope.TryGet<const ast::CExprTypeId>(inputId))
 				{
-					color = GetTypeColor(static_cast<ast::Tree&>(access.GetContext()), type->id);
+					color = GetTypeColor(static_cast<ast::Tree&>(scope.GetContext()), type->id);
 				}
 
 				Nodes::PushStyleColor(Nodes::ColorVar_Link, color);

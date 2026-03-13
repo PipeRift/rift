@@ -11,9 +11,9 @@
 
 namespace rift::editor
 {
-	bool TypeCombo(p::TAccessRef<ast::CNamespace, ast::CDeclType, ast::CDeclNative,
+	bool TypeCombo(p::TIdScopeRef<ast::CNamespace, ast::CDeclType, ast::CDeclNative,
 	                   ast::CDeclStruct, ast::CDeclClass>
-	                   access,
+	                   scope,
 	    p::StringView label, ast::Id& selectedTypeId);
 
 	bool InputLiteralValue(ast::Tree& ast, p::StringView label, ast::Id literalId);

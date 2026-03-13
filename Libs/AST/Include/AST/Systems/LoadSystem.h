@@ -41,7 +41,7 @@ namespace rift::ast::LoadSystem
 	    Tree& ast, p::TView<ModuleTypePaths> pathsByModule, p::TArray<Id>& ids);
 
 	void LoadFileStrings(
-	    p::TAccessRef<CFileRef> access, p::TView<Id> nodes, p::TArray<p::String>& strings);
+	    p::TIdScopeRef<CFileRef> scope, p::TView<Id> nodes, p::TArray<p::String>& strings);
 
 	void DeserializeModules(Tree& ast, p::TView<Id> moduleIds, p::TView<p::String> strings);
 	void DeserializeTypes(Tree& ast, p::TView<Id> typeIds, p::TView<p::String> strings);

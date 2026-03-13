@@ -7,12 +7,12 @@
 
 namespace rift::editor
 {
-	void ListTypesFromFilter(p::TAccessRef<ast::CNamespace> access, p::TArray<ast::Id> typeIds,
+	void ListTypesFromFilter(p::TIdScopeRef<ast::CNamespace> scope, p::TArray<ast::Id> typeIds,
 	    ast::Id& selectedId, ImGuiTextFilter& searchFilter)
 	{
 		for (ast::Id id : typeIds)
 		{
-			const auto& type   = access.Get<const ast::CNamespace>(id);
+			const auto& type   = scope.Get<const ast::CNamespace>(id);
 			p::StringView name = type.name.AsString();
 
 			if (!searchFilter.PassFilter(name.data(), name.data() + name.size()))
@@ -29,15 +29,15 @@ namespace rift::editor
 		}
 	}
 
-	bool TypeCombo(p::TAccessRef<ast::CNamespace, ast::CDeclType, ast::CDeclNative,
+	bool TypeCombo(p::TIdScopeRef<ast::CNamespace, ast::CDeclType, ast::CDeclNative,
 	                   ast::CDeclStruct, ast::CDeclClass>
-	                   access,
+	                   scope,
 	    p::StringView label, ast::Id& selectedId)
 	{
 		p::Tag ownerName;
 		if (!IsNone(selectedId))
 		{
-			ownerName = access.Get<const ast::CNamespace>(selectedId).name;
+			ownerName = scope.Get<const ast::CNamespace>(selectedId).name;
 		}
 
 		ast::Id lastId = selectedId;
@@ -52,26 +52,26 @@ namespace rift::editor
 			filter.Draw("##Filter");
 
 			auto nativeIds =
-			    p::FindAllIdsWith<ast::CDeclType, ast::CDeclNative, ast::CNamespace>(access);
+			    p::FindAllIdsWith<ast::CDeclType, ast::CDeclNative, ast::CNamespace>(scope);
 			auto structIds =
-			    p::FindAllIdsWith<ast::CDeclType, ast::CDeclStruct, ast::CNamespace>(access);
+			    p::FindAllIdsWith<ast::CDeclType, ast::CDeclStruct, ast::CNamespace>(scope);
 			auto classIds =
-			    p::FindAllIdsWith<ast::CDeclType, ast::CDeclClass, ast::CNamespace>(access);
+			    p::FindAllIdsWith<ast::CDeclType, ast::CDeclClass, ast::CNamespace>(scope);
 			if (filter.IsActive())
 			{
 				if (UI::TreeNodeEx("Native##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					ListTypesFromFilter(access, nativeIds, selectedId, filter);
+					ListTypesFromFilter(scope, nativeIds, selectedId, filter);
 					UI::TreePop();
 				}
 				if (UI::TreeNodeEx("Structs##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					ListTypesFromFilter(access, structIds, selectedId, filter);
+					ListTypesFromFilter(scope, structIds, selectedId, filter);
 					UI::TreePop();
 				}
 				if (UI::TreeNodeEx("Classes##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					ListTypesFromFilter(access, classIds, selectedId, filter);
+					ListTypesFromFilter(scope, classIds, selectedId, filter);
 					UI::TreePop();
 				}
 			}
@@ -79,17 +79,17 @@ namespace rift::editor
 			{
 				if (UI::TreeNodeEx("Native", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					ListTypesFromFilter(access, nativeIds, selectedId, filter);
+					ListTypesFromFilter(scope, nativeIds, selectedId, filter);
 					UI::TreePop();
 				}
 				if (UI::TreeNode("Structs"))
 				{
-					ListTypesFromFilter(access, structIds, selectedId, filter);
+					ListTypesFromFilter(scope, structIds, selectedId, filter);
 					UI::TreePop();
 				}
 				if (UI::TreeNode("Classes"))
 				{
-					ListTypesFromFilter(access, classIds, selectedId, filter);
+					ListTypesFromFilter(scope, classIds, selectedId, filter);
 					UI::TreePop();
 				}
 			}

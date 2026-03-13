@@ -68,7 +68,7 @@ namespace rift::editor
 		void DrawContextMenu(ast::Tree& ast, p::StringView path, ast::Id itemId);
 
 		void CacheProjectFiles(
-		    p::TAccessRef<ast::CProject, ast::CModule, ast::CFileRef, ast::CDeclType> access);
+		    p::TIdScopeRef<ast::CProject, ast::CModule, ast::CFileRef, ast::CDeclType> scope);
 
 		void SortFolder(Folder& folder);
 

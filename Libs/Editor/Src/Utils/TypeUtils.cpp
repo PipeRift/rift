@@ -8,27 +8,27 @@
 
 namespace rift::editor
 {
-	void OpenType(p::TAccessRef<TWrite<CTypeEditor>, ast::CDeclType> access, ast::Id id)
+	void OpenType(p::TIdScopeRef<Writes<CTypeEditor>, ast::CDeclType> scope, ast::Id id)
 	{
-		P_Check(access.Has<ast::CDeclType>(id));
-		if (auto* editor = access.TryGet<CTypeEditor>(id))
+		P_Check(scope.Has<ast::CDeclType>(id));
+		if (auto* editor = scope.TryGet<CTypeEditor>(id))
 		{
 			editor->pendingFocus = true;
 		}
 		else
 		{
-			access.Add<CTypeEditor>(id);
+			scope.Add<CTypeEditor>(id);
 		}
 	}
 
-	void CloseType(p::TAccessRef<TWrite<CTypeEditor>, ast::CDeclType> access, ast::Id id)
+	void CloseType(p::TIdScopeRef<Writes<CTypeEditor>, ast::CDeclType> scope, ast::Id id)
 	{
-		P_Check(access.Has<ast::CDeclType>(id));
-		access.Remove<CTypeEditor>(id);
+		P_Check(scope.Has<ast::CDeclType>(id));
+		scope.Remove<CTypeEditor>(id);
 	}
 
-	bool IsTypeOpen(p::TAccessRef<CTypeEditor> access, ast::Id id)
+	bool IsTypeOpen(p::TIdScopeRef<CTypeEditor> scope, ast::Id id)
 	{
-		return access.Has<CTypeEditor>(id);
+		return scope.Has<CTypeEditor>(id);
 	}
 }    // namespace rift::editor

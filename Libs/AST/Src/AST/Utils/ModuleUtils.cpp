@@ -132,28 +132,28 @@ namespace rift::ast
 		return moduleId;
 	}
 
-	Id GetProjectId(p::TAccessRef<CProject> access)
+	Id GetProjectId(p::TIdScopeRef<CProject> scope)
 	{
-		return GetFirstIdWith<CProject>(access);
+		return GetFirstIdWith<CProject>(scope);
 	}
 
-	p::Tag GetProjectName(p::TAccessRef<CProject, CNamespace, CFileRef> access)
+	p::Tag GetProjectName(p::TIdScopeRef<CProject, CNamespace, CFileRef> scope)
 	{
-		Id moduleId = GetProjectId(access);
-		return GetModuleName(access, moduleId);
+		Id moduleId = GetProjectId(scope);
+		return GetModuleName(scope, moduleId);
 	}
 
-	p::StringView GetProjectPath(p::TAccessRef<CFileRef, CProject> access)
+	p::StringView GetProjectPath(p::TIdScopeRef<CFileRef, CProject> scope)
 	{
-		return GetModulePath(access, GetProjectId(access));
+		return GetModulePath(scope, GetProjectId(scope));
 	}
 
-	CModule* GetProjectModule(p::TAccessRef<CProject, p::TWrite<CModule>> access)
+	CModule* GetProjectModule(p::TIdScopeRef<p::Writes<CModule>, CProject> scope)
 	{
-		const Id projectId = GetProjectId(access);
+		const Id projectId = GetProjectId(scope);
 		if (projectId != NoId)
 		{
-			return access.TryGet<CModule>(projectId);
+			return scope.TryGet<CModule>(projectId);
 		}
 		return nullptr;
 	}
@@ -163,20 +163,20 @@ namespace rift::ast
 		return GetProjectId(ast) != NoId;
 	}
 
-	p::Tag GetModuleName(p::TAccessRef<CNamespace, CFileRef> access, Id moduleId)
+	p::Tag GetModuleName(p::TIdScopeRef<CNamespace, CFileRef> scope, Id moduleId)
 	{
-		if (!access.IsValid(moduleId))
+		if (!scope.IsValid(moduleId))
 		{
 			return {};
 		}
 
-		const auto* ns = access.TryGet<const CNamespace>(moduleId);
+		const auto* ns = scope.TryGet<const CNamespace>(moduleId);
 		if (ns && !ns->name.IsNone())
 		{
 			return ns->name;
 		}
 
-		const auto* file = access.TryGet<const CFileRef>(moduleId);
+		const auto* file = scope.TryGet<const CFileRef>(moduleId);
 		if (file && !file->path.empty())
 		{
 			// Obtain name from project file name
@@ -186,9 +186,9 @@ namespace rift::ast
 		return {};
 	}
 
-	p::StringView GetModulePath(p::TAccessRef<CFileRef> access, Id moduleId)
+	p::StringView GetModulePath(p::TIdScopeRef<CFileRef> scope, Id moduleId)
 	{
-		if (const auto* file = access.TryGet<const CFileRef>(moduleId))
+		if (const auto* file = scope.TryGet<const CFileRef>(moduleId))
 		{
 			return p::GetParentPath(file->path);
 		}
@@ -237,7 +237,7 @@ namespace rift::ast
 	{
 		if (const auto* binding = FindModuleBinding(bindingId))
 		{
-			ast.AddDefault(binding->tagType, id);
+			ast.AddByTypeId(binding->tagType, id);
 		}
 	}
 	void RemoveBindingFromModule(ast::Tree& ast, ast::Id id, p::Tag bindingId)

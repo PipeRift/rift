@@ -12,9 +12,9 @@
 
 namespace rift::editor
 {
-	void OpenType(p::TAccessRef<TWrite<CTypeEditor>, ast::CDeclType> access, ast::Id id);
-	void CloseType(p::TAccessRef<TWrite<CTypeEditor>, ast::CDeclType> access, ast::Id id);
-	bool IsTypeOpen(p::TAccessRef<CTypeEditor> access, ast::Id id);
+	void OpenType(p::TIdScopeRef<Writes<CTypeEditor>, ast::CDeclType> scope, ast::Id id);
+	void CloseType(p::TIdScopeRef<Writes<CTypeEditor>, ast::CDeclType> scope, ast::Id id);
+	bool IsTypeOpen(p::TIdScopeRef<CTypeEditor> scope, ast::Id id);
 
 	constexpr StringView GetUnaryOperatorName(ast::UnaryOperatorType type)
 	{

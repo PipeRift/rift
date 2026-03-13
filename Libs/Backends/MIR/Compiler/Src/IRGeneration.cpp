@@ -17,11 +17,11 @@ namespace rift::MIR
 
 	void GenerateC(Compiler& compiler)
 	{
-		MIRAccess access{compiler.ast};
-		CGenerator cGen{compiler, access};
+		MIRScope scope{compiler.ast};
+		CGenerator cGen{compiler, scope};
 		cGen.BindNativeTypes();
 		cGen.GenerateLiterals();
-		for (ast::Id moduleId : FindAllIdsWith<ast::CModule>(access))
+		for (ast::Id moduleId : FindAllIdsWith<ast::CModule>(scope))
 		{
 			cGen.GenerateModule(moduleId);
 		}
@@ -36,29 +36,29 @@ namespace rift::MIR
 
 		// Get all rift types from the module
 		p::TArray<ast::Id> typeIds;
-		p::GetIdChildren(access, moduleId, typeIds);
-		ExcludeIdsWithout<ast::CDeclType>(access, typeIds);
+		p::GetIdChildren(scope, moduleId, typeIds);
+		ExcludeIdsWithout<ast::CDeclType>(scope, typeIds);
 
 		{    // Native declarations
-			p::TArray<ast::Id> cStructIds = p::FindIdsWith<CDeclCStruct>(access, typeIds);
-			p::TArray<ast::Id> cStaticIds = p::FindIdsWith<CDeclCStatic>(access, typeIds);
+			p::TArray<ast::Id> cStructIds = p::FindIdsWith<CDeclCStruct>(scope, typeIds);
+			p::TArray<ast::Id> cStaticIds = p::FindIdsWith<CDeclCStatic>(scope, typeIds);
 			p::TArray<ast::Id> cFunctionIds;
-			p::GetIdChildren(access, cStaticIds, cFunctionIds);
-			ExcludeIdsWithout<ast::CDeclFunction>(access, cFunctionIds);
+			p::GetIdChildren(scope, cStaticIds, cFunctionIds);
+			ExcludeIdsWithout<ast::CDeclFunction>(scope, cFunctionIds);
 			DeclareStructs(cStructIds);
 			DeclareFunctions(cFunctionIds, false);
 		}
 
 		p::TArray<ast::Id> staticFunctionIds;
 		{    // Rift declarations & definitions
-			p::TArray<ast::Id> structIds = p::FindIdsWith<ast::CDeclStruct>(access, typeIds);
-			p::TArray<ast::Id> staticIds = p::FindIdsWith<ast::CDeclStatic>(access, typeIds);
-			p::TArray<ast::Id> classIds  = p::FindIdsWith<ast::CDeclClass>(access, typeIds);
+			p::TArray<ast::Id> structIds = p::FindIdsWith<ast::CDeclStruct>(scope, typeIds);
+			p::TArray<ast::Id> staticIds = p::FindIdsWith<ast::CDeclStatic>(scope, typeIds);
+			p::TArray<ast::Id> classIds  = p::FindIdsWith<ast::CDeclClass>(scope, typeIds);
 			p::TArray<ast::Id> classFunctionIds;
-			p::GetIdChildren(access, staticIds, staticFunctionIds);
-			p::GetIdChildren(access, classIds, classFunctionIds);
-			ExcludeIdsWithout<ast::CDeclFunction>(access, staticFunctionIds);
-			ExcludeIdsWithout<ast::CDeclFunction>(access, classFunctionIds);
+			p::GetIdChildren(scope, staticIds, staticFunctionIds);
+			p::GetIdChildren(scope, classIds, classFunctionIds);
+			ExcludeIdsWithout<ast::CDeclFunction>(scope, staticFunctionIds);
+			ExcludeIdsWithout<ast::CDeclFunction>(scope, classFunctionIds);
 			p::TArray<ast::Id> functionIds;
 			functionIds.Append(staticFunctionIds);
 			functionIds.Append(classFunctionIds);
@@ -84,55 +84,55 @@ namespace rift::MIR
 
 	void CGenerator::BindNativeTypes()
 	{
-		const auto& nativeTypes = static_cast<ast::Tree&>(access.GetContext()).GetNativeTypes();
-		access.Add(nativeTypes.boolId, CMIRType{"char"});
-		access.Add(nativeTypes.floatId, CMIRType{"float"});
-		access.Add(nativeTypes.doubleId, CMIRType{"double"});
-		access.Add(nativeTypes.u8Id, CMIRType{"unsigned char"});
-		access.Add(nativeTypes.i8Id, CMIRType{"char"});
-		access.Add(nativeTypes.u16Id, CMIRType{"unsigned short"});
-		access.Add(nativeTypes.i16Id, CMIRType{"short"});
-		access.Add(nativeTypes.u32Id, CMIRType{"unsigned long"});
-		access.Add(nativeTypes.i32Id, CMIRType{"long"});
-		access.Add(nativeTypes.u64Id, CMIRType{"unsigned long long"});
-		access.Add(nativeTypes.i64Id, CMIRType{"long long"});
-		// access.Add<CIRType>(nativeTypes.stringId, {});
+		const auto& nativeTypes = static_cast<ast::Tree&>(scope.GetContext()).GetNativeTypes();
+		scope.Add(nativeTypes.boolId, CMIRType{"char"});
+		scope.Add(nativeTypes.floatId, CMIRType{"float"});
+		scope.Add(nativeTypes.doubleId, CMIRType{"double"});
+		scope.Add(nativeTypes.u8Id, CMIRType{"unsigned char"});
+		scope.Add(nativeTypes.i8Id, CMIRType{"char"});
+		scope.Add(nativeTypes.u16Id, CMIRType{"unsigned short"});
+		scope.Add(nativeTypes.i16Id, CMIRType{"short"});
+		scope.Add(nativeTypes.u32Id, CMIRType{"unsigned long"});
+		scope.Add(nativeTypes.i32Id, CMIRType{"long"});
+		scope.Add(nativeTypes.u64Id, CMIRType{"unsigned long long"});
+		scope.Add(nativeTypes.i64Id, CMIRType{"long long"});
+		// scope.Add<CIRType>(nativeTypes.stringId, {});
 	}
 
 	void CGenerator::GenerateLiterals()
 	{
-		for (ast::Id id : FindAllIdsWith<ast::CLiteralBool>(access))
+		for (ast::Id id : FindAllIdsWith<ast::CLiteralBool>(scope))
 		{
-			const auto& boolean = access.Get<const ast::CLiteralBool>(id);
-			access.Add(id, CMIRLiteral{.value = boolean.value ? "true" : "false"});
+			const auto& boolean = scope.Get<const ast::CLiteralBool>(id);
+			scope.Add(id, CMIRLiteral{.value = boolean.value ? "true" : "false"});
 		}
 		p::String strValue;
-		for (ast::Id id : FindAllIdsWith<ast::CLiteralIntegral>(access))
+		for (ast::Id id : FindAllIdsWith<ast::CLiteralIntegral>(scope))
 		{
 			strValue.clear();
-			const auto& integral = access.Get<const ast::CLiteralIntegral>(id);
+			const auto& integral = scope.Get<const ast::CLiteralIntegral>(id);
 			p::Strings::ToString(strValue, integral.value);
-			access.Add(id, CMIRLiteral{.value = p::Tag{strValue}});
+			scope.Add(id, CMIRLiteral{.value = p::Tag{strValue}});
 		}
-		for (ast::Id id : FindAllIdsWith<ast::CLiteralFloating>(access))
+		for (ast::Id id : FindAllIdsWith<ast::CLiteralFloating>(scope))
 		{
 			strValue.clear();
-			const auto& floating = access.Get<const ast::CLiteralFloating>(id);
+			const auto& floating = scope.Get<const ast::CLiteralFloating>(id);
 			p::Strings::ToString(strValue, floating.value);
 			if (floating.type == ast::FloatingType::F32)
 			{
 				strValue.push_back('f');
 			}
-			access.Add(id, CMIRLiteral{.value = p::Tag{strValue}});
+			scope.Add(id, CMIRLiteral{.value = p::Tag{strValue}});
 		}
-		for (ast::Id id : FindAllIdsWith<ast::CLiteralString>(access))
+		for (ast::Id id : FindAllIdsWith<ast::CLiteralString>(scope))
 		{
 			strValue.clear();
-			const auto& string = access.Get<const ast::CLiteralString>(id);
+			const auto& string = scope.Get<const ast::CLiteralString>(id);
 			strValue.push_back('\"');
 			strValue.append(string.value);
 			strValue.push_back('\"');
-			access.Add(id, CMIRLiteral{.value = p::Tag{strValue}});
+			scope.Add(id, CMIRLiteral{.value = p::Tag{strValue}});
 		}
 	}
 
@@ -141,8 +141,8 @@ namespace rift::MIR
 		code->append("// Struct Declarations\n");
 		for (ast::Id id : ids)
 		{
-			p::Tag name = ast::GetNameUnsafe(access, id);
-			access.Add(id, CMIRType{name});
+			p::Tag name = ast::GetNameUnsafe(scope, id);
+			scope.Add(id, CMIRType{name});
 			p::Strings::FormatTo(*code, "typedef struct {0} {0};\n", name);
 		}
 		code->push_back('\n');
@@ -157,24 +157,24 @@ namespace rift::MIR
 		{
 			membersCode.clear();
 			memberIds.Clear(false);
-			p::GetIdChildren(access, id, memberIds);
+			p::GetIdChildren(scope, id, memberIds);
 
-			p::ExcludeIdsWithout<ast::CDeclVariable>(access, memberIds);
+			p::ExcludeIdsWithout<ast::CDeclVariable>(scope, memberIds);
 			for (ast::Id memberId : memberIds)
 			{
-				const auto& var = access.Get<const ast::CDeclVariable>(memberId);
+				const auto& var = scope.Get<const ast::CDeclVariable>(memberId);
 
-				const p::Tag memberName = ast::GetName(access, memberId);
-				auto* irType            = access.TryGet<const CMIRType>(var.typeId);
+				const p::Tag memberName = ast::GetName(scope, memberId);
+				auto* irType            = scope.TryGet<const CMIRType>(var.typeId);
 				if (!irType) [[unlikely]]
 				{
-					const p::Tag typeName = ast::GetName(access, id);
+					const p::Tag typeName = ast::GetName(scope, id);
 					compiler.Error(p::Strings::Format(
 					    "Variable '{}' in struct '{}' has an invalid type", memberName, typeName));
 				}
 				else if (reservedNames.Contains(memberName)) [[unlikely]]
 				{
-					const p::Tag typeName = ast::GetName(access, id);
+					const p::Tag typeName = ast::GetName(scope, id);
 					compiler.Error(p::Strings::Format(
 					    "Variable name '{}' not allowed in struct '{}' ", memberName, typeName));
 				}
@@ -184,7 +184,7 @@ namespace rift::MIR
 				}
 			}
 
-			const auto& type = access.Get<const CMIRType>(id);
+			const auto& type = scope.Get<const CMIRType>(id);
 			p::Strings::FormatTo(*code, "struct {0} {{\n{1}}};\n", type.value, membersCode);
 		}
 		code->push_back('\n');
@@ -196,39 +196,39 @@ namespace rift::MIR
 
 		for (ast::Id id : ids)
 		{
-			auto& signature = access.Add<CMIRFunctionSignature>(id).value;
+			auto& signature = scope.Add<CMIRFunctionSignature>(id).value;
 
 			signature.append("void ");
-			const p::String name = useFullName ? ast::GetFullName(access, id, false, '_')
-			                                   : p::String{ast::GetName(access, id).AsString()};
+			const p::String name = useFullName ? ast::GetFullName(scope, id, false, '_')
+			                                   : p::String{ast::GetName(scope, id).AsString()};
 			signature.append(name);
 			signature.push_back('(');
 
-			if (auto* outputs = access.TryGet<const ast::CExprOutputs>(id))
+			if (auto* outputs = scope.TryGet<const ast::CExprOutputs>(id))
 			{
 				for (p::i32 i = 0; i < outputs->pinIds.Size(); ++i)
 				{
 					ast::Id inputId = outputs->pinIds[i];
-					if (access.Has<ast::CInvalid>(inputId))
+					if (scope.Has<ast::CInvalid>(inputId))
 					{
 						continue;
 					}
 
-					p::Tag inputName = ast::GetName(access, inputId);
+					p::Tag inputName = ast::GetName(scope, inputId);
 
-					auto* exprId = access.TryGet<const ast::CExprTypeId>(inputId);
+					auto* exprId = scope.TryGet<const ast::CExprTypeId>(inputId);
 					const auto* irType =
-					    exprId ? access.TryGet<const CMIRType>(exprId->id) : nullptr;
+					    exprId ? scope.TryGet<const CMIRType>(exprId->id) : nullptr;
 					if (!irType) [[unlikely]]
 					{
-						const p::String functionName = ast::GetFullName(access, id);
+						const p::String functionName = ast::GetFullName(scope, id);
 						compiler.Error(p::Strings::Format(
 						    "Input '{}' in function '{}' has an invalid type. Using i32 instead.",
 						    inputName, functionName));
 					}
 					else if (reservedNames.Contains(inputName)) [[unlikely]]
 					{
-						const p::String functionName = ast::GetFullName(access, id);
+						const p::String functionName = ast::GetFullName(scope, id);
 						compiler.Error(
 						    p::Strings::Format("Input name '{}' not allowed in function '{}' ",
 						        inputName, functionName));
@@ -254,11 +254,11 @@ namespace rift::MIR
 		code->append("// Function Definitions\n");
 		for (ast::Id id : ids)
 		{
-			const p::String& signature = access.Get<const CMIRFunctionSignature>(id).value;
+			const p::String& signature = scope.Get<const CMIRFunctionSignature>(id).value;
 			code->append(signature);
 			code->append(" {\n");
 
-			const auto& output = access.Get<const ast::CStmtOutput>(id);
+			const auto& output = scope.Get<const ast::CStmtOutput>(id);
 			AddStmtBlock(output.linkInputNode);
 
 			code->append("}\n");
@@ -270,11 +270,11 @@ namespace rift::MIR
 	{
 		ast::Id splitId = ast::NoId;
 		p::TArray<ast::Id> stmtIds;
-		ast::GetStmtChain(access, firstStmtId, stmtIds, splitId);
+		ast::GetStmtChain(scope, firstStmtId, stmtIds, splitId);
 
 		for (ast::Id id : stmtIds)
 		{
-			if (const auto* call = access.TryGet<const ast::CExprCallId>(id))
+			if (const auto* call = scope.TryGet<const ast::CExprCallId>(id))
 			{
 				AddCall(id, *call);
 			}
@@ -282,7 +282,7 @@ namespace rift::MIR
 
 		if (splitId != ast::NoId)
 		{
-			if (access.Has<const ast::CStmtIf>(splitId))
+			if (scope.Has<const ast::CStmtIf>(splitId))
 			{
 				AddStmtIf(splitId);
 			}
@@ -293,16 +293,16 @@ namespace rift::MIR
 	void CGenerator::AddExpr(const ast::ExprOutput& output)
 	{
 		const auto* value =
-		    !IsNone(output.pinId) ? access.TryGet<const CMIRLiteral>(output.pinId) : nullptr;
+		    !IsNone(output.pinId) ? scope.TryGet<const CMIRLiteral>(output.pinId) : nullptr;
 		// TODO
 	}
 
 	void CGenerator::AddStmtIf(ast::Id id)
 	{
-		const auto& outputs      = access.Get<const ast::CStmtOutputs>(id);
+		const auto& outputs      = scope.Get<const ast::CStmtOutputs>(id);
 		const auto& connectedIds = outputs.linkInputNodes;
 		P_Check(connectedIds.Size() == 2);
-		const auto& exprInputs = access.Get<const ast::CExprInputs>(id);
+		const auto& exprInputs = scope.Get<const ast::CExprInputs>(id);
 		P_Check(exprInputs.linkedOutputs.Size() == 1);
 
 		code->append("if (");
@@ -317,19 +317,19 @@ namespace rift::MIR
 	void CGenerator::AddCall(ast::Id id, const ast::CExprCallId& call)
 	{
 		const ast::Id functionId = call.functionId;
-		if (!access.IsValid(functionId))
+		if (!scope.IsValid(functionId))
 		{
 			compiler.Error("Call to an unknown function");
 			return;
 		}
-		if (!P_Ensure(access.Has<const CMIRFunctionSignature>(functionId)))
+		if (!P_Ensure(scope.Has<const CMIRFunctionSignature>(functionId)))
 		{
 			compiler.Error(p::Strings::Format(
-			    "Call to an invalid function: '{}'", ast::GetFullName(access, functionId)));
+			    "Call to an invalid function: '{}'", ast::GetFullName(scope, functionId)));
 			return;
 		}
 
-		if (auto* inputs = access.TryGet<const ast::CExprInputs>(id))
+		if (auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
 		{
 			for (p::i32 i = 0; i < inputs->linkedOutputs.Size(); ++i)
 			{
@@ -357,7 +357,7 @@ namespace rift::MIR
 			return;
 		}
 
-		// auto* customMainFunction = access.Get<const CIRFunction>(functionId).instance;
+		// auto* customMainFunction = scope.Get<const CIRFunction>(functionId).instance;
 
 		code->append("int main() {\nProject_Main_Main();\nreturn 0;\n}\n");
 	}
@@ -368,7 +368,7 @@ namespace rift::MIR
 
 		for (ast::Id id : functionIds)
 		{
-			const auto* ns = access.TryGet<const ast::CNamespace>(id);
+			const auto* ns = scope.TryGet<const ast::CNamespace>(id);
 			if (ns && ns->name == mainFunctionName)
 			{
 				return id;

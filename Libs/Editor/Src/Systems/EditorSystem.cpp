@@ -405,8 +405,8 @@ namespace rift::editor::EditorSystem
 
 	void DrawModuleEditors(ast::Tree& ast, SEditor& editor)
 	{
-		TAccess<TWrite<CModuleEditor>, TWrite<ast::CNamespace>, TWrite<ast::CModule>, ast::CFileRef>
-		    moduleEditors{ast};
+		TIdScope<Writes<CModuleEditor, ast::CNamespace, ast::CModule>, ast::CFileRef> moduleEditors{
+		    ast};
 		for (ast::Id moduleId :
 		    FindAllIdsWith<ast::CModule, CModuleEditor, ast::CFileRef>(moduleEditors))
 		{
@@ -522,25 +522,25 @@ namespace rift::editor::EditorSystem
 
 	void DrawTypes(ast::Tree& ast, SEditor& editor)
 	{
-		TAccess<TWrite<CTypeEditor>, ast::CDeclType, ast::CFileRef, ast::CDeclClass,
+		TIdScope<Writes<CTypeEditor>, ast::CDeclType, ast::CFileRef, ast::CDeclClass,
 		    ast::CDeclStruct, ast::CDeclStatic>
-		    access{ast};
-		for (ast::Id typeId : FindAllIdsWith<ast::CDeclType, CTypeEditor, ast::CFileRef>(access))
+		    scope{ast};
+		for (ast::Id typeId : FindAllIdsWith<ast::CDeclType, CTypeEditor, ast::CFileRef>(scope))
 		{
-			auto& typeEditor = access.Get<CTypeEditor>(typeId);
-			const auto& file = access.Get<const ast::CFileRef>(typeId);
+			auto& typeEditor = scope.Get<CTypeEditor>(typeId);
+			const auto& file = scope.Get<const ast::CFileRef>(typeId);
 
 
 			StringView icon;
-			if (ast::IsStructType(access, typeId))
+			if (ast::IsStructType(scope, typeId))
 			{
 				icon = ICON_FA_FILE_ALT;
 			}
-			else if (ast::IsClassType(access, typeId))
+			else if (ast::IsClassType(scope, typeId))
 			{
 				icon = ICON_FA_FILE_INVOICE;
 			}
-			else if (ast::IsStaticType(access, typeId))
+			else if (ast::IsStaticType(scope, typeId))
 			{
 				icon = ICON_FA_FILE_WORD;
 			}

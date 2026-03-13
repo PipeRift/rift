@@ -17,7 +17,7 @@ namespace rift::ast::TypeSystem
 {
 	void Init(Tree& ast)
 	{
-		p::TAccess<CDeclType, CNamespace> access{ast};
+		p::TIdScope<CDeclType, CNamespace> scope{ast};
 
 		ast.OnAdd<CFileRef>().Bind([&ast](auto ids) {
 			auto& types = ast.template GetOrSetStatic<STypes>();
@@ -44,60 +44,60 @@ namespace rift::ast::TypeSystem
 		});
 	}
 
-	void PropagateVariableTypes(PropagateVariableTypesAccess access)
+	void PropagateVariableTypes(PropagateVariableTypesScope scope)
 	{
-		for (Id id : FindAllIdsWith<CExprDeclRefId>(access))
+		for (Id id : FindAllIdsWith<CExprDeclRefId>(scope))
 		{
-			const Id declId = access.Get<const CExprDeclRefId>(id).declarationId;
-			if (access.IsValid(declId))
+			const Id declId = scope.Get<const CExprDeclRefId>(id).declarationId;
+			if (scope.IsValid(declId))
 			{
-				const Id typeId = access.Get<const CDeclVariable>(declId).typeId;
-				access.Add<CExprTypeId>(id, {.id = typeId});
+				const Id typeId = scope.Get<const CDeclVariable>(declId).typeId;
+				scope.Add<CExprTypeId>(id, {.id = typeId});
 			}
 		}
 	}
 
-	bool PropagateUnaryOperator(p::TAccess<CExprInputs, p::TWrite<CExprTypeId>> access, Id nodeId)
+	bool PropagateUnaryOperator(p::TIdScope<p::Writes<CExprTypeId>, CExprInputs> scope, Id nodeId)
 	{
 		const Id outputId  = nodeId;    // Output in unary operator is same as the node itself
-		const auto& inputs = access.Get<const CExprInputs>(nodeId);
+		const auto& inputs = scope.Get<const CExprInputs>(nodeId);
 		const ExprOutput* linkedOutputId = inputs.linkedOutputs.At(0);
 		if (linkedOutputId && linkedOutputId->pinId != NoId)
 		{
-			return CopyExpressionType(access, linkedOutputId->pinId, outputId);
+			return CopyExpressionType(scope, linkedOutputId->pinId, outputId);
 		}
 		return false;
 	}
 
-	bool PropagateBinaryOperator(p::TAccess<CExprInputs, p::TWrite<CExprTypeId>> access, Id nodeId)
+	bool PropagateBinaryOperator(p::TIdScope<p::Writes<CExprTypeId>, CExprInputs> scope, Id nodeId)
 	{
-		const auto& inputs = access.Get<const CExprInputs>(nodeId);
+		const auto& inputs = scope.Get<const CExprInputs>(nodeId);
 		Id outputId        = nodeId;    // Output in binary operator is same as the node itself
 		if (inputs.pinIds.Size() == 2) [[likely]]
 		{
 			const ExprOutput firstLinkedOutputId = inputs.linkedOutputs[0];
 			// Set input types
-			CopyExpressionType(access, firstLinkedOutputId.pinId, inputs.pinIds[0]);
-			CopyExpressionType(access, inputs.linkedOutputs[1].pinId, inputs.pinIds[1]);
+			CopyExpressionType(scope, firstLinkedOutputId.pinId, inputs.pinIds[0]);
+			CopyExpressionType(scope, inputs.linkedOutputs[1].pinId, inputs.pinIds[1]);
 			// Set output type from first connection
-			return CopyExpressionType(access, firstLinkedOutputId.pinId, outputId);
+			return CopyExpressionType(scope, firstLinkedOutputId.pinId, outputId);
 		}
 		return false;
 	}
 
-	void PropagateExpressionTypes(PropagateExpressionTypesAccess access)
+	void PropagateExpressionTypes(PropagateExpressionTypesScope scope)
 	{
-		p::TArray<Id> dirtyTypeIds = p::FindAllIdsWith<CDeclType, CChanged>(access);
+		p::TArray<Id> dirtyTypeIds = p::FindAllIdsWith<CDeclType, CChanged>(scope);
 
 		p::TArray<Id> dirtyNodeIds;
-		p::GetIdChildren(access, dirtyTypeIds, dirtyNodeIds);
+		p::GetIdChildren(scope, dirtyTypeIds, dirtyNodeIds);
 
 		// Make sure the nodes have inputs and outputs
-		p::ExcludeIdsWithout<CExprInputs, CExprOutputs>(access, dirtyNodeIds);
+		p::ExcludeIdsWithout<CExprInputs, CExprOutputs>(scope, dirtyNodeIds);
 
 		// Only Unary and Binary operators propagate as of right now
-		p::ExcludeIdsWith(dirtyNodeIds, [&access](Id id) {
-			return !access.Has<CExprUnaryOperator>(id) && !access.Has<CExprBinaryOperator>(id);
+		p::ExcludeIdsWith(dirtyNodeIds, [&scope](Id id) {
+			return !scope.Has<CExprUnaryOperator>(id) && !scope.Has<CExprBinaryOperator>(id);
 		});
 
 		bool anyPropagated;
@@ -109,17 +109,17 @@ namespace rift::ast::TypeSystem
 			{
 				const Id nodeId = dirtyNodeIds[i];
 
-				if (access.Has<CExprUnaryOperator>(nodeId))
+				if (scope.Has<CExprUnaryOperator>(nodeId))
 				{
-					if (PropagateUnaryOperator(access, nodeId))
+					if (PropagateUnaryOperator(scope, nodeId))
 					{
 						dirtyNodeIds.RemoveAtSwapUnsafe(i);
 						anyPropagated = true;
 					}
 				}
-				else if (access.Has<CExprBinaryOperator>(nodeId))
+				else if (scope.Has<CExprBinaryOperator>(nodeId))
 				{
-					if (PropagateBinaryOperator(access, nodeId))
+					if (PropagateBinaryOperator(scope, nodeId))
 					{
 						dirtyNodeIds.RemoveAtSwapUnsafe(i);
 						anyPropagated = true;
@@ -135,17 +135,17 @@ namespace rift::ast::TypeSystem
 	}
 
 	void ResolveExprTypeIds(
-	    p::TAccessRef<p::TWrite<CExprTypeId>, CExprType, CNamespace, CParent, CChild> access)
+	    p::TIdScopeRef<p::Writes<CExprTypeId>, CExprType, CNamespace, CParent, CChild> scope)
 	{
-		auto callExprs = p::FindAllIdsWith<CExprType>(access);
-		p::ExcludeIdsWith<CExprTypeId>(access, callExprs);
+		auto callExprs = p::FindAllIdsWith<CExprType>(scope);
+		p::ExcludeIdsWith<CExprTypeId>(scope, callExprs);
 		for (Id id : callExprs)
 		{
-			auto& expr      = access.Get<const CExprType>(id);
-			const Id typeId = FindIdFromNamespace(access, expr.type);
+			auto& expr      = scope.Get<const CExprType>(id);
+			const Id typeId = FindIdFromNamespace(scope, expr.type);
 			if (!p::IsNone(typeId))
 			{
-				access.Add(id, CExprTypeId{.id = typeId, .mode = expr.mode});
+				scope.Add(id, CExprTypeId{.id = typeId, .mode = expr.mode});
 			}
 		}
 	}
