@@ -11,7 +11,7 @@
 #include <Pipe/Core/Map.h>
 #include <Pipe/Core/Templates.h>
 #include <Pipe/Files/Paths.h>
-#include <PipeArrays.h>
+#include <PipeContainers.h>
 #include <PipeMath.h>
 #include <PipeReflect.h>
 

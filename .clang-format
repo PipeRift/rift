@@ -1,109 +1,19 @@
 ---
-Language: Cpp
-DisableFormat: false
+BasedOnStyle: Microsoft
 AccessModifierOffset: -4
 AlignAfterOpenBracket: DontAlign
 AlignArrayOfStructures: Left
-AlignConsecutiveAssignments: Consecutive
-AlignConsecutiveBitFields: None
-AlignConsecutiveDeclarations: None
+AlignConsecutiveAssignments:
+  Enabled: true
 AlignEscapedNewlines: Left
 AlignOperands: AlignAfterOperator
-AlignTrailingComments: true
-AllowAllArgumentsOnNextLine: true
-AllowAllParametersOfDeclarationOnNextLine: true
-AllowShortBlocksOnASingleLine: Always
+AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: true
-AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Empty
-AllowShortIfStatementsOnASingleLine: Never
 AllowShortLambdasOnASingleLine: Empty
-AllowShortLoopsOnASingleLine: false
-AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: true
-AlwaysBreakTemplateDeclarations: Yes
-BinPackArguments: true
 BinPackParameters: true
 BitFieldColonSpacing: None
-BreakBeforeBinaryOperators: NonAssignment
-BreakBeforeConceptDeclarations: true
-BreakConstructorInitializers: BeforeComma
-BreakInheritanceList: AfterComma
-BreakStringLiterals: true
-ColumnLimit: 100
-CompactNamespaces: false
-ConstructorInitializerIndentWidth: 4
-ContinuationIndentWidth: 4
-ConstructorInitializerAllOnOneLineOrOnePerLine: true
-Cpp11BracedListStyle: true
-DeriveLineEnding: true
-DerivePointerAlignment: false
-EmptyLineAfterAccessModifier: Leave
-EmptyLineBeforeAccessModifier: LogicalBlock
-FixNamespaceComments: true
-IncludeBlocks: Regroup
-IncludeCategories:
-  - Regex:           '.*(PCH).*'
-    Priority:        -1
-  - Regex:           '".*"'
-    Priority:        1
-  - Regex:           '^<.*\.(h)>'
-    Priority:        3
-  - Regex:           '^<.*>'
-    Priority:        4
-IncludeIsMainRegex: '([-_](test|unittest))?$'
-IndentAccessModifiers: false
-IndentCaseBlocks: false
-IndentCaseLabels: true
-IndentExternBlock: AfterExternBlock
-IndentGotoLabels: true
-IndentPPDirectives: BeforeHash
-IndentRequires: true
-IndentWidth: 4
-IndentWrappedFunctionNames: false
-InsertBraces: true
-KeepEmptyLinesAtTheStartOfBlocks: false
-LambdaBodyIndentation: OuterScope
-MaxEmptyLinesToKeep: 2
-NamespaceIndentation: All
-#PackConstructorInitializers: CurrentLine
-PenaltyBreakAssignment: 2
-PenaltyBreakBeforeFirstCallParameter: 1
-PenaltyBreakComment: 300
-PenaltyBreakFirstLessLess: 120
-PenaltyBreakString: 1000
-PenaltyBreakTemplateDeclaration: 10
-PenaltyExcessCharacter: 1000000
-PenaltyReturnTypeOnItsOwnLine: 200
-PointerAlignment: Left
-ReferenceAlignment: Left
-ReflowComments: true
-RequiresClausePosition: WithPreceding
-SortIncludes: CaseInsensitive
-SortUsingDeclarations: true
-SpaceAfterCStyleCast: false
-SpaceAfterLogicalNot: false
-SpaceAfterTemplateKeyword: false
-SpaceBeforeAssignmentOperators: true
-SpaceBeforeCaseColon: false
-SpaceBeforeCpp11BracedList: false
-SpaceBeforeCtorInitializerColon: true
-SpaceBeforeInheritanceColon: true
-SpaceBeforeParens: ControlStatements
-SpaceBeforeRangeBasedForLoopColon: true
-SpaceBeforeSquareBrackets: false
-SpaceInEmptyBlock: false
-SpaceInEmptyParentheses: false
-SpacesBeforeTrailingComments: 4
-SpacesInAngles: Never
-SpacesInCStyleCastParentheses: false
-SpacesInConditionalStatement: false
-SpacesInParentheses: false
-SpacesInSquareBrackets: false
-Standard: Auto
-TabWidth: 4
-UseTab: ForIndentation
-BreakBeforeBraces: Custom
 BraceWrapping:
   AfterCaseLabel: false
   AfterClass: true
@@ -111,14 +21,60 @@ BraceWrapping:
   AfterEnum: true
   AfterFunction: true
   AfterNamespace: true
+  AfterObjCDeclaration: true
   AfterStruct: true
   AfterUnion: true
   AfterExternBlock: true
   BeforeCatch: true
   BeforeElse: true
-  BeforeLambdaBody: false
+  BeforeLambdaBody: true
   BeforeWhile: false
+  IndentBraces: false
   SplitEmptyFunction: false
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
----
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeConceptDeclarations: true
+BreakConstructorInitializers: BeforeComma
+BreakInheritanceList: AfterComma
+BreakTemplateDeclarations: Yes
+ColumnLimit: 100
+EmptyLineAfterAccessModifier: Leave
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: .*(PCH).*
+    Priority: -1
+  - Regex: '".*"'
+    Priority: 1
+  - Regex: ^<.*\.(h)>
+    Priority: 3
+  - Regex: ^<.*>
+    Priority: 4
+IncludeIsMainRegex: ([-_](test|unittest))?$
+IndentCaseLabels: true
+IndentPPDirectives: BeforeHash
+InsertBraces: true
+LambdaBodyIndentation: OuterScope
+MaxEmptyLinesToKeep: 2
+NamespaceIndentation: All
+PenaltyBreakBeforeFirstCallParameter: 1
+PenaltyReturnTypeOnItsOwnLine: 200
+PointerAlignment: Left
+ReferenceAlignment: Left
+ReflowComments: true
+RequiresClausePosition: WithPreceding
+SortIncludes:
+  IgnoreCase: true
+SpaceAfterTemplateKeyword: false
+SpacesBeforeTrailingComments: 4
+Standard: Auto
+UseTab: ForIndentation
+Language: Cpp
+AlwaysBreakTemplateDeclarations: Yes
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+DeriveLineEnding: true
+KeepEmptyLinesAtTheStartOfBlocks: false
+SpaceInEmptyParentheses: false
+SpacesInCStyleCastParentheses: false
+SpacesInConditionalStatement: false
+SpacesInParentheses: false

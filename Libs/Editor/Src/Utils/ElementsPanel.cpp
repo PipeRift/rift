@@ -50,9 +50,9 @@ namespace rift::editor
 			ImRect bb = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
 
 			bool selected = editor.selectedPropertyId == variableId;
-			ImGui::Selectable("##selectArea", &selected,
-			    ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap,
-			    ImVec2(0, frameHeight));
+		ImGui::Selectable("##selectArea", &selected,
+		    ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap,
+		    ImVec2(0, frameHeight));
 
 			if (selected)
 			{
@@ -212,7 +212,7 @@ namespace rift::editor
 	void DrawFunctions(ast::Tree& ast, CTypeEditor& editor, ast::Id typeId)
 	{
 		const ImGuiTreeNodeFlags flags =
-		    ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap;
+		    ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowOverlap;
 
 		bool add = false;
 		if (UI::CollapsingHeaderWithButton("Functions", flags, add, ICON_FA_PLUS))

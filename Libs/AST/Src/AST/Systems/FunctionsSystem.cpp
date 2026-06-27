@@ -50,7 +50,7 @@ namespace rift::ast::FunctionsSystem
 	void PropagateDirtyIntoCalls(Tree& ast)
 	{
 		p::TIdScope<p::Writes<p::CMdfd<CExprCallId>>, CChanged, CExprCallId> scope{ast};
-		if (scope.Size<CChanged>() <= 0)
+		if (scope.PoolSize<CChanged>() <= 0)
 		{
 			return;
 		}
@@ -288,7 +288,7 @@ namespace rift::ast::FunctionsSystem
 
 	void RemoveInvalidDisconnectedArgs(InvalidDisconnectedPinAccess scope)
 	{
-		if (scope.Size<CInvalid>() <= 0)
+		if (scope.PoolSize<CInvalid>() <= 0)
 		{
 			// No invalids!
 			return;

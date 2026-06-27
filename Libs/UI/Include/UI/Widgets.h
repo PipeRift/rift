@@ -30,7 +30,7 @@ namespace rift::UI
 		p::v2 GetUV() const;
 	};
 
-	static bool SpriteButton(AnimatedSprite& sprite, p::i32 framePadding,
+	static bool SpriteButton(const char* strId, AnimatedSprite& sprite,
 	    const p::LinearColor& bgColor, const p::LinearColor& tintColor);
 
 	inline bool InputText(const char* label, char* buf, size_t buf_size,

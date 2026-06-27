@@ -9,7 +9,7 @@
 #include <AST/Components/Declarations.h>
 #include <AST/Tree.h>
 #include <Pipe/Core/String.h>
-#include <PipeArrays.h>
+#include <PipeContainers.h>
 #include <PipeECS.h>
 
 

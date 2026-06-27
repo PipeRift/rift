@@ -8,9 +8,8 @@
 #include <assert.h>
 #include <AST/Id.h>
 #include <limits.h>
-#include <Pipe/Core/BitArray.h>
 #include <Pipe/Core/EnumFlags.h>
-#include <PipeArrays.h>
+#include <PipeContainers.h>
 #include <PipeVectors.h>
 
 
@@ -225,7 +224,8 @@ namespace rift::Nodes
 
 		void ClearDepthOrder()
 		{
-			depthOrder.RemoveIf([this](ast::Id id) {
+			depthOrder.RemoveIf([this](ast::Id id)
+			{
 				return TIndexedArray<T>::invalidIds.ContainsSorted(id);
 			});
 		}
@@ -546,7 +546,7 @@ namespace rift::Nodes
 	{
 		if (!objects.inUse.IsEmpty())
 		{
-			objects.inUse.ClearBits();
+			objects.inUse.SetAllFalse();
 		}
 	}
 
@@ -576,7 +576,7 @@ namespace rift::Nodes
 		}
 
 		// Flag it as used
-		objects.inUse.FillBit(index);
+		objects.inUse.SetTrue(index);
 		return index;
 	}
 

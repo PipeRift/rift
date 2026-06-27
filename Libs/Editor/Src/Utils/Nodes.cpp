@@ -328,8 +328,8 @@ namespace rift::Nodes
 
 			{
 				ImDrawCmd drawCmd;
-				drawCmd.ClipRect  = drawList->_ClipRectStack.back();
-				drawCmd.TextureId = drawList->_TextureIdStack.back();
+				drawCmd.ClipRect = drawList->_ClipRectStack.back();
+				drawCmd.TexRef   = drawList->_TextureStack.back();
 				channel._CmdBuffer.push_back(drawCmd);
 			}
 		}
@@ -901,7 +901,7 @@ namespace rift::Nodes
 				for (i32 i = 0; i < depthStack.Size() - selectedIds.Size(); ++i)
 				{
 					for (ast::Id nodeId = depthStack[i]; selectedIds.Contains(nodeId);
-					     nodeId         = depthStack[i])
+					    nodeId          = depthStack[i])
 					{
 						depthStack.RemoveAt(i, false);
 						depthStack.Add(nodeId);
@@ -951,9 +951,10 @@ namespace rift::Nodes
 		const v2 startPos = GetScreenSpacePinCoordinates(editor, startIdx.type, startPinData);
 		// If we are within the hover radius of a receiving pin, snap the link
 		// endpoint to it
-		const v2 endPos = shouldSnap ? GetScreenSpacePinCoordinates(editor,
-		                      gNodes->HoveredPinIdx.type, editor.GetPinData(gNodes->HoveredPinIdx))
-		                             : gNodes->mousePosition;
+		const v2 endPos = shouldSnap
+		                    ? GetScreenSpacePinCoordinates(editor, gNodes->HoveredPinIdx.type,
+		                          editor.GetPinData(gNodes->HoveredPinIdx))
+		                    : gNodes->mousePosition;
 
 		const CubicBezier cubicBezier = MakeCubicBezier(
 		    startPos, endPos, startIdx.type, gNodes->style.linkLineSegmentsPerLength);
@@ -1270,7 +1271,7 @@ namespace rift::Nodes
 		bool drawPrimary  = gNodes->style.Flags & StyleFlags_GridLinesPrimary;
 
 		for (float x = fmodf(offset.x, gNodes->style.GridSpacing); x < canvasSize.x;
-		     x += gNodes->style.GridSpacing)
+		    x += gNodes->style.GridSpacing)
 		{
 			gNodes->CanvasDrawList->AddLine(EditorToScreenPosition(v2(x, 0.0f)),
 			    EditorToScreenPosition(v2(x, canvasSize.y)),
@@ -1278,7 +1279,7 @@ namespace rift::Nodes
 		}
 
 		for (float y = fmodf(offset.y, gNodes->style.GridSpacing); y < canvasSize.y;
-		     y += gNodes->style.GridSpacing)
+		    y += gNodes->style.GridSpacing)
 		{
 			gNodes->CanvasDrawList->AddLine(EditorToScreenPosition(v2(0.0f, y)),
 			    EditorToScreenPosition(v2(canvasSize.x, y)),
@@ -2268,38 +2269,38 @@ namespace rift::Nodes
 	};
 
 	static const StyleVarInfo gStyleVarInfo[] = {
-  // StyleVar_GridSpacing
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, GridSpacing)              },
- // StyleVar_NodeCornerRounding
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, NodeCornerRounding)       },
- // StyleVar_NodePadding
-	    {ImGuiDataType_Float, 2, (u32)IM_OFFSETOF(Style, NodePadding)              },
- // StyleVar_NodeBorderThickness
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, NodeBorderThickness)      },
- // StyleVar_LinkThickness
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, LinkThickness)            },
- // StyleVar_linkLineSegmentsPerLength
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, linkLineSegmentsPerLength)},
- // StyleVar_LinkHoverDistance
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, LinkHoverDistance)        },
- // StyleVar_PinCircleRadius
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinCircleRadius)          },
- // StyleVar_PinQuadSideLength
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinQuadSideLength)        },
- // StyleVar_PinTriangleSideLength
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinTriangleSideLength)    },
- // StyleVar_PinDiamondSideLength
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinDiamondSideLength)     },
- // StyleVar_PinLineThickness
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinLineThickness)         },
- // StyleVar_PinHoverRadius
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinHoverRadius)           },
- // StyleVar_PinOffset
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinOffset)                },
- // StyleVar_MiniMapPadding
-	    {ImGuiDataType_Float, 2, (u32)IM_OFFSETOF(Style, miniMapPadding)           },
- // StyleVar_MiniMapOffset
-	    {ImGuiDataType_Float, 2, (u32)IM_OFFSETOF(Style, miniMapOffset)            },
+	    // StyleVar_GridSpacing
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, GridSpacing)              },
+	    // StyleVar_NodeCornerRounding
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, NodeCornerRounding)       },
+	    // StyleVar_NodePadding
+	    {ImGuiDataType_Float, 2, (u32)offsetof(Style, NodePadding)              },
+	    // StyleVar_NodeBorderThickness
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, NodeBorderThickness)      },
+	    // StyleVar_LinkThickness
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, LinkThickness)            },
+	    // StyleVar_linkLineSegmentsPerLength
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, linkLineSegmentsPerLength)},
+	    // StyleVar_LinkHoverDistance
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, LinkHoverDistance)        },
+	    // StyleVar_PinCircleRadius
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, PinCircleRadius)          },
+	    // StyleVar_PinQuadSideLength
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, PinQuadSideLength)        },
+	    // StyleVar_PinTriangleSideLength
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, PinTriangleSideLength)    },
+	    // StyleVar_PinDiamondSideLength
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, PinDiamondSideLength)     },
+	    // StyleVar_PinLineThickness
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, PinLineThickness)         },
+	    // StyleVar_PinHoverRadius
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, PinHoverRadius)           },
+	    // StyleVar_PinOffset
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, PinOffset)                },
+	    // StyleVar_MiniMapPadding
+	    {ImGuiDataType_Float, 2, (u32)offsetof(Style, miniMapPadding)           },
+	    // StyleVar_MiniMapOffset
+	    {ImGuiDataType_Float, 2, (u32)offsetof(Style, miniMapOffset)            },
 	};
 
 	static const StyleVarInfo* GetStyleVarInfo(StyleVar idx)

@@ -28,7 +28,7 @@
 #include <MIRBackendModule.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Files/PlatformPaths.h>
-#include <PipeArrays.h>
+#include <PipeContainers.h>
 #include <PipeECS.h>
 #include <PipeFiles.h>
 #include <Rift.h>
@@ -93,12 +93,6 @@ namespace rift::editor::EditorSystem
 	void Init(ast::Tree& ast)
 	{
 		OnProjectEditorOpen(ast);
-		ast.OnAdd<CTypeEditor>().Bind([&ast](auto ids) {
-			for (ast::Id id : ids)
-			{
-				OnTypeEditorOpen(static_cast<ast::Tree&>(ast), id);
-			}
-		});
 	}
 
 	// Root Editor

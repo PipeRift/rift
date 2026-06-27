@@ -17,6 +17,8 @@ namespace rift::ast::TypeSystem
 {
 	void Init(Tree& ast);
 
+	void SyncTypesByPath(Tree& ast);
+
 	using PropagateVariableTypesScope =
 	    p::TIdScopeRef<p::Writes<CExprTypeId>, CExprDeclRefId, CDeclVariable>;
 	void PropagateVariableTypes(PropagateVariableTypesScope scope);

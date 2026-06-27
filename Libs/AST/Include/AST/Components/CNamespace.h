@@ -2,6 +2,7 @@
 #pragma once
 
 #include <Pipe/Core/Tag.h>
+#include <PipeContainers.h>
 #include <PipeReflect.h>
 
 
@@ -48,9 +49,16 @@ namespace rift::ast
 
 		Namespace() = default;
 		template<p::i32 M>
-		Namespace(p::Tag scopes[M]) requires(M <= scopeCount)
-		    : scopes{scopes}
-		{}
+		Namespace(p::TView<p::Tag> inScopes)
+		{
+			if (P_EnsureMsg(inScopes.Size() <= scopeCount, "Tag count can never exceed 8."))
+			{
+				for (p::i32 i = 0; i < inScopes.Size(); ++i)
+				{
+					scopes[i] = inScopes[i];
+				}
+			}
+		}
 		Namespace(p::StringView value);
 		// Prevent initializer list from stealing string constructor
 		Namespace(const p::String& value) : Namespace(p::StringView{value}) {}

@@ -182,7 +182,7 @@ namespace rift::editor
 					    UI::GetStyle().ItemInnerSpacing.x / 2);
 					UI::Text(usedPctLabel);
 
-					UI::SetItemAllowOverlap();
+					UI::SetNextItemAllowOverlap();
 					const float usedFontSize = (UI::GetFontSize() * size.size()) / 2.f;
 					UI::SameLine(UI::GetContentRegionAvail().x - usedFontSize);
 					UI::Text(size);

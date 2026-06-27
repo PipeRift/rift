@@ -50,6 +50,7 @@ namespace rift
 
 		p::Info("Loading files");
 		ast::LoadSystem::Run(ast);
+		ast::TypeSystem::SyncTypesByPath(ast);
 
 		OptimizationSystem::PruneDisconnectedExpressions(ast);
 		ast::TypeSystem::PropagateVariableTypes(ast);

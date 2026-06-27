@@ -111,6 +111,7 @@ namespace rift::editor
 			if (filesDirty)
 			{
 				ast::LoadSystem::Run(ast);
+				ast::TypeSystem::SyncTypesByPath(ast);
 				filesDirty = false;
 			}
 			ast::FunctionsSystem::ResolveCallFunctionIds(ast);

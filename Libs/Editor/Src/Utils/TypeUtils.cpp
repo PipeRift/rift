@@ -2,6 +2,8 @@
 
 #include "Utils/TypeUtils.h"
 
+#include "Systems/EditorSystem.h"
+
 #include <Pipe/Core/Checks.h>
 #include <PipeECS.h>
 
@@ -18,6 +20,7 @@ namespace rift::editor
 		else
 		{
 			scope.Add<CTypeEditor>(id);
+			EditorSystem::OnTypeEditorOpen(static_cast<ast::Tree&>(scope.GetContext()), id);
 		}
 	}
 

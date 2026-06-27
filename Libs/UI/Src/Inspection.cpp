@@ -268,9 +268,9 @@ namespace rift::UI
 		UI::PushHeaderColor(UI::GetNeutralColor(1));
 		UI::AlignTextToFramePadding();
 		const ImGuiTreeNodeFlags flags =
-		    ImGuiTreeNodeFlags_AllowItemOverlap | (isLeaf ? ImGuiTreeNodeFlags_Leaf : 0);
+		    ImGuiTreeNodeFlags_AllowOverlap | (isLeaf ? ImGuiTreeNodeFlags_Leaf : 0);
 
-		bool bOpen = UI::TreeNodeEx(name.data(), ImGuiTreeNodeFlags_AllowItemOverlap);
+		bool bOpen = UI::TreeNodeEx(name.data(), ImGuiTreeNodeFlags_AllowOverlap);
 		UI::PopHeaderColor();
 		return bOpen;
 	}

@@ -35,12 +35,12 @@ namespace rift::UI
 	}
 
 
-	bool SpriteButton(AnimatedSprite& sprite, p::i32 framePadding, const p::LinearColor& bgColor,
+	bool SpriteButton(const char* strId, AnimatedSprite& sprite, const p::LinearColor& bgColor,
 	    const p::LinearColor& tintColor)
 	{
 		const p::v2 uv = sprite.GetUV();
-		return UI::ImageButton(
-		    sprite.textureId, sprite.size, uv, uv + sprite.size, framePadding, bgColor, tintColor);
+		return UI::ImageButton(strId, ImTextureRef(sprite.textureId), sprite.size, uv,
+		    uv + sprite.size, bgColor, tintColor);
 	}
 
 
@@ -133,8 +133,8 @@ namespace rift::UI
 		{
 			const float spacingX = 0;
 			const float spacingY = style.ItemSpacing.y;
-			const float spacingL = IM_FLOOR(spacingX * 0.50f);
-			const float spacingU = IM_FLOOR(spacingY * 0.50f);
+			const float spacingL = IM_TRUNC(spacingX * 0.50f);
+			const float spacingU = IM_TRUNC(spacingY * 0.50f);
 			bb.Min.x -= spacingL;
 			bb.Min.y -= spacingU;
 			bb.Max.x += (spacingX - spacingL);

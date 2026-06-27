@@ -12,7 +12,7 @@
 #include <AST/Tree.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/TypeUtils.h>
-#include <PipeArrays.h>
+#include <PipeContainers.h>
 #include <PipeECS.h>
 
 

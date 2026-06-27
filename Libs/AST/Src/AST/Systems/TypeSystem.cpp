@@ -4,6 +4,7 @@
 
 #include "AST/Components/CFileRef.h"
 #include "AST/Components/CNamespace.h"
+#include "AST/Components/Tags/CDirty.h"
 #include "AST/Id.h"
 #include "AST/Statics/STypes.h"
 #include "AST/Tree.h"
@@ -18,30 +19,26 @@ namespace rift::ast::TypeSystem
 	void Init(Tree& ast)
 	{
 		p::TIdScope<CDeclType, CNamespace> scope{ast};
+	}
 
-		ast.OnAdd<CFileRef>().Bind([&ast](auto ids) {
-			auto& types = ast.template GetOrSetStatic<STypes>();
-			for (Id id : ids)
+	void SyncTypesByPath(Tree& ast)
+	{
+		auto& types = ast.GetOrSetStatic<STypes>();
+		p::TIdScope<p::Writes<p::CMdfd<CFileRef>>, CDeclType, CFileRef> scope{ast};
+		for (Id id : p::FindAllIdsWith<p::CMdfd<CFileRef>>(scope))
+		{
+			if (scope.Has<CFileRef>(id))
 			{
-				if (ast.template Has<CDeclType>(id) && ast.template Has<CFileRef>(id))
-				{
-					const auto& file = ast.template Get<const CFileRef>(id);
-					types.typesByPath.Insert(p::Tag{file.path}, id);
-				}
+				const auto& file = scope.Get<const CFileRef>(id);
+				types.typesByPath.Insert(p::Tag{file.path}, id);
 			}
-		});
-
-		ast.OnRemove<CFileRef>().Bind([&ast](auto ids) {
-			auto& types = ast.template GetOrSetStatic<STypes>();
-			for (Id id : ids)
+			else
 			{
-				if (ast.template Has<CDeclType>(id) && ast.template Has<CFileRef>(id))
-				{
-					const auto& file = ast.template Get<const CFileRef>(id);
-					types.typesByPath.Remove(p::Tag{file.path});
-				}
+				const auto& mdfd = scope.Get<const p::CMdfd<CFileRef>>(id);
+				types.typesByPath.Remove(p::Tag{mdfd.Last.path});
 			}
-		});
+			scope.Remove<p::CMdfd<CFileRef>>(id);
+		}
 	}
 
 	void PropagateVariableTypes(PropagateVariableTypesScope scope)
@@ -95,10 +92,8 @@ namespace rift::ast::TypeSystem
 		// Make sure the nodes have inputs and outputs
 		p::ExcludeIdsWithout<CExprInputs, CExprOutputs>(scope, dirtyNodeIds);
 
-		// Only Unary and Binary operators propagate as of right now
-		p::ExcludeIdsWith(dirtyNodeIds, [&scope](Id id) {
-			return !scope.Has<CExprUnaryOperator>(id) && !scope.Has<CExprBinaryOperator>(id);
-		});
+		// Only Unary or Binary operators propagate as of right now
+		p::ExcludeIdsWithoutAny<CExprUnaryOperator, CExprBinaryOperator>(scope, dirtyNodeIds);
 
 		bool anyPropagated;
 		while (!dirtyNodeIds.IsEmpty())    // Repeat until nothing to propagate

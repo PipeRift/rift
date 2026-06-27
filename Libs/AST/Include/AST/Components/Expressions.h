@@ -77,7 +77,7 @@ namespace rift::ast
 	struct CExprCallId : public CExpression
 	{
 		using Super = CExpression;
-		P_STRUCT(CExprCallId, p::TF_NotSerialized || p::TF_ECS_AutoModify)
+		P_STRUCT(CExprCallId, p::TF_NotSerialized || p::TF_ECS_ModifyOnEdit)
 
 		// Id pointing to the function declaration
 		P_PROP(functionId)

@@ -70,7 +70,7 @@ namespace rift::editor::Graph
 		{
 			// Return true also if Enter is pressed
 			if (UI::MenuItem(name.data())
-			    || (UI::IsItemFocused() && UI::IsKeyPressedMap(ImGuiKey_Enter)))
+			    || (UI::IsItemFocused() && UI::IsKeyPressed(ImGuiKey_Enter)))
 			{
 				UI::CloseCurrentPopup();
 				return true;

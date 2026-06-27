@@ -244,7 +244,7 @@ namespace rift::ast
 	{
 		if (const auto* binding = FindModuleBinding(bindingId))
 		{
-			ast.Remove(binding->tagType, id);
+			ast.RemoveByTypeId(binding->tagType, id);
 		}
 	}
 
