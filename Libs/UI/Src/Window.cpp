@@ -97,6 +97,9 @@ namespace rift::UI
 		ImGui_ImplGlfw_InitForOpenGL(gWindow, true);
 		ImGui_ImplOpenGL3_Init(glslVersion);
 
+		// Build fonts after backends set ImGuiBackendFlags_RendererHasTextures
+		ImGui::GetIO().Fonts->Build();
+
 		SetWindowIcon();
 
 		RegisterCoreKeyValueInspections();

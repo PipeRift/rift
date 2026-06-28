@@ -19,7 +19,7 @@ P_ENUM(rift::ast::RiftModuleTarget)
 
 namespace rift::ast
 {
-	static constexpr p::StringView moduleFilename = "__module__.rf";
+	static constexpr p::StringView moduleFilename = ".module.rf";
 
 	struct CModule
 	{

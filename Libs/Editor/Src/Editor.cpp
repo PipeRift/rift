@@ -26,7 +26,8 @@ namespace rift::editor
 {
 	void RegisterKeyValueInspections()
 	{
-		UI::RegisterCustomInspection<ast::Id>([](p::StringView label, void* data, p::TypeId type) {
+		UI::RegisterCustomInspection<ast::Id>([](p::StringView label, void* data, p::TypeId type)
+		{
 			auto* id = static_cast<ast::Id*>(data);
 			// UI::DrawKeyValue(label, data, GetType<IdTraits<ast::Id>::Entity>());
 			UI::TableNextRow();
@@ -42,7 +43,8 @@ namespace rift::editor
 		});
 
 		UI::RegisterCustomInspection<ast::Namespace>(
-		    [](p::StringView label, void* data, p::TypeId type) {
+		    [](p::StringView label, void* data, p::TypeId type)
+		{
 			UI::TableNextRow();
 			UI::TableSetColumnIndex(0);
 			UI::AlignTextToFramePadding();
@@ -174,13 +176,16 @@ namespace rift::editor
 			// Start watching the project folder for file changes
 			ast.Add(GetProjectId(ast), fileWatcher.ListenPath(projectPath, true,
 			                               [](FileWatchId id, StringView path, StringView filename,
-			                                   FileWatchAction action, StringView oldFilename) {
+			                                   FileWatchAction action, StringView oldFilename)
+			{
 				Editor::Get().filesDirty = true;
 			}));
 
 
 			auto& editorSettings = GetUserSettings<EditorSettings>();
-			editorSettings.recentProjects.AddUnique(p::String(projectPath));
+			p::String projectPathStr{projectPath};
+			p::SetWeaklyCanonical(projectPathStr);    // Prevent / \\ mismatch duplicates
+			editorSettings.recentProjects.AddUnique(p::Move(projectPathStr));
 			SaveUserSettings<EditorSettings>();
 			return true;
 		}

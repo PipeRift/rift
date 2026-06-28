@@ -1,6 +1,7 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
+#include "AST/Components/CFileRef.h"
 #include "AST/Components/Declarations.h"
 #include "AST/Components/Expressions.h"
 #include "AST/Components/Tags/CChanged.h"
@@ -17,7 +18,7 @@ namespace rift::ast::TypeSystem
 {
 	void Init(Tree& ast);
 
-	void SyncTypesByPath(Tree& ast);
+	void SyncTypesByPath(p::TIdScopeRef<CDeclType, CFileRef> scope);
 
 	using PropagateVariableTypesScope =
 	    p::TIdScopeRef<p::Writes<CExprTypeId>, CExprDeclRefId, CDeclVariable>;

@@ -48,6 +48,19 @@ if (RIFT_BUILD_EDITOR)
 
   add_library(IconFontCppHeaders INTERFACE)
   target_include_directories(IconFontCppHeaders INTERFACE IconFontCppHeaders)
+
+  # ImPlot (optional, for arena debugger)
+  set(IMPLOT_DISABLE_DEMO ON CACHE BOOL "Disable ImPlot demo")
+  add_library(implot STATIC)
+  target_include_directories(implot PUBLIC implot)
+  target_sources(implot PRIVATE
+      implot/implot.cpp
+      implot/implot_items.cpp
+  )
+  pipe_target_enable_CPP20(implot)
+  set_target_properties(implot PROPERTIES FOLDER Extern)
+  target_link_libraries(implot PUBLIC imgui)
+  target_compile_definitions(implot PUBLIC IMPLOT_DISABLE_DEMO)
 endif()
 
 

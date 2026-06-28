@@ -2,7 +2,6 @@
 
 #include "AST/Systems/TypeSystem.h"
 
-#include "AST/Components/CFileRef.h"
 #include "AST/Components/CNamespace.h"
 #include "AST/Components/Tags/CDirty.h"
 #include "AST/Id.h"
@@ -21,23 +20,18 @@ namespace rift::ast::TypeSystem
 		p::TIdScope<CDeclType, CNamespace> scope{ast};
 	}
 
-	void SyncTypesByPath(Tree& ast)
+	void SyncTypesByPath(p::TIdScopeRef<CDeclType, CFileRef> scope)
 	{
-		auto& types = ast.GetOrSetStatic<STypes>();
-		p::TIdScope<p::Writes<p::CMdfd<CFileRef>>, CDeclType, CFileRef> scope{ast};
+		if (scope.PoolSize<p::CMdfd<CFileRef>>() <= 0)
+		{
+			return;
+		}
+
+		auto& types = scope.GetOrSetStatic<STypes>();
 		for (Id id : p::FindAllIdsWith<p::CMdfd<CFileRef>>(scope))
 		{
-			if (scope.Has<CFileRef>(id))
-			{
-				const auto& file = scope.Get<const CFileRef>(id);
-				types.typesByPath.Insert(p::Tag{file.path}, id);
-			}
-			else
-			{
-				const auto& mdfd = scope.Get<const p::CMdfd<CFileRef>>(id);
-				types.typesByPath.Remove(p::Tag{mdfd.Last.path});
-			}
-			scope.Remove<p::CMdfd<CFileRef>>(id);
+			const auto& file = scope.Get<const CFileRef>(id);
+			types.typesByPath.Insert(p::Tag{file.path}, id);
 		}
 	}
 

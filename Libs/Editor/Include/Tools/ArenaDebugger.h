@@ -2,21 +2,19 @@
 #pragma once
 
 #include "AST/Tree.h"
-#include "PipeReflect.h"
 
 #include <UI/UI.h>
 
 
 namespace rift::editor
 {
-	using namespace p;
-
-
-	struct ReflectionDebugger
+	struct ArenaDebugger
 	{
 		bool open = false;
 
-		ReflectionDebugger();
+
+		ArenaDebugger();
+
 		void Draw(ast::Tree& ast);
 	};
 }    // namespace rift::editor

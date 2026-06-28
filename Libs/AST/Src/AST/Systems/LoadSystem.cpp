@@ -99,7 +99,7 @@ namespace rift::ast::LoadSystem
 			    ast::TypeIterator(path /*TODO: Ignore paths | , &modulePaths*/))
 			{
 				p::String path = p::ToString(typePath);
-				if (p::GetStem(path) != "__module__")    // Ignore module files
+				if (p::GetStem(path) != ".module")    // Ignore module files
 				{
 					paths.Add(path);
 				}
@@ -113,7 +113,8 @@ namespace rift::ast::LoadSystem
 
 		// Remove existing module paths
 		auto moduleIds = p::FindAllIdsWith<CModule, CFileRef>(scope);
-		paths.RemoveIfSwap([&scope, &moduleIds](const p::String& path) {
+		paths.RemoveIfSwap([&scope, &moduleIds](const p::String& path)
+		{
 			bool moduleExists = false;
 			for (Id id : moduleIds)
 			{
@@ -155,7 +156,8 @@ namespace rift::ast::LoadSystem
 		// Remove already existing types
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
-			modulePaths.paths.RemoveIfSwap([types, &modulePaths](const p::String& path) {
+			modulePaths.paths.RemoveIfSwap([types, &modulePaths](const p::String& path)
+			{
 				return types->typesByPath.Contains(p::Tag{path});
 			});
 		}

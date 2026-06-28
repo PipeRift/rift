@@ -42,7 +42,8 @@ namespace rift::editor::EditorSystem
 	void OnProjectEditorOpen(ast::Tree& ast)
 	{
 		auto& editor = ast.GetStatic<SEditor>();
-		editor.layout.OnBuild([](auto& builder) {
+		editor.layout.OnBuild([](auto& builder)
+		{
 			// ==================================== //
 			//          |                           //
 			//          |                           //
@@ -65,7 +66,8 @@ namespace rift::editor::EditorSystem
 	void OnTypeEditorOpen(ast::Tree& ast, ast::Id typeId)
 	{
 		auto& typeEditor = ast.Get<CTypeEditor>(typeId);
-		typeEditor.layout.OnBuild([](auto& builder) {
+		typeEditor.layout.OnBuild([](auto& builder)
+		{
 			// ==================================== //
 			//                           |          //
 			//                           | Elements //
@@ -238,6 +240,7 @@ namespace rift::editor::EditorSystem
 		editor.reflectionDebugger.Draw(ast);
 		editor.ASTDebugger.Draw(ast);
 		editor.memoryDebugger.Draw();
+		editor.arenaDebugger.Draw(ast);
 		editor.fileExplorer.Draw(ast);
 		editor.graphPlayground.Draw(ast, editor.layout);
 
@@ -265,7 +268,8 @@ namespace rift::editor::EditorSystem
 					editorData.skipFrameAfterMenu = true;
 				}
 				UI::Separator();
-				if (UI::MenuItem("Open File")) {}
+				if (UI::MenuItem("Open File"))
+				{}
 				if (UI::MenuItem(ICON_FA_SAVE " Save All", "CTRL+SHFT+S"))
 				{
 					TArray<TPair<String, String>> fileDatas;    // Path to file data
@@ -324,12 +328,17 @@ namespace rift::editor::EditorSystem
 
 			if (UI::BeginMenu("Edit"))
 			{
-				if (UI::MenuItem("Undo", "CTRL+Z")) {}
-				if (UI::MenuItem("Redo", "CTRL+Y", false, false)) {}    // Disabled item
+				if (UI::MenuItem("Undo", "CTRL+Z"))
+				{}
+				if (UI::MenuItem("Redo", "CTRL+Y", false, false))
+				{}    // Disabled item
 				UI::Separator();
-				if (UI::MenuItem("Cut", "CTRL+X")) {}
-				if (UI::MenuItem("Copy", "CTRL+C")) {}
-				if (UI::MenuItem("Paste", "CTRL+V")) {}
+				if (UI::MenuItem("Cut", "CTRL+X"))
+				{}
+				if (UI::MenuItem("Copy", "CTRL+C"))
+				{}
+				if (UI::MenuItem("Paste", "CTRL+V"))
+				{}
 				UI::Separator();
 				if (UI::BeginMenu("Settings"))
 				{
@@ -353,6 +362,7 @@ namespace rift::editor::EditorSystem
 					UI::MenuItem(
 					    "  " ICON_FA_BUG "  AST Debugger", nullptr, &editorData.ASTDebugger.open);
 					UI::MenuItem("Memory", nullptr, &editorData.memoryDebugger.open);
+					UI::MenuItem("Arenas", nullptr, &editorData.arenaDebugger.open);
 					UI::MenuItem("Graph Playground", nullptr, &editorData.graphPlayground.open);
 					UI::EndMenu();
 				}

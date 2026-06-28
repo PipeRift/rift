@@ -24,9 +24,10 @@ namespace rift::UI
 
 		void Add(float size, ImFont* imFont)
 		{
-			if (sizes.ContainsIf([size](const auto& font) {
-				    return p::NearlyEqual(font.first, size);
-			    }))
+			if (sizes.ContainsIf([size](const auto& font)
+			{
+				return p::NearlyEqual(font.first, size);
+			}))
 			{
 				p::Error(
 				    "Tried to register the same font with the same size and mode twice (size: {})",
@@ -46,10 +47,10 @@ namespace rift::UI
 			{
 				return sizes.First().second;
 			}
-			const p::TPair<float, ImFont*>* foundFont =
-			    sizes.FindIf([desiredSize](const auto& font) {
-				    return p::NearlyEqual(font.first, desiredSize);
-			    });
+			const p::TPair<float, ImFont*>* foundFont = sizes.FindIf([desiredSize](const auto& font)
+			{
+				return p::NearlyEqual(font.first, desiredSize);
+			});
 			return foundFont ? foundFont->second : nullptr;
 		}
 	};
@@ -139,8 +140,6 @@ namespace rift::UI
 		    p::JoinPaths(resources, "Fonts/Karla-LightItalic.ttf"));
 		AddTextFont("Karla", UI::FontMode::Regular, 14.f,
 		    p::JoinPaths(resources, "Fonts/Karla-Regular.ttf"));
-
-		io.Fonts->Build();
 	}
 
 	ImFont* FindFont(p::Tag name, UI::FontMode mode, float size)

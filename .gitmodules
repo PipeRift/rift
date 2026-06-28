@@ -19,3 +19,6 @@
 [submodule "Extern/mir"]
 	path = Extern/mir
 	url = https://github.com/vnmakarov/mir.git
+[submodule "Extern/implot"]
+	path = Extern/implot
+	url = https://github.com/epezent/implot.git
