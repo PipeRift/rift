@@ -34,7 +34,7 @@ namespace rift::editor
 
 		UI::SetNextWindowSize(modalSize, ImGuiCond_Always);
 
-		UI::PushStyleVar(ImGuiStyleVar_WindowPadding, p::v2{20.f, 15.f});
+		UI::PushStyleVar(ImGuiStyleVar_WindowPadding, p::v2{24.f, 12.f});
 		if (UI::BeginPopupModal("Project Manager", nullptr,
 		        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
 		{
@@ -48,9 +48,9 @@ namespace rift::editor
 			static p::String folder;
 
 			ImGui::BeginTable("table", 3);
-			ImGui::TableSetupColumn("##col1", ImGuiTableColumnFlags_WidthStretch);
-			ImGui::TableSetupColumn("##gap", ImGuiTableColumnFlags_WidthFixed, 24.f);
-			ImGui::TableSetupColumn("##col2", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("##create", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("##gap", ImGuiTableColumnFlags_WidthFixed, 8.f);
+			ImGui::TableSetupColumn("##recent", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableNextColumn();
 			{
 				UI::PushFont("WorkSans", UI::FontMode::Regular, 18.f);
@@ -69,9 +69,7 @@ namespace rift::editor
 					    "Select project folder", p::PlatformPaths::GetCurrentPath());
 				}
 			}
-			ImGui::TableNextColumn();
-			{
-			}
+			ImGui::TableNextColumn();    // Gap
 			ImGui::TableNextColumn();
 			{
 				UI::PushFont("WorkSans", UI::FontMode::Regular, 18.f);
@@ -127,8 +125,7 @@ namespace rift::editor
 				}
 			}
 			ImGui::TableNextColumn();
-			{
-			}
+			{}
 			ImGui::TableNextColumn();
 			if (UI::Button("Create", p::v2{-FLT_MIN, 0.0f}))
 			{
