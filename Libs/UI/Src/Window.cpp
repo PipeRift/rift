@@ -15,10 +15,21 @@
 #include <GL/gl3w.h>
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
+#if P_PLATFORM_WINDOWS
+	#define GLFW_EXPOSE_NATIVE_WIN32
+#endif
+#include "UI/Style.h"
+
+#include <GLFW/glfw3native.h>
 #include <Pipe/Core/Log.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Files/PlatformPaths.h>
 #include <PipeColor.h>
+
+#if P_PLATFORM_WINDOWS
+	#include <dwmapi.h>
+	#pragma comment(lib, "dwmapi")
+#endif
 
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -27,12 +38,15 @@
 
 namespace rift::UI
 {
-	static GLFWwindow* gWindow = nullptr;
+	static GLFWwindow* gWindow             = nullptr;
+	constexpr p::LinearColor titleBarColor = GetNeutralColor(0);
 
 	void OnGl3WError(int error, const char* description)
 	{
 		p::Error("Glfw Error {}: {}", error, p::StringView{description});
 	}
+
+	void ApplyDarkTitleBar(GLFWwindow* window);
 
 	bool Init()
 	{
@@ -65,6 +79,8 @@ namespace rift::UI
 		{
 			return false;
 		}
+
+		ApplyDarkTitleBar(gWindow);
 
 		glfwMakeContextCurrent(gWindow);
 		glfwSwapInterval(1);    // Enable vsync
@@ -198,5 +214,29 @@ namespace rift::UI
 		stbi_image_free(images[0].pixels);
 		stbi_image_free(images[1].pixels);
 		stbi_image_free(images[2].pixels);
+	}
+
+	void ApplyDarkTitleBar(GLFWwindow* window)
+	{
+#if P_PLATFORM_WINDOWS
+		HWND hwnd = glfwGetWin32Window(window);
+		if (!hwnd)
+		{
+			return;
+		}
+
+		// Best: match the UI background exactly (Win 11 22H2+)
+		constexpr DWORD DWMWA_CAPTION_COLOR = 35;
+		const COLORREF captionColor =
+		    RGB(titleBarColor.r * 255, titleBarColor.g * 255, titleBarColor.b * 255);
+		if (FAILED(DwmSetWindowAttribute(
+		        hwnd, DWMWA_CAPTION_COLOR, &captionColor, sizeof(captionColor))))
+		{
+			// Fallback: ask Windows to use its immersive dark title bar
+			const BOOL useDark = TRUE;
+			DwmSetWindowAttribute(hwnd, 20, &useDark, sizeof(useDark));    // Win 11 build 22621
+			DwmSetWindowAttribute(hwnd, 19, &useDark, sizeof(useDark));    // Older Win 10/11
+		}
+#endif
 	}
 }    // namespace rift::UI

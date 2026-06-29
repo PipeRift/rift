@@ -16,4 +16,8 @@ target_link_libraries(RiftUILib PUBLIC
 target_link_libraries(RiftUILib PRIVATE stb_image)
 target_compile_definitions(RiftUILib PRIVATE NOMINMAX)
 
+if(PLATFORM_WINDOWS)
+    target_link_libraries(RiftUILib PRIVATE dwmapi)
+endif()
+
 rift_module(RiftUILib)
