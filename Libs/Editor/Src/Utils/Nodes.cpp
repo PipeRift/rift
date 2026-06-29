@@ -2132,6 +2132,8 @@ namespace rift::Nodes
 
 		EditorContext& editor = GetEditorContext();
 
+		ImGui::Dummy(ImVec2(0.f, 0.f));
+
 		// The node's rectangle depends on the ImGui UI group size.
 		ImGui::EndGroup();
 		ImGui::PopID();

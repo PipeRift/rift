@@ -11,9 +11,12 @@ using namespace bandit;
 using namespace rift;
 
 
-go_bandit([]() {
-	describe("AST.Statements", []() {
-		it("Initializes outputs correctly", [&]() {
+go_bandit([]()
+{
+	describe("AST.Statements", []()
+	{
+		it("Initializes outputs correctly", [&]()
+		{
 			ast::Tree ast;
 
 			ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
@@ -27,7 +30,8 @@ go_bandit([]() {
 			AssertThat(ast.Get<ast::CStmtOutputs>(ifId).pinIds.Size(), Equals(2));
 		});
 
-		it("Initializes inputs correctly", [&]() {
+		it("Initializes inputs correctly", [&]()
+		{
 			ast::Tree ast;
 
 			ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
@@ -40,7 +44,8 @@ go_bandit([]() {
 			AssertThat(ast.Has<ast::CStmtInput>(ifId), Equals(true));
 		});
 
-		it("Can connect with single output", [&]() {
+		it("Can connect with single output", [&]()
+		{
 			ast::Tree ast;
 
 			ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
@@ -60,7 +65,8 @@ go_bandit([]() {
 			AssertThat(ast::TryConnectStmt(ast, functionId, ifId), Equals(true));
 		});
 
-		it("Can connect with multiple outputs", [&]() {
+		it("Can connect with multiple outputs", [&]()
+		{
 			ast::Tree ast;
 
 			ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");

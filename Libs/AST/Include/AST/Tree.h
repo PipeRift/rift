@@ -64,7 +64,8 @@ namespace rift::ast
 	template<typename... T>
 	void PreAllocPools()
 	{
-		Tree::OnInit().Bind([](const Tree& ast) {
+		Tree::OnInit().Bind([](const Tree& ast)
+		{
 			(ast.AssurePool<T>(), ...);
 		});
 	}

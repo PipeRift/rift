@@ -325,13 +325,15 @@ namespace rift::UI
 	void RegisterCoreKeyValueInspections()
 	{
 		UI::RegisterCustomInspection<p::LinearColor>(
-		    [](p::StringView label, void* data, p::TypeId type) {
+		    [](p::StringView label, void* data, p::TypeId type)
+		{
 			DrawColorKeyValue(label, *reinterpret_cast<p::LinearColor*>(data),
 			    ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaPreviewHalf);
 		});
 
 		UI::RegisterCustomInspection<p::HSVColor>(
-		    [](p::StringView label, void* data, p::TypeId type) {
+		    [](p::StringView label, void* data, p::TypeId type)
+		{
 			auto* color = reinterpret_cast<p::HSVColor*>(data);
 			p::LinearColor lColor{*color};
 			if (DrawColorKeyValue(label, lColor,
@@ -342,7 +344,8 @@ namespace rift::UI
 			}
 		});
 
-		UI::RegisterCustomInspection<p::Color>([](p::StringView label, void* data, p::TypeId type) {
+		UI::RegisterCustomInspection<p::Color>([](p::StringView label, void* data, p::TypeId type)
+		{
 			auto* color = reinterpret_cast<p::Color*>(data);
 			p::LinearColor lColor{*color};
 			if (DrawColorKeyValue(label, lColor,
@@ -353,7 +356,8 @@ namespace rift::UI
 			}
 		});
 
-		UI::RegisterCustomInspection<p::Path>([](p::StringView label, void* data, p::TypeId type) {
+		UI::RegisterCustomInspection<p::Path>([](p::StringView label, void* data, p::TypeId type)
+		{
 			auto* path = reinterpret_cast<p::Path*>(data);
 			UI::TableNextRow();
 			UI::TableSetColumnIndex(0);

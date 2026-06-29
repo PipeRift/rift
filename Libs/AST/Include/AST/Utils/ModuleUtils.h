@@ -75,7 +75,8 @@ namespace rift::ast
 	template<typename... T>
 	void RegisterSerializedModulePools()
 	{
-		auto components = [](auto& rw) {
+		auto components = [](auto& rw)
+		{
 			rw.template SerializePools<T...>();
 		};
 		OnReadModulePools().Bind(components);

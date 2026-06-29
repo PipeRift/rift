@@ -17,9 +17,10 @@ namespace rift::ast
 		using Super::Super;
 
 		explicit TypeIterator(p::StringView path)
-		    : Super(path, [](p::StringView path) {
-			    return p::GetExtension(path) == Paths::typeExtension;
-		    })
+		    : Super(path, [](p::StringView path)
+		{
+			return p::GetExtension(path) == Paths::typeExtension;
+		})
 		{}
 	};
 

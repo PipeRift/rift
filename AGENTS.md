@@ -9,7 +9,7 @@ C++20, CMake 3.26+, Ninja generator (optional).
 
 ```bash
 # Configure (first time or after CMakeLists changes)
-cmake -GNinja -S . -B Build -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B Build
 
 # Build
 cmake --build Build --config Release

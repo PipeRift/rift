@@ -14,9 +14,12 @@ using namespace bandit;
 using namespace rift;
 
 
-go_bandit([]() {
-	describe("AST.Namespaces", []() {
-		it("Can get namespaces", [&]() {
+go_bandit([]()
+{
+	describe("AST.Namespaces", []()
+	{
+		it("Can get namespaces", [&]()
+		{
 			ast::Tree ast;
 
 			ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
@@ -43,7 +46,8 @@ go_bandit([]() {
 			    Equals("@SomeScope.TestClass"));
 		});
 
-		it("Can get local namespaces", [&]() {
+		it("Can get local namespaces", [&]()
+		{
 			ast::Tree ast;
 
 			ast::Id parent = p::AddId(ast);
@@ -56,7 +60,8 @@ go_bandit([]() {
 			AssertThat(ns.c_str(), Equals("TestClass.TestFunction"));
 		});
 
-		it("Can initialize", [&]() {
+		it("Can initialize", [&]()
+		{
 			ast::Namespace ns0{};
 			AssertThat(ns0.scopes[0].IsNone(), Equals(true));
 			AssertThat(ns0.Size(), Equals(0));
@@ -76,7 +81,8 @@ go_bandit([]() {
 			AssertThat(ns2.IsEmpty(), Equals(false));
 		});
 
-		it("Can iterate", [&]() {
+		it("Can iterate", [&]()
+		{
 			ast::Namespace ns0{};
 			for (const Tag& name : ns0)
 			{
@@ -98,7 +104,8 @@ go_bandit([]() {
 			}
 		});
 
-		it("Can find id from namespace", [&]() {
+		it("Can find id from namespace", [&]()
+		{
 			ast::Tree ast;
 			ast::Id parent = p::AddId(ast);
 			ast.Add<ast::CModule>(parent);

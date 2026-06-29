@@ -11,9 +11,12 @@ using namespace bandit;
 using namespace rift;
 
 
-go_bandit([]() {
-	describe("AST.Expressions", []() {
-		it("Initializes inputs & outputs correctly", [&]() {
+go_bandit([]()
+{
+	describe("AST.Expressions", []()
+	{
+		it("Initializes inputs & outputs correctly", [&]()
+		{
 			ast::Tree ast;
 
 			ast::Id id = ast::AddBinaryOperator({ast, ast::NoId}, ast::BinaryOperatorType::Div);

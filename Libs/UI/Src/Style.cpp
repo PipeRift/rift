@@ -212,7 +212,7 @@ namespace rift::UI
 		colors[ImGuiCol_ResizeGripActive]  = resizeGripColor;
 
 		colors[ImGuiCol_DockingPreview] = UI::GetNeutralColor(2);
-		colors[ImGuiCol_DockingEmptyBg] = p::LinearColor::White().Shade(0.97f);
+		colors[ImGuiCol_DockingEmptyBg] = UI::GetNeutralColor(0);
 		colors[ImGuiCol_TextSelectedBg] = UI::primaryColor.Shade(0.1f);
 
 		colors[ImGuiCol_NavHighlight] = UI::primaryColor;

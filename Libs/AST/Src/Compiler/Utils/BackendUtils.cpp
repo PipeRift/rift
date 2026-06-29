@@ -10,7 +10,8 @@ namespace rift
 	p::TArray<p::TypeId> GetBackendTypes()
 	{
 		p::TArray<p::TypeId> types;    // = Backend::GetStaticType()->GetChildren();
-		types.RemoveIf([](p::TypeId type) {
+		types.RemoveIf([](p::TypeId type)
+		{
 			return !type.IsValid() || p::HasTypeFlags(type, p::TF_Abstract);
 		});
 		return Move(types);

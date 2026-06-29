@@ -15,7 +15,8 @@ namespace rift::ast
 	 */
 	struct CFileRef
 	{
-		P_STRUCT(CFileRef, p::TF_NotSerialized | p::TF_ECS_ModifyOnEdit | p::TF_ECS_StoreLastModified)
+		P_STRUCT(
+		    CFileRef, p::TF_NotSerialized | p::TF_ECS_ModifyOnEdit | p::TF_ECS_StoreLastModified)
 
 		P_PROP(path)
 		p::String path;

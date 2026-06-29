@@ -25,7 +25,8 @@ namespace rift::ast
 {
 	static p::TArray<RiftType> gFileTypes;
 
-	auto gTypeComponents = [](auto& rw) {
+	auto gTypeComponents = [](auto& rw)
+	{
 		rw.template SerializePools<CChild, CDeclVariable, CDeclFunction, CExprBinaryOperator,
 		    CExprCall, CExprDeclRefId, CExprOutputs, CExprInputs, CStmtReturn, CExprType,
 		    CExprUnaryOperator, CNodePosition, CNamespace, CParent, CLiteralBool, CLiteralFloating,
