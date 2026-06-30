@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 // Dummy
 const char* gA = "";

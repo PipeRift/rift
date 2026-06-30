@@ -1,11 +1,11 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Tools/MemoryDebugger.h"
 
 #include <Pipe/Core/String.h>
-#include <Pipe/Math/Math.h>
-#include <Pipe/Memory/Alloc.h>
 #include <Pipe/Memory/MemoryStats.h>
+#include <PipeMath.h>
+#include <PipeMemoryArenas.h>
 #include <UI/UI.h>
 #include <UI/UIImgui.h>
 
@@ -14,7 +14,7 @@
 #include <imgui_internal.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	static constexpr Color gFreeColor{210, 56, 41};    // Red
 	static constexpr Color gUsedColor{56, 210, 41};    // Green
@@ -32,12 +32,12 @@ namespace rift::Editor
 		if (UI::Begin("Memory", &open))
 		{
 			String label;
-			auto* stats = GetHeapStats();
+			auto* stats = GetHeapArena().GetStats();
 			UI::Text(Strings::Format("Used: {}", Strings::ParseMemorySize(stats->used)));
 
 			if (UI::BeginChild("Allocations"))
 			{
-				const i32 shown = math::Min<i32>(10000, i32(stats->allocations.Size()));
+				const i32 shown = p::Min<i32>(10000, i32(stats->allocations.Size()));
 				for (i32 i = 0; i < shown; ++i)
 				{
 					const auto& allocation = stats->allocations[i];
@@ -46,7 +46,7 @@ namespace rift::Editor
 					if (UI::TreeNodeEx(label.c_str()))
 					{
 						label.clear();
-						Strings::FormatTo(label, "Address: {}, Size: {}", allocation.ptr,
+						Strings::FormatTo(label, "Address: {}, Size: {}", (void*)allocation.ptr,
 						    Strings::ParseMemorySize(allocation.size));
 						UI::Text(label.c_str());
 
@@ -72,4 +72,4 @@ namespace rift::Editor
 		}
 		UI::End();
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

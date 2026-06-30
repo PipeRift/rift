@@ -1,17 +1,18 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include <Pipe/Core/Tag.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeContainers.h>
+#include <PipeReflect.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	struct CNamespace : public p::Struct
+	struct CNamespace
 	{
-		STRUCT(CNamespace, p::Struct)
+		P_STRUCT(CNamespace)
 
-		PROP(name);
+		P_PROP(name, p::PF_Edit);
 		p::Tag name;
 
 
@@ -38,9 +39,9 @@ namespace rift::AST
 	}
 
 
-	struct Namespace : public p::Struct
+	struct Namespace
 	{
-		STRUCT(Namespace, p::Struct)
+		P_STRUCT(Namespace)
 
 		static constexpr p::i32 scopeCount = 8;
 		p::Tag scopes[scopeCount];    // TODO: Implement Inline arrays
@@ -48,16 +49,22 @@ namespace rift::AST
 
 		Namespace() = default;
 		template<p::i32 M>
-		Namespace(p::Tag scopes[M])
-		    requires(M <= scopeCount)
-		    : scopes{scopes}
-		{}
+		Namespace(p::TView<p::Tag> inScopes)
+		{
+			if (P_EnsureMsg(inScopes.Size() <= scopeCount, "Tag count can never exceed 8."))
+			{
+				for (p::i32 i = 0; i < inScopes.Size(); ++i)
+				{
+					scopes[i] = inScopes[i];
+				}
+			}
+		}
 		Namespace(p::StringView value);
 		// Prevent initializer list from stealing string constructor
 		Namespace(const p::String& value) : Namespace(p::StringView{value}) {}
 		Namespace(std::initializer_list<p::Tag> values)
 		{
-			const p::i32 size = p::math::Min(p::i32(values.size()), scopeCount);
+			const p::i32 size = p::Min(p::i32(values.size()), scopeCount);
 			for (p::i32 i = 0; i < size; ++i)
 			{
 				scopes[i] = *(values.begin() + i);
@@ -68,7 +75,7 @@ namespace rift::AST
 		bool IsEmpty() const;
 		p::i32 Size() const;
 		bool Contains(const Namespace& other) const;
-		p::String ToString(bool isLocal = false) const;
+		p::String ToString(bool isLocal = false, char separator = '.') const;
 		p::Tag& First()
 		{
 			return scopes[0];
@@ -95,7 +102,7 @@ namespace rift::AST
 		}
 		p::Tag operator[](p::i32 index) const
 		{
-			Check(index >= 0 && index < scopeCount);
+			P_Check(index >= 0 && index < scopeCount);
 			return scopes[index];
 		}
 		operator bool() const
@@ -123,4 +130,4 @@ namespace rift::AST
 		void Read(p::Reader& ct);
 		void Write(p::Writer& ct) const;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

@@ -1,15 +1,21 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include <Compiler/Backend.h>
 #include <Module.h>
 
+struct MIR_context;
+struct c2mir_options;
+
 
 namespace rift
 {
+	struct Input;
 	class MIRBackendModule : public Module
 	{
-		CLASS(MIRBackendModule, Module)
+	public:
+		using Super = Module;
+		P_CLASS(MIRBackendModule)
 
 	public:
 		MIRBackendModule();
@@ -18,7 +24,9 @@ namespace rift
 
 	class MIRBackend : public Backend
 	{
-		CLASS(MIRBackend, Backend)
+	public:
+		using Super = Backend;
+		P_CLASS(MIRBackend)
 
 	public:
 		Tag GetName() override
@@ -27,5 +35,7 @@ namespace rift
 		}
 
 		void Build(Compiler& compiler) override;
+
+		void PrintBuildFinish(Compiler& compiler) const;
 	};
 }    // namespace rift

@@ -1,14 +1,13 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
-#include <Pipe/Core/Platform.h>
 #include <Pipe/Core/StringView.h>
-#include <Pipe/Math/Vector.h>
-#include <Pipe/Memory/BigBestFitArena.h>
-#include <Pipe/Memory/Block.h>
+#include <PipeMemoryArenas.h>
+#include <PipePlatform.h>
+#include <PipeVectors.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	using namespace p;
 
@@ -16,11 +15,11 @@ namespace rift::Editor
 	{
 		static constexpr v2 unitSize{4.f, 4.f};    // Size of each grid point
 
-		u32 memoryScale               = 8;    // Each gridpoint will equal N bytes
-		u32 numColumns                = 0;
-		u32 bytesPerRow               = 0;
-		u32 numRows                   = 0;
-		const p::Memory::Block* block = nullptr;
+		u32 memoryScale            = 8;    // Each gridpoint will equal N bytes
+		u32 numColumns             = 0;
+		u32 bytesPerRow            = 0;
+		u32 numRows                = 0;
+		const p::ArenaBlock* block = nullptr;
 
 
 		MemoryGrid() = default;
@@ -60,4 +59,4 @@ namespace rift::Editor
 		BigBestFitArenaDebugger();
 		void Draw();
 	};
-}    // namespace rift::Editor
+}    // namespace rift::editor

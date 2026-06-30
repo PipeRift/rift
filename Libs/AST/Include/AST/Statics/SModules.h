@@ -1,17 +1,17 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include "AST/Id.h"
 
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	struct SModules : public p::Struct
+	struct SModules
 	{
-		STRUCT(SModules, p::Struct)
+		P_STRUCT(SModules)
 
-		p::TMap<p::Tag, AST::Id> modulesByPath;
+		p::TMap<p::Tag, ast::Id> modulesByPath;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

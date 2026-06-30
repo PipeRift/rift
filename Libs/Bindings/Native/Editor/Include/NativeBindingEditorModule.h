@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
@@ -9,6 +9,8 @@ namespace rift
 {
 	class NativeBindingEditorModule : public Module
 	{
-		CLASS(NativeBindingEditorModule, Module)
+	public:
+		using Super = Module;
+		P_CLASS(NativeBindingEditorModule)
 	};
 }    // namespace rift

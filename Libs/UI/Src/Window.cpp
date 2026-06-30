@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "UI/Window.h"
 
@@ -15,22 +15,38 @@
 #include <GL/gl3w.h>
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
+#if P_PLATFORM_WINDOWS
+	#define GLFW_EXPOSE_NATIVE_WIN32
+#endif
+#include "UI/Style.h"
+
+#include <GLFW/glfw3native.h>
 #include <Pipe/Core/Log.h>
-#include <Pipe/Core/Profiler.h>
-#include <Pipe/Math/Color.h>
+#include <Pipe/Files/Paths.h>
+#include <Pipe/Files/PlatformPaths.h>
+#include <PipeColor.h>
+
+#if P_PLATFORM_WINDOWS
+	#include <dwmapi.h>
+	#pragma comment(lib, "dwmapi")
+#endif
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 
 namespace rift::UI
 {
-	using namespace p::math;
-
-
-	static GLFWwindow* gWindow = nullptr;
+	static GLFWwindow* gWindow             = nullptr;
+	constexpr p::LinearColor titleBarColor = GetNeutralColor(0);
 
 	void OnGl3WError(int error, const char* description)
 	{
-		p::Error("Glfw Error {}: {}", error, description);
+		p::Error("Glfw Error {}: {}", error, p::StringView{description});
 	}
+
+	void ApplyDarkTitleBar(GLFWwindow* window);
 
 	bool Init()
 	{
@@ -64,6 +80,8 @@ namespace rift::UI
 			return false;
 		}
 
+		ApplyDarkTitleBar(gWindow);
+
 		glfwMakeContextCurrent(gWindow);
 		glfwSwapInterval(1);    // Enable vsync
 
@@ -95,6 +113,11 @@ namespace rift::UI
 		ImGui_ImplGlfw_InitForOpenGL(gWindow, true);
 		ImGui_ImplOpenGL3_Init(glslVersion);
 
+		// Build fonts after backends set ImGuiBackendFlags_RendererHasTextures
+		ImGui::GetIO().Fonts->Build();
+
+		SetWindowIcon();
+
 		RegisterCoreKeyValueInspections();
 		return true;
 	}
@@ -117,7 +140,6 @@ namespace rift::UI
 
 	void PreFrame()
 	{
-		ZoneScopedN("PreFrame");
 		glfwPollEvents();
 
 		ImGui_ImplOpenGL3_NewFrame();
@@ -127,14 +149,12 @@ namespace rift::UI
 
 	void Render()
 	{
-		ZoneScopedC(0xA245D1);
-
 		ImGui::Render();
-		i32 displayW, displayH;
+		p::i32 displayW, displayH;
 		glfwGetFramebufferSize(gWindow, &displayW, &displayH);
 		glViewport(0, 0, displayW, displayH);
 
-		static constexpr LinearColor clearColor{0.1f, 0.1f, 0.1f, 1.00f};
+		static constexpr p::LinearColor clearColor{0.1f, 0.1f, 0.1f, 1.00f};
 		glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 		glClear(GL_COLOR_BUFFER_BIT);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -167,5 +187,56 @@ namespace rift::UI
 	GLFWwindow* GetWindow()
 	{
 		return gWindow;
+	}
+
+	void SetWindowIcon()
+	{
+		p::String icon64Path =
+		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_64.png");
+		p::String icon128Path =
+		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_128.png");
+		p::String icon256Path =
+		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_256.png");
+		GLFWimage images[3];
+		images[0].pixels =
+		    stbi_load(icon64Path.c_str(), &images[0].width, &images[0].height, nullptr, 0);
+		images[1].pixels =
+		    stbi_load(icon128Path.c_str(), &images[1].width, &images[1].height, nullptr, 0);
+		images[2].pixels =
+		    stbi_load(icon256Path.c_str(), &images[2].width, &images[2].height, nullptr, 0);
+		if (!images[0].pixels || !images[1].pixels || !images[2].pixels)
+		{
+			p::Error("Window icon couldn't be loaded");
+			return;
+		}
+		glfwSetWindowIcon(gWindow, 3, images);
+
+		stbi_image_free(images[0].pixels);
+		stbi_image_free(images[1].pixels);
+		stbi_image_free(images[2].pixels);
+	}
+
+	void ApplyDarkTitleBar(GLFWwindow* window)
+	{
+#if P_PLATFORM_WINDOWS
+		HWND hwnd = glfwGetWin32Window(window);
+		if (!hwnd)
+		{
+			return;
+		}
+
+		// Best: match the UI background exactly (Win 11 22H2+)
+		constexpr DWORD DWMWA_CAPTION_COLOR = 35;
+		const COLORREF captionColor =
+		    RGB(titleBarColor.r * 255, titleBarColor.g * 255, titleBarColor.b * 255);
+		if (FAILED(DwmSetWindowAttribute(
+		        hwnd, DWMWA_CAPTION_COLOR, &captionColor, sizeof(captionColor))))
+		{
+			// Fallback: ask Windows to use its immersive dark title bar
+			const BOOL useDark = TRUE;
+			DwmSetWindowAttribute(hwnd, 20, &useDark, sizeof(useDark));    // Win 11 build 22621
+			DwmSetWindowAttribute(hwnd, 19, &useDark, sizeof(useDark));    // Older Win 10/11
+		}
+#endif
 	}
 }    // namespace rift::UI

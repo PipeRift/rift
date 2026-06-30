@@ -1,62 +1,64 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
+#include "Pipe/Core/TypeTraits.h"
+
 #include <AST/Tree.h>
-#include <Pipe/Math/Color.h>
-#include <Pipe/Reflect/TypeId.h>
+#include <PipeColor.h>
+#include <PipeReflect.h>
 #include <UI/Style.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	using namespace p;
 
 
-	constexpr Color selectedColor{Color::FromHEX(0xdba43f)};
-	constexpr Color executionColor{Color::FromHEX(0xdbdbdb)};
+	constexpr Color selectedColor{Color::FromHex(0xdba43f)};
+	constexpr Color executionColor{Color::FromHex(0xdbdbdb)};
 
-	constexpr Color functionColor{Color::FromHEX(0xCC3D33)};
+	constexpr Color functionColor{Color::FromHex(0xCC3D33)};
 	constexpr Color returnColor{functionColor.Shade(0.1f)};
-	constexpr Color callColor{Color::FromHEX(0x3366CC)};
+	constexpr Color callColor{Color::FromHex(0x3366CC)};
 	constexpr Color flowColor{UI::GetNeutralColor(4)};
-	constexpr Color invalidColor{Color::FromHEX(0xF95040)};
+	constexpr Color invalidColor{Color::FromHex(0xF95040)};
 
 	template<typename T>
 	constexpr Color GetTypeColor()
 	{
 		if constexpr (IsSame<T, bool>)
 		{
-			return Color::FromHEX(0xBF4A41);
+			return Color::FromHex(0xBF4A41);
 		}
 		else if constexpr (FloatingPoint<T>)
 		{
-			return Color::FromHEX(0x54BFA6);
+			return Color::FromHex(0x54BFA6);
 		}
 		else if constexpr (SignedIntegral<T>)
 		{
-			return Color::FromHEX(0x63BF54);
+			return Color::FromHex(0x63BF54);
 		}
 		else if constexpr (UnsignedIntegral<T>)
 		{
-			return Color::FromHEX(0x54BF79);
+			return Color::FromHex(0x54BF79);
 		}
 		else if constexpr (IsSame<T, String>)
 		{
-			return Color::FromHEX(0xBF54AE);
+			return Color::FromHex(0xBF54AE);
 		}
-		else if constexpr (IsSame<T, Class>)
+		else if constexpr (IsObject<T>)
 		{
-			return Color::FromHEX(0x545FBF);
+			return Color::FromHex(0x545FBF);
 		}
-		else if constexpr (IsSame<T, Struct>)
+		else if constexpr (IsStructOrClass<T>)
 		{
-			return Color::FromHEX(0x548CBF);
+			return Color::FromHex(0x548CBF);
 		}
 		return Color::Gray();
 	};
 
-	const Color GetTypeColor(const AST::Tree& ast, AST::Id id);
+	const Color GetTypeColor(const ast::Tree& ast, ast::Id id);
 
 
 	void PushNodeTitleColor(Color color);
@@ -64,4 +66,4 @@ namespace rift::Editor
 
 	void PushNodeBackgroundColor(Color color);
 	void PopNodeBackgroundColor();
-}    // namespace rift::Editor
+}    // namespace rift::editor

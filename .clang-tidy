@@ -1,5 +1,5 @@
 ---
-Checks: '-*, readability-identifier-naming, clang-analyzer-*, clang-analyzer-cplusplus*, performance-*, bugprone-*, modernize-*, misc-unused-*,-bugprone-macro-parentheses, -modernize-use-trailing-return-type, -modernize-use-nodiscard, -modernize-use-default-member-init, -modernize-use-equals-default, -performance-unnecessary-value-param, -misc-unused-parameters, -bugprone-branch-clone, -modernize-avoid-c-arrays, -bugprone-easily-swappable-parameters'
+Checks: '-*, readability-identifier-naming, clang-analyzer-*, clang-analyzer-cplusplus*, performance-*, bugprone-*, modernize-*, misc-unused-*,-bugprone-macro-parentheses, -modernize-use-trailing-return-type, -modernize-use-nodiscard, -modernize-use-default-member-init, -modernize-use-equals-default, -modernize-raw-string-literal -performance-unnecessary-value-param, -misc-unused-parameters, -bugprone-branch-clone, -modernize-avoid-c-arrays, -bugprone-easily-swappable-parameters'
 WarningsAsErrors: ''
 HeaderFilterRegex: 'Corresponding Header'
 FormatStyle: file

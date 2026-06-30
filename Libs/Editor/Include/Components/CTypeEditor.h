@@ -1,19 +1,19 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include "DockSpaceLayout.h"
 
 #include <AST/Id.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 #include <UI/UI.h>
 #include <Utils/NodesInternal.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	struct CTypeEditor : public p::Struct
+	struct CTypeEditor
 	{
-		STRUCT(CTypeEditor, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(CTypeEditor, p::TF_NotSerialized)
 
 		static const Tag rightTopNode;
 		static const Tag rightBottomNode;
@@ -27,8 +27,8 @@ namespace rift::Editor
 		bool showElements = true;
 		bool showDetails  = true;
 
-		AST::Id selectedPropertyId      = AST::NoId;
-		AST::Id pendingDeletePropertyId = AST::NoId;
+		ast::Id selectedPropertyId      = ast::NoId;
+		ast::Id pendingDeletePropertyId = ast::NoId;
 
 		Nodes::EditorContext nodesEditor;
 		ImGuiTextFilter elementsFilter;
@@ -37,4 +37,4 @@ namespace rift::Editor
 	inline const Tag CTypeEditor::rightTopNode{"rightTopNode"};
 	inline const Tag CTypeEditor::rightBottomNode{"rightBottomNode"};
 	inline const Tag CTypeEditor::centralNode{"centralNode"};
-}    // namespace rift::Editor
+}    // namespace rift::editor

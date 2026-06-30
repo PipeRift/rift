@@ -1,0 +1,16 @@
+M0:	module
+proto0:	proto	i32, ...
+	import	printf
+main:	func	
+	local	i64:u0_a, i64:I_0, i64:i0_q, i64:i0_nn, i64:i_1, i64:i_2
+# 0 args, 6 locals
+	uext8	I_0, 1
+	mov	u0_a, I_0
+	mov	i0_q, 4
+	mov	i0_nn, 2433
+	adds	i_2, i0_q, i0_nn
+	call	proto0, printf, i_1, "%i\000", i_2
+	ret
+	endfunc
+	export	main
+	endmodule

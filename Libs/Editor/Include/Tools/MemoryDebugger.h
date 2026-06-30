@@ -1,14 +1,13 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
-#include <Pipe/Core/Platform.h>
 #include <Pipe/Core/StringView.h>
-#include <Pipe/Math/Vector.h>
-#include <Pipe/Memory/BigBestFitArena.h>
-#include <Pipe/Memory/Block.h>
+#include <PipeMemory.h>
+#include <PipePlatform.h>
+#include <PipeVectors.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	using namespace p;
 
@@ -21,4 +20,4 @@ namespace rift::Editor
 		MemoryDebugger();
 		void Draw();
 	};
-}    // namespace rift::Editor
+}    // namespace rift::editor

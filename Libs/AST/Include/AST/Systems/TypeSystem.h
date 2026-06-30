@@ -1,39 +1,33 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
-#include "AST/Components/CDeclType.h"
-#include "AST/Components/CDeclVariable.h"
-#include "AST/Components/CExprBinaryOperator.h"
-#include "AST/Components/CExprDeclRef.h"
-#include "AST/Components/CExprInputs.h"
-#include "AST/Components/CExprOutputs.h"
-#include "AST/Components/CExprType.h"
-#include "AST/Components/CExprUnaryOperator.h"
+#include "AST/Components/CFileRef.h"
+#include "AST/Components/Declarations.h"
+#include "AST/Components/Expressions.h"
 #include "AST/Components/Tags/CChanged.h"
 
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct Tree;
 }
 
-namespace rift::AST::TypeSystem
+namespace rift::ast::TypeSystem
 {
-	using namespace p;
-
-
 	void Init(Tree& ast);
 
-	using PropagateVariableTypesAccess =
-	    TAccessRef<CExprDeclRefId, CDeclVariable, TWrite<CExprTypeId>>;
-	void PropagateVariableTypes(PropagateVariableTypesAccess access);
+	void SyncTypesByPath(p::TIdScopeRef<CDeclType, CFileRef> scope);
 
-	using PropagateExpressionTypesAccess = TAccessRef<CDeclType, CChanged, CExprInputs,
-	    CExprOutputs, TWrite<CExprTypeId>, CExprUnaryOperator, CExprBinaryOperator, CParent>;
-	void PropagateExpressionTypes(PropagateExpressionTypesAccess access);
+	using PropagateVariableTypesScope =
+	    p::TIdScopeRef<p::Writes<CExprTypeId>, CExprDeclRefId, CDeclVariable>;
+	void PropagateVariableTypes(PropagateVariableTypesScope scope);
+
+	using PropagateExpressionTypesScope = p::TIdScopeRef<p::Writes<CExprTypeId>, CDeclType,
+	    CChanged, CExprInputs, CExprOutputs, CExprUnaryOperator, CExprBinaryOperator, p::CParent>;
+	void PropagateExpressionTypes(PropagateExpressionTypesScope scope);
 
 	void ResolveExprTypeIds(
-	    TAccessRef<TWrite<CExprTypeId>, CExprType, CNamespace, CParent, CChild> access);
-}    // namespace rift::AST::TypeSystem
+	    p::TIdScopeRef<p::Writes<CExprTypeId>, CExprType, CNamespace, p::CParent, p::CChild> scope);
+}    // namespace rift::ast::TypeSystem

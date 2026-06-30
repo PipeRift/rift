@@ -1,12 +1,13 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include "AST/Tree.h"
+#include "PipeReflect.h"
 
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	using namespace p;
 
@@ -15,16 +16,7 @@ namespace rift::Editor
 	{
 		bool open = false;
 
-		Type* selectedType = nullptr;
-		ImGuiTextFilter filter;
-		TypeCategory categoryFilter = TypeCategory::All;
-
-
 		ReflectionDebugger();
-
-		void Draw();
-
-	private:
-		void DrawType(Type* type);
+		void Draw(ast::Tree& ast);
 	};
-}    // namespace rift::Editor
+}    // namespace rift::editor

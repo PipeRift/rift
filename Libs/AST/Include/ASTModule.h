@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
@@ -7,14 +7,16 @@
 
 namespace rift
 {
-	namespace AST
+	namespace ast
 	{
 		class Tree;
 	}
 
 	class ASTModule : public Module
 	{
-		CLASS(ASTModule, Module)
+	public:
+		using Super = Module;
+		P_CLASS(ASTModule)
 
 	public:
 		static const p::Tag structType;

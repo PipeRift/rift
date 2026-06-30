@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "AST/Utils/Namespaces.h"
 
@@ -6,62 +6,62 @@
 #include "AST/Id.h"
 #include "Pipe/Core/StringView.h"
 
-#include <Pipe/Math/Math.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
+#include <PipeMath.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	Namespace GetNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id)
+	Namespace GetNamespace(p::TIdScopeRef<CNamespace, CChild, CModule> scope, Id id)
 	{
 		Namespace ns;
-		TArray<Id> idChain;
+		p::TArray<Id> idChain;
 		idChain.Reserve(Namespace::scopeCount);
 
 		while (!IsNone(id))
 		{
 			idChain.Add(id);
-			if (access.Has<CModule>(id))
+			if (scope.Has<CModule>(id))
 			{
 				break;
 			}
-			id = p::GetParent(access, id);
+			id = p::GetIdParent(scope, id);
 		}
 
-		i32 i, scopeIndex = 0;
+		p::i32 i, scopeIndex = 0;
 		for (i = idChain.Size() - 1; i >= 0 && scopeIndex < Namespace::scopeCount; --i)
 		{
-			ns.scopes[scopeIndex] = GetName(access, idChain[i]);
+			ns.scopes[scopeIndex] = GetName(scope, idChain[i]);
 			++scopeIndex;
 		}
-		CheckMsg(i < 0, "Not enough scopes to cover this namespace");
+		P_CheckMsg(i < 0, "Not enough scopes to cover this namespace");
 		return ns;
 	}
 
-	Namespace GetParentNamespace(TAccessRef<CNamespace, CChild, CModule> access, Id id)
+	Namespace GetParentNamespace(p::TIdScopeRef<CNamespace, CChild, CModule> scope, Id id)
 	{
 		if (!IsNone(id))
 		{
-			return GetNamespace(access, p::GetParent(access, id));
+			return GetNamespace(scope, p::GetIdParent(scope, id));
 		}
 		return {};
 	}
 
-	Id FindIdFromNamespace(TAccessRef<CNamespace, CChild, CParent> access, const Namespace& ns,
-	    const TArray<Id>* rootIds)
+	Id FindIdFromNamespace(p::TIdScopeRef<CNamespace, CChild, CParent> scope, const Namespace& ns,
+	    const p::TArray<Id>* rootIds)
 	{
-		TArray<Id> localRoots;
+		p::TArray<Id> localRoots;
 		if (!rootIds)
 		{
-			localRoots = FindAllIdsWith<CNamespace>(access);
-			ExcludeIdsWith<CChild>(access, localRoots);
+			localRoots = p::FindAllIdsWith<CNamespace>(scope);
+			p::ExcludeIdsWith<CChild>(scope, localRoots);
 			rootIds = &localRoots;
 		}
 
-		const TArray<Id>* scopeIds = rootIds;
-		Id foundScopeId            = NoId;
-		Tag scopeName;
-		i32 depth = 0;
+		const p::TArray<Id>* scopeIds = rootIds;
+		Id foundScopeId               = NoId;
+		p::Tag scopeName;
+		p::i32 depth = 0;
 		while (scopeIds && depth < Namespace::scopeCount)
 		{
 			scopeName = ns[depth];
@@ -73,7 +73,7 @@ namespace rift::AST
 			foundScopeId = NoId;
 			for (Id id : *scopeIds)
 			{
-				auto* rootName = access.TryGet<const CNamespace>(id);
+				auto* rootName = scope.TryGet<const CNamespace>(id);
 				if (rootName && rootName->name == scopeName)
 				{
 					foundScopeId = id;
@@ -84,7 +84,7 @@ namespace rift::AST
 			if (!IsNone(foundScopeId))
 			{
 				// Found matching name, check next scope
-				scopeIds = p::GetChildren(access, foundScopeId);
+				scopeIds = p::GetIdChildren(scope, foundScopeId);
 				++depth;
 			}
 			else
@@ -95,20 +95,20 @@ namespace rift::AST
 		return foundScopeId;
 	}
 
-	Tag GetName(TAccessRef<CNamespace> access, Id id)
+	p::Tag GetName(p::TIdScopeRef<CNamespace> scope, Id id)
 	{
-		auto* ns = access.TryGet<const CNamespace>(id);
-		return ns ? ns->name : Tag::None();
+		auto* ns = scope.TryGet<const CNamespace>(id);
+		return ns ? ns->name : p::Tag::None();
 	}
-	Tag GetNameUnsafe(TAccessRef<CNamespace> access, Id id)
+	p::Tag GetNameUnsafe(p::TIdScopeRef<CNamespace> scope, Id id)
 	{
-		return access.Get<const CNamespace>(id).name;
-	}
-
-	p::String GetFullName(
-	    TAccessRef<CNamespace, CChild, CModule> access, Id id, bool localNamespace)
-	{
-		return GetNamespace(access, id).ToString(localNamespace);
+		return scope.Get<const CNamespace>(id).name;
 	}
 
-}    // namespace rift::AST
+	p::String GetFullName(p::TIdScopeRef<CNamespace, CChild, CModule> scope, Id id,
+	    bool localNamespace, char separator)
+	{
+		return GetNamespace(scope, id).ToString(localNamespace, separator);
+	}
+
+}    // namespace rift::ast

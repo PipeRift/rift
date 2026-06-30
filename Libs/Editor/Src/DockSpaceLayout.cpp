@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "DockSpaceLayout.h"
 
@@ -7,7 +7,7 @@
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	const Tag DockSpaceLayout::rootNodeId{"root"};
 
@@ -34,14 +34,14 @@ namespace rift::Editor
 	ImGuiDockNodeFlags& DockSpaceLayout::Builder::GetNodeLocalFlags(Tag nodeId)
 	{
 		const ImGuiID dockNodeId = layout.GetDockNodeId(nodeId);
-		Check(dockNodeId > 0);
+		P_Check(dockNodeId > 0);
 		return ImGui::DockBuilderGetNode(dockNodeId)->LocalFlags;
 	}
 
 	ImGuiDockNodeFlags& DockSpaceLayout::Builder::GetNodeSharedFlags(Tag nodeId)
 	{
 		const ImGuiID dockNodeId = layout.GetDockNodeId(nodeId);
-		Check(dockNodeId > 0);
+		P_Check(dockNodeId > 0);
 		return ImGui::DockBuilderGetNode(dockNodeId)->SharedFlags;
 	}
 
@@ -103,4 +103,4 @@ namespace rift::Editor
 		}
 		ImGui::DockBuilderFinish(dockSpaceID);
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

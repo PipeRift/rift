@@ -1,7 +1,6 @@
 # Copyright 2015-2023 Piperift - All rights reserved
 
 add_subdirectory(AST)
-add_subdirectory(Backends/LLVM)
 add_subdirectory(Backends/MIR)
 add_subdirectory(Bindings/Native)
 

@@ -1,12 +1,26 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include <mir.h>
-#include <Pipe/Reflect/Struct.h>
+#include <Pipe/Core/Tag.h>
 
 
 namespace rift
 {
-	using CMIRModule = MIR_module_t;
-	using CMIRType   = MIR_type_t;
+	struct CMIRModule
+	{
+		p::String code;
+	};
+	struct CMIRType
+	{
+		p::Tag value;
+	};
+	struct CMIRLiteral
+	{
+		p::Tag value;
+	};
+	struct CMIRFunctionSignature
+	{
+		p::String value;
+	};
 }    // namespace rift

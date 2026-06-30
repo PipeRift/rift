@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "UI/Style.h"
 
@@ -8,26 +8,26 @@
 #include <IconsFontAwesome5.h>
 #include <Pipe/Core/Checks.h>
 #include <Pipe/Core/Log.h>
-#include <Pipe/Core/Tuples.h>
+#include <Pipe/Core/Map.h>
+#include <Pipe/Core/Templates.h>
 #include <Pipe/Files/Paths.h>
-#include <Pipe/Math/Math.h>
-#include <Pipe/PipeArrays.h>
+#include <PipeContainers.h>
+#include <PipeMath.h>
+#include <PipeReflect.h>
 
 
 namespace rift::UI
 {
-	using namespace p;
-
-
 	struct FontType
 	{
-		TArray<TPair<float, ImFont*>> sizes{};
+		p::TArray<p::TPair<float, ImFont*>> sizes{};
 
 		void Add(float size, ImFont* imFont)
 		{
-			if (sizes.Contains([size](const auto& font) {
-				    return math::NearlyEqual(font.first, size);
-			    }))
+			if (sizes.ContainsIf([size](const auto& font)
+			{
+				return p::NearlyEqual(font.first, size);
+			}))
 			{
 				p::Error(
 				    "Tried to register the same font with the same size and mode twice (size: {})",
@@ -47,8 +47,9 @@ namespace rift::UI
 			{
 				return sizes.First().second;
 			}
-			const TPair<float, ImFont*>* foundFont = sizes.Find([desiredSize](const auto& font) {
-				return math::NearlyEqual(font.first, desiredSize);
+			const p::TPair<float, ImFont*>* foundFont = sizes.FindIf([desiredSize](const auto& font)
+			{
+				return p::NearlyEqual(font.first, desiredSize);
 			});
 			return foundFont ? foundFont->second : nullptr;
 		}
@@ -56,29 +57,29 @@ namespace rift::UI
 
 	struct FontDescriptor
 	{
-		std::array<FontType, GetEnumSize<UI::FontMode>()> modes{};
+		std::array<FontType, p::GetEnumSize<UI::FontMode>()> modes{};
 
 		FontType& operator[](UI::FontMode mode)
 		{
-			return modes[u8(mode)];
+			return modes[p::u8(mode)];
 		}
 		const FontType& operator[](UI::FontMode mode) const
 		{
-			return modes[u8(mode)];
+			return modes[p::u8(mode)];
 		}
 	};
 
-	static TMap<Tag, FontDescriptor> gFonts{};
+	static p::TMap<p::Tag, FontDescriptor> gFonts{};
 
 
-	ImFont* AddFont(Path file, float size, const ImFontConfig* fontConfig = nullptr,
+	ImFont* AddFont(p::StringView file, float size, const ImFontConfig* fontConfig = nullptr,
 	    const ImWchar* glyphRanges = nullptr)
 	{
 		auto& io = ImGui::GetIO();
-		return io.Fonts->AddFontFromFileTTF(ToString(file).data(), size, fontConfig, glyphRanges);
+		return io.Fonts->AddFontFromFileTTF(file.data(), size, fontConfig, glyphRanges);
 	}
 
-	void AddTextFont(Tag name, UI::FontMode mode, float size, p::Path file)
+	void AddTextFont(p::Tag name, UI::FontMode mode, float size, p::StringView file)
 	{
 		FontDescriptor* font = gFonts.Find(name);
 		if (!font)
@@ -87,7 +88,7 @@ namespace rift::UI
 			font = &gFonts[name];
 		}
 
-		ImFont* imFont = AddFont(ToString(file).data(), size);
+		ImFont* imFont = AddFont(file.data(), size);
 		(*font)[mode].Add(size, imFont);
 
 		// Add Font Awesome icons
@@ -97,7 +98,8 @@ namespace rift::UI
 		iconsConfig.PixelSnapH       = true;
 		iconsConfig.GlyphMinAdvanceX = 14.f;
 		// use FONT_ICON_FILE_NAME_FAR if you want regular instead of solid
-		AddFont(file.parent_path() / FONT_ICON_FILE_NAME_FAS, 14.0f, &iconsConfig, iconsRanges);
+		p::String path = p::JoinPaths(p::GetParentPath(file), FONT_ICON_FILE_NAME_FAS);
+		AddFont(path, 14.0f, &iconsConfig, iconsRanges);
 	}
 
 	void LoadFonts()
@@ -105,42 +107,48 @@ namespace rift::UI
 		auto& io = ImGui::GetIO();
 		io.Fonts->AddFontDefault();
 
-		auto resources = rift::Paths::GetResourcesPath() / "Editor";
+		auto resources = p::JoinPaths(rift::Paths::GetResourcesPath(), "Editor");
 
 		// Work Sans
-		AddTextFont("WorkSans", UI::FontMode::Bold, 14.f, resources / "Fonts/WorkSans-Bold.ttf");
+		AddTextFont("WorkSans", UI::FontMode::Bold, 14.f,
+		    p::JoinPaths(resources, "Fonts/WorkSans-Bold.ttf"));
 		AddTextFont("WorkSans", UI::FontMode::BoldItalic, 14.f,
-		    resources / "Fonts/WorkSans-BoldItalic.ttf");
-		AddTextFont(
-		    "WorkSans", UI::FontMode::Italic, 14.f, resources / "Fonts/WorkSans-Italic.ttf");
-		AddTextFont("WorkSans", UI::FontMode::Light, 14.f, resources / "Fonts/WorkSans-Light.ttf");
+		    p::JoinPaths(resources, "Fonts/WorkSans-BoldItalic.ttf"));
+		AddTextFont("WorkSans", UI::FontMode::Italic, 14.f,
+		    p::JoinPaths(resources, "Fonts/WorkSans-Italic.ttf"));
+		AddTextFont("WorkSans", UI::FontMode::Light, 14.f,
+		    p::JoinPaths(resources, "Fonts/WorkSans-Light.ttf"));
 		AddTextFont("WorkSans", UI::FontMode::LightItalic, 14.f,
-		    resources / "Fonts/WorkSans-LightItalic.ttf");
-		AddTextFont(
-		    "WorkSans", UI::FontMode::Regular, 14.f, resources / "Fonts/WorkSans-Regular.ttf");
-		AddTextFont(
-		    "WorkSans", UI::FontMode::Regular, 18.f, resources / "Fonts/WorkSans-Regular.ttf");
+		    p::JoinPaths(resources, "Fonts/WorkSans-LightItalic.ttf"));
+		AddTextFont("WorkSans", UI::FontMode::Regular, 14.f,
+		    p::JoinPaths(resources, "Fonts/WorkSans-Regular.ttf"));
+		AddTextFont("WorkSans", UI::FontMode::Regular, 18.f,
+		    p::JoinPaths(resources, "Fonts/WorkSans-Regular.ttf"));
+		AddTextFont("WorkSans", UI::FontMode::Regular, 24.f,
+		    p::JoinPaths(resources, "Fonts/WorkSans-Regular.ttf"));
 
 		// Karla
-		AddTextFont("Karla", UI::FontMode::Bold, 14.f, resources / "Fonts/Karla-Bold.ttf");
 		AddTextFont(
-		    "Karla", UI::FontMode::BoldItalic, 14.f, resources / "Fonts/Karla-BoldItalic.ttf");
-		AddTextFont("Karla", UI::FontMode::Italic, 14.f, resources / "Fonts/Karla-Italic.ttf");
-		AddTextFont("Karla", UI::FontMode::Light, 14.f, resources / "Fonts/Karla-Light.ttf");
+		    "Karla", UI::FontMode::Bold, 14.f, p::JoinPaths(resources, "Fonts/Karla-Bold.ttf"));
+		AddTextFont("Karla", UI::FontMode::BoldItalic, 14.f,
+		    p::JoinPaths(resources, "Fonts/Karla-BoldItalic.ttf"));
 		AddTextFont(
-		    "Karla", UI::FontMode::LightItalic, 14.f, resources / "Fonts/Karla-LightItalic.ttf");
-		AddTextFont("Karla", UI::FontMode::Regular, 14.f, resources / "Fonts/Karla-Regular.ttf");
-
-		io.Fonts->Build();
+		    "Karla", UI::FontMode::Italic, 14.f, p::JoinPaths(resources, "Fonts/Karla-Italic.ttf"));
+		AddTextFont(
+		    "Karla", UI::FontMode::Light, 14.f, p::JoinPaths(resources, "Fonts/Karla-Light.ttf"));
+		AddTextFont("Karla", UI::FontMode::LightItalic, 14.f,
+		    p::JoinPaths(resources, "Fonts/Karla-LightItalic.ttf"));
+		AddTextFont("Karla", UI::FontMode::Regular, 14.f,
+		    p::JoinPaths(resources, "Fonts/Karla-Regular.ttf"));
 	}
 
-	ImFont* FindFont(Tag name, UI::FontMode mode, float size)
+	ImFont* FindFont(p::Tag name, UI::FontMode mode, float size)
 	{
 		const FontDescriptor* const font = gFonts.Find(name);
 		return font ? (*font)[mode].Get(size) : nullptr;
 	}
 
-	void SetDefaultFont(Tag name, UI::FontMode mode, float size)
+	void SetDefaultFont(p::Tag name, UI::FontMode mode, float size)
 	{
 		ImFont* font = FindFont(name, mode, size);
 		if (!font && !name.IsNone())
@@ -150,13 +158,13 @@ namespace rift::UI
 		ImGui::GetIO().FontDefault = font;
 	}
 
-	void PushFont(Tag name, UI::FontMode mode, float size)
+	void PushFont(p::Tag name, UI::FontMode mode, float size)
 	{
 		ImFont* font = FindFont(name, mode, size);
 		if (!font && !name.IsNone())
 		{
 			p::Error("Tried to push inexistent font '{}' (mode: {}, size: {})", name,
-			    GetEnumName(mode), size);
+			    p::GetEnumName(mode), size);
 		}
 		ImGui::PushFont(font);
 	}
@@ -181,10 +189,10 @@ namespace rift::UI
 
 		ImVec4* colors = style.Colors;
 
-		LinearColor titleColor            = UI::GetNeutralColor(0);
+		p::LinearColor titleColor         = UI::GetNeutralColor(0);
 		colors[ImGuiCol_TitleBg]          = titleColor.Shade(0.2f);
 		colors[ImGuiCol_TitleBgActive]    = titleColor;
-		colors[ImGuiCol_TitleBgCollapsed] = UI::Disabled(titleColor);
+		colors[ImGuiCol_TitleBgCollapsed] = UI::ToDisabled(titleColor);
 
 		colors[ImGuiCol_WindowBg] = UI::GetNeutralColor(1);
 		colors[ImGuiCol_Border]   = UI::GetNeutralColor(0);
@@ -194,17 +202,17 @@ namespace rift::UI
 		colors[ImGuiCol_SliderGrab]       = UI::GetNeutralColor(4);
 
 
-		LinearColor separatorColor        = UI::GetNeutralColor(1);
-		colors[ImGuiCol_SeparatorHovered] = UI::Hovered(separatorColor);
+		p::LinearColor separatorColor     = UI::GetNeutralColor(1);
+		colors[ImGuiCol_SeparatorHovered] = UI::ToHovered(separatorColor);
 		colors[ImGuiCol_SeparatorActive]  = separatorColor;
 
-		LinearColor resizeGripColor        = UI::GetNeutralColor(1);
+		p::LinearColor resizeGripColor     = UI::GetNeutralColor(1);
 		colors[ImGuiCol_ResizeGrip]        = resizeGripColor.Shade(0.3f);
-		colors[ImGuiCol_ResizeGripHovered] = UI::Hovered(resizeGripColor);
+		colors[ImGuiCol_ResizeGripHovered] = UI::ToHovered(resizeGripColor);
 		colors[ImGuiCol_ResizeGripActive]  = resizeGripColor;
 
 		colors[ImGuiCol_DockingPreview] = UI::GetNeutralColor(2);
-		colors[ImGuiCol_DockingEmptyBg] = LinearColor::White().Shade(0.97f);
+		colors[ImGuiCol_DockingEmptyBg] = UI::GetNeutralColor(0);
 		colors[ImGuiCol_TextSelectedBg] = UI::primaryColor.Shade(0.1f);
 
 		colors[ImGuiCol_NavHighlight] = UI::primaryColor;
@@ -221,73 +229,11 @@ namespace rift::UI
 
 		UI::PushButtonColor(UI::GetNeutralColor(3));
 		UI::PushFrameBgColor(UI::GetNeutralColor(2));
-		UI::PushHeaderColor();
+		UI::PushHeaderColor(UI::GetNeutralColor(2));
 
 		LoadFonts();
 		UI::SetDefaultFont("WorkSans");
 	}
 
 	void PopGeneralStyle() {}
-
-	// Make the UI compact because there are so many fields
-	void PushStyleCompact()
-	{
-		ImGuiStyle& style = ImGui::GetStyle();
-		UI::PushStyleVar(ImGuiStyleVar_FramePadding,
-		    ImVec2(style.FramePadding.x, (float)(int)(style.FramePadding.y * 0.60f)));
-		UI::PushStyleVar(ImGuiStyleVar_ItemSpacing,
-		    ImVec2(style.ItemSpacing.x, (float)(int)(style.ItemSpacing.y * 0.60f)));
-	}
-
-	void PopStyleCompact()
-	{
-		UI::PopStyleVar(2);
-	}
-
-	void PushFrameBgColor(LinearColor color)
-	{
-		UI::PushStyleColor(ImGuiCol_FrameBg, color.Shade(0.3f));
-		UI::PushStyleColor(ImGuiCol_FrameBgHovered, UI::Hovered(color));
-		UI::PushStyleColor(ImGuiCol_FrameBgActive, color);
-	}
-
-	void PopFrameBgColor()
-	{
-		UI::PopStyleColor(3);
-	}
-
-	void PushButtonColor(LinearColor color)
-	{
-		UI::PushStyleColor(ImGuiCol_Button, color);
-		UI::PushStyleColor(ImGuiCol_ButtonHovered, UI::Hovered(color));
-		UI::PushStyleColor(ImGuiCol_ButtonActive, color.Tint(0.1f));
-	}
-
-	void PopButtonColor()
-	{
-		UI::PopStyleColor(3);
-	}
-
-	void PushHeaderColor(LinearColor color)
-	{
-		UI::PushStyleColor(ImGuiCol_Header, color);
-		UI::PushStyleColor(ImGuiCol_HeaderHovered, UI::Hovered(color));
-		UI::PushStyleColor(ImGuiCol_HeaderActive, color.Tint(0.1f));
-	}
-
-	void PopHeaderColor()
-	{
-		UI::PopStyleColor(3);
-	}
-
-	void PushTextColor(LinearColor color)
-	{
-		UI::PushStyleColor(ImGuiCol_Text, color);
-		UI::PushStyleColor(ImGuiCol_TextDisabled, color.Shade(0.15f));
-	}
-
-	void PopTextColor()
-	{
-		UI::PopStyleColor(2);
-	}
 }    // namespace rift::UI

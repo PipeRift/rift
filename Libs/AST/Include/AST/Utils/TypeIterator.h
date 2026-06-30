@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include "AST/Utils/Paths.h"
@@ -7,19 +7,20 @@
 #include <Pipe/Files/LambdaFileIterator.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	class TypeIterator : public p::files::LambdaFileIterator<p::files::RecursiveIterator>
+	class TypeIterator : public p::LambdaFileIterator<p::RecursiveDirectoryIterator>
 	{
-		using Super = p::files::LambdaFileIterator<p::files::RecursiveIterator>;
+		using Super = p::LambdaFileIterator<p::RecursiveDirectoryIterator>;
 
 	public:
 		using Super::Super;
 
-		explicit TypeIterator(const p::Path& path)
-		    : Super(path, [](const auto& path) {
-			    return path.extension() == Paths::typeExtension;
-		    })
+		explicit TypeIterator(p::StringView path)
+		    : Super(path, [](p::StringView path)
+		{
+			return p::GetExtension(path) == Paths::typeExtension;
+		})
 		{}
 	};
 
@@ -33,4 +34,4 @@ namespace rift::AST
 	{
 		return {};
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

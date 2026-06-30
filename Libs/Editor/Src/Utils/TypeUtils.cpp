@@ -1,34 +1,37 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Utils/TypeUtils.h"
 
+#include "Systems/EditorSystem.h"
+
 #include <Pipe/Core/Checks.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	void OpenType(TAccessRef<TWrite<CTypeEditor>, AST::CDeclType> access, AST::Id id)
+	void OpenType(p::TIdScopeRef<Writes<CTypeEditor>, ast::CDeclType> scope, ast::Id id)
 	{
-		Check(access.Has<AST::CDeclType>(id));
-		if (auto* editor = access.TryGet<CTypeEditor>(id))
+		P_Check(scope.Has<ast::CDeclType>(id));
+		if (auto* editor = scope.TryGet<CTypeEditor>(id))
 		{
 			editor->pendingFocus = true;
 		}
 		else
 		{
-			access.Add<CTypeEditor>(id);
+			scope.Add<CTypeEditor>(id);
+			EditorSystem::OnTypeEditorOpen(static_cast<ast::Tree&>(scope.GetContext()), id);
 		}
 	}
 
-	void CloseType(TAccessRef<TWrite<CTypeEditor>, AST::CDeclType> access, AST::Id id)
+	void CloseType(p::TIdScopeRef<Writes<CTypeEditor>, ast::CDeclType> scope, ast::Id id)
 	{
-		Check(access.Has<AST::CDeclType>(id));
-		access.Remove<CTypeEditor>(id);
+		P_Check(scope.Has<ast::CDeclType>(id));
+		scope.Remove<CTypeEditor>(id);
 	}
 
-	bool IsTypeOpen(TAccessRef<CTypeEditor> access, AST::Id id)
+	bool IsTypeOpen(p::TIdScopeRef<CTypeEditor> scope, ast::Id id)
 	{
-		return access.Has<CTypeEditor>(id);
+		return scope.Has<CTypeEditor>(id);
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

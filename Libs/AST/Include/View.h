@@ -1,19 +1,19 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
-#include "AST/Components/CDeclType.h"
+#include "AST/Components/Declarations.h"
 
 #include <Pipe/Core/Function.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
 namespace rift
 {
-	struct View : public p::Struct
+	struct View
 	{
-		STRUCT(View, p::Struct)
+		P_STRUCT(View)
 
-		PROP(name)
+		P_PROP(name)
 		p::Tag name;
 
 		p::TArray<p::Tag> supportedTypes;

@@ -1,23 +1,21 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include "AST/Id.h"
 
 #include <Pipe/Files/Paths.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	using namespace p::core;
-
-	struct STypes : public Struct
+	struct STypes
 	{
-		STRUCT(STypes, Struct)
+		P_STRUCT(STypes)
 
-		TMap<Tag, Id> typesByName;
+		p::TMap<p::Tag, Id> typesByName;
 		// TODO: Use StringView to point to CFileRef component's path.
 		// Current TMap lookup of stringviews seems unconsistent
-		TMap<Tag, Id> typesByPath;
+		p::TMap<p::Tag, Id> typesByPath;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

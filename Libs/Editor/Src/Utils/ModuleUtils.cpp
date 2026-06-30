@@ -1,33 +1,33 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Utils/ModuleUtils.h"
 
 #include <Pipe/Core/Checks.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	void OpenModuleEditor(TAccessRef<TWrite<CModuleEditor>, AST::CModule> access, AST::Id id)
+	void OpenModuleEditor(p::TIdScopeRef<Writes<CModuleEditor>, ast::CModule> scope, ast::Id id)
 	{
-		Check(access.Has<AST::CModule>(id));
-		if (auto* editor = access.TryGet<CModuleEditor>(id))
+		P_Check(scope.Has<ast::CModule>(id));
+		if (auto* editor = scope.TryGet<CModuleEditor>(id))
 		{
 			editor->pendingFocus = true;
 		}
 		else
 		{
-			access.Add<CModuleEditor>(id);
+			scope.Add<CModuleEditor>(id);
 		}
 	}
 
-	void CloseModuleEditor(TAccessRef<TWrite<CModuleEditor>, AST::CModule> access, AST::Id id)
+	void CloseModuleEditor(p::TIdScopeRef<Writes<CModuleEditor>, ast::CModule> scope, ast::Id id)
 	{
-		Check(access.Has<AST::CModule>(id));
-		access.Remove<CModuleEditor>(id);
+		P_Check(scope.Has<ast::CModule>(id));
+		scope.Remove<CModuleEditor>(id);
 	}
 
-	bool IsEditingModule(TAccessRef<CModuleEditor> access, AST::Id id)
+	bool IsEditingModule(p::TIdScopeRef<CModuleEditor> scope, ast::Id id)
 	{
-		return access.Has<CModuleEditor>(id);
+		return scope.Has<CModuleEditor>(id);
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

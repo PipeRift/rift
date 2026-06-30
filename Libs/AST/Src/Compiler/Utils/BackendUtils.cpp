@@ -1,28 +1,30 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Compiler/Utils/BackendUtils.h"
+
+#include "PipeReflect.h"
 
 
 namespace rift
 {
-	TArray<ClassType*> GetBackendTypes()
+	p::TArray<p::TypeId> GetBackendTypes()
 	{
-		TArray<ClassType*> types = Backend::GetStaticType()->GetChildren();
-		types.RemoveIf([](ClassType* type) {
-			return !type || type->HasFlag(Class_Abstract);
+		p::TArray<p::TypeId> types;    // = Backend::GetStaticType()->GetChildren();
+		types.RemoveIf([](p::TypeId type)
+		{
+			return !type.IsValid() || p::HasTypeFlags(type, p::TF_Abstract);
 		});
 		return Move(types);
 	}
 
-	TArray<TOwnPtr<Backend>> CreateBackends()
+	p::TArray<p::TOwnPtr<Backend>> CreateBackends()
 	{
-		TArray<TOwnPtr<Backend>> backends;
-
+		p::TArray<p::TOwnPtr<Backend>> backends;
 		auto types = GetBackendTypes();
 		backends.Reserve(types.Size());
-		for (auto* type : types)
+		for (p::TypeId type : types)
 		{
-			backends.Add(MakeOwned<Backend>(type));
+			backends.Add(p::MakeOwned<Backend>(type));
 		}
 		return Move(backends);
 	}

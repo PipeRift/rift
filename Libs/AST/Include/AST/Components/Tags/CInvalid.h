@@ -1,13 +1,13 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	struct CInvalid : public p::Struct
+	struct CInvalid
 	{
-		STRUCT(CInvalid, p::Struct)
+		P_STRUCT(CInvalid)
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

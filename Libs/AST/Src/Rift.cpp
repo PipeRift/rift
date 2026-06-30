@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Rift.h"
 
@@ -7,13 +7,13 @@
 
 namespace rift
 {
-	static p::TMap<p::ClassType*, p::TOwnPtr<class Module>> gModules{};
+	static p::TMap<p::TypeId, p::TOwnPtr<class Module>> gModules{};
 	static p::TArray<View> gViews{};
 
 
-	void EnableModule(p::ClassType* type)
+	void EnableModule(p::TypeId type)
 	{
-		Check(Module::GetStaticType()->IsParentOf(type));
+		P_Check(IsTypeParentOf(GetTypeId<Module>(), type));
 
 		if (!gModules.Contains(type))
 		{
@@ -23,12 +23,12 @@ namespace rift
 		}
 	}
 
-	void DisableModule(p::ClassType* type)
+	void DisableModule(p::TypeId type)
 	{
 		gModules.Remove(type);
 	}
 
-	p::TPtr<Module> GetModule(p::ClassType* type)
+	p::TPtr<Module> GetModule(p::TypeId type)
 	{
 		if (auto* module = gModules.Find(type))
 		{

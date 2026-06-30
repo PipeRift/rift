@@ -1,27 +1,28 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
 #include "Compiler/Compiler.h"
 
-#include <Pipe/Reflect/Class.h>
+#include <PipeReflect.h>
 
 
 namespace rift
 {
-	class Backend : public Class
+	class Backend : public p::Object
 	{
-		CLASS(Backend, Class)
-
 	public:
-		virtual Tag GetName()
+		using Super = p::Object;
+		P_CLASS(Backend)
+
+		virtual p::Tag GetName()
 		{
-			return Tag::None();
+			return p::Tag::None();
 		}
 
 		virtual void Build(Compiler& compiler)
 		{
-			CheckMsg(false, "Backend '{}' tried to run but Build() is not implemented.",
+			P_CheckMsg(false, "Backend '{}' tried to run but Build() is not implemented.",
 			    GetName().AsString());
 		}
 	};

@@ -1,19 +1,19 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include "AST/Id.h"
 
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	// Keeps a list of entities to load from disk
-	struct SLoadQueue : public p::Struct
+	struct SLoadQueue
 	{
-		STRUCT(SLoadQueue, p::Struct)
+		P_STRUCT(SLoadQueue)
 
-		TArray<Id> pendingSyncLoad;
-		TArray<Id> pendingAsyncLoad;
+		p::TArray<Id> pendingSyncLoad;
+		p::TArray<Id> pendingAsyncLoad;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

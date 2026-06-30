@@ -1,17 +1,16 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "UI/Widgets.h"
 
 #include <IconsFontAwesome5.h>
-#include <Pipe/Math/DateTime.h>
-#include <Pipe/Math/Timespan.h>
+#include <PipeTime.h>
 
 
 namespace rift::UI
 {
-	void AnimatedSprite::SetAnimation(u32 id)
+	void AnimatedSprite::SetAnimation(p::u32 id)
 	{
-		currentFrame              = {0, math::Clamp(id, 0u, u32(numFrames.Size() - 1))};
+		currentFrame              = {0, p::Clamp(id, 0u, p::u32(numFrames.Size() - 1))};
 		currentFrameRemainingTime = rate;
 	}
 
@@ -22,7 +21,7 @@ namespace rift::UI
 		if (currentFrameRemainingTime <= 0.f)
 		{
 			++currentFrame.x;
-			if (currentFrame.x >= numFrames[i32(currentFrame.y)])
+			if (currentFrame.x >= numFrames[p::i32(currentFrame.y)])
 			{
 				currentFrame.x = 0;
 			}
@@ -30,24 +29,24 @@ namespace rift::UI
 		}
 	}
 
-	v2 AnimatedSprite::GetUV() const
+	p::v2 AnimatedSprite::GetUV() const
 	{
 		return size * currentFrame;
 	}
 
 
-	bool SpriteButton(AnimatedSprite& sprite, i32 framePadding, const LinearColor& bgColor,
-	    const LinearColor& tintColor)
+	bool SpriteButton(const char* strId, AnimatedSprite& sprite, const p::LinearColor& bgColor,
+	    const p::LinearColor& tintColor)
 	{
-		const v2 uv = sprite.GetUV();
-		return UI::ImageButton(
-		    sprite.textureId, sprite.size, uv, uv + sprite.size, framePadding, bgColor, tintColor);
+		const p::v2 uv = sprite.GetUV();
+		return UI::ImageButton(strId, ImTextureRef(sprite.textureId), sprite.size, uv,
+		    uv + sprite.size, bgColor, tintColor);
 	}
 
 
 	struct InputTextCallbackStringUserData
 	{
-		String* str;
+		p::String* str;
 		ImGuiInputTextCallback chainCallback;
 		void* chainCallbackUserData;
 	};
@@ -60,7 +59,7 @@ namespace rift::UI
 			// Resize string callback
 			// If for some reason we refuse the new length (BufTextLen) and/or capacity (BufSize) we
 			// need to set them back to what we want.
-			String* str = userData->str;
+			p::String* str = userData->str;
 			IM_ASSERT(data->Buf == str->c_str());
 			str->resize(data->BufTextLen);
 			data->Buf = (char*)str->c_str();
@@ -75,7 +74,7 @@ namespace rift::UI
 	}
 
 
-	bool InputText(const char* label, String& str, ImGuiInputTextFlags flags,
+	bool InputText(const char* label, p::String& str, ImGuiInputTextFlags flags,
 	    ImGuiInputTextCallback callback, void* userData)
 	{
 		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
@@ -89,7 +88,7 @@ namespace rift::UI
 		    label, (char*)str.c_str(), str.capacity() + 1, flags, InputTextCallback, &cbUserData);
 	}
 
-	bool InputTextMultiline(const char* label, String& str, const ImVec2& size,
+	bool InputTextMultiline(const char* label, p::String& str, const ImVec2& size,
 	    ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* userData)
 	{
 		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
@@ -103,7 +102,7 @@ namespace rift::UI
 		    InputTextCallback, &cbUserData);
 	}
 
-	bool InputTextWithHint(const char* label, const char* hint, String& str,
+	bool InputTextWithHint(const char* label, const char* hint, p::String& str,
 	    ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* userData)
 	{
 		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
@@ -117,7 +116,7 @@ namespace rift::UI
 		    InputTextCallback, &cbUserData);
 	}
 
-	ImRect GetWorkRect(v2 desiredSize, bool addhalfItemSpacing, v2 extent)
+	ImRect GetWorkRect(p::v2 desiredSize, bool addhalfItemSpacing, p::v2 extent)
 	{
 		auto& style  = ImGui::GetStyle();
 		auto* window = UI::GetCurrentWindow();
@@ -127,15 +126,15 @@ namespace rift::UI
 		const float minX = window->ParentWorkRect.Min.x;
 		const float maxX = window->ParentWorkRect.Max.x;
 
-		const ImVec2 size{math::Max(desiredSize.x, maxX - minX), desiredSize.y};
+		const ImVec2 size{p::Max(desiredSize.x, maxX - minX), desiredSize.y};
 		ImRect bb{minX, pos.y, minX + size.x, pos.y + size.y};
 
 		if (addhalfItemSpacing)
 		{
 			const float spacingX = 0;
 			const float spacingY = style.ItemSpacing.y;
-			const float spacingL = IM_FLOOR(spacingX * 0.50f);
-			const float spacingU = IM_FLOOR(spacingY * 0.50f);
+			const float spacingL = IM_TRUNC(spacingX * 0.50f);
+			const float spacingU = IM_TRUNC(spacingY * 0.50f);
 			bb.Min.x -= spacingL;
 			bb.Min.y -= spacingU;
 			bb.Max.x += (spacingX - spacingL);
@@ -150,13 +149,13 @@ namespace rift::UI
 
 	static ImGuiID gPendingEditingId = 0;
 
-	bool MutableText(StringView label, String& text, ImGuiInputTextFlags flags)
+	bool MutableText(p::StringView label, p::String& text, ImGuiInputTextFlags flags)
 	{
 		const ImGuiID id     = UI::GetID(label);
 		const bool isEditing = UI::GetActiveID() == id;
 		if (!isEditing)    // Is editing
 		{
-			UI::PushStyleColor(ImGuiCol_FrameBg, LinearColor::Transparent());
+			UI::PushStyleColor(ImGuiCol_FrameBg, p::LinearColor::Transparent());
 		}
 
 		const bool valueChanged = UI::InputText(label.data(), text, flags);
@@ -167,7 +166,7 @@ namespace rift::UI
 		return valueChanged;
 	}
 
-	void HelpTooltip(StringView text, float delay)
+	void HelpTooltip(p::StringView text, float delay)
 	{
 		static ImGuiID currentHelpItemId = 0;
 
@@ -177,8 +176,8 @@ namespace rift::UI
 			bool show = true;
 			if (delay > 0.f)
 			{
-				static DateTime hoverStartTime;
-				const DateTime now = DateTime::Now();
+				static p::DateTime hoverStartTime;
+				const p::DateTime now = p::DateTime::Now();
 				if (itemId != currentHelpItemId)
 				{
 					// Reset help tooltip countdown
@@ -190,12 +189,12 @@ namespace rift::UI
 
 			if (show)
 			{
-				UI::PushStyleVar(ImGuiStyleVar_WindowPadding, v2{4.f, 3.f});
+				UI::PushStyleVar(ImGuiStyleVar_WindowPadding, p::v2{4.f, 3.f});
 				ImGui::BeginTooltip();
 				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-				static String finalText;
+				static p::String finalText;
 				finalText.clear();
-				Strings::FormatTo(finalText, "{} {}", ICON_FA_QUESTION_CIRCLE, text);
+				p::Strings::FormatTo(finalText, "{} {}", ICON_FA_QUESTION_CIRCLE, text);
 				UI::AlignTextToFramePadding();
 				ImGui::TextUnformatted(finalText.c_str());
 				ImGui::PopTextWrapPos();
@@ -208,9 +207,66 @@ namespace rift::UI
 			currentHelpItemId = 0;
 		}
 	}
-	void HelpMarker(StringView text)
+	void HelpMarker(p::StringView text)
 	{
 		ImGui::TextDisabled(ICON_FA_QUESTION_CIRCLE);
 		HelpTooltip(text, 0.f);
+	}
+
+	bool DrawFilterWithHint(
+	    ImGuiTextFilter& filter, const char* label, const char* hint, float width)
+	{
+		if (width != 0.0f)
+		{
+			ImGui::SetNextItemWidth(width);
+		}
+		bool value_changed =
+		    ImGui::InputTextWithHint(label, hint, filter.InputBuf, IM_ARRAYSIZE(filter.InputBuf));
+		if (value_changed)
+		{
+			filter.Build();
+		}
+		return value_changed;
+	}
+
+	bool CollapsingHeaderWithButton(p::StringView label, ImGuiTreeNodeFlags flags,
+	    bool& buttonClicked, p::StringView buttonLabel, p::v2 buttonSize)
+	{
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		if (window->SkipItems)
+		{
+			return false;
+		}
+
+		ImGuiID id = window->GetID(label.data());
+		flags |= ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_AllowOverlap
+		       | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
+		bool isOpen = ImGui::TreeNodeBehavior(id, flags, label.data());
+
+
+		// Create a small overlapping close button
+		// FIXME: We can evolve this into user scopeible helpers to add extra buttons on title
+		// bars, headers, etc.
+		// FIXME: CloseButton can overlap into text, need find a way to clip the text somehow.
+		ImGuiContext& g                    = *GImGui;
+		ImGuiLastItemData last_item_backup = g.LastItemData;
+		UI::PushID(id);
+		const float widthAvailable =
+		    ImGui::GetContentRegionAvail().x + UI::GetCurrentWindow()->DC.Indent.x;
+		ImGui::SameLine(widthAvailable - 25.f);
+		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
+		UI::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
+		float backup_padding_y = g.Style.FramePadding.y;
+		g.Style.FramePadding.y = 0.0f;
+		if (ImGui::ButtonEx(buttonLabel.data(), buttonSize, ImGuiButtonFlags_AlignTextBaseLine))
+		{
+			buttonClicked = true;
+		}
+		g.Style.FramePadding.y = backup_padding_y;
+		UI::PopStyleVar(2);
+		UI::PopID();
+		g.LastItemData = last_item_backup;
+
+		return isOpen;
 	}
 }    // namespace rift::UI

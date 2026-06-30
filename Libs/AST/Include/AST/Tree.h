@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include "AST/Id.h"
@@ -6,30 +6,30 @@
 
 #include <Pipe/Core/Tag.h>
 #include <Pipe/Memory/UniquePtr.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct NativeTypeIds
 	{
-		AST::Id voidId   = AST::NoId;
-		AST::Id boolId   = AST::NoId;
-		AST::Id floatId  = AST::NoId;
-		AST::Id doubleId = AST::NoId;
-		AST::Id u8Id     = AST::NoId;
-		AST::Id i8Id     = AST::NoId;
-		AST::Id u16Id    = AST::NoId;
-		AST::Id i16Id    = AST::NoId;
-		AST::Id u32Id    = AST::NoId;
-		AST::Id i32Id    = AST::NoId;
-		AST::Id u64Id    = AST::NoId;
-		AST::Id i64Id    = AST::NoId;
-		AST::Id stringId = AST::NoId;
+		ast::Id voidId   = ast::NoId;
+		ast::Id boolId   = ast::NoId;
+		ast::Id floatId  = ast::NoId;
+		ast::Id doubleId = ast::NoId;
+		ast::Id u8Id     = ast::NoId;
+		ast::Id i8Id     = ast::NoId;
+		ast::Id u16Id    = ast::NoId;
+		ast::Id i16Id    = ast::NoId;
+		ast::Id u32Id    = ast::NoId;
+		ast::Id i32Id    = ast::NoId;
+		ast::Id u64Id    = ast::NoId;
+		ast::Id i64Id    = ast::NoId;
+		ast::Id stringId = ast::NoId;
 	};
 
 
-	struct Tree : public p::EntityContext
+	struct Tree : public p::IdContext
 	{
 	private:
 		static p::TBroadcast<Tree&> onInit;
@@ -51,6 +51,8 @@ namespace rift::AST
 
 		static const p::TBroadcast<Tree&>& OnInit();
 
+		p::String DumpPools();
+
 	private:
 		void CopyFrom(const Tree& other);
 		void MoveFrom(Tree&& other);
@@ -62,8 +64,9 @@ namespace rift::AST
 	template<typename... T>
 	void PreAllocPools()
 	{
-		Tree::OnInit().Bind([](const Tree& ast) {
+		Tree::OnInit().Bind([](const Tree& ast)
+		{
 			(ast.AssurePool<T>(), ...);
 		});
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

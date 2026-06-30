@@ -1,12 +1,12 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
-#include "Pipe/Core/Platform.h"
+#include "PipePlatform.h"
 #include "Rift.h"
 
 #include <Pipe/Memory/OwnPtr.h>
-#include <Pipe/Reflect/Class.h>
+#include <PipeReflect.h>
 
 
 namespace rift
@@ -14,9 +14,10 @@ namespace rift
 	using namespace p;
 
 
-	class Module : public Class
+	class Module : public Object
 	{
-		CLASS(Module, Class)
+		using Super = Object;
+		P_CLASS(Module)
 
 		enum class State : u8
 		{
@@ -43,7 +44,7 @@ namespace rift
 		template<typename ModuleType>
 		void AddDependency()
 		{
-			EnsureMsg(state == State::Uninitialized,
+			P_EnsureMsg(state == State::Uninitialized,
 			    "Should not add dependencies outside of the constructor");
 
 			EnableModule<ModuleType>();

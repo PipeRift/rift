@@ -1,19 +1,17 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "AST/Systems/FunctionsSystem.h"
 
-#include "AST/Components/CExprInputs.h"
-#include "AST/Components/CExprOutputs.h"
-#include "AST/Components/CExprType.h"
+#include "AST/Components/Expressions.h"
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 #include "AST/Utils/Namespaces.h"
 #include "AST/Utils/TypeUtils.h"
 
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::AST::FunctionsSystem
+namespace rift::ast::FunctionsSystem
 {
 	struct CallToSync
 	{
@@ -23,67 +21,62 @@ namespace rift::AST::FunctionsSystem
 		CExprInputs* functionInputs;
 		CExprOutputs* functionOutputs;
 
-		TArray<Id> inputArgs;
-		TArray<Id> outputArgs;
-		TArray<Id> invalidArgs;
-		TArray<Id> unrelatedCallChildren;
+		p::TArray<Id> inputArgs;
+		p::TArray<Id> outputArgs;
+		p::TArray<Id> invalidArgs;
+		p::TArray<Id> unrelatedCallChildren;
 	};
 
 
-	void Init(Tree& ast)
-	{
-		ast.OnAdd<CExprCallId>().Bind([](auto& ast, auto ids) {
-			ast.template AddN<CCallDirty>(ids);
-		});
-	}
+	void Init(Tree& ast) {}
 
-	void ResolveCallFunctionIds(
-	    TAccessRef<TWrite<CExprCallId>, CExprCall, CDeclFunction, CNamespace, CParent, CChild>
-	        access)
+	void ResolveCallFunctionIds(p::TIdScopeRef<p::Writes<CExprCallId>, CExprCall, CDeclFunction,
+	    CNamespace, CParent, CChild>
+	        scope)
 	{
-		auto callExprs = FindAllIdsWith<CExprCall>(access);
-		ExcludeIdsWith<CExprCallId>(access, callExprs);
+		auto callExprs = FindAllIdsWith<CExprCall>(scope);
+		ExcludeIdsWith<CExprCallId>(scope, callExprs);
 		for (Id id : callExprs)
 		{
-			auto& call          = access.Get<const CExprCall>(id);
-			const Id functionId = FindIdFromNamespace(access, call.function);
+			auto& call          = scope.Get<const CExprCall>(id);
+			const Id functionId = FindIdFromNamespace(scope, call.function);
 			if (!IsNone(functionId))
 			{
-				access.Add(id, CExprCallId{functionId});
+				scope.Add(id, CExprCallId{functionId});
 			}
 		}
 	}
 
 	void PropagateDirtyIntoCalls(Tree& ast)
 	{
-		TAccess<CChanged, CExprCallId, TWrite<CCallDirty>> access{ast};
-		if (access.Size<CChanged>() <= 0)
+		p::TIdScope<p::Writes<p::CMdfd<CExprCallId>>, CChanged, CExprCallId> scope{ast};
+		if (scope.PoolSize<CChanged>() <= 0)
 		{
 			return;
 		}
 
-		TArray<Id> callExprIds = FindAllIdsWith<CExprCallId>(access);
-		ExcludeIdsWith<CCallDirty>(access, callExprIds);
+		p::TArray<Id> callExprIds = p::FindAllIdsWith<CExprCallId>(scope);
+		p::ExcludeIdsWith<p::CMdfd<CExprCallId>>(scope, callExprIds);
 		for (Id id : callExprIds)
 		{
-			const Id functionId = access.Get<const CExprCallId>(id).functionId;
-			if (!IsNone(functionId) && access.Has<CChanged>(functionId))
+			const Id functionId = scope.Get<const CExprCallId>(id).functionId;
+			if (!IsNone(functionId) && scope.Has<CChanged>(functionId))
 			{
-				access.Add<CCallDirty>(id);
+				scope.Add<p::CMdfd<CExprCallId>>(id);
 			}
 		}
 	}
 
-	void PushInvalidPinsBack(TAccessRef<TWrite<CExprInputs>, TWrite<CExprOutputs>, CInvalid> access)
+	void PushInvalidPinsBack(p::TIdScopeRef<p::Writes<CExprInputs, CExprOutputs>, CInvalid> scope)
 	{
-		for (Id inputsId : FindAllIdsWith<CExprInputs>(access))
+		for (Id inputsId : p::FindAllIdsWith<CExprInputs>(scope))
 		{
-			auto& inputs  = access.Get<CExprInputs>(inputsId);
-			i32 validSize = inputs.pinIds.Size();
-			for (i32 i = 0; i < validSize;)
+			auto& inputs     = scope.Get<CExprInputs>(inputsId);
+			p::i32 validSize = inputs.pinIds.Size();
+			for (p::i32 i = 0; i < validSize;)
 			{
 				Id id = inputs.pinIds[i];
-				if (access.Has<CInvalid>(id))
+				if (scope.Has<CInvalid>(id))
 				{
 					ExprOutput output = inputs.linkedOutputs[i];
 					inputs.pinIds.RemoveAt(i, false);
@@ -99,14 +92,14 @@ namespace rift::AST::FunctionsSystem
 			}
 		}
 
-		for (Id outputsId : FindAllIdsWith<CExprOutputs>(access))
+		for (Id outputsId : p::FindAllIdsWith<CExprOutputs>(scope))
 		{
-			auto& outputs = access.Get<CExprOutputs>(outputsId);
-			i32 validSize = outputs.pinIds.Size();
-			for (i32 i = 0; i < validSize;)
+			auto& outputs    = scope.Get<CExprOutputs>(outputsId);
+			p::i32 validSize = outputs.pinIds.Size();
+			for (p::i32 i = 0; i < validSize;)
 			{
 				Id id = outputs.pinIds[i];
-				if (access.Has<CInvalid>(id))
+				if (scope.Has<CInvalid>(id))
 				{
 					outputs.pinIds.RemoveAt(i, false);
 					outputs.pinIds.Add(id);
@@ -122,13 +115,13 @@ namespace rift::AST::FunctionsSystem
 
 	void SyncCallPinsFromFunction(Tree& ast)
 	{
-		TArray<CallToSync> calls;
-		TAccess<CCallDirty, CExprCallId, TWrite<CExprInputs>, TWrite<CExprOutputs>,
-		    TWrite<CInvalid>, TWrite<CExprTypeId>, TWrite<CNamespace>>
-		    access{ast};
-		for (Id id : FindAllIdsWith<CCallDirty, CExprCallId>(access))
+		p::TArray<CallToSync> calls;
+		p::TIdScope<p::Writes<CExprInputs, CExprOutputs, CInvalid, CExprTypeId, CNamespace>,
+		    p::CMdfd<CExprCallId>, CExprCallId>
+		    scope{ast};
+		for (Id id : p::FindAllIdsWith<p::CMdfd<CExprCallId>, CExprCallId>(scope))
 		{
-			const auto& call = access.Get<const CExprCallId>(id);
+			const auto& call = scope.Get<const CExprCallId>(id);
 			if (IsNone(call.functionId))
 			{
 				continue;
@@ -137,29 +130,29 @@ namespace rift::AST::FunctionsSystem
 			CallToSync cache;
 			cache.id              = id;
 			cache.functionId      = call.functionId;
-			cache.functionOutputs = &access.GetOrAdd<CExprOutputs>(call.functionId);
-			cache.functionInputs  = &access.GetOrAdd<CExprInputs>(call.functionId);
+			cache.functionOutputs = &scope.GetOrAdd<CExprOutputs>(call.functionId);
+			cache.functionInputs  = &scope.GetOrAdd<CExprInputs>(call.functionId);
 			calls.Add(cache);
 		}
 
 		// Sync call outputs to function inputs
 		for (auto& call : calls)
 		{
-			auto& callOutputs = access.GetOrAdd<CExprOutputs>(call.id);
+			auto& callOutputs = scope.GetOrAdd<CExprOutputs>(call.id);
 
 
 			// For each function pin
-			i32 validSize = call.functionInputs->pinIds.Size();
-			for (i32 i = 0; i < validSize; ++i)
+			p::i32 validSize = call.functionInputs->pinIds.Size();
+			for (p::i32 i = 0; i < validSize; ++i)
 			{
 				const Id pinId = call.functionInputs->pinIds[i];
-				if (access.Has<CInvalid>(pinId))
+				if (scope.Has<CInvalid>(pinId))
 				{
 					validSize = i;
 					break;
 				}
 
-				const auto* name = access.TryGet<const CNamespace>(pinId);
+				const auto* name = scope.TryGet<const CNamespace>(pinId);
 				if (!name)
 				{
 					continue;
@@ -167,28 +160,30 @@ namespace rift::AST::FunctionsSystem
 
 				if (i >= callOutputs.pinIds.Size())
 				{
-					Id id = ast.Create();
-					access.Add<CNamespace>(id, *name);
-					p::Attach(ast, call.id, id);
+					Id id = p::AddId(ast);
+					scope.Add<CNamespace>(id, *name);
+					p::AttachId(ast, call.id, id);
 					callOutputs.Add(id);
 				}
 				else
 				{
 					// Search matching pin to 'pinId' from i to end
-					i32 callPinIdx = i;
+					p::i32 callPinIdx = i;
 					while (callPinIdx < callOutputs.pinIds.Size())
 					{
 						const Id outputPinId    = callOutputs.pinIds[callPinIdx];
-						const auto* callPinName = access.TryGet<const CNamespace>(outputPinId);
+						const auto* callPinName = scope.TryGet<const CNamespace>(outputPinId);
 						if (callPinName && *callPinName == *name)
+						{
 							break;    // Found existing pin
+						}
 						++callPinIdx;
 					}
 					if (callPinIdx == callOutputs.pinIds.Size())    // Pin not found, insert it
 					{
-						Id id = ast.Create();
-						access.Add<CNamespace>(id, *name);
-						p::Attach(ast, call.id, id);
+						Id id = p::AddId(ast);
+						scope.Add<CNamespace>(id, *name);
+						p::AttachId(ast, call.id, id);
 						callOutputs.Insert(i, id);
 					}
 					else if (callPinIdx > i)
@@ -198,39 +193,39 @@ namespace rift::AST::FunctionsSystem
 					}
 				}
 
-				const auto* pinType = access.TryGet<const CExprTypeId>(pinId);
-				access.Add<CExprTypeId>(callOutputs.pinIds[i], pinType ? *pinType : CExprTypeId{});
+				const auto* pinType = scope.TryGet<const CExprTypeId>(pinId);
+				scope.Add<CExprTypeId>(callOutputs.pinIds[i], pinType ? *pinType : CExprTypeId{});
 			}
 
 			// Mark as invalid all after N function params, and valid those before
-			const i32 firstInvalid = validSize;
+			const p::i32 firstInvalid = validSize;
 			if (firstInvalid > 0)
 			{
-				access.Remove<CInvalid>({callOutputs.pinIds.Data(), firstInvalid});
+				scope.Remove<CInvalid>({callOutputs.pinIds.Data(), firstInvalid});
 			}
-			const i32 count = callOutputs.pinIds.Size() - validSize;
+			const p::i32 count = callOutputs.pinIds.Size() - validSize;
 			if (count > 0)
 			{
-				access.AddN<CInvalid>({callOutputs.pinIds.Data() + firstInvalid, count});
+				scope.AddN<CInvalid>({callOutputs.pinIds.Data() + firstInvalid, count});
 			}
 		}
 
 		// Sync call inputs to function outputs
 		for (auto& call : calls)
 		{
-			auto& callInputs = access.GetOrAdd<CExprInputs>(call.id);
+			auto& callInputs = scope.GetOrAdd<CExprInputs>(call.id);
 			// For each function pin
-			i32 validSize = call.functionOutputs->pinIds.Size();
-			for (i32 i = 0; i < validSize; ++i)
+			p::i32 validSize = call.functionOutputs->pinIds.Size();
+			for (p::i32 i = 0; i < validSize; ++i)
 			{
 				const Id pinId = call.functionOutputs->pinIds[i];
-				if (access.Has<CInvalid>(pinId))
+				if (scope.Has<CInvalid>(pinId))
 				{
 					validSize = i;
 					break;
 				}
 
-				const auto* name = access.TryGet<const CNamespace>(pinId);
+				const auto* name = scope.TryGet<const CNamespace>(pinId);
 				if (!name)
 				{
 					continue;
@@ -238,28 +233,30 @@ namespace rift::AST::FunctionsSystem
 
 				if (i >= callInputs.pinIds.Size())
 				{
-					Id id = ast.Create();
-					access.Add<CNamespace>(id, *name);
-					p::Attach(ast, call.id, id);
+					Id id = p::AddId(ast);
+					scope.Add<CNamespace>(id, *name);
+					p::AttachId(ast, call.id, id);
 					callInputs.Add(id);
 				}
 				else
 				{
 					// Search matching pin to 'pinId' from i to end
-					i32 callPinIdx = i;
+					p::i32 callPinIdx = i;
 					while (callPinIdx < callInputs.pinIds.Size())
 					{
 						const Id pinId          = callInputs.pinIds[callPinIdx];
-						const auto* callPinName = access.TryGet<const CNamespace>(pinId);
+						const auto* callPinName = scope.TryGet<const CNamespace>(pinId);
 						if (callPinName && *callPinName == *name)
+						{
 							break;    // Found existing pin
+						}
 						++callPinIdx;
 					}
 					if (callPinIdx == callInputs.pinIds.Size())    // Pin not found, insert it
 					{
-						Id id = ast.Create();
-						access.Add<CNamespace>(id, *name);
-						p::Attach(ast, call.id, id);
+						Id id = p::AddId(ast);
+						scope.Add<CNamespace>(id, *name);
+						p::AttachId(ast, call.id, id);
 						callInputs.Insert(i, id);
 					}
 					else if (callPinIdx > i)
@@ -269,55 +266,55 @@ namespace rift::AST::FunctionsSystem
 					}
 				}
 
-				const auto* pinType = access.TryGet<const CExprTypeId>(pinId);
-				access.Add<CExprTypeId>(callInputs.pinIds[i], pinType ? *pinType : CExprTypeId{});
+				const auto* pinType = scope.TryGet<const CExprTypeId>(pinId);
+				scope.Add<CExprTypeId>(callInputs.pinIds[i], pinType ? *pinType : CExprTypeId{});
 			}
 
 			// Mark as invalid all after N function params, and valid those before
-			const i32 firstInvalid = validSize;
+			const p::i32 firstInvalid = validSize;
 			if (firstInvalid > 0)
 			{
-				access.Remove<CInvalid>({callInputs.pinIds.Data(), firstInvalid});
+				scope.Remove<CInvalid>({callInputs.pinIds.Data(), firstInvalid});
 			}
-			const i32 count = callInputs.pinIds.Size() - validSize;
+			const p::i32 count = callInputs.pinIds.Size() - validSize;
 			if (count > 0)
 			{
-				access.AddN<CInvalid>({callInputs.pinIds.Data() + firstInvalid, count});
+				scope.AddN<CInvalid>({callInputs.pinIds.Data() + firstInvalid, count});
 			}
 		}
 
 		RemoveInvalidDisconnectedArgs(ast);
 	}
 
-	void RemoveInvalidDisconnectedArgs(InvalidDisconnectedPinAccess access)
+	void RemoveInvalidDisconnectedArgs(InvalidDisconnectedPinAccess scope)
 	{
-		if (access.Size<CInvalid>() <= 0)
+		if (scope.PoolSize<CInvalid>() <= 0)
 		{
 			// No invalids!
 			return;
 		}
 
-		for (Id id : FindAllIdsWith<CExprInputs>(access))
+		for (Id id : FindAllIdsWith<CExprInputs>(scope))
 		{
-			const auto& inputs = access.Get<const CExprInputs>(id);
-			for (i32 i = 0; i < inputs.pinIds.Size(); ++i)
+			const auto& inputs = scope.Get<const CExprInputs>(id);
+			for (p::i32 i = 0; i < inputs.pinIds.Size(); ++i)
 			{
 				Id pinId                 = inputs.pinIds[i];
 				const ExprOutput& output = inputs.linkedOutputs[i];
 				if (!output.IsNone())    // Is connected
 				{
-					if (access.Has<CInvalid>(pinId))
+					if (scope.Has<CInvalid>(pinId))
 					{
-						access.Add<CTmpInvalidKeep>(pinId);
+						scope.Add<CTmpInvalidKeep>(pinId);
 					}
-					if (access.Has<CInvalid>(output.pinId))
+					if (scope.Has<CInvalid>(output.pinId))
 					{
-						access.Add<CTmpInvalidKeep>(output.pinId);
+						scope.Add<CTmpInvalidKeep>(output.pinId);
 					}
 				}
 				else
 				{
-					// if (access.Has<CInvalid>(pinId))
+					// if (scope.Has<CInvalid>(pinId))
 					//{
 					//	// Remove invalid disconnected input
 					//	inputs.pinIds.RemoveAt(i);
@@ -327,15 +324,15 @@ namespace rift::AST::FunctionsSystem
 			}
 		}
 
-		TArray<Id> pinsToRemove = FindAllIdsWith<CInvalid>(access);
-		ExcludeIdsWith<CTmpInvalidKeep>(access, pinsToRemove);
-		p::Remove(access, pinsToRemove);
+		p::TArray<Id> pinsToRemove = p::FindAllIdsWith<CInvalid>(scope);
+		ExcludeIdsWith<CTmpInvalidKeep>(scope, pinsToRemove);
+		p::RmId(scope.GetContext(), pinsToRemove);
 
-		access.GetPool<CTmpInvalidKeep>()->Clear();
+		scope.GetPool<CTmpInvalidKeep>()->Clear();
 	}
 
 	void ClearAddedTags(Tree& ast)
 	{
-		ast.AssurePool<CCallDirty>().Clear();
+		ast.AssurePool<p::CMdfd<CExprCallId>>().Clear();
 	}
-}    // namespace rift::AST::FunctionsSystem
+}    // namespace rift::ast::FunctionsSystem

@@ -1,19 +1,18 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "AST/Tree.h"
 
-#include "AST/Components/CDeclNative.h"
-#include "AST/Components/CDeclType.h"
 #include "AST/Components/CNamespace.h"
+#include "AST/Components/Declarations.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
 
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	TBroadcast<Tree&> Tree::onInit{};
+	p::TBroadcast<Tree&> Tree::onInit{};
 
 
 	Tree::Tree()
@@ -22,28 +21,28 @@ namespace rift::AST
 		onInit(*this);
 	}
 
-	Tree::Tree(const Tree& other) noexcept : EntityContext(other)
+	Tree::Tree(const Tree& other) noexcept : p::IdContext(other)
 	{
 		CopyFrom(other);
 	}
-	Tree::Tree(Tree&& other) noexcept : EntityContext(Move(other))
+	Tree::Tree(Tree&& other) noexcept : p::IdContext(p::Move(other))
 	{
-		MoveFrom(Move(other));
+		MoveFrom(p::Move(other));
 	}
 	Tree& Tree::operator=(const Tree& other) noexcept
 	{
-		EntityContext::operator=(other);
+		p::IdContext::operator=(other);
 		CopyFrom(other);
 		return *this;
 	}
 	Tree& Tree::operator=(Tree&& other) noexcept
 	{
-		EntityContext::operator=(Move(other));
-		MoveFrom(Move(other));
+		IdContext::operator=(p::Move(other));
+		MoveFrom(p::Move(other));
 		return *this;
 	}
 
-	const TBroadcast<Tree&>& Tree::OnInit()
+	const p::TBroadcast<Tree&>& Tree::OnInit()
 	{
 		return onInit;
 	}
@@ -51,53 +50,53 @@ namespace rift::AST
 	void Tree::SetupNativeTypes()
 	{
 		// Remove any previous native types
-		Destroy(FindAllIdsWith<CDeclNative>(*this));
+		RmId(*this, p::FindAllIdsWith<CDeclNative>(*this));
 
-		nativeTypes.boolId = Create();
+		nativeTypes.boolId = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.boolId);
 		Add(nativeTypes.boolId, CNamespace{"Bool"});
 
-		nativeTypes.floatId = Create();
+		nativeTypes.floatId = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.floatId);
 		Add(nativeTypes.floatId, CNamespace{"Float"});
 
-		nativeTypes.doubleId = Create();
+		nativeTypes.doubleId = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.doubleId);
 		Add(nativeTypes.doubleId, CNamespace{"Double"});
 
-		nativeTypes.u8Id = Create();
+		nativeTypes.u8Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.u8Id);
 		Add(nativeTypes.u8Id, CNamespace{"U8"});
 
-		nativeTypes.i8Id = Create();
+		nativeTypes.i8Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.i8Id);
 		Add(nativeTypes.i8Id, CNamespace{"I8"});
 
-		nativeTypes.u16Id = Create();
+		nativeTypes.u16Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.u16Id);
 		Add(nativeTypes.u16Id, CNamespace{"U16"});
 
-		nativeTypes.i16Id = Create();
+		nativeTypes.i16Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.i16Id);
 		Add(nativeTypes.i16Id, CNamespace{"I16"});
 
-		nativeTypes.u32Id = Create();
+		nativeTypes.u32Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.u32Id);
 		Add(nativeTypes.u32Id, CNamespace{"U32"});
 
-		nativeTypes.i32Id = Create();
+		nativeTypes.i32Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.i32Id);
 		Add(nativeTypes.i32Id, CNamespace{"I32"});
 
-		nativeTypes.u64Id = Create();
+		nativeTypes.u64Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.u64Id);
 		Add(nativeTypes.u64Id, CNamespace{"U64"});
 
-		nativeTypes.i64Id = Create();
+		nativeTypes.i64Id = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.i64Id);
 		Add(nativeTypes.i64Id, CNamespace{"I64"});
 
-		nativeTypes.stringId = Create();
+		nativeTypes.stringId = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.stringId);
 		Add(nativeTypes.stringId, CNamespace{"String"});
 	}
@@ -122,4 +121,20 @@ namespace rift::AST
 	{
 		nativeTypes = other.nativeTypes;
 	}
-}    // namespace rift::AST
+
+	p::String Tree::DumpPools()
+	{
+		p::String text;
+
+		text.append("Pools: \n");
+		for (const auto& pool : GetPools())
+		{
+			p::TypeId type = pool.GetId();
+			p::Strings::FormatTo(text, "- {} x{}\n",
+			    type.IsValid() ? GetTypeName(type) : p::StringView{"NotReflected"},
+			    pool.GetPool()->Size());
+		}
+
+		return text;
+	}
+}    // namespace rift::ast

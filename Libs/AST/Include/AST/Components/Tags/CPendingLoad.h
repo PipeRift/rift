@@ -1,13 +1,13 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
 
 namespace rift
 {
-	struct CPendingLoad : public p::Struct
+	struct CPendingLoad
 	{
-		STRUCT(CPendingLoad, p::Struct)
+		P_STRUCT(CPendingLoad)
 	};
 }    // namespace rift

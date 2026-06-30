@@ -1,10 +1,10 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <Pipe/Memory/NewDelete.h>
+#include <PipeNewDelete.h>
 //  Override as first include
 
 #include <bandit/bandit.h>
-#include <Pipe/Pipe.h>
+#include <Pipe.h>
 
 
 int main(int argc, char* argv[])
