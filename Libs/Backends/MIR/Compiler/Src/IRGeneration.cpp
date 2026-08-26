@@ -156,7 +156,7 @@ namespace rift::MIR
 		for (ast::Id id : ids)
 		{
 			membersCode.clear();
-			memberIds.Clear(false);
+			memberIds.Clear(p::Shrink::No);
 			p::GetIdChildren(scope, id, memberIds);
 
 			p::ExcludeIdsWithout<ast::CDeclVariable>(scope, memberIds);

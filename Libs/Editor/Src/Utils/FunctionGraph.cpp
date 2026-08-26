@@ -685,7 +685,7 @@ namespace rift::editor::Graph
 
 			BeginNode(scope, id);
 			{
-				pinIds.Clear(false);
+				pinIds.Clear(p::Shrink::No);
 				p::GetIdChildren(scope, id, pinIds);
 				if (!P_Ensure(pinIds.Size() >= 2))
 				{

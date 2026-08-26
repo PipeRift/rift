@@ -32,7 +32,7 @@ namespace rift::editor
 		FileExplorerPanel fileExplorer{};
 
 		ReflectionDebugger reflectionDebugger;
-		ASTDebugger ASTDebugger;
+		ASTDebugger astDebugger;
 		MemoryDebugger memoryDebugger;
 		ArenaDebugger arenaDebugger;
 		GraphPlayground graphPlayground;

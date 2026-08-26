@@ -33,37 +33,27 @@ namespace rift::editor
 		{
 			String label;
 			auto* stats = GetHeapArena().GetStats();
+			stats->CollectStats();
 			UI::Text(Strings::Format("Used: {}", Strings::ParseMemorySize(stats->used)));
 
 			if (UI::BeginChild("Allocations"))
 			{
-				const i32 shown = p::Min<i32>(10000, i32(stats->allocations.Size()));
+				const i32 shown = p::Min<i32>(10000, i32(stats->events.Size()));
 				for (i32 i = 0; i < shown; ++i)
 				{
-					const auto& allocation = stats->allocations[i];
+					if (!stats->live[i])
+					{
+						continue;    // Event is not a live allocation
+					}
+					const auto& event = stats->events[i];
 					label.clear();
-					Strings::FormatTo(label, "{}", allocation.ptr);
+					Strings::FormatTo(label, "{}", (void*)event.GetPtr());
 					if (UI::TreeNodeEx(label.c_str()))
 					{
 						label.clear();
-						Strings::FormatTo(label, "Address: {}, Size: {}", (void*)allocation.ptr,
-						    Strings::ParseMemorySize(allocation.size));
+						Strings::FormatTo(label, "Address: {}, Size: {}", (void*)event.GetPtr(),
+						    Strings::ParseMemorySize(event.GetSize()));
 						UI::Text(label.c_str());
-
-#if PIPE_ENABLE_ALLOCATION_STACKS
-						UI::Text("Stack trace:");
-						const auto& stack = stats->allocationStacks[i];
-						backward::TraceResolver tr;
-						tr.load_stacktrace(stack);
-						for (sizet i = 0; i < stack.size(); ++i)
-						{
-							backward::ResolvedTrace trace = tr.resolve(stack[i]);
-							label.clear();
-							Strings::FormatTo(label, "#{} {} {} [{}]", i, trace.object_filename,
-							    trace.object_function, trace.addr);
-							UI::Text(label);
-						}
-#endif
 						UI::TreePop();
 					}
 				}

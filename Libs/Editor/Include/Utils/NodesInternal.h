@@ -159,7 +159,7 @@ namespace rift::Nodes
 
 		void CacheInvalidIds()
 		{
-			invalidIds.Clear(false);
+			invalidIds.Clear(p::Shrink::No);
 			for (ast::Id id : lastFrameIds)
 			{
 				if (!frameIds.ContainsSorted(id))
@@ -218,7 +218,7 @@ namespace rift::Nodes
 
 		void PushToTheFront(ast::Id id)
 		{
-			depthOrder.Remove(id, false);
+			depthOrder.Remove(id, p::Shrink::No);
 			depthOrder.Add(id);
 		}
 
