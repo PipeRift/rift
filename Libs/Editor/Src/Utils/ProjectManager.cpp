@@ -110,6 +110,22 @@ namespace rift::editor
 
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
+			if (UI::Button("Create", p::v2{-FLT_MIN, 0.0f}))
+			{
+				if (Editor::Get().CreateProject(folder))
+				{
+					folder = "";
+					UI::CloseCurrentPopup();
+				}
+				else
+				{
+					UI::AddNotification({UI::ToastType::Error, 1.f,
+					    p::Strings::Format("Failed to create project at '{}'", folder)});
+				}
+			}
+			ImGui::TableNextColumn();
+			{}
+			ImGui::TableNextColumn();
 			if (UI::Button("Open", p::v2{-FLT_MIN, 0.0f}))
 			{
 				p::String folder = p::SelectFolderDialog(
@@ -122,22 +138,6 @@ namespace rift::editor
 				{
 					UI::AddNotification({UI::ToastType::Error, 1.f,
 					    p::Strings::Format("Failed to open project at '{}'", p::ToString(folder))});
-				}
-			}
-			ImGui::TableNextColumn();
-			{}
-			ImGui::TableNextColumn();
-			if (UI::Button("Create", p::v2{-FLT_MIN, 0.0f}))
-			{
-				if (Editor::Get().CreateProject(folder))
-				{
-					folder = "";
-					UI::CloseCurrentPopup();
-				}
-				else
-				{
-					UI::AddNotification({UI::ToastType::Error, 1.f,
-					    p::Strings::Format("Failed to create project at '{}'", folder)});
 				}
 			}
 			ImGui::EndTable();

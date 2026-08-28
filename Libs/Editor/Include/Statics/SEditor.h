@@ -7,7 +7,6 @@
 #include "Tools/ArenaDebugger.h"
 #include "Tools/ASTDebugger.h"
 #include "Tools/GraphPlayground.h"
-#include "Tools/MemoryDebugger.h"
 #include "Tools/ReflectionDebugger.h"
 
 #include <Pipe/Memory/OwnPtr.h>
@@ -33,7 +32,6 @@ namespace rift::editor
 
 		ReflectionDebugger reflectionDebugger;
 		ASTDebugger ASTDebugger;
-		MemoryDebugger memoryDebugger;
 		ArenaDebugger arenaDebugger;
 		GraphPlayground graphPlayground;
 

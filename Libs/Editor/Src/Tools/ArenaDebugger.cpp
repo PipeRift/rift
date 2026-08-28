@@ -27,7 +27,7 @@ namespace rift::editor
 		dbgContext.ctx   = &ast;
 		if (p::BeginDebug(dbgContext))
 		{
-			p::DrawMemory("Arenas", &open);
+			p::DrawMemory("Memory", &open);
 			p::EndDebug();
 		}
 	}

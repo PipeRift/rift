@@ -33,7 +33,7 @@ namespace rift::ast
 				}
 			}
 			currentNodeIds = nextNodeIds;
-			nextNodeIds.Clear(false);
+			nextNodeIds.Clear(p::Shrink::No);
 		}
 		return false;
 	}

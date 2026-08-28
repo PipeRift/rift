@@ -72,7 +72,7 @@ namespace rift::ast::LoadSystem
 
 	void ScanTypes(Tree& ast, p::TArray<ModuleTypePaths>& pathsByModule)
 	{
-		pathsByModule.Clear(false);
+		pathsByModule.Clear(p::Shrink::No);
 
 		// Cache module paths in a Set
 		p::TSet<p::StringView> modulePaths;
