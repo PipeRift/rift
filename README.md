@@ -13,9 +13,10 @@
 
 [![build](https://github.com/PipeRift/rift/actions/workflows/build.yml/badge.svg)](https://github.com/PipeRift/rift/actions/workflows/build.yml) [![license](https://img.shields.io/github/license/PipeRift/rift?labelColor=394047)](https://github.com/PipeRift/rift/blob/main/LICENSE) [![Code Quality](https://api.codacy.com/project/badge/Grade/a377314fe8ae4a2bb17159bce8a1ac76)](https://app.codacy.com/gh/PipeRift/rift?utm_source=github.com&utm_medium=referral&utm_content=PipeRift/rift&utm_campaign=Badge_Grade)
 
+> [!IMPORTANT]  
+> Rift is a project in early development. At this time it is **not ready for general use**.
 
-## [Documentation](https://riftlang.org)
-<br>
+# Fundamentals
 
 ## Code is Data
 
@@ -25,16 +26,16 @@ Where in languages like C, C++ you write code into text directly, in Rift you us
 At first this might sound counterintuitive, but it actually brings multiple key advantages with huge potential for the developer and code quality.
 
 ### Coding style is User preference
-Code does not specify how your code looks, your settings in the editor do, and they are your choice.
-_You will always be comfortable in any code, because it is always the coding standard you prefer_
+Code does not specify how your code looks, your editor settings do, and they are your choice.
+Many programmers, many styles, same code.
 
 ### Many code representations, one language
 Rift has the concept of _"Views"_ which are different visualizations of code (E.g: Visual Nodes and Text).
 
-This means developers can choose how to code, while on the **same language**, **same editor**, **same build system**, and **same compiler**. One example would be in the development of a game where a designer uses visual nodes and a programmer uses text, but they are both using the same environment. In the future, they could potentially even convert code between views.
+This means developers can choose how to code, while sharing the **same language**, **same editor**, **same build system** and **same compiler**. One example would be the development of a videogame where a designer uses visual nodes and a programmer uses text, but they both use the same environment.
 
 ### No include or definition order
-Since it is data we are talking about, theres no need for includes or order of functions or variables. Its all already there as soon as the project has loaded.
+No need for includes, no circular dependencies, no order of functions or variables.
 
 ## Compile times
 
@@ -67,7 +68,10 @@ Some examples of what future modularity would look like:
   - E.g: A format checker that ensures correct naming across a module, even while compiling
 
 
-## Software Quality
+# [Documentation](https://riftlang.org)
+Visit [riftlang.org](https://riftlang.org) to read documentation on Rift.
+
+# Software Quality
 [![build](https://github.com/PipeRift/rift/actions/workflows/build.yml/badge.svg)](https://github.com/PipeRift/rift/actions/workflows/build.yml) [![static-analysis](https://github.com/PipeRift/rift/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/PipeRift/rift/actions/workflows/static-analysis.yml)
 
 The code is validated on the following platforms/compilers:
@@ -79,13 +83,13 @@ The code is validated on the following platforms/compilers:
 
 It has also been tested on **x64** and **ARM64** architectures.
 
-## Credits
-Developed by Miguel Fernandez Arce (Muit) and every direct or indirect [contributors](https://github.com/piperift/rift/graphs/contributors) to the GitHub repository.
+# Credits
+Developed by Piperift and every direct or indirect [contributors](https://github.com/piperift/rift/graphs/contributors) to the GitHub repository.
 
-## License
+# License
 Rift is licensed under the [LGPLv3](https://github.com/piperift/rift/blob/master/LICENSE) license with some exceptions.
 
-### Why LGPL License?
+## Why LGPL License?
 Any Rift's source code licensed as [LGPLv3](https://github.com/piperift/rift/blob/master/LICENSE) seeks to defend the following:
 - Rift must remain free and distributable to and by everyone
 - Everyone can freely contribute and modify Rift
@@ -93,14 +97,15 @@ Any Rift's source code licensed as [LGPLv3](https://github.com/piperift/rift/blo
 
 The GPL strictly aims at protecting these freedoms, requiring everyone to share their modifications when they also share the software in public. That aspect is commonly referred to as [Copyleft](http://en.wikipedia.org/wiki/Copyleft).
 
-### Details
+## Details
 While Rift editor, compiler and other tools are under LGPL, other components/tools might be under more permissive licenses.
 
 This also means code you created can be under any license. One example could be a custom compiler pass for optimization, or a new view that adds a new way to edit code.
 
 Rift’s source can also be embedded into other projects (explaining the L of LGPL). This means projects embedding Rift do not need to inherit the same license and can be commercial, but Rift components must keep their own licenses and remain open source if LGPL, including any modifications to them.
 
-### Your code
+## Your code
 Any code or assets you create with Rift as a language is of your sole property. This includes code files like .rf and any generated files by Rift compiler, editor or tools.
 
 This means Rift can be used commercially by studios, programmers, designers, artists or anyone else.
+

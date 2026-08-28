@@ -238,7 +238,8 @@ namespace rift::editor::EditorSystem
 		DrawTypes(ast, editor);
 
 		editor.reflectionDebugger.Draw(ast);
-		editor.ASTDebugger.Draw(ast);
+		editor.astDebugger.Draw(ast);
+		editor.memoryDebugger.Draw();
 		editor.arenaDebugger.Draw(ast);
 		editor.fileExplorer.Draw(ast);
 		editor.graphPlayground.Draw(ast, editor.layout);
@@ -359,8 +360,8 @@ namespace rift::editor::EditorSystem
 				{
 					UI::MenuItem("Reflection", nullptr, &editorData.reflectionDebugger.open);
 					UI::MenuItem(
-					    "  " ICON_FA_BUG "  AST Debugger", nullptr, &editorData.ASTDebugger.open);
-					UI::MenuItem("Memory", nullptr, &editorData.arenaDebugger.open);
+					    "  " ICON_FA_BUG "  AST Debugger", nullptr, &editorData.astDebugger.open);
+					UI::MenuItem("Memory", nullptr, &editorData.memoryDebugger.open);
 					UI::MenuItem("Graph Playground", nullptr, &editorData.graphPlayground.open);
 					UI::EndMenu();
 				}

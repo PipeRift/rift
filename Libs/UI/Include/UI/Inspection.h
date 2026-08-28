@@ -139,7 +139,7 @@ namespace rift::UI
 	template<typename T>
 	inline void InspectStruct(T* data) requires(p::IsStructOrClass<T>)
 	{
-		InspectStruct(data, GetTypeId<T>());
+		InspectStruct(data, p::GetTypeId<T>());
 	}
 
 	bool BeginCategory(p::StringView name, bool isLeaf);
