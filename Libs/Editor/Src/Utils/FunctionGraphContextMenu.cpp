@@ -173,7 +173,7 @@ namespace rift::editor::Graph
 				if (auto* ns = typesScope.TryGet<const ast::CNamespace>(typeId))
 				{
 					makeStr.clear();
-					Strings::FormatTo(makeStr, "Make {}", ns->name);
+					p::FormatTo(makeStr, "Make {}", ns->name);
 					if (ContextItem(makeStr, filter))
 					{
 						ast::Id newId = ast::AddLiteral({ast, typeId}, typeId);
@@ -195,12 +195,12 @@ namespace rift::editor::Graph
 				ast::Id funcTypeId = p::GetIdParent(scope, functionId);
 				if (!IsNone(funcTypeId) && scope.Has<ast::CDeclType, ast::CNamespace>(funcTypeId))
 				{
-					Strings::FormatTo(label, "{}   ({})", name,
+					p::FormatTo(label, "{}   ({})", name,
 					    scope.Get<const ast::CNamespace>(funcTypeId).name);
 				}
 				else
 				{
-					Strings::FormatTo(label, "{}", name);
+					p::FormatTo(label, "{}", name);
 				}
 				if (ContextItem(label, filter))
 				{
@@ -222,12 +222,12 @@ namespace rift::editor::Graph
 				ast::Id typeId = p::GetIdParent(scope, variableId);
 				if (!IsNone(typeId) && scope.Has<ast::CDeclType, ast::CNamespace>(typeId))
 				{
-					Strings::FormatTo(
+					p::FormatTo(
 					    label, "{}   ({})", name, scope.Get<const ast::CNamespace>(typeId).name);
 				}
 				else
 				{
-					Strings::FormatTo(label, "{}", name);
+					p::FormatTo(label, "{}", name);
 				}
 				if (ContextItem(label, filter))
 				{
@@ -247,7 +247,7 @@ namespace rift::editor::Graph
 				name.clear();
 				StringView shortName = GetUnaryOperatorName(type);
 				StringView longName  = GetUnaryOperatorLongName(type);
-				Strings::FormatTo(name, "{}   ({})", shortName, longName);
+				p::FormatTo(name, "{}   ({})", shortName, longName);
 				if (ContextItem(name, filter))
 				{
 					ast::Id newId = ast::AddUnaryOperator({ast, typeId}, type);
@@ -260,7 +260,7 @@ namespace rift::editor::Graph
 				name.clear();
 				StringView shortName = GetBinaryOperatorName(type);
 				StringView longName  = GetBinaryOperatorLongName(type);
-				Strings::FormatTo(name, "{}   ({})", shortName, longName);
+				p::FormatTo(name, "{}   ({})", shortName, longName);
 				if (ContextItem(name, filter))
 				{
 					ast::Id newId = ast::AddBinaryOperator({ast, typeId}, type);

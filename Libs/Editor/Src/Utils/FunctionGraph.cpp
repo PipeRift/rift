@@ -824,7 +824,7 @@ namespace rift::editor::Graph
 
 		static String graphId;
 		graphId.clear();
-		Strings::FormatTo(graphId, "Graph##{}", typeId);
+		p::FormatTo(graphId, "Graph##{}", typeId);
 
 		bool wantsToOpenContextMenu = false;
 		typeEditor.layout.BindNextWindowToNode(CTypeEditor::centralNode, ImGuiCond_Appearing);

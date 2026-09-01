@@ -5,10 +5,10 @@
 #include "AST/Utils/Settings.h"
 #include "Pipe/Files/Paths.h"
 
-#include <Pipe/Core/String.h>
 #include <Pipe/Files/Files.h>
 #include <PipeECS.h>
 #include <PipeSerialize.h>
+#include <PipeStrings.h>
 
 
 namespace rift

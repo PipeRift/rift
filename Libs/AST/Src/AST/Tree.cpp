@@ -130,7 +130,7 @@ namespace rift::ast
 		for (const auto& pool : GetPools())
 		{
 			p::TypeId type = pool.GetId();
-			p::Strings::FormatTo(text, "- {} x{}\n",
+			p::FormatTo(text, "- {} x{}\n",
 			    type.IsValid() ? GetTypeName(type) : p::StringView{"NotReflected"},
 			    pool.GetPool()->Size());
 		}

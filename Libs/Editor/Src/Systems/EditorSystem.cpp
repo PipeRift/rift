@@ -9,8 +9,8 @@
 #include "DockSpaceLayout.h"
 #include "Editor.h"
 #include "imgui.h"
-#include "Pipe/Core/String.h"
 #include "Pipe/Files/Files.h"
+#include "PipeStrings.h"
 #include "Statics/SEditor.h"
 #include "Utils/DetailsPanel.h"
 #include "Utils/ElementsPanel.h"
@@ -239,7 +239,6 @@ namespace rift::editor::EditorSystem
 
 		editor.reflectionDebugger.Draw(ast);
 		editor.astDebugger.Draw(ast);
-		editor.memoryDebugger.Draw();
 		editor.arenaDebugger.Draw(ast);
 		editor.fileExplorer.Draw(ast);
 		editor.graphPlayground.Draw(ast, editor.layout);
@@ -303,7 +302,7 @@ namespace rift::editor::EditorSystem
 					ast.Remove<ast::CFileDirty>(dirtyModuleIds);
 
 					UI::AddNotification({UI::ToastType::Success, 1.f,
-					    !fileDatas.IsEmpty() ? Strings::Format("Saved {} files", fileDatas.Size())
+					    !fileDatas.IsEmpty() ? p::Format("Saved {} files", fileDatas.Size())
 					                         : "Nothing to save"});
 				}
 				UI::EndMenu();
@@ -359,9 +358,8 @@ namespace rift::editor::EditorSystem
 				if (UI::BeginMenu("Debug"))
 				{
 					UI::MenuItem("Reflection", nullptr, &editorData.reflectionDebugger.open);
-					UI::MenuItem(
-					    "  " ICON_FA_BUG "  AST Debugger", nullptr, &editorData.astDebugger.open);
-					UI::MenuItem("Memory", nullptr, &editorData.memoryDebugger.open);
+					UI::MenuItem("Abstract Syntax Tree", nullptr, &editorData.astDebugger.open);
+					UI::MenuItem("Memory", nullptr, &editorData.arenaDebugger.open);
 					UI::MenuItem("Graph Playground", nullptr, &editorData.graphPlayground.open);
 					UI::EndMenu();
 				}
@@ -400,7 +398,7 @@ namespace rift::editor::EditorSystem
 				ast.Remove<ast::CFileDirty>(moduleId);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
-				    Strings::Format("Saved file {}", p::GetFilename(file.path))});
+				    p::Format("Saved file {}", p::GetFilename(file.path))});
 			}
 			UI::EndMenuBar();
 		}
@@ -417,11 +415,11 @@ namespace rift::editor::EditorSystem
 			const auto& file   = moduleEditors.Get<const ast::CFileRef>(moduleId);
 
 			bool isOpen               = true;
-			const String path         = p::ToString(file.path);
+			const String& path        = file.path;
 			const StringView filename = p::GetFilename(path);
 			const StringView dirty    = ast.Has<ast::CFileDirty>(moduleId) ? " *" : "";
 			const String windowName =
-			    Strings::Format(ICON_FA_TH_LARGE " {}{}###{}", filename, dirty, moduleId);
+			    p::Format(ICON_FA_TH_LARGE " {}{}###{}", filename, dirty, moduleId);
 
 			if (moduleEditor.pendingFocus)
 			{
@@ -462,7 +460,7 @@ namespace rift::editor::EditorSystem
 							{
 								UI::PushStyleCompact();
 								const p::String addText =
-								    p::Strings::Format(ICON_FA_PLUS " {}", binding.displayName);
+								    p::Format(ICON_FA_PLUS " {}", binding.displayName);
 								UI::TableNextRow();
 								UI::TableSetColumnIndex(1);
 								if (UI::Button(addText.c_str(), ImVec2(-FLT_MIN, 0.0f)))
@@ -506,7 +504,7 @@ namespace rift::editor::EditorSystem
 				ast.Remove<ast::CFileDirty>(typeId);
 
 				UI::AddNotification({UI::ToastType::Success, 1.f,
-				    Strings::Format("Saved file {}", p::GetFilename(file.path))});
+				    p::Format("Saved file {}", p::GetFilename(file.path))});
 			}
 
 			if (UI::BeginMenu("View"))
@@ -549,11 +547,10 @@ namespace rift::editor::EditorSystem
 			}
 
 			bool isOpen               = true;
-			const String path         = p::ToString(file.path);
+			const String& path        = file.path;
 			const StringView filename = p::GetFilename(path);
 			const StringView dirty    = ast.Has<ast::CFileDirty>(typeId) ? " *" : "";
-			const String windowName =
-			    Strings::Format("{} {}{}###{}", icon, filename, dirty, typeId);
+			const String windowName   = p::Format("{} {}{}###{}", icon, filename, dirty, typeId);
 
 			if (typeEditor.pendingFocus)
 			{

@@ -3,7 +3,7 @@
 #include "Panels/FileExplorerPanel.h"
 
 #include "Editor.h"
-#include "Pipe/Core/String.h"
+#include "PipeStrings.h"
 #include "Statics/SEditor.h"
 #include "UI/Widgets.h"
 #include "Utils/ModuleUtils.h"
@@ -154,12 +154,12 @@ namespace rift::editor
 					}
 
 					createText.clear();
-					Strings::FormatTo(
+					p::FormatTo(
 					    createText, "{}##{}", fileType->settings.displayName, fileType->id);
 					if (UI::MenuItem(createText.c_str()))
 					{
 						createText.clear();
-						Strings::FormatTo(
+						p::FormatTo(
 						    createText, "Create {} type", fileType->settings.displayName);
 						CreateType(ast, createText, fileType->id, path);
 					}
@@ -286,7 +286,7 @@ namespace rift::editor
 
 	void FileExplorerPanel::DrawItem(ast::Tree& ast, const Item& item)
 	{
-		const String path         = p::ToString(item.path);
+		const String& path         = item.path;
 		const StringView fileName = p::GetFilename(path);
 
 		const StringView dirty =
@@ -299,7 +299,7 @@ namespace rift::editor
 			if (module)
 			{
 				// TODO: Display module name
-				const String text = Strings::Format(ICON_FA_TH_LARGE " {}{}", fileName, dirty);
+				const String text = p::Format(ICON_FA_TH_LARGE " {}{}", fileName, dirty);
 
 				UI::PushHeaderColor(UI::GetNeutralColor(1));
 				UI::PushStyleCompact();
@@ -338,7 +338,7 @@ namespace rift::editor
 			}
 			else    // Just a folder
 			{
-				const String text = Strings::Format(ICON_FA_FOLDER " {}", fileName);
+				const String text = p::Format(ICON_FA_FOLDER " {}", fileName);
 				bool open         = UI::TreeNodeEx(text.data(), flags);
 				if (UI::BeginPopupContextItem())
 				{
@@ -361,7 +361,7 @@ namespace rift::editor
 			String text;
 			if (fileName == ast::moduleFilename)
 			{
-				text = Strings::Format(ICON_FA_TH_LARGE " {}{}", fileName, dirty);
+				text = p::Format(ICON_FA_TH_LARGE " {}{}", fileName, dirty);
 			}
 			else if (Strings::EndsWith(fileName, ".rf"))
 			{
@@ -379,7 +379,7 @@ namespace rift::editor
 					icon = ICON_FA_FILE_WORD;
 				}
 
-				text = Strings::Format("{} {}{}", icon, fileName, dirty);
+				text = p::Format("{} {}{}", icon, fileName, dirty);
 			}
 			else
 			{
@@ -486,7 +486,7 @@ namespace rift::editor
 	{
 		const p::String path = p::SaveFileDialog(title, folderPath,
 		    {
-		        {"Rift Type", Strings::Format("*.{}", Paths::typeExtension)}
+		        {"Rift Type", p::Format("*.{}", Paths::typeExtension)}
         },
 		    true);
 

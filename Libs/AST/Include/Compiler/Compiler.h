@@ -4,8 +4,8 @@
 
 #include "Compiler/CompilerConfig.h"
 
-#include <Pipe/Core/String.h>
 #include <PipeReflect.h>
+#include <PipeStrings.h>
 
 
 namespace rift

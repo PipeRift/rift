@@ -53,7 +53,7 @@ namespace rift::editor
 
 					static p::String idText;
 					idText.clear();
-					p::Strings::FormatTo(idText, "{}", it.second);
+					p::FormatTo(idText, "{}", it.second);
 					UI::Text(idText);
 				}
 
@@ -115,7 +115,7 @@ namespace rift::editor
 		ast::Id changedId  = inspector.id;
 
 		p::String name;
-		p::Strings::FormatTo(
+		p::FormatTo(
 		    name, "{}: {}{}###{}", label, inspector.id, removed ? " (removed)" : "", id);
 
 		if (inspector.pendingFocus)

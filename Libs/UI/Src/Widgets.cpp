@@ -194,7 +194,7 @@ namespace rift::UI
 				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 				static p::String finalText;
 				finalText.clear();
-				p::Strings::FormatTo(finalText, "{} {}", ICON_FA_QUESTION_CIRCLE, text);
+				p::FormatTo(finalText, "{} {}", ICON_FA_QUESTION_CIRCLE, text);
 				UI::AlignTextToFramePadding();
 				ImGui::TextUnformatted(finalText.c_str());
 				ImGui::PopTextWrapPos();

@@ -96,7 +96,7 @@ namespace rift::editor
 		UI::SetNextItemWidth(-FLT_MIN);
 		static String nameId;
 		nameId.clear();
-		Strings::FormatTo(nameId, " ##name_{}", variableId);
+		p::FormatTo(nameId, " ##name_{}", variableId);
 		if (UI::MutableText(nameId, name,
 		        ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 		{
@@ -141,7 +141,7 @@ namespace rift::editor
 		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 1.f);
 		static String headerId;
 		headerId.clear();
-		Strings::FormatTo(headerId, "{}###{}", name, id);
+		p::FormatTo(headerId, "{}###{}", name, id);
 
 		const bool selected = editor.selectedPropertyId == id;
 		UI::CollapsingHeader(headerId.c_str(),
@@ -247,7 +247,7 @@ namespace rift::editor
 			return;
 		}
 
-		const String windowName = Strings::Format("Elements##{}", typeId);
+		const String windowName = p::Format("Elements##{}", typeId);
 		if (UI::Begin(windowName.c_str(), &editor.showElements))
 		{
 			UI::SetNextItemWidth(UI::GetContentRegionAvail().x);

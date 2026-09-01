@@ -180,7 +180,7 @@ namespace rift::ast
 		if (file && !file->path.empty())
 		{
 			// Obtain name from project file name
-			const p::String fileName = p::ToString(file->path);
+			const p::String& fileName = file->path;
 			return p::Tag{p::GetFilename(p::GetParentPath(fileName))};    // Folder name
 		}
 		return {};

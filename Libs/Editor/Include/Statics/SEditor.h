@@ -32,7 +32,6 @@ namespace rift::editor
 
 		ReflectionDebugger reflectionDebugger;
 		ASTDebugger astDebugger;
-		MemoryDebugger memoryDebugger;
 		ArenaDebugger arenaDebugger;
 		GraphPlayground graphPlayground;
 

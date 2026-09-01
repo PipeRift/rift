@@ -32,13 +32,13 @@ namespace rift
 		{
 			for (const auto& backend : backends)
 			{
-				Strings::FormatTo(desc, "{}, ", backend->GetName());
+				p::FormatTo(desc, "{}, ", backend->GetName());
 			}
 			Strings::RemoveFromEnd(desc, 2);
 		}
 		else
 		{
-			Strings::FormatTo(desc, "None");
+			p::FormatTo(desc, "None");
 		}
 
 		// Set default value
@@ -72,7 +72,7 @@ int main(int argc, char** argv)
 		String text;
 		auto now = p::DateTime::Now();
 		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		p::Strings::FormatTo(text, "[Info] {}\n", msg);
+		p::FormatTo(text, "[Info] {}\n", msg);
 		std::cout << text;
 	},
 	    .warningCallback =
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 		String text;
 		auto now = p::DateTime::Now();
 		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		p::Strings::FormatTo(text, "[Warning] {}\n", msg);
+		p::FormatTo(text, "[Warning] {}\n", msg);
 		std::cout << text;
 	},
 	    .errorCallback = [](StringView msg)
@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 		String text;
 		auto now = p::DateTime::Now();
 		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		p::Strings::FormatTo(text, "[Error] {}\n", msg);
+		p::FormatTo(text, "[Error] {}\n", msg);
 		std::cout << text;
 	}};
 
@@ -122,7 +122,7 @@ int main(int argc, char** argv)
 
 	if (!ast::HasProject(ast))
 	{
-		p::Error("Couldn't open project '{}'", p::ToString(path));
+		p::Error("Couldn't open project '{}'", path);
 		return 1;
 	}
 

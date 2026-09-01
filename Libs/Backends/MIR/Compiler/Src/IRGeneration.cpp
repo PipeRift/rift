@@ -6,7 +6,7 @@
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Statements.h>
 #include <Compiler/Compiler.h>
-#include <Pipe/Core/String.h>
+#include <PipeStrings.h>
 #include <Pipe/Core/StringView.h>
 
 
@@ -143,7 +143,7 @@ namespace rift::MIR
 		{
 			p::Tag name = ast::GetNameUnsafe(scope, id);
 			scope.Add(id, CMIRType{name});
-			p::Strings::FormatTo(*code, "typedef struct {0} {0};\n", name);
+			p::FormatTo(*code, "typedef struct {0} {0};\n", name);
 		}
 		code->push_back('\n');
 	}
@@ -169,23 +169,23 @@ namespace rift::MIR
 				if (!irType) [[unlikely]]
 				{
 					const p::Tag typeName = ast::GetName(scope, id);
-					compiler.Error(p::Strings::Format(
+					compiler.Error(p::Format(
 					    "Variable '{}' in struct '{}' has an invalid type", memberName, typeName));
 				}
 				else if (reservedNames.Contains(memberName)) [[unlikely]]
 				{
 					const p::Tag typeName = ast::GetName(scope, id);
-					compiler.Error(p::Strings::Format(
+					compiler.Error(p::Format(
 					    "Variable name '{}' not allowed in struct '{}' ", memberName, typeName));
 				}
 				else
 				{
-					p::Strings::FormatTo(membersCode, "{} {};\n", irType->value, memberName);
+					p::FormatTo(membersCode, "{} {};\n", irType->value, memberName);
 				}
 			}
 
 			const auto& type = scope.Get<const CMIRType>(id);
-			p::Strings::FormatTo(*code, "struct {0} {{\n{1}}};\n", type.value, membersCode);
+			p::FormatTo(*code, "struct {0} {{\n{1}}};\n", type.value, membersCode);
 		}
 		code->push_back('\n');
 	}
@@ -222,7 +222,7 @@ namespace rift::MIR
 					if (!irType) [[unlikely]]
 					{
 						const p::String functionName = ast::GetFullName(scope, id);
-						compiler.Error(p::Strings::Format(
+						compiler.Error(p::Format(
 						    "Input '{}' in function '{}' has an invalid type. Using i32 instead.",
 						    inputName, functionName));
 					}
@@ -230,12 +230,12 @@ namespace rift::MIR
 					{
 						const p::String functionName = ast::GetFullName(scope, id);
 						compiler.Error(
-						    p::Strings::Format("Input name '{}' not allowed in function '{}' ",
+						    p::Format("Input name '{}' not allowed in function '{}' ",
 						        inputName, functionName));
 					}
 					else
 					{
-						p::Strings::FormatTo(signature, "{0} {1}, ", irType->value, inputName);
+						p::FormatTo(signature, "{0} {1}, ", irType->value, inputName);
 					}
 				}
 				p::Strings::RemoveFromEnd(signature, ", ");
@@ -324,7 +324,7 @@ namespace rift::MIR
 		}
 		if (!P_Ensure(scope.Has<const CMIRFunctionSignature>(functionId)))
 		{
-			compiler.Error(p::Strings::Format(
+			compiler.Error(p::Format(
 			    "Call to an invalid function: '{}'", ast::GetFullName(scope, functionId)));
 			return;
 		}
@@ -353,7 +353,7 @@ namespace rift::MIR
 	{
 		if (p::IsNone(functionId))
 		{
-			compiler.Error(p::Strings::Format("Module is executable but has no \"Main\" function"));
+			compiler.Error(p::Format("Module is executable but has no \"Main\" function"));
 			return;
 		}
 

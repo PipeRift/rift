@@ -98,7 +98,7 @@ namespace rift::editor
 							else
 							{
 								UI::AddNotification({UI::ToastType::Error, 1.f,
-								    p::Strings::Format("Failed to open project at '{}'", path)});
+								    p::Format("Failed to open project at '{}'", path)});
 							}
 						}
 						UI::SameLine();
@@ -120,7 +120,7 @@ namespace rift::editor
 				else
 				{
 					UI::AddNotification({UI::ToastType::Error, 1.f,
-					    p::Strings::Format("Failed to create project at '{}'", folder)});
+					    p::Format("Failed to create project at '{}'", folder)});
 				}
 			}
 			ImGui::TableNextColumn();
@@ -137,7 +137,7 @@ namespace rift::editor
 				else
 				{
 					UI::AddNotification({UI::ToastType::Error, 1.f,
-					    p::Strings::Format("Failed to open project at '{}'", p::ToString(folder))});
+					    p::Format("Failed to open project at '{}'", folder)});
 				}
 			}
 			ImGui::EndTable();

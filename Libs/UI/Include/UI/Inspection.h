@@ -66,7 +66,7 @@ namespace rift::UI
 		{
 			if (index != p::NO_INDEX)
 			{
-				p::Strings::FormatTo(name, "{}", index);
+				p::FormatTo(name, "{}", index);
 			}
 			else if (property)
 			{

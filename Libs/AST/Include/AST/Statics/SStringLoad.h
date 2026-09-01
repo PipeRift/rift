@@ -3,9 +3,9 @@
 
 #include "AST/Id.h"
 
-#include <Pipe/Core/String.h>
 #include <Pipe/Files/Paths.h>
 #include <PipeReflect.h>
+#include <PipeStrings.h>
 
 
 namespace rift::ast

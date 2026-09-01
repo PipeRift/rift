@@ -29,7 +29,7 @@ namespace rift::UI
 	{
 		static p::String label;
 		label.clear();
-		p::Strings::FormatTo(label, "##{}", p::sizet(data));
+		p::FormatTo(label, "##{}", p::sizet(data));
 		/*
 		const i32 currentIndex = type->GetIndexFromValue(data);
 		if (UI::BeginCombo(label.c_str(), type->GetNameByIndex(currentIndex).AsString().data()))
@@ -58,7 +58,7 @@ namespace rift::UI
 	{
 		static p::String label;
 		label.clear();
-		p::Strings::FormatTo(label, "##{}", p::sizet(data));
+		p::FormatTo(label, "##{}", p::sizet(data));
 
 		switch (type.GetId())
 		{
@@ -131,7 +131,7 @@ namespace rift::UI
 			return;
 		}
 
-		UI::Text(p::Strings::Format("{} items", ops->GetSize(instance)));
+		UI::Text(p::Format("{} items", ops->GetSize(instance)));
 
 		// Ignore indent on buttons
 		const float widthAvailable =
@@ -158,7 +158,7 @@ namespace rift::UI
 		UI::PushStyleCompact();
 		static p::String label;
 		label.clear();
-		p::Strings::FormatTo(label, ICON_FA_TIMES "##removeItem_{}", handle.GetIndex());
+		p::FormatTo(label, ICON_FA_TIMES "##removeItem_{}", handle.GetIndex());
 		if (UI::Button(label.c_str(), p::v2(18.f, 18.f)))
 		{
 			// handle.GetArrayProperty()->RemoveItem(handle.GetContainerPtr(), handle.GetIndex());

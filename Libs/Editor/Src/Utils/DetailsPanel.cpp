@@ -43,7 +43,7 @@ namespace rift::editor
 		static String labelId;
 		static String popupName;
 		popupName.clear();
-		Strings::FormatTo(popupName, "##PinContextMenu_{}", id);
+		p::FormatTo(popupName, "##PinContextMenu_{}", id);
 
 		ast::Id typeId = ast::FindIdFromNamespace(ast, type->type);
 
@@ -53,7 +53,7 @@ namespace rift::editor
 
 		UI::TableNextColumn();    // Name
 		labelId.clear();
-		Strings::FormatTo(labelId, "##Name_{}", id);
+		p::FormatTo(labelId, "##Name_{}", id);
 		String name{ns->name.AsString()};
 		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
 		if (UI::MutableText(labelId, name, ImGuiInputTextFlags_AutoSelectAll))
@@ -69,7 +69,7 @@ namespace rift::editor
 		UI::TableNextColumn();    // Type
 		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 		labelId.clear();
-		Strings::FormatTo(labelId, "##Type_{}", id);
+		p::FormatTo(labelId, "##Type_{}", id);
 		UI::SetNextItemWidth(-FLT_MIN);
 		if (editor::TypeCombo(ast, labelId, typeId))
 		{
@@ -201,7 +201,7 @@ namespace rift::editor
 			return;
 		}
 
-		const String windowName = Strings::Format("Details##{}", typeId);
+		const String windowName = p::Format("Details##{}", typeId);
 		if (UI::Begin(windowName.c_str(), &editor.showDetails))
 		{
 			if (IsNone(editor.selectedPropertyId))

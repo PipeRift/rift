@@ -4,7 +4,7 @@
 
 #include "UI/UIImgui.h"
 
-#include <Pipe/Core/String.h>
+#include <PipeStrings.h>
 
 
 namespace rift::UI

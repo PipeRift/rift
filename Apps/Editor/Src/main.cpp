@@ -27,7 +27,7 @@ int RunEditor(StringView projectPath)
 		String text;
 		auto now = p::DateTime::Now();
 		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		p::Strings::FormatTo(text, "[Info] {}\n", msg);
+		p::FormatTo(text, "[Info] {}\n", msg);
 		std::cout << text;
 	},
 	    .warningCallback =
@@ -36,7 +36,7 @@ int RunEditor(StringView projectPath)
 		String text;
 		auto now = p::DateTime::Now();
 		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		p::Strings::FormatTo(text, "[Warning] {}\n", msg);
+		p::FormatTo(text, "[Warning] {}\n", msg);
 		std::cout << text;
 	},
 	    .errorCallback = [](StringView msg)
@@ -44,7 +44,7 @@ int RunEditor(StringView projectPath)
 		String text;
 		auto now = p::DateTime::Now();
 		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		p::Strings::FormatTo(text, "[Error] {}\n", msg);
+		p::FormatTo(text, "[Error] {}\n", msg);
 		std::cout << text;
 	}};
 

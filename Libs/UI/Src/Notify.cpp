@@ -6,7 +6,6 @@
 #include "UI/UIImgui.h"
 
 #include <IconsFontAwesome5.h>
-#include <Pipe/Core/String.h>
 #include <PipeTime.h>
 #include <PipeVectors.h>
 
@@ -172,7 +171,7 @@ namespace rift::UI
 			p::v2 position, pivot;
 			notification.GetPositionAndPivot(height, position, pivot);
 			ImGui::SetNextWindowPos(position, ImGuiCond_Always, pivot);
-			p::String windowName = p::Strings::Format("##Notification_{}", i);
+			p::String windowName = p::Format("##Notification_{}", i);
 			ImGui::Begin(windowName.c_str(), nullptr, Notification::flags);
 
 			// Here we render the toast content

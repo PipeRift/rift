@@ -2,7 +2,7 @@
 
 #include "Tools/BigBestFitArenaDebugger.h"
 
-#include <Pipe/Core/String.h>
+#include <PipeStrings.h>
 #include <PipeMath.h>
 #include <PipeMemoryArenas.h>
 #include <PipeReflect.h>
@@ -176,7 +176,7 @@ namespace rift::editor
 					UI::PopItemWidth();
 
 					const String usedPctLabel =
-					    Strings::Format("{:.0f}%% used ({})", usedPct * 100.f, used);
+					    p::Format("{:.0f}%% used ({})", usedPct * 100.f, used);
 					const float pctFontSize = (UI::GetFontSize() * usedPctLabel.size()) / 2.f;
 					UI::SameLine(UI::GetContentRegionAvail().x / 2 - pctFontSize / 2,
 					    UI::GetStyle().ItemInnerSpacing.x / 2);

@@ -8,7 +8,7 @@
 #include <AST/Components/CNamespace.h>
 #include <AST/Components/Declarations.h>
 #include <AST/Tree.h>
-#include <Pipe/Core/String.h>
+#include <PipeStrings.h>
 #include <PipeContainers.h>
 #include <PipeECS.h>
 
