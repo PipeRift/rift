@@ -3,94 +3,87 @@
 #include <AST/Tree.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TypeUtils.h>
-#include <bandit/bandit.h>
+#include <PipeTest.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
+using namespace p;
 using namespace rift;
 
 
-go_bandit([]()
+Spec("AST.Statements", []()
 {
-	describe("AST.Statements", []()
+	It("Initializes outputs correctly", []()
 	{
-		it("Initializes outputs correctly", [&]()
-		{
-			ast::Tree ast;
+		ast::Tree ast;
 
-			ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
-			AssertThat(ast.Has<ast::CStmtOutput>(functionId), Equals(true));
+		ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
+		Expect(ast.Has<ast::CStmtOutput>(functionId)).ToBeTrue();
 
-			ast::Id callId = ast::AddCall({ast, ast::NoId}, functionId);
-			AssertThat(ast.Has<ast::CStmtOutput>(callId), Equals(true));
+		ast::Id callId = ast::AddCall({ast, ast::NoId}, functionId);
+		Expect(ast.Has<ast::CStmtOutput>(callId)).ToBeTrue();
 
-			ast::Id ifId = ast::AddIf({ast, ast::NoId});
-			AssertThat(ast.Has<ast::CStmtOutputs>(ifId), Equals(true));
-			AssertThat(ast.Get<ast::CStmtOutputs>(ifId).pinIds.Size(), Equals(2));
-		});
+		ast::Id ifId = ast::AddIf({ast, ast::NoId});
+		Expect(ast.Has<ast::CStmtOutputs>(ifId)).ToBeTrue();
+		Expect(ast.Get<ast::CStmtOutputs>(ifId).pinIds.Size()).ToEqual(2u);
+	});
 
-		it("Initializes inputs correctly", [&]()
-		{
-			ast::Tree ast;
+	It("Initializes inputs correctly", []()
+	{
+		ast::Tree ast;
 
-			ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
-			AssertThat(ast.Has<ast::CStmtInput>(functionId), Equals(false));
+		ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
+		Expect(ast.Has<ast::CStmtInput>(functionId)).ToBeFalse();
 
-			ast::Id callId = ast::AddCall({ast, ast::NoId}, functionId);
-			AssertThat(ast.Has<ast::CStmtInput>(callId), Equals(true));
+		ast::Id callId = ast::AddCall({ast, ast::NoId}, functionId);
+		Expect(ast.Has<ast::CStmtInput>(callId)).ToBeTrue();
 
-			ast::Id ifId = ast::AddIf({ast, ast::NoId});
-			AssertThat(ast.Has<ast::CStmtInput>(ifId), Equals(true));
-		});
+		ast::Id ifId = ast::AddIf({ast, ast::NoId});
+		Expect(ast.Has<ast::CStmtInput>(ifId)).ToBeTrue();
+	});
 
-		it("Can connect with single output", [&]()
-		{
-			ast::Tree ast;
+	It("Can connect with single output", []()
+	{
+		ast::Tree ast;
 
-			ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
-			ast::Id callId     = ast::AddCall({ast, ast::NoId}, functionId);
-			ast::Id ifId       = ast::AddIf({ast, ast::NoId});
+		ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
+		ast::Id callId     = ast::AddCall({ast, ast::NoId}, functionId);
+		ast::Id ifId       = ast::AddIf({ast, ast::NoId});
 
-			AssertThat(ast::TryConnectStmt(ast, functionId, callId), Equals(true));
+		Expect(ast::TryConnectStmt(ast, functionId, callId)).ToBeTrue();
 
-			// Can't connect to self
-			AssertThat(ast::TryConnectStmt(ast, functionId, functionId), Equals(false));
+		// Can't connect to self
+		Expect(ast::TryConnectStmt(ast, functionId, functionId)).ToBeFalse();
 
-			// Can't connect in loops
-			AssertThat(ast::TryConnectStmt(ast, callId, ifId), Equals(true));
-			AssertThat(ast::TryConnectStmt(ast, ifId, callId), Equals(false));
+		// Can't connect in loops
+		Expect(ast::TryConnectStmt(ast, callId, ifId)).ToBeTrue();
+		Expect(ast::TryConnectStmt(ast, ifId, callId)).ToBeFalse();
 
-			// Can replace a connection
-			AssertThat(ast::TryConnectStmt(ast, functionId, ifId), Equals(true));
-		});
+		// Can replace a connection
+		Expect(ast::TryConnectStmt(ast, functionId, ifId)).ToBeTrue();
+	});
 
-		it("Can connect with multiple outputs", [&]()
-		{
-			ast::Tree ast;
+	It("Can connect with multiple outputs", []()
+	{
+		ast::Tree ast;
 
-			ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
+		ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
 
-			ast::Id ifId    = ast::AddIf({ast, ast::NoId});
-			ast::Id call1Id = ast::AddCall({ast, ast::NoId}, functionId);
-			ast::Id call2Id = ast::AddCall({ast, ast::NoId}, functionId);
+		ast::Id ifId    = ast::AddIf({ast, ast::NoId});
+		ast::Id call1Id = ast::AddCall({ast, ast::NoId}, functionId);
+		ast::Id call2Id = ast::AddCall({ast, ast::NoId}, functionId);
 
-			AssertThat(
-			    ast::TryConnectStmt(ast, ast.Get<ast::CStmtOutputs>(ifId).pinIds[0], call2Id),
-			    Equals(true));
-			AssertThat(ast.Get<ast::CStmtOutputs>(ifId).linkInputNodes[0], Equals(call2Id));
+		Expect(ast::TryConnectStmt(ast, ast.Get<ast::CStmtOutputs>(ifId).pinIds[0], call2Id))
+		    .ToBeTrue();
+		Expect(ast.Get<ast::CStmtOutputs>(ifId).linkInputNodes[0]).ToEqual(call2Id);
 
-			// Can replace a connection
-			AssertThat(
-			    ast::TryConnectStmt(ast, ast.Get<ast::CStmtOutputs>(ifId).pinIds[0], call1Id),
-			    Equals(true));
-			AssertThat(ast.Get<ast::CStmtOutputs>(ifId).linkInputNodes[0], Equals(call1Id));
+		// Can replace a connection
+		Expect(ast::TryConnectStmt(ast, ast.Get<ast::CStmtOutputs>(ifId).pinIds[0], call1Id))
+		    .ToBeTrue();
+		Expect(ast.Get<ast::CStmtOutputs>(ifId).linkInputNodes[0]).ToEqual(call1Id);
 
-			// Can connect to a different pin
-			AssertThat(
-			    ast::TryConnectStmt(ast, ast.Get<ast::CStmtOutputs>(ifId).pinIds[1], call2Id),
-			    Equals(true));
-			AssertThat(ast.Get<ast::CStmtOutputs>(ifId).linkInputNodes[1], Equals(call2Id));
-		});
+		// Can connect to a different pin
+		Expect(ast::TryConnectStmt(ast, ast.Get<ast::CStmtOutputs>(ifId).pinIds[1], call2Id))
+		    .ToBeTrue();
+		Expect(ast.Get<ast::CStmtOutputs>(ifId).linkInputNodes[1]).ToEqual(call2Id);
 	});
 });

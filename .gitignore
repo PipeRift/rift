@@ -9,3 +9,4 @@ Testing
 compile_commands.json
 Tools/remedybg.exe
 *.rdbg
+.worktrees
