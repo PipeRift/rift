@@ -10,7 +10,7 @@ using namespace p;
 using namespace rift;
 
 
-Spec("AST.Expressions", []()
+P_SPEC("AST.Expressions", []()
 {
 	It("Initializes inputs & outputs correctly", []()
 	{

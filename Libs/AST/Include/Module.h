@@ -5,6 +5,7 @@
 #include "PipePlatform.h"
 #include "Rift.h"
 
+#include <Pipe/Core/Object.h>
 #include <Pipe/Memory/OwnPtr.h>
 #include <PipeReflect.h>
 

@@ -4,7 +4,7 @@
 
 #include "Compiler/Compiler.h"
 
-#include <PipeReflect.h>
+#include <Pipe/Core/Object.h>
 
 
 namespace rift

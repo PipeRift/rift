@@ -12,7 +12,7 @@ using namespace p;
 using namespace rift;
 
 
-Spec("AST.Namespaces", []()
+P_SPEC("AST.Namespaces", []()
 {
 	It("Can get namespaces", []()
 	{

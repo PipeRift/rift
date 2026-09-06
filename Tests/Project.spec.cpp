@@ -3,11 +3,11 @@
 #include <AST/Components/CModule.h>
 #include <AST/Systems/LoadSystem.h>
 #include <AST/Utils/ModuleUtils.h>
-#include <PipeTest.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Files/PlatformPaths.h>
 #include <Pipe/Memory/OwnPtr.h>
+#include <PipeTest.h>
 
 #include <chrono>
 #include <thread>
@@ -20,7 +20,7 @@ using namespace std::chrono_literals;
 String testProjectPath = p::JoinPaths(PlatformPaths::GetCurrentPath(), "TestProject");
 
 
-Spec("Project", []()
+P_SPEC("Project", []()
 {
 	BeforeEach([]()
 	{

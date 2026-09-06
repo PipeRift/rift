@@ -5,6 +5,7 @@
 #include "Pipe/Core/TypeTraits.h"
 
 #include <AST/Tree.h>
+#include <Pipe/Core/Object.h>
 #include <PipeColor.h>
 #include <PipeReflect.h>
 #include <UI/Style.h>
