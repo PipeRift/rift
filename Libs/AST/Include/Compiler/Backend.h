@@ -13,7 +13,7 @@ namespace rift
 	{
 	public:
 		using Super = p::Object;
-		P_CLASS(Backend)
+		P_CLASS(Backend, p::TF_Abstract)
 
 		virtual p::Tag GetName()
 		{

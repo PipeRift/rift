@@ -67,6 +67,18 @@ namespace rift::ast::FunctionsSystem
 		}
 	}
 
+	void MarkAllCallsDirty(Tree& ast)
+	{
+		p::TIdScope<p::Writes<p::CMdfd<CExprCallId>>, CExprCallId> scope{ast};
+		for (Id id : p::FindAllIdsWith<CExprCallId>(scope))
+		{
+			if (!scope.Has<p::CMdfd<CExprCallId>>(id))
+			{
+				scope.Add<p::CMdfd<CExprCallId>>(id);
+			}
+		}
+	}
+
 	void PushInvalidPinsBack(p::TIdScopeRef<p::Writes<CExprInputs, CExprOutputs>, CInvalid> scope)
 	{
 		for (Id inputsId : p::FindAllIdsWith<CExprInputs>(scope))

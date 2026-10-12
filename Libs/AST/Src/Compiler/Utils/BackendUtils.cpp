@@ -9,11 +9,19 @@ namespace rift
 {
 	p::TArray<p::TypeId> GetBackendTypes()
 	{
-		p::TArray<p::TypeId> types;    // = Backend::GetStaticType()->GetChildren();
-		types.RemoveIf([](p::TypeId type)
+		p::TArray<p::TypeId> types;
+		const p::TypeId backendType = p::GetTypeId<Backend>();
+		for (p::TypeId type : p::GetRegisteredTypeIds())
 		{
-			return !type.IsValid() || p::HasTypeFlags(type, p::TF_Abstract);
-		});
+			if (!type.IsValid() || p::HasTypeFlags(type, p::TF_Abstract))
+			{
+				continue;
+			}
+			if (type == backendType || p::IsTypeParentOf(backendType, type))
+			{
+				types.Add(type);
+			}
+		}
 		return Move(types);
 	}
 

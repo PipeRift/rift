@@ -29,6 +29,9 @@ namespace rift::ast::FunctionsSystem
 
 	// Marks calls referencing dirty functions as dirty theirselfs
 	void PropagateDirtyIntoCalls(Tree& ast);
+	// Marks every resolved call as dirty. Used by head-less builds, where no
+	// editing transaction tagged functions as changed.
+	void MarkAllCallsDirty(Tree& ast);
 	void SyncCallPinsFromFunction(Tree& ast);
 	using InvalidDisconnectedPinAccess =
 	    p::TIdScopeRef<p::Writes<CTmpInvalidKeep, CChild, CParent>, CInvalid, CExprInputs>;

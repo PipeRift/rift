@@ -13,12 +13,35 @@
 #include <Pipe/Files/Paths.h>
 #include <PipeECS.h>
 
+#include <filesystem>
+#include <system_error>
+
 
 namespace rift::ast
 {
 	static p::TArray<ModuleBinding> gModuleBindings;
 	p::TBroadcast<p::EntityReader&> gOnReadModulePools;
 	p::TBroadcast<p::EntityWriter&> gOnWriteModulePools;
+
+
+	// Resolves a path against the current working directory. Uses std::filesystem
+	// because p::ToAbsolutePath relies on PlatformPaths::GetCurrentPath(), which
+	// is broken on Linux in the current Pipe revision.
+	static p::String ResolveAbsolutePath(p::StringView path)
+	{
+		if (p::IsAbsolutePath(path))
+		{
+			return p::String(path);
+		}
+		std::error_code errorCode;
+		const std::filesystem::path absolutePath =
+		    std::filesystem::absolute(std::filesystem::path(std::string(path)), errorCode);
+		if (!errorCode)
+		{
+			return p::String(absolutePath.string().c_str());
+		}
+		return p::String(path);
+	}
 
 
 	bool ValidateModulePath(p::String& path, p::String& error)
@@ -36,11 +59,11 @@ namespace rift::ast
 				error = "Path is not a rift module file or a folder";
 				return false;
 			}
-			path = p::GetParentPath(p::ToAbsolutePath(path));
+			path = p::GetParentPath(ResolveAbsolutePath(path));
 		}
 		else
 		{
-			path = p::String(p::ToAbsolutePath(path));
+			path = ResolveAbsolutePath(path);
 		}
 		return true;
 	}
