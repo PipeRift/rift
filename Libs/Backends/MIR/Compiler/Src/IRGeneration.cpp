@@ -6,13 +6,69 @@
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Statements.h>
 #include <Compiler/Compiler.h>
-#include <PipeStrings.h>
 #include <Pipe/Core/StringView.h>
+#include <PipeStrings.h>
 
 
 namespace rift::MIR
 {
 	const p::TSet<p::Tag> CGenerator::reservedNames{"class", "struct"};
+
+
+	static void AppendCStringLiteral(p::String& out, p::StringView value)
+	{
+		out.push_back('"');
+		for (p::sizet i = 0; i < value.size(); ++i)
+		{
+			switch (value[i])
+			{
+				case '"': out.append("\\\""); break;
+				case '\\': out.append("\\\\"); break;
+				case '\n': out.append("\\n"); break;
+				case '\r': out.append("\\r"); break;
+				case '\t': out.append("\\t"); break;
+				default: out.push_back(value[i]); break;
+			}
+		}
+		out.push_back('"');
+	}
+
+	static p::StringView GetUnaryOperatorString(ast::UnaryOperatorType type)
+	{
+		switch (type)
+		{
+			case ast::UnaryOperatorType::Not: return "!";
+			case ast::UnaryOperatorType::Negation: return "-";
+			case ast::UnaryOperatorType::Increment: return "++";
+			case ast::UnaryOperatorType::Decrement: return "--";
+			case ast::UnaryOperatorType::BitNot: return "~";
+		}
+		return "";
+	}
+
+	static p::StringView GetBinaryOperatorString(ast::BinaryOperatorType type)
+	{
+		switch (type)
+		{
+			case ast::BinaryOperatorType::Add: return "+";
+			case ast::BinaryOperatorType::Sub: return "-";
+			case ast::BinaryOperatorType::Mul: return "*";
+			case ast::BinaryOperatorType::Div: return "/";
+			case ast::BinaryOperatorType::Mod: return "%";
+			case ast::BinaryOperatorType::Equal: return "==";
+			case ast::BinaryOperatorType::NotEqual: return "!=";
+			case ast::BinaryOperatorType::Greater: return ">";
+			case ast::BinaryOperatorType::Less: return "<";
+			case ast::BinaryOperatorType::GreaterOrEqual: return ">=";
+			case ast::BinaryOperatorType::LessOrEqual: return "<=";
+			case ast::BinaryOperatorType::And: return "&&";
+			case ast::BinaryOperatorType::Or: return "||";
+			case ast::BinaryOperatorType::BitAnd: return "&";
+			case ast::BinaryOperatorType::BitOr: return "|";
+			case ast::BinaryOperatorType::Xor: return "^";
+		}
+		return "";
+	}
 
 
 	void GenerateC(Compiler& compiler)
@@ -129,9 +185,7 @@ namespace rift::MIR
 		{
 			strValue.clear();
 			const auto& string = scope.Get<const ast::CLiteralString>(id);
-			strValue.push_back('\"');
-			strValue.append(string.value);
-			strValue.push_back('\"');
+			AppendCStringLiteral(strValue, string.value);
 			scope.Add(id, CMIRLiteral{.value = p::Tag{strValue}});
 		}
 	}
@@ -201,6 +255,7 @@ namespace rift::MIR
 			signature.append("void ");
 			const p::String name = useFullName ? ast::GetFullName(scope, id, false, '_')
 			                                   : p::String{ast::GetName(scope, id).AsString()};
+			scope.Add(id, CMIRFunctionName{.value = p::Tag{name}});
 			signature.append(name);
 			signature.push_back('(');
 
@@ -229,9 +284,8 @@ namespace rift::MIR
 					else if (reservedNames.Contains(inputName)) [[unlikely]]
 					{
 						const p::String functionName = ast::GetFullName(scope, id);
-						compiler.Error(
-						    p::Format("Input name '{}' not allowed in function '{}' ",
-						        inputName, functionName));
+						compiler.Error(p::Format("Input name '{}' not allowed in function '{}' ",
+						    inputName, functionName));
 					}
 					else
 					{
@@ -277,6 +331,7 @@ namespace rift::MIR
 			if (const auto* call = scope.TryGet<const ast::CExprCallId>(id))
 			{
 				AddCall(id, *call);
+				code->append(";\n");
 			}
 		}
 
@@ -292,9 +347,69 @@ namespace rift::MIR
 
 	void CGenerator::AddExpr(const ast::ExprOutput& output)
 	{
-		const auto* value =
-		    !IsNone(output.pinId) ? scope.TryGet<const CMIRLiteral>(output.pinId) : nullptr;
-		// TODO
+		if (output.IsNone())
+		{
+			code->append("0");
+			return;
+		}
+
+		// Literal nodes are their own output pin
+		if (const auto* literal = scope.TryGet<const CMIRLiteral>(output.pinId))
+		{
+			code->append(literal->value.AsString());
+			return;
+		}
+		if (const auto* call = scope.TryGet<const ast::CExprCallId>(output.nodeId))
+		{
+			AddCall(output.nodeId, *call);
+			return;
+		}
+		if (const auto* unary = scope.TryGet<const ast::CExprUnaryOperator>(output.nodeId))
+		{
+			AddUnaryOperator(output.nodeId, unary->type);
+			return;
+		}
+		if (const auto* binary = scope.TryGet<const ast::CExprBinaryOperator>(output.nodeId))
+		{
+			AddBinaryOperator(output.nodeId, binary->type);
+			return;
+		}
+
+		compiler.Error("Unsupported expression found while generating code");
+		code->append("0");
+	}
+
+	void CGenerator::AddUnaryOperator(ast::Id id, ast::UnaryOperatorType type)
+	{
+		const auto* inputs = scope.TryGet<const ast::CExprInputs>(id);
+		if (!inputs || inputs->linkedOutputs.IsEmpty())
+		{
+			compiler.Error("Unary operator without a connected operand");
+			code->append("0");
+			return;
+		}
+
+		code->append(GetUnaryOperatorString(type));
+		code->push_back('(');
+		AddExpr(inputs->linkedOutputs.First());
+		code->push_back(')');
+	}
+
+	void CGenerator::AddBinaryOperator(ast::Id id, ast::BinaryOperatorType type)
+	{
+		const auto* inputs = scope.TryGet<const ast::CExprInputs>(id);
+		if (!inputs || inputs->linkedOutputs.Size() < 2)
+		{
+			compiler.Error("Binary operator without two connected operands");
+			code->append("0");
+			return;
+		}
+
+		code->push_back('(');
+		AddExpr(inputs->linkedOutputs[0]);
+		p::FormatTo(*code, " {} ", GetBinaryOperatorString(type));
+		AddExpr(inputs->linkedOutputs[1]);
+		code->push_back(')');
 	}
 
 	void CGenerator::AddStmtIf(ast::Id id)
@@ -322,29 +437,35 @@ namespace rift::MIR
 			compiler.Error("Call to an unknown function");
 			return;
 		}
-		if (!P_Ensure(scope.Has<const CMIRFunctionSignature>(functionId)))
+		const auto* functionName = scope.TryGet<const CMIRFunctionName>(functionId);
+		if (!P_Ensure(functionName))
 		{
 			compiler.Error(p::Format(
 			    "Call to an invalid function: '{}'", ast::GetFullName(scope, functionId)));
 			return;
 		}
 
+		code->append(functionName->value.AsString());
+		code->push_back('(');
+
 		if (auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
 		{
+			bool firstArg = true;
 			for (p::i32 i = 0; i < inputs->linkedOutputs.Size(); ++i)
 			{
 				ast::ExprOutput output = inputs->linkedOutputs[i];
-				if (!output.IsNone())
-				{
-					AddExpr(output);
-					code->push_back(',');
-				}
-				else
+				if (output.IsNone())
 				{
 					// TODO: Error? or assign default value?
+					continue;
 				}
+				if (!firstArg)
+				{
+					code->append(", ");
+				}
+				firstArg = false;
+				AddExpr(output);
 			}
-			p::Strings::RemoveFromEnd(*code, ", ");
 		}
 		code->push_back(')');
 	}
@@ -357,9 +478,14 @@ namespace rift::MIR
 			return;
 		}
 
-		// auto* customMainFunction = scope.Get<const CIRFunction>(functionId).instance;
+		const auto* functionName = scope.TryGet<const CMIRFunctionName>(functionId);
+		if (!P_Ensure(functionName))
+		{
+			compiler.Error("Main function has no generated name");
+			return;
+		}
 
-		code->append("int main() {\nProject_Main_Main();\nreturn 0;\n}\n");
+		p::FormatTo(*code, "int main() {{\n{}();\nreturn 0;\n}}\n", functionName->value.AsString());
 	}
 
 	ast::Id CGenerator::FindMainFunction(p::TView<ast::Id> functionIds)

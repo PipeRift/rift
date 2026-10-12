@@ -12,7 +12,7 @@
         },
         "CExprCall": {
             "2": [
-                "IO",
+                "Std",
                 "IO",
                 "PrintHelloWorld"
             ]
