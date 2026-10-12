@@ -33,7 +33,9 @@ function(rift_runtime_module module)
     set(RIFT_BINARY_DIR ${CMAKE_BINARY_DIR}/Bin/${CMAKE_CFG_INTDIR})
 
     set(target RiftRuntime${module})
-    add_library(${target} STATIC)
+    # Runtimes are loaded at runtime by the compiler backends (native bindings),
+    # so they must be shared libraries and not static archives.
+    add_library(${target} SHARED)
     rift_module(${target})
 
     target_include_directories(${target} PUBLIC ${module}/Include)

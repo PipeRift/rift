@@ -37,6 +37,13 @@ include(CMake/Util.cmake)
 include(CMake/SetIcon.cmake)
 include(CMake/CheckClangTools.cmake)
 
+# Pipe ships a header-ordering bug (PipeType.h uses IsTypeParentOf before
+# PipeReflect.h declares it) that recent Clang/GCC reject. Force-include a
+# forward declaration so the whole project keeps building with modern tools.
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-include${CMAKE_CURRENT_SOURCE_DIR}/CMake/PipeCompat.h>")
+endif()
+
 add_subdirectory(Extern)
 
 add_subdirectory(Libs)
@@ -48,8 +55,8 @@ if (RIFT_BUILD_EDITOR)
 endif()
 
 # Tests
+include(CTest)
 if(BUILD_TESTING AND RIFT_BUILD_TESTS)
-    include(CTest)
     add_subdirectory(Tests)
 endif()
 
