@@ -90,23 +90,6 @@ jobs:
           name: rift-${{ matrix.os-name }}
           path: Build/Bin
 
-      - name: Diagnose RiftTests crash (Windows)
-        if: ${{ matrix.os-name == 'windows' }}
-        working-directory: ./Build
-        continue-on-error: true
-        shell: cmd
-        run: |
-          set "CDB=C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\cdb.exe"
-          if not exist "%CDB%" set "CDB=C:\Program Files\Windows Kits\10\Debuggers\x64\cdb.exe"
-          "%CDB%" -g -G -c "g; kb; q" Bin\RiftTests.exe
-
-      - name: Diagnose RiftTests crash (macOS)
-        if: ${{ matrix.os-name == 'macos' }}
-        working-directory: ./Build
-        continue-on-error: true
-        run: |
-          lldb -b -o run -k "thread backtrace all" -k "quit" ./Bin/RiftTests 2>&1 | tail -200
-
       - name: Run Tests
         working-directory: ./Build
         run: ctest --output-on-failure -j2 -C ${{ matrix.config }}
