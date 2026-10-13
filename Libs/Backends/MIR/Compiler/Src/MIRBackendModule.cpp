@@ -168,6 +168,19 @@ namespace rift
 		}
 	}
 
+#if defined(__APPLE__) && defined(__aarch64__)
+	// MIR's generated code references a `float __nan(void)` helper (see mir-bin-run.c).
+	static float NanValue()
+	{
+		union
+		{
+			unsigned int i;
+			float f;
+		} u{0x7fc00000u};
+		return u.f;
+	}
+#endif
+
 	static void* ImportResolver(const char* name)
 	{
 		void *handler, *sym = nullptr;
@@ -232,11 +245,11 @@ namespace rift
 	#if defined(__APPLE__) && defined(__aarch64__)
 			if (strcmp(name, "__nan") == 0)
 			{
-				return __nan;
+				return (void*)NanValue;
 			}
 			if (strcmp(name, "_MIR_set_code") == 0)
 			{
-				return _MIR_set_code;
+				return (void*)_MIR_set_code;
 			}
 	#endif
 #endif
