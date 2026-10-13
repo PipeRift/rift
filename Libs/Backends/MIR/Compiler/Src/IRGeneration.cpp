@@ -9,8 +9,6 @@
 #include <Pipe/Core/StringView.h>
 #include <PipeStrings.h>
 
-#include <iterator>
-
 
 namespace rift::MIR
 {
