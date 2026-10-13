@@ -32,7 +32,7 @@ jobs:
             os-name: macos
     steps:
       - name: Download Rift build
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: rift-${{ matrix.os-name }}
           path: rift
