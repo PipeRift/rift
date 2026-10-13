@@ -49,15 +49,12 @@ namespace rift::MIR
 
 		void DeclareStructs(p::TView<ast::Id> ids);
 		void DefineStructs(p::TView<ast::Id> ids);
-		p::String GetFunctionName(ast::Id id);
-		void DeclareFunctions(p::TView<ast::Id> ids);
+		void DeclareFunctions(p::TView<ast::Id> ids, bool useFullName = true);
 		void DefineFunctions(p::TView<ast::Id> ids);
 
 		void AddStmtBlock(ast::Id firstStmtId);
 		void AddStmtIf(ast::Id id);
 		void AddExpr(const ast::ExprOutput& output);
-		void AddUnaryOperator(ast::Id id, ast::UnaryOperatorType type);
-		void AddBinaryOperator(ast::Id id, ast::BinaryOperatorType type);
 		void AddCall(ast::Id id, const ast::CExprCallId& call);
 		void CreateMain(ast::Id functionId);
 		ast::Id FindMainFunction(p::TView<ast::Id> functionIds);
