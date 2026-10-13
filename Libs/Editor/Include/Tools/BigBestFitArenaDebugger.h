@@ -4,7 +4,7 @@
 #include <Pipe/Core/StringView.h>
 #include <PipeMemoryArenas.h>
 #include <PipePlatform.h>
-#include <PipeVectors.h>
+#include <PipeMath.h>
 
 
 namespace rift::editor

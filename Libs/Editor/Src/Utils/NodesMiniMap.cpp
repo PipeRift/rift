@@ -6,7 +6,7 @@
 #include "Utils/NodesInternal.h"
 
 #include <PipeMath.h>
-#include <PipeVectors.h>
+#include <PipeMath.h>
 
 
 namespace rift::Nodes

@@ -13,6 +13,7 @@
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
 #include <PipeTime.h>
+#include <cmath>
 #include <stdlib.h>
 
 
@@ -245,6 +246,15 @@ namespace rift
 		}
 	}
 
+#if defined(__APPLE__) && defined(__aarch64__)
+	// MIR's aarch64 prelude declares `float __nan(void)`; MIR's own drivers define it as a quiet
+	// NaN. Provide the matching helper for the dynamic symbol resolver.
+	static float NanValue()
+	{
+		return NAN;
+	}
+#endif
+
 	static void* ImportResolver(const char* name)
 	{
 		void *handler, *sym = nullptr;
@@ -329,11 +339,11 @@ namespace rift
 	#if defined(__APPLE__) && defined(__aarch64__)
 			if (strcmp(name, "__nan") == 0)
 			{
-				return __nan;
+				return (void*)NanValue;
 			}
 			if (strcmp(name, "_MIR_set_code") == 0)
 			{
-				return _MIR_set_code;
+				return (void*)_MIR_set_code;
 			}
 	#endif
 #endif

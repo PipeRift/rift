@@ -21,39 +21,39 @@ jobs:
         name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang]
         include:
           - name: windows-msvc
-            os: windows-latest
+            os: windows-2025
             os-name: windows
             compiler: msvc
             cxx: cl
             cc: cl
           - name: windows-clang
-            os: windows-latest
+            os: windows-2025
             os-name: windows
-            compiler: clang-16
+            compiler: clang-21
             cxx: clang-cl
             cc: clang-cl
           - name: linux-clang
-            os: ubuntu-latest
+            os: ubuntu-24.04
             os-name: linux
-            compiler: clang-16
+            compiler: clang-21
             cxx: clang++
             cc: clang
           - name: linux-gcc
-            os: ubuntu-latest
+            os: ubuntu-24.04
             os-name: linux
-            compiler: gcc-13
+            compiler: gcc-15
             cxx: g++
             cc: gcc
           - name: macos-clang
-            os: macos-14
+            os: macos-15
             os-name: macos
-            compiler: clang-16
+            compiler: clang-21
             cxx: clang++
             cc: clang
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           submodules: 'recursive'
 
@@ -61,7 +61,7 @@ jobs:
         if: ${{ matrix.os-name == 'linux'}}
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential xz-utils curl libx11-dev xorg-dev libglu1-mesa-dev
+          sudo apt-get install -y build-essential xz-utils curl libx11-dev xorg-dev libglu1-mesa-dev libwayland-dev libwayland-bin wayland-protocols libxkbcommon-dev
 
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
@@ -72,7 +72,7 @@ jobs:
           ninja: true
 
       - name: Cache Build
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: Build
           key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
@@ -84,7 +84,7 @@ jobs:
         run: cmake --build Build --config ${{ matrix.config }}
 
       - name: Upload binaries as artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         if: ${{ matrix.config == 'Release' && contains(matrix.compiler, 'clang') }} # Only clang artifacts are stored
         with:
           name: rift-${{ matrix.os-name }}

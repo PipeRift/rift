@@ -26,6 +26,6 @@ namespace rift
 		    staticType, {.displayName = "Static", .hasVariables = true, .hasFunctions = true});
 		ast::PreAllocPools<ast::CDeclStruct, ast::CDeclClass, ast::CDeclStatic>();
 
-		ast::RegisterSerializedModulePools<ast::CModule>();
+		ast::RegisterSerializedModulePools<ast::CModule, ast::CNamespace>();
 	}
 }    // namespace rift

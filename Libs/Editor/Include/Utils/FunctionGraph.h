@@ -5,7 +5,7 @@
 #include "Components/CTypeEditor.h"
 
 #include <AST/Tree.h>
-#include <PipeVectors.h>
+#include <PipeMath.h>
 
 
 namespace rift
