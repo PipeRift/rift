@@ -95,7 +95,7 @@ jobs:
         working-directory: ./Build
         continue-on-error: true
         run: |
-          lldb -b -o run -o "bt all" -o quit ./Bin/RiftTests 2>&1 | tail -150
+          lldb -b -o run -k "thread backtrace all" -k "quit" ./Bin/RiftTests 2>&1 | tail -200
 
       - name: Run Tests
         working-directory: ./Build
