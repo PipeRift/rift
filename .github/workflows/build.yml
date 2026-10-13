@@ -53,7 +53,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           submodules: 'recursive'
 
@@ -72,7 +72,7 @@ jobs:
           ninja: true
 
       - name: Cache Build
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: Build
           key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
@@ -84,7 +84,7 @@ jobs:
         run: cmake --build Build --config ${{ matrix.config }}
 
       - name: Upload binaries as artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: ${{ matrix.config == 'Release' && contains(matrix.compiler, 'clang') }} # Only clang artifacts are stored
         with:
           name: rift-${{ matrix.os-name }}
