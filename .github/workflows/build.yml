@@ -90,6 +90,13 @@ jobs:
           name: rift-${{ matrix.os-name }}
           path: Build/Bin
 
+      - name: Diagnose RiftTests crash (macOS)
+        if: ${{ matrix.os-name == 'macos' }}
+        working-directory: ./Build
+        continue-on-error: true
+        run: |
+          lldb -b -o run -o "bt all" -o quit ./Bin/RiftTests 2>&1 | tail -150
+
       - name: Run Tests
         working-directory: ./Build
         run: ctest --output-on-failure -j2 -C ${{ matrix.config }}
