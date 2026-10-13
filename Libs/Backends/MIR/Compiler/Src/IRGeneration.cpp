@@ -9,10 +9,23 @@
 #include <Pipe/Core/StringView.h>
 #include <PipeStrings.h>
 
+#include <iterator>
+
 
 namespace rift::MIR
 {
 	const p::TSet<p::Tag> CGenerator::reservedNames{"class", "struct"};
+
+	// Operator strings indexed by their enum value. Binary operators include the
+	// surrounding spaces so they are appended in a single operation.
+	static constexpr p::StringView unaryOperators[]{"!", "-", "++", "--", "~"};
+	static constexpr p::StringView binaryOperators[]{" + ", " - ", " * ", " / ", " % ",
+	    " == ", " != ", " > ", " < ", " >= ", " <= ", " && ", " || ", " & ", " | ", " ^ "};
+
+	static_assert(std::size(unaryOperators) == p::sizet(p::u8(ast::UnaryOperatorType::BitNot)) + 1,
+	    "unaryOperators must have one entry per UnaryOperatorType");
+	static_assert(std::size(binaryOperators) == p::sizet(p::u8(ast::BinaryOperatorType::Xor)) + 1,
+	    "binaryOperators must have one entry per BinaryOperatorType");
 
 
 	static void AppendCStringLiteral(p::String& out, p::StringView value)
@@ -347,17 +360,7 @@ namespace rift::MIR
 			return;
 		}
 
-		p::StringView operatorStr;
-		switch (op.type)
-		{
-			case ast::UnaryOperatorType::Not: operatorStr = "!"; break;
-			case ast::UnaryOperatorType::Negation: operatorStr = "-"; break;
-			case ast::UnaryOperatorType::Increment: operatorStr = "++"; break;
-			case ast::UnaryOperatorType::Decrement: operatorStr = "--"; break;
-			case ast::UnaryOperatorType::BitNot: operatorStr = "~"; break;
-		}
-
-		code->append(operatorStr);
+		code->append(unaryOperators[p::u8(op.type)]);
 		code->push_back('(');
 		AddExpr(inputs->linkedOutputs.First());
 		code->push_back(')');
@@ -372,32 +375,9 @@ namespace rift::MIR
 			return;
 		}
 
-		p::StringView operatorStr;
-		switch (op.type)
-		{
-			case ast::BinaryOperatorType::Add: operatorStr = "+"; break;
-			case ast::BinaryOperatorType::Sub: operatorStr = "-"; break;
-			case ast::BinaryOperatorType::Mul: operatorStr = "*"; break;
-			case ast::BinaryOperatorType::Div: operatorStr = "/"; break;
-			case ast::BinaryOperatorType::Mod: operatorStr = "%"; break;
-			case ast::BinaryOperatorType::Equal: operatorStr = "=="; break;
-			case ast::BinaryOperatorType::NotEqual: operatorStr = "!="; break;
-			case ast::BinaryOperatorType::Greater: operatorStr = ">"; break;
-			case ast::BinaryOperatorType::Less: operatorStr = "<"; break;
-			case ast::BinaryOperatorType::GreaterOrEqual: operatorStr = ">="; break;
-			case ast::BinaryOperatorType::LessOrEqual: operatorStr = "<="; break;
-			case ast::BinaryOperatorType::And: operatorStr = "&&"; break;
-			case ast::BinaryOperatorType::Or: operatorStr = "||"; break;
-			case ast::BinaryOperatorType::BitAnd: operatorStr = "&"; break;
-			case ast::BinaryOperatorType::BitOr: operatorStr = "|"; break;
-			case ast::BinaryOperatorType::Xor: operatorStr = "^"; break;
-		}
-
 		code->push_back('(');
 		AddExpr(inputs->linkedOutputs[0]);
-		code->push_back(' ');
-		code->append(operatorStr);
-		code->push_back(' ');
+		code->append(binaryOperators[p::u8(op.type)]);
 		AddExpr(inputs->linkedOutputs[1]);
 		code->push_back(')');
 	}
