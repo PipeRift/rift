@@ -65,7 +65,7 @@ P_SPEC("Project", []()
 	It("Project name can be overriden", [&]()
 	{
 		SaveStringFile(
-		    p::JoinPaths(testProjectPath, ast::moduleFilename), "{\"name\": \"SomeProject\"}");
+		    p::JoinPaths(testProjectPath, ast::moduleFilename), "{\"CNamespace\": \"SomeProject\"}");
 
 		ast::Tree ast;
 		bool result = ast::OpenProject(ast, testProjectPath);

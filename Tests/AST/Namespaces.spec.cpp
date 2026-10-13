@@ -19,14 +19,14 @@ P_SPEC("AST.Namespaces", []()
 		ast::Tree ast;
 
 		ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
-		Expect(ast::GetNamespace(ast, functionId).ToString().c_str()).ToEqual("@TestFunction");
+		Expect(ast::GetNamespace(ast, functionId).ToString().c_str()).ToEqual("TestFunction");
 		Expect(ast::GetParentNamespace(ast, functionId).ToString().c_str()).ToEqual("");
 
 		ast::Id classBId    = ast::CreateType(ast, ASTModule::classType, "TestClass");
 		ast::Id functionBId = ast::AddFunction({ast, classBId}, "TestFunction");
 		Expect(ast::GetNamespace(ast, functionBId).ToString().c_str())
-		    .ToEqual("@TestClass.TestFunction");
-		Expect(ast::GetParentNamespace(ast, functionBId).ToString().c_str()).ToEqual("@TestClass");
+		    .ToEqual("TestClass.TestFunction");
+		Expect(ast::GetParentNamespace(ast, functionBId).ToString().c_str()).ToEqual("TestClass");
 
 		ast::Id parentC = p::AddId(ast);
 		ast.Add<ast::CModule>(parentC);
@@ -35,9 +35,9 @@ P_SPEC("AST.Namespaces", []()
 		p::AttachId(ast, parentC, classCId);
 		ast::Id functionCId = ast::AddFunction({ast, classCId}, "TestFunction");
 		Expect(ast::GetNamespace(ast, functionCId).ToString().c_str())
-		    .ToEqual("@SomeScope.TestClass.TestFunction");
+		    .ToEqual("SomeScope.TestClass.TestFunction");
 		Expect(ast::GetParentNamespace(ast, functionCId).ToString().c_str())
-		    .ToEqual("@SomeScope.TestClass");
+		    .ToEqual("SomeScope.TestClass");
 	});
 
 	It("Can get local namespaces", []()
@@ -51,7 +51,7 @@ P_SPEC("AST.Namespaces", []()
 		p::AttachId(ast, parent, classId);
 		ast::Id functionId = ast::AddFunction({ast, classId}, "TestFunction");
 		p::String ns       = ast::GetNamespace(ast, functionId).ToString(true);
-		Expect(ns.c_str()).ToEqual("TestClass.TestFunction");
+		Expect(ns.c_str()).ToEqual("#TestClass.TestFunction");
 	});
 
 	It("Can initialize", []()
