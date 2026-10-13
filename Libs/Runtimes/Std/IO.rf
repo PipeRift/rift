@@ -1,20 +1,44 @@
 {
     "type": "CStatic",
-    "count": 2,
+    "count": 4,
     "components": {
         "CChild": {
             "0": -1,
-            "1": 0
+            "1": 0,
+            "2": 0,
+            "3": 2
         },
         "CDeclFunction": {
-            "1": {}
+            "1": {},
+            "2": {}
+        },
+        "CExprOutputs": {
+            "2": {
+                "pinIds": [
+                    3
+                ]
+            }
+        },
+        "CExprType": {
+            "3": [
+                "String"
+            ]
         },
         "CNamespace": {
             "0": "IO",
-            "1": "PrintHelloWorld"
+            "1": "PrintHelloWorld",
+            "2": "Print",
+            "3": "text"
         },
         "CParent": {
-            "0": [1]
+            "0": [
+                1,
+                2
+            ],
+            "1": [],
+            "2": [
+                3
+            ]
         }
     }
 }

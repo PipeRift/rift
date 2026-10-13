@@ -33,43 +33,6 @@ namespace rift::MIR
 		out.push_back('"');
 	}
 
-	static p::StringView GetUnaryOperatorString(ast::UnaryOperatorType type)
-	{
-		switch (type)
-		{
-			case ast::UnaryOperatorType::Not: return "!";
-			case ast::UnaryOperatorType::Negation: return "-";
-			case ast::UnaryOperatorType::Increment: return "++";
-			case ast::UnaryOperatorType::Decrement: return "--";
-			case ast::UnaryOperatorType::BitNot: return "~";
-		}
-		return "";
-	}
-
-	static p::StringView GetBinaryOperatorString(ast::BinaryOperatorType type)
-	{
-		switch (type)
-		{
-			case ast::BinaryOperatorType::Add: return "+";
-			case ast::BinaryOperatorType::Sub: return "-";
-			case ast::BinaryOperatorType::Mul: return "*";
-			case ast::BinaryOperatorType::Div: return "/";
-			case ast::BinaryOperatorType::Mod: return "%";
-			case ast::BinaryOperatorType::Equal: return "==";
-			case ast::BinaryOperatorType::NotEqual: return "!=";
-			case ast::BinaryOperatorType::Greater: return ">";
-			case ast::BinaryOperatorType::Less: return "<";
-			case ast::BinaryOperatorType::GreaterOrEqual: return ">=";
-			case ast::BinaryOperatorType::LessOrEqual: return "<=";
-			case ast::BinaryOperatorType::And: return "&&";
-			case ast::BinaryOperatorType::Or: return "||";
-			case ast::BinaryOperatorType::BitAnd: return "&";
-			case ast::BinaryOperatorType::BitOr: return "|";
-			case ast::BinaryOperatorType::Xor: return "^";
-		}
-		return "";
-	}
-
 
 	void GenerateC(Compiler& compiler)
 	{
@@ -152,7 +115,7 @@ namespace rift::MIR
 		scope.Add(nativeTypes.i32Id, CMIRType{"long"});
 		scope.Add(nativeTypes.u64Id, CMIRType{"unsigned long long"});
 		scope.Add(nativeTypes.i64Id, CMIRType{"long long"});
-		// scope.Add<CIRType>(nativeTypes.stringId, {});
+		scope.Add(nativeTypes.stringId, CMIRType{"const char*"});
 	}
 
 	void CGenerator::GenerateLiterals()
@@ -363,39 +326,80 @@ namespace rift::MIR
 		}
 		else if (const auto* unary = scope.TryGet<const ast::CExprUnaryOperator>(output.nodeId))
 		{
-			const auto* inputs = scope.TryGet<const ast::CExprInputs>(output.nodeId);
-			if (!inputs || inputs->linkedOutputs.IsEmpty())
-			{
-				compiler.Error("Unary operator without a connected operand");
-				return;
-			}
-
-			code->append(GetUnaryOperatorString(unary->type));
-			code->push_back('(');
-			AddExpr(inputs->linkedOutputs.First());
-			code->push_back(')');
+			AddUnaryOperator(output.nodeId, *unary);
 		}
 		else if (const auto* binary = scope.TryGet<const ast::CExprBinaryOperator>(output.nodeId))
 		{
-			const auto* inputs = scope.TryGet<const ast::CExprInputs>(output.nodeId);
-			if (!inputs || inputs->linkedOutputs.Size() < 2)
-			{
-				compiler.Error("Binary operator without two connected operands");
-				return;
-			}
-
-			code->push_back('(');
-			AddExpr(inputs->linkedOutputs[0]);
-			code->push_back(' ');
-			code->append(GetBinaryOperatorString(binary->type));
-			code->push_back(' ');
-			AddExpr(inputs->linkedOutputs[1]);
-			code->push_back(')');
+			AddBinaryOperator(output.nodeId, *binary);
 		}
 		else
 		{
 			compiler.Error("Unsupported expression found while generating code");
 		}
+	}
+
+	void CGenerator::AddUnaryOperator(ast::Id id, const ast::CExprUnaryOperator& op)
+	{
+		const auto* inputs = scope.TryGet<const ast::CExprInputs>(id);
+		if (!inputs || inputs->linkedOutputs.IsEmpty())
+		{
+			compiler.Error("Unary operator without a connected operand");
+			return;
+		}
+
+		p::StringView operatorStr;
+		switch (op.type)
+		{
+			case ast::UnaryOperatorType::Not: operatorStr = "!"; break;
+			case ast::UnaryOperatorType::Negation: operatorStr = "-"; break;
+			case ast::UnaryOperatorType::Increment: operatorStr = "++"; break;
+			case ast::UnaryOperatorType::Decrement: operatorStr = "--"; break;
+			case ast::UnaryOperatorType::BitNot: operatorStr = "~"; break;
+		}
+
+		code->append(operatorStr);
+		code->push_back('(');
+		AddExpr(inputs->linkedOutputs.First());
+		code->push_back(')');
+	}
+
+	void CGenerator::AddBinaryOperator(ast::Id id, const ast::CExprBinaryOperator& op)
+	{
+		const auto* inputs = scope.TryGet<const ast::CExprInputs>(id);
+		if (!inputs || inputs->linkedOutputs.Size() < 2)
+		{
+			compiler.Error("Binary operator without two connected operands");
+			return;
+		}
+
+		p::StringView operatorStr;
+		switch (op.type)
+		{
+			case ast::BinaryOperatorType::Add: operatorStr = "+"; break;
+			case ast::BinaryOperatorType::Sub: operatorStr = "-"; break;
+			case ast::BinaryOperatorType::Mul: operatorStr = "*"; break;
+			case ast::BinaryOperatorType::Div: operatorStr = "/"; break;
+			case ast::BinaryOperatorType::Mod: operatorStr = "%"; break;
+			case ast::BinaryOperatorType::Equal: operatorStr = "=="; break;
+			case ast::BinaryOperatorType::NotEqual: operatorStr = "!="; break;
+			case ast::BinaryOperatorType::Greater: operatorStr = ">"; break;
+			case ast::BinaryOperatorType::Less: operatorStr = "<"; break;
+			case ast::BinaryOperatorType::GreaterOrEqual: operatorStr = ">="; break;
+			case ast::BinaryOperatorType::LessOrEqual: operatorStr = "<="; break;
+			case ast::BinaryOperatorType::And: operatorStr = "&&"; break;
+			case ast::BinaryOperatorType::Or: operatorStr = "||"; break;
+			case ast::BinaryOperatorType::BitAnd: operatorStr = "&"; break;
+			case ast::BinaryOperatorType::BitOr: operatorStr = "|"; break;
+			case ast::BinaryOperatorType::Xor: operatorStr = "^"; break;
+		}
+
+		code->push_back('(');
+		AddExpr(inputs->linkedOutputs[0]);
+		code->push_back(' ');
+		code->append(operatorStr);
+		code->push_back(' ');
+		AddExpr(inputs->linkedOutputs[1]);
+		code->push_back(')');
 	}
 
 	void CGenerator::AddStmtIf(ast::Id id)

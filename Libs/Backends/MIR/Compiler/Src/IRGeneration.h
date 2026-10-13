@@ -55,6 +55,8 @@ namespace rift::MIR
 		void AddStmtBlock(ast::Id firstStmtId);
 		void AddStmtIf(ast::Id id);
 		void AddExpr(const ast::ExprOutput& output);
+		void AddUnaryOperator(ast::Id id, const ast::CExprUnaryOperator& op);
+		void AddBinaryOperator(ast::Id id, const ast::CExprBinaryOperator& op);
 		void AddCall(ast::Id id, const ast::CExprCallId& call);
 		void CreateMain(ast::Id functionId);
 		ast::Id FindMainFunction(p::TView<ast::Id> functionIds);

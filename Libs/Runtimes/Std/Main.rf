@@ -1,11 +1,12 @@
 {
     "type": "Static",
-    "count": 3,
+    "count": 4,
     "components": {
         "CChild": {
             "0": -1,
             "1": 0,
-            "2": 0
+            "2": 0,
+            "3": 0
         },
         "CDeclFunction": {
             "1": {}
@@ -14,28 +15,28 @@
             "2": [
                 "Std",
                 "IO",
-                "PrintHelloWorld"
+                "Print"
             ]
+        },
+        "CExprInputs": {
+            "2": {
+                "linkedOutputs": [
+                    {
+                        "nodeId": 3,
+                        "pinId": 3
+                    }
+                ],
+                "pinIds": []
+            }
         },
         "CExprOutputs": {
             "2": {
                 "pinIds": []
             }
         },
-        "CExprInputs": {
-            "2": {
-                "linkedOutputs": [],
-                "pinIds": []
-            }
-        },
-        "CNodePosition": {
-            "1": {
-                "x": 0.0,
-                "y": 0.0
-            },
-            "2": {
-                "x": 10.0,
-                "y": 0.0
+        "CLiteralString": {
+            "3": {
+                "value": "Hello World\n"
             }
         },
         "CNamespace": {
@@ -45,7 +46,8 @@
         "CParent": {
             "0": [
                 1,
-                2
+                2,
+                3
             ],
             "1": []
         },
