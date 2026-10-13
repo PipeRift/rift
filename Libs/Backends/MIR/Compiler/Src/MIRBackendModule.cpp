@@ -39,8 +39,6 @@ extern "C"
 
 namespace rift
 {
-#if defined(_WIN32)
-	// Windows has no RTLD_DEFAULT, so the C runtime has to be loaded explicitly.
 	struct Lib
 	{
 		const char* name = nullptr;
@@ -49,16 +47,111 @@ namespace rift
 
 	// clang-format off
 	static Lib gStdLibs[] {
+	#if defined(_WIN32)
 		{"C:\\Windows\\System32\\msvcrt.dll"},
 		{"C:\\Windows\\System32\\kernel32.dll"},
 		{"C:\\Windows\\System32\\ucrtbase.dll"},
+	#elif defined(__APPLE__)
+		{"/usr/lib/libc.dylib"},
+		{"/usr/lib/libm.dylib"},
+	#elif defined(__unix__)
+		#if UINTPTR_MAX == 0xffffffff
+			{"/lib/libc.so.6"},
+			{"/lib32/libc.so.6"},
+			{"/lib/libm.so.6"},
+			{"/lib32/libm.so.6"},
+			{"/lib/libpthread.so.0"},
+			{"/lib32/libpthread.so.0"},
+		#elif UINTPTR_MAX == 0xffffffffffffffff
+			#if defined(__x86_64__)
+				{"/lib64/libc.so.6"},
+				{"/lib/x86_64-linux-gnu/libc.so.6"},
+				{"/lib64/libm.so.6"},
+				{"/lib/x86_64-linux-gnu/libm.so.6"},
+				{"/usr/lib64/libpthread.so.0"},
+				{"/lib/x86_64-linux-gnu/libpthread.so.0"},
+				{"/usr/lib/libc.so"},
+			#elif (__aarch64__)
+				{"/lib64/libc.so.6"}, {"/lib/aarch64-linux-gnu/libc.so.6"},
+				{"/lib64/libm.so.6"},
+				{"/lib/aarch64-linux-gnu/libm.so.6"},
+				{"/lib64/libpthread.so.0"},
+				{"/lib/aarch64-linux-gnu/libpthread.so.0"},
+			#elif (__PPC64__)
+				{"/lib64/libc.so.6"},
+				{"/lib64/libm.so.6"},
+				{"/lib64/libpthread.so.0"},
+				#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+					{"/lib/powerpc64le-linux-gnu/libc.so.6"},
+					{"/lib/powerpc64le-linux-gnu/libm.so.6"},
+					{"/lib/powerpc64le-linux-gnu/libpthread.so.0"},
+				#else
+					{"/lib/powerpc64-linux-gnu/libc.so.6"},
+					{"/lib/powerpc64-linux-gnu/libm.so.6"},
+					{"/lib/powerpc64-linux-gnu/libpthread.so.0"},
+				#endif
+			#elif (__s390x__)
+				{"/lib64/libc.so.6"},
+				{"/lib/s390x-linux-gnu/libc.so.6"},
+				{"/lib64/libm.so.6"},
+				{"/lib/s390x-linux-gnu/libm.so.6"},
+				{"/lib64/libpthread.so.0"},
+				{"/lib/s390x-linux-gnu/libpthread.so.0"},
+			#elif (__riscv)
+				{"/lib64/libc.so.6"},
+				{"/lib/riscv64-linux-gnu/libc.so.6"},
+				{"/lib64/libm.so.6"},
+				{"/lib/riscv64-linux-gnu/libm.so.6"},
+				{"/lib64/libpthread.so.0"},
+				{"/lib/riscv64-linux-gnu/libpthread.so.0"},
+			#else
+				#error Cannot recognize 32- or 64-bit target
+			#endif
+		#endif
+	#endif
 	};
-	// clang-format on
 
+	#if defined(__unix__)
+	static const char* gStdLibDirs[]
+	{
+		#if UINTPTR_MAX == 0xffffffff
+			"/lib",
+			"/lib32"
+		#elif UINTPTR_MAX == 0xffffffffffffffff
+			#if defined(__x86_64__)
+				"/lib64",
+				"/lib/x86_64-linux-gnu"
+			#elif (__aarch64__)
+				"/lib64",
+				"/lib/aarch64-linux-gnu"
+			#elif (__PPC64__)
+				"/lib64",
+				#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+					"/lib/powerpc64le-linux-gnu",
+				#else
+					"/lib/powerpc64-linux-gnu",
+				#endif
+			#elif (__s390x__)
+				"/lib64",
+				"/lib/s390x-linux-gnu"
+			#elif (__riscv)
+				"/lib64",
+				"/lib/riscv64-linux-gnu"
+			#endif
+		#endif
+	};
+	static const char* gLibSuffix = ".so";
+	#elif defined(__APPLE__)
+	static const char* gStdLibDirs[]{"/usr/lib"};
+	static const char* gLibSuffix    = ".dylib";
+	#elif defined(_WIN32)
+	static const char* gStdLibDirs[]{"C:\\Windows\\System32"};
+	static const char* gLibSuffix = ".dll";
 	#define dlopen(n, f) LoadLibrary(n)
 	#define dlclose(h) FreeLibrary(HMODULE(h))
 	#define dlsym(h, s) GetProcAddress(HMODULE(h), s)
-#endif
+	#endif
+	// clang-format on
 
 
 	// Libraries loaded from module native bindings at build time
@@ -72,17 +165,14 @@ namespace rift
 
 	static void OpenSTDLibs()
 	{
-#if defined(_WIN32)
 		for (Lib& stdLib : gStdLibs)
 		{
 			stdLib.handler = dlopen(stdLib.name, RTLD_LAZY);
 		}
-#endif
 	}
 
 	static void CloseSTDLibs()
 	{
-#if defined(_WIN32)
 		for (Lib& stdLib : gStdLibs)
 		{
 			if (stdLib.handler)
@@ -90,7 +180,6 @@ namespace rift
 				dlclose(stdLib.handler);
 			}
 		}
-#endif
 		for (NativeLib& nativeLib : gNativeLibs)
 		{
 			if (nativeLib.handler)
@@ -177,12 +266,11 @@ namespace rift
 
 	static void* ImportResolver(const char* name)
 	{
-		void* sym = nullptr;
+		void *handler, *sym = nullptr;
 
-#if defined(_WIN32)
 		for (Lib& stdLib : gStdLibs)
 		{
-			void* handler = stdLib.handler;
+			handler = stdLib.handler;
 			if (handler)
 			{
 				sym = dlsym(handler, name);
@@ -192,7 +280,6 @@ namespace rift
 				}
 			}
 		}
-#endif
 
 		for (NativeLib& nativeLib : gNativeLibs)
 		{
