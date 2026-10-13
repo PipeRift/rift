@@ -48,8 +48,8 @@ if (RIFT_BUILD_EDITOR)
 endif()
 
 # Tests
-include(CTest)
 if(BUILD_TESTING AND RIFT_BUILD_TESTS)
+    include(CTest)
     add_subdirectory(Tests)
 endif()
 

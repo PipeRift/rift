@@ -104,8 +104,7 @@ int main(int argc, char** argv)
 	app.add_option("-p,--project", path, "Project path")->required();
 	app.add_option("-v,--verbose", config.verbose, "Verbose")->required();
 	// CLI11 requires long names to start with two dashes, so use `--O0`..`--O3`.
-	p::i32 optimizationLevel = p::i32(config.optimization);
-	app.add_flag("--O0{0},--O1{1},--O2{2},--O3{3}", optimizationLevel, "Optimization");
+	app.add_flag("--O0{0},--O1{1},--O2{2},--O3{3}", config.optimization, "Optimization");
 
 
 	String selectedBackendStr;
@@ -113,7 +112,6 @@ int main(int argc, char** argv)
 	AddBackendOption(app, availableBackends, selectedBackendStr);
 
 	CLI11_PARSE(app, argc, argv);
-	config.optimization = OptimizationLevel(optimizationLevel);
 
 	TPtr<Backend> backend = FindBackendByName(availableBackends, Tag(selectedBackendStr));
 
@@ -128,10 +126,7 @@ int main(int argc, char** argv)
 
 	Build(ast, config, backend);
 
-	// Release owned resources before shutting Pipe down so no allocations leak.
-	backend = {};
-	availableBackends.Clear();
-	ast.Reset();
+	// Destroy the enabled modules before Pipe shuts down so nothing leaks.
 	DisableAllModules();
 
 	p::Shutdown();
