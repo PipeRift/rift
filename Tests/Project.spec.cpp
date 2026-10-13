@@ -62,10 +62,10 @@ P_SPEC("Project", []()
 
 	// TODO: Fix module loading. They can't load from CFileRef pointing to the folder and not
 	// the file
-	XIt("Project name can be overriden", [&]()
+	It("Project name can be overriden", [&]()
 	{
 		SaveStringFile(
-		    p::JoinPaths(testProjectPath, ast::moduleFilename), "{\"name\": \"SomeProject\"}");
+		    p::JoinPaths(testProjectPath, ast::moduleFilename), "{\"CNamespace\": \"SomeProject\"}");
 
 		ast::Tree ast;
 		bool result = ast::OpenProject(ast, testProjectPath);

@@ -11,6 +11,7 @@
 #include <Pipe/Core/Log.h>
 #include <Pipe/Files/Files.h>
 #include <PipeTime.h>
+#include <cmath>
 #include <stdlib.h>
 
 
@@ -169,15 +170,11 @@ namespace rift
 	}
 
 #if defined(__APPLE__) && defined(__aarch64__)
-	// MIR's generated code references a `float __nan(void)` helper (see mir-bin-run.c).
+	// MIR's aarch64 prelude declares `float __nan(void)`; MIR's own drivers define it as a quiet
+	// NaN. Provide the matching helper for the dynamic symbol resolver.
 	static float NanValue()
 	{
-		union
-		{
-			unsigned int i;
-			float f;
-		} u{0x7fc00000u};
-		return u.f;
+		return NAN;
 	}
 #endif
 
