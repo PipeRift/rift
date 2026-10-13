@@ -10,7 +10,6 @@
 #include <PipeTest.h>
 
 #include <chrono>
-#include <filesystem>
 #include <thread>
 
 
@@ -18,7 +17,7 @@ using namespace rift;
 using namespace p;
 using namespace std::chrono_literals;
 
-String testProjectPath = p::JoinPaths(std::filesystem::current_path().string(), "TestProject");
+String testProjectPath = p::JoinPaths(PlatformPaths::GetCurrentPath(), "TestProject");
 
 
 P_SPEC("Project", []()
@@ -63,7 +62,7 @@ P_SPEC("Project", []()
 
 	// TODO: Fix module loading. They can't load from CFileRef pointing to the folder and not
 	// the file
-	XIt("Project name can be overriden", [&]()
+	It("Project name can be overriden", [&]()
 	{
 		SaveStringFile(
 		    p::JoinPaths(testProjectPath, ast::moduleFilename), "{\"CNamespace\": \"SomeProject\"}");
