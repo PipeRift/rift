@@ -15,7 +15,7 @@
 
 #include <Pipe/Core/Checks.h>
 #include <Pipe/Core/Log.h>
-#include <PipeVectors.h>
+#include <PipeMath.h>
 
 #include <cassert>
 #include <cstring>    // strlen, strncmp

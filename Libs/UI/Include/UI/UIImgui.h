@@ -4,7 +4,7 @@
 #include <Pipe/Core/StringView.h>
 #include <PipeColor.h>
 #include <PipePlatform.h>
-#include <PipeVectors.h>
+#include <PipeMath.h>
 
 
 #define IM_VEC2_CLASS_EXTRA                                   \
