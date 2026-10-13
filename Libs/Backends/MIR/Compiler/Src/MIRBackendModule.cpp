@@ -12,9 +12,11 @@
 #include <Pipe/Core/Log.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/Files/PlatformPaths.h>
 #include <PipeTime.h>
-#include <cmath>
 #include <stdlib.h>
+
+#include <cmath>
 
 
 extern "C"
@@ -188,13 +190,20 @@ namespace rift
 		gNativeLibs.Clear();
 	}
 
-	// Resolves a native binding binary path against a module folder, falling back
-	// to the platform shared-library naming (e.g. "./Lib/Std.lib" -> "libStd.so").
+	// Native libraries are provided by Rift's own SDK, which is installed next to
+	// the compiler executable (see rift_runtime_module in CMake/Util.cmake).
+	static p::String GetSDKRoot()
+	{
+		return p::JoinPaths(p::PlatformPaths::GetExecutablePath(), "Runtimes");
+	}
+
+	// Resolves a native binding binary against the compiler's SDK folder, falling
+	// back to the platform shared-library naming (e.g. "Std.lib" -> "libStd.so").
 	static p::String ResolveNativeLibraryPath(
 	    ast::Tree& ast, ast::Id moduleId, const p::String& binary)
 	{
-		const p::String modulePath(ast::GetModulePath(ast, moduleId));
-		const p::String path = p::JoinPaths(modulePath, binary);
+		const p::String moduleName(ast::GetModuleName(ast, moduleId).AsString());
+		const p::String path = p::JoinPaths(p::JoinPaths(GetSDKRoot(), moduleName), binary);
 		if (p::ExistsAsFile(path))
 		{
 			return path;
