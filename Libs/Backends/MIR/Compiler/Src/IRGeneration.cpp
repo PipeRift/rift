@@ -102,7 +102,7 @@ namespace rift::MIR
 			p::GetIdChildren(scope, cStaticIds, cFunctionIds);
 			ExcludeIdsWithout<ast::CDeclFunction>(scope, cFunctionIds);
 			DeclareStructs(cStructIds);
-			DeclareFunctions(cFunctionIds, false);
+			DeclareFunctions(cFunctionIds);
 		}
 
 		p::TArray<ast::Id> staticFunctionIds;
@@ -244,7 +244,17 @@ namespace rift::MIR
 		code->push_back('\n');
 	}
 
-	void CGenerator::DeclareFunctions(p::TView<ast::Id> ids, bool useFullName)
+	p::String CGenerator::GetFunctionName(ast::Id id)
+	{
+		// Native C functions keep their original symbol name; Rift functions are
+		// emitted with their module-qualified name to avoid collisions.
+		const ast::Id ownerId = p::GetIdParent(scope, id);
+		const bool isNative = scope.Has<CDeclCStruct>(ownerId) || scope.Has<CDeclCStatic>(ownerId);
+		return isNative ? p::String(ast::GetName(scope, id).AsString())
+		                : ast::GetFullName(scope, id, false, '_');
+	}
+
+	void CGenerator::DeclareFunctions(p::TView<ast::Id> ids)
 	{
 		code->append("// Function Declarations\n");
 
@@ -253,9 +263,7 @@ namespace rift::MIR
 			auto& signature = scope.Add<CMIRFunctionSignature>(id).value;
 
 			signature.append("void ");
-			const p::String name = useFullName ? ast::GetFullName(scope, id, false, '_')
-			                                   : p::String{ast::GetName(scope, id).AsString()};
-			scope.Add(id, CMIRFunctionName{.value = p::Tag{name}});
+			const p::String name = GetFunctionName(id);
 			signature.append(name);
 			signature.push_back('(');
 
@@ -437,15 +445,14 @@ namespace rift::MIR
 			compiler.Error("Call to an unknown function");
 			return;
 		}
-		const auto* functionName = scope.TryGet<const CMIRFunctionName>(functionId);
-		if (!P_Ensure(functionName))
+		if (!P_Ensure(scope.Has<const CMIRFunctionSignature>(functionId)))
 		{
 			compiler.Error(p::Format(
 			    "Call to an invalid function: '{}'", ast::GetFullName(scope, functionId)));
 			return;
 		}
 
-		code->append(functionName->value.AsString());
+		code->append(GetFunctionName(functionId));
 		code->push_back('(');
 
 		if (auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
@@ -478,14 +485,7 @@ namespace rift::MIR
 			return;
 		}
 
-		const auto* functionName = scope.TryGet<const CMIRFunctionName>(functionId);
-		if (!P_Ensure(functionName))
-		{
-			compiler.Error("Main function has no generated name");
-			return;
-		}
-
-		p::FormatTo(*code, "int main() {{\n{}();\nreturn 0;\n}}\n", functionName->value.AsString());
+		p::FormatTo(*code, "int main() {{\n{}();\nreturn 0;\n}}\n", GetFunctionName(functionId));
 	}
 
 	ast::Id CGenerator::FindMainFunction(p::TView<ast::Id> functionIds)

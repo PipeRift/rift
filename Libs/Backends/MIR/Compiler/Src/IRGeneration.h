@@ -22,14 +22,13 @@ namespace rift
 namespace rift::MIR
 {
 	// Defines a single ecs scope dfor the entire IR generation
-	using MIRScope =
-	    p::TIdScopeRef<p::Writes<CMIRType, CMIRFunctionSignature, CMIRLiteral, CMIRFunctionName>,
-	        ast::CStmtOutput, ast::CStmtOutputs, ast::CExprInputs, ast::CStmtIf, ast::CExprCallId,
-	        ast::CExprTypeId, ast::CExprOutputs, ast::CNamespace, ast::CDeclType,
-	        ast::CDeclVariable, ast::CDeclStruct, ast::CDeclClass, ast::CDeclStatic, ast::CParent,
-	        ast::CInvalid, ast::CChild, ast::CModule, ast::CLiteralBool, ast::CLiteralIntegral,
-	        ast::CLiteralFloating, ast::CLiteralString, ast::CDeclFunction, ast::CExprUnaryOperator,
-	        ast::CExprBinaryOperator, CDeclCStruct, CDeclCStatic>;
+	using MIRScope = p::TIdScopeRef<p::Writes<CMIRType, CMIRFunctionSignature, CMIRLiteral>,
+	    ast::CStmtOutput, ast::CStmtOutputs, ast::CExprInputs, ast::CStmtIf, ast::CExprCallId,
+	    ast::CExprTypeId, ast::CExprOutputs, ast::CNamespace, ast::CDeclType, ast::CDeclVariable,
+	    ast::CDeclStruct, ast::CDeclClass, ast::CDeclStatic, ast::CParent, ast::CInvalid,
+	    ast::CChild, ast::CModule, ast::CLiteralBool, ast::CLiteralIntegral, ast::CLiteralFloating,
+	    ast::CLiteralString, ast::CDeclFunction, ast::CExprUnaryOperator, ast::CExprBinaryOperator,
+	    CDeclCStruct, CDeclCStatic>;
 
 	void GenerateC(Compiler& compiler);
 
@@ -50,7 +49,8 @@ namespace rift::MIR
 
 		void DeclareStructs(p::TView<ast::Id> ids);
 		void DefineStructs(p::TView<ast::Id> ids);
-		void DeclareFunctions(p::TView<ast::Id> ids, bool useFullName = true);
+		p::String GetFunctionName(ast::Id id);
+		void DeclareFunctions(p::TView<ast::Id> ids);
 		void DefineFunctions(p::TView<ast::Id> ids);
 
 		void AddStmtBlock(ast::Id firstStmtId);

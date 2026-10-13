@@ -23,8 +23,4 @@ namespace rift
 	{
 		p::String value;
 	};
-	struct CMIRFunctionName
-	{
-		p::Tag value;
-	};
 }    // namespace rift
