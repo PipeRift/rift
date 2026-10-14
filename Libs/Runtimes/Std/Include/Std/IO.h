@@ -1,6 +1,9 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
+// Lives in Include/Std so no header name here can shadow a system header on case
+// insensitive filesystems (<math.h>, <io.h>, <stdio.h>), which breaks <cmath>/<cstdio>
+// on macOS and Windows.
 #include <Pipe/Core/StringView.h>
 
 /**

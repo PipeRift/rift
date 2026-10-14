@@ -1,8 +1,7 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include "Math.h"
-
 #include <PipeMath.h>
+#include <Std/Math.h>
 
 
 // The standard library exposes Pipe's math helpers to Rift through out parameters.

@@ -135,7 +135,7 @@ namespace rift::MIR
 	{
 		code->append("// Native Types\n");
 
-		// Mirrored by the runtime in Std's IO.h, which must keep the same member order.
+		// Mirrored by the runtime in Std's Std/IO.h, which must keep the same member order.
 		// TODO: Emit p::StringView directly once Pipe defines its own string view, whose
 		// layout would be specified instead of depending on the host standard library.
 		code->append(
