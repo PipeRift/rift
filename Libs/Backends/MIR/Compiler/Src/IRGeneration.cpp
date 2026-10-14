@@ -63,6 +63,8 @@ namespace rift::MIR
 		CMIRModule& mirModule = compiler.ast.Add<CMIRModule>(moduleId);
 		code                  = &mirModule.code;
 
+		DeclareNativeTypes();
+
 
 		// Get all rift types from the module
 		p::TArray<ast::Id> typeIds;
@@ -126,7 +128,22 @@ namespace rift::MIR
 		scope.Add(nativeTypes.i32Id, CMIRType{"long"});
 		scope.Add(nativeTypes.u64Id, CMIRType{"unsigned long long"});
 		scope.Add(nativeTypes.i64Id, CMIRType{"long long"});
-		scope.Add(nativeTypes.stringId, CMIRType{"const char*"});
+		scope.Add(nativeTypes.stringId, CMIRType{"StringView"});
+	}
+
+	void CGenerator::DeclareNativeTypes()
+	{
+		code->append("// Native Types\n");
+
+		// Mirrored by the runtime in Std's IO.h, which must keep the same member order.
+		// TODO: Emit p::StringView directly once Pipe defines its own string view, whose
+		// layout would be specified instead of depending on the host standard library.
+		code->append(
+		    "typedef struct StringView"
+		    "{"
+		    "    const char* data;"
+		    "    unsigned long long size;"
+		    "} StringView;\n\n");
 	}
 
 	void CGenerator::GenerateLiterals()
@@ -159,7 +176,9 @@ namespace rift::MIR
 		{
 			strValue.clear();
 			const auto& string = scope.Get<const ast::CLiteralString>(id);
-			AppendCStringLiteral(strValue, string.value);
+			p::String value;
+			AppendCStringLiteral(value, string.value);
+			p::FormatTo(strValue, "(StringView){{{0}, {1}}}", value, string.value.size());
 			scope.Add(id, CMIRLiteral{.value = p::Tag{strValue}});
 		}
 	}
@@ -226,47 +245,59 @@ namespace rift::MIR
 		{
 			auto& signature = scope.Add<CMIRFunctionSignature>(id).value;
 
+			// Functions always return void. Inputs are passed by value and outputs are passed by
+			// pointer as trailing parameters.
 			signature.append("void ");
 			const p::String name = useFullName ? ast::GetFullName(scope, id, false, '_')
 			                                   : p::String{ast::GetName(scope, id).AsString()};
 			signature.append(name);
 			signature.push_back('(');
 
-			if (auto* outputs = scope.TryGet<const ast::CExprOutputs>(id))
+			auto appendParams = [this, &signature, id](
+			                        const p::TArray<ast::Id>& pinIds, bool isOutput)
 			{
-				for (p::i32 i = 0; i < outputs->pinIds.Size(); ++i)
+				for (ast::Id pinId : pinIds)
 				{
-					ast::Id inputId = outputs->pinIds[i];
-					if (scope.Has<ast::CInvalid>(inputId))
+					if (scope.Has<ast::CInvalid>(pinId))
 					{
 						continue;
 					}
 
-					p::Tag inputName = ast::GetName(scope, inputId);
-
-					auto* exprId = scope.TryGet<const ast::CExprTypeId>(inputId);
+					const p::Tag pinName = ast::GetName(scope, pinId);
+					const auto* exprId   = scope.TryGet<const ast::CExprTypeId>(pinId);
 					const auto* irType =
 					    exprId ? scope.TryGet<const CMIRType>(exprId->id) : nullptr;
 					if (!irType) [[unlikely]]
 					{
+						const auto* pinKind          = isOutput ? "Output" : "Input";
 						const p::String functionName = ast::GetFullName(scope, id);
-						compiler.Error(p::Format(
-						    "Input '{}' in function '{}' has an invalid type. Using i32 instead.",
-						    inputName, functionName));
+						compiler.Error(p::Format("{} '{}' in function '{}' has an invalid type",
+						    pinKind, pinName, functionName));
 					}
-					else if (reservedNames.Contains(inputName)) [[unlikely]]
+					else if (reservedNames.Contains(pinName)) [[unlikely]]
 					{
+						const auto* pinKind          = isOutput ? "Output" : "Input";
 						const p::String functionName = ast::GetFullName(scope, id);
-						compiler.Error(p::Format("Input name '{}' not allowed in function '{}' ",
-						    inputName, functionName));
+						compiler.Error(p::Format("{} name '{}' not allowed in function '{}' ",
+						    pinKind, pinName, functionName));
 					}
 					else
 					{
-						p::FormatTo(signature, "{0} {1}, ", irType->value, inputName);
+						p::FormatTo(
+						    signature, "{0}{1} {2}, ", irType->value, isOutput ? "*" : "", pinName);
 					}
 				}
-				p::Strings::RemoveFromEnd(signature, ", ");
+			};
+
+			if (const auto* inputs = scope.TryGet<const ast::CExprOutputs>(id))
+			{
+				appendParams(inputs->pinIds, false);
 			}
+			if (const auto* outputs = scope.TryGet<const ast::CExprInputs>(id))
+			{
+				appendParams(outputs->pinIds, true);
+			}
+			p::Strings::RemoveFromEnd(signature, ", ");
 			signature.push_back(')');
 
 			// Create function

@@ -7,13 +7,18 @@
 
 extern "C"
 {
-	void Print(const char* text)
+	void Print(StringView text)
 	{
-		printf("%s", text);
+		const p::StringView view{text.data, text.size};
+		if (!view.empty())
+		{
+			std::fwrite(view.data(), 1, view.size(), stdout);
+		}
 	}
 
-	void PrintHelloWorld()
+	void PrintLine(StringView text)
 	{
-		Print("Hello World\n");
+		Print(text);
+		std::fputc('\n', stdout);
 	}
 }

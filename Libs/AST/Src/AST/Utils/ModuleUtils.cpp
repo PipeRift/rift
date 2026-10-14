@@ -11,6 +11,7 @@
 
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/Files/PlatformPaths.h>
 #include <PipeECS.h>
 
 
@@ -193,6 +194,11 @@ namespace rift::ast
 			return p::GetParentPath(file->path);
 		}
 		return {};
+	}
+
+	p::String GetRuntimesRoot()
+	{
+		return p::JoinPaths(p::PlatformPaths::GetExecutablePath(), "Runtimes");
 	}
 
 	void SerializeModule(ast::Tree& ast, ast::Id id, p::String& data)

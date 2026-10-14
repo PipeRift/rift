@@ -123,8 +123,9 @@ namespace rift::ast::TypeSystem
 		}
 	}
 
-	void ResolveExprTypeIds(
-	    p::TIdScopeRef<p::Writes<CExprTypeId>, CExprType, CNamespace, CParent, CChild> scope)
+	void ResolveExprTypeIds(p::TIdScopeRef<p::Writes<CExprTypeId>, CExprType, CNamespace, CParent,
+	    CChild, CModule, CDeclNative>
+	        scope)
 	{
 		auto callExprs = p::FindAllIdsWith<CExprType>(scope);
 		p::ExcludeIdsWith<CExprTypeId>(scope, callExprs);

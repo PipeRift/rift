@@ -69,6 +69,17 @@ namespace rift::ast::LoadSystem
 		{
 			paths.Add(p::ToString(modulePath));
 		}
+
+		// Runtime modules (Std)
+		const p::String runtimesPath = GetRuntimesRoot();
+		if (p::ExistsAsFolder(runtimesPath))
+		{
+			for (const auto& modulePath : ModuleFileIterator(runtimesPath))
+			{
+				p::String path = p::ToString(modulePath);
+				paths.AddUnique(p::Move(path));
+			}
+		}
 	}
 
 	void ScanTypes(Tree& ast, p::TArray<ModuleTypePaths>& pathsByModule)

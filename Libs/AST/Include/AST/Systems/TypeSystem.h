@@ -2,6 +2,7 @@
 #pragma once
 
 #include "AST/Components/CFileRef.h"
+#include "AST/Components/CModule.h"
 #include "AST/Components/Declarations.h"
 #include "AST/Components/Expressions.h"
 #include "AST/Components/Tags/CChanged.h"
@@ -28,6 +29,7 @@ namespace rift::ast::TypeSystem
 	    CChanged, CExprInputs, CExprOutputs, CExprUnaryOperator, CExprBinaryOperator, p::CParent>;
 	void PropagateExpressionTypes(PropagateExpressionTypesScope scope);
 
-	void ResolveExprTypeIds(
-	    p::TIdScopeRef<p::Writes<CExprTypeId>, CExprType, CNamespace, p::CParent, p::CChild> scope);
+	void ResolveExprTypeIds(p::TIdScopeRef<p::Writes<CExprTypeId>, CExprType, CNamespace,
+	    p::CParent, p::CChild, CModule, CDeclNative>
+	        scope);
 }    // namespace rift::ast::TypeSystem

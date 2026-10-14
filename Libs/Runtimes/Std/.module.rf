@@ -1,6 +1,6 @@
 {
     "CModule": {
-        "target": "Executable",
+        "target": "Shared",
         "dependencies": []
     },
     "CNativeBinding": {
