@@ -8,9 +8,9 @@
 #include <AST/Components/CNamespace.h>
 #include <AST/Components/Declarations.h>
 #include <AST/Tree.h>
-#include <PipeStrings.h>
 #include <PipeContainers.h>
 #include <PipeECS.h>
+#include <PipeStrings.h>
 
 
 namespace rift::editor
@@ -54,6 +54,9 @@ namespace rift::editor
 		p::String renameBuffer;
 		bool renameHasFocused = false;
 
+		ast::Id pendingReloadId = ast::NoId;
+		bool wantsReloadPopup   = false;
+
 		p::StringView pendingOpenCreatedPath;
 
 
@@ -76,6 +79,9 @@ namespace rift::editor
 		void InsertItem(const Item& item);
 		void DrawItem(ast::Tree& ast, const Item& item);
 		// void DrawFile(ast::Tree& ast, File& file);
+
+		void DrawReloadPopup(ast::Tree& ast);
+		void ReloadFile(ast::Tree& ast, ast::Id id);
 
 		void DrawModuleActions(ast::Id id, struct ast::CModule& module);
 		void DrawTypeActions(ast::Id id, struct ast::CDeclType& type);

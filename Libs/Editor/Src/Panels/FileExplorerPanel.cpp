@@ -5,6 +5,7 @@
 #include "Editor.h"
 #include "PipeStrings.h"
 #include "Statics/SEditor.h"
+#include "UI/Notify.h"
 #include "UI/Widgets.h"
 #include "Utils/ModuleUtils.h"
 #include "Utils/TypeUtils.h"
@@ -63,6 +64,7 @@ namespace rift::editor
 				UI::EndMenuBar();
 			}
 			DrawList(ast);
+			DrawReloadPopup(ast);
 		}
 		UI::End();
 	}
@@ -114,6 +116,23 @@ namespace rift::editor
 				}
 			}
 
+			if (ast.Has<ast::CFileRef>(itemId))
+			{
+				if (UI::MenuItem("Reload"))
+				{
+					if (ast.Has<ast::CFileDirty>(itemId))
+					{
+						// Ask for confirmation before discarding unsaved changes
+						pendingReloadId  = itemId;
+						wantsReloadPopup = true;
+					}
+					else
+					{
+						ReloadFile(ast, itemId);
+					}
+				}
+			}
+
 			if (UI::MenuItem("Rename"))
 			{
 				renameId     = itemId;
@@ -138,7 +157,8 @@ namespace rift::editor
 				{
 					types.Add(&type);
 				}
-				types.Sort([](const auto* one, const auto* other) {
+				types.Sort([](const auto* one, const auto* other)
+				{
 					return one->settings.category < other->settings.category;
 				});
 
@@ -154,13 +174,11 @@ namespace rift::editor
 					}
 
 					createText.clear();
-					p::FormatTo(
-					    createText, "{}##{}", fileType->settings.displayName, fileType->id);
+					p::FormatTo(createText, "{}##{}", fileType->settings.displayName, fileType->id);
 					if (UI::MenuItem(createText.c_str()))
 					{
 						createText.clear();
-						p::FormatTo(
-						    createText, "Create {} type", fileType->settings.displayName);
+						p::FormatTo(createText, "Create {} type", fileType->settings.displayName);
 						CreateType(ast, createText, fileType->id, path);
 					}
 				}
@@ -176,6 +194,69 @@ namespace rift::editor
 		if (UI::MenuItem("Show in Explorer"))
 		{
 			PlatformPaths::ShowFolder(path);
+		}
+	}
+
+	void FileExplorerPanel::ReloadFile(ast::Tree& ast, ast::Id id)
+	{
+		bool success = false;
+		if (ast.Has<ast::CModule>(id))
+		{
+			success = ast::ReloadModule(ast, id);
+		}
+		else if (ast.Has<ast::CDeclType>(id))
+		{
+			success = ast::ReloadType(ast, id);
+		}
+
+		const auto* file         = ast.TryGet<const ast::CFileRef>(id);
+		const p::StringView name = file ? p::GetFilename(file->path) : p::StringView{};
+
+		if (success)
+		{
+			UI::AddNotification({UI::ToastType::Success, 1.f, p::Format("Reloaded '{}'", name)});
+		}
+		else
+		{
+			UI::AddNotification(
+			    {UI::ToastType::Error, 1.f, p::Format("Failed to reload '{}'", name)});
+		}
+	}
+
+	void FileExplorerPanel::DrawReloadPopup(ast::Tree& ast)
+	{
+		if (wantsReloadPopup)
+		{
+			UI::OpenPopup("Reload File");
+			wantsReloadPopup = false;
+		}
+
+		if (UI::BeginPopupModal("Reload File", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			const auto* file         = ast.TryGet<const ast::CFileRef>(pendingReloadId);
+			const p::StringView name = file ? p::GetFilename(file->path) : p::StringView{"file"};
+
+			UI::Text(p::Format("'{}' has unsaved changes.", name));
+			UI::Text("Reloading will discard them and load the file from disk.");
+			UI::Spacing();
+			UI::Separator();
+			UI::Spacing();
+
+			if (UI::Button("Reload", p::v2{120.f, 0.f}))
+			{
+				const ast::Id id = pendingReloadId;
+				pendingReloadId  = ast::NoId;
+				ReloadFile(ast, id);
+				UI::CloseCurrentPopup();
+			}
+			UI::SameLine();
+			if (UI::Button("Cancel", p::v2{120.f, 0.f}))
+			{
+				pendingReloadId = ast::NoId;
+				UI::CloseCurrentPopup();
+			}
+			UI::SetItemDefaultFocus();
+			UI::EndPopup();
 		}
 	}
 
@@ -275,7 +356,8 @@ namespace rift::editor
 	void FileExplorerPanel::SortFolder(Folder& folder)
 	{
 		// Sort items. First folders, then alphabetically
-		folder.items.Sort([](const auto& one, const auto& other) {
+		folder.items.Sort([](const auto& one, const auto& other)
+		{
 			if (one.isFolder != other.isFolder)
 			{
 				return one.isFolder;
@@ -286,7 +368,7 @@ namespace rift::editor
 
 	void FileExplorerPanel::DrawItem(ast::Tree& ast, const Item& item)
 	{
-		const String& path         = item.path;
+		const String& path        = item.path;
 		const StringView fileName = p::GetFilename(path);
 
 		const StringView dirty =
@@ -417,7 +499,7 @@ namespace rift::editor
 					UI::SetNextWindowPos(UI::GetCursorScreenPos());
 					UI::SetTooltip(nameIsEmpty
 					                   ? "A type's name can't be empty"
-					                   : "This name is in use by another type in this module");
+									   : "This name is in use by another type in this module");
 					UI::PopTextColor();
 				}
 				else if (UI::IsItemDeactivatedAfterEdit())

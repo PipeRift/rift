@@ -61,6 +61,7 @@ namespace rift::ast
 
 	void SerializeModule(ast::Tree& ast, ast::Id id, p::String& data);
 	void DeserializeModule(ast::Tree& ast, ast::Id id, const p::String& data);
+	bool ReloadModule(ast::Tree& ast, ast::Id id);
 	const p::TBroadcast<p::EntityReader&>& OnReadModulePools();
 	const p::TBroadcast<p::EntityWriter&>& OnWriteModulePools();
 
