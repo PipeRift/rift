@@ -30,6 +30,10 @@ namespace rift::editor
 		ast::Id selectedPropertyId      = ast::NoId;
 		ast::Id pendingDeletePropertyId = ast::NoId;
 
+		// Last type picked for a function input/output pin. Used as the default type
+		// when creating new pins.
+		ast::Id lastPinTypeId = ast::NoId;
+
 		Nodes::EditorContext nodesEditor;
 		ImGuiTextFilter elementsFilter;
 	};

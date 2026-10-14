@@ -263,23 +263,33 @@ namespace rift::ast
 		return id;
 	}
 
-	Id AddFunctionInput(Tree& ast, Id functionId, Tag name)
+	Id AddFunctionInput(Tree& ast, Id functionId, Tag name, Id typeId)
 	{
 		Id id = p::AddId(ast);
 		ast.Add<CNamespace>(id, name);
-		ast.Add<CExprTypeId>(id);
-		ast.Add<CExprType>(id);
+		auto& exprTypeId = ast.Add<CExprTypeId>(id);
+		exprTypeId.id    = typeId;
+		auto& exprType   = ast.Add<CExprType>(id);
+		if (!IsNone(typeId))
+		{
+			exprType.type = GetNamespace(ast, typeId);
+		}
 		p::AttachId(ast, functionId, id);
 		ast.GetOrAdd<CExprOutputs>(functionId).Add(id);
 		return id;
 	}
 
-	Id AddFunctionOutput(Tree& ast, Id functionId, Tag name)
+	Id AddFunctionOutput(Tree& ast, Id functionId, Tag name, Id typeId)
 	{
 		Id id = p::AddId(ast);
 		ast.Add<CNamespace>(id, name);
-		ast.Add<CExprTypeId>(id);
-		ast.Add<CExprType>(id);
+		auto& exprTypeId = ast.Add<CExprTypeId>(id);
+		exprTypeId.id    = typeId;
+		auto& exprType   = ast.Add<CExprType>(id);
+		if (!IsNone(typeId))
+		{
+			exprType.type = GetNamespace(ast, typeId);
+		}
 		p::AttachId(ast, functionId, id);
 		ast.GetOrAdd<CExprInputs>(functionId).Add(id);
 		return id;

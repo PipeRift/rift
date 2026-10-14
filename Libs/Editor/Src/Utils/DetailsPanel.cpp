@@ -23,7 +23,18 @@
 
 namespace rift::editor
 {
-	void EditFunctionPin(ast::Tree& ast, ast::Id ownerId, ast::Id id)
+	// Type used for newly created function input/output pins: the last type the user
+	// picked, or bool when there's no valid last type.
+	static ast::Id GetDefaultPinType(ast::Tree& ast, const CTypeEditor& editor)
+	{
+		if (!IsNone(editor.lastPinTypeId) && ast.IsValid(editor.lastPinTypeId))
+		{
+			return editor.lastPinTypeId;
+		}
+		return ast.GetNativeTypes().boolId;
+	}
+
+	void EditFunctionPin(ast::Tree& ast, CTypeEditor& editor, ast::Id ownerId, ast::Id id)
 	{
 		if (!ast.IsValid(id))
 		{
@@ -76,6 +87,9 @@ namespace rift::editor
 			ScopedChange(ast, id);
 			ast.GetOrAdd<ast::CExprTypeId>(id).id = typeId;
 			type->type                            = ast::GetNamespace(ast, typeId);
+
+			// Remember the type so newly created pins default to it
+			editor.lastPinTypeId = typeId;
 		}
 		UI::PopStyleVar();
 		if (UI::IsItemHovered())
@@ -116,6 +130,7 @@ namespace rift::editor
 		{
 			return;
 		}
+		auto& editor = ast.Get<CTypeEditor>(typeId);
 
 		String functionName{ns->name.AsString()};
 		UI::SetNextItemWidth(UI::GetContentRegionAvail().x);
@@ -150,7 +165,7 @@ namespace rift::editor
 				{
 					for (ast::Id pinId : exprOutputs->pinIds)
 					{
-						EditFunctionPin(ast, id, pinId);
+						EditFunctionPin(ast, editor, id, pinId);
 					}
 				}
 				UI::EndTable();
@@ -160,7 +175,7 @@ namespace rift::editor
 		if (addInput)
 		{
 			ScopedChange(ast, id);
-			ast::AddFunctionInput(ast, id);
+			ast::AddFunctionInput(ast, id, p::Tag::None(), GetDefaultPinType(ast, editor));
 		}
 		UI::Spacing();
 
@@ -177,7 +192,7 @@ namespace rift::editor
 				{
 					for (ast::Id pinId : exprInputs->pinIds)
 					{
-						EditFunctionPin(ast, id, pinId);
+						EditFunctionPin(ast, editor, id, pinId);
 					}
 				}
 				UI::EndTable();
@@ -187,7 +202,7 @@ namespace rift::editor
 		if (addOutput)
 		{
 			ScopedChange(ast, id);
-			ast::AddFunctionOutput(ast, id);
+			ast::AddFunctionOutput(ast, id, p::Tag::None(), GetDefaultPinType(ast, editor));
 		}
 		UI::Spacing();
 	}
