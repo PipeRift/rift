@@ -33,6 +33,10 @@ namespace rift::ast::FunctionsSystem
 	// editing transaction tagged functions as changed.
 	void MarkAllCallsDirty(Tree& ast);
 	void SyncCallPinsFromFunction(Tree& ast);
+	// Repairs invalid graph connectivity (e.g. mismatched pin/link counts) so
+	// drawing and code generation can continue instead of failing. Logs a
+	// warning for every node it has to repair.
+	void HealGraph(Tree& ast);
 	using InvalidDisconnectedPinAccess =
 	    p::TIdScopeRef<p::Writes<CTmpInvalidKeep, CChild, CParent>, CInvalid, CExprInputs>;
 	void RemoveInvalidDisconnectedArgs(InvalidDisconnectedPinAccess scope);

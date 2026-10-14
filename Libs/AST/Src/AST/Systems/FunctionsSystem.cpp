@@ -8,7 +8,9 @@
 #include "AST/Utils/Namespaces.h"
 #include "AST/Utils/TypeUtils.h"
 
+#include <Pipe/Core/Log.h>
 #include <PipeECS.h>
+#include <PipeMath.h>
 
 
 namespace rift::ast::FunctionsSystem
@@ -341,6 +343,61 @@ namespace rift::ast::FunctionsSystem
 		p::RmId(scope.GetContext(), pinsToRemove);
 
 		scope.GetPool<CTmpInvalidKeep>()->Clear();
+	}
+
+	void HealGraph(Tree& ast)
+	{
+		// Expression inputs keep pinIds and linkedOutputs paired 1:1
+		{
+			p::TIdScope<p::Writes<CExprInputs, CChild, CParent>> scope{ast};
+			for (Id id : p::FindAllIdsWith<CExprInputs>(scope))
+			{
+				auto& inputs         = scope.Get<CExprInputs>(id);
+				const p::i32 pins    = inputs.pinIds.Size();
+				const p::i32 outputs = inputs.linkedOutputs.Size();
+				if (pins == outputs)
+				{
+					continue;
+				}
+
+				p::Warning(
+				    "Healing expression inputs '{}': {} pins vs {} links", id, pins, outputs);
+
+				const p::i32 count = p::Max(pins, outputs);
+				while (inputs.pinIds.Size() < count)
+				{
+					const Id pinId = p::AddId(ast);
+					p::AttachId(ast, id, pinId);
+					inputs.pinIds.Add(pinId);
+				}
+				while (inputs.linkedOutputs.Size() < count)
+				{
+					inputs.linkedOutputs.Add();
+				}
+			}
+		}
+
+		// Statement outputs keep pinIds and linkInputNodes paired 1:1
+		{
+			p::TIdScope<p::Writes<CStmtOutputs>> scope{ast};
+			for (Id id : p::FindAllIdsWith<CStmtOutputs>(scope))
+			{
+				auto& outputs      = scope.Get<CStmtOutputs>(id);
+				const p::i32 pins  = outputs.pinIds.Size();
+				const p::i32 links = outputs.linkInputNodes.Size();
+				if (pins == links)
+				{
+					continue;
+				}
+
+				p::Warning("Healing statement outputs '{}': {} pins vs {} links", id, pins, links);
+
+				while (outputs.linkInputNodes.Size() < pins)
+				{
+					outputs.linkInputNodes.Add(NoId);
+				}
+			}
+		}
 	}
 
 	void ClearAddedTags(Tree& ast)

@@ -65,6 +65,7 @@ namespace rift
 		ast::FunctionsSystem::PushInvalidPinsBack(ast);
 		ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
 		ast::TypeSystem::PropagateExpressionTypes(ast);
+		ast::FunctionsSystem::HealGraph(ast);
 
 		OptimizationSystem::PruneDisconnectedExpressions(ast);
 

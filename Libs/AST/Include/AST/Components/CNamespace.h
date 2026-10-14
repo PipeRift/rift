@@ -2,6 +2,7 @@
 #pragma once
 
 #include <Pipe/Core/Tag.h>
+#include <Pipe/Core/TypeFlags.h>
 #include <PipeContainers.h>
 #include <PipeReflect.h>
 
@@ -131,3 +132,17 @@ namespace rift::ast
 		void Write(p::Writer& ct) const;
 	};
 }    // namespace rift::ast
+
+
+namespace p
+{
+	// Namespace uses its own member Read/Write (a tag array), not reflection.
+	template<>
+	struct TFlags<rift::ast::Namespace> : public DefaultTFlags
+	{
+		enum
+		{
+			HasMemberSerialize = true
+		};
+	};
+}    // namespace p

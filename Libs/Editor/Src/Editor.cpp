@@ -122,6 +122,9 @@ namespace rift::editor
 			ast::FunctionsSystem::ResolveCallFunctionIds(ast);
 			ast::TypeSystem::ResolveExprTypeIds(ast);
 
+			// Repair any invalid graph connectivity before drawing it
+			ast::FunctionsSystem::HealGraph(ast);
+
 			EditorSystem::Draw(ast);
 			ast::TypeSystem::PropagateVariableTypes(ast);
 			ast::FunctionsSystem::PropagateDirtyIntoCalls(ast);

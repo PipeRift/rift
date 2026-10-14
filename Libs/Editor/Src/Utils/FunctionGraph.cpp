@@ -19,6 +19,7 @@
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
+#include <Pipe/Core/Log.h>
 #include <PipeECS.h>
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
@@ -774,9 +775,10 @@ namespace rift::editor::Graph
 		for (ast::Id nodeId : FindIdsWith<ast::CExprInputs>(scope, children))
 		{
 			const auto& inputs = scope.Get<const ast::CExprInputs>(nodeId);
-			if (!P_EnsureMsg(inputs.pinIds.Size() == inputs.linkedOutputs.Size(),
-			        "Inputs are invalid. The graph might be corrupted.")) [[likely]]
+			if (inputs.pinIds.Size() != inputs.linkedOutputs.Size()) [[unlikely]]
 			{
+				p::Warning("Corrupted expression '{}' ({} pins vs {} links). Skipping its links.",
+				    nodeId, inputs.pinIds.Size(), inputs.linkedOutputs.Size());
 				continue;
 			}
 
