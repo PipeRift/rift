@@ -130,6 +130,7 @@ namespace rift::editor
 			ast::FunctionsSystem::PropagateDirtyIntoCalls(ast);
 			ast::FunctionsSystem::PushInvalidPinsBack(ast);
 			ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
+			ast::FunctionsSystem::SyncReturnPinsFromFunction(ast);
 			ast::TypeSystem::PropagateExpressionTypes(ast);
 		}
 		else

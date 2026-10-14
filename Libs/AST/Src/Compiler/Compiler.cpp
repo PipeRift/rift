@@ -64,6 +64,7 @@ namespace rift
 		ast::TypeSystem::PropagateVariableTypes(ast);
 		ast::FunctionsSystem::PushInvalidPinsBack(ast);
 		ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
+		ast::FunctionsSystem::SyncReturnPinsFromFunction(ast);
 		ast::TypeSystem::PropagateExpressionTypes(ast);
 		ast::FunctionsSystem::HealGraph(ast);
 

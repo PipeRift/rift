@@ -33,6 +33,8 @@ namespace rift::ast::FunctionsSystem
 	// editing transaction tagged functions as changed.
 	void MarkAllCallsDirty(Tree& ast);
 	void SyncCallPinsFromFunction(Tree& ast);
+	// Populates return statement pins from the outputs of the function they're connected to
+	void SyncReturnPinsFromFunction(Tree& ast);
 	// Repairs invalid graph connectivity (e.g. mismatched pin/link counts) so
 	// drawing and code generation can continue instead of failing. Logs a
 	// warning for every node it has to repair.

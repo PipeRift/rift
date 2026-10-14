@@ -380,9 +380,10 @@ namespace rift::editor::Graph
 		}
 	}
 
-	void DrawReturnNode(p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>,
-	                        ast::CChild, ast::CFileRef>
-	                        scope,
+	void DrawReturnNode(
+	    p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
+	        ast::CFileRef, ast::CExprInputs, ast::CInvalid, ast::CExprTypeId, ast::CNamespace>
+	        scope,
 	    ast::Id id)
 	{
 		PushNodeBackgroundColor(rift::UI::GetNeutralColor(0));
@@ -403,6 +404,12 @@ namespace rift::editor::Graph
 				UI::EndGroup();
 			}
 			Nodes::EndNodeTitleBar();
+
+			// Return arguments are populated from the connected function's outputs
+			if (const auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
+			{
+				DrawInputs(scope, *inputs);
+			}
 		}
 		EndNode(scope);
 		PopNodeTitleColor();
@@ -522,7 +529,8 @@ namespace rift::editor::Graph
 	}
 
 	void DrawReturns(p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>,
-	                     ast::CChild, ast::CFileRef, ast::CStmtReturn>
+	                     ast::CChild, ast::CFileRef, ast::CStmtReturn, ast::CExprInputs,
+	                     ast::CInvalid, ast::CExprTypeId, ast::CNamespace>
 	                     scope,
 	    const TArray<ast::Id>& children)
 	{
