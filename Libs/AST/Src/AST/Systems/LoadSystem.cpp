@@ -5,6 +5,7 @@
 #include "AST/Components/CModule.h"
 #include "AST/Components/CNamespace.h"
 #include "AST/Components/Declarations.h"
+#include "AST/Components/Tags/CDirty.h"
 #include "AST/Statics/SLoadQueue.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/SStringLoad.h"
@@ -62,8 +63,8 @@ namespace rift::ast::LoadSystem
 	{
 		paths.Clear();
 
-		Id projectId      = GetProjectId(ast);
-		auto& projectFile = ast.Get<CFileRef>(projectId);
+		const Id projectId      = GetProjectId(ast);
+		const auto& projectFile = ast.Get<const CFileRef>(projectId);
 		for (const auto& modulePath : ModuleFileIterator(p::GetParentPath(projectFile.path)))
 		{
 			paths.Add(p::ToString(modulePath));
@@ -208,6 +209,9 @@ namespace rift::ast::LoadSystem
 		{
 			DeserializeModule(ast, moduleIds[i], strings[i]);
 		}
+
+		// Deserializing a module isn't modifying it, so clear dirty
+		ast.Remove<CFileDirty>(moduleIds);
 	}
 
 	void DeserializeTypes(Tree& ast, p::TView<Id> typeIds, p::TView<p::String> strings)
@@ -218,5 +222,8 @@ namespace rift::ast::LoadSystem
 		{
 			DeserializeType(ast, typeIds[i], strings[i]);
 		}
+
+		// Deserializing a type isn't modifying it, so clear dirty
+		ast.Remove<CFileDirty>(typeIds);
 	}
 }    // namespace rift::ast::LoadSystem
