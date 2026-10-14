@@ -5,6 +5,7 @@
 #include "Utils/ElementsPanel.h"
 
 #include <AST/Utils/Settings.h>
+#include <IconsFontAwesome5.h>
 #include <Pipe/Files/PlatformPaths.h>
 #include <PipeFiles.h>
 #include <UI/Notify.h>
@@ -83,12 +84,14 @@ namespace rift::editor
 					auto& editorSettings = rift::GetUserSettings<EditorSettings>();
 					UI::SetNextItemWidth(-FLT_MIN);
 
+					p::i32 idxToRemove = -1;
 					for (int n = 0; n < editorSettings.recentProjects.Size(); ++n)
 					{
 						p::StringView path   = editorSettings.recentProjects[n];
 						p::StringView name   = p::GetFilename(path);
 						p::StringView parent = p::GetParentPath(path);
 
+						UI::PushID(path);
 						if (UI::TextLink(name))
 						{
 							if (Editor::Get().OpenProject(path))
@@ -103,6 +106,24 @@ namespace rift::editor
 						}
 						UI::SameLine();
 						UI::TextDisabled(parent);
+
+						// Remove button, aligned to the right of the entry
+						const float widthAvailable =
+						    ImGui::GetContentRegionAvail().x + UI::GetCurrentWindow()->DC.Indent.x;
+						UI::SameLine(widthAvailable - 24.f);
+						UI::PushStyleCompact();
+						if (UI::Button(ICON_FA_TIMES "##remove", p::v2{18.f, 18.f}))
+						{
+							idxToRemove = n;
+						}
+						UI::PopStyleCompact();
+						UI::PopID();
+					}
+
+					if (idxToRemove >= 0)
+					{
+						editorSettings.recentProjects.RemoveAt(idxToRemove);
+						SaveUserSettings<EditorSettings>();
 					}
 				}
 				UI::Dummy({10.f, 40.f});
