@@ -28,6 +28,11 @@ namespace rift
 		gModules.Remove(type);
 	}
 
+	void DisableAllModules()
+	{
+		gModules.Clear();
+	}
+
 	p::TPtr<Module> GetModule(p::TypeId type)
 	{
 		if (auto* module = gModules.Find(type))

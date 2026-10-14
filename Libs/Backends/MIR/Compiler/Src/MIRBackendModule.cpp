@@ -7,12 +7,16 @@
 #include "IRGeneration.h"
 
 #include <AST/Utils/ModuleUtils.h>
+#include <Components/CNativeBinding.h>
 #include <NativeBindingModule.h>
 #include <Pipe/Core/Log.h>
 #include <Pipe/Files/Files.h>
+#include <Pipe/Files/Paths.h>
+#include <Pipe/Files/PlatformPaths.h>
 #include <PipeTime.h>
-#include <cmath>
 #include <stdlib.h>
+
+#include <cmath>
 
 
 extern "C"
@@ -150,6 +154,15 @@ namespace rift
 	// clang-format on
 
 
+	// Libraries loaded from module native bindings at build time
+	struct NativeLib
+	{
+		p::String name;
+		void* handler = nullptr;
+	};
+	static p::TArray<NativeLib> gNativeLibs;
+
+
 	static void OpenSTDLibs()
 	{
 		for (Lib& stdLib : gStdLibs)
@@ -165,6 +178,79 @@ namespace rift
 			if (stdLib.handler)
 			{
 				dlclose(stdLib.handler);
+			}
+		}
+		for (NativeLib& nativeLib : gNativeLibs)
+		{
+			if (nativeLib.handler)
+			{
+				dlclose(nativeLib.handler);
+			}
+		}
+		gNativeLibs.Clear();
+	}
+
+	// Native libraries are provided by Rift's own SDK, which is installed next to
+	// the compiler executable (see rift_runtime_module in CMake/Util.cmake).
+	static p::String GetSDKRoot()
+	{
+		return p::JoinPaths(p::PlatformPaths::GetExecutablePath(), "Runtimes");
+	}
+
+	// Resolves a native binding binary against the compiler's SDK folder, falling
+	// back to the platform shared-library naming (e.g. "Std.lib" -> "libStd.so").
+	static p::String ResolveNativeLibraryPath(
+	    ast::Tree& ast, ast::Id moduleId, const p::String& binary)
+	{
+		const p::String moduleName(ast::GetModuleName(ast, moduleId).AsString());
+		const p::String path = p::JoinPaths(p::JoinPaths(GetSDKRoot(), moduleName), binary);
+		if (p::ExistsAsFile(path))
+		{
+			return path;
+		}
+
+#if defined(__APPLE__)
+		const char* libExtension = ".dylib";
+#elif defined(_WIN32)
+		const char* libExtension = ".dll";
+#else
+		const char* libExtension = ".so";
+#endif
+		const p::String dir(p::GetParentPath(path));
+		const p::String stem(p::GetStem(path));
+		const p::String candidates[]{
+		    p::JoinPaths(dir, p::Format("lib{}{}", stem, libExtension)),
+		    p::JoinPaths(dir, p::Format("{}{}", stem, libExtension)),
+		};
+		for (const p::String& candidate : candidates)
+		{
+			if (p::ExistsAsFile(candidate))
+			{
+				return candidate;
+			}
+		}
+		return path;
+	}
+
+	static void OpenNativeLibs(Compiler& compiler)
+	{
+		p::TArray<ast::Id> moduleIds;
+		p::FindAllIdsWith<ast::CModule, CNativeBinding>(compiler.ast, moduleIds);
+
+		for (ast::Id moduleId : moduleIds)
+		{
+			const auto& binding = compiler.ast.Get<const CNativeBinding>(moduleId);
+			for (const p::String& binary : binding.binaries)
+			{
+				const p::String path = ResolveNativeLibraryPath(compiler.ast, moduleId, binary);
+				void* handler        = dlopen(path.c_str(), RTLD_LAZY);
+				if (!handler)
+				{
+					compiler.Error(p::Format("Could not load native library '{}'", path));
+					continue;
+				}
+				gNativeLibs.Add(NativeLib{path, handler});
+				p::Info("Loaded native library '{}'", path);
 			}
 		}
 	}
@@ -194,6 +280,26 @@ namespace rift
 				}
 			}
 		}
+
+		for (NativeLib& nativeLib : gNativeLibs)
+		{
+			if (nativeLib.handler)
+			{
+				sym = dlsym(nativeLib.handler, name);
+				if (sym)
+				{
+					break;
+				}
+			}
+		}
+
+#ifndef _WIN32
+		if (sym == nullptr)
+		{
+			// Fall back to symbols already present in the current process
+			sym = dlsym(RTLD_DEFAULT, name);
+		}
+#endif
 
 		if (sym == nullptr)
 		{
@@ -281,11 +387,11 @@ namespace rift
 		MIR_item_t func, mainFunc = nullptr;
 
 		{    // Find main
-			for (MIR_module_t module       = DLIST_HEAD(MIR_module_t, *MIR_get_module_list(ctx));
-			     module != nullptr; module = DLIST_NEXT(MIR_module_t, module))
+			for (MIR_module_t module      = DLIST_HEAD(MIR_module_t, *MIR_get_module_list(ctx));
+			    module != nullptr; module = DLIST_NEXT(MIR_module_t, module))
 			{
 				for (func = DLIST_HEAD(MIR_item_t, module->items); func != nullptr;
-				     func = DLIST_NEXT(MIR_item_t, func))
+				    func  = DLIST_NEXT(MIR_item_t, func))
 				{
 					if (func->item_type == MIR_func_item && strcmp(func->u.func->name, "main") == 0)
 					{
@@ -308,6 +414,16 @@ namespace rift
 		}
 
 		OpenSTDLibs();
+		OpenNativeLibs(compiler);
+
+		if (compiler.HasErrors())
+		{
+			PrintBuildFinish(compiler);
+			CloseSTDLibs();
+			MIR_finish(ctx);
+			return;
+		}
+
 		MIR_gen_init(ctx);
 
 		if (compiler.config.optimization != OptimizationLevel::Zero)

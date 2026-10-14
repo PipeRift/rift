@@ -27,7 +27,8 @@ namespace rift::MIR
 	    ast::CExprTypeId, ast::CExprOutputs, ast::CNamespace, ast::CDeclType, ast::CDeclVariable,
 	    ast::CDeclStruct, ast::CDeclClass, ast::CDeclStatic, ast::CParent, ast::CInvalid,
 	    ast::CChild, ast::CModule, ast::CLiteralBool, ast::CLiteralIntegral, ast::CLiteralFloating,
-	    ast::CLiteralString, ast::CDeclFunction, CDeclCStruct, CDeclCStatic>;
+	    ast::CLiteralString, ast::CDeclFunction, ast::CExprUnaryOperator, ast::CExprBinaryOperator,
+	    CDeclCStruct, CDeclCStatic>;
 
 	void GenerateC(Compiler& compiler);
 
@@ -54,6 +55,8 @@ namespace rift::MIR
 		void AddStmtBlock(ast::Id firstStmtId);
 		void AddStmtIf(ast::Id id);
 		void AddExpr(const ast::ExprOutput& output);
+		void AddUnaryOperator(ast::Id id, const ast::CExprUnaryOperator& op);
+		void AddBinaryOperator(ast::Id id, const ast::CExprBinaryOperator& op);
 		void AddCall(ast::Id id, const ast::CExprCallId& call);
 		void CreateMain(ast::Id functionId);
 		ast::Id FindMainFunction(p::TView<ast::Id> functionIds);

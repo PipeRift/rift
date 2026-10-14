@@ -74,6 +74,9 @@ namespace rift::editor
 		RegisterKeyValueInspections();
 		p::Info("Editor is ready");
 
+		// Don't write an imgui.ini in the working directory while no project is open.
+		ImGui::GetIO().IniFilename = nullptr;
+
 		// Open a project if a path has been provided
 		OpenProject(projectPath, false);
 
@@ -119,6 +122,9 @@ namespace rift::editor
 			ast::FunctionsSystem::ResolveCallFunctionIds(ast);
 			ast::TypeSystem::ResolveExprTypeIds(ast);
 
+			// Repair any invalid graph connectivity before drawing it
+			ast::FunctionsSystem::HealGraph(ast);
+
 			EditorSystem::Draw(ast);
 			ast::TypeSystem::PropagateVariableTypes(ast);
 			ast::FunctionsSystem::PropagateDirtyIntoCalls(ast);
@@ -136,6 +142,9 @@ namespace rift::editor
 	{
 		if (UI::GetWindow())
 		{
+			// Ensure the project's Saved folder exists so the layout can persist there
+			// instead of falling back to an imgui.ini in the working directory.
+			p::CreateFolder(p::GetParentPath(path), true);
 			configFileChanged          = true;
 			configFile                 = path;
 			ImGui::GetIO().IniFilename = configFile.c_str();
@@ -154,6 +163,7 @@ namespace rift::editor
 			ast.SetStatic<SEditor>();
 			EditorSystem::Init(ast);
 			SetUIConfigFile(p::JoinPaths(ast::GetProjectPath(ast), "Saved/UI.ini"));
+			filesDirty = true;
 			return true;
 		}
 		return false;
@@ -187,6 +197,7 @@ namespace rift::editor
 			p::SetWeaklyCanonical(projectPathStr);    // Prevent / \\ mismatch duplicates
 			editorSettings.recentProjects.AddUnique(p::Move(projectPathStr));
 			SaveUserSettings<EditorSettings>();
+			filesDirty = true;
 			return true;
 		}
 		return false;
@@ -200,6 +211,11 @@ namespace rift::editor
 			fileWatcher.StopListening(ast.Get<p::FileWatchId>(id));
 		}
 		ast::CloseProject(ast);
+
+		// Stop writing a project layout file and never fall back to imgui.ini
+		configFile.clear();
+		configFileChanged          = false;
+		ImGui::GetIO().IniFilename = nullptr;
 	}
 
 	void Editor::Close()

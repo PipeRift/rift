@@ -6,13 +6,43 @@
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Statements.h>
 #include <Compiler/Compiler.h>
-#include <PipeStrings.h>
 #include <Pipe/Core/StringView.h>
+#include <PipeStrings.h>
 
 
 namespace rift::MIR
 {
 	const p::TSet<p::Tag> CGenerator::reservedNames{"class", "struct"};
+
+	// Operator strings indexed by their enum value. Binary operators include the
+	// surrounding spaces so they are appended in a single operation.
+	static constexpr p::StringView unaryOperators[]{"!", "-", "++", "--", "~"};
+	static constexpr p::StringView binaryOperators[]{" + ", " - ", " * ", " / ", " % ",
+	    " == ", " != ", " > ", " < ", " >= ", " <= ", " && ", " || ", " & ", " | ", " ^ "};
+
+	static_assert(std::size(unaryOperators) == p::sizet(p::u8(ast::UnaryOperatorType::BitNot)) + 1,
+	    "unaryOperators must have one entry per UnaryOperatorType");
+	static_assert(std::size(binaryOperators) == p::sizet(p::u8(ast::BinaryOperatorType::Xor)) + 1,
+	    "binaryOperators must have one entry per BinaryOperatorType");
+
+
+	static void AppendCStringLiteral(p::String& out, p::StringView value)
+	{
+		out.push_back('"');
+		for (p::sizet i = 0; i < value.size(); ++i)
+		{
+			switch (value[i])
+			{
+				case '"': out.append("\\\""); break;
+				case '\\': out.append("\\\\"); break;
+				case '\n': out.append("\\n"); break;
+				case '\r': out.append("\\r"); break;
+				case '\t': out.append("\\t"); break;
+				default: out.push_back(value[i]); break;
+			}
+		}
+		out.push_back('"');
+	}
 
 
 	void GenerateC(Compiler& compiler)
@@ -96,7 +126,7 @@ namespace rift::MIR
 		scope.Add(nativeTypes.i32Id, CMIRType{"long"});
 		scope.Add(nativeTypes.u64Id, CMIRType{"unsigned long long"});
 		scope.Add(nativeTypes.i64Id, CMIRType{"long long"});
-		// scope.Add<CIRType>(nativeTypes.stringId, {});
+		scope.Add(nativeTypes.stringId, CMIRType{"const char*"});
 	}
 
 	void CGenerator::GenerateLiterals()
@@ -129,9 +159,7 @@ namespace rift::MIR
 		{
 			strValue.clear();
 			const auto& string = scope.Get<const ast::CLiteralString>(id);
-			strValue.push_back('\"');
-			strValue.append(string.value);
-			strValue.push_back('\"');
+			AppendCStringLiteral(strValue, string.value);
 			scope.Add(id, CMIRLiteral{.value = p::Tag{strValue}});
 		}
 	}
@@ -229,9 +257,8 @@ namespace rift::MIR
 					else if (reservedNames.Contains(inputName)) [[unlikely]]
 					{
 						const p::String functionName = ast::GetFullName(scope, id);
-						compiler.Error(
-						    p::Format("Input name '{}' not allowed in function '{}' ",
-						        inputName, functionName));
+						compiler.Error(p::Format("Input name '{}' not allowed in function '{}' ",
+						    inputName, functionName));
 					}
 					else
 					{
@@ -277,6 +304,7 @@ namespace rift::MIR
 			if (const auto* call = scope.TryGet<const ast::CExprCallId>(id))
 			{
 				AddCall(id, *call);
+				code->append(";\n");
 			}
 		}
 
@@ -292,25 +320,83 @@ namespace rift::MIR
 
 	void CGenerator::AddExpr(const ast::ExprOutput& output)
 	{
-		const auto* value =
-		    !IsNone(output.pinId) ? scope.TryGet<const CMIRLiteral>(output.pinId) : nullptr;
-		// TODO
+		if (output.IsNone())
+		{
+			compiler.Error("Missing expression found while generating code");
+			return;
+		}
+
+		// Literal nodes are their own output pin
+		if (const auto* literal = scope.TryGet<const CMIRLiteral>(output.pinId))
+		{
+			code->append(literal->value.AsString());
+		}
+		else if (const auto* call = scope.TryGet<const ast::CExprCallId>(output.nodeId))
+		{
+			AddCall(output.nodeId, *call);
+		}
+		else if (const auto* unary = scope.TryGet<const ast::CExprUnaryOperator>(output.nodeId))
+		{
+			AddUnaryOperator(output.nodeId, *unary);
+		}
+		else if (const auto* binary = scope.TryGet<const ast::CExprBinaryOperator>(output.nodeId))
+		{
+			AddBinaryOperator(output.nodeId, *binary);
+		}
+		else
+		{
+			compiler.Error("Unsupported expression found while generating code");
+		}
+	}
+
+	void CGenerator::AddUnaryOperator(ast::Id id, const ast::CExprUnaryOperator& op)
+	{
+		const auto* inputs = scope.TryGet<const ast::CExprInputs>(id);
+		if (!inputs || inputs->linkedOutputs.IsEmpty())
+		{
+			compiler.Error("Unary operator without a connected operand");
+			return;
+		}
+
+		code->append(unaryOperators[p::u8(op.type)]);
+		code->push_back('(');
+		AddExpr(inputs->linkedOutputs.First());
+		code->push_back(')');
+	}
+
+	void CGenerator::AddBinaryOperator(ast::Id id, const ast::CExprBinaryOperator& op)
+	{
+		const auto* inputs = scope.TryGet<const ast::CExprInputs>(id);
+		if (!inputs || inputs->linkedOutputs.Size() < 2)
+		{
+			compiler.Error("Binary operator without two connected operands");
+			return;
+		}
+
+		code->push_back('(');
+		AddExpr(inputs->linkedOutputs[0]);
+		code->append(binaryOperators[p::u8(op.type)]);
+		AddExpr(inputs->linkedOutputs[1]);
+		code->push_back(')');
 	}
 
 	void CGenerator::AddStmtIf(ast::Id id)
 	{
 		const auto& outputs      = scope.Get<const ast::CStmtOutputs>(id);
 		const auto& connectedIds = outputs.linkInputNodes;
-		P_Check(connectedIds.Size() == 2);
+		P_Check(connectedIds.Size() >= 1);
 		const auto& exprInputs = scope.Get<const ast::CExprInputs>(id);
 		P_Check(exprInputs.linkedOutputs.Size() == 1);
 
 		code->append("if (");
 		AddExpr(exprInputs.linkedOutputs.First());
-		code->append("){\n");
+		code->append(") {\n");
 		AddStmtBlock(connectedIds[0]);
-		code->append("} else {\n");
-		AddStmtBlock(connectedIds[1]);
+		if (connectedIds.Size() > 1 && !p::IsNone(connectedIds[1]))
+		{
+			code->append("} else {\n");
+			AddStmtBlock(connectedIds[1]);
+		}
 		code->append("}\n");
 	}
 
@@ -329,6 +415,19 @@ namespace rift::MIR
 			return;
 		}
 
+		// Native C functions keep their original symbol name; Rift functions are
+		// emitted module-qualified to avoid collisions.
+		const ast::Id ownerId = p::GetIdParent(scope, functionId);
+		if (scope.Has<CDeclCStruct>(ownerId) || scope.Has<CDeclCStatic>(ownerId))
+		{
+			code->append(ast::GetName(scope, functionId).AsString());
+		}
+		else
+		{
+			code->append(ast::GetFullName(scope, functionId, false, '_'));
+		}
+		code->push_back('(');
+
 		if (auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
 		{
 			for (p::i32 i = 0; i < inputs->linkedOutputs.Size(); ++i)
@@ -337,11 +436,7 @@ namespace rift::MIR
 				if (!output.IsNone())
 				{
 					AddExpr(output);
-					code->push_back(',');
-				}
-				else
-				{
-					// TODO: Error? or assign default value?
+					code->append(", ");
 				}
 			}
 			p::Strings::RemoveFromEnd(*code, ", ");
@@ -357,9 +452,8 @@ namespace rift::MIR
 			return;
 		}
 
-		// auto* customMainFunction = scope.Get<const CIRFunction>(functionId).instance;
-
-		code->append("int main() {\nProject_Main_Main();\nreturn 0;\n}\n");
+		p::FormatTo(*code, "int main() {{\n{}();\nreturn 0;\n}}\n",
+		    ast::GetFullName(scope, functionId, false, '_'));
 	}
 
 	ast::Id CGenerator::FindMainFunction(p::TView<ast::Id> functionIds)

@@ -16,6 +16,7 @@ namespace rift
 {
 	void EnableModule(p::TypeId type);
 	void DisableModule(p::TypeId type);
+	void DisableAllModules();
 	p::TPtr<class Module> GetModule(p::TypeId type);
 
 

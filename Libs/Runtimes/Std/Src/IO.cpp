@@ -14,6 +14,6 @@ extern "C"
 
 	void PrintHelloWorld()
 	{
-		Print("Hello World");
+		Print("Hello World\n");
 	}
 }

@@ -15,9 +15,7 @@
 #include <PipeTime.h>
 #include <Rift.h>
 
-#include <chrono>
 #include <CLI/CLI.hpp>
-#include <thread>
 
 
 using namespace rift;
@@ -105,8 +103,8 @@ int main(int argc, char** argv)
 	String path;
 	app.add_option("-p,--project", path, "Project path")->required();
 	app.add_option("-v,--verbose", config.verbose, "Verbose")->required();
-	app.add_flag("-O0{0},-O1{1},-O2{2},-O3{3}", config.optimization, "Optimization")
-	    ->expected(0, 3);
+	// CLI11 requires long names to start with two dashes, so use `--O0`..`--O3`.
+	app.add_flag("--O0{0},--O1{1},--O2{2},--O3{3}", config.optimization, "Optimization");
 
 
 	String selectedBackendStr;
@@ -128,11 +126,8 @@ int main(int argc, char** argv)
 
 	Build(ast, config, backend);
 
-	while (true)
-	{
-		// Live for a second to let the profiler connect. Temporal
-		std::this_thread::sleep_for(std::chrono::seconds(3));
-	}
+	// Destroy the enabled modules before Pipe shuts down so nothing leaks.
+	DisableAllModules();
 
 	p::Shutdown();
 	return 0;

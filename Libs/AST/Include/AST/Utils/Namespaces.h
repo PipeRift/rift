@@ -30,16 +30,3 @@ namespace rift::ast
 	p::String GetFullName(p::TIdScopeRef<CNamespace, CChild, CModule> scope, Id id,
 	    bool localNamespace = false, char separator = '.');
 }    // namespace rift::ast
-
-
-namespace p
-{
-	template<>
-	struct TFlags<rift::ast::Namespace> : public DefaultTFlags
-	{
-		enum
-		{
-			HasMemberSerialize = true
-		};
-	};
-}    // namespace p

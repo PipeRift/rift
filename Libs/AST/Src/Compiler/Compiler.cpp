@@ -2,7 +2,9 @@
 
 #include "Compiler/Compiler.h"
 
+#include "AST/Systems/FunctionsSystem.h"
 #include "AST/Systems/LoadSystem.h"
+#include "AST/Systems/TransactionSystem.h"
 #include "AST/Systems/TypeSystem.h"
 #include "AST/Utils/ModuleUtils.h"
 #include "Compiler/Backend.h"
@@ -52,9 +54,20 @@ namespace rift
 		ast::LoadSystem::Run(ast);
 		ast::TypeSystem::SyncTypesByPath(ast);
 
-		OptimizationSystem::PruneDisconnectedExpressions(ast);
+		// Resolve graph connectivity. On the editor these steps run while editing;
+		// a head-less build has to run them once for the loaded project.
+		ast::FunctionsSystem::ClearAddedTags(ast);
+		ast::TransactionSystem::ClearTags(ast);
+		ast::FunctionsSystem::ResolveCallFunctionIds(ast);
+		ast::TypeSystem::ResolveExprTypeIds(ast);
+		ast::FunctionsSystem::MarkAllCallsDirty(ast);
 		ast::TypeSystem::PropagateVariableTypes(ast);
+		ast::FunctionsSystem::PushInvalidPinsBack(ast);
+		ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
 		ast::TypeSystem::PropagateExpressionTypes(ast);
+		ast::FunctionsSystem::HealGraph(ast);
+
+		OptimizationSystem::PruneDisconnectedExpressions(ast);
 
 
 		p::Info("Building project '{}'", ast::GetProjectName(compiler.ast));

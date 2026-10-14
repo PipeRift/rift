@@ -7,6 +7,8 @@ target_link_libraries(RiftBindingNativeLib PUBLIC RiftASTLib)
 
 rift_compiler_module(RiftBindingNativeLib)
 
-add_library(RiftBindingNativeEditorLib STATIC)
-rift_editor_module(RiftBindingNativeEditorLib)
-target_link_libraries(RiftBindingNativeEditorLib PUBLIC RiftEditorLib RiftBindingNativeLib)
+if(RIFT_BUILD_EDITOR)
+    add_library(RiftBindingNativeEditorLib STATIC)
+    rift_editor_module(RiftBindingNativeEditorLib)
+    target_link_libraries(RiftBindingNativeEditorLib PUBLIC RiftEditorLib RiftBindingNativeLib)
+endif()

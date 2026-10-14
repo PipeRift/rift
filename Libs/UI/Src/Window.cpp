@@ -191,6 +191,15 @@ namespace rift::UI
 
 	void SetWindowIcon()
 	{
+		// Wayland doesn't support window icons (they come from the .desktop file),
+		// so calling glfwSetWindowIcon there just emits an error.
+#if defined(GLFW_PLATFORM_WAYLAND)
+		if (glfwGetPlatform() == GLFW_PLATFORM_WAYLAND)
+		{
+			return;
+		}
+#endif
+
 		p::String icon64Path =
 		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_64.png");
 		p::String icon128Path =
