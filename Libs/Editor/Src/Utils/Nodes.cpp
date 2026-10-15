@@ -2612,7 +2612,7 @@ namespace rift::Nodes
 	bool IsLinkDropped(Id* outputId, Id* inputId, bool includingDetachedLinks)
 	{
 		// Call this function after EndNodeEditor()!
-		P_Check(gNodes->currentScope != Scope::None);
+		P_Check(gNodes->currentScope == Scope::None);
 		P_Check(outputId != nullptr);
 
 		const EditorContext& editor = GetEditorContext();

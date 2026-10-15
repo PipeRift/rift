@@ -16,7 +16,9 @@
 #include <AST/Components/Expressions.h>
 #include <AST/Components/Views/CNodePosition.h>
 #include <AST/Statics/STypes.h>
+#include <AST/Systems/FunctionsSystem.h>
 #include <AST/Utils/Expressions.h>
+#include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <GLFW/glfw3.h>
@@ -26,30 +28,248 @@
 
 namespace rift::editor::Graph
 {
-	void SetPositionAndConnect(ast::Tree& ast, ast::Id id, v2 position)
+	// Expression pins carry a type, execution pins are the node itself and don't.
+	static bool IsExprPin(ast::Tree& ast, ast::Id pinId)
 	{
-		if (!IsNone(id))
-		{
-			ast.Add<CNodePosition>(id, position);
-			// TODO: Improve nodes input to handle this correctly
-			TPair<Nodes::Id, Nodes::PinType> linkPin = Nodes::GetDraggedOriginPin();
+		return ast.Has<ast::CExprType>(pinId) || ast.Has<ast::CExprTypeId>(pinId);
+	}
 
-			const auto linkPinId = ast::Id::MakeRaw(linkPin.first);
-			switch (linkPin.second)
+	static ast::Id GetPinTypeId(ast::Tree& ast, ast::Id pinId)
+	{
+		if (const auto* type = ast.TryGet<const ast::CExprTypeId>(pinId))
+		{
+			return type->id;
+		}
+		if (const auto* type = ast.TryGet<const ast::CExprType>(pinId))
+		{
+			return ast::FindIdFromNamespace(ast, type->type);
+		}
+		return ast::NoId;
+	}
+
+	static bool HasPinWithType(ast::Tree& ast, p::TView<const ast::Id> pinIds, ast::Id typeId)
+	{
+		for (ast::Id pinId : pinIds)
+		{
+			if (GetPinTypeId(ast, pinId) == typeId)
 			{
-				case Nodes::PinType::Output:
-					ast::TryConnectStmt(ast, linkPinId, id);
-					ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, linkPinId),
-					    ast::GetExprInputFromPin(ast, id));
-					break;
-				case Nodes::PinType::Input:
-					ast::TryConnectStmt(ast, id, linkPinId);
-					ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, id),
-					    ast::GetExprInputFromPin(ast, linkPinId));
-					break;
-				default: break;
+				return true;
 			}
 		}
+		return false;
+	}
+
+	// The first pin on 'nodeId' that the dropped link can connect to. For expression links
+	// it's the first pin with a matching type, for execution links the node's exec pin.
+	static ast::Id FindMatchingPin(ast::Tree& ast, ast::Id nodeId, const DroppedLink& dropped)
+	{
+		if (IsExprPin(ast, dropped.pinId))
+		{
+			const ast::Id typeId = GetPinTypeId(ast, dropped.pinId);
+			if (dropped.pinType == Nodes::PinType::Output)
+			{
+				if (const auto* inputs = ast.TryGet<const ast::CExprInputs>(nodeId))
+				{
+					for (ast::Id pinId : inputs->pinIds)
+					{
+						if (GetPinTypeId(ast, pinId) == typeId)
+						{
+							return pinId;
+						}
+					}
+				}
+			}
+			else
+			{
+				if (const auto* outputs = ast.TryGet<const ast::CExprOutputs>(nodeId))
+				{
+					for (ast::Id pinId : outputs->pinIds)
+					{
+						if (GetPinTypeId(ast, pinId) == typeId)
+						{
+							return pinId;
+						}
+					}
+				}
+			}
+			return ast::NoId;
+		}
+
+		if (dropped.pinType == Nodes::PinType::Output && ast.Has<ast::CStmtInput>(nodeId))
+		{
+			return nodeId;
+		}
+		if (dropped.pinType == Nodes::PinType::Input)
+		{
+			if (ast.Has<ast::CStmtOutput>(nodeId))
+			{
+				return nodeId;
+			}
+			if (const auto* outputs = ast.TryGet<const ast::CStmtOutputs>(nodeId))
+			{
+				if (!outputs->pinIds.IsEmpty())
+				{
+					return outputs->pinIds[0];
+				}
+			}
+		}
+		return ast::NoId;
+	}
+
+	// Connects a freshly created node to the pin the user dropped over empty canvas.
+	static void ConnectDroppedLink(ast::Tree& ast, ast::Id nodeId)
+	{
+		const DroppedLink dropped = GetDroppedLink();
+		if (!dropped.IsValid())
+		{
+			return;
+		}
+
+		const ast::Id targetPin = FindMatchingPin(ast, nodeId, dropped);
+		if (dropped.pinType == Nodes::PinType::Output)
+		{
+			ast::TryConnectStmt(ast, dropped.pinId, nodeId);
+			if (!IsNone(targetPin))
+			{
+				ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, dropped.pinId),
+				    ast::GetExprInputFromPin(ast, targetPin));
+			}
+		}
+		else if (!IsNone(targetPin))
+		{
+			ast::TryConnectStmt(ast, targetPin, dropped.pinId);
+			ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, targetPin),
+			    ast::GetExprInputFromPin(ast, dropped.pinId));
+		}
+	}
+
+	void SetPositionAndConnect(ast::Tree& ast, ast::Id id, v2 position)
+	{
+		if (IsNone(id))
+		{
+			return;
+		}
+
+		ast.Add<CNodePosition>(id, position);
+
+		if (GetDroppedLink().IsValid())
+		{
+			ConnectDroppedLink(ast, id);
+			GetDroppedLink() = {};
+			return;
+		}
+
+		// TODO: Improve nodes input to handle this correctly
+		TPair<Nodes::Id, Nodes::PinType> linkPin = Nodes::GetDraggedOriginPin();
+
+		const auto linkPinId = ast::Id::MakeRaw(linkPin.first);
+		switch (linkPin.second)
+		{
+			case Nodes::PinType::Output:
+				ast::TryConnectStmt(ast, linkPinId, id);
+				ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, linkPinId),
+				    ast::GetExprInputFromPin(ast, id));
+				break;
+			case Nodes::PinType::Input:
+				ast::TryConnectStmt(ast, id, linkPinId);
+				ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, id),
+				    ast::GetExprInputFromPin(ast, linkPinId));
+				break;
+			default: break;
+		}
+	}
+
+	static bool DroppedLinkFitsLiteral(ast::Tree& ast, ast::Id literalTypeId)
+	{
+		const DroppedLink& dropped = GetDroppedLink();
+		if (!dropped.IsValid())
+		{
+			return true;
+		}
+		// Literals only produce a value, so they can only receive an input link
+		if (!IsExprPin(ast, dropped.pinId) || dropped.pinType != Nodes::PinType::Input)
+		{
+			return false;
+		}
+		return literalTypeId == GetPinTypeId(ast, dropped.pinId);
+	}
+
+	static bool DroppedLinkFitsReturn(ast::Tree& ast)
+	{
+		const DroppedLink& dropped = GetDroppedLink();
+		if (!dropped.IsValid())
+		{
+			return true;
+		}
+		// Return nodes take execution flow; their value inputs come from the function
+		return !IsExprPin(ast, dropped.pinId) && dropped.pinType == Nodes::PinType::Output;
+	}
+
+	static bool DroppedLinkFitsIf(ast::Tree& ast)
+	{
+		const DroppedLink& dropped = GetDroppedLink();
+		if (!dropped.IsValid())
+		{
+			return true;
+		}
+		if (!IsExprPin(ast, dropped.pinId))
+		{
+			return true;    // if nodes have both an execution input and outputs
+		}
+		// Only a bool output fits the if node's condition input
+		return dropped.pinType == Nodes::PinType::Output
+		    && GetPinTypeId(ast, dropped.pinId) == ast.GetNativeTypes().boolId;
+	}
+
+	static bool DroppedLinkFitsFunction(ast::Tree& ast, ast::Id functionId)
+	{
+		const DroppedLink& dropped = GetDroppedLink();
+		if (!dropped.IsValid() || !IsExprPin(ast, dropped.pinId))
+		{
+			return true;    // call nodes always have an execution input and output
+		}
+
+		const ast::Id typeId = GetPinTypeId(ast, dropped.pinId);
+		if (dropped.pinType == Nodes::PinType::Output)
+		{
+			// Call inputs mirror the function's parameters
+			if (const auto* params = ast.TryGet<const ast::CExprOutputs>(functionId))
+			{
+				return HasPinWithType(ast, params->pinIds, typeId);
+			}
+		}
+		else if (const auto* returns = ast.TryGet<const ast::CExprInputs>(functionId))
+		{
+			// Call outputs mirror the function's return values
+			return HasPinWithType(ast, returns->pinIds, typeId);
+		}
+		return false;
+	}
+
+	static bool DroppedLinkFitsVariable(ast::Tree& ast, ast::Id variableId)
+	{
+		const DroppedLink& dropped = GetDroppedLink();
+		if (!dropped.IsValid())
+		{
+			return true;
+		}
+		if (!IsExprPin(ast, dropped.pinId) || dropped.pinType != Nodes::PinType::Input)
+		{
+			return false;
+		}
+		const auto* variable = ast.TryGet<const ast::CDeclVariable>(variableId);
+		if (!variable || IsNone(variable->typeId))
+		{
+			return false;
+		}
+		return variable->typeId == GetPinTypeId(ast, dropped.pinId);
+	}
+
+	static bool DroppedLinkFitsOperator(ast::Tree& ast)
+	{
+		const DroppedLink& dropped = GetDroppedLink();
+		// Operator pin types are inferred from their connections, so accept any expression
+		return !dropped.IsValid() || IsExprPin(ast, dropped.pinId);
 	}
 
 	bool ContextTreeNode(StringView name, const ImGuiTextFilter& filter)
@@ -150,12 +370,12 @@ namespace rift::editor::Graph
 
 		if (ContextTreeNode("Flow", filter))
 		{
-			if (ContextItem("Return", filter))
+			if (DroppedLinkFitsReturn(ast) && ContextItem("Return", filter))
 			{
 				ast::Id newId = ast::AddReturn({ast, typeId});
 				SetPositionAndConnect(ast, newId, gridPos);
 			}
-			if (ContextItem("If", filter))
+			if (DroppedLinkFitsIf(ast) && ContextItem("If", filter))
 			{
 				ast::Id newId = ast::AddIf({ast, typeId});
 				SetPositionAndConnect(ast, newId, gridPos);
@@ -174,7 +394,7 @@ namespace rift::editor::Graph
 				{
 					makeStr.clear();
 					p::FormatTo(makeStr, "Make {}", ns->name);
-					if (ContextItem(makeStr, filter))
+					if (DroppedLinkFitsLiteral(ast, typeId) && ContextItem(makeStr, filter))
 					{
 						ast::Id newId = ast::AddLiteral({ast, typeId}, typeId);
 						SetPositionAndConnect(ast, newId, gridPos);
@@ -202,9 +422,12 @@ namespace rift::editor::Graph
 				{
 					p::FormatTo(label, "{}", name);
 				}
-				if (ContextItem(label, filter))
+				if (DroppedLinkFitsFunction(ast, functionId) && ContextItem(label, filter))
 				{
 					ast::Id newId = ast::AddCall({ast, typeId}, functionId);
+					// Populate the new call's pins right away so the dropped link can find
+					// a matching pin to connect to
+					ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
 			}
@@ -229,7 +452,7 @@ namespace rift::editor::Graph
 				{
 					p::FormatTo(label, "{}", name);
 				}
-				if (ContextItem(label, filter))
+				if (DroppedLinkFitsVariable(ast, variableId) && ContextItem(label, filter))
 				{
 					ast::Id newId = ast::AddDeclarationReference({ast, typeId}, variableId);
 					SetPositionAndConnect(ast, newId, gridPos);
@@ -248,7 +471,7 @@ namespace rift::editor::Graph
 				StringView shortName = GetUnaryOperatorName(type);
 				StringView longName  = GetUnaryOperatorLongName(type);
 				p::FormatTo(name, "{}   ({})", shortName, longName);
-				if (ContextItem(name, filter))
+				if (DroppedLinkFitsOperator(ast) && ContextItem(name, filter))
 				{
 					ast::Id newId = ast::AddUnaryOperator({ast, typeId}, type);
 					SetPositionAndConnect(ast, newId, gridPos);
@@ -261,7 +484,7 @@ namespace rift::editor::Graph
 				StringView shortName = GetBinaryOperatorName(type);
 				StringView longName  = GetBinaryOperatorLongName(type);
 				p::FormatTo(name, "{}   ({})", shortName, longName);
-				if (ContextItem(name, filter))
+				if (DroppedLinkFitsOperator(ast) && ContextItem(name, filter))
 				{
 					ast::Id newId = ast::AddBinaryOperator({ast, typeId}, type);
 					SetPositionAndConnect(ast, newId, gridPos);

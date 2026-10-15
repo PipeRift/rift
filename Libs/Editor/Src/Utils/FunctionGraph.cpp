@@ -31,6 +31,12 @@
 namespace rift::editor::Graph
 {
 	static CNodePosition* currentNodeTransform = nullptr;
+	static DroppedLink gDroppedLink;
+
+	DroppedLink& GetDroppedLink()
+	{
+		return gDroppedLink;
+	}
 
 	void Settings::SetGridSize(float size)
 	{
@@ -926,6 +932,24 @@ namespace rift::editor::Graph
 				ast::DisconnectExpr(ast, ast::GetExprInputFromPin(ast, ast::Id::MakeRaw(linkId)));
 			}
 
+			// A link dropped over empty canvas opens the context menu instead of silently
+			// doing nothing, so the user can pick the node to connect it to.
+			Nodes::Id droppedOutput;
+			Nodes::Id droppedInput;
+			if (Nodes::IsLinkDropped(&droppedOutput, &droppedInput))
+			{
+				DroppedLink& dropped = GetDroppedLink();
+				if (droppedOutput != 0)
+				{
+					dropped = {ast::Id::MakeRaw(droppedOutput), Nodes::PinType::Output};
+				}
+				else if (droppedInput != 0)
+				{
+					dropped = {ast::Id::MakeRaw(droppedInput), Nodes::PinType::Input};
+				}
+				wantsToOpenContextMenu = dropped.IsValid();
+			}
+
 			ast::Id hoveredNodeId = Nodes::GetHoveredNode();
 			if (!IsNone(hoveredNodeId) && Nodes::IsNodeSelected(hoveredNodeId)
 			    && UI::IsMouseClicked(ImGuiMouseButton_Left))
@@ -951,11 +975,27 @@ namespace rift::editor::Graph
 			static ast::Id contextHoveredLinkId = ast::NoId;
 			if (wantsToOpenContextMenu)
 			{
-				contextHoveredNodeId = Nodes::GetHoveredNode();
-				contextHoveredLinkId = Nodes::GetHoveredLink();
+				if (GetDroppedLink().IsValid())
+				{
+					// Always show the (filtered) graph menu when a link was dropped, even
+					// if the cursor ended over a node
+					contextHoveredNodeId = ast::NoId;
+					contextHoveredLinkId = ast::NoId;
+				}
+				else
+				{
+					contextHoveredNodeId = Nodes::GetHoveredNode();
+					contextHoveredLinkId = Nodes::GetHoveredLink();
+				}
 				ImGui::OpenPopup("ContextMenu", ImGuiPopupFlags_AnyPopup);
 			}
 			DrawContextMenu(ast, typeId, contextHoveredNodeId, contextHoveredLinkId);
+
+			// Forget the pin that was dropped once the menu goes away
+			if (!ImGui::IsPopupOpen("ContextMenu"))
+			{
+				GetDroppedLink() = {};
+			}
 		}
 		UI::End();
 	}

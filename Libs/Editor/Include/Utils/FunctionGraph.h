@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Components/CTypeEditor.h"
+#include "Utils/Nodes.h"
 
 #include <AST/Tree.h>
 #include <PipeMath.h>
@@ -53,6 +54,20 @@ namespace rift::editor::Graph
 	void PopInnerNodeStyle();
 
 	void DrawTypeGraph(ast::Tree& ast, ast::Id typeId, CTypeEditor& typeEditor);
+
+	// A pin the user was dragging when they released the link over empty canvas. The
+	// context menu is filtered with it and connects the new node to its first matching pin.
+	struct DroppedLink
+	{
+		ast::Id pinId          = ast::NoId;
+		Nodes::PinType pinType = Nodes::PinType::None;
+
+		bool IsValid() const
+		{
+			return !IsNone(pinId) && pinType != Nodes::PinType::None;
+		}
+	};
+	DroppedLink& GetDroppedLink();
 
 	void SetNodePosition(ast::Id id, v2 position);
 	v2 GetNodePosition(ast::Id id);
