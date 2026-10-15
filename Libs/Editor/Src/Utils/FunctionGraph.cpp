@@ -310,11 +310,23 @@ namespace rift::editor::Graph
 		{
 			BeginExprOutput(ast, id, false);
 			PushInnerNodeStyle();
-			ImGuiStyle& style     = ImGui::GetStyle();
+
+			const float gridSize  = settings.GetGridSize();
 			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
-			const v2 minSize{settings.GetGridSize() * 4.f, settings.GetGridSize()};
-			const v2 size{p::Max(minSize.x, textSize.x), p::Max(minSize.y, textSize.y)};
-			UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
+
+			// CalcTextSize() ignores a trailing newline, but ImGui renders it as an extra line
+			const float textHeight =
+			    textSize.y + (value.ends_with('\n') ? ImGui::GetTextLineHeight() : 0.f);
+
+			// The node is the field plus its padding on both sides, so size the field for
+			// the resulting node to land on the grid
+			const v2 padding = Nodes::GetStyle().NodePadding;
+			const v2 size{
+			    p::Ceil((textSize.x + 2.f * padding.x) / gridSize) * gridSize - 2.f * padding.x,
+			    p::Ceil((textHeight + 2.f * padding.y) / gridSize) * gridSize - 2.f * padding.y};
+
+			UI::InputTextMultiline("##value", value, size);
+
 			PopInnerNodeStyle();
 			EndExprOutput(false);
 		}
