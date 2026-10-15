@@ -35,7 +35,7 @@ namespace rift::ast::FunctionsSystem
 	void Init(Tree& ast) {}
 
 	void ResolveCallFunctionIds(p::TIdScopeRef<p::Writes<CExprCallId>, CExprCall, CDeclFunction,
-	    CNamespace, CParent, CChild>
+	    CNamespace, CParent, CChild, CModule, CDeclNative>
 	        scope)
 	{
 		auto callExprs = FindAllIdsWith<CExprCall>(scope);
@@ -462,9 +462,16 @@ namespace rift::ast::FunctionsSystem
 	{
 		// Expression inputs keep pinIds and linkedOutputs paired 1:1
 		{
-			p::TIdScope<p::Writes<CExprInputs, CChild, CParent>> scope{ast};
+			p::TIdScope<p::Writes<CExprInputs, CChild, CParent>, CDeclFunction> scope{ast};
 			for (Id id : p::FindAllIdsWith<CExprInputs>(scope))
 			{
+				// Function declarations use CExprInputs to declare their outputs. Those are
+				// plain pin declarations and are never linked to anything.
+				if (scope.Has<CDeclFunction>(id))
+				{
+					continue;
+				}
+
 				auto& inputs         = scope.Get<CExprInputs>(id);
 				const p::i32 pins    = inputs.pinIds.Size();
 				const p::i32 outputs = inputs.linkedOutputs.Size();

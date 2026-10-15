@@ -3,6 +3,7 @@
 #include "AST/Utils/Namespaces.h"
 
 #include "AST/Components/CNamespace.h"
+#include "AST/Components/Declarations.h"
 #include "AST/Id.h"
 #include "Pipe/Core/StringView.h"
 
@@ -47,15 +48,16 @@ namespace rift::ast
 		return {};
 	}
 
-	Id FindIdFromNamespace(p::TIdScopeRef<CNamespace, CChild, CParent> scope, const Namespace& ns,
-	    const p::TArray<Id>* rootIds)
+	Id FindIdFromNamespace(p::TIdScopeRef<CNamespace, CChild, CParent, CModule, CDeclNative> scope,
+	    const Namespace& ns, const p::TArray<Id>* rootIds)
 	{
 		p::TArray<Id> localRoots;
 		if (!rootIds)
 		{
-			localRoots = p::FindAllIdsWith<CNamespace>(scope);
-			p::ExcludeIdsWith<CChild>(scope, localRoots);
-			rootIds = &localRoots;
+			// A namespace starts at the module owning the id (see GetNamespace), and native
+			// types are referenced by their bare name, so both count as roots.
+			localRoots = p::FindAllIdsWithAny<CModule, CDeclNative>(scope);
+			rootIds    = &localRoots;
 		}
 
 		const p::TArray<Id>* scopeIds = rootIds;

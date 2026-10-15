@@ -1,19 +1,24 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include "IO.h"
+#include "Std/IO.h"
 
 #include <cstdio>
 
 
 extern "C"
 {
-	void Print(const char* text)
+	void Print(StringView text)
 	{
-		printf("%s", text);
+		const p::StringView view{text.data, text.size};
+		if (!view.empty())
+		{
+			std::fwrite(view.data(), 1, view.size(), stdout);
+		}
 	}
 
-	void PrintHelloWorld()
+	void PrintLine(StringView text)
 	{
-		Print("Hello World\n");
+		Print(text);
+		std::fputc('\n', stdout);
 	}
 }

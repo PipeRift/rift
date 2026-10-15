@@ -93,6 +93,8 @@ namespace rift::editor
 						p::StringView name   = p::GetFilename(path);
 						p::StringView parent = p::GetParentPath(path);
 
+						// Use the full path as the ID so projects sharing a name but living in
+						// different folders are treated as distinct buttons.
 						UI::PushID(path);
 						if (UI::TextLink(name))
 						{
