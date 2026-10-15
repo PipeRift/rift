@@ -1256,11 +1256,9 @@ namespace rift::Nodes
 
 	Rect GetNodeTitleRect(const NodeData& node)
 	{
-		Rect expandedTitleRect = node.TitleBarContentRect;
-		expandedTitleRect.Expand(node.LayoutStyle.Padding);
-
-		return {expandedTitleRect.min, expandedTitleRect.min + v2(node.rect.GetSize().x, 0.f)
-		                                   + v2(0.f, expandedTitleRect.GetSize().y)};
+		Rect titleRect = node.TitleBarContentRect;
+		titleRect.Expand(node.LayoutStyle.Padding);
+		return titleRect;
 	}
 
 	void DrawGrid(EditorContext& editor, const v2& canvasSize)
@@ -1448,7 +1446,8 @@ namespace rift::Nodes
 			// title bar:
 			if (node.TitleBarContentRect.GetSize().y > 0.f)
 			{
-				Rect titleBarRect = GetNodeTitleRect(node);
+				Rect titleBarRect  = GetNodeTitleRect(node);
+				titleBarRect.max.x = node.rect.max.x;    // span the node's full width
 
 				gNodes->CanvasDrawList->AddRectFilled(titleBarRect.min, titleBarRect.max,
 				    titlebarBackground.ToPackedABGR(), node.LayoutStyle.CornerRounding,
@@ -1895,7 +1894,7 @@ namespace rift::Nodes
 		gNodes->altMouseScrollDelta    = ImGui::GetIO().MouseWheel;
 		gNodes->multipleSelectModifier = (gNodes->io.multipleSelectModifier.modifier != nullptr
 		                                      ? *gNodes->io.multipleSelectModifier.modifier
-		                                      : ImGui::GetIO().KeyCtrl);
+											  : ImGui::GetIO().KeyCtrl);
 		gNodes->activePin              = false;
 
 		ImGui::BeginGroup();
@@ -2174,8 +2173,11 @@ namespace rift::Nodes
 		NodeData& node           = editor.nodes[gNodes->currentNodeId];
 		node.TitleBarContentRect = GetItemRect();
 
-		Rect nodeTitleRect = GetNodeTitleRect(node);
-		ImGui::ItemAdd({nodeTitleRect.min, nodeTitleRect.max}, ImGui::GetID("title_bar"));
+		// Register the title bar as an item (using its content bounds, not the previous
+		// frame's node width) so it counts as an ImGui interaction without making empty
+		// content groups grow the node.
+		Rect titleRect = GetNodeTitleRect(node);
+		ImGui::ItemAdd({titleRect.min, titleRect.max}, ImGui::GetID("title_bar"));
 
 		ImGui::SetCursorPos(GridToEditorPosition(editor, GetNodeContentOrigin(node)));
 	}

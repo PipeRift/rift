@@ -9,6 +9,7 @@
 #include "AST/Systems/LoadSystem.h"
 #include "AST/Systems/TypeSystem.h"
 
+#include <Pipe/Core/Checks.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Files/PlatformPaths.h>
@@ -220,6 +221,32 @@ namespace rift::ast
 			r.BeginObject();
 			r.SerializeSingleEntity(id, gOnReadModulePools);
 		}
+	}
+
+	bool ReloadModule(ast::Tree& ast, ast::Id id)
+	{
+		if (!P_Ensure(ast.Has<CModule>(id)))
+		{
+			return false;
+		}
+
+		const auto* file = ast.TryGet<const CFileRef>(id);
+		if (!file)
+		{
+			return false;
+		}
+
+		p::String data;
+		if (!p::LoadStringFile(file->path, data, 4))
+		{
+			p::Error("File could not be loaded from disk ({})", file->path);
+			return false;
+		}
+
+		// Module files only serialize the module entity itself (not its children), so
+		// the existing types/modules are left untouched.
+		LoadSystem::DeserializeModules(ast, id, data);
+		return true;
 	}
 	const p::TBroadcast<p::EntityReader&>& OnReadModulePools()
 	{
