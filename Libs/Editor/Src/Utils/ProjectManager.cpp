@@ -137,7 +137,7 @@ namespace rift::editor
 						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.f, 0.f, 0.f, 0.f});
 						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{1.f, 1.f, 1.f, 0.12f});
 						ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{1.f, 1.f, 1.f, 0.22f});
-						UI::PushTextColor(UI::GetTextColor().Shade(0.1f));
+						UI::PushTextColor(UI::GetTextColor().Shade(0.2f));
 						UI::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2{0.5f, 0.5f});
 						float backupPaddingY             = ImGui::GetStyle().FramePadding.y;
 						ImGui::GetStyle().FramePadding.y = 0.f;
