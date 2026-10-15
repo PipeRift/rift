@@ -306,6 +306,9 @@ namespace rift::editor::Graph
 		static constexpr Color color = GetTypeColor<String>();
 		PushNodeBackgroundColor(color);
 
+		// EndNode() adds one item spacing below the node content
+		const float nodeSpacingY = ImGui::GetStyle().ItemSpacing.y;
+
 		BeginNode(ast, id);
 		{
 			BeginExprOutput(ast, id, false);
@@ -318,12 +321,13 @@ namespace rift::editor::Graph
 			const float textHeight =
 			    textSize.y + (value.ends_with('\n') ? ImGui::GetTextLineHeight() : 0.f);
 
-			// The node is the field plus its padding on both sides, so size the field for
-			// the resulting node to land on the grid
+			// The node is the field plus its padding (and a trailing item spacing) on both
+			// sides, so size the field for the resulting node to land on the grid
 			const v2 padding = Nodes::GetStyle().NodePadding;
 			const v2 size{
 			    p::Ceil((textSize.x + 2.f * padding.x) / gridSize) * gridSize - 2.f * padding.x,
-			    p::Ceil((textHeight + 2.f * padding.y) / gridSize) * gridSize - 2.f * padding.y};
+			    p::Ceil((textHeight + 2.f * padding.y + nodeSpacingY) / gridSize) * gridSize
+			        - 2.f * padding.y - nodeSpacingY};
 
 			UI::InputTextMultiline("##value", value, size);
 
