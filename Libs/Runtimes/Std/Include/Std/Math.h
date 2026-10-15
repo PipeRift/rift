@@ -1,12 +1,7 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
-// Lives in Include/Std so no header name here can shadow a system header on case
-// insensitive filesystems (<math.h>, <io.h>, <stdio.h>), which breaks <cmath>/<cstdio>
-// on macOS and Windows.
 
-// Rift functions always return void: inputs are passed by value, outputs by pointer.
-// Values are single precision to match Pipe's trigonometric helpers and Rift's Float.
 extern "C"
 {
 	void Abs(float value, float* out);
