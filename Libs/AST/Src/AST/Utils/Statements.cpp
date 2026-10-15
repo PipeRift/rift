@@ -116,11 +116,21 @@ namespace rift::ast
 		    && P_EnsureMsg(!IsNone(inputComp->linkOutputNode),
 		        "Trying to disconnect a unexistant link")) [[likely]]
 		{
-			// We expect the other side to have outputs component
-			auto& outputsComp = ast.Get<CStmtOutputs>(inputComp->linkOutputNode);
-			if (Id* lastInputNode = outputsComp.linkInputNodes.Find(linkId)) [[likely]]
+			// The other side may have a single output (functions, calls) or multiple
+			// outputs (if statements), so clear whichever it has.
+			if (auto* outputComp = ast.TryGet<CStmtOutput>(inputComp->linkOutputNode))
 			{
-				*lastInputNode = ast::NoId;
+				if (outputComp->linkInputNode == linkId) [[likely]]
+				{
+					outputComp->linkInputNode = ast::NoId;
+				}
+			}
+			else if (auto* outputsComp = ast.TryGet<CStmtOutputs>(inputComp->linkOutputNode))
+			{
+				if (Id* lastInputNode = outputsComp->linkInputNodes.Find(linkId)) [[likely]]
+				{
+					*lastInputNode = ast::NoId;
+				}
 			}
 			inputComp->linkOutputNode = ast::NoId;
 			return true;

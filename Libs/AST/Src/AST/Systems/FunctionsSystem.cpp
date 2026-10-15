@@ -347,9 +347,7 @@ namespace rift::ast::FunctionsSystem
 		scope.GetPool<CTmpInvalidKeep>()->Clear();
 	}
 
-	// Resolves the function a statement belongs to by walking the statement chain back to
-	// the function declaration node. Returns NoId when the statement isn't connected to one.
-	static Id FindOwningFunction(p::TIdScopeRef<CStmtInput, CDeclFunction> scope, Id stmtId)
+	Id FindOwningFunction(p::TIdScopeRef<CStmtInput, CDeclFunction> scope, Id stmtId)
 	{
 		Id current = stmtId;
 		for (p::i32 depth = 0; !IsNone(current) && depth < 1024; ++depth)
@@ -380,6 +378,12 @@ namespace rift::ast::FunctionsSystem
 			const Id functionId = FindOwningFunction(scope, returnId);
 			if (IsNone(functionId))
 			{
+				// The return node is no longer connected to a function, so it has no return
+				// values to mirror. Mark its pins invalid so they're dropped from the node.
+				if (auto* returnInputs = scope.TryGet<CExprInputs>(returnId))
+				{
+					scope.AddN<CInvalid>(returnInputs->pinIds);
+				}
 				continue;
 			}
 

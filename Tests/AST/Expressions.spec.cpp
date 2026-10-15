@@ -1,5 +1,6 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
+#include <AST/Systems/FunctionsSystem.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/TypeUtils.h>
@@ -29,5 +30,30 @@ P_SPEC("AST.Expressions", []()
 		Expect(ast.Get<ast::CExprInputs>(id2).linkedOutputs.Size()).ToEqual(1u);
 		Expect(ast.Get<ast::CExprInputs>(id2).linkedOutputs.Size())
 		    .ToEqual(ast.Get<ast::CExprInputs>(id2).pinIds.Size());
+	});
+
+	It("Syncs the pins of a newly placed call", []()
+	{
+		ast::Tree ast;
+
+		ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
+		ast::AddFunctionInput(ast, functionId, "value", ast.GetNativeTypes().floatId);
+		ast::AddFunctionOutput(ast, functionId, "out", ast.GetNativeTypes().floatId);
+
+		ast::Id callId = ast::AddCall({ast, ast::NoId}, functionId);
+
+		// Adding a call has to tag it as modified, otherwise the systems never populate its
+		// pins (std functions are never edited, so nothing else marks their calls dirty)
+		Expect(ast.Has<p::CMdfd<ast::CExprCallId>>(callId)).ToBeTrue();
+
+		ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
+
+		// Call inputs mirror the function parameters, outputs its return values
+		const auto* callInputs  = ast.TryGet<const ast::CExprInputs>(callId);
+		const auto* callOutputs = ast.TryGet<const ast::CExprOutputs>(callId);
+		Expect(callInputs != nullptr).ToBeTrue();
+		Expect(callInputs->pinIds.Size()).ToEqual(1u);
+		Expect(callOutputs != nullptr).ToBeTrue();
+		Expect(callOutputs->pinIds.Size()).ToEqual(1u);
 	});
 });

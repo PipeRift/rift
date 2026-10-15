@@ -16,6 +16,7 @@
 #include <AST/Components/Statements.h>
 #include <AST/Components/Tags/CInvalid.h>
 #include <AST/Components/Views/CNodePosition.h>
+#include <AST/Systems/FunctionsSystem.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
@@ -30,6 +31,12 @@
 namespace rift::editor::Graph
 {
 	static CNodePosition* currentNodeTransform = nullptr;
+	static DroppedLink gDroppedLink;
+
+	DroppedLink& GetDroppedLink()
+	{
+		return gDroppedLink;
+	}
 
 	void Settings::SetGridSize(float size)
 	{
@@ -372,7 +379,7 @@ namespace rift::editor::Graph
 					UI::SameLine();
 
 					PushExecutionPinStyle();
-					Nodes::BeginOutput(i32(functionId.value), Nodes::PinShape_QuadFilled);
+					Nodes::BeginOutput(i32(functionId.value), Nodes::PinShape_TriangleFilled);
 					UI::Text("");
 					Nodes::EndOutput();
 					PopExecutionPinStyle();
@@ -403,7 +410,7 @@ namespace rift::editor::Graph
 			Nodes::BeginNodeTitleBar();
 			{
 				PushExecutionPinStyle();
-				Nodes::BeginInput(i32(id.value), Nodes::PinShape_QuadFilled);
+				Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
 				UI::TextUnformatted("");
 				Nodes::EndInput();
 				UI::SameLine();
@@ -445,7 +452,7 @@ namespace rift::editor::Graph
 					{
 						PushExecutionPinStyle();
 
-						Nodes::BeginInput(i32(id.value), Nodes::PinShape_QuadFilled);
+						Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
 						UI::TextUnformatted("");
 						Nodes::EndInput();
 						UI::SameLine();
@@ -455,7 +462,7 @@ namespace rift::editor::Graph
 						UI::EndGroup();
 
 						UI::SameLine();
-						Nodes::BeginOutput(i32(id.value), Nodes::PinShape_QuadFilled);
+						Nodes::BeginOutput(i32(id.value), Nodes::PinShape_TriangleFilled);
 						UI::TextUnformatted("");
 						Nodes::EndOutput();
 
@@ -507,7 +514,7 @@ namespace rift::editor::Graph
 
 		Nodes::PushStyleVar(Nodes::StyleVar_PinLineThickness, 2.5f);
 		Nodes::PushStyleVar(Nodes::StyleVar_NodeCornerRounding, 1.f);
-		Nodes::PushStyleVar(Nodes::StyleVar_PinQuadSideLength, 10.f);
+		Nodes::PushStyleVar(Nodes::StyleVar_PinTriangleSideLength, 10.f);
 		Nodes::PushStyleVar(Nodes::StyleVar_PinDiamondSideLength, 10.f);
 		Nodes::PushStyleVar(Nodes::StyleVar_NodePadding, v2(8.f, 1.f));
 
@@ -623,7 +630,7 @@ namespace rift::editor::Graph
 					UI::BeginGroup();
 					{
 						PushExecutionPinStyle();
-						Nodes::BeginInput(i32(id.value), Nodes::PinShape_QuadFilled);
+						Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
 						UI::TextUnformatted("");
 						Nodes::EndInput();
 						PopExecutionPinStyle();
@@ -654,11 +661,11 @@ namespace rift::editor::Graph
 						}
 						PushExecutionPinStyle();
 						Nodes::BeginOutput(
-						    i32(outputs.pinIds[0].value), Nodes::PinShape_QuadFilled);
+						    i32(outputs.pinIds[0].value), Nodes::PinShape_TriangleFilled);
 						UI::TextUnformatted("true");
 						Nodes::EndOutput();
 						Nodes::BeginOutput(
-						    i32(outputs.pinIds[1].value), Nodes::PinShape_QuadFilled);
+						    i32(outputs.pinIds[1].value), Nodes::PinShape_TriangleFilled);
 						UI::TextUnformatted("false");
 						Nodes::EndOutput();
 						PopExecutionPinStyle();
@@ -925,22 +932,70 @@ namespace rift::editor::Graph
 				ast::DisconnectExpr(ast, ast::GetExprInputFromPin(ast, ast::Id::MakeRaw(linkId)));
 			}
 
+			// A link dropped over empty canvas opens the context menu instead of silently
+			// doing nothing, so the user can pick the node to connect it to.
+			Nodes::Id droppedOutput;
+			Nodes::Id droppedInput;
+			if (Nodes::IsLinkDropped(&droppedOutput, &droppedInput))
+			{
+				DroppedLink& dropped = GetDroppedLink();
+				if (droppedOutput != 0)
+				{
+					dropped = {ast::Id::MakeRaw(droppedOutput), Nodes::PinType::Output};
+				}
+				else if (droppedInput != 0)
+				{
+					dropped = {ast::Id::MakeRaw(droppedInput), Nodes::PinType::Input};
+				}
+				wantsToOpenContextMenu = dropped.IsValid();
+			}
+
 			ast::Id hoveredNodeId = Nodes::GetHoveredNode();
 			if (!IsNone(hoveredNodeId) && Nodes::IsNodeSelected(hoveredNodeId)
 			    && UI::IsMouseClicked(ImGuiMouseButton_Left))
 			{
-				typeEditor.selectedPropertyId = Nodes::GetHoveredNode();
+				if (ast.Has<ast::CStmtReturn>(hoveredNodeId))
+				{
+					// A return node has no details of its own. Instead show the function it
+					// returns into, and only when it's connected to one.
+					const ast::Id functionId =
+					    ast::FunctionsSystem::FindOwningFunction(ast, hoveredNodeId);
+					if (!IsNone(functionId))
+					{
+						typeEditor.selectedPropertyId = functionId;
+					}
+				}
+				else
+				{
+					typeEditor.selectedPropertyId = hoveredNodeId;
+				}
 			}
 
 			static ast::Id contextHoveredNodeId = ast::NoId;
 			static ast::Id contextHoveredLinkId = ast::NoId;
 			if (wantsToOpenContextMenu)
 			{
-				contextHoveredNodeId = Nodes::GetHoveredNode();
-				contextHoveredLinkId = Nodes::GetHoveredLink();
+				if (GetDroppedLink().IsValid())
+				{
+					// Always show the (filtered) graph menu when a link was dropped, even
+					// if the cursor ended over a node
+					contextHoveredNodeId = ast::NoId;
+					contextHoveredLinkId = ast::NoId;
+				}
+				else
+				{
+					contextHoveredNodeId = Nodes::GetHoveredNode();
+					contextHoveredLinkId = Nodes::GetHoveredLink();
+				}
 				ImGui::OpenPopup("ContextMenu", ImGuiPopupFlags_AnyPopup);
 			}
 			DrawContextMenu(ast, typeId, contextHoveredNodeId, contextHoveredLinkId);
+
+			// Forget the pin that was dropped once the menu goes away
+			if (!ImGui::IsPopupOpen("ContextMenu"))
+			{
+				GetDroppedLink() = {};
+			}
 		}
 		UI::End();
 	}
