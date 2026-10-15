@@ -379,7 +379,7 @@ namespace rift::editor::Graph
 					UI::SameLine();
 
 					PushExecutionPinStyle();
-					Nodes::BeginOutput(i32(functionId.value), Nodes::PinShape_QuadFilled);
+					Nodes::BeginOutput(i32(functionId.value), Nodes::PinShape_TriangleFilled);
 					UI::Text("");
 					Nodes::EndOutput();
 					PopExecutionPinStyle();
@@ -410,7 +410,7 @@ namespace rift::editor::Graph
 			Nodes::BeginNodeTitleBar();
 			{
 				PushExecutionPinStyle();
-				Nodes::BeginInput(i32(id.value), Nodes::PinShape_QuadFilled);
+				Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
 				UI::TextUnformatted("");
 				Nodes::EndInput();
 				UI::SameLine();
@@ -452,7 +452,7 @@ namespace rift::editor::Graph
 					{
 						PushExecutionPinStyle();
 
-						Nodes::BeginInput(i32(id.value), Nodes::PinShape_QuadFilled);
+						Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
 						UI::TextUnformatted("");
 						Nodes::EndInput();
 						UI::SameLine();
@@ -462,7 +462,7 @@ namespace rift::editor::Graph
 						UI::EndGroup();
 
 						UI::SameLine();
-						Nodes::BeginOutput(i32(id.value), Nodes::PinShape_QuadFilled);
+						Nodes::BeginOutput(i32(id.value), Nodes::PinShape_TriangleFilled);
 						UI::TextUnformatted("");
 						Nodes::EndOutput();
 
@@ -514,7 +514,7 @@ namespace rift::editor::Graph
 
 		Nodes::PushStyleVar(Nodes::StyleVar_PinLineThickness, 2.5f);
 		Nodes::PushStyleVar(Nodes::StyleVar_NodeCornerRounding, 1.f);
-		Nodes::PushStyleVar(Nodes::StyleVar_PinQuadSideLength, 10.f);
+		Nodes::PushStyleVar(Nodes::StyleVar_PinTriangleSideLength, 10.f);
 		Nodes::PushStyleVar(Nodes::StyleVar_PinDiamondSideLength, 10.f);
 		Nodes::PushStyleVar(Nodes::StyleVar_NodePadding, v2(8.f, 1.f));
 
@@ -630,7 +630,7 @@ namespace rift::editor::Graph
 					UI::BeginGroup();
 					{
 						PushExecutionPinStyle();
-						Nodes::BeginInput(i32(id.value), Nodes::PinShape_QuadFilled);
+						Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
 						UI::TextUnformatted("");
 						Nodes::EndInput();
 						PopExecutionPinStyle();
@@ -661,11 +661,11 @@ namespace rift::editor::Graph
 						}
 						PushExecutionPinStyle();
 						Nodes::BeginOutput(
-						    i32(outputs.pinIds[0].value), Nodes::PinShape_QuadFilled);
+						    i32(outputs.pinIds[0].value), Nodes::PinShape_TriangleFilled);
 						UI::TextUnformatted("true");
 						Nodes::EndOutput();
 						Nodes::BeginOutput(
-						    i32(outputs.pinIds[1].value), Nodes::PinShape_QuadFilled);
+						    i32(outputs.pinIds[1].value), Nodes::PinShape_TriangleFilled);
 						UI::TextUnformatted("false");
 						Nodes::EndOutput();
 						PopExecutionPinStyle();
