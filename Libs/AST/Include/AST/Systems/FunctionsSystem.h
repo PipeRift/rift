@@ -1,6 +1,7 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
+#include "AST/Components/CModule.h"
 #include "AST/Components/CNamespace.h"
 #include "AST/Components/Declarations.h"
 #include "AST/Components/Expressions.h"
@@ -23,7 +24,7 @@ namespace rift::ast::FunctionsSystem
 
 	void Init(Tree& ast);
 	void ResolveCallFunctionIds(p::TIdScopeRef<p::Writes<CExprCallId>, CExprCall, CDeclFunction,
-	    CNamespace, CParent, CChild>
+	    CNamespace, CParent, CChild, CModule, CDeclNative>
 	        scope);
 	void PushInvalidPinsBack(p::TIdScopeRef<p::Writes<CExprInputs, CExprOutputs>, CInvalid> scope);
 

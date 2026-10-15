@@ -45,6 +45,7 @@ namespace rift::MIR
 		void GenerateModule(ast::Id moduleId);
 
 		void BindNativeTypes();
+		void DeclareNativeTypes();
 		void GenerateLiterals();
 
 		void DeclareStructs(p::TView<ast::Id> ids);

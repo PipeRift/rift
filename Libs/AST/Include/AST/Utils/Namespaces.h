@@ -3,6 +3,7 @@
 
 #include "AST/Components/CModule.h"
 #include "AST/Components/CNamespace.h"
+#include "AST/Components/Declarations.h"
 #include "AST/Id.h"
 
 #include <Pipe/Core/GenericEnums.h>
@@ -22,8 +23,8 @@ namespace rift::ast
 	 * @param rootIds entity ids. If nullptr, roots are resolved from ecs context.
 	 * @return Id found or NoId
 	 */
-	Id FindIdFromNamespace(p::TIdScopeRef<CNamespace, CChild, CParent> scope, const Namespace& ns,
-	    const p::TArray<Id>* rootIds = nullptr);
+	Id FindIdFromNamespace(p::TIdScopeRef<CNamespace, CChild, CParent, CModule, CDeclNative> scope,
+	    const Namespace& ns, const p::TArray<Id>* rootIds = nullptr);
 
 	p::Tag GetName(p::TIdScopeRef<CNamespace> scope, Id id);
 	p::Tag GetNameUnsafe(p::TIdScopeRef<CNamespace> scope, Id id);

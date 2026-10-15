@@ -59,6 +59,9 @@ namespace rift::ast
 	// Resolve a module's name
 	p::StringView GetModulePath(p::TIdScopeRef<CFileRef> scope, Id moduleId);
 
+	/** Root of the runtime modules (Std) installed next to the Rift executable */
+	p::String GetRuntimesRoot();
+
 	void SerializeModule(ast::Tree& ast, ast::Id id, p::String& data);
 	void DeserializeModule(ast::Tree& ast, ast::Id id, const p::String& data);
 	const p::TBroadcast<p::EntityReader&>& OnReadModulePools();
