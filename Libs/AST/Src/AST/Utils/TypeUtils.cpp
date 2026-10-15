@@ -36,7 +36,7 @@ namespace rift::ast
 
 	void InitTypeFromFileType(Tree& ast, Id id, p::Tag typeId)
 	{
-		if (auto* fileRef = ast.TryGet<CFileRef>(id))
+		if (const auto* fileRef = ast.TryGet<const CFileRef>(id))
 		{
 			p::StringView fileName{p::GetFilename(fileRef->path)};
 			fileName = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
