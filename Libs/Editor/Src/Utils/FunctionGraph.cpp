@@ -16,6 +16,7 @@
 #include <AST/Components/Statements.h>
 #include <AST/Components/Tags/CInvalid.h>
 #include <AST/Components/Views/CNodePosition.h>
+#include <AST/Systems/FunctionsSystem.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
@@ -929,7 +930,21 @@ namespace rift::editor::Graph
 			if (!IsNone(hoveredNodeId) && Nodes::IsNodeSelected(hoveredNodeId)
 			    && UI::IsMouseClicked(ImGuiMouseButton_Left))
 			{
-				typeEditor.selectedPropertyId = Nodes::GetHoveredNode();
+				if (ast.Has<ast::CStmtReturn>(hoveredNodeId))
+				{
+					// A return node has no details of its own. Instead show the function it
+					// returns into, and only when it's connected to one.
+					const ast::Id functionId =
+					    ast::FunctionsSystem::FindOwningFunction(ast, hoveredNodeId);
+					if (!IsNone(functionId))
+					{
+						typeEditor.selectedPropertyId = functionId;
+					}
+				}
+				else
+				{
+					typeEditor.selectedPropertyId = hoveredNodeId;
+				}
 			}
 
 			static ast::Id contextHoveredNodeId = ast::NoId;
