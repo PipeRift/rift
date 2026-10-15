@@ -134,13 +134,10 @@ namespace rift::editor
 						    ImGui::GetContentRegionAvail().x + UI::GetCurrentWindow()->DC.Indent.x;
 						UI::SameLine(widthAvailable - removeButtonSize);
 
-						const ImVec4 textColor = UI::GetStyleColorVec4(ImGuiCol_Text);
 						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.f, 0.f, 0.f, 0.f});
 						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{1.f, 1.f, 1.f, 0.12f});
 						ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{1.f, 1.f, 1.f, 0.22f});
-						UI::PushTextColor(
-						    p::LinearColor{textColor.x, textColor.y, textColor.z, textColor.w}
-						        .Shade(0.1f));
+						UI::PushTextColor(UI::GetTextColor().Shade(0.1f));
 						UI::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2{0.5f, 0.5f});
 						float backupPaddingY             = ImGui::GetStyle().FramePadding.y;
 						ImGui::GetStyle().FramePadding.y = 0.f;
