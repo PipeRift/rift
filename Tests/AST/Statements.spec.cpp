@@ -1,5 +1,6 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
+#include <AST/Systems/FunctionsSystem.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TypeUtils.h>
@@ -85,5 +86,45 @@ P_SPEC("AST.Statements", []()
 		Expect(ast::TryConnectStmt(ast, ast.Get<ast::CStmtOutputs>(ifId).pinIds[1], call2Id))
 		    .ToBeTrue();
 		Expect(ast.Get<ast::CStmtOutputs>(ifId).linkInputNodes[1]).ToEqual(call2Id);
+	});
+
+	It("Disconnects a single output", []()
+	{
+		ast::Tree ast;
+
+		ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
+		ast::Id callId     = ast::AddCall({ast, ast::NoId}, functionId);
+
+		Expect(ast::TryConnectStmt(ast, functionId, callId)).ToBeTrue();
+		Expect(ast.Get<ast::CStmtInput>(callId).linkOutputNode).ToEqual(functionId);
+
+		// Input node id equals the link id
+		Expect(ast::DisconnectStmtLink(ast, callId)).ToBeTrue();
+		Expect(ast.Get<ast::CStmtInput>(callId).linkOutputNode).ToEqual(ast::NoId);
+		Expect(ast.Get<ast::CStmtOutput>(functionId).linkInputNode).ToEqual(ast::NoId);
+	});
+
+	It("Invalidates return pins disconnected from their function", []()
+	{
+		ast::Tree ast;
+
+		ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
+		ast::AddFunctionOutput(ast, functionId, "out", ast.GetNativeTypes().floatId);
+
+		ast::Id returnId = ast::AddReturn({ast, ast::NoId});
+		Expect(ast::TryConnectStmt(ast, functionId, returnId)).ToBeTrue();
+
+		ast::FunctionsSystem::SyncReturnPinsFromFunction(ast);
+		const auto* inputs = ast.TryGet<const ast::CExprInputs>(returnId);
+		Expect(inputs != nullptr).ToBeTrue();
+		Expect(inputs->pinIds.Size()).ToEqual(1u);
+		const ast::Id pinId = inputs->pinIds[0];
+		Expect(ast.IsValid(pinId)).ToBeTrue();
+
+		// Disconnecting the return from its function invalidates the mirrored pins
+		Expect(ast::DisconnectStmtLink(ast, returnId)).ToBeTrue();
+		ast::FunctionsSystem::SyncReturnPinsFromFunction(ast);
+		Expect(ast.IsValid(pinId)).ToBeFalse();
+		Expect(ast.Has<ast::CInvalid>(pinId)).ToBeTrue();
 	});
 });

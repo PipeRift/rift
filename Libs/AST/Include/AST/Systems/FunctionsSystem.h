@@ -5,6 +5,7 @@
 #include "AST/Components/CNamespace.h"
 #include "AST/Components/Declarations.h"
 #include "AST/Components/Expressions.h"
+#include "AST/Components/Statements.h"
 #include "AST/Components/Tags/CInvalid.h"
 #include "AST/Tree.h"
 
@@ -34,6 +35,9 @@ namespace rift::ast::FunctionsSystem
 	// editing transaction tagged functions as changed.
 	void MarkAllCallsDirty(Tree& ast);
 	void SyncCallPinsFromFunction(Tree& ast);
+	// Resolves the function a statement belongs to by walking the statement chain back to
+	// the function declaration node. Returns NoId when the statement isn't connected to one.
+	Id FindOwningFunction(p::TIdScopeRef<CStmtInput, CDeclFunction> scope, Id stmtId);
 	// Populates return statement pins from the outputs of the function they're connected to
 	void SyncReturnPinsFromFunction(Tree& ast);
 	// Repairs invalid graph connectivity (e.g. mismatched pin/link counts) so
