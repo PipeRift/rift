@@ -84,7 +84,9 @@ namespace rift::editor
 					auto& editorSettings = rift::GetUserSettings<EditorSettings>();
 					UI::SetNextItemWidth(-FLT_MIN);
 
-					p::i32 idxToRemove = -1;
+					p::i32 idxToRemove           = -1;
+					const float spacing          = ImGui::GetStyle().ItemSpacing.x;
+					const float removeButtonSize = 18.f;
 					for (int n = 0; n < editorSettings.recentProjects.Size(); ++n)
 					{
 						p::StringView path   = editorSettings.recentProjects[n];
@@ -105,18 +107,53 @@ namespace rift::editor
 							}
 						}
 						UI::SameLine();
-						UI::TextDisabled(parent);
 
-						// Remove button, aligned to the right of the entry
+						// Truncate the path to the space left before the remove button
+						const float textWidth = p::Max(
+						    ImGui::GetContentRegionAvail().x - removeButtonSize - spacing, 1.f);
+						p::String display{parent};
+						if (ImGui::CalcTextSize(display.data(), display.data() + display.size()).x
+						    > textWidth)
+						{
+							const float ellipsisWidth = ImGui::CalcTextSize("...").x;
+							while (!display.empty()
+							       && ImGui::CalcTextSize(
+							              display.data(), display.data() + display.size())
+							                      .x
+							                  + ellipsisWidth
+							              > textWidth)
+							{
+								display.resize(display.size() - 1);
+							}
+							display += "...";
+						}
+						UI::TextDisabled(display);
+
+						// Remove button, aligned to the right, no background (highlight on hover)
 						const float widthAvailable =
 						    ImGui::GetContentRegionAvail().x + UI::GetCurrentWindow()->DC.Indent.x;
-						UI::SameLine(widthAvailable - 24.f);
-						UI::PushStyleCompact();
-						if (UI::Button(ICON_FA_TIMES "##remove", p::v2{18.f, 18.f}))
+						UI::SameLine(widthAvailable - removeButtonSize);
+
+						const ImVec4 textColor = UI::GetStyleColorVec4(ImGuiCol_Text);
+						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.f, 0.f, 0.f, 0.f});
+						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{1.f, 1.f, 1.f, 0.12f});
+						ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{1.f, 1.f, 1.f, 0.22f});
+						UI::PushTextColor(
+						    p::LinearColor{textColor.x, textColor.y, textColor.z, textColor.w}
+						        .Shade(0.1f));
+						UI::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2{0.5f, 0.5f});
+						float backupPaddingY             = ImGui::GetStyle().FramePadding.y;
+						ImGui::GetStyle().FramePadding.y = 0.f;
+						if (ImGui::ButtonEx(ICON_FA_TIMES,
+						        p::v2{removeButtonSize, removeButtonSize},
+						        ImGuiButtonFlags_AlignTextBaseLine))
 						{
 							idxToRemove = n;
 						}
-						UI::PopStyleCompact();
+						ImGui::GetStyle().FramePadding.y = backupPaddingY;
+						UI::PopStyleVar();
+						UI::PopTextColor();
+						ImGui::PopStyleColor(3);
 						UI::PopID();
 					}
 
