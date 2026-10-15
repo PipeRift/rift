@@ -306,35 +306,45 @@ namespace rift::editor::Graph
 		static constexpr Color color = GetTypeColor<String>();
 		PushNodeBackgroundColor(color);
 
-		// EndNode() adds one item spacing below the node content
-		const float nodeSpacingY = ImGui::GetStyle().ItemSpacing.y;
-
 		BeginNode(ast, id);
 		{
 			BeginExprOutput(ast, id, false);
-			PushInnerNodeStyle();
 
-			const float gridSize  = settings.GetGridSize();
+			const float gridSize = settings.GetGridSize();
+			const v2 padding     = Nodes::GetStyle().NodePadding;
+			const float fontSize = p::Max(gridSize - 2.f * padding.y, 1.f);
+
+			i32 lineCount = 1;
+			for (p::sizet i = 0; i < value.size(); ++i)
+			{
+				if (value[i] == '\n')
+				{
+					++lineCount;
+				}
+			}
+
+			// One line of text per grid tile: scale the font to the tile and size the field
+			// to the tiles minus the node padding
+			ImGui::PushFont(ImGui::GetFont(), fontSize);
+			const ImGuiStyle& style = ImGui::GetStyle();
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{style.FramePadding.x, 0.f});
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{style.ItemSpacing.x, 0.f});
+
 			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
-
-			// CalcTextSize() ignores a trailing newline, but ImGui renders it as an extra line
-			const float textHeight =
-			    textSize.y + (value.ends_with('\n') ? ImGui::GetTextLineHeight() : 0.f);
-
-			// The node is the field plus its padding (and a trailing item spacing) on both
-			// sides, so size the field for the resulting node to land on the grid
-			const v2 padding = Nodes::GetStyle().NodePadding;
 			const v2 size{
 			    p::Ceil((textSize.x + 2.f * padding.x) / gridSize) * gridSize - 2.f * padding.x,
-			    p::Ceil((textHeight + 2.f * padding.y + nodeSpacingY) / gridSize) * gridSize
-			        - 2.f * padding.y - nodeSpacingY};
+			    lineCount * gridSize - 2.f * padding.y};
 
 			UI::InputTextMultiline("##value", value, size);
 
-			PopInnerNodeStyle();
 			EndExprOutput(false);
 		}
 		EndNode(ast);
+
+		// Keep the zero spacing active until the node group is closed so the node ends up
+		// exactly as its content plus the node padding
+		ImGui::PopStyleVar(2);
+		ImGui::PopFont();
 
 		PopNodeBackgroundColor();
 	}
@@ -499,7 +509,7 @@ namespace rift::editor::Graph
 		Nodes::PushStyleVar(Nodes::StyleVar_NodeCornerRounding, 1.f);
 		Nodes::PushStyleVar(Nodes::StyleVar_PinQuadSideLength, 10.f);
 		Nodes::PushStyleVar(Nodes::StyleVar_PinDiamondSideLength, 10.f);
-		Nodes::PushStyleVar(Nodes::StyleVar_NodePadding, v2(10.f, 2.f));
+		Nodes::PushStyleVar(Nodes::StyleVar_NodePadding, v2(8.f, 1.f));
 
 		Nodes::PushStyleVar(Nodes::StyleVar_NodeBorderThickness, 0.f);
 
