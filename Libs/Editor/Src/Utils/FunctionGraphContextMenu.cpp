@@ -424,8 +424,19 @@ namespace rift::editor::Graph
 			filter.Clear();
 		}
 		filter.Draw("##Filter");
-		const v2 clickPos = UI::GetMousePosOnOpeningCurrentPopup();
-		const v2 gridPos  = settings.GetGridPosition(clickPos).Floor();
+		// Spawn at the release position when the menu came from a dropped link, so the
+		// new node lands where the link was let go
+		const DroppedLink& dropped = GetDroppedLink();
+		v2 clickPos;
+		if (dropped.IsValid())
+		{
+			clickPos = dropped.screenPosition;
+		}
+		else
+		{
+			clickPos = UI::GetMousePosOnOpeningCurrentPopup();
+		}
+		const v2 gridPos = settings.GetGridPosition(clickPos).Floor();
 
 		if (!canEditBody)
 		{

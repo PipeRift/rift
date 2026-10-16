@@ -61,6 +61,9 @@ namespace rift::editor::Graph
 	{
 		ast::Id pinId          = ast::NoId;
 		Nodes::PinType pinType = Nodes::PinType::None;
+		// Screen position where the link was released, so the menu keeps the link
+		// anchored there and spawns the chosen node at that spot
+		v2 screenPosition = v2::Zero();
 
 		bool IsValid() const
 		{

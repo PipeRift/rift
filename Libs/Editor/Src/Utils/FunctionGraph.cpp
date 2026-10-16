@@ -960,13 +960,14 @@ namespace rift::editor::Graph
 			if (Nodes::IsLinkDropped(&droppedOutput, &droppedInput))
 			{
 				DroppedLink& dropped = GetDroppedLink();
+				const v2 releasePos  = UI::GetMousePos();
 				if (droppedOutput != 0)
 				{
-					dropped = {ast::Id::MakeRaw(droppedOutput), Nodes::PinType::Output};
+					dropped = {ast::Id::MakeRaw(droppedOutput), Nodes::PinType::Output, releasePos};
 				}
 				else if (droppedInput != 0)
 				{
-					dropped = {ast::Id::MakeRaw(droppedInput), Nodes::PinType::Input};
+					dropped = {ast::Id::MakeRaw(droppedInput), Nodes::PinType::Input, releasePos};
 				}
 				wantsToOpenContextMenu = dropped.IsValid();
 			}
@@ -980,7 +981,9 @@ namespace rift::editor::Graph
 				    && Nodes::GetPinScreenData(
 				        i32(dropped.pinId.value), dropped.pinType, startPos, startColor))
 				{
-					const v2 endPos                 = UI::GetMousePos();
+					// Keep the link anchored where it was released instead of following
+					// the mouse, so it stays put while the menu is open
+					const v2 endPos                 = dropped.screenPosition;
 					const Nodes::CubicBezier bezier = Nodes::MakeCubicBezier(startPos, endPos,
 					    dropped.pinType, Nodes::GetStyle().linkLineSegmentsPerLength);
 					ImGui::GetWindowDrawList()->AddBezierCubic(bezier.p0, bezier.p1, bezier.p2,
