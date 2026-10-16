@@ -907,13 +907,23 @@ namespace rift::editor::Graph
 			Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
 			PopNodeStyle();
 
+			Nodes::EndNodeEditor();
+
 			if (UI::IsKeyReleased(ImGuiKey_Delete))
 			{
-				TArray<ast::Id> selectedLinks;
-				if (Nodes::GetSelectedLinks(selectedLinks))
+				// Remove both selected and hovered links, so a link can be deleted without
+				// having to box-select it first
+				TArray<ast::Id> linksToRemove;
+				Nodes::GetSelectedLinks(linksToRemove);
+				const ast::Id hoveredLinkId = Nodes::GetHoveredLink();
+				if (!IsNone(hoveredLinkId))
 				{
-					ScopedChange(ast, selectedLinks);
-					for (ast::Id linkId : selectedLinks)
+					linksToRemove.AddUnique(hoveredLinkId);
+				}
+				if (!linksToRemove.IsEmpty())
+				{
+					ScopedChange(ast, linksToRemove);
+					for (ast::Id linkId : linksToRemove)
 					{
 						ast::DisconnectStmtLink(ast, linkId);
 						ast::DisconnectExpr(ast, ast::GetExprInputFromPin(ast, linkId));
@@ -921,7 +931,6 @@ namespace rift::editor::Graph
 				}
 				ast::RemoveNodes(ast, Nodes::GetSelectedNodes());
 			}
-			Nodes::EndNodeEditor();
 
 
 			Nodes::Id outputPin;
