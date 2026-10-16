@@ -2441,6 +2441,21 @@ namespace rift::Nodes
 		return gNodes->hoveredNodeId == nodeId && gNodes->hoveredNodeId != ast::NoId;
 	}
 
+	bool GetPinScreenData(Id pinId, PinType type, v2& outPosition, Color& outColor)
+	{
+		const EditorContext& editor     = GetEditorContext();
+		const ObjectPool<PinData>& pool = editor.GetPinPool(type);
+		const i32 idx                   = ObjectPoolFind(pool, pinId);
+		if (idx < 0 || !pool.inUse.IsSet(idx))
+		{
+			return false;
+		}
+
+		outPosition = pool.pool[idx].position;
+		outColor    = pool.pool[idx].colorStyle.Background;
+		return true;
+	}
+
 	bool IsLinkHovered(ast::Id linkId)
 	{
 		assert(gNodes->currentScope != Scope::None);

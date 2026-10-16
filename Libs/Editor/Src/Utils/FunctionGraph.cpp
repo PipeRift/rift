@@ -950,6 +950,24 @@ namespace rift::editor::Graph
 				wantsToOpenContextMenu = dropped.IsValid();
 			}
 
+			// Keep the dropped link visible under the context menu until it closes
+			{
+				const DroppedLink& dropped = GetDroppedLink();
+				v2 startPos;
+				Color startColor;
+				if (dropped.IsValid()
+				    && Nodes::GetPinScreenData(
+				        i32(dropped.pinId.value), dropped.pinType, startPos, startColor))
+				{
+					const v2 endPos                 = UI::GetMousePos();
+					const Nodes::CubicBezier bezier = Nodes::MakeCubicBezier(startPos, endPos,
+					    dropped.pinType, Nodes::GetStyle().linkLineSegmentsPerLength);
+					ImGui::GetWindowDrawList()->AddBezierCubic(bezier.p0, bezier.p1, bezier.p2,
+					    bezier.p3, startColor.ToPackedABGR(), Nodes::GetStyle().LinkThickness,
+					    bezier.numSegments);
+				}
+			}
+
 			ast::Id hoveredNodeId = Nodes::GetHoveredNode();
 			if (!IsNone(hoveredNodeId) && Nodes::IsNodeSelected(hoveredNodeId)
 			    && UI::IsMouseClicked(ImGuiMouseButton_Left))
