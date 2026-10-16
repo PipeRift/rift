@@ -450,7 +450,6 @@ namespace rift::editor::Graph
 		if (ContextTreeNode("Constructors", filter))
 		{
 			String makeStr{};
-			auto& typeList = ast.GetStatic<ast::STypes>();
 			TIdScope<ast::CDeclType, ast::CNamespace> typesScope{ast};
 			for (Id typeId : FindAllIdsWith<ast::CDeclType>(typesScope))
 			{
