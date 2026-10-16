@@ -462,15 +462,16 @@ namespace rift::editor::Graph
 		{
 			String makeStr{};
 			TIdScope<ast::CDeclType, ast::CNamespace> typesScope{ast};
-			for (Id typeId : FindAllIdsWith<ast::CDeclType>(typesScope))
+			for (Id literalTypeId : FindAllIdsWith<ast::CDeclType>(typesScope))
 			{
-				if (auto* ns = typesScope.TryGet<const ast::CNamespace>(typeId))
+				if (auto* ns = typesScope.TryGet<const ast::CNamespace>(literalTypeId))
 				{
 					makeStr.clear();
 					p::FormatTo(makeStr, "Make {}", ns->name);
-					if (DroppedLinkFitsLiteral(ast, typeId) && ContextItem(makeStr, filter))
+					if (DroppedLinkFitsLiteral(ast, literalTypeId) && ContextItem(makeStr, filter))
 					{
-						ast::Id newId = ast::AddLiteral({ast, typeId}, typeId);
+						// Attach to the edited type, not the literal's own type
+						ast::Id newId = ast::AddLiteral({ast, typeId}, literalTypeId);
 						SetPositionAndConnect(ast, newId, gridPos);
 					}
 				}
@@ -499,11 +500,12 @@ namespace rift::editor::Graph
 			{
 				Tag name = scope.Get<const ast::CNamespace>(variableId).name;
 				label.clear();
-				ast::Id typeId = p::GetIdParent(scope, variableId);
-				if (!IsNone(typeId) && scope.Has<ast::CDeclType, ast::CNamespace>(typeId))
+				ast::Id variableTypeId = p::GetIdParent(scope, variableId);
+				if (!IsNone(variableTypeId)
+				    && scope.Has<ast::CDeclType, ast::CNamespace>(variableTypeId))
 				{
-					p::FormatTo(
-					    label, "{}   ({})", name, scope.Get<const ast::CNamespace>(typeId).name);
+					p::FormatTo(label, "{}   ({})", name,
+					    scope.Get<const ast::CNamespace>(variableTypeId).name);
 				}
 				else
 				{
@@ -511,6 +513,7 @@ namespace rift::editor::Graph
 				}
 				if (DroppedLinkFitsVariable(ast, variableId) && ContextItem(label, filter))
 				{
+					// Attach to the edited type, not the variable's owning type
 					ast::Id newId = ast::AddDeclarationReference({ast, typeId}, variableId);
 					SetPositionAndConnect(ast, newId, gridPos);
 				}
