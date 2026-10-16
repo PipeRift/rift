@@ -127,4 +127,33 @@ P_SPEC("AST.Statements", []()
 		Expect(ast.IsValid(pinId)).ToBeFalse();
 		Expect(ast.Has<ast::CInvalid>(pinId)).ToBeTrue();
 	});
+
+	It("Replaces a connected return without corrupting its pins", []()
+	{
+		ast::Tree ast;
+
+		ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
+		ast::AddFunctionOutput(ast, functionId, "out", ast.GetNativeTypes().floatId);
+
+		ast::Id return1 = ast::AddReturn({ast, ast::NoId});
+		ast::Id return2 = ast::AddReturn({ast, ast::NoId});
+
+		Expect(ast::TryConnectStmt(ast, functionId, return1)).ToBeTrue();
+		ast::FunctionsSystem::SyncReturnPinsFromFunction(ast);
+
+		// Connecting a second return replaces the first. Creating the new return's pins
+		// must not invalidate the reference to the function's component.
+		Expect(ast::TryConnectStmt(ast, functionId, return2)).ToBeTrue();
+		ast::FunctionsSystem::SyncReturnPinsFromFunction(ast);
+
+		Expect(ast.Get<ast::CStmtInput>(return2).linkOutputNode).ToEqual(functionId);
+		Expect(ast.Get<ast::CStmtInput>(return1).linkOutputNode).ToEqual(ast::NoId);
+		const auto* inputs = ast.TryGet<const ast::CExprInputs>(return2);
+		Expect(inputs != nullptr).ToBeTrue();
+		Expect(inputs->pinIds.Size()).ToEqual(1u);
+		if (inputs && !inputs->pinIds.IsEmpty())
+		{
+			Expect(ast.IsValid(inputs->pinIds[0])).ToBeTrue();
+		}
+	});
 });

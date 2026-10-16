@@ -387,8 +387,13 @@ namespace rift::ast::FunctionsSystem
 				continue;
 			}
 
-			const auto& functionOutputs = scope.GetOrAdd<CExprInputs>(functionId);
-			auto& returnInputs          = scope.GetOrAdd<CExprInputs>(returnId);
+			// Creating the return's component can reallocate the pool and invalidate a
+			// reference to the function's component, so make both exist before taking
+			// references to them.
+			scope.GetOrAdd<CExprInputs>(functionId);
+			scope.GetOrAdd<CExprInputs>(returnId);
+			const auto& functionOutputs = scope.Get<CExprInputs>(functionId);
+			auto& returnInputs          = scope.Get<CExprInputs>(returnId);
 
 			// Mirror the function's return values as the return node's input pins,
 			// reusing existing pins by name and preserving order.
