@@ -1006,8 +1006,9 @@ namespace rift::editor::Graph
 						typeName = typeNs->name.AsString();
 					}
 				}
-				// Statement (execution) pins carry no expression type
-				else if (!ast.Has<ast::CExprType>(pinId))
+				// Statement (execution) pins carry no expression type. Invalid pins
+				// (drawn gray) have none either, but should show "?" instead.
+				else if (!ast.Has<ast::CExprType>(pinId) && !ast.Has<ast::CInvalid>(pinId))
 				{
 					typeName = "Statement";
 				}
