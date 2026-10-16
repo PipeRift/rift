@@ -3,8 +3,8 @@
 
 #include <Pipe/Core/StringView.h>
 #include <PipeColor.h>
-#include <PipePlatform.h>
 #include <PipeMath.h>
+#include <PipePlatform.h>
 
 
 #define IM_VEC2_CLASS_EXTRA                                   \

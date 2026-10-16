@@ -995,16 +995,10 @@ namespace rift::editor::Graph
 			// Show the hovered pin's type in a tooltip
 			Nodes::Id hoveredPinId;
 			Nodes::PinType hoveredPinType;
-			if (!ImGui::IsPopupOpen("ContextMenu")
-			    && Nodes::GetHoveredPin(hoveredPinId, hoveredPinType))
+			if (Nodes::GetHoveredPin(hoveredPinId, hoveredPinType))
 			{
 				const ast::Id pinId = ast::Id::MakeRaw(hoveredPinId);
-				String pinName;
-				if (const auto* ns = ast.TryGet<const ast::CNamespace>(pinId))
-				{
-					pinName = ns->name.AsString();
-				}
-				String typeName;
+				StringView typeName;
 				if (const auto* typeId = ast.TryGet<const ast::CExprTypeId>(pinId))
 				{
 					if (const auto* typeNs = ast.TryGet<const ast::CNamespace>(typeId->id))
@@ -1012,22 +1006,16 @@ namespace rift::editor::Graph
 						typeName = typeNs->name.AsString();
 					}
 				}
-				else
+				// Statement (execution) pins carry no expression type
+				else if (!ast.Has<ast::CExprType>(pinId))
 				{
-					typeName = "Exec";
+					typeName = "Statement";
 				}
 				if (typeName.empty())
 				{
 					typeName = "?";
 				}
-				if (pinName.empty())
-				{
-					UI::SetTooltip("%s", typeName.c_str());
-				}
-				else
-				{
-					UI::SetTooltip("%s: %s", pinName.c_str(), typeName.c_str());
-				}
+				UI::SetTooltip(typeName);
 			}
 
 			ast::Id hoveredNodeId = Nodes::GetHoveredNode();
