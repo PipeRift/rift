@@ -38,27 +38,6 @@ namespace rift::editor::Graph
 		return gDroppedLink;
 	}
 
-	// Statement (execution) pins are either the statement node itself or one of its
-	// declared output pins. Expression pins carry a type instead.
-	static bool IsStmtPin(ast::Tree& ast, ast::Id pinId)
-	{
-		if (ast.Has<ast::CStmtInput>(pinId) || ast.Has<ast::CStmtOutput>(pinId)
-		    || ast.Has<ast::CStmtOutputs>(pinId))
-		{
-			return true;
-		}
-
-		const ast::Id parent = p::GetIdParent(ast, pinId);
-		if (!IsNone(parent))
-		{
-			if (const auto* outputs = ast.TryGet<const ast::CStmtOutputs>(parent))
-			{
-				return outputs->pinIds.Contains(pinId);
-			}
-		}
-		return false;
-	}
-
 	void Settings::SetGridSize(float size)
 	{
 		gridSize                      = size;
@@ -1027,9 +1006,7 @@ namespace rift::editor::Graph
 						typeName = typeNs->name.AsString();
 					}
 				}
-				// Statement (execution) pins show a label; typeless expression pins
-				// (drawn gray) fall through to "?"
-				else if (IsStmtPin(ast, pinId))
+				else
 				{
 					typeName = "Statement";
 				}
