@@ -338,9 +338,11 @@ namespace rift::editor::Graph
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{style.ItemSpacing.x, 0.f});
 
 			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
-			const v2 size{
-			    p::Ceil((textSize.x + 2.f * padding.x) / gridSize) * gridSize - 2.f * padding.x,
-			    lineCount * gridSize - 2.f * padding.y};
+			// Keep a minimum width: with an empty value the computed width is 0 and ImGui
+			// would stretch the field to the whole available width, making the node huge
+			const float textWidth =
+			    p::Ceil((textSize.x + 2.f * padding.x) / gridSize) * gridSize - 2.f * padding.x;
+			const v2 size{p::Max(textWidth, 128.f), lineCount * gridSize - 2.f * padding.y};
 
 			UI::InputTextMultiline("##value", value, size);
 
