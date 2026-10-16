@@ -799,9 +799,9 @@ namespace rift::Nodes
 
 		for (i32 i = 0; i < editor.links.pool.Size(); ++i)
 		{
-			if (editor.links.inUse.IsSet(i))
+			if (!editor.links.inUse.IsSet(i))
 			{
-				continue;
+				continue;    // Only existing links are duplicates
 			}
 
 			const LinkData& link = editor.links.pool[i];
