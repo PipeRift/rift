@@ -349,6 +349,70 @@ namespace rift::editor::Graph
 		}
 	}
 
+	struct ContextFunction
+	{
+		ast::Id id;
+		ast::Namespace ns;    // Full namespace, function name included as its last scope
+	};
+
+	// Draws functions grouped by their namespace. 'depth' is the namespace scope being
+	// grouped at, so the root scope becomes a root category and the type nests under it.
+	static void DrawFunctionNamespace(ast::Tree& ast, ast::Id typeId,
+	    const TArray<ContextFunction>& functions, i32 depth, const ImGuiTextFilter& filter,
+	    v2 gridPos)
+	{
+		TArray<Tag> drawnCategories;
+		for (const ContextFunction& function : functions)
+		{
+			const i32 functionDepth = function.ns.Size() - 1;
+			if (functionDepth <= depth)
+			{
+				continue;    // The function itself is drawn at this level
+			}
+
+			const Tag category = function.ns[depth];
+			if (drawnCategories.Contains(category))
+			{
+				continue;
+			}
+			drawnCategories.Add(category);
+
+			TArray<ContextFunction> categoryFunctions;
+			for (const ContextFunction& other : functions)
+			{
+				if (other.ns.Size() - 1 > depth && other.ns[depth] == category)
+				{
+					categoryFunctions.Add(other);
+				}
+			}
+
+			if (ContextTreeNode(category.AsString(), filter))
+			{
+				DrawFunctionNamespace(ast, typeId, categoryFunctions, depth + 1, filter, gridPos);
+				ContextTreePop(filter);
+			}
+		}
+
+		for (const ContextFunction& function : functions)
+		{
+			if (function.ns.Size() - 1 != depth)
+			{
+				continue;
+			}
+
+			const Tag functionName = function.ns[depth];
+			if (DroppedLinkFitsFunction(ast, function.id)
+			    && ContextItem(functionName.AsString(), filter))
+			{
+				ast::Id newId = ast::AddCall({ast, typeId}, function.id);
+				// Populate the new call's pins right away so the dropped link can find a
+				// matching pin to connect to
+				ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
+				SetPositionAndConnect(ast, newId, gridPos);
+			}
+		}
+	}
+
 	void DrawGraphContextMenu(ast::Tree& ast, ast::Id typeId)
 	{
 		static ImGuiTextFilter filter;
@@ -404,34 +468,17 @@ namespace rift::editor::Graph
 			ContextTreePop(filter);
 		}
 
-		if (ContextTreeNode("Functions", filter))
 		{
-			static String label;
-			TIdScope<ast::CDeclFunction, ast::CNamespace, ast::CChild, ast::CDeclType> scope{ast};
+			TIdScope<ast::CDeclFunction, ast::CNamespace, ast::CChild, ast::CModule> scope{ast};
+			TArray<ContextFunction> functions;
 			for (ast::Id functionId : FindAllIdsWith<ast::CDeclFunction, ast::CNamespace>(scope))
 			{
-				Tag name = scope.Get<const ast::CNamespace>(functionId).name;
-				label.clear();
-				ast::Id funcTypeId = p::GetIdParent(scope, functionId);
-				if (!IsNone(funcTypeId) && scope.Has<ast::CDeclType, ast::CNamespace>(funcTypeId))
-				{
-					p::FormatTo(label, "{}   ({})", name,
-					    scope.Get<const ast::CNamespace>(funcTypeId).name);
-				}
-				else
-				{
-					p::FormatTo(label, "{}", name);
-				}
-				if (DroppedLinkFitsFunction(ast, functionId) && ContextItem(label, filter))
-				{
-					ast::Id newId = ast::AddCall({ast, typeId}, functionId);
-					// Populate the new call's pins right away so the dropped link can find
-					// a matching pin to connect to
-					ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
-					SetPositionAndConnect(ast, newId, gridPos);
-				}
+				functions.Add({functionId, ast::GetNamespace(scope, functionId)});
 			}
-			ContextTreePop(filter);
+			if (!functions.IsEmpty())
+			{
+				DrawFunctionNamespace(ast, typeId, functions, 0, filter, gridPos);
+			}
 		}
 
 		if (ContextTreeNode("Variables", filter))
