@@ -980,6 +980,44 @@ namespace rift::editor::Graph
 				}
 			}
 
+			// Show the hovered pin's type in a tooltip
+			Nodes::Id hoveredPinId;
+			Nodes::PinType hoveredPinType;
+			if (!ImGui::IsPopupOpen("ContextMenu")
+			    && Nodes::GetHoveredPin(hoveredPinId, hoveredPinType))
+			{
+				const ast::Id pinId = ast::Id::MakeRaw(hoveredPinId);
+				String pinName;
+				if (const auto* ns = ast.TryGet<const ast::CNamespace>(pinId))
+				{
+					pinName = ns->name.AsString();
+				}
+				String typeName;
+				if (const auto* typeId = ast.TryGet<const ast::CExprTypeId>(pinId))
+				{
+					if (const auto* typeNs = ast.TryGet<const ast::CNamespace>(typeId->id))
+					{
+						typeName = typeNs->name.AsString();
+					}
+				}
+				else
+				{
+					typeName = "Exec";
+				}
+				if (typeName.empty())
+				{
+					typeName = "?";
+				}
+				if (pinName.empty())
+				{
+					UI::SetTooltip("%s", typeName.c_str());
+				}
+				else
+				{
+					UI::SetTooltip("%s: %s", pinName.c_str(), typeName.c_str());
+				}
+			}
+
 			ast::Id hoveredNodeId = Nodes::GetHoveredNode();
 			if (!IsNone(hoveredNodeId) && Nodes::IsNodeSelected(hoveredNodeId)
 			    && UI::IsMouseClicked(ImGuiMouseButton_Left))

@@ -2456,6 +2456,19 @@ namespace rift::Nodes
 		return true;
 	}
 
+	bool GetHoveredPin(Id& outPinId, PinType& outType)
+	{
+		if (!gNodes->HoveredPinIdx)
+		{
+			return false;
+		}
+
+		const EditorContext& editor = GetEditorContext();
+		outPinId                    = editor.GetPinData(gNodes->HoveredPinIdx).id;
+		outType                     = gNodes->HoveredPinIdx.type;
+		return true;
+	}
+
 	bool IsLinkHovered(ast::Id linkId)
 	{
 		assert(gNodes->currentScope != Scope::None);
