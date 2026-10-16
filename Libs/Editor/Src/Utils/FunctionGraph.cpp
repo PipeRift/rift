@@ -907,6 +907,16 @@ namespace rift::editor::Graph
 
 			if (UI::IsKeyReleased(ImGuiKey_Delete))
 			{
+				TArray<ast::Id> selectedLinks;
+				if (Nodes::GetSelectedLinks(selectedLinks))
+				{
+					ScopedChange(ast, selectedLinks);
+					for (ast::Id linkId : selectedLinks)
+					{
+						ast::DisconnectStmtLink(ast, linkId);
+						ast::DisconnectExpr(ast, ast::GetExprInputFromPin(ast, linkId));
+					}
+				}
 				ast::RemoveNodes(ast, Nodes::GetSelectedNodes());
 			}
 			Nodes::EndNodeEditor();
