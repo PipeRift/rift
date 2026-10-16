@@ -959,8 +959,9 @@ namespace rift::Nodes
 		const CubicBezier cubicBezier = MakeCubicBezier(
 		    startPos, endPos, startIdx.type, gNodes->style.linkLineSegmentsPerLength);
 
+		// Keep the in-progress link colored like the pin it's dragged from
 		gNodes->CanvasDrawList->AddBezierCubic(cubicBezier.p0, cubicBezier.p1, cubicBezier.p2,
-		    cubicBezier.p3, gNodes->style.colors[ColorVar_Link].ToPackedABGR(),
+		    cubicBezier.p3, startPinData.colorStyle.Background.ToPackedABGR(),
 		    gNodes->style.LinkThickness, cubicBezier.numSegments);
 
 		const bool linkCreationOnSnap =
