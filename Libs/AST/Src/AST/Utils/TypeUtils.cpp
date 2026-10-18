@@ -495,10 +495,7 @@ namespace rift::ast
 	void RemoveNodes(const RemoveScope& scope, TView<Id> ids)
 	{
 		ScopedChange(scope, ids);
-		// Deferred removals keep the component data alive until the pool is flushed, and
-		// the editor never flushes, so removed nodes would keep being drawn. Remove them
-		// from the pools right away.
-		p::RmId(scope.GetContext(), ids, p::RmIdFlags::Instant);
+		p::RmId(scope.GetContext(), ids);
 	}
 
 	bool CopyExpressionType(

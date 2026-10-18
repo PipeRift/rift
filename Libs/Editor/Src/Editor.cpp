@@ -137,6 +137,8 @@ namespace rift::editor
 		{
 			EditorSystem::Draw(ast);
 		}
+
+		p::FlushDeferredRemovals(ast);
 	}
 
 	void Editor::SetUIConfigFile(p::StringView path)
