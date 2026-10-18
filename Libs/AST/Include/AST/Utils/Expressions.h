@@ -35,4 +35,7 @@ namespace rift::ast
 
 	ExprInput GetExprInputFromPin(p::TIdScopeRef<CExprInputs, CChild> scope, Id pinId);
 	ExprOutput GetExprOutputFromPin(p::TIdScopeRef<CExprOutputs, CChild> scope, Id pinId);
+
+	// Type of an expression pin, or NoId when it has none
+	Id GetPinType(p::TIdScopeRef<CExprTypeId> scope, Id pinId);
 }    // namespace rift::ast
