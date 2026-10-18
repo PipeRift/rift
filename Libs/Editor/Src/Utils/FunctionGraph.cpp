@@ -31,12 +31,6 @@
 namespace rift::editor::Graph
 {
 	static CNodePosition* currentNodeTransform = nullptr;
-	static DroppedLink gDroppedLink;
-
-	DroppedLink& GetDroppedLink()
-	{
-		return gDroppedLink;
-	}
 
 	void Settings::SetGridSize(float size)
 	{
@@ -877,37 +871,38 @@ namespace rift::editor::Graph
 		{
 			Nodes::SetEditorContext(&typeEditor.nodesEditor);
 			Nodes::GetCurrentContext()->canCreateLinks = ast::HasFunctionBodies(ast, typeId);
-			Nodes::BeginNodeEditor();
-			PushNodeStyle();
-
-			if (!ImGui::IsAnyItemHovered() && Nodes::IsEditorHovered()
-			    && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
 			{
-				wantsToOpenContextMenu = true;
+				Nodes::BeginNodeEditor();
+				PushNodeStyle();
+
+				if (!ImGui::IsAnyItemHovered() && Nodes::IsEditorHovered()
+				    && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+				{
+					wantsToOpenContextMenu = true;
+				}
+
+				TArray<ast::Id> children;
+				p::GetIdChildren(ast, typeId, children);
+
+				// Nodes
+				DrawFunctionDecls(ast, FindIdsWith<ast::CDeclFunction>(ast, children));
+				DrawReturns(ast, children);
+				DrawCalls(ast, typeId, children);
+				DrawLiterals(ast, children);
+				DrawVariableRefs(ast, children);
+
+				DrawIfs(ast, children);
+				DrawUnaryOperators(ast, children);
+				DrawBinaryOperators(ast, children);
+
+				// Links
+				DrawStatementLinks(ast, children);
+				DrawExpressionLinks(ast, children);
+
+				Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
+				PopNodeStyle();
+				Nodes::EndNodeEditor();
 			}
-
-			TArray<ast::Id> children;
-			p::GetIdChildren(ast, typeId, children);
-
-			// Nodes
-			DrawFunctionDecls(ast, FindIdsWith<ast::CDeclFunction>(ast, children));
-			DrawReturns(ast, children);
-			DrawCalls(ast, typeId, children);
-			DrawLiterals(ast, children);
-			DrawVariableRefs(ast, children);
-
-			DrawIfs(ast, children);
-			DrawUnaryOperators(ast, children);
-			DrawBinaryOperators(ast, children);
-
-			// Links
-			DrawStatementLinks(ast, children);
-			DrawExpressionLinks(ast, children);
-
-			Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
-			PopNodeStyle();
-
-			Nodes::EndNodeEditor();
 
 			if (UI::IsKeyReleased(ImGuiKey_Delete))
 			{
@@ -959,33 +954,33 @@ namespace rift::editor::Graph
 			Nodes::Id droppedInput;
 			if (Nodes::IsLinkDropped(&droppedOutput, &droppedInput))
 			{
-				DroppedLink& dropped = GetDroppedLink();
-				const v2 releasePos  = UI::GetMousePos();
+				const v2 releasePos = UI::GetMousePos();
 				if (droppedOutput != 0)
 				{
-					dropped = {ast::Id::MakeRaw(droppedOutput), Nodes::PinType::Output, releasePos};
+					typeEditor.menuContext = {
+					    ast::Id::MakeRaw(droppedOutput), Nodes::PinType::Output, releasePos};
 				}
 				else if (droppedInput != 0)
 				{
-					dropped = {ast::Id::MakeRaw(droppedInput), Nodes::PinType::Input, releasePos};
+					typeEditor.menuContext = {
+					    ast::Id::MakeRaw(droppedInput), Nodes::PinType::Input, releasePos};
 				}
-				wantsToOpenContextMenu = dropped.IsValid();
+				wantsToOpenContextMenu = typeEditor.menuContext.HasSource();
 			}
 
 			// Keep the dropped link visible under the context menu until it closes
 			{
-				const DroppedLink& dropped = GetDroppedLink();
 				v2 startPos;
 				Color startColor;
-				if (dropped.IsValid()
-				    && Nodes::GetPinScreenData(
-				        i32(dropped.pinId.value), dropped.pinType, startPos, startColor))
+				if (typeEditor.menuContext.HasSource()
+				    && Nodes::GetPinScreenData(i32(typeEditor.menuContext.sourcePin.value),
+				        typeEditor.menuContext.type, startPos, startColor))
 				{
 					// Keep the link anchored where it was released instead of following
 					// the mouse, so it stays put while the menu is open
-					const v2 endPos                 = dropped.screenPosition;
+					const v2 endPos                 = typeEditor.menuContext.location;
 					const Nodes::CubicBezier bezier = Nodes::MakeCubicBezier(startPos, endPos,
-					    dropped.pinType, Nodes::GetStyle().linkLineSegmentsPerLength);
+					    typeEditor.menuContext.type, Nodes::GetStyle().linkLineSegmentsPerLength);
 					ImGui::GetWindowDrawList()->AddBezierCubic(bezier.p0, bezier.p1, bezier.p2,
 					    bezier.p3, startColor.ToPackedABGR(), Nodes::GetStyle().LinkThickness,
 					    bezier.numSegments);
@@ -1038,30 +1033,28 @@ namespace rift::editor::Graph
 				}
 			}
 
-			static ast::Id contextHoveredNodeId = ast::NoId;
-			static ast::Id contextHoveredLinkId = ast::NoId;
 			if (wantsToOpenContextMenu)
 			{
-				if (GetDroppedLink().IsValid())
+				if (typeEditor.menuContext.HasSource())
 				{
 					// Always show the (filtered) graph menu when a link was dropped, even
 					// if the cursor ended over a node
-					contextHoveredNodeId = ast::NoId;
-					contextHoveredLinkId = ast::NoId;
+					typeEditor.menuContext.hoveredNodeId = ast::NoId;
+					typeEditor.menuContext.hoveredLinkId = ast::NoId;
 				}
 				else
 				{
-					contextHoveredNodeId = Nodes::GetHoveredNode();
-					contextHoveredLinkId = Nodes::GetHoveredLink();
+					typeEditor.menuContext.hoveredNodeId = Nodes::GetHoveredNode();
+					typeEditor.menuContext.hoveredLinkId = Nodes::GetHoveredLink();
 				}
 				ImGui::OpenPopup("ContextMenu", ImGuiPopupFlags_AnyPopup);
 			}
-			DrawContextMenu(ast, typeId, contextHoveredNodeId, contextHoveredLinkId);
+			DrawContextMenu(ast, typeId, typeEditor.menuContext);
 
 			// Forget the pin that was dropped once the menu goes away
 			if (!ImGui::IsPopupOpen("ContextMenu"))
 			{
-				GetDroppedLink() = {};
+				typeEditor.menuContext = {};
 			}
 		}
 		UI::End();

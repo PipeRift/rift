@@ -55,23 +55,6 @@ namespace rift::editor::Graph
 
 	void DrawTypeGraph(ast::Tree& ast, ast::Id typeId, CTypeEditor& typeEditor);
 
-	// A pin the user was dragging when they released the link over empty canvas. The
-	// context menu is filtered with it and connects the new node to its first matching pin.
-	struct DroppedLink
-	{
-		ast::Id pinId          = ast::NoId;
-		Nodes::PinType pinType = Nodes::PinType::None;
-		// Screen position where the link was released, so the menu keeps the link
-		// anchored there and spawns the chosen node at that spot
-		v2 screenPosition = v2::Zero();
-
-		bool IsValid() const
-		{
-			return !IsNone(pinId) && pinType != Nodes::PinType::None;
-		}
-	};
-	DroppedLink& GetDroppedLink();
-
 	void SetNodePosition(ast::Id id, v2 position);
 	v2 GetNodePosition(ast::Id id);
 
