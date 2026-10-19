@@ -3,9 +3,11 @@
 #include "Tools/GraphPlayground.h"
 
 #include "DockSpaceLayout.h"
+#include "Statics/EditorSettings.h"
 #include "Statics/SEditor.h"
 #include "Utils/FunctionGraph.h"
 
+#include <AST/Utils/Settings.h>
 #include <Utils/Nodes.h>
 #include <Utils/NodesMiniMap.h>
 
@@ -29,7 +31,7 @@ namespace rift::editor
 			Nodes::SetEditorContext(&nodesEditor);
 			if (UI::IsWindowAppearing())
 			{
-				Nodes::ResetZoom();
+				Nodes::SetZoom(GetUserSettings<EditorSettings>().zoom.current);
 			}
 			Nodes::BeginNodeEditor();
 

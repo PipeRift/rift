@@ -48,6 +48,9 @@ namespace rift::editor::Graph
 	void Init();
 	void Shutdown();
 
+	// Copies the zoom configuration from the user settings into the node editor.
+	void ApplyZoomSettings();
+
 	void PushNodeStyle();
 	void PopNodeStyle();
 	void PushInnerNodeStyle();

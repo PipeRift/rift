@@ -11,6 +11,7 @@
 #include "imgui.h"
 #include "Pipe/Files/Files.h"
 #include "PipeStrings.h"
+#include "Statics/EditorSettings.h"
 #include "Statics/SEditor.h"
 #include "Utils/DetailsPanel.h"
 #include "Utils/ElementsPanel.h"
@@ -23,6 +24,7 @@
 #include <AST/Components/CModule.h>
 #include <AST/Components/Declarations.h>
 #include <AST/Components/Tags/CDirty.h>
+#include <AST/Utils/Settings.h>
 #include <Compiler/Compiler.h>
 #include <IconsFontAwesome5.h>
 #include <MIRBackendModule.h>
@@ -341,13 +343,34 @@ namespace rift::editor::EditorSystem
 				UI::Separator();
 				if (UI::BeginMenu("Settings"))
 				{
-					float gridSize = Graph::settings.GetGridSize();
 					UI::PushStyleCompact();
+					float gridSize = Graph::settings.GetGridSize();
 					if (UI::SliderFloat("Grid Size", &gridSize, 8.f, 32.f, "%.f"))
 					{
 						Graph::settings.SetGridSize(gridSize);
 					}
+
+					auto& zoom       = GetUserSettings<EditorSettings>().zoom;
+					bool zoomChanged = false;
+					zoomChanged |= UI::SliderFloat("Zoom Min", &zoom.min, 0.05f, 1.f, "%.2fx");
+					zoomChanged |= UI::SliderFloat("Zoom Max", &zoom.max, 1.f, 10.f, "%.2fx");
+					zoomChanged |=
+					    UI::SliderFloat("Zoom Default", &zoom.defaultZoom, 0.05f, 10.f, "%.2fx");
+					zoomChanged |= UI::SliderFloat("Zoom Step", &zoom.step, 1.01f, 2.f, "%.2fx");
 					UI::PopStyleCompact();
+
+					if (zoomChanged)
+					{
+						// Keep the range sane and push the new values to the node editor.
+						zoom.min         = p::Clamp(zoom.min, 0.05f, 0.95f);
+						zoom.max         = p::Clamp(zoom.max, 1.05f, 10.f);
+						zoom.defaultZoom = p::Clamp(zoom.defaultZoom, zoom.min, zoom.max);
+						zoom.step        = p::Max(zoom.step, 1.01f);
+						zoom.current     = p::Clamp(zoom.current, zoom.min, zoom.max);
+
+						Graph::ApplyZoomSettings();
+						SaveUserSettings<EditorSettings>();
+					}
 					UI::EndMenu();
 				}
 				UI::EndMenu();

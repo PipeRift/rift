@@ -1356,14 +1356,14 @@ namespace rift::Nodes
 			    (trackBottom - ImGui::GetMousePos().y) / (trackBottom - trackTop), 0.f, 1.f);
 
 			// Zoom is mapped logarithmically so that 100% sits in the middle of the range.
-			const float logMin  = logf(minZoom);
-			const float logMax  = logf(maxZoom);
+			const float logMin  = logf(gNodes->io.ZoomMin);
+			const float logMax  = logf(gNodes->io.ZoomMax);
 			const float newZoom = expf(logMin + t * (logMax - logMin));
 
 			// Keep the canvas centered while dragging.
 			const v2 centerScreen = canvas.GetCenter();
 			const v2 centerGrid   = ScreenToGridPosition(editor, centerScreen);
-			editor.zoom           = Clamp(newZoom, minZoom, maxZoom);
+			editor.zoom           = Clamp(newZoom, gNodes->io.ZoomMin, gNodes->io.ZoomMax);
 			editor.panning =
 			    centerScreen - gNodes->CanvasOriginScreenSpace - centerGrid * editor.zoom;
 		}
@@ -1419,8 +1419,8 @@ namespace rift::Nodes
 		    trackHalf);
 
 		// Fill: empty at the bottom (min zoom) and full at the top (max zoom).
-		const float logMin  = logf(minZoom);
-		const float logMax  = logf(maxZoom);
+		const float logMin  = logf(gNodes->io.ZoomMin);
+		const float logMax  = logf(gNodes->io.ZoomMax);
 		const float t       = Clamp((logf(editor.zoom) - logMin) / (logMax - logMin), 0.f, 1.f);
 		const float fillTop = trackBottom - t * (trackBottom - trackTop);
 
@@ -1876,12 +1876,12 @@ namespace rift::Nodes
 	void SetZoom(float zoom)
 	{
 		EditorContext& editor = GetEditorContext();
-		editor.zoom           = Clamp(zoom, minZoom, maxZoom);
+		editor.zoom           = Clamp(zoom, gNodes->io.ZoomMin, gNodes->io.ZoomMax);
 	}
 
 	void ResetZoom()
 	{
-		SetZoom(defaultZoom);
+		SetZoom(gNodes->io.ZoomDefault);
 	}
 
 	void SetImGuiContext(ImGuiContext* ctx)
@@ -2207,8 +2207,9 @@ namespace rift::Nodes
 		{
 			const v2 mousePos   = gNodes->mousePosition;
 			const v2 gridPos    = ScreenToGridPosition(editor, mousePos);
-			const float newZoom = Clamp(
-			    editor.zoom * powf(zoomStep, gNodes->altMouseScrollDelta), minZoom, maxZoom);
+			const float newZoom = Clamp(editor.zoom * powf(gNodes->io.ZoomStep,
+			                                     gNodes->altMouseScrollDelta),
+			    gNodes->io.ZoomMin, gNodes->io.ZoomMax);
 			if (newZoom != editor.zoom)
 			{
 				editor.zoom    = newZoom;

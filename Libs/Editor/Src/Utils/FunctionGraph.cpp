@@ -5,6 +5,7 @@
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "imgui.h"
+#include "Statics/EditorSettings.h"
 #include "Utils/EditorStyle.h"
 #include "Utils/FunctionGraphContextMenu.h"
 #include "Utils/TypeUtils.h"
@@ -18,6 +19,7 @@
 #include <AST/Components/Views/CNodePosition.h>
 #include <AST/Systems/FunctionsSystem.h>
 #include <AST/Utils/Expressions.h>
+#include <AST/Utils/Settings.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <Pipe/Core/Log.h>
@@ -31,6 +33,51 @@
 namespace rift::editor::Graph
 {
 	static CNodePosition* currentNodeTransform = nullptr;
+
+	namespace
+	{
+		// Persists the current zoom after it stops changing, so scrolling does not write the
+		// settings file on every notch.
+		void PersistZoom()
+		{
+			static float saveTimer = -1.f;
+
+			ZoomSettings& zoom = GetUserSettings<EditorSettings>().zoom;
+
+			// Only the focused graph updates the stored value, so multiple open graphs do not
+			// fight over the same user setting.
+			if (ImGui::IsWindowFocused())
+			{
+				const float current = Nodes::GetZoom();
+				if (current != zoom.current)
+				{
+					zoom.current = current;
+					saveTimer    = 0.5f;
+				}
+			}
+
+			// Once the value settles, write it, even if the focus moved elsewhere meanwhile.
+			if (saveTimer >= 0.f)
+			{
+				saveTimer -= ImGui::GetIO().DeltaTime;
+				if (saveTimer < 0.f)
+				{
+					SaveUserSettings<EditorSettings>();
+				}
+			}
+		}
+	}    // namespace
+
+	void ApplyZoomSettings()
+	{
+		const ZoomSettings& zoom = GetUserSettings<EditorSettings>().zoom;
+
+		Nodes::IO& io  = Nodes::GetIO();
+		io.ZoomMin     = p::Max(zoom.min, 0.01f);
+		io.ZoomMax     = p::Max(zoom.max, io.ZoomMin);
+		io.ZoomDefault = p::Clamp(zoom.defaultZoom, io.ZoomMin, io.ZoomMax);
+		io.ZoomStep    = p::Max(zoom.step, 1.f);
+	}
 
 	void Settings::SetGridSize(float size)
 	{
@@ -494,6 +541,7 @@ namespace rift::editor::Graph
 	void Init()
 	{
 		Nodes::CreateContext();
+		ApplyZoomSettings();
 		settings.SetGridSize(settings.GetGridSize());
 	}
 
@@ -872,7 +920,7 @@ namespace rift::editor::Graph
 			Nodes::SetEditorContext(&typeEditor.nodesEditor);
 			if (UI::IsWindowAppearing())
 			{
-				Nodes::ResetZoom();
+				Nodes::SetZoom(GetUserSettings<EditorSettings>().zoom.current);
 			}
 			Nodes::GetCurrentContext()->canCreateLinks = ast::HasFunctionBodies(ast, typeId);
 			{
@@ -907,6 +955,10 @@ namespace rift::editor::Graph
 				PopNodeStyle();
 				Nodes::EndNodeEditor();
 			}
+
+			// The focused graph stores the current zoom; the pending write is flushed even if
+			// focus moves elsewhere before it settles.
+			PersistZoom();
 
 			if (UI::IsKeyReleased(ImGuiKey_Delete))
 			{
