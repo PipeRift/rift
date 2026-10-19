@@ -974,6 +974,32 @@ namespace rift::editor::Graph
 				ast::RemoveNodes(ast, Nodes::GetSelectedNodes());
 			}
 
+			// Move selected nodes by one grid tile in the pressed direction
+			const ImGuiKey directionKeys[4] = {
+			    ImGuiKey_UpArrow, ImGuiKey_DownArrow, ImGuiKey_LeftArrow, ImGuiKey_RightArrow};
+			const v2 directionDeltas[4] = {
+			    {0.f,  -1.f},
+                {0.f,  1.f },
+                {-1.f, 0.f },
+                {1.f,  0.f }
+            };
+			for (int i = 0; i < 4; ++i)
+			{
+				if (UI::IsKeyPressed(directionKeys[i]))
+				{
+					const TArray<ast::Id>& selectedNodes = Nodes::GetSelectedNodes();
+					if (!selectedNodes.IsEmpty())
+					{
+						ScopedChange(ast, selectedNodes);
+						for (ast::Id nodeId : selectedNodes)
+						{
+							const v2 newPosition = GetNodePosition(nodeId) + directionDeltas[i];
+							SetNodePosition(nodeId, newPosition);
+							ast.GetOrAdd<CNodePosition>(nodeId).position = newPosition;
+						}
+					}
+				}
+			}
 
 			Nodes::Id outputPin;
 			Nodes::Id inputPin;
