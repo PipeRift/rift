@@ -68,15 +68,19 @@ namespace rift::editor::Graph
 		}
 	}    // namespace
 
-	void ApplyZoomSettings()
+	void ApplyGraphSettings()
 	{
-		const ZoomSettings& zoom = GetUserSettings<EditorSettings>().zoom;
+		const EditorSettings& editorSettings = GetUserSettings<EditorSettings>();
 
-		Nodes::IO& io  = Nodes::GetIO();
-		io.ZoomMin     = p::Max(zoom.min, 0.01f);
-		io.ZoomMax     = p::Max(zoom.max, io.ZoomMin);
-		io.ZoomDefault = p::Clamp(zoom.defaultZoom, io.ZoomMin, io.ZoomMax);
-		io.ZoomStep    = p::Max(zoom.step, 1.f);
+		// Grid size also publishes the spacing into the node style.
+		settings.SetGridSize(p::Clamp(editorSettings.gridSize, 4.f, 64.f));
+
+		const ZoomSettings& zoom = editorSettings.zoom;
+		Nodes::IO& io            = Nodes::GetIO();
+		io.ZoomMin               = p::Max(zoom.min, 0.01f);
+		io.ZoomMax               = p::Max(zoom.max, io.ZoomMin);
+		io.ZoomDefault           = p::Clamp(zoom.defaultZoom, io.ZoomMin, io.ZoomMax);
+		io.ZoomStep              = p::Max(zoom.step, 1.f);
 	}
 
 	void Settings::SetGridSize(float size)
@@ -541,8 +545,7 @@ namespace rift::editor::Graph
 	void Init()
 	{
 		Nodes::CreateContext();
-		ApplyZoomSettings();
-		settings.SetGridSize(settings.GetGridSize());
+		ApplyGraphSettings();
 	}
 
 	void Shutdown()

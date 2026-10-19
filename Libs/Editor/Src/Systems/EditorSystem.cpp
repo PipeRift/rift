@@ -343,32 +343,33 @@ namespace rift::editor::EditorSystem
 				UI::Separator();
 				if (UI::BeginMenu("Settings"))
 				{
-					UI::PushStyleCompact();
-					float gridSize = Graph::settings.GetGridSize();
-					if (UI::SliderFloat("Grid Size", &gridSize, 8.f, 32.f, "%.f"))
-					{
-						Graph::settings.SetGridSize(gridSize);
-					}
+					auto& editorSettings = GetUserSettings<EditorSettings>();
 
-					auto& zoom       = GetUserSettings<EditorSettings>().zoom;
-					bool zoomChanged = false;
-					zoomChanged |= UI::SliderFloat("Zoom Min", &zoom.min, 0.05f, 1.f, "%.2fx");
-					zoomChanged |= UI::SliderFloat("Zoom Max", &zoom.max, 1.f, 10.f, "%.2fx");
-					zoomChanged |=
-					    UI::SliderFloat("Zoom Default", &zoom.defaultZoom, 0.05f, 10.f, "%.2fx");
-					zoomChanged |= UI::SliderFloat("Zoom Step", &zoom.step, 1.01f, 2.f, "%.2fx");
+					UI::PushStyleCompact();
+					bool settingsChanged = false;
+					settingsChanged |=
+					    UI::SliderFloat("Grid Size", &editorSettings.gridSize, 8.f, 32.f, "%.f");
+
+					auto& zoom = editorSettings.zoom;
+					settingsChanged |= UI::SliderFloat("Zoom Min", &zoom.min, 0.05f, 1.f, "%.2fx");
+					settingsChanged |= UI::SliderFloat("Zoom Max", &zoom.max, 1.f, 10.f, "%.2fx");
+					settingsChanged |= UI::SliderFloat(
+					    "Zoom Default", &zoom.defaultZoom, 0.05f, 10.f, "%.2fx");
+					settingsChanged |=
+					    UI::SliderFloat("Zoom Step", &zoom.step, 1.01f, 2.f, "%.2fx");
 					UI::PopStyleCompact();
 
-					if (zoomChanged)
+					if (settingsChanged)
 					{
-						// Keep the range sane and push the new values to the node editor.
-						zoom.min         = p::Clamp(zoom.min, 0.05f, 0.95f);
-						zoom.max         = p::Clamp(zoom.max, 1.05f, 10.f);
-						zoom.defaultZoom = p::Clamp(zoom.defaultZoom, zoom.min, zoom.max);
-						zoom.step        = p::Max(zoom.step, 1.01f);
-						zoom.current     = p::Clamp(zoom.current, zoom.min, zoom.max);
+						// Keep the values sane and push them to the node editor.
+						editorSettings.gridSize = p::Clamp(editorSettings.gridSize, 4.f, 64.f);
+						zoom.min                = p::Clamp(zoom.min, 0.05f, 0.95f);
+						zoom.max                = p::Clamp(zoom.max, 1.05f, 10.f);
+						zoom.defaultZoom        = p::Clamp(zoom.defaultZoom, zoom.min, zoom.max);
+						zoom.step               = p::Max(zoom.step, 1.01f);
+						zoom.current            = p::Clamp(zoom.current, zoom.min, zoom.max);
 
-						Graph::ApplyZoomSettings();
+						Graph::ApplyGraphSettings();
 						SaveUserSettings<EditorSettings>();
 					}
 					UI::EndMenu();

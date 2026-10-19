@@ -37,6 +37,9 @@ namespace rift::editor
 		P_PROP(recentProjects)
 		p::TArray<p::String> recentProjects;
 
+		P_PROP(gridSize, p::PF_Edit)
+		float gridSize = 16.f;
+
 		P_PROP(zoom)
 		ZoomSettings zoom;
 	};
