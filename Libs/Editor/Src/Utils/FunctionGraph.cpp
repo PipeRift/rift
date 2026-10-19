@@ -51,12 +51,12 @@ namespace rift::editor::Graph
 
 	float Settings::GetSpaceHeight(u32 height) const
 	{
-		return settings.GetGridSize() - (settings.verticalMargin * 2.f);
+		return (settings.GetGridSize() - (settings.verticalMargin * 2.f)) * Nodes::GetZoom();
 	}
 
 	v2 Settings::GetContentPadding() const
 	{
-		return {0.f, settings.verticalMargin + settings.verticalPadding};
+		return {0.f, (settings.verticalMargin + settings.verticalPadding) * Nodes::GetZoom()};
 	}
 
 	v2 Settings::GetGridPosition(v2 screenPosition) const
@@ -194,7 +194,7 @@ namespace rift::editor::Graph
 		if (Nodes::IsNodeSelected(context->currentNodeId))
 		{
 			Nodes::GetEditorContext().nodes[context->currentNodeId].LayoutStyle.BorderThickness =
-			    2.f;
+			    2.f * Nodes::GetZoom();
 		}
 		Nodes::EndNode();
 		Nodes::PopStyleColor(1);
@@ -311,8 +311,9 @@ namespace rift::editor::Graph
 		{
 			BeginExprOutput(ast, id, false);
 
-			const float gridSize = settings.GetGridSize();
-			const v2 padding     = Nodes::GetStyle().NodePadding;
+			const float zoom = Nodes::GetZoom();
+			const float gridSize = settings.GetGridSize() * zoom;
+			const v2 padding     = Nodes::GetStyle().NodePadding * zoom;
 			const float fontSize = p::Max(gridSize - 2.f * padding.y, 1.f);
 
 			i32 lineCount = 1;
@@ -336,10 +337,9 @@ namespace rift::editor::Graph
 			// would stretch the field to the whole available width, making the node huge
 			const float textWidth =
 			    p::Ceil((textSize.x + 2.f * padding.x) / gridSize) * gridSize - 2.f * padding.x;
-			const v2 size{p::Max(textWidth, 128.f), lineCount * gridSize - 2.f * padding.y};
+			const v2 size{p::Max(textWidth, 128.f * zoom), lineCount * gridSize - 2.f * padding.y};
 
 			UI::InputTextMultiline("##value", value, size);
-
 			EndExprOutput(false);
 		}
 		EndNode(ast);
@@ -870,6 +870,10 @@ namespace rift::editor::Graph
 		if (UI::Begin(graphId.c_str(), &typeEditor.showGraph, ImGuiWindowFlags_NoCollapse))
 		{
 			Nodes::SetEditorContext(&typeEditor.nodesEditor);
+			if (UI::IsWindowAppearing())
+			{
+				Nodes::ResetZoom();
+			}
 			Nodes::GetCurrentContext()->canCreateLinks = ast::HasFunctionBodies(ast, typeId);
 			{
 				Nodes::BeginNodeEditor();

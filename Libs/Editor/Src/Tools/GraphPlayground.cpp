@@ -27,6 +27,10 @@ namespace rift::editor
 			Graph::PushNodeStyle();
 
 			Nodes::SetEditorContext(&nodesEditor);
+			if (UI::IsWindowAppearing())
+			{
+				Nodes::ResetZoom();
+			}
 			Nodes::BeginNodeEditor();
 
 			if (UI::IsWindowAppearing())

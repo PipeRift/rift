@@ -31,6 +31,13 @@ namespace rift::Nodes
 	using PinShape   = i32;    // -> enum PinShape_
 	using PinFlags   = i32;    // -> enum PinFlags_
 
+	// Canvas zoom configuration. A zoom of 1.0f corresponds to 100% (no scaling).
+	constexpr float minZoom     = 0.25f;
+	constexpr float maxZoom     = 4.f;
+	constexpr float defaultZoom = 1.f;
+	// Multiplier applied to the zoom for every mouse-wheel notch.
+	constexpr float zoomStep = 1.1f;
+
 	enum ColorVar : u8
 	{
 		ColorVar_NodeBackground = 0,
@@ -299,6 +306,12 @@ namespace rift::Nodes
 	v2 GetPanning();
 	void ResetPanning(const v2& pos);
 	void MoveToNode(ast::Id nodeId, v2 offset = v2::Zero());
+
+	// Canvas zoom. Values are clamped between minZoom and maxZoom. Zooming keeps the point
+	// under the mouse cursor fixed. Use ResetZoom() to go back to defaultZoom.
+	float GetZoom();
+	void SetZoom(float zoom);
+	void ResetZoom();
 
 	IO& GetIO();
 
