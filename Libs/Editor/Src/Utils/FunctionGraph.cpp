@@ -608,12 +608,25 @@ namespace rift::editor::Graph
 		}
 	}
 
+
+	// Output labels are right-aligned so they sit next to their pins
+	// TODO: Standarize into all output pins
+	static void TextUnformattedAlignedRight(const char* text, float groupWidth)
+	{
+		const float textWidth = UI::CalcTextSize(text).x;
+		UI::SetCursorPosX(UI::GetCursorPosX() + ImMax(0.0f, groupWidth - textWidth));
+		UI::TextUnformatted(text);
+	}
+
 	void DrawIfs(p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
 	                 ast::CFileRef, ast::CStmtIf, ast::CStmtOutputs, ast::CExprInputs, ast::CParent,
 	                 ast::CExprTypeId>
 	                 scope,
 	    const TArray<ast::Id>& children)
 	{
+		const float outputColumnWidth =
+		    p::Max(UI::CalcTextSize("true").x, UI::CalcTextSize("false").x);
+
 		PushNodeBackgroundColor(UI::GetNeutralColor(0));
 		PushNodeTitleColor(flowColor);
 		for (ast::Id id :
@@ -627,7 +640,7 @@ namespace rift::editor::Graph
 					{
 						PushExecutionPinStyle();
 						Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
-						UI::TextUnformatted("");
+						UI::TextUnformatted("if");
 						Nodes::EndInput();
 						PopExecutionPinStyle();
 
@@ -637,14 +650,9 @@ namespace rift::editor::Graph
 							continue;
 						}
 						BeginExprInput(scope, inputs.pinIds[0], false);
-						UI::TextUnformatted("");
+						UI::TextUnformatted("value");
 						EndExprInput(false);
 					}
-					UI::EndGroup();
-					UI::SameLine();
-
-					UI::BeginGroup();
-					UI::TextUnformatted("if");
 					UI::EndGroup();
 
 					UI::SameLine();
@@ -658,11 +666,11 @@ namespace rift::editor::Graph
 						PushExecutionPinStyle();
 						Nodes::BeginOutput(
 						    i32(outputs.pinIds[0].value), Nodes::PinShape_TriangleFilled);
-						UI::TextUnformatted("true");
+						TextUnformattedAlignedRight("true", outputColumnWidth);
 						Nodes::EndOutput();
 						Nodes::BeginOutput(
 						    i32(outputs.pinIds[1].value), Nodes::PinShape_TriangleFilled);
-						UI::TextUnformatted("false");
+						TextUnformattedAlignedRight("false", outputColumnWidth);
 						Nodes::EndOutput();
 						PopExecutionPinStyle();
 					}
@@ -676,21 +684,13 @@ namespace rift::editor::Graph
 		PopNodeBackgroundColor();
 	}
 
-	// Output labels are right-aligned so they sit next to their pins
-	static void DrawRightAlignedText(const char* text, float columnWidth)
-	{
-		UI::Dummy({p::Max(columnWidth - UI::CalcTextSize(text).x, 0.f), 0.f});
-		UI::SameLine(0.f, 0.f);
-		UI::TextUnformatted(text);
-	}
-
 	void DrawFors(p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
 	                  ast::CFileRef, ast::CStmtFor, ast::CStmtOutputs, ast::CExprInputs,
 	                  ast::CExprOutputs, ast::CExprTypeId>
 	                  scope,
 	    const TArray<ast::Id>& children)
 	{
-		// Keep both rows the same width so the right-aligned output column lines up
+		// Both rows share the same columns so the output labels end at the node edge
 		const float titleLabelWidth = UI::CalcTextSize("for").x;
 		const float inputColumnWidth =
 		    p::Max(UI::CalcTextSize("first").x, UI::CalcTextSize("count").x);
@@ -708,22 +708,18 @@ namespace rift::editor::Graph
 			{
 				Nodes::BeginNodeTitleBar();
 				{
+					const float rowStartX = UI::GetCursorPosX();
 					UI::BeginGroup();
 					{
 						PushExecutionPinStyle();
 						Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
-						UI::TextUnformatted("");
+						UI::TextUnformatted("for");
 						Nodes::EndInput();
 						PopExecutionPinStyle();
-
-						UI::SameLine(0.f, 0.f);
-						UI::TextUnformatted("for");
-						UI::SameLine(0.f, 0.f);
-						UI::Dummy({leftColumnWidth - titleLabelWidth, 0.f});
 					}
 					UI::EndGroup();
 
-					UI::SameLine();
+					UI::SameLine(rowStartX + leftColumnWidth);
 					UI::BeginGroup();
 					{
 						auto& outputs = scope.Get<const ast::CStmtOutputs>(id);
@@ -734,11 +730,11 @@ namespace rift::editor::Graph
 						PushExecutionPinStyle();
 						Nodes::BeginOutput(
 						    i32(outputs.pinIds[0].value), Nodes::PinShape_TriangleFilled);
-						DrawRightAlignedText("each", outputColumnWidth);
+						TextUnformattedAlignedRight("each", outputColumnWidth);
 						Nodes::EndOutput();
 						Nodes::BeginOutput(
 						    i32(outputs.pinIds[1].value), Nodes::PinShape_TriangleFilled);
-						DrawRightAlignedText("continue", outputColumnWidth);
+						TextUnformattedAlignedRight("continue", outputColumnWidth);
 						Nodes::EndOutput();
 						PopExecutionPinStyle();
 					}
@@ -747,6 +743,7 @@ namespace rift::editor::Graph
 				Nodes::EndNodeTitleBar();
 
 				// Inputs
+				const float rowStartX = UI::GetCursorPosX();
 				UI::BeginGroup();
 				{
 					auto& inputs = scope.Get<const ast::CExprInputs>(id);
@@ -760,15 +757,9 @@ namespace rift::editor::Graph
 						UI::TextUnformatted("count");
 						EndExprInput(false);
 					}
-
-					// Match the title row's left column width
-					if (inputColumnWidth < leftColumnWidth)
-					{
-						UI::Dummy({leftColumnWidth, 0.f});
-					}
 				}
 				UI::EndGroup();
-				UI::SameLine();
+				UI::SameLine(rowStartX + leftColumnWidth);
 
 				// Outputs
 				UI::BeginGroup();
@@ -777,7 +768,7 @@ namespace rift::editor::Graph
 					if (P_Ensure(outputs.pinIds.Size() == 1))
 					{
 						BeginExprOutput(scope, outputs.pinIds[0], false);
-						DrawRightAlignedText("index", outputColumnWidth);
+						TextUnformattedAlignedRight("index", outputColumnWidth);
 						EndExprOutput(false);
 					}
 				}
