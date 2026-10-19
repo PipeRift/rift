@@ -324,6 +324,12 @@ namespace rift::MIR
 		code->push_back('\n');
 	}
 
+	// For loop variables are named after their node id, which is unique within a tree
+	static p::String GetForIndexName(ast::Id id)
+	{
+		return p::Format("__rift_for_index_{}_{}", id.GetIndex(), id.GetVersion());
+	}
+
 	void CGenerator::AddStmtBlock(ast::Id firstStmtId)
 	{
 		ast::Id splitId = ast::NoId;
@@ -344,6 +350,10 @@ namespace rift::MIR
 			if (scope.Has<const ast::CStmtIf>(splitId))
 			{
 				AddStmtIf(splitId);
+			}
+			else if (scope.Has<const ast::CStmtFor>(splitId))
+			{
+				AddStmtFor(splitId);
 			}
 		}
 		// TODO: Resolve continuation block and generate it
@@ -373,6 +383,11 @@ namespace rift::MIR
 		else if (const auto* binary = scope.TryGet<const ast::CExprBinaryOperator>(output.nodeId))
 		{
 			AddBinaryOperator(output.nodeId, *binary);
+		}
+		else if (scope.Has<const ast::CStmtFor>(output.nodeId))
+		{
+			// The only expression output of a for node is its loop index
+			code->append(GetForIndexName(output.nodeId));
 		}
 		else
 		{
@@ -429,6 +444,35 @@ namespace rift::MIR
 			AddStmtBlock(connectedIds[1]);
 		}
 		code->append("}\n");
+	}
+
+	void CGenerator::AddStmtFor(ast::Id id)
+	{
+		const auto& outputs = scope.Get<const ast::CStmtOutputs>(id);
+		P_Check(outputs.linkInputNodes.Size() >= 1);
+		const auto& exprInputs = scope.Get<const ast::CExprInputs>(id);
+		P_Check(exprInputs.linkedOutputs.Size() == 2);
+
+		const ast::Id i32Id   = static_cast<ast::Tree&>(scope.GetContext()).GetNativeTypes().i32Id;
+		const auto* indexType = scope.TryGet<const CMIRType>(i32Id);
+		const p::StringView type  = indexType ? indexType->value.AsString() : p::StringView{"long"};
+		const p::String indexName = GetForIndexName(id);
+
+		// The index stays visible in the continuation block after the loop
+		p::FormatTo(*code, "{} {} = ", type, indexName);
+		AddExpr(exprInputs.linkedOutputs[0]);
+		code->append(";\n{\n");
+		p::FormatTo(*code, "{} {}_end = {} + ", type, indexName, indexName);
+		AddExpr(exprInputs.linkedOutputs[1]);
+		code->append(";\n");
+		p::FormatTo(*code, "for (; {} < {}_end; ++{}) {{\n", indexName, indexName, indexName);
+		AddStmtBlock(outputs.linkInputNodes[0]);
+		code->append("}\n}\n");
+
+		if (outputs.linkInputNodes.Size() > 1 && !p::IsNone(outputs.linkInputNodes[1]))
+		{
+			AddStmtBlock(outputs.linkInputNodes[1]);
+		}
 	}
 
 	void CGenerator::AddCall(ast::Id id, const ast::CExprCallId& call)

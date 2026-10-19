@@ -31,7 +31,8 @@ namespace rift::ast
 		rw.template SerializePools<CChild, CDeclVariable, CDeclFunction, CExprBinaryOperator,
 		    CExprCall, CExprDeclRefId, CExprOutputs, CExprInputs, CStmtReturn, CExprType,
 		    CExprUnaryOperator, CNodePosition, CNamespace, CParent, CLiteralBool, CLiteralFloating,
-		    CLiteralIntegral, CLiteralString, CStmtIf, CStmtOutput, CStmtOutputs, CStmtInput>();
+		    CLiteralIntegral, CLiteralString, CStmtFor, CStmtIf, CStmtOutput, CStmtOutputs,
+		    CStmtInput>();
 	};
 
 	void InitTypeFromFileType(Tree& ast, Id id, p::Tag typeId)
@@ -309,6 +310,53 @@ namespace rift::ast
 		p::AttachId(ast, id, valueId);
 		ast.Add<CExprInputs>(id).Add(valueId);
 
+		TArray<Id> outIds(2);
+		p::AddId(ast, outIds);
+		p::AttachId(ast, id, outIds);
+		ast.Add<CStmtOutputs>(id, Move(outIds));
+
+		if (type)
+		{
+			p::AttachId(ast, type.GetId(), id);
+		}
+		return id;
+	}
+
+	Id AddFor(TypeRef type)
+	{
+		Tree& ast   = type.GetContext();
+		const Id id = p::AddId(ast);
+		ast.Add<CStmtFor>(id);
+		ast.Add<CStmtInput>(id);
+
+		// Loop bounds and index are always integers
+		const Id indexTypeId = ast.GetNativeTypes().i32Id;
+		const Namespace indexType{GetNamespace(ast, indexTypeId)};
+		auto& inputs = ast.Add<CExprInputs>(id);
+
+		const Id firstId = p::AddId(ast);
+		ast.Add<CNamespace>(firstId, p::Tag{"first"});
+		ast.Add<CExprTypeId>(firstId, {.id = indexTypeId});
+		ast.Add<CExprType>(firstId).type = indexType;
+		p::AttachId(ast, id, firstId);
+		inputs.Add(firstId);
+
+		const Id countId = p::AddId(ast);
+		ast.Add<CNamespace>(countId, p::Tag{"count"});
+		ast.Add<CExprTypeId>(countId, {.id = indexTypeId});
+		ast.Add<CExprType>(countId).type = indexType;
+		p::AttachId(ast, id, countId);
+		inputs.Add(countId);
+
+		// Index output
+		const Id indexId = p::AddId(ast);
+		ast.Add<CNamespace>(indexId, p::Tag{"index"});
+		ast.Add<CExprTypeId>(indexId, {.id = indexTypeId});
+		ast.Add<CExprType>(indexId).type = indexType;
+		p::AttachId(ast, id, indexId);
+		ast.Add<CExprOutputs>(id).Add(indexId);
+
+		// "each" and "continue" outputs
 		TArray<Id> outIds(2);
 		p::AddId(ast, outIds);
 		p::AttachId(ast, id, outIds);

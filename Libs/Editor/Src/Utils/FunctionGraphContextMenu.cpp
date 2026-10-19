@@ -126,6 +126,7 @@ namespace rift::editor::Graph
 		Literal,
 		Return,
 		If,
+		For,
 		Function,
 		Variable,
 		Operator,
@@ -204,6 +205,10 @@ namespace rift::editor::Graph
 				// if nodes have both an execution input and outputs, and only a bool
 				// output fits the condition input
 				return !isExpr || (isOutput && sourceType == ast.GetNativeTypes().boolId);
+			case ContextItemKind::For:
+				// for nodes can be connected from execution pins, or from integer
+				// expressions to their "first"/"count" inputs and "index" output
+				return !isExpr || sourceType == ast.GetNativeTypes().i32Id;
 			case ContextItemKind::Variable:
 				if (isExpr && !isOutput)
 				{
@@ -424,6 +429,12 @@ namespace rift::editor::Graph
 			    && ContextItem("If"))
 			{
 				Id newId = ast::AddIf({ast, typeId});
+				SetPositionAndConnect(ast, newId, context);
+			}
+			if (MatchesContext(ast, context, ContextItemKind::For, "For", filter)
+			    && ContextItem("For"))
+			{
+				Id newId = ast::AddFor({ast, typeId});
 				SetPositionAndConnect(ast, newId, context);
 			}
 			ContextTreePop(filter);
