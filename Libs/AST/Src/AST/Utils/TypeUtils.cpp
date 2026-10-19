@@ -10,6 +10,7 @@
 #include "AST/Components/Statements.h"
 #include "AST/Components/Views/CNodePosition.h"
 #include "AST/Statics/STypes.h"
+#include "AST/Systems/LoadSystem.h"
 #include "AST/Utils/Namespaces.h"
 #include "AST/Utils/Paths.h"
 #include "AST/Utils/TransactionUtils.h"
@@ -35,7 +36,7 @@ namespace rift::ast
 
 	void InitTypeFromFileType(Tree& ast, Id id, p::Tag typeId)
 	{
-		if (auto* fileRef = ast.TryGet<CFileRef>(id))
+		if (const auto* fileRef = ast.TryGet<const CFileRef>(id))
 		{
 			p::StringView fileName{p::GetFilename(fileRef->path)};
 			fileName = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
@@ -115,6 +116,46 @@ namespace rift::ast
 		InitTypeFromFileType(ast, id, typeId);
 
 		r.SerializeEntity(id, gTypeComponents);
+	}
+
+	bool ReloadType(Tree& ast, Id id)
+	{
+		if (!P_Ensure(ast.Has<CDeclType>(id)))
+		{
+			return false;
+		}
+
+		const auto* file = ast.TryGet<const CFileRef>(id);
+		if (!file)
+		{
+			return false;
+		}
+
+		String data;
+		if (!p::LoadStringFile(file->path, data, 4))
+		{
+			p::Error("File could not be loaded from disk ({})", file->path);
+			return false;
+		}
+
+		// Deserializing reuses/creates the entities referenced by the file. Remove the
+		// existing ones first, otherwise the file contents would be appended to the
+		// current graph instead of replacing it.
+		TArray<Id> children;
+		p::GetIdChildren(ast, id, children);
+		if (!children.IsEmpty())
+		{
+			p::RmId(ast, children, p::RmIdFlags::Instant);
+		}
+
+		// Remove the type kind so it's fully re-derived from the file (the kind itself
+		// isn't stored as a serialized component).
+		ast.Remove<CDeclClass>(id);
+		ast.Remove<CDeclStruct>(id);
+		ast.Remove<CDeclStatic>(id);
+
+		LoadSystem::DeserializeTypes(ast, id, data);
+		return true;
 	}
 
 
@@ -222,23 +263,33 @@ namespace rift::ast
 		return id;
 	}
 
-	Id AddFunctionInput(Tree& ast, Id functionId, Tag name)
+	Id AddFunctionInput(Tree& ast, Id functionId, Tag name, Id typeId)
 	{
 		Id id = p::AddId(ast);
 		ast.Add<CNamespace>(id, name);
-		ast.Add<CExprTypeId>(id);
-		ast.Add<CExprType>(id);
+		auto& exprTypeId = ast.Add<CExprTypeId>(id);
+		exprTypeId.id    = typeId;
+		auto& exprType   = ast.Add<CExprType>(id);
+		if (!IsNone(typeId))
+		{
+			exprType.type = GetNamespace(ast, typeId);
+		}
 		p::AttachId(ast, functionId, id);
 		ast.GetOrAdd<CExprOutputs>(functionId).Add(id);
 		return id;
 	}
 
-	Id AddFunctionOutput(Tree& ast, Id functionId, Tag name)
+	Id AddFunctionOutput(Tree& ast, Id functionId, Tag name, Id typeId)
 	{
 		Id id = p::AddId(ast);
 		ast.Add<CNamespace>(id, name);
-		ast.Add<CExprTypeId>(id);
-		ast.Add<CExprType>(id);
+		auto& exprTypeId = ast.Add<CExprTypeId>(id);
+		exprTypeId.id    = typeId;
+		auto& exprType   = ast.Add<CExprType>(id);
+		if (!IsNone(typeId))
+		{
+			exprType.type = GetNamespace(ast, typeId);
+		}
 		p::AttachId(ast, functionId, id);
 		ast.GetOrAdd<CExprInputs>(functionId).Add(id);
 		return id;

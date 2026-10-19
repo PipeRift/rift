@@ -408,6 +408,11 @@ namespace rift::Nodes
 	bool IsLinkHovered(ast::Id linkId);
 	bool IsPinHovered(Id* attributeId);
 
+	// Returns the on-screen position and color of a pin, if it currently exists
+	bool GetPinScreenData(Id pinId, PinType type, v2& outPosition, Color& outColor);
+	// Returns the currently hovered pin, if any. Valid after EndNodeEditor()
+	bool GetHoveredPin(Id& outPinId, PinType& outType);
+
 	// Use The following two functions to query the number of selected nodes or links in the
 	// current editor. Use after calling EndNodeEditor().
 	int NumSelectedLinks();

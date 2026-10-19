@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Components/CTypeEditor.h"
+#include "Utils/Nodes.h"
 
 #include <AST/Tree.h>
 #include <PipeMath.h>

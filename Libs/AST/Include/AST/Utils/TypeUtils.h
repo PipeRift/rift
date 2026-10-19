@@ -56,6 +56,7 @@ namespace rift::ast
 
 	void SerializeType(Tree& ast, p::Id id, p::String& data);
 	void DeserializeType(Tree& ast, p::Id id, const p::String& data);
+	bool ReloadType(Tree& ast, p::Id id);
 
 	Id FindTypeByPath(Tree& ast, p::StringView path);
 	bool IsClassType(p::TIdScopeRef<CDeclClass> scope, Id typeId);
@@ -69,8 +70,8 @@ namespace rift::ast
 	Id AddFunction(TypeRef type, p::Tag name);
 
 	Id AddCall(TypeRef type, Id targetFunctionId);
-	Id AddFunctionInput(Tree& ast, Id functionId, p::Tag name = p::Tag::None());
-	Id AddFunctionOutput(Tree& ast, Id functionId, p::Tag name = p::Tag::None());
+	Id AddFunctionInput(Tree& ast, Id functionId, p::Tag name = p::Tag::None(), Id typeId = NoId);
+	Id AddFunctionOutput(Tree& ast, Id functionId, p::Tag name = p::Tag::None(), Id typeId = NoId);
 
 	Id AddIf(TypeRef type);
 	Id AddReturn(TypeRef type);

@@ -75,6 +75,15 @@ namespace rift::editor
 
 		auto& dbgContext = ast.GetOrSetStatic<p::DebugContext>();
 		dbgContext.ctx   = &ast;
+		// Let the entity list filter by each entity's namespace
+		dbgContext.ecs.getName = [astPtr = &ast](p::Id id) -> p::StringView
+		{
+			if (const auto* ns = astPtr->TryGet<const ast::CNamespace>(id))
+			{
+				return ns->name.AsString();
+			}
+			return {};
+		};
 		p::BeginDebug(dbgContext);
 		p::DrawIdRegistry("  " ICON_FA_BUG "  AST Debugger", &open);
 		p::EndDebug();
@@ -89,7 +98,8 @@ namespace rift::editor
 		}
 		else
 		{
-			bool wasInspected = secondaryInspectors.RemoveIf([id](const auto& inspector) {
+			bool wasInspected = secondaryInspectors.RemoveIf([id](const auto& inspector)
+			{
 				return inspector.id == id;
 			}) > 0;
 			if (mainInspector.id == id)
@@ -115,8 +125,7 @@ namespace rift::editor
 		ast::Id changedId  = inspector.id;
 
 		p::String name;
-		p::FormatTo(
-		    name, "{}: {}{}###{}", label, inspector.id, removed ? " (removed)" : "", id);
+		p::FormatTo(name, "{}: {}{}###{}", label, inspector.id, removed ? " (removed)" : "", id);
 
 		if (inspector.pendingFocus)
 		{
@@ -206,7 +215,8 @@ namespace rift::editor
 
 	void ASTDebugger::OpenAvailableSecondaryInspector(ast::Id id)
 	{
-		p::i32 availableIndex = secondaryInspectors.FindIndexIf([](const auto& inspector) {
+		p::i32 availableIndex = secondaryInspectors.FindIndexIf([](const auto& inspector)
+		{
 			return !inspector.open || inspector.id == ast::NoId;
 		});
 		if (availableIndex != p::NO_INDEX)

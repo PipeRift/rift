@@ -16,6 +16,7 @@
 #include <AST/Components/Statements.h>
 #include <AST/Components/Tags/CInvalid.h>
 #include <AST/Components/Views/CNodePosition.h>
+#include <AST/Systems/FunctionsSystem.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
@@ -309,16 +310,44 @@ namespace rift::editor::Graph
 		BeginNode(ast, id);
 		{
 			BeginExprOutput(ast, id, false);
-			PushInnerNodeStyle();
-			ImGuiStyle& style     = ImGui::GetStyle();
+
+			const float gridSize = settings.GetGridSize();
+			const v2 padding     = Nodes::GetStyle().NodePadding;
+			const float fontSize = p::Max(gridSize - 2.f * padding.y, 1.f);
+
+			i32 lineCount = 1;
+			for (p::sizet i = 0; i < value.size(); ++i)
+			{
+				if (value[i] == '\n')
+				{
+					++lineCount;
+				}
+			}
+
+			// One line of text per grid tile: scale the font to the tile and size the field
+			// to the tiles minus the node padding
+			ImGui::PushFont(ImGui::GetFont(), fontSize);
+			const ImGuiStyle& style = ImGui::GetStyle();
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{style.FramePadding.x, 0.f});
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{style.ItemSpacing.x, 0.f});
+
 			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
-			const v2 minSize{settings.GetGridSize() * 4.f, settings.GetGridSize()};
-			const v2 size{p::Max(minSize.x, textSize.x), p::Max(minSize.y, textSize.y)};
-			UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
-			PopInnerNodeStyle();
+			// Keep a minimum width: with an empty value the computed width is 0 and ImGui
+			// would stretch the field to the whole available width, making the node huge
+			const float textWidth =
+			    p::Ceil((textSize.x + 2.f * padding.x) / gridSize) * gridSize - 2.f * padding.x;
+			const v2 size{p::Max(textWidth, 128.f), lineCount * gridSize - 2.f * padding.y};
+
+			UI::InputTextMultiline("##value", value, size);
+
 			EndExprOutput(false);
 		}
 		EndNode(ast);
+
+		// Keep the zero spacing active until the node group is closed so the node ends up
+		// exactly as its content plus the node padding
+		ImGui::PopStyleVar(2);
+		ImGui::PopFont();
 
 		PopNodeBackgroundColor();
 	}
@@ -346,7 +375,7 @@ namespace rift::editor::Graph
 					UI::SameLine();
 
 					PushExecutionPinStyle();
-					Nodes::BeginOutput(i32(functionId.value), Nodes::PinShape_QuadFilled);
+					Nodes::BeginOutput(i32(functionId.value), Nodes::PinShape_TriangleFilled);
 					UI::Text("");
 					Nodes::EndOutput();
 					PopExecutionPinStyle();
@@ -364,9 +393,10 @@ namespace rift::editor::Graph
 		}
 	}
 
-	void DrawReturnNode(p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>,
-	                        ast::CChild, ast::CFileRef>
-	                        scope,
+	void DrawReturnNode(
+	    p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
+	        ast::CFileRef, ast::CExprInputs, ast::CInvalid, ast::CExprTypeId, ast::CNamespace>
+	        scope,
 	    ast::Id id)
 	{
 		PushNodeBackgroundColor(rift::UI::GetNeutralColor(0));
@@ -376,7 +406,7 @@ namespace rift::editor::Graph
 			Nodes::BeginNodeTitleBar();
 			{
 				PushExecutionPinStyle();
-				Nodes::BeginInput(i32(id.value), Nodes::PinShape_QuadFilled);
+				Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
 				UI::TextUnformatted("");
 				Nodes::EndInput();
 				UI::SameLine();
@@ -387,6 +417,12 @@ namespace rift::editor::Graph
 				UI::EndGroup();
 			}
 			Nodes::EndNodeTitleBar();
+
+			// Return arguments are populated from the connected function's outputs
+			if (const auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
+			{
+				DrawInputs(scope, *inputs);
+			}
 		}
 		EndNode(scope);
 		PopNodeTitleColor();
@@ -412,7 +448,7 @@ namespace rift::editor::Graph
 					{
 						PushExecutionPinStyle();
 
-						Nodes::BeginInput(i32(id.value), Nodes::PinShape_QuadFilled);
+						Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
 						UI::TextUnformatted("");
 						Nodes::EndInput();
 						UI::SameLine();
@@ -422,7 +458,7 @@ namespace rift::editor::Graph
 						UI::EndGroup();
 
 						UI::SameLine();
-						Nodes::BeginOutput(i32(id.value), Nodes::PinShape_QuadFilled);
+						Nodes::BeginOutput(i32(id.value), Nodes::PinShape_TriangleFilled);
 						UI::TextUnformatted("");
 						Nodes::EndOutput();
 
@@ -474,9 +510,9 @@ namespace rift::editor::Graph
 
 		Nodes::PushStyleVar(Nodes::StyleVar_PinLineThickness, 2.5f);
 		Nodes::PushStyleVar(Nodes::StyleVar_NodeCornerRounding, 1.f);
-		Nodes::PushStyleVar(Nodes::StyleVar_PinQuadSideLength, 10.f);
+		Nodes::PushStyleVar(Nodes::StyleVar_PinTriangleSideLength, 10.f);
 		Nodes::PushStyleVar(Nodes::StyleVar_PinDiamondSideLength, 10.f);
-		Nodes::PushStyleVar(Nodes::StyleVar_NodePadding, v2(10.f, 2.f));
+		Nodes::PushStyleVar(Nodes::StyleVar_NodePadding, v2(8.f, 1.f));
 
 		Nodes::PushStyleVar(Nodes::StyleVar_NodeBorderThickness, 0.f);
 
@@ -506,7 +542,8 @@ namespace rift::editor::Graph
 	}
 
 	void DrawReturns(p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>,
-	                     ast::CChild, ast::CFileRef, ast::CStmtReturn>
+	                     ast::CChild, ast::CFileRef, ast::CStmtReturn, ast::CExprInputs,
+	                     ast::CInvalid, ast::CExprTypeId, ast::CNamespace>
 	                     scope,
 	    const TArray<ast::Id>& children)
 	{
@@ -589,7 +626,7 @@ namespace rift::editor::Graph
 					UI::BeginGroup();
 					{
 						PushExecutionPinStyle();
-						Nodes::BeginInput(i32(id.value), Nodes::PinShape_QuadFilled);
+						Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
 						UI::TextUnformatted("");
 						Nodes::EndInput();
 						PopExecutionPinStyle();
@@ -620,11 +657,11 @@ namespace rift::editor::Graph
 						}
 						PushExecutionPinStyle();
 						Nodes::BeginOutput(
-						    i32(outputs.pinIds[0].value), Nodes::PinShape_QuadFilled);
+						    i32(outputs.pinIds[0].value), Nodes::PinShape_TriangleFilled);
 						UI::TextUnformatted("true");
 						Nodes::EndOutput();
 						Nodes::BeginOutput(
-						    i32(outputs.pinIds[1].value), Nodes::PinShape_QuadFilled);
+						    i32(outputs.pinIds[1].value), Nodes::PinShape_TriangleFilled);
 						UI::TextUnformatted("false");
 						Nodes::EndOutput();
 						PopExecutionPinStyle();
@@ -834,41 +871,61 @@ namespace rift::editor::Graph
 		{
 			Nodes::SetEditorContext(&typeEditor.nodesEditor);
 			Nodes::GetCurrentContext()->canCreateLinks = ast::HasFunctionBodies(ast, typeId);
-			Nodes::BeginNodeEditor();
-			PushNodeStyle();
-
-			if (!ImGui::IsAnyItemHovered() && Nodes::IsEditorHovered()
-			    && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
 			{
-				wantsToOpenContextMenu = true;
+				Nodes::BeginNodeEditor();
+				PushNodeStyle();
+
+				if (!ImGui::IsAnyItemHovered() && Nodes::IsEditorHovered()
+				    && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+				{
+					wantsToOpenContextMenu = true;
+				}
+
+				TArray<ast::Id> children;
+				p::GetIdChildren(ast, typeId, children);
+
+				// Nodes
+				DrawFunctionDecls(ast, FindIdsWith<ast::CDeclFunction>(ast, children));
+				DrawReturns(ast, children);
+				DrawCalls(ast, typeId, children);
+				DrawLiterals(ast, children);
+				DrawVariableRefs(ast, children);
+
+				DrawIfs(ast, children);
+				DrawUnaryOperators(ast, children);
+				DrawBinaryOperators(ast, children);
+
+				// Links
+				DrawStatementLinks(ast, children);
+				DrawExpressionLinks(ast, children);
+
+				Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
+				PopNodeStyle();
+				Nodes::EndNodeEditor();
 			}
-
-			TArray<ast::Id> children;
-			p::GetIdChildren(ast, typeId, children);
-
-			// Nodes
-			DrawFunctionDecls(ast, FindIdsWith<ast::CDeclFunction>(ast, children));
-			DrawReturns(ast, children);
-			DrawCalls(ast, typeId, children);
-			DrawLiterals(ast, children);
-			DrawVariableRefs(ast, children);
-
-			DrawIfs(ast, children);
-			DrawUnaryOperators(ast, children);
-			DrawBinaryOperators(ast, children);
-
-			// Links
-			DrawStatementLinks(ast, children);
-			DrawExpressionLinks(ast, children);
-
-			Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
-			PopNodeStyle();
 
 			if (UI::IsKeyReleased(ImGuiKey_Delete))
 			{
+				// Remove both selected and hovered links, so a link can be deleted without
+				// having to box-select it first
+				TArray<ast::Id> linksToRemove;
+				Nodes::GetSelectedLinks(linksToRemove);
+				const ast::Id hoveredLinkId = Nodes::GetHoveredLink();
+				if (!IsNone(hoveredLinkId))
+				{
+					linksToRemove.AddUnique(hoveredLinkId);
+				}
+				if (!linksToRemove.IsEmpty())
+				{
+					ScopedChange(ast, linksToRemove);
+					for (ast::Id linkId : linksToRemove)
+					{
+						ast::DisconnectStmtLink(ast, linkId);
+						ast::DisconnectExpr(ast, ast::GetExprInputFromPin(ast, linkId));
+					}
+				}
 				ast::RemoveNodes(ast, Nodes::GetSelectedNodes());
 			}
-			Nodes::EndNodeEditor();
 
 
 			Nodes::Id outputPin;
@@ -891,22 +948,114 @@ namespace rift::editor::Graph
 				ast::DisconnectExpr(ast, ast::GetExprInputFromPin(ast, ast::Id::MakeRaw(linkId)));
 			}
 
+			// A link dropped over empty canvas opens the context menu instead of silently
+			// doing nothing, so the user can pick the node to connect it to.
+			Nodes::Id droppedOutput;
+			Nodes::Id droppedInput;
+			if (Nodes::IsLinkDropped(&droppedOutput, &droppedInput))
+			{
+				const v2 releasePos = UI::GetMousePos();
+				if (droppedOutput != 0)
+				{
+					typeEditor.menuContext = {
+					    ast::Id::MakeRaw(droppedOutput), Nodes::PinType::Output, releasePos};
+				}
+				else if (droppedInput != 0)
+				{
+					typeEditor.menuContext = {
+					    ast::Id::MakeRaw(droppedInput), Nodes::PinType::Input, releasePos};
+				}
+				wantsToOpenContextMenu = typeEditor.menuContext.HasSource();
+			}
+
+			// Keep the dropped link visible under the context menu until it closes
+			{
+				v2 startPos;
+				Color startColor;
+				if (typeEditor.menuContext.HasSource()
+				    && Nodes::GetPinScreenData(i32(typeEditor.menuContext.sourcePin.value),
+				        typeEditor.menuContext.type, startPos, startColor))
+				{
+					// Keep the link anchored where it was released instead of following
+					// the mouse, so it stays put while the menu is open
+					const v2 endPos                 = typeEditor.menuContext.location;
+					const Nodes::CubicBezier bezier = Nodes::MakeCubicBezier(startPos, endPos,
+					    typeEditor.menuContext.type, Nodes::GetStyle().linkLineSegmentsPerLength);
+					ImGui::GetWindowDrawList()->AddBezierCubic(bezier.p0, bezier.p1, bezier.p2,
+					    bezier.p3, startColor.ToPackedABGR(), Nodes::GetStyle().LinkThickness,
+					    bezier.numSegments);
+				}
+			}
+
+			// Show the hovered pin's type in a tooltip
+			Nodes::Id hoveredPinId;
+			Nodes::PinType hoveredPinType;
+			if (Nodes::GetHoveredPin(hoveredPinId, hoveredPinType))
+			{
+				const ast::Id pinId = ast::Id::MakeRaw(hoveredPinId);
+				StringView typeName;
+				if (const auto* typeId = ast.TryGet<const ast::CExprTypeId>(pinId))
+				{
+					if (const auto* typeNs = ast.TryGet<const ast::CNamespace>(typeId->id))
+					{
+						typeName = typeNs->name.AsString();
+					}
+				}
+				else
+				{
+					typeName = "Statement";
+				}
+				if (typeName.empty())
+				{
+					typeName = "?";
+				}
+				UI::SetTooltip(typeName);
+			}
+
 			ast::Id hoveredNodeId = Nodes::GetHoveredNode();
 			if (!IsNone(hoveredNodeId) && Nodes::IsNodeSelected(hoveredNodeId)
 			    && UI::IsMouseClicked(ImGuiMouseButton_Left))
 			{
-				typeEditor.selectedPropertyId = Nodes::GetHoveredNode();
+				if (ast.Has<ast::CStmtReturn>(hoveredNodeId))
+				{
+					// A return node has no details of its own. Instead show the function it
+					// returns into, and only when it's connected to one.
+					const ast::Id functionId =
+					    ast::FunctionsSystem::FindOwningFunction(ast, hoveredNodeId);
+					if (!IsNone(functionId))
+					{
+						typeEditor.selectedPropertyId = functionId;
+					}
+				}
+				else
+				{
+					typeEditor.selectedPropertyId = hoveredNodeId;
+				}
 			}
 
-			static ast::Id contextHoveredNodeId = ast::NoId;
-			static ast::Id contextHoveredLinkId = ast::NoId;
 			if (wantsToOpenContextMenu)
 			{
-				contextHoveredNodeId = Nodes::GetHoveredNode();
-				contextHoveredLinkId = Nodes::GetHoveredLink();
+				if (typeEditor.menuContext.HasSource())
+				{
+					// Always show the (filtered) graph menu when a link was dropped, even
+					// if the cursor ended over a node
+					typeEditor.menuContext.hoveredNodeId = ast::NoId;
+					typeEditor.menuContext.hoveredLinkId = ast::NoId;
+				}
+				else
+				{
+					typeEditor.menuContext.hoveredNodeId = Nodes::GetHoveredNode();
+					typeEditor.menuContext.hoveredLinkId = Nodes::GetHoveredLink();
+				}
 				ImGui::OpenPopup("ContextMenu", ImGuiPopupFlags_AnyPopup);
 			}
-			DrawContextMenu(ast, typeId, contextHoveredNodeId, contextHoveredLinkId);
+			DrawContextMenu(ast, typeId, typeEditor.menuContext);
+
+			// Forget the pin that was dropped once the menu goes away
+			if (!ImGui::IsPopupOpen("ContextMenu"))
+			{
+				typeEditor.menuContext = {};
+			}
 		}
 		UI::End();
 	}

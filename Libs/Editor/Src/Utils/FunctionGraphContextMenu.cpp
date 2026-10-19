@@ -16,7 +16,9 @@
 #include <AST/Components/Expressions.h>
 #include <AST/Components/Views/CNodePosition.h>
 #include <AST/Statics/STypes.h>
+#include <AST/Systems/FunctionsSystem.h>
 #include <AST/Utils/Expressions.h>
+#include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <GLFW/glfw3.h>
@@ -26,31 +28,108 @@
 
 namespace rift::editor::Graph
 {
-	void SetPositionAndConnect(ast::Tree& ast, ast::Id id, v2 position)
+	// Expression pins carry a type, execution pins are the node itself and don't.
+	static bool IsExprPin(ast::Tree& ast, Id pinId)
 	{
-		if (!IsNone(id))
-		{
-			ast.Add<CNodePosition>(id, position);
-			// TODO: Improve nodes input to handle this correctly
-			TPair<Nodes::Id, Nodes::PinType> linkPin = Nodes::GetDraggedOriginPin();
+		return ast.Has<ast::CExprType>(pinId) || ast.Has<ast::CExprTypeId>(pinId);
+	}
 
-			const auto linkPinId = ast::Id::MakeRaw(linkPin.first);
-			switch (linkPin.second)
+	// The first pin on 'nodeId' that the dropped link can connect to. For expression links
+	// it's the first pin with a matching type, for execution links the node's exec pin.
+	static Id FindMatchingPin(ast::Tree& ast, Id nodeId, const MenuContext& context)
+	{
+		const Id sourceType = GetPinType(ast, context.sourcePin);
+		if (!IsNone(sourceType))
+		{
+			if (context.type == Nodes::PinType::Output)
 			{
-				case Nodes::PinType::Output:
-					ast::TryConnectStmt(ast, linkPinId, id);
-					ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, linkPinId),
-					    ast::GetExprInputFromPin(ast, id));
-					break;
-				case Nodes::PinType::Input:
-					ast::TryConnectStmt(ast, id, linkPinId);
-					ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, id),
-					    ast::GetExprInputFromPin(ast, linkPinId));
-					break;
-				default: break;
+				if (const auto* inputs = ast.TryGet<const ast::CExprInputs>(nodeId))
+				{
+					for (Id pinId : inputs->pinIds)
+					{
+						if (GetPinType(ast, pinId) == sourceType)
+						{
+							return pinId;
+						}
+					}
+				}
+			}
+			else
+			{
+				if (const auto* outputs = ast.TryGet<const ast::CExprOutputs>(nodeId))
+				{
+					for (Id pinId : outputs->pinIds)
+					{
+						if (GetPinType(ast, pinId) == sourceType)
+						{
+							return pinId;
+						}
+					}
+				}
+			}
+			return ast::NoId;
+		}
+
+		if (context.type == Nodes::PinType::Output && ast.Has<ast::CStmtInput>(nodeId))
+		{
+			return nodeId;
+		}
+		if (context.type == Nodes::PinType::Input)
+		{
+			if (ast.Has<ast::CStmtOutput>(nodeId))
+			{
+				return nodeId;
+			}
+			if (const auto* outputs = ast.TryGet<const ast::CStmtOutputs>(nodeId))
+			{
+				if (!outputs->pinIds.IsEmpty())
+				{
+					return outputs->pinIds[0];
+				}
+			}
+		}
+		return ast::NoId;
+	}
+
+	void SetPositionAndConnect(ast::Tree& ast, Id id, const MenuContext& context)
+	{
+		if (IsNone(id))
+		{
+			return;
+		}
+
+		ast.Add<CNodePosition>(id, settings.GetGridPosition(context.location).Floor());
+
+		if (context.HasSource())
+		{
+			const Id targetPin = FindMatchingPin(ast, id, context);
+			if (context.type == Nodes::PinType::Output)
+			{
+				ast::TryConnectStmt(ast, context.sourcePin, id);
+				if (!IsNone(targetPin))
+				{
+					ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, context.sourcePin),
+					    ast::GetExprInputFromPin(ast, targetPin));
+				}
+			}
+			else if (!IsNone(targetPin))
+			{
+				ast::TryConnectStmt(ast, targetPin, context.sourcePin);
+				ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, targetPin),
+				    ast::GetExprInputFromPin(ast, context.sourcePin));
 			}
 		}
 	}
+
+	enum class ContextItemKind
+	{
+		Literal,
+		Return,
+		If,
+		Function,
+		Variable,
+		Operator,
+	};
 
 	bool ContextTreeNode(StringView name, const ImGuiTextFilter& filter)
 	{
@@ -64,22 +143,116 @@ namespace rift::editor::Graph
 		}
 	}
 
-	bool ContextItem(StringView name, const ImGuiTextFilter& filter)
+	bool MatchesContext(ast::Tree& ast, const MenuContext& context, ContextItemKind kind,
+	    StringView name, const ImGuiTextFilter& filter, Id itemId = ast::NoId)
 	{
-		if (filter.PassFilter(name.data(), name.data() + name.size()))
+		if (!filter.PassFilter(name.data(), name.data() + name.size()))
 		{
-			// Return true also if Enter is pressed
-			if (UI::MenuItem(name.data())
-			    || (UI::IsItemFocused() && UI::IsKeyPressed(ImGuiKey_Enter)))
-			{
-				UI::CloseCurrentPopup();
-				return true;
-			}
+			return false;
+		}
+
+		if (!context.HasSource())
+		{
+			return true;
+		}
+
+		const bool isExpr   = IsExprPin(ast, context.sourcePin);
+		const bool isOutput = context.type == Nodes::PinType::Output;
+		const Id sourceType = GetPinType(ast, context.sourcePin);
+
+		switch (kind)
+		{
+			case ContextItemKind::Function:
+				if (!isExpr)    // call nodes always have an stmt input and output
+				{
+					return true;
+				}
+				else if (isOutput)
+				{
+					// Input matches type?
+					if (const auto* inputs = ast.TryGet<const ast::CExprInputs>(itemId))
+					{
+						for (Id pinId : inputs->pinIds)
+						{
+							if (GetPinType(ast, pinId) == sourceType)
+							{
+								return true;
+							}
+						}
+					}
+				}
+				else
+				{
+					// Output matches type?
+					if (const auto* outputs = ast.TryGet<const ast::CExprOutputs>(itemId))
+					{
+						for (Id pinId : outputs->pinIds)
+						{
+							if (GetPinType(ast, pinId) == sourceType)
+							{
+								return true;
+							}
+						}
+					}
+				}
+				break;
+			case ContextItemKind::Literal:
+				// Literals only produce a value, so they can only receive an input link
+				return isExpr && context.type != Nodes::PinType::Output && itemId == sourceType;
+			case ContextItemKind::Return: return false;
+			case ContextItemKind::If:
+				// if nodes have both an execution input and outputs, and only a bool
+				// output fits the condition input
+				return !isExpr || (isOutput && sourceType == ast.GetNativeTypes().boolId);
+			case ContextItemKind::Variable:
+				if (isExpr && !isOutput)
+				{
+					if (const auto* variable = ast.TryGet<const ast::CDeclVariable>(itemId))
+					{
+						return !IsNone(variable->typeId) && variable->typeId == sourceType;
+					}
+				}
+				break;
+			case ContextItemKind::Operator: return isExpr;
 		}
 		return false;
 	}
 
-	void DrawNodesContextMenu(ast::Tree& ast, ast::Id typeId, TView<ast::Id> nodeIds)
+	bool ContextItem(StringView name, Color background = Color::Transparent())
+	{
+		constexpr float rounding = 2.f;
+
+		// Keep the click area tight to the item so the 1px spacing between items shows
+		ImGuiSelectableFlags flags = ImGuiSelectableFlags_NoPadWithHalfSpacing;
+		const bool hasBackground   = background.a > 0.f;
+		if (hasBackground)
+		{
+			UI::PushHeaderColor(background);
+		}
+
+		UI::PushStyleVar(ImGuiStyleVar_ItemSpacing, v2{UI::GetStyle().ItemSpacing.x, 2.f});
+		UI::PushStyleVar(ImGuiStyleVar_SelectableRounding, rounding);
+		// Inset the text 4px from the background edges
+		const float itemWidth  = UI::GetContentRegionAvail().x;
+		const float textWidth  = UI::CalcTextSize(name).x;
+		const float textAlignX = textWidth < itemWidth ? 4.f / (itemWidth - textWidth) : 0.f;
+		UI::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, v2{textAlignX, 0.f});
+		// A selected Selectable always paints its background
+		const bool pressed = UI::Selectable(name, hasBackground, flags, v2{0.f, 16.f})
+		                  || (UI::IsItemFocused() && UI::IsKeyPressed(ImGuiKey_Enter));
+		UI::PopStyleVar(3);
+		if (hasBackground)
+		{
+			UI::PopHeaderColor();
+		}
+		if (pressed)
+		{
+			UI::CloseCurrentPopup();
+		}
+		return pressed;
+	}
+
+	void DrawNodesContextMenu(ast::Tree& ast, Id typeId, TView<Id> nodeIds)
 	{
 		P_Check(!nodeIds.IsEmpty());
 		const bool canEditBody = ast::HasFunctionBodies(ast, typeId);
@@ -89,12 +262,12 @@ namespace rift::editor::Graph
 			ast::RemoveNodes(ast, nodeIds);
 		}
 
-		ast::Id firstNodeId = nodeIds[0];
+		Id firstNodeId = nodeIds[0];
 		if (nodeIds.Size() == 1 && ast.Has<ast::CDeclFunction>(firstNodeId))
 		{
 			if (canEditBody && UI::MenuItem("Add return node"))
 			{
-				ast::Id newId = ast::AddReturn({ast, typeId});
+				Id newId = ast::AddReturn({ast, typeId});
 				if (!IsNone(newId))
 				{
 					v2 position = ast.Get<CNodePosition>(firstNodeId).position;
@@ -104,24 +277,24 @@ namespace rift::editor::Graph
 				}
 			}
 		}
-		TArray<ast::Id> calls = FindIdsWith<ast::CExprCall>(ast, nodeIds);
+		TArray<Id> calls = FindIdsWith<ast::CExprCall>(ast, nodeIds);
 		if (!calls.IsEmpty() && UI::MenuItem("Refresh"))
 		{
 			ast.AddN<CMdfd<ast::CExprCallId>>(calls);
 		}
 	}
 
-	void DrawLinksContextMenu(ast::Tree& ast, ast::Id typeId, TView<ast::Id> linkIds)
+	void DrawLinksContextMenu(ast::Tree& ast, Id typeId, TView<Id> linkIds)
 	{
 		P_Check(!linkIds.IsEmpty());
 		const bool canEditBody = ast::HasFunctionBodies(ast, typeId);
 
-		ast::Id firstLinkId = linkIds[0];
+		Id firstLinkId = linkIds[0];
 
 		if (canEditBody && UI::MenuItem("Delete"))
 		{
 			ScopedChange(ast, linkIds);
-			for (ast::Id linkId : linkIds)
+			for (Id linkId : linkIds)
 			{
 				ast::DisconnectExpr(ast, ast::GetExprInputFromPin(ast, firstLinkId));
 				ast::DisconnectStmtLink(ast, firstLinkId);
@@ -129,7 +302,93 @@ namespace rift::editor::Graph
 		}
 	}
 
-	void DrawGraphContextMenu(ast::Tree& ast, ast::Id typeId)
+	// Icon shown before a type/file category name
+	static StringView GetFileIcon(ast::Tree& ast, Id typeId)
+	{
+		if (ast.Has<ast::CModule>(typeId))
+		{
+			return ICON_FA_TH_LARGE;
+		}
+		else if (ast::IsStructType(ast, typeId))
+		{
+			return ICON_FA_FILE_ALT;
+		}
+		else if (ast::IsClassType(ast, typeId))
+		{
+			return ICON_FA_FILE_INVOICE;
+		}
+		else if (ast::IsStaticType(ast, typeId))
+		{
+			return ICON_FA_FILE_WORD;
+		}
+		return ICON_FA_FILE;
+	}
+
+	// Recursively draws a list of namespace ids: functions and variables become items,
+	// modules and types become categories.
+	static void DrawNamespaceChildren(ast::Tree& ast, Id typeId, const TArray<Id>& ids,
+	    const ImGuiTextFilter& filter, const MenuContext& context)
+	{
+		for (Id childId : ids)
+		{
+			const auto* ns = ast.TryGet<const ast::CNamespace>(childId);
+			if (!ns)
+			{
+				continue;
+			}
+			const StringView childName = ns->name.AsString();
+
+			if (ast.Has<ast::CDeclFunction>(childId))
+			{
+				if (MatchesContext(
+				        ast, context, ContextItemKind::Function, childName, filter, childId)
+				    && ContextItem(childName))
+				{
+					Id newId = ast::AddCall({ast, typeId}, childId);
+					// Populate the new call's pins right away so the dropped link can find
+					// a matching pin to connect to
+					ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
+					SetPositionAndConnect(ast, newId, context);
+				}
+			}
+			else if (ast.Has<ast::CDeclVariable>(childId))
+			{
+				const auto* variable = ast.TryGet<const ast::CDeclVariable>(childId);
+				if (MatchesContext(
+				        ast, context, ContextItemKind::Variable, childName, filter, childId)
+				    && ContextItem(
+				        childName, GetTypeColor(ast, variable ? variable->typeId : ast::NoId)))
+				{
+					// Attach to the edited type, not the variable's owning type
+					Id newId = ast::AddDeclarationReference({ast, typeId}, childId);
+					SetPositionAndConnect(ast, newId, context);
+				}
+			}
+			else
+			{
+				TArray<Id> categoryChildren;
+				p::GetIdChildren(ast, childId, categoryChildren);
+				categoryChildren.RemoveIf([&ast](Id id)
+				{
+					return ast.Has<ast::CModule>(id);    // Modules are drawn at root
+				}, p::Shrink::No);
+				if (categoryChildren.IsEmpty())
+				{
+					continue;
+				}
+
+				const StringView icon = GetFileIcon(ast, childId);
+				const String label    = p::Format("{} {}", icon, childName);
+				if (ContextTreeNode(label, filter))
+				{
+					DrawNamespaceChildren(ast, typeId, categoryChildren, filter, context);
+					ContextTreePop(filter);
+				}
+			}
+		}
+	}
+
+	void DrawGraphContextMenu(ast::Tree& ast, Id typeId, MenuContext context)
 	{
 		static ImGuiTextFilter filter;
 		const bool canEditBody = ast::HasFunctionBodies(ast, typeId);
@@ -140,8 +399,13 @@ namespace rift::editor::Graph
 			filter.Clear();
 		}
 		filter.Draw("##Filter");
-		const v2 clickPos = UI::GetMousePosOnOpeningCurrentPopup();
-		const v2 gridPos  = settings.GetGridPosition(clickPos).Floor();
+
+		// Spawn at the release position when the menu came from a dropped link, so the
+		// new node lands where the link was let go
+		if (!context.HasSource())
+		{
+			context.location = UI::GetMousePosOnOpeningCurrentPopup();
+		}
 
 		if (!canEditBody)
 		{
@@ -150,90 +414,17 @@ namespace rift::editor::Graph
 
 		if (ContextTreeNode("Flow", filter))
 		{
-			if (ContextItem("Return", filter))
+			if (MatchesContext(ast, context, ContextItemKind::Return, "Return", filter)
+			    && ContextItem("Return"))
 			{
-				ast::Id newId = ast::AddReturn({ast, typeId});
-				SetPositionAndConnect(ast, newId, gridPos);
+				Id newId = ast::AddReturn({ast, typeId});
+				SetPositionAndConnect(ast, newId, context);
 			}
-			if (ContextItem("If", filter))
+			if (MatchesContext(ast, context, ContextItemKind::If, "If", filter)
+			    && ContextItem("If"))
 			{
-				ast::Id newId = ast::AddIf({ast, typeId});
-				SetPositionAndConnect(ast, newId, gridPos);
-			}
-			ContextTreePop(filter);
-		}
-
-		if (ContextTreeNode("Constructors", filter))
-		{
-			String makeStr{};
-			auto& typeList = ast.GetStatic<ast::STypes>();
-			TIdScope<ast::CDeclType, ast::CNamespace> typesScope{ast};
-			for (Id typeId : FindAllIdsWith<ast::CDeclType>(typesScope))
-			{
-				if (auto* ns = typesScope.TryGet<const ast::CNamespace>(typeId))
-				{
-					makeStr.clear();
-					p::FormatTo(makeStr, "Make {}", ns->name);
-					if (ContextItem(makeStr, filter))
-					{
-						ast::Id newId = ast::AddLiteral({ast, typeId}, typeId);
-						SetPositionAndConnect(ast, newId, gridPos);
-					}
-				}
-			}
-			ContextTreePop(filter);
-		}
-
-		if (ContextTreeNode("Functions", filter))
-		{
-			static String label;
-			TIdScope<ast::CDeclFunction, ast::CNamespace, ast::CChild, ast::CDeclType> scope{ast};
-			for (ast::Id functionId : FindAllIdsWith<ast::CDeclFunction, ast::CNamespace>(scope))
-			{
-				Tag name = scope.Get<const ast::CNamespace>(functionId).name;
-				label.clear();
-				ast::Id funcTypeId = p::GetIdParent(scope, functionId);
-				if (!IsNone(funcTypeId) && scope.Has<ast::CDeclType, ast::CNamespace>(funcTypeId))
-				{
-					p::FormatTo(label, "{}   ({})", name,
-					    scope.Get<const ast::CNamespace>(funcTypeId).name);
-				}
-				else
-				{
-					p::FormatTo(label, "{}", name);
-				}
-				if (ContextItem(label, filter))
-				{
-					ast::Id newId = ast::AddCall({ast, typeId}, functionId);
-					SetPositionAndConnect(ast, newId, gridPos);
-				}
-			}
-			ContextTreePop(filter);
-		}
-
-		if (ContextTreeNode("Variables", filter))
-		{
-			static String label;
-			TIdScope<ast::CDeclVariable, ast::CNamespace, ast::CChild, ast::CDeclType> scope{ast};
-			for (ast::Id variableId : FindAllIdsWith<ast::CDeclVariable, ast::CNamespace>(scope))
-			{
-				Tag name = scope.Get<const ast::CNamespace>(variableId).name;
-				label.clear();
-				ast::Id typeId = p::GetIdParent(scope, variableId);
-				if (!IsNone(typeId) && scope.Has<ast::CDeclType, ast::CNamespace>(typeId))
-				{
-					p::FormatTo(
-					    label, "{}   ({})", name, scope.Get<const ast::CNamespace>(typeId).name);
-				}
-				else
-				{
-					p::FormatTo(label, "{}", name);
-				}
-				if (ContextItem(label, filter))
-				{
-					ast::Id newId = ast::AddDeclarationReference({ast, typeId}, variableId);
-					SetPositionAndConnect(ast, newId, gridPos);
-				}
+				Id newId = ast::AddIf({ast, typeId});
+				SetPositionAndConnect(ast, newId, context);
 			}
 			ContextTreePop(filter);
 		}
@@ -248,10 +439,11 @@ namespace rift::editor::Graph
 				StringView shortName = GetUnaryOperatorName(type);
 				StringView longName  = GetUnaryOperatorLongName(type);
 				p::FormatTo(name, "{}   ({})", shortName, longName);
-				if (ContextItem(name, filter))
+				if (MatchesContext(ast, context, ContextItemKind::Operator, name, filter)
+				    && ContextItem(name))
 				{
-					ast::Id newId = ast::AddUnaryOperator({ast, typeId}, type);
-					SetPositionAndConnect(ast, newId, gridPos);
+					Id newId = ast::AddUnaryOperator({ast, typeId}, type);
+					SetPositionAndConnect(ast, newId, context);
 				}
 			}
 			// Binary operators
@@ -261,49 +453,80 @@ namespace rift::editor::Graph
 				StringView shortName = GetBinaryOperatorName(type);
 				StringView longName  = GetBinaryOperatorLongName(type);
 				p::FormatTo(name, "{}   ({})", shortName, longName);
-				if (ContextItem(name, filter))
+				if (MatchesContext(ast, context, ContextItemKind::Operator, name, filter)
+				    && ContextItem(name))
 				{
-					ast::Id newId = ast::AddBinaryOperator({ast, typeId}, type);
-					SetPositionAndConnect(ast, newId, gridPos);
+					Id newId = ast::AddBinaryOperator({ast, typeId}, type);
+					SetPositionAndConnect(ast, newId, context);
 				}
 			}
 			ContextTreePop(filter);
 		}
+
+		if (ContextTreeNode("Constructors", filter))
+		{
+			String makeStr{};
+			TIdScope<ast::CDeclType, ast::CNamespace> typesScope{ast};
+			for (Id literalTypeId : FindAllIdsWith<ast::CDeclType>(typesScope))
+			{
+				if (auto* ns = typesScope.TryGet<const ast::CNamespace>(literalTypeId))
+				{
+					makeStr.clear();
+					p::FormatTo(makeStr, "Make {}", ns->name);
+					const bool picked = MatchesContext(ast, context, ContextItemKind::Literal,
+					                        makeStr, filter, literalTypeId)
+					                 && ContextItem(makeStr, GetTypeColor(ast, literalTypeId));
+					if (picked)
+					{
+						// Attach to the edited type, not the literal's own type
+						Id newId = ast::AddLiteral({ast, typeId}, literalTypeId);
+						SetPositionAndConnect(ast, newId, context);
+					}
+				}
+			}
+			ContextTreePop(filter);
+		}
+
+		// Functions and variables, grouped under their module and type namespaces
+		DrawNamespaceChildren(
+		    ast, typeId, p::FindAllIdsWith<ast::CModule, ast::CNamespace>(ast), filter, context);
 	}
 
 	void DrawLinkContextMenu() {}
 
-	void DrawContextMenu(
-	    ast::Tree& ast, ast::Id typeId, ast::Id hoveredNodeId, ast::Id hoveredLinkId)
+	void DrawContextMenu(ast::Tree& ast, Id typeId, MenuContext context)
 	{
+		// Cap the height so a long menu scrolls within the panel instead of overflowing it
+		const float maxHeight = p::Min(UI::GetIO().DisplaySize.y * 0.3f, UI::GetWindowSize().y);
+		UI::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(FLT_MAX, maxHeight));
 		if (UI::BeginPopup("ContextMenu"))
 		{
-			if (!IsNone(hoveredNodeId))
+			if (!IsNone(context.hoveredNodeId))
 			{
-				if (Nodes::IsNodeSelected(hoveredNodeId))
+				if (Nodes::IsNodeSelected(context.hoveredNodeId))
 				{
 					DrawNodesContextMenu(ast, typeId, Nodes::GetSelectedNodes());
 				}
 				else
 				{
-					DrawNodesContextMenu(ast, typeId, hoveredNodeId);
+					DrawNodesContextMenu(ast, typeId, context.hoveredNodeId);
 				}
 			}
-			else if (!IsNone(hoveredLinkId))
+			else if (!IsNone(context.hoveredLinkId))
 			{
-				TArray<ast::Id> selectedLinkIds;
+				TArray<Id> selectedLinkIds;
 				if (Nodes::GetSelectedLinks(selectedLinkIds))
 				{
 					DrawLinksContextMenu(ast, typeId, selectedLinkIds);
 				}
 				else
 				{
-					DrawLinksContextMenu(ast, typeId, hoveredLinkId);
+					DrawLinksContextMenu(ast, typeId, context.hoveredLinkId);
 				}
 			}
 			else
 			{
-				DrawGraphContextMenu(ast, typeId);
+				DrawGraphContextMenu(ast, typeId, context);
 			}
 			UI::EndPopup();
 		}

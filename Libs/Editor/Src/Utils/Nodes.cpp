@@ -799,9 +799,9 @@ namespace rift::Nodes
 
 		for (i32 i = 0; i < editor.links.pool.Size(); ++i)
 		{
-			if (editor.links.inUse.IsSet(i))
+			if (!editor.links.inUse.IsSet(i))
 			{
-				continue;
+				continue;    // Only existing links are duplicates
 			}
 
 			const LinkData& link = editor.links.pool[i];
@@ -959,8 +959,9 @@ namespace rift::Nodes
 		const CubicBezier cubicBezier = MakeCubicBezier(
 		    startPos, endPos, startIdx.type, gNodes->style.linkLineSegmentsPerLength);
 
+		// Keep the in-progress link colored like the pin it's dragged from
 		gNodes->CanvasDrawList->AddBezierCubic(cubicBezier.p0, cubicBezier.p1, cubicBezier.p2,
-		    cubicBezier.p3, gNodes->style.colors[ColorVar_Link].ToPackedABGR(),
+		    cubicBezier.p3, startPinData.colorStyle.Background.ToPackedABGR(),
 		    gNodes->style.LinkThickness, cubicBezier.numSegments);
 
 		const bool linkCreationOnSnap =
@@ -1256,11 +1257,9 @@ namespace rift::Nodes
 
 	Rect GetNodeTitleRect(const NodeData& node)
 	{
-		Rect expandedTitleRect = node.TitleBarContentRect;
-		expandedTitleRect.Expand(node.LayoutStyle.Padding);
-
-		return {expandedTitleRect.min, expandedTitleRect.min + v2(node.rect.GetSize().x, 0.f)
-		                                   + v2(0.f, expandedTitleRect.GetSize().y)};
+		Rect titleRect = node.TitleBarContentRect;
+		titleRect.Expand(node.LayoutStyle.Padding);
+		return titleRect;
 	}
 
 	void DrawGrid(EditorContext& editor, const v2& canvasSize)
@@ -1448,7 +1447,8 @@ namespace rift::Nodes
 			// title bar:
 			if (node.TitleBarContentRect.GetSize().y > 0.f)
 			{
-				Rect titleBarRect = GetNodeTitleRect(node);
+				Rect titleBarRect  = GetNodeTitleRect(node);
+				titleBarRect.max.x = node.rect.max.x;    // span the node's full width
 
 				gNodes->CanvasDrawList->AddRectFilled(titleBarRect.min, titleBarRect.max,
 				    titlebarBackground.ToPackedABGR(), node.LayoutStyle.CornerRounding,
@@ -1895,7 +1895,7 @@ namespace rift::Nodes
 		gNodes->altMouseScrollDelta    = ImGui::GetIO().MouseWheel;
 		gNodes->multipleSelectModifier = (gNodes->io.multipleSelectModifier.modifier != nullptr
 		                                      ? *gNodes->io.multipleSelectModifier.modifier
-		                                      : ImGui::GetIO().KeyCtrl);
+											  : ImGui::GetIO().KeyCtrl);
 		gNodes->activePin              = false;
 
 		ImGui::BeginGroup();
@@ -2174,8 +2174,11 @@ namespace rift::Nodes
 		NodeData& node           = editor.nodes[gNodes->currentNodeId];
 		node.TitleBarContentRect = GetItemRect();
 
-		Rect nodeTitleRect = GetNodeTitleRect(node);
-		ImGui::ItemAdd({nodeTitleRect.min, nodeTitleRect.max}, ImGui::GetID("title_bar"));
+		// Register the title bar as an item (using its content bounds, not the previous
+		// frame's node width) so it counts as an ImGui interaction without making empty
+		// content groups grow the node.
+		Rect titleRect = GetNodeTitleRect(node);
+		ImGui::ItemAdd({titleRect.min, titleRect.max}, ImGui::GetID("title_bar"));
 
 		ImGui::SetCursorPos(GridToEditorPosition(editor, GetNodeContentOrigin(node)));
 	}
@@ -2438,6 +2441,34 @@ namespace rift::Nodes
 		return gNodes->hoveredNodeId == nodeId && gNodes->hoveredNodeId != ast::NoId;
 	}
 
+	bool GetPinScreenData(Id pinId, PinType type, v2& outPosition, Color& outColor)
+	{
+		const EditorContext& editor     = GetEditorContext();
+		const ObjectPool<PinData>& pool = editor.GetPinPool(type);
+		const i32 idx                   = ObjectPoolFind(pool, pinId);
+		if (idx < 0 || !pool.inUse.IsSet(idx))
+		{
+			return false;
+		}
+
+		outPosition = pool.pool[idx].position;
+		outColor    = pool.pool[idx].colorStyle.Background;
+		return true;
+	}
+
+	bool GetHoveredPin(Id& outPinId, PinType& outType)
+	{
+		if (!gNodes->HoveredPinIdx)
+		{
+			return false;
+		}
+
+		const EditorContext& editor = GetEditorContext();
+		outPinId                    = editor.GetPinData(gNodes->HoveredPinIdx).id;
+		outType                     = gNodes->HoveredPinIdx.type;
+		return true;
+	}
+
 	bool IsLinkHovered(ast::Id linkId)
 	{
 		assert(gNodes->currentScope != Scope::None);
@@ -2610,7 +2641,7 @@ namespace rift::Nodes
 	bool IsLinkDropped(Id* outputId, Id* inputId, bool includingDetachedLinks)
 	{
 		// Call this function after EndNodeEditor()!
-		P_Check(gNodes->currentScope != Scope::None);
+		P_Check(gNodes->currentScope == Scope::None);
 		P_Check(outputId != nullptr);
 
 		const EditorContext& editor = GetEditorContext();

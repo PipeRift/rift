@@ -3,9 +3,11 @@
 #include "AST/Systems/FunctionsSystem.h"
 
 #include "AST/Components/Expressions.h"
+#include "AST/Components/Statements.h"
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 #include "AST/Utils/Namespaces.h"
+#include "AST/Utils/Statements.h"
 #include "AST/Utils/TypeUtils.h"
 
 #include <Pipe/Core/Log.h>
@@ -343,6 +345,126 @@ namespace rift::ast::FunctionsSystem
 		p::RmId(scope.GetContext(), pinsToRemove);
 
 		scope.GetPool<CTmpInvalidKeep>()->Clear();
+	}
+
+	Id FindOwningFunction(p::TIdScopeRef<CStmtInput, CDeclFunction> scope, Id stmtId)
+	{
+		Id current = stmtId;
+		for (p::i32 depth = 0; !IsNone(current) && depth < 1024; ++depth)
+		{
+			if (scope.Has<CDeclFunction>(current))
+			{
+				return current;
+			}
+			const auto* input = scope.TryGet<const CStmtInput>(current);
+			if (!input)
+			{
+				return NoId;
+			}
+			current = input->linkOutputNode;
+		}
+		return NoId;
+	}
+
+	void SyncReturnPinsFromFunction(Tree& ast)
+	{
+		p::TIdScope<
+		    p::Writes<CExprInputs, CInvalid, CExprTypeId, CNamespace, CExprType, CChild, CParent>,
+		    CStmtReturn, CStmtInput, CDeclFunction>
+		    scope{ast};
+
+		for (Id returnId : FindAllIdsWith<CStmtReturn>(scope))
+		{
+			const Id functionId = FindOwningFunction(scope, returnId);
+			if (IsNone(functionId))
+			{
+				// The return node is no longer connected to a function, so it has no return
+				// values to mirror. Mark its pins invalid so they're dropped from the node.
+				if (auto* returnInputs = scope.TryGet<CExprInputs>(returnId))
+				{
+					scope.AddN<CInvalid>(returnInputs->pinIds);
+				}
+				continue;
+			}
+
+			// Creating the return's component can reallocate the pool and invalidate a
+			// reference to the function's component, so make both exist before taking
+			// references to them.
+			scope.GetOrAdd<CExprInputs>(functionId);
+			scope.GetOrAdd<CExprInputs>(returnId);
+			const auto& functionOutputs = scope.Get<CExprInputs>(functionId);
+			auto& returnInputs          = scope.Get<CExprInputs>(returnId);
+
+			// Mirror the function's return values as the return node's input pins,
+			// reusing existing pins by name and preserving order.
+			p::i32 validSize = functionOutputs.pinIds.Size();
+			for (p::i32 i = 0; i < validSize; ++i)
+			{
+				const Id pinId = functionOutputs.pinIds[i];
+				if (scope.Has<CInvalid>(pinId))
+				{
+					validSize = i;
+					break;
+				}
+
+				const auto* name = scope.TryGet<const CNamespace>(pinId);
+				if (!name)
+				{
+					continue;
+				}
+
+				if (i >= returnInputs.pinIds.Size())
+				{
+					Id id = p::AddId(ast);
+					scope.Add<CNamespace>(id, *name);
+					p::AttachId(ast, returnId, id);
+					returnInputs.Add(id);
+				}
+				else
+				{
+					// Search a matching pin from 'i' to the end
+					p::i32 pinIdx = i;
+					while (pinIdx < returnInputs.pinIds.Size())
+					{
+						const Id existingId      = returnInputs.pinIds[pinIdx];
+						const auto* existingName = scope.TryGet<const CNamespace>(existingId);
+						if (existingName && *existingName == *name)
+						{
+							break;    // Found existing pin
+						}
+						++pinIdx;
+					}
+					if (pinIdx == returnInputs.pinIds.Size())    // Pin not found, insert it
+					{
+						Id id = p::AddId(ast);
+						scope.Add<CNamespace>(id, *name);
+						p::AttachId(ast, returnId, id);
+						returnInputs.Insert(i, id);
+					}
+					else if (pinIdx > i)
+					{
+						// Correct pin is after where it should, swap it to keep order
+						returnInputs.Swap(pinIdx, i);
+					}
+				}
+
+				const auto* pinType = scope.TryGet<const CExprTypeId>(pinId);
+				scope.Add<CExprTypeId>(returnInputs.pinIds[i], pinType ? *pinType : CExprTypeId{});
+			}
+
+			// Mark as invalid all pins after the function's return values
+			if (validSize > 0)
+			{
+				scope.Remove<CInvalid>({returnInputs.pinIds.Data(), validSize});
+			}
+			const p::i32 count = returnInputs.pinIds.Size() - validSize;
+			if (count > 0)
+			{
+				scope.AddN<CInvalid>({returnInputs.pinIds.Data() + validSize, count});
+			}
+		}
+
+		RemoveInvalidDisconnectedArgs(ast);
 	}
 
 	void HealGraph(Tree& ast)

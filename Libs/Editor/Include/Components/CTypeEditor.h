@@ -11,6 +11,20 @@
 
 namespace rift::editor
 {
+	struct MenuContext
+	{
+		Id sourcePin        = NoId;
+		Nodes::PinType type = Nodes::PinType::None;
+		v2 location         = v2::Zero();
+		Id hoveredNodeId    = NoId;
+		Id hoveredLinkId    = NoId;
+
+		bool HasSource() const
+		{
+			return !IsNone(sourcePin);
+		}
+	};
+
 	struct CTypeEditor
 	{
 		P_STRUCT(CTypeEditor, p::TF_NotSerialized)
@@ -30,8 +44,14 @@ namespace rift::editor
 		ast::Id selectedPropertyId      = ast::NoId;
 		ast::Id pendingDeletePropertyId = ast::NoId;
 
+		// Last type picked for a function input/output pin. Used as the default type
+		// when creating new pins.
+		ast::Id lastPinTypeId = ast::NoId;
+
 		Nodes::EditorContext nodesEditor;
 		ImGuiTextFilter elementsFilter;
+
+		MenuContext menuContext;
 	};
 
 	inline const Tag CTypeEditor::rightTopNode{"rightTopNode"};

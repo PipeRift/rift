@@ -188,4 +188,10 @@ namespace rift::ast
 		}
 		return output;
 	}
+
+	Id GetPinType(p::TIdScopeRef<CExprTypeId> scope, Id pinId)
+	{
+		const auto* type = scope.TryGet<const CExprTypeId>(pinId);
+		return type ? type->id : NoId;
+	}
 }    // namespace rift::ast
