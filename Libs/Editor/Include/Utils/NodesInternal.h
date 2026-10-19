@@ -391,6 +391,27 @@ namespace rift::Nodes
 	// [SECTION] global and editor context structs
 
 
+	// Visual overlay indicating the current canvas zoom. It stays hidden until the mouse
+	// hovers over it or the zoom changes, in which case it is shown for a short while.
+	struct ZoomIndicator
+	{
+		// Screen-space rectangle of the indicator, valid while it is drawn.
+		Rect rectScreenSpace;
+		// Time at which the indicator stops being visible after the last zoom change.
+		double visibleEndTime = 0.0;
+		// Current fade alpha in [0, 1].
+		float alpha = 0.f;
+		// Zoom observed on the previous frame, used to detect changes.
+		float lastZoom = 1.f;
+
+		bool hovered  = false;
+		bool dragging = false;
+
+		void Update();
+		void Draw();
+	};
+
+
 	struct EditorContext
 	{
 		NodeArray<NodeData> nodes;
@@ -416,6 +437,8 @@ namespace rift::Nodes
 		ClickInteractionState clickInteraction;
 
 		MiniMap miniMap;
+
+		ZoomIndicator zoomIndicator;
 
 		bool canCreateLinks = true;
 

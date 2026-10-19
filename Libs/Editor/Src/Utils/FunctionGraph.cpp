@@ -5,6 +5,7 @@
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "imgui.h"
+#include "Statics/EditorSettings.h"
 #include "Utils/EditorStyle.h"
 #include "Utils/FunctionGraphContextMenu.h"
 #include "Utils/TypeUtils.h"
@@ -18,6 +19,7 @@
 #include <AST/Components/Views/CNodePosition.h>
 #include <AST/Systems/FunctionsSystem.h>
 #include <AST/Utils/Expressions.h>
+#include <AST/Utils/Settings.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
 #include <Pipe/Core/Log.h>
@@ -31,6 +33,43 @@
 namespace rift::editor::Graph
 {
 	static CNodePosition* currentNodeTransform = nullptr;
+
+	namespace
+	{
+		// Persists the current zoom after it stops changing, so scrolling does not write the
+		// settings file on every notch.
+		void PersistZoom()
+		{
+			static float saveTimer = -1.f;
+			static float lastSaved = 0.f;
+
+			ZoomSettings& zoom = GetUserSettings<EditorSettings>().zoom;
+
+			if (zoom.current != lastSaved)
+			{
+				saveTimer = 0.5f;
+			}
+
+			// Once the value settles, write it, even if the focus moved elsewhere meanwhile.
+			if (saveTimer >= 0.f)
+			{
+				saveTimer -= ImGui::GetIO().DeltaTime;
+				if (saveTimer < 0.f)
+				{
+					SaveUserSettings<EditorSettings>();
+					lastSaved = zoom.current;
+				}
+			}
+		}
+	}    // namespace
+
+	void ApplyGraphSettings()
+	{
+		const EditorSettings& editorSettings = GetUserSettings<EditorSettings>();
+
+		// Grid size also publishes the spacing into the node style.
+		settings.SetGridSize(p::Clamp(editorSettings.gridSize, 4.f, 64.f));
+	}
 
 	void Settings::SetGridSize(float size)
 	{
@@ -51,12 +90,12 @@ namespace rift::editor::Graph
 
 	float Settings::GetSpaceHeight(u32 height) const
 	{
-		return settings.GetGridSize() - (settings.verticalMargin * 2.f);
+		return (settings.GetGridSize() - (settings.verticalMargin * 2.f)) * Nodes::GetZoom();
 	}
 
 	v2 Settings::GetContentPadding() const
 	{
-		return {0.f, settings.verticalMargin + settings.verticalPadding};
+		return {0.f, (settings.verticalMargin + settings.verticalPadding) * Nodes::GetZoom()};
 	}
 
 	v2 Settings::GetGridPosition(v2 screenPosition) const
@@ -194,7 +233,7 @@ namespace rift::editor::Graph
 		if (Nodes::IsNodeSelected(context->currentNodeId))
 		{
 			Nodes::GetEditorContext().nodes[context->currentNodeId].LayoutStyle.BorderThickness =
-			    2.f;
+			    2.f * Nodes::GetZoom();
 		}
 		Nodes::EndNode();
 		Nodes::PopStyleColor(1);
@@ -311,8 +350,9 @@ namespace rift::editor::Graph
 		{
 			BeginExprOutput(ast, id, false);
 
-			const float gridSize = settings.GetGridSize();
-			const v2 padding     = Nodes::GetStyle().NodePadding;
+			const float zoom = Nodes::GetZoom();
+			const float gridSize = settings.GetGridSize() * zoom;
+			const v2 padding     = Nodes::GetStyle().NodePadding * zoom;
 			const float fontSize = p::Max(gridSize - 2.f * padding.y, 1.f);
 
 			i32 lineCount = 1;
@@ -336,10 +376,9 @@ namespace rift::editor::Graph
 			// would stretch the field to the whole available width, making the node huge
 			const float textWidth =
 			    p::Ceil((textSize.x + 2.f * padding.x) / gridSize) * gridSize - 2.f * padding.x;
-			const v2 size{p::Max(textWidth, 128.f), lineCount * gridSize - 2.f * padding.y};
+			const v2 size{p::Max(textWidth, 128.f * zoom), lineCount * gridSize - 2.f * padding.y};
 
 			UI::InputTextMultiline("##value", value, size);
-
 			EndExprOutput(false);
 		}
 		EndNode(ast);
@@ -494,7 +533,7 @@ namespace rift::editor::Graph
 	void Init()
 	{
 		Nodes::CreateContext();
-		settings.SetGridSize(settings.GetGridSize());
+		ApplyGraphSettings();
 	}
 
 	void Shutdown()
@@ -870,6 +909,10 @@ namespace rift::editor::Graph
 		if (UI::Begin(graphId.c_str(), &typeEditor.showGraph, ImGuiWindowFlags_NoCollapse))
 		{
 			Nodes::SetEditorContext(&typeEditor.nodesEditor);
+			if (UI::IsWindowAppearing())
+			{
+				Nodes::SetZoom(GetUserSettings<EditorSettings>().zoom.current);
+			}
 			Nodes::GetCurrentContext()->canCreateLinks = ast::HasFunctionBodies(ast, typeId);
 			{
 				Nodes::BeginNodeEditor();
@@ -903,6 +946,10 @@ namespace rift::editor::Graph
 				PopNodeStyle();
 				Nodes::EndNodeEditor();
 			}
+
+			// The focused graph stores the current zoom; the pending write is flushed even if
+			// focus moves elsewhere before it settles.
+			PersistZoom();
 
 			if (UI::IsKeyReleased(ImGuiKey_Delete))
 			{

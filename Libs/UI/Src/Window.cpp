@@ -2,7 +2,6 @@
 
 #include "UI/Window.h"
 
-#include "UI/Inspection.h"
 #include "UI/Style.h"
 #include "UI/UI.h"
 
@@ -118,7 +117,6 @@ namespace rift::UI
 
 		SetWindowIcon();
 
-		RegisterCoreKeyValueInspections();
 		return true;
 	}
 
