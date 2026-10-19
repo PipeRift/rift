@@ -41,19 +41,13 @@ namespace rift::editor::Graph
 		void PersistZoom()
 		{
 			static float saveTimer = -1.f;
+			static float lastSaved = 0.f;
 
 			ZoomSettings& zoom = GetUserSettings<EditorSettings>().zoom;
 
-			// Only the focused graph updates the stored value, so multiple open graphs do not
-			// fight over the same user setting.
-			if (ImGui::IsWindowFocused())
+			if (zoom.current != lastSaved)
 			{
-				const float current = Nodes::GetZoom();
-				if (current != zoom.current)
-				{
-					zoom.current = current;
-					saveTimer    = 0.5f;
-				}
+				saveTimer = 0.5f;
 			}
 
 			// Once the value settles, write it, even if the focus moved elsewhere meanwhile.
@@ -63,6 +57,7 @@ namespace rift::editor::Graph
 				if (saveTimer < 0.f)
 				{
 					SaveUserSettings<EditorSettings>();
+					lastSaved = zoom.current;
 				}
 			}
 		}
@@ -74,13 +69,6 @@ namespace rift::editor::Graph
 
 		// Grid size also publishes the spacing into the node style.
 		settings.SetGridSize(p::Clamp(editorSettings.gridSize, 4.f, 64.f));
-
-		const ZoomSettings& zoom = editorSettings.zoom;
-		Nodes::IO& io            = Nodes::GetIO();
-		io.ZoomMin               = p::Max(zoom.min, 0.01f);
-		io.ZoomMax               = p::Max(zoom.max, io.ZoomMin);
-		io.ZoomDefault           = p::Clamp(zoom.defaultZoom, io.ZoomMin, io.ZoomMax);
-		io.ZoomStep              = p::Max(zoom.step, 1.f);
 	}
 
 	void Settings::SetGridSize(float size)

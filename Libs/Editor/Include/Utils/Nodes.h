@@ -31,14 +31,6 @@ namespace rift::Nodes
 	using PinShape   = i32;    // -> enum PinShape_
 	using PinFlags   = i32;    // -> enum PinFlags_
 
-	// Default canvas zoom configuration. A zoom of 1.0f corresponds to 100% (no scaling).
-	// The editor overrides these through IO from the user settings.
-	constexpr float minZoom     = 0.25f;
-	constexpr float maxZoom     = 4.f;
-	constexpr float defaultZoom = 1.f;
-	// Default multiplier applied to the zoom for every mouse-wheel notch.
-	constexpr float zoomStep = 1.1f;
-
 	enum ColorVar : u8
 	{
 		ColorVar_NodeBackground = 0,
@@ -219,13 +211,6 @@ namespace rift::Nodes
 
 		// Panning speed when dragging an element and mouse is outside the main editor view.
 		float AutoPanningSpeed = 1000.f;
-
-		// Zoom limits and step used by the canvas. The current zoom lives on the editor
-		// context; these values configure how it may change.
-		float ZoomMin     = minZoom;
-		float ZoomMax     = maxZoom;
-		float ZoomDefault = defaultZoom;
-		float ZoomStep    = zoomStep;
 	};
 
 	struct Style
@@ -315,9 +300,8 @@ namespace rift::Nodes
 	void ResetPanning(const v2& pos);
 	void MoveToNode(ast::Id nodeId, v2 offset = v2::Zero());
 
-	// Canvas zoom. The limits, default and step are configured through IO (ZoomMin, ZoomMax,
-	// ZoomDefault and ZoomStep), which the editor populates from user settings. Zooming keeps
-	// the point under the mouse cursor fixed. Use ResetZoom() to return to the default zoom.
+	// Canvas zoom, read from and written to the editor settings. Zooming keeps the point
+	// under the mouse cursor fixed. Use ResetZoom() to return to the default zoom.
 	float GetZoom();
 	void SetZoom(float zoom);
 	void ResetZoom();
