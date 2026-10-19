@@ -6,6 +6,7 @@
 #include "Panels/FileExplorerPanel.h"
 #include "Tools/ArenaDebugger.h"
 #include "Tools/ASTDebugger.h"
+#include "Tools/EditorSettingsWindow.h"
 #include "Tools/GraphPlayground.h"
 #include "Tools/ReflectionDebugger.h"
 
@@ -34,6 +35,7 @@ namespace rift::editor
 		ASTDebugger astDebugger;
 		ArenaDebugger arenaDebugger;
 		GraphPlayground graphPlayground;
+		EditorSettingsWindow editorSettings;
 
 		bool skipFrameAfterMenu = false;
 	};

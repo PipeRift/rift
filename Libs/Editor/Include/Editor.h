@@ -38,7 +38,6 @@ namespace rift::editor
 		int Run(p::StringView projectPath = {});
 
 		void Tick();
-
 		void SetUIConfigFile(p::StringView path);
 
 		static Editor& Get()
@@ -62,4 +61,8 @@ namespace rift::editor
 	protected:
 		void UpdateConfig();
 	};
+
+	// Registers inspections for AST types (ids, namespaces...). Intended to be passed to
+	// UI::BeginInspector(), so they are registered when an inspector appears.
+	void RegisterKeyValueInspections();
 }    // namespace rift::editor

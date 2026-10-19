@@ -40,7 +40,7 @@ namespace rift::editor
 		P_PROP(gridSize, p::PF_Edit)
 		float gridSize = 16.f;
 
-		P_PROP(zoom)
+		P_PROP(zoom, p::PF_Edit)
 		ZoomSettings zoom;
 	};
 }    // namespace rift::editor

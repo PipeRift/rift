@@ -244,6 +244,7 @@ namespace rift::editor::EditorSystem
 		editor.arenaDebugger.Draw(ast);
 		editor.fileExplorer.Draw(ast);
 		editor.graphPlayground.Draw(ast, editor.layout);
+		editor.editorSettings.Draw();
 
 		UI::PopID();
 	}
@@ -374,6 +375,9 @@ namespace rift::editor::EditorSystem
 					}
 					UI::EndMenu();
 				}
+
+				UI::Separator();
+				UI::MenuItem("Editor Settings", nullptr, &editorData.editorSettings.open);
 				UI::EndMenu();
 			}
 
@@ -462,7 +466,8 @@ namespace rift::editor::EditorSystem
 
 				DrawModuleMenuBar(ast, moduleId);
 
-				if (UI::BeginInspector("ModuleInspector"))
+				if (UI::BeginInspector("ModuleInspector", p::v2{0.f, 0.f}, false,
+				        RegisterKeyValueInspections, &ast))
 				{
 					auto& module = moduleEditors.Get<ast::CModule>(moduleId);
 					UI::InspectStruct(&module);
@@ -476,7 +481,7 @@ namespace rift::editor::EditorSystem
 							{
 								if (UI::BeginCategory(binding.displayName, true))
 								{
-									UI::InspectChildrenProperties({data, binding.tagType});
+									UI::InspectChildrenProperties(data, binding.tagType);
 									UI::EndCategory();
 								}
 							}

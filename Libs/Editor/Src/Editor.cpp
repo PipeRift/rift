@@ -26,22 +26,6 @@ namespace rift::editor
 {
 	void RegisterKeyValueInspections()
 	{
-		UI::RegisterCustomInspection<ast::Id>([](p::StringView label, void* data, p::TypeId type)
-		{
-			auto* id = static_cast<ast::Id*>(data);
-			// UI::DrawKeyValue(label, data, GetType<IdTraits<ast::Id>::Entity>());
-			UI::TableNextRow();
-			UI::TableSetColumnIndex(0);
-			UI::AlignTextToFramePadding();
-			UI::Text(label);
-			UI::TableSetColumnIndex(1);
-			String asString = p::ToString(*id);
-			if (UI::InputText("##value", asString))
-			{
-				*id = p::IdFromString(asString, nullptr);
-			}
-		});
-
 		UI::RegisterCustomInspection<ast::Namespace>(
 		    [](p::StringView label, void* data, p::TypeId type)
 		{
@@ -71,9 +55,7 @@ namespace rift::editor
 			return 1;
 		}
 		Graph::Init();
-		RegisterKeyValueInspections();
 		p::Info("Editor is ready");
-
 		// Don't write an imgui.ini in the working directory while no project is open.
 		ImGui::GetIO().IniFilename = nullptr;
 
