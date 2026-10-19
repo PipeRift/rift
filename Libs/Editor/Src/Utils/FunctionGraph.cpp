@@ -609,12 +609,84 @@ namespace rift::editor::Graph
 	}
 
 
-	// Output labels are right-aligned so they sit next to their pins
-	// TODO: Standarize into all output pins
-	static void TextUnformattedAlignedRight(const char* text, float groupWidth)
+	// Nodes are laid out as a table:
+	//   title inputs | name | title outputs
+	//   inputs       |      | outputs
+	// Columns auto-fit their content, so dynamic widths (default value widgets,
+	// labels, etc.) need no manual measurement. The name column is omitted when
+	// the node has no name.
+	struct NodeTableLayout
+	{
+		ImVec2 contentMin;
+		float titleBottom = 0.f;
+		bool hasName      = false;
+
+		i32 GetOutputColumn() const
+		{
+			return hasName ? 2 : 1;
+		}
+	};
+
+	static bool BeginNodeTable(const char* tableId, bool hasName, NodeTableLayout& layout)
+	{
+		layout.contentMin = UI::GetCursorScreenPos();
+		layout.hasName    = hasName;
+
+		const ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX
+		                            | ImGuiTableFlags_NoPadOuterX | ImGuiTableFlags_NoPadInnerX
+		                            | ImGuiTableFlags_NoSavedSettings;
+		const ImGuiTableColumnFlags columnFlags =
+		    ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize;
+
+		UI::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(0.f, 0.f));
+		if (!UI::BeginTable(tableId, hasName ? 3 : 2, flags))
+		{
+			UI::PopStyleVar();
+			return false;
+		}
+
+		UI::TableSetupColumn("##inputs", columnFlags);
+		if (hasName)
+		{
+			UI::TableSetupColumn("##name", columnFlags);
+		}
+		UI::TableSetupColumn("##outputs", columnFlags);
+
+		UI::TableNextRow();
+		UI::TableSetColumnIndex(0);
+		return true;
+	}
+
+	static void BeginNodeTableBody(NodeTableLayout& layout)
+	{
+		// Remember where the body starts so the title bar can be drawn behind the
+		// first row once the node dimensions are known.
+		UI::TableNextRow();
+		layout.titleBottom = UI::GetCursorScreenPos().y;
+		UI::TableSetColumnIndex(0);
+	}
+
+	static void EndNodeTable()
+	{
+		UI::EndTable();
+		UI::PopStyleVar();
+	}
+
+	static void UpdateNodeTitleBar(const NodeTableLayout& layout, ast::Id nodeId)
+	{
+		auto& node               = Nodes::GetEditorContext().nodes.Get(nodeId);
+		node.TitleBarContentRect = Rect{
+		    layout.contentMin,
+		    ImVec2{node.rect.max.x - node.LayoutStyle.Padding.x, layout.titleBottom}
+        };
+	}
+
+	// Call inside the outputs table cell: aligns the label to the cell's right edge
+	static void TextUnformattedAlignedRight(const char* text)
 	{
 		const float textWidth = UI::CalcTextSize(text).x;
-		UI::SetCursorPosX(UI::GetCursorPosX() + ImMax(0.0f, groupWidth - textWidth));
+		UI::SetCursorPosX(
+		    UI::GetCursorPosX() + ImMax(0.0f, UI::GetContentRegionAvail().x - textWidth));
 		UI::TextUnformatted(text);
 	}
 
@@ -624,39 +696,27 @@ namespace rift::editor::Graph
 	                 scope,
 	    const TArray<ast::Id>& children)
 	{
-		const float outputColumnWidth =
-		    p::Max(UI::CalcTextSize("true").x, UI::CalcTextSize("false").x);
-
 		PushNodeBackgroundColor(UI::GetNeutralColor(0));
 		PushNodeTitleColor(flowColor);
 		for (ast::Id id :
 		    FindIdsWith<ast::CStmtIf, ast::CExprInputs, ast::CStmtOutputs>(scope, children))
 		{
+			NodeTableLayout layout;
 			BeginNode(scope, id);
 			{
-				Nodes::BeginNodeTitleBar();
+				if (BeginNodeTable("##node", true, layout))
 				{
-					UI::BeginGroup();
-					{
-						PushExecutionPinStyle();
-						Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
-						UI::TextUnformatted("if");
-						Nodes::EndInput();
-						PopExecutionPinStyle();
+					// Title row: execution input | name | true/false
+					PushExecutionPinStyle();
+					Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
+					UI::TextUnformatted("");
+					Nodes::EndInput();
+					PopExecutionPinStyle();
 
-						auto& inputs = scope.Get<const ast::CExprInputs>(id);
-						if (!P_Ensure(inputs.pinIds.Size() == 1))
-						{
-							continue;
-						}
-						BeginExprInput(scope, inputs.pinIds[0], false);
-						UI::TextUnformatted("value");
-						EndExprInput(false);
-					}
-					UI::EndGroup();
+					UI::TableSetColumnIndex(1);
+					UI::TextUnformatted("If");
 
-					UI::SameLine();
-					UI::BeginGroup();
+					UI::TableSetColumnIndex(layout.GetOutputColumn());
 					{
 						auto& outputs = scope.Get<const ast::CStmtOutputs>(id);
 						if (!P_Ensure(outputs.pinIds.Size() == 2))
@@ -666,19 +726,30 @@ namespace rift::editor::Graph
 						PushExecutionPinStyle();
 						Nodes::BeginOutput(
 						    i32(outputs.pinIds[0].value), Nodes::PinShape_TriangleFilled);
-						TextUnformattedAlignedRight("true", outputColumnWidth);
+						TextUnformattedAlignedRight("true");
 						Nodes::EndOutput();
 						Nodes::BeginOutput(
 						    i32(outputs.pinIds[1].value), Nodes::PinShape_TriangleFilled);
-						TextUnformattedAlignedRight("false", outputColumnWidth);
+						TextUnformattedAlignedRight("false");
 						Nodes::EndOutput();
 						PopExecutionPinStyle();
 					}
-					UI::EndGroup();
+
+					// Body row: condition input
+					BeginNodeTableBody(layout);
+					auto& inputs = scope.Get<const ast::CExprInputs>(id);
+					if (P_Ensure(inputs.pinIds.Size() == 1))
+					{
+						BeginExprInput(scope, inputs.pinIds[0], false);
+						UI::TextUnformatted("value");
+						EndExprInput(false);
+					}
+
+					EndNodeTable();
 				}
-				Nodes::EndNodeTitleBar();
 			}
 			EndNode(scope);
+			UpdateNodeTitleBar(layout, id);
 		}
 		PopNodeTitleColor();
 		PopNodeBackgroundColor();
@@ -690,37 +761,28 @@ namespace rift::editor::Graph
 	                  scope,
 	    const TArray<ast::Id>& children)
 	{
-		// Both rows share the same columns so the output labels end at the node edge
-		const float titleLabelWidth = UI::CalcTextSize("for").x;
-		const float inputColumnWidth =
-		    p::Max(UI::CalcTextSize("first").x, UI::CalcTextSize("count").x);
-		const float leftColumnWidth   = p::Max(titleLabelWidth, inputColumnWidth);
-		const float outputColumnWidth = p::Max(UI::CalcTextSize("each").x,
-		    p::Max(UI::CalcTextSize("continue").x, UI::CalcTextSize("index").x));
-
 		PushNodeBackgroundColor(UI::GetNeutralColor(0));
 		PushNodeTitleColor(flowColor);
 		for (ast::Id id :
 		    FindIdsWith<ast::CStmtFor, ast::CExprInputs, ast::CStmtOutputs, ast::CExprOutputs>(
 		        scope, children))
 		{
+			NodeTableLayout layout;
 			BeginNode(scope, id);
 			{
-				Nodes::BeginNodeTitleBar();
+				if (BeginNodeTable("##node", true, layout))
 				{
-					const float rowStartX = UI::GetCursorPosX();
-					UI::BeginGroup();
-					{
-						PushExecutionPinStyle();
-						Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
-						UI::TextUnformatted("for");
-						Nodes::EndInput();
-						PopExecutionPinStyle();
-					}
-					UI::EndGroup();
+					// Title row: execution input | name | each/continue
+					PushExecutionPinStyle();
+					Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
+					UI::TextUnformatted("");
+					Nodes::EndInput();
+					PopExecutionPinStyle();
 
-					UI::SameLine(rowStartX + leftColumnWidth);
-					UI::BeginGroup();
+					UI::TableSetColumnIndex(1);
+					UI::TextUnformatted("For");
+
+					UI::TableSetColumnIndex(layout.GetOutputColumn());
 					{
 						auto& outputs = scope.Get<const ast::CStmtOutputs>(id);
 						if (!P_Ensure(outputs.pinIds.Size() == 2))
@@ -730,22 +792,17 @@ namespace rift::editor::Graph
 						PushExecutionPinStyle();
 						Nodes::BeginOutput(
 						    i32(outputs.pinIds[0].value), Nodes::PinShape_TriangleFilled);
-						TextUnformattedAlignedRight("each", outputColumnWidth);
+						TextUnformattedAlignedRight("each");
 						Nodes::EndOutput();
 						Nodes::BeginOutput(
 						    i32(outputs.pinIds[1].value), Nodes::PinShape_TriangleFilled);
-						TextUnformattedAlignedRight("continue", outputColumnWidth);
+						TextUnformattedAlignedRight("continue");
 						Nodes::EndOutput();
 						PopExecutionPinStyle();
 					}
-					UI::EndGroup();
-				}
-				Nodes::EndNodeTitleBar();
 
-				// Inputs
-				const float rowStartX = UI::GetCursorPosX();
-				UI::BeginGroup();
-				{
+					// Body row: first/count inputs | index output
+					BeginNodeTableBody(layout);
 					auto& inputs = scope.Get<const ast::CExprInputs>(id);
 					if (P_Ensure(inputs.pinIds.Size() == 2))
 					{
@@ -757,24 +814,23 @@ namespace rift::editor::Graph
 						UI::TextUnformatted("count");
 						EndExprInput(false);
 					}
-				}
-				UI::EndGroup();
-				UI::SameLine(rowStartX + leftColumnWidth);
 
-				// Outputs
-				UI::BeginGroup();
-				{
-					auto& outputs = scope.Get<const ast::CExprOutputs>(id);
-					if (P_Ensure(outputs.pinIds.Size() == 1))
+					UI::TableSetColumnIndex(layout.GetOutputColumn());
 					{
-						BeginExprOutput(scope, outputs.pinIds[0], false);
-						TextUnformattedAlignedRight("index", outputColumnWidth);
-						EndExprOutput(false);
+						auto& outputs = scope.Get<const ast::CExprOutputs>(id);
+						if (P_Ensure(outputs.pinIds.Size() == 1))
+						{
+							BeginExprOutput(scope, outputs.pinIds[0], false);
+							TextUnformattedAlignedRight("index");
+							EndExprOutput(false);
+						}
 					}
+
+					EndNodeTable();
 				}
-				UI::EndGroup();
 			}
 			EndNode(scope);
+			UpdateNodeTitleBar(layout, id);
 		}
 		PopNodeTitleColor();
 		PopNodeBackgroundColor();
