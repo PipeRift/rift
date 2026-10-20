@@ -22,6 +22,7 @@
 #include <AST/Utils/Settings.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
+#include <IconsFontAwesome5.h>
 #include <Pipe/Core/Log.h>
 #include <PipeECS.h>
 #include <UI/Style.h>
@@ -793,6 +794,42 @@ namespace rift::editor::Graph
 		}
 	}
 
+	void DrawConversions(ast::Tree& ast, const TArray<ast::Id>& children)
+	{
+		for (ast::Id id : FindIdsWith<ast::CExprConversion>(ast, children))
+		{
+			const auto* inputs  = ast.TryGet<const ast::CExprInputs>(id);
+			const auto* outputs = ast.TryGet<const ast::CExprOutputs>(id);
+			if (!inputs || inputs->pinIds.IsEmpty() || !outputs || outputs->pinIds.IsEmpty())
+			{
+				continue;
+			}
+
+			static constexpr Color color = UI::GetNeutralColor(0);
+			PushNodeBackgroundColor(color);
+
+			BeginNode(ast, id);
+			{
+				BeginExprInput(ast, inputs->pinIds[0], false);
+				UI::TextUnformatted("");
+				EndExprInput(false);
+				UI::SameLine();
+
+				// The arrow shows the conversion, colored as the type it produces
+				UI::PushTextColor(GetTypeColor(ast, GetPinType(ast, outputs->pinIds[0])));
+				UI::Text(ICON_FA_LONG_ARROW_ALT_RIGHT);
+				UI::PopTextColor();
+
+				UI::SameLine();
+				BeginExprOutput(ast, outputs->pinIds[0], false);
+				UI::TextUnformatted("");
+				EndExprOutput(false);
+			}
+			EndNode(ast);
+			PopNodeBackgroundColor();
+		}
+	}
+
 	void DrawStatementLinks(
 	    p::TIdScopeRef<ast::CParent, ast::CStmtOutput, ast::CStmtOutputs>& scope,
 	    const TArray<ast::Id>& children)
@@ -937,6 +974,7 @@ namespace rift::editor::Graph
 				DrawIfs(ast, children);
 				DrawUnaryOperators(ast, children);
 				DrawBinaryOperators(ast, children);
+				DrawConversions(ast, children);
 
 				// Links
 				DrawStatementLinks(ast, children);

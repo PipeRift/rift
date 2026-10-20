@@ -2,6 +2,8 @@
 
 #include "IRGeneration.h"
 
+#include <AST/Systems/ConversionSystem.h>
+#include <AST/Utils/Expressions.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Statements.h>
@@ -374,9 +376,61 @@ namespace rift::MIR
 		{
 			AddBinaryOperator(output.nodeId, *binary);
 		}
+		else if (scope.Has<ast::CExprConversion>(output.nodeId))
+		{
+			AddConversion(output.nodeId);
+		}
 		else
 		{
 			compiler.Error("Unsupported expression found while generating code");
+		}
+	}
+
+	void CGenerator::AddExprAs(const ast::ExprOutput& output, ast::Id targetPinId)
+	{
+		const ast::Id sourceType = ast::GetPinType(scope, output.pinId);
+		const ast::Id targetType = ast::GetPinType(scope, targetPinId);
+		if (p::IsNone(sourceType) || p::IsNone(targetType) || sourceType == targetType)
+		{
+			AddExpr(output);
+			return;
+		}
+
+		// The value doesn't match the type of the pin it feeds, so it's converted into it.
+		// Only the conversions that happen on their own can be used here
+		const ast::Conversion* conversion =
+		    ast::ConversionSystem::FindConversion(compiler.ast, sourceType, targetType);
+		if (!conversion) [[unlikely]]
+		{
+			compiler.Error("Cannot convert a value into the type of the pin it feeds");
+			AddExpr(output);
+			return;
+		}
+		if (!ast::HasFlag(conversion->flags, ast::ConversionFlags::Implicit)) [[unlikely]]
+		{
+			compiler.Error("The value needs an explicit conversion to fit the pin it feeds");
+			AddExpr(output);
+			return;
+		}
+
+		switch (conversion->method)
+		{
+			case ast::ConversionMethod::ValueCast:
+			{
+				const auto* irType = scope.TryGet<const CMIRType>(targetType);
+				if (!irType) [[unlikely]]
+				{
+					compiler.Error("Cannot convert a value into an invalid type");
+					AddExpr(output);
+					return;
+				}
+				code->append("((");
+				code->append(irType->value.AsString());
+				code->append(")(");
+				AddExpr(output);
+				code->append("))");
+				break;
+			}
 		}
 	}
 
@@ -411,6 +465,53 @@ namespace rift::MIR
 		code->push_back(')');
 	}
 
+	void CGenerator::AddConversion(ast::Id id)
+	{
+		const auto* inputs  = scope.TryGet<const ast::CExprInputs>(id);
+		const auto* outputs = scope.TryGet<const ast::CExprOutputs>(id);
+		if (!inputs || inputs->linkedOutputs.IsEmpty() || !outputs || outputs->pinIds.IsEmpty())
+		{
+			compiler.Error("Conversion without a connected value");
+			return;
+		}
+
+		const ast::Id sourceType = ast::GetPinType(scope, inputs->pinIds[0]);
+		const ast::Id targetType = ast::GetPinType(scope, outputs->pinIds[0]);
+		if (p::IsNone(sourceType) || p::IsNone(targetType))
+		{
+			compiler.Error("Conversion between invalid types");
+			return;
+		}
+
+		const ast::Conversion* registered =
+		    ast::ConversionSystem::FindConversion(compiler.ast, sourceType, targetType);
+		if (!registered) [[unlikely]]
+		{
+			compiler.Error("Unknown conversion between types");
+			return;
+		}
+
+		switch (registered->method)
+		{
+			case ast::ConversionMethod::ValueCast:
+			{
+				const auto* irType = scope.TryGet<const CMIRType>(targetType);
+				if (!irType) [[unlikely]]
+				{
+					compiler.Error("Cannot convert a value into an invalid type");
+					return;
+				}
+				code->append("((");
+				code->append(irType->value.AsString());
+				code->append(")(");
+				// The value is first converted into the type of the input pin
+				AddExprAs(inputs->linkedOutputs[0], inputs->pinIds[0]);
+				code->append("))");
+				break;
+			}
+		}
+	}
+
 	void CGenerator::AddStmtIf(ast::Id id)
 	{
 		const auto& outputs      = scope.Get<const ast::CStmtOutputs>(id);
@@ -420,7 +521,9 @@ namespace rift::MIR
 		P_Check(exprInputs.linkedOutputs.Size() == 1);
 
 		code->append("if (");
-		AddExpr(exprInputs.linkedOutputs.First());
+		// The condition is converted into the bool type of the pin
+		AddExprAs(exprInputs.linkedOutputs.First(),
+		    exprInputs.pinIds.IsEmpty() ? ast::NoId : exprInputs.pinIds[0]);
 		code->append(") {\n");
 		AddStmtBlock(connectedIds[0]);
 		if (connectedIds.Size() > 1 && !p::IsNone(connectedIds[1]))
@@ -466,7 +569,8 @@ namespace rift::MIR
 				ast::ExprOutput output = inputs->linkedOutputs[i];
 				if (!output.IsNone())
 				{
-					AddExpr(output);
+					// The argument is converted into the type of the parameter it feeds
+					AddExprAs(output, inputs->pinIds[i]);
 					code->append(", ");
 				}
 			}

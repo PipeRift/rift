@@ -6,6 +6,7 @@
 #include "AST/Components/Declarations.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
+#include "AST/Systems/ConversionSystem.h"
 
 #include <PipeECS.h>
 
@@ -99,6 +100,9 @@ namespace rift::ast
 		nativeTypes.stringId = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.stringId);
 		Add(nativeTypes.stringId, CNamespace{"String"});
+
+		// Conversions between the built-in types depend on their ids
+		ConversionSystem::RegisterNumericConversions(*this);
 	}
 
 	void Tree::CopyFrom(const Tree& other)
@@ -112,6 +116,10 @@ namespace rift::ast
 		if (auto* typesStatic = other.TryGetStatic<STypes>())
 		{
 			SetStatic<STypes>(*typesStatic);
+		}
+		if (auto* conversionsStatic = other.TryGetStatic<SConversions>())
+		{
+			SetStatic<SConversions>(*conversionsStatic);
 		}
 
 		nativeTypes = other.nativeTypes;

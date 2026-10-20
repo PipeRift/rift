@@ -16,6 +16,7 @@
 #include <AST/Components/Expressions.h>
 #include <AST/Components/Views/CNodePosition.h>
 #include <AST/Statics/STypes.h>
+#include <AST/Systems/ConversionSystem.h>
 #include <AST/Systems/FunctionsSystem.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Namespaces.h>
@@ -34,6 +35,21 @@ namespace rift::editor::Graph
 		return ast.Has<ast::CExprType>(pinId) || ast.Has<ast::CExprTypeId>(pinId);
 	}
 
+	// Can a value of 'valueType' be used where a value of 'targetType' is expected?
+	static bool IsTypeCompatible(ast::Tree& ast, Id valueType, Id targetType)
+	{
+		if (valueType == targetType)
+		{
+			return true;
+		}
+		// Pins without a type take the type of whatever gets connected to them
+		if (IsNone(valueType) || IsNone(targetType))
+		{
+			return true;
+		}
+		return ast::ConversionSystem::CanConvertImplicitly(ast, valueType, targetType);
+	}
+
 	// The first pin on 'nodeId' that the dropped link can connect to. For expression links
 	// it's the first pin with a matching type, for execution links the node's exec pin.
 	static Id FindMatchingPin(ast::Tree& ast, Id nodeId, const MenuContext& context)
@@ -41,15 +57,23 @@ namespace rift::editor::Graph
 		const Id sourceType = GetPinType(ast, context.sourcePin);
 		if (!IsNone(sourceType))
 		{
+			// Pins of a compatible type are used when no pin matches exactly
+			Id compatiblePin = ast::NoId;
 			if (context.type == Nodes::PinType::Output)
 			{
 				if (const auto* inputs = ast.TryGet<const ast::CExprInputs>(nodeId))
 				{
 					for (Id pinId : inputs->pinIds)
 					{
-						if (GetPinType(ast, pinId) == sourceType)
+						const Id pinType = GetPinType(ast, pinId);
+						if (pinType == sourceType)
 						{
 							return pinId;
+						}
+						if (IsNone(compatiblePin)
+						    && IsTypeCompatible(ast, sourceType, pinType))
+						{
+							compatiblePin = pinId;
 						}
 					}
 				}
@@ -60,14 +84,20 @@ namespace rift::editor::Graph
 				{
 					for (Id pinId : outputs->pinIds)
 					{
-						if (GetPinType(ast, pinId) == sourceType)
+						const Id pinType = GetPinType(ast, pinId);
+						if (pinType == sourceType)
 						{
 							return pinId;
+						}
+						if (IsNone(compatiblePin)
+						    && IsTypeCompatible(ast, pinType, sourceType))
+						{
+							compatiblePin = pinId;
 						}
 					}
 				}
 			}
-			return ast::NoId;
+			return compatiblePin;
 		}
 
 		if (context.type == Nodes::PinType::Output && ast.Has<ast::CStmtInput>(nodeId))
@@ -174,7 +204,7 @@ namespace rift::editor::Graph
 					{
 						for (Id pinId : inputs->pinIds)
 						{
-							if (GetPinType(ast, pinId) == sourceType)
+							if (IsTypeCompatible(ast, sourceType, GetPinType(ast, pinId)))
 							{
 								return true;
 							}
@@ -188,7 +218,7 @@ namespace rift::editor::Graph
 					{
 						for (Id pinId : outputs->pinIds)
 						{
-							if (GetPinType(ast, pinId) == sourceType)
+							if (IsTypeCompatible(ast, GetPinType(ast, pinId), sourceType))
 							{
 								return true;
 							}
@@ -198,7 +228,8 @@ namespace rift::editor::Graph
 				break;
 			case ContextItemKind::Literal:
 				// Literals only produce a value, so they can only receive an input link
-				return isExpr && context.type != Nodes::PinType::Output && itemId == sourceType;
+				return isExpr && context.type != Nodes::PinType::Output
+				    && IsTypeCompatible(ast, itemId, sourceType);
 			case ContextItemKind::Return: return false;
 			case ContextItemKind::If:
 				// if nodes have both an execution input and outputs, and only a bool
@@ -209,7 +240,8 @@ namespace rift::editor::Graph
 				{
 					if (const auto* variable = ast.TryGet<const ast::CDeclVariable>(itemId))
 					{
-						return !IsNone(variable->typeId) && variable->typeId == sourceType;
+						return !IsNone(variable->typeId)
+						    && IsTypeCompatible(ast, variable->typeId, sourceType);
 					}
 				}
 				break;
@@ -388,6 +420,33 @@ namespace rift::editor::Graph
 		}
 	}
 
+	// The conversions that can be applied to the dropped link. A conversion node takes
+	// the value in its input pin and produces the converted value in its output pin
+	static bool MatchesConversionContext(
+	    ast::Tree& ast, const MenuContext& context, const ast::Conversion& conversion)
+	{
+		if (!context.HasSource())
+		{
+			return true;
+		}
+		if (!IsExprPin(ast, context.sourcePin))
+		{
+			return false;    // Execution pins have no value to convert
+		}
+		const Id sourceType = GetPinType(ast, context.sourcePin);
+		if (IsNone(sourceType))
+		{
+			return false;
+		}
+		if (context.type == Nodes::PinType::Output)
+		{
+			// The dropped value becomes the input of the conversion
+			return IsTypeCompatible(ast, sourceType, conversion.fromType);
+		}
+		// The output of the conversion feeds the dropped pin
+		return IsTypeCompatible(ast, conversion.toType, sourceType);
+	}
+
 	void DrawGraphContextMenu(ast::Tree& ast, Id typeId, MenuContext context)
 	{
 		static ImGuiTextFilter filter;
@@ -482,6 +541,32 @@ namespace rift::editor::Graph
 						Id newId = ast::AddLiteral({ast, typeId}, literalTypeId);
 						SetPositionAndConnect(ast, newId, context);
 					}
+				}
+			}
+			ContextTreePop(filter);
+		}
+
+		if (ContextTreeNode("Conversions", filter))
+		{
+			String name;
+			for (const ast::Conversion& conversion : ast::ConversionSystem::GetConversions(ast))
+			{
+				name.clear();
+				p::FormatTo(name, "{} {} {}", ast::GetName(ast, conversion.fromType).AsString(),
+				    ICON_FA_ARROW_RIGHT, ast::GetName(ast, conversion.toType).AsString());
+				if (!filter.PassFilter(name.data(), name.data() + name.size()))
+				{
+					continue;
+				}
+				if (!MatchesConversionContext(ast, context, conversion))
+				{
+					continue;
+				}
+				if (ContextItem(name, GetTypeColor(ast, conversion.toType)))
+				{
+					Id newId =
+					    ast::AddConversion({ast, typeId}, conversion.fromType, conversion.toType);
+					SetPositionAndConnect(ast, newId, context);
 				}
 			}
 			ContextTreePop(filter);

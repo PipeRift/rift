@@ -31,7 +31,8 @@ namespace rift::ast
 		rw.template SerializePools<CChild, CDeclVariable, CDeclFunction, CExprBinaryOperator,
 		    CExprCall, CExprDeclRefId, CExprOutputs, CExprInputs, CStmtReturn, CExprType,
 		    CExprUnaryOperator, CNodePosition, CNamespace, CParent, CLiteralBool, CLiteralFloating,
-		    CLiteralIntegral, CLiteralString, CStmtIf, CStmtOutput, CStmtOutputs, CStmtInput>();
+		    CLiteralIntegral, CLiteralString, CStmtIf, CStmtOutput, CStmtOutputs, CStmtInput,
+		    CExprConversion>();
 	};
 
 	void InitTypeFromFileType(Tree& ast, Id id, p::Tag typeId)
@@ -467,6 +468,33 @@ namespace rift::ast
 		inputs.Resize(2);
 		p::AddId(ast, inputs.pinIds);
 		p::AttachId(ast, id, inputs.pinIds);
+		if (type)
+		{
+			p::AttachId(ast, type.GetId(), id);
+		}
+		return id;
+	}
+
+	Id AddConversion(TypeRef type, Id fromTypeId, Id toTypeId)
+	{
+		Tree& ast   = type.GetContext();
+		const Id id = p::AddId(ast);
+		ast.Add<CExprConversion>(id);
+
+		// The input pin takes the value to convert
+		const Id inputId = p::AddId(ast);
+		ast.Add<CExprTypeId>(inputId, {.id = fromTypeId});
+		ast.Add<CExprType>(inputId).type = GetNamespace(ast, fromTypeId);
+		p::AttachId(ast, id, inputId);
+		ast.Add<CExprInputs>(id).Add(inputId);
+
+		// The output pin holds the converted value
+		const Id outputId = p::AddId(ast);
+		ast.Add<CExprTypeId>(outputId, {.id = toTypeId});
+		ast.Add<CExprType>(outputId).type = GetNamespace(ast, toTypeId);
+		p::AttachId(ast, id, outputId);
+		ast.Add<CExprOutputs>(id).Add(outputId);
+
 		if (type)
 		{
 			p::AttachId(ast, type.GetId(), id);

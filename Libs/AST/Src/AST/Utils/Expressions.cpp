@@ -3,6 +3,7 @@
 #include "AST/Utils/Expressions.h"
 
 #include "AST/Id.h"
+#include "AST/Systems/ConversionSystem.h"
 
 
 namespace rift::ast
@@ -79,8 +80,11 @@ namespace rift::ast
 
 			if (outputType && inputType)
 			{
-				// TODO: Check if different types can be implicitly casted
-				if (outputType->id != inputType->id)
+				// Different types can still be connected when the value converts into the
+				// type of the input on its own
+				if (outputType->id != inputType->id
+				    && !ConversionSystem::CanConvertImplicitly(
+				        static_cast<Tree&>(scope.GetContext()), outputType->id, inputType->id))
 				{
 					return false;
 				}
