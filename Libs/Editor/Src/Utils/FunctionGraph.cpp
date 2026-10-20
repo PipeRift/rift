@@ -885,7 +885,7 @@ namespace rift::editor::Graph
 				UI::TextUnformatted("");
 				EndExprInput(false);
 
-				// The arrow shows the conversion, colored as the type it produces
+				// The arrow shows the cast, colored as the type it produces
 				const float arrowWidth = UI::CalcTextSize(ICON_FA_LONG_ARROW_ALT_RIGHT).x;
 				ImGui::SetCursorPos(
 				    ImVec2{start.x + p::Max((contentWidth - arrowWidth) * 0.5f, 0.f), start.y});
@@ -1136,7 +1136,7 @@ namespace rift::editor::Graph
 				const ast::ExprOutput output = ast::GetExprOutputFromPin(ast, outputPinId);
 				const ast::ExprInput input   = ast::GetExprInputFromPin(ast, inputPinId);
 
-				// Values that only convert explicitly go through a cast node, which is placed
+				// Values that need an explicit cast go through a cast node, which is placed
 				// over the pin it feeds
 				const ast::Id castId = ast::ConnectExprWithCast({ast, typeId}, output, input);
 				if (!p::IsNone(castId))

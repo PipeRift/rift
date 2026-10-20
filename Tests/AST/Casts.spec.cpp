@@ -1,6 +1,6 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <AST/Systems/ConversionSystem.h>
+#include <AST/Systems/CastSystem.h>
 #include <AST/Systems/FunctionsSystem.h>
 #include <AST/Systems/TypeSystem.h>
 #include <AST/Tree.h>
@@ -13,51 +13,43 @@ using namespace p;
 using namespace rift;
 
 
-P_SPEC("AST.Conversions", []()
+P_SPEC("AST.Casts", []()
 {
-	It("Registers the numeric conversions", []()
+	It("Registers the numeric casts", []()
 	{
 		ast::Tree ast;
 		const auto& natives = ast.GetNativeTypes();
 
-		// Conversions that keep every value of the source type happen on their own
-		Expect(ast::ConversionSystem::CanConvertImplicitly(ast, natives.i32Id, natives.doubleId))
+		// Casts that keep every value of the source type happen on their own
+		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.i32Id, natives.doubleId)).ToBeTrue();
+		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.floatId, natives.doubleId))
 		    .ToBeTrue();
-		Expect(ast::ConversionSystem::CanConvertImplicitly(ast, natives.floatId, natives.doubleId))
-		    .ToBeTrue();
-		Expect(ast::ConversionSystem::CanConvertImplicitly(ast, natives.u8Id, natives.i32Id))
-		    .ToBeTrue();
-		Expect(ast::ConversionSystem::CanConvertImplicitly(ast, natives.boolId, natives.i32Id))
-		    .ToBeTrue();
-		Expect(ast::ConversionSystem::CanConvertImplicitly(ast, natives.i32Id, natives.i64Id))
-		    .ToBeTrue();
+		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.u8Id, natives.i32Id)).ToBeTrue();
+		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.boolId, natives.i32Id)).ToBeTrue();
+		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.i32Id, natives.i64Id)).ToBeTrue();
 
-		// Narrowing conversions need an explicit cast node
-		Expect(ast::ConversionSystem::CanConvertImplicitly(ast, natives.doubleId, natives.i32Id))
+		// Narrowing casts need an explicit cast node
+		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.doubleId, natives.i32Id))
 		    .ToBeFalse();
-		Expect(ast::ConversionSystem::CanConvertImplicitly(ast, natives.doubleId, natives.floatId))
+		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.doubleId, natives.floatId))
 		    .ToBeFalse();
-		Expect(ast::ConversionSystem::CanConvertImplicitly(ast, natives.i32Id, natives.i8Id))
-		    .ToBeFalse();
-		Expect(ast::ConversionSystem::CanConvertImplicitly(ast, natives.i32Id, natives.u32Id))
-		    .ToBeFalse();
-		Expect(ast::ConversionSystem::CanConvertImplicitly(ast, natives.i64Id, natives.doubleId))
+		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.i32Id, natives.i8Id)).ToBeFalse();
+		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.i32Id, natives.u32Id)).ToBeFalse();
+		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.i64Id, natives.doubleId))
 		    .ToBeFalse();
 
 		// But they can still be done explicitly
-		Expect(ast::ConversionSystem::CanConvertExplicitly(ast, natives.doubleId, natives.i32Id))
-		    .ToBeTrue();
-		Expect(ast::ConversionSystem::CanConvertExplicitly(ast, natives.i32Id, natives.i8Id))
-		    .ToBeTrue();
+		Expect(ast::CastSystem::CanCastExplicitly(ast, natives.doubleId, natives.i32Id)).ToBeTrue();
+		Expect(ast::CastSystem::CanCastExplicitly(ast, natives.i32Id, natives.i8Id)).ToBeTrue();
 
-		// Types that have nothing to do with each other don't convert
-		Expect(ast::ConversionSystem::CanConvertExplicitly(ast, natives.stringId, natives.i32Id))
+		// Types that have nothing to do with each other can't be cast
+		Expect(ast::CastSystem::CanCastExplicitly(ast, natives.stringId, natives.i32Id))
 		    .ToBeFalse();
-		Expect(ast::ConversionSystem::CanConvertExplicitly(ast, natives.i32Id, natives.stringId))
+		Expect(ast::CastSystem::CanCastExplicitly(ast, natives.i32Id, natives.stringId))
 		    .ToBeFalse();
 	});
 
-	It("Connects values that convert into the type of the pin", []()
+	It("Connects values that fit the type of the pin", []()
 	{
 		ast::Tree ast;
 		const auto& natives = ast.GetNativeTypes();
@@ -70,7 +62,7 @@ P_SPEC("AST.Conversions", []()
 		const auto& callInputs = ast.Get<ast::CExprInputs>(callId);
 		Expect(callInputs.pinIds.Size()).ToEqual(1u);
 
-		// An I32 value converts into the Double argument
+		// An I32 value fits the Double argument
 		ast::Id literalId = ast::AddLiteral({ast, ast::NoId}, natives.i32Id);
 		Expect(literalId != ast::NoId).ToBeTrue();
 		Expect(ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, literalId),
@@ -78,7 +70,7 @@ P_SPEC("AST.Conversions", []()
 		    .ToBeTrue();
 	});
 
-	It("Rejects values that need an explicit conversion", []()
+	It("Rejects values that need an explicit cast", []()
 	{
 		ast::Tree ast;
 		const auto& natives = ast.GetNativeTypes();
@@ -121,7 +113,7 @@ P_SPEC("AST.Conversions", []()
 		    ast::TryConnectExpr(ast, output, ast::GetExprInputFromPin(ast, callInputs.pinIds[0])))
 		    .ToBeTrue();
 
-		// And converts on its own into an integer one
+		// And fits an integer one on its own
 		Expect(
 		    ast::TryConnectExpr(ast, output, ast::GetExprInputFromPin(ast, callInputs.pinIds[1])))
 		    .ToBeTrue();
@@ -163,7 +155,7 @@ P_SPEC("AST.Conversions", []()
 		    .ToBeTrue();
 	});
 
-	It("Inserts a cast node when a value only casts explicitly", []()
+	It("Inserts a cast node when a value needs an explicit cast", []()
 	{
 		ast::Tree ast;
 		const auto& natives = ast.GetNativeTypes();

@@ -16,7 +16,7 @@
 #include <AST/Components/Expressions.h>
 #include <AST/Components/Views/CNodePosition.h>
 #include <AST/Statics/STypes.h>
-#include <AST/Systems/ConversionSystem.h>
+#include <AST/Systems/CastSystem.h>
 #include <AST/Systems/FunctionsSystem.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Namespaces.h>
@@ -47,7 +47,7 @@ namespace rift::editor::Graph
 		{
 			return true;
 		}
-		return ast::ConversionSystem::CanConvertImplicitly(ast, valueType, targetType);
+		return ast::CastSystem::CanCastImplicitly(ast, valueType, targetType);
 	}
 
 	// The first pin on 'nodeId' that the dropped link can connect to. For expression links
@@ -407,10 +407,10 @@ namespace rift::editor::Graph
 		}
 	}
 
-	// The conversions that can be applied to the dropped link. A cast node takes
-	// the value in its input pin and produces the converted value in its output pin
-	static bool MatchesConversionContext(
-	    ast::Tree& ast, const MenuContext& context, const ast::Conversion& conversion)
+	// The casts that can be applied to the dropped link. A cast node takes
+	// the value in its input pin and produces the cast value in its output pin
+	static bool MatchesCastContext(
+	    ast::Tree& ast, const MenuContext& context, const ast::Cast& cast)
 	{
 		if (!context.HasSource())
 		{
@@ -418,7 +418,7 @@ namespace rift::editor::Graph
 		}
 		if (!IsExprPin(ast, context.sourcePin))
 		{
-			return false;    // Execution pins have no value to convert
+			return false;    // Execution pins have no value to cast
 		}
 		const Id sourceType = GetPinType(ast, context.sourcePin);
 		if (IsNone(sourceType))
@@ -427,11 +427,11 @@ namespace rift::editor::Graph
 		}
 		if (context.type == Nodes::PinType::Output)
 		{
-			// The dropped value becomes the input of the conversion
-			return IsTypeCompatible(ast, sourceType, conversion.fromType);
+			// The dropped value becomes the input of the cast
+			return IsTypeCompatible(ast, sourceType, cast.fromType);
 		}
-		// The output of the conversion feeds the dropped pin
-		return IsTypeCompatible(ast, conversion.toType, sourceType);
+		// The output of the cast feeds the dropped pin
+		return IsTypeCompatible(ast, cast.toType, sourceType);
 	}
 
 	void DrawGraphContextMenu(ast::Tree& ast, Id typeId, MenuContext context)
@@ -536,22 +536,22 @@ namespace rift::editor::Graph
 		if (ContextTreeNode("Casts", filter))
 		{
 			String name;
-			for (const ast::Conversion& conversion : ast::ConversionSystem::GetConversions(ast))
+			for (const ast::Cast& cast : ast::CastSystem::GetCasts(ast))
 			{
 				name.clear();
-				p::FormatTo(name, "{} {} {}", ast::GetName(ast, conversion.fromType).AsString(),
-				    ICON_FA_ARROW_RIGHT, ast::GetName(ast, conversion.toType).AsString());
+				p::FormatTo(name, "{} {} {}", ast::GetName(ast, cast.fromType).AsString(),
+				    ICON_FA_ARROW_RIGHT, ast::GetName(ast, cast.toType).AsString());
 				if (!filter.PassFilter(name.data(), name.data() + name.size()))
 				{
 					continue;
 				}
-				if (!MatchesConversionContext(ast, context, conversion))
+				if (!MatchesCastContext(ast, context, cast))
 				{
 					continue;
 				}
-				if (ContextItem(name, GetTypeColor(ast, conversion.toType)))
+				if (ContextItem(name, GetTypeColor(ast, cast.toType)))
 				{
-					Id newId = ast::AddCast({ast, typeId}, conversion.fromType, conversion.toType);
+					Id newId = ast::AddCast({ast, typeId}, cast.fromType, cast.toType);
 					SetPositionAndConnect(ast, newId, context);
 				}
 			}

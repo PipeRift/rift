@@ -10,7 +10,7 @@
 #include "AST/Components/Statements.h"
 #include "AST/Components/Views/CNodePosition.h"
 #include "AST/Statics/STypes.h"
-#include "AST/Systems/ConversionSystem.h"
+#include "AST/Systems/CastSystem.h"
 #include "AST/Systems/LoadSystem.h"
 #include "AST/Utils/Expressions.h"
 #include "AST/Utils/Namespaces.h"
@@ -470,14 +470,14 @@ namespace rift::ast
 		const Id id = p::AddId(ast);
 		ast.Add<CExprCast>(id);
 
-		// The input pin takes the value to convert
+		// The input pin takes the value to cast
 		const Id inputId = p::AddId(ast);
 		ast.Add<CExprTypeId>(inputId, {.id = fromTypeId});
 		ast.Add<CExprType>(inputId).type = GetNamespace(ast, fromTypeId);
 		p::AttachId(ast, id, inputId);
 		ast.Add<CExprInputs>(id).Add(inputId);
 
-		// The output pin holds the converted value
+		// The output pin holds the cast value
 		const Id outputId = p::AddId(ast);
 		ast.Add<CExprTypeId>(outputId, {.id = toTypeId});
 		ast.Add<CExprType>(outputId).type = GetNamespace(ast, toTypeId);
@@ -496,7 +496,7 @@ namespace rift::ast
 		Tree& ast = type.GetContext();
 		if (TryConnectExpr(ast, output, input))
 		{
-			return NoId;    // The value converts into the pin on its own
+			return NoId;    // The value fits the pin on its own
 		}
 
 		if (output.IsNone() || input.IsNone() || output.nodeId == input.nodeId
@@ -508,7 +508,7 @@ namespace rift::ast
 		const Id outputType = GetPinType(ast, output.pinId);
 		const Id inputType  = GetPinType(ast, input.pinId);
 		if (IsNone(outputType) || IsNone(inputType) || outputType == inputType
-		    || !ConversionSystem::CanConvertExplicitly(ast, outputType, inputType))
+		    || !CastSystem::CanCastExplicitly(ast, outputType, inputType))
 		{
 			return NoId;
 		}

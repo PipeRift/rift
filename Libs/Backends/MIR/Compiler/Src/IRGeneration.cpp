@@ -2,7 +2,7 @@
 
 #include "IRGeneration.h"
 
-#include <AST/Systems/ConversionSystem.h>
+#include <AST/Systems/CastSystem.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/Namespaces.h>
@@ -395,24 +395,23 @@ namespace rift::MIR
 			return;
 		}
 
-		// The value doesn't match the type of the pin it feeds, so it's converted into it.
-		// Only the conversions that happen on their own can be used here
-		const ast::Conversion* conversion =
-		    ast::ConversionSystem::FindConversion(compiler.ast, sourceType, targetType);
-		if (!conversion) [[unlikely]]
+		// The value doesn't match the type of the pin it feeds, so it's cast into it.
+		// Only the casts that happen on their own can be used here
+		const ast::Cast* cast = ast::CastSystem::FindCast(compiler.ast, sourceType, targetType);
+		if (!cast) [[unlikely]]
 		{
-			compiler.Error("Cannot convert a value into the type of the pin it feeds");
+			compiler.Error("Cannot cast a value into the type of the pin it feeds");
 			AddExpr(output);
 			return;
 		}
-		if (!ast::HasFlag(conversion->flags, ast::ConversionFlags::Implicit)) [[unlikely]]
+		if (!ast::HasFlag(cast->flags, ast::CastFlags::Implicit)) [[unlikely]]
 		{
-			compiler.Error("The value needs an explicit conversion to fit the pin it feeds");
+			compiler.Error("The value needs an explicit cast to fit the pin it feeds");
 			AddExpr(output);
 			return;
 		}
 
-		switch (conversion->kind)
+		switch (cast->kind)
 		{
 			// Every numeric cast is expressed as a C cast, no matter which instruction a
 			// backend would lower it to
@@ -423,7 +422,7 @@ namespace rift::MIR
 				const auto* irType = scope.TryGet<const CMIRType>(targetType);
 				if (!irType) [[unlikely]]
 				{
-					compiler.Error("Cannot convert a value into an invalid type");
+					compiler.Error("Cannot cast a value into an invalid type");
 					AddExpr(output);
 					return;
 				}
@@ -486,11 +485,11 @@ namespace rift::MIR
 			return;
 		}
 
-		const ast::Conversion* registered =
-		    ast::ConversionSystem::FindConversion(compiler.ast, sourceType, targetType);
+		const ast::Cast* registered =
+		    ast::CastSystem::FindCast(compiler.ast, sourceType, targetType);
 		if (!registered) [[unlikely]]
 		{
-			compiler.Error("No conversion is registered between the types of the cast");
+			compiler.Error("No cast is registered between the types of the cast");
 			return;
 		}
 
@@ -505,13 +504,13 @@ namespace rift::MIR
 				const auto* irType = scope.TryGet<const CMIRType>(targetType);
 				if (!irType) [[unlikely]]
 				{
-					compiler.Error("Cannot convert a value into an invalid type");
+					compiler.Error("Cannot cast a value into an invalid type");
 					return;
 				}
 				code->append("((");
 				code->append(irType->value.AsString());
 				code->append(")(");
-				// The value is first converted into the type of the input pin
+				// The value is first cast into the type of the input pin
 				AddExprAs(inputs->linkedOutputs[0], inputs->pinIds[0]);
 				code->append("))");
 				break;
@@ -528,7 +527,7 @@ namespace rift::MIR
 		P_Check(exprInputs.linkedOutputs.Size() == 1);
 
 		code->append("if (");
-		// The condition is converted into the bool type of the pin
+		// The condition is cast into the bool type of the pin
 		AddExprAs(exprInputs.linkedOutputs.First(),
 		    exprInputs.pinIds.IsEmpty() ? ast::NoId : exprInputs.pinIds[0]);
 		code->append(") {\n");
@@ -576,7 +575,7 @@ namespace rift::MIR
 				const ast::ExprOutput output = inputs->linkedOutputs[i];
 				if (!output.IsNone())
 				{
-					// The argument is converted into the type of the parameter it feeds
+					// The argument is cast into the type of the parameter it feeds
 					AddExprAs(output, inputs->pinIds[i]);
 					code->append(", ");
 				}

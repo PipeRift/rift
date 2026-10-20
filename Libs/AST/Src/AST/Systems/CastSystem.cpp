@@ -1,15 +1,15 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include "AST/Systems/ConversionSystem.h"
+#include "AST/Systems/CastSystem.h"
 
 #include <PipeECS.h>
 
 
-namespace rift::ast::ConversionSystem
+namespace rift::ast::CastSystem
 {
 	namespace
 	{
-		// Traits of a built-in numeric type, used to compute the conversions between them
+		// Traits of a built-in numeric type, used to compute the casts between them
 		struct NumericType
 		{
 			Id id         = NoId;
@@ -96,21 +96,21 @@ namespace rift::ast::ConversionSystem
 	}    // namespace
 
 
-	void RegisterConversion(Tree& ast, const Conversion& conversion)
+	void RegisterCast(Tree& ast, const Cast& cast)
 	{
-		auto& conversions = ast.GetOrSetStatic<SConversions>().conversions;
-		for (Conversion& existing : conversions)
+		auto& casts = ast.GetOrSetStatic<SCasts>().casts;
+		for (Cast& existing : casts)
 		{
-			if (existing.fromType == conversion.fromType && existing.toType == conversion.toType)
+			if (existing.fromType == cast.fromType && existing.toType == cast.toType)
 			{
-				existing = conversion;
+				existing = cast;
 				return;
 			}
 		}
-		conversions.Add(conversion);
+		casts.Add(cast);
 	}
 
-	void RegisterNumericConversions(Tree& ast)
+	void RegisterNumericCasts(Tree& ast)
 	{
 		const p::TArray<NumericType> types = GetNumericTypes(ast.GetNativeTypes());
 		for (const NumericType& from : types)
@@ -125,56 +125,56 @@ namespace rift::ast::ConversionSystem
 				{
 					continue;
 				}
-				// Conversions that keep every value of the source type happen on their own,
+				// Casts that keep every value of the source type happen on their own,
 				// the rest need an explicit cast node
-				const ConversionFlags flags =
-				    IsValuePreserving(from, to) ? ConversionFlags::All : ConversionFlags::Explicit;
-				RegisterConversion(ast, {.fromType  = from.id,
-				                            .toType = to.id,
-				                            .kind   = GetNumericCastKind(from, to),
-				                            .flags  = flags});
+				const CastFlags flags =
+				    IsValuePreserving(from, to) ? CastFlags::All : CastFlags::Explicit;
+				RegisterCast(ast, {.fromType  = from.id,
+				                      .toType = to.id,
+				                      .kind   = GetNumericCastKind(from, to),
+				                      .flags  = flags});
 			}
 		}
 	}
 
-	const Conversion* FindConversion(const Tree& ast, Id fromType, Id toType)
+	const Cast* FindCast(const Tree& ast, Id fromType, Id toType)
 	{
-		if (const auto* registry = ast.TryGetStatic<SConversions>())
+		if (const auto* registry = ast.TryGetStatic<SCasts>())
 		{
-			for (const Conversion& conversion : registry->conversions)
+			for (const Cast& cast : registry->casts)
 			{
-				if (conversion.fromType == fromType && conversion.toType == toType)
+				if (cast.fromType == fromType && cast.toType == toType)
 				{
-					return &conversion;
+					return &cast;
 				}
 			}
 		}
 		return nullptr;
 	}
 
-	p::TView<const Conversion> GetConversions(const Tree& ast)
+	p::TView<const Cast> GetCasts(const Tree& ast)
 	{
-		if (const auto* registry = ast.TryGetStatic<SConversions>())
+		if (const auto* registry = ast.TryGetStatic<SCasts>())
 		{
-			return registry->conversions;
+			return registry->casts;
 		}
 		return {};
 	}
 
-	bool CanConvert(const Tree& ast, Id fromType, Id toType, ConversionFlags required)
+	bool CanCast(const Tree& ast, Id fromType, Id toType, CastFlags required)
 	{
-		const Conversion* conversion = FindConversion(ast, fromType, toType);
-		return conversion != nullptr && HasFlag(conversion->flags, required);
+		const Cast* cast = FindCast(ast, fromType, toType);
+		return cast != nullptr && HasFlag(cast->flags, required);
 	}
 
-	bool CanConvertImplicitly(const Tree& ast, Id fromType, Id toType)
+	bool CanCastImplicitly(const Tree& ast, Id fromType, Id toType)
 	{
-		return CanConvert(ast, fromType, toType, ConversionFlags::Implicit);
+		return CanCast(ast, fromType, toType, CastFlags::Implicit);
 	}
 
-	bool CanConvertExplicitly(const Tree& ast, Id fromType, Id toType)
+	bool CanCastExplicitly(const Tree& ast, Id fromType, Id toType)
 	{
-		const Conversion* conversion = FindConversion(ast, fromType, toType);
-		return conversion != nullptr && conversion->flags != ConversionFlags::None;
+		const Cast* cast = FindCast(ast, fromType, toType);
+		return cast != nullptr && cast->flags != CastFlags::None;
 	}
-}    // namespace rift::ast::ConversionSystem
+}    // namespace rift::ast::CastSystem
