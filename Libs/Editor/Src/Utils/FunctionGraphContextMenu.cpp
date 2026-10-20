@@ -157,6 +157,7 @@ namespace rift::editor::Graph
 		Function,
 		Variable,
 		Operator,
+		Cast,
 	};
 
 	bool ContextTreeNode(StringView name, const ImGuiTextFilter& filter)
@@ -171,10 +172,30 @@ namespace rift::editor::Graph
 		}
 	}
 
-	bool MatchesContext(ast::Tree& ast, const MenuContext& context, ContextItemKind kind,
-	    StringView name, const ImGuiTextFilter& filter, Id itemId = ast::NoId)
+	// An item of the context menu matches when any of its keywords passes the search filter
+	bool MatchesFilter(const ImGuiTextFilter& filter, std::initializer_list<StringView> keywords)
 	{
-		if (!filter.PassFilter(name.data(), name.data() + name.size()))
+		if (!filter.IsActive())
+		{
+			return true;
+		}
+		for (StringView keyword : keywords)
+		{
+			if (filter.PassFilter(keyword.data(), keyword.data() + keyword.size()))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// Whether an item of the given kind fits the menu context. It matches the search filter
+	// when any of the keywords does
+	bool MatchesContext(ast::Tree& ast, const MenuContext& context, ContextItemKind kind,
+	    std::initializer_list<StringView> keywords, const ImGuiTextFilter& filter,
+	    Id itemId = ast::NoId, const ast::Cast* cast = nullptr)
+	{
+		if (!MatchesFilter(filter, keywords))
 		{
 			return false;
 		}
@@ -244,12 +265,28 @@ namespace rift::editor::Graph
 				}
 				break;
 			case ContextItemKind::Operator: return isExpr;
+			case ContextItemKind::Cast:
+				// A cast takes the value in its input pin and produces it in its output pin
+				if (!isExpr || !cast)
+				{
+					return false;    // Execution pins have no value to cast
+				}
+				if (IsNone(sourceType))
+				{
+					return false;
+				}
+				return isOutput ? IsTypeCompatible(ast, sourceType, cast->fromType)
+				                : IsTypeCompatible(ast, cast->toType, sourceType);
 		}
 		return false;
 	}
 
-	bool ContextItem(StringView name, Color background = Color::Transparent())
+	bool ContextItem(StringView name, Id id, Color background = Color::Transparent())
 	{
+		if (id != p::NoId)
+		{
+			UI::PushID(id);
+		}
 		constexpr float rounding = 2.f;
 
 		// Keep the click area tight to the item so the 1px spacing between items shows
@@ -279,6 +316,186 @@ namespace rift::editor::Graph
 		{
 			UI::CloseCurrentPopup();
 		}
+		if (id != p::NoId)
+		{
+			UI::PopID();
+		}
+		return pressed;
+	}
+
+	constexpr float contextChipRounding = 2.f;
+	constexpr float contextChipPadding  = 4.f;
+	constexpr float contextChipSpacing  = 4.f;
+
+	// Draws a context menu row. When a background is given it's painted by the row itself,
+	// with the content drawn on top. Returns whether the row was picked
+	bool DrawContextChipRow(StringView label, ImVec2& outMin, ImVec2& outMax,
+	    Color background = Color::Transparent(), float height = 16.f)
+	{
+		UI::PushStyleVar(ImGuiStyleVar_ItemSpacing, v2{UI::GetStyle().ItemSpacing.x, 2.f});
+		UI::PushStyleVar(ImGuiStyleVar_SelectableRounding, contextChipRounding);
+		const bool hasBackground = background.a > 0.f;
+		if (hasBackground)
+		{
+			UI::PushHeaderColor(background);
+		}
+		const bool pressed = UI::Selectable(label, hasBackground,
+		                         ImGuiSelectableFlags_NoPadWithHalfSpacing, v2{0.f, height})
+		                  || (UI::IsItemFocused() && UI::IsKeyPressed(ImGuiKey_Enter));
+		if (hasBackground)
+		{
+			UI::PopHeaderColor();
+		}
+		UI::PopStyleVar(2);
+		if (pressed)
+		{
+			UI::CloseCurrentPopup();
+		}
+
+		outMin = UI::GetItemRectMin();
+		outMax = UI::GetItemRectMax();
+		return pressed;
+	}
+
+	// Draws text centered on the row, advancing 'x'
+	void DrawContextItemText(ImDrawList& drawList, float& x, float centerY, StringView text)
+	{
+		const ImVec2 size = UI::CalcTextSize(text);
+		drawList.AddText(ImVec2{x, centerY - size.y * 0.5f}, UI::GetColorU32(ImGuiCol_Text),
+		    text.data(), text.data() + text.size());
+		x += size.x;
+	}
+
+	// Draws a type name over a rounded background of its own color, advancing 'x'. The icon,
+	// when given, is drawn smaller and before the name
+	void DrawContextTypeChip(ImDrawList& drawList, float& x, float centerY, StringView name,
+	    const Color& color, const char* icon = nullptr)
+	{
+		ImFont* font          = UI::GetFont();
+		const float fontSize  = UI::GetFontSize();
+		const float iconSize  = fontSize * 0.75f;
+		const float iconWidth = icon ? font->CalcTextSizeA(iconSize, FLT_MAX, 0.f, icon).x : 0.f;
+
+		const ImVec2 textSize    = UI::CalcTextSize(name);
+		const float contentWidth = iconWidth + textSize.x;
+		const float height       = UI::GetTextLineHeight() + 2.f;
+		const ImVec2 chipMin{x, centerY - height * 0.5f};
+		const ImVec2 chipMax{x + contentWidth + contextChipPadding * 2.f, centerY + height * 0.5f};
+
+		drawList.AddRectFilled(chipMin, chipMax, color.ToPackedABGR(), contextChipRounding);
+		// The icon shares the top of the text line, instead of being centred on its own
+		if (icon)
+		{
+			const float textY = centerY - (iconSize * 0.5f) + 2.f;
+			drawList.AddText(font, iconSize, ImVec2{chipMin.x + contextChipPadding, textY},
+			    UI::GetColorU32(ImGuiCol_Text), icon);
+		}
+		const float textY = centerY - textSize.y * 0.5f;
+		drawList.AddText(ImVec2{chipMin.x + contextChipPadding + iconWidth, textY},
+		    UI::GetColorU32(ImGuiCol_Text), name.data(), name.data() + name.size());
+		x = chipMax.x;
+	}
+
+	// A cast of the context menu: each type carries a rounded background of its own color
+	bool ContextCastItem(ast::Tree& ast, const ast::Cast& cast)
+	{
+		ImDrawList* drawList      = UI::GetWindowDrawList();
+		const StringView fromName = ast::GetName(ast, cast.fromType).AsString();
+		const StringView toName   = ast::GetName(ast, cast.toType).AsString();
+
+		// Both types identify the cast in the menu
+		UI::PushID(cast.fromType);
+		UI::PushID(cast.toType);
+		ImVec2 itemMin;
+		ImVec2 itemMax;
+		const bool pressed  = DrawContextChipRow("###Item", itemMin, itemMax);
+		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
+		float x             = itemMin.x + contextChipPadding;
+		DrawContextTypeChip(*drawList, x, centerY, fromName, GetTypeColor(ast, cast.fromType));
+		x += contextChipSpacing;
+		DrawContextItemText(*drawList, x, centerY, ICON_FA_ARROW_RIGHT);
+		x += contextChipSpacing;
+		DrawContextTypeChip(*drawList, x, centerY, toName, GetTypeColor(ast, cast.toType));
+		UI::PopID();
+		UI::PopID();
+		return pressed;
+	}
+
+	// A function of the context menu: its name followed by its arguments and returns, each a
+	// chip with its name colored as its type. Returns are marked with an upward arrow
+	bool ContextFunctionItem(ast::Tree& ast, Id id, StringView name)
+	{
+		ImDrawList* drawList = UI::GetWindowDrawList();
+		UI::PushID(id);
+		ImVec2 itemMin;
+		ImVec2 itemMax;
+
+		// The function carries its own background, slightly thicker than the pin chips
+		const float rowHeight = UI::GetTextLineHeight() + 4.f;
+		const bool pressed =
+		    DrawContextChipRow("###Item", itemMin, itemMax, functionColor, rowHeight);
+		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
+		float x             = itemMin.x + contextChipPadding;
+
+		// Arguments produce a value inside the function, returns consume one
+		const auto* args    = ast.TryGet<const ast::CExprOutputs>(id);
+		const auto* returns = ast.TryGet<const ast::CExprInputs>(id);
+
+		bool first   = true;
+		auto drawPin = [&](Id pinId, bool isReturn)
+		{
+			DrawContextItemText(*drawList, x, centerY, first ? "" : ", ");
+			first = false;
+
+			// The chip carries the name of the pin, colored as its type. Returns lead with an
+			// arrow inside of the chip
+			const auto* ns = ast.TryGet<const ast::CNamespace>(pinId);
+			DrawContextTypeChip(*drawList, x, centerY,
+			    ns ? ns->name.AsString() : StringView{"none"},
+			    GetTypeColor(ast, GetPinType(ast, pinId)),
+			    isReturn ? ICON_FA_LONG_ARROW_ALT_UP : nullptr);
+		};
+
+		auto drawPins = [&](const p::TArray<Id>& pins, bool isReturn)
+		{
+			for (Id pinId : pins)
+			{
+				if (ast.IsValid(pinId))
+				{
+					drawPin(pinId, isReturn);
+				}
+			}
+		};
+
+		DrawContextItemText(*drawList, x, centerY, name);
+		DrawContextItemText(*drawList, x, centerY, "(");
+		if (args)
+		{
+			drawPins(args->pinIds, false);
+		}
+		if (returns)
+		{
+			drawPins(returns->pinIds, true);
+		}
+		DrawContextItemText(*drawList, x, centerY, ")");
+		UI::PopID();
+		return pressed;
+	}
+
+	// A constructor of the context menu: the type carries a rounded background of its color
+	bool ContextConstructItem(StringView typeName, Id id, const Color& color)
+	{
+		ImDrawList* drawList = UI::GetWindowDrawList();
+		UI::PushID(id);
+		ImVec2 itemMin;
+		ImVec2 itemMax;
+		const bool pressed  = DrawContextChipRow("###Item", itemMin, itemMax);
+		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
+		float x             = itemMin.x + contextChipPadding;
+		DrawContextItemText(*drawList, x, centerY, "Make ");
+		x += contextChipSpacing;
+		DrawContextTypeChip(*drawList, x, centerY, typeName, color);
+		UI::PopID();
 		return pressed;
 	}
 
@@ -360,8 +577,8 @@ namespace rift::editor::Graph
 			if (ast.Has<ast::CDeclFunction>(childId))
 			{
 				if (MatchesContext(
-				        ast, context, ContextItemKind::Function, childName, filter, childId)
-				    && ContextItem(childName))
+				        ast, context, ContextItemKind::Function, {childName}, filter, childId)
+				    && ContextFunctionItem(ast, childId, childName))
 				{
 					Id newId = ast::AddCall({ast, typeId}, childId);
 					// Populate the new call's pins right away so the dropped link can find
@@ -374,9 +591,9 @@ namespace rift::editor::Graph
 			{
 				const auto* variable = ast.TryGet<const ast::CDeclVariable>(childId);
 				if (MatchesContext(
-				        ast, context, ContextItemKind::Variable, childName, filter, childId)
-				    && ContextItem(
-				        childName, GetTypeColor(ast, variable ? variable->typeId : ast::NoId)))
+				        ast, context, ContextItemKind::Variable, {childName}, filter, childId)
+				    && ContextItem(childName, childId,
+				        GetTypeColor(ast, variable ? variable->typeId : ast::NoId)))
 				{
 					// Attach to the edited type, not the variable's owning type
 					Id newId = ast::AddDeclarationReference({ast, typeId}, childId);
@@ -407,33 +624,6 @@ namespace rift::editor::Graph
 		}
 	}
 
-	// The casts that can be applied to the dropped link. A cast node takes
-	// the value in its input pin and produces the cast value in its output pin
-	static bool MatchesCastContext(
-	    ast::Tree& ast, const MenuContext& context, const ast::Cast& cast)
-	{
-		if (!context.HasSource())
-		{
-			return true;
-		}
-		if (!IsExprPin(ast, context.sourcePin))
-		{
-			return false;    // Execution pins have no value to cast
-		}
-		const Id sourceType = GetPinType(ast, context.sourcePin);
-		if (IsNone(sourceType))
-		{
-			return false;
-		}
-		if (context.type == Nodes::PinType::Output)
-		{
-			// The dropped value becomes the input of the cast
-			return IsTypeCompatible(ast, sourceType, cast.fromType);
-		}
-		// The output of the cast feeds the dropped pin
-		return IsTypeCompatible(ast, cast.toType, sourceType);
-	}
-
 	void DrawGraphContextMenu(ast::Tree& ast, Id typeId, MenuContext context)
 	{
 		static ImGuiTextFilter filter;
@@ -458,115 +648,126 @@ namespace rift::editor::Graph
 			return;
 		}
 
-		if (ContextTreeNode("Flow", filter))
+		// Only the results scroll, so the search bar stays visible. The results take the rest
+		// of the menu height, under the search row
+		const float maxHeight        = p::Max(UI::GetIO().DisplaySize.y * 0.3f, 1.f);
+		const float resultsMaxHeight = p::Max(
+		    maxHeight - UI::GetStyle().WindowPadding.y * 2.f - UI::GetFrameHeightWithSpacing(),
+		    1.f);
+		UI::SetNextWindowSizeConstraints(v2{0.f, 0.f}, v2{FLT_MAX, resultsMaxHeight});
+		UI::BeginChild(
+		    "##Results", v2{0.f, 0.f}, ImGuiChildFlags_AutoResizeY | ImGuiChildFlags_NavFlattened);
 		{
-			if (MatchesContext(ast, context, ContextItemKind::Return, "Return", filter)
-			    && ContextItem("Return"))
+			if (ContextTreeNode("Flow", filter))
 			{
-				Id newId = ast::AddReturn({ast, typeId});
-				SetPositionAndConnect(ast, newId, context);
-			}
-			if (MatchesContext(ast, context, ContextItemKind::If, "If", filter)
-			    && ContextItem("If"))
-			{
-				Id newId = ast::AddIf({ast, typeId});
-				SetPositionAndConnect(ast, newId, context);
-			}
-			ContextTreePop(filter);
-		}
-
-		if (ContextTreeNode("Operators", filter))
-		{
-			String name;
-			// Unary operators
-			for (auto type : GetEnumValues<ast::UnaryOperatorType>())
-			{
-				name.clear();
-				StringView shortName = GetUnaryOperatorName(type);
-				StringView longName  = GetUnaryOperatorLongName(type);
-				p::FormatTo(name, "{}   ({})", shortName, longName);
-				if (MatchesContext(ast, context, ContextItemKind::Operator, name, filter)
-				    && ContextItem(name))
+				if (MatchesContext(ast, context, ContextItemKind::Return, {"Return"}, filter)
+				    && ContextItem("Return", p::NoId))
 				{
-					Id newId = ast::AddUnaryOperator({ast, typeId}, type);
+					Id newId = ast::AddReturn({ast, typeId});
 					SetPositionAndConnect(ast, newId, context);
 				}
-			}
-			// Binary operators
-			for (auto type : GetEnumValues<ast::BinaryOperatorType>())
-			{
-				name.clear();
-				StringView shortName = GetBinaryOperatorName(type);
-				StringView longName  = GetBinaryOperatorLongName(type);
-				p::FormatTo(name, "{}   ({})", shortName, longName);
-				if (MatchesContext(ast, context, ContextItemKind::Operator, name, filter)
-				    && ContextItem(name))
+				if (MatchesContext(ast, context, ContextItemKind::If, {"If"}, filter)
+				    && ContextItem("If", p::NoId))
 				{
-					Id newId = ast::AddBinaryOperator({ast, typeId}, type);
+					Id newId = ast::AddIf({ast, typeId});
 					SetPositionAndConnect(ast, newId, context);
 				}
+				ContextTreePop(filter);
 			}
-			ContextTreePop(filter);
-		}
 
-		if (ContextTreeNode("Constructors", filter))
-		{
-			String makeStr{};
-			TIdScope<ast::CDeclType, ast::CNamespace> typesScope{ast};
-			for (Id literalTypeId : FindAllIdsWith<ast::CDeclType>(typesScope))
+			if (ContextTreeNode("Operators", filter))
 			{
-				if (auto* ns = typesScope.TryGet<const ast::CNamespace>(literalTypeId))
+				String name;
+				// Unary operators
+				for (auto type : GetEnumValues<ast::UnaryOperatorType>())
 				{
-					makeStr.clear();
-					p::FormatTo(makeStr, "Make {}", ns->name);
-					const bool picked = MatchesContext(ast, context, ContextItemKind::Literal,
-					                        makeStr, filter, literalTypeId)
-					                 && ContextItem(makeStr, GetTypeColor(ast, literalTypeId));
-					if (picked)
+					name.clear();
+					StringView shortName = GetUnaryOperatorName(type);
+					StringView longName  = GetUnaryOperatorLongName(type);
+					p::FormatTo(name, "{}   ({})", shortName, longName);
+					if (MatchesContext(
+					        ast, context, ContextItemKind::Operator, {shortName, longName}, filter)
+					    && ContextItem(name, p::NoId))
 					{
-						// Attach to the edited type, not the literal's own type
-						Id newId = ast::AddLiteral({ast, typeId}, literalTypeId);
+						Id newId = ast::AddUnaryOperator({ast, typeId}, type);
 						SetPositionAndConnect(ast, newId, context);
 					}
 				}
+				// Binary operators
+				for (auto type : GetEnumValues<ast::BinaryOperatorType>())
+				{
+					name.clear();
+					StringView shortName = GetBinaryOperatorName(type);
+					StringView longName  = GetBinaryOperatorLongName(type);
+					p::FormatTo(name, "{}   ({})", shortName, longName);
+					if (MatchesContext(
+					        ast, context, ContextItemKind::Operator, {shortName, longName}, filter)
+					    && ContextItem(name, p::NoId))
+					{
+						Id newId = ast::AddBinaryOperator({ast, typeId}, type);
+						SetPositionAndConnect(ast, newId, context);
+					}
+				}
+				ContextTreePop(filter);
 			}
-			ContextTreePop(filter);
-		}
 
-		if (ContextTreeNode("Casts", filter))
-		{
-			String name;
-			for (const ast::Cast& cast : ast::CastSystem::GetCasts(ast))
+			if (ContextTreeNode("Constructors", filter))
 			{
-				name.clear();
-				p::FormatTo(name, "{} {} {}", ast::GetName(ast, cast.fromType).AsString(),
-				    ICON_FA_ARROW_RIGHT, ast::GetName(ast, cast.toType).AsString());
-				if (!filter.PassFilter(name.data(), name.data() + name.size()))
+				TIdScope<ast::CDeclType, ast::CNamespace> typesScope{ast};
+				for (Id literalTypeId : FindAllIdsWith<ast::CDeclType>(typesScope))
 				{
-					continue;
-				}
-				if (!MatchesCastContext(ast, context, cast))
-				{
-					continue;
-				}
-				if (ContextItem(name, GetTypeColor(ast, cast.toType)))
-				{
-					Id newId = ast::AddCast({ast, typeId}, cast.fromType, cast.toType);
-					SetPositionAndConnect(ast, newId, context);
-				}
-			}
-			ContextTreePop(filter);
-		}
+					if (auto* ns = typesScope.TryGet<const ast::CNamespace>(literalTypeId))
+					{
+						if (!MatchesContext(ast, context, ContextItemKind::Literal,
+						        {"Make", ns->name.AsString()}, filter, literalTypeId))
+						{
+							continue;
+						}
 
-		// Functions and variables, grouped under their module and type namespaces
-		DrawNamespaceChildren(
-		    ast, typeId, p::FindAllIdsWith<ast::CModule, ast::CNamespace>(ast), filter, context);
+						if (ContextConstructItem(ns->name.AsString(), literalTypeId,
+						        GetTypeColor(ast, literalTypeId)))
+						{
+							// Attach to the edited type, not the literal's own type
+							Id newId = ast::AddLiteral({ast, typeId}, literalTypeId);
+							SetPositionAndConnect(ast, newId, context);
+						}
+					}
+				}
+				ContextTreePop(filter);
+			}
+
+			if (ContextTreeNode("Casts", filter))
+			{
+				for (const ast::Cast& cast : ast::CastSystem::GetCasts(ast))
+				{
+					// A cast matches when its kind or either of its types does
+					if (!MatchesContext(ast, context, ContextItemKind::Cast,
+					        {"Cast", ast::GetName(ast, cast.fromType).AsString(),
+					            ast::GetName(ast, cast.toType).AsString()},
+					        filter, ast::NoId, &cast))
+					{
+						continue;
+					}
+					if (ContextCastItem(ast, cast))
+					{
+						Id newId = ast::AddCast({ast, typeId}, cast.fromType, cast.toType);
+						SetPositionAndConnect(ast, newId, context);
+					}
+				}
+				ContextTreePop(filter);
+			}
+
+			// Functions and variables, grouped under their module and type namespaces
+			DrawNamespaceChildren(ast, typeId,
+			    p::FindAllIdsWith<ast::CModule, ast::CNamespace>(ast), filter, context);
+		}
+		UI::EndChild();
 	}
 
 	void DrawContextMenu(ast::Tree& ast, Id typeId, MenuContext context)
 	{
-		// Cap the height so a long menu scrolls within the panel instead of overflowing it
-		const float maxHeight = p::Min(UI::GetIO().DisplaySize.y * 0.3f, UI::GetWindowSize().y);
+		// Cap the height so a long menu scrolls instead of overflowing the display
+		const float maxHeight = p::Max(UI::GetIO().DisplaySize.y * 0.3f, 1.f);
 		UI::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(FLT_MAX, maxHeight));
 		if (UI::BeginPopup("ContextMenu"))
 		{
