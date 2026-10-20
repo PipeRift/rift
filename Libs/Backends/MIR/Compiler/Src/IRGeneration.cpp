@@ -307,11 +307,81 @@ namespace rift::MIR
 		code->push_back('\n');
 	}
 
+	void CGenerator::ResetVariableNames(ast::Id functionId)
+	{
+		forIndexNames.Clear();
+		variableNameCounts.Clear();
+		usedVariableNames.Clear();
+
+		// Function parameters are in scope for the whole body, so generated locals must
+		// not shadow them.
+		auto addPinNames = [this](const p::TArray<ast::Id>& pinIds)
+		{
+			for (ast::Id pinId : pinIds)
+			{
+				const p::Tag name = ast::GetName(scope, pinId);
+				if (!name.IsNone())
+				{
+					usedVariableNames.Insert(name);
+				}
+			}
+		};
+		if (const auto* inputs = scope.TryGet<const ast::CExprOutputs>(functionId))
+		{
+			addPinNames(inputs->pinIds);
+		}
+		if (const auto* outputs = scope.TryGet<const ast::CExprInputs>(functionId))
+		{
+			addPinNames(outputs->pinIds);
+		}
+	}
+
+	p::String CGenerator::MakeVariableName(p::StringView baseName)
+	{
+		p::i32& count = variableNameCounts[p::Tag{baseName}];
+		p::String name;
+		while (true)
+		{
+			name.clear();
+			if (count == 0)
+			{
+				name.append(baseName);
+			}
+			else
+			{
+				p::FormatTo(name, "{}_{}", baseName, count);
+			}
+			++count;
+
+			if (!usedVariableNames.Contains(p::Tag{name}))
+			{
+				break;
+			}
+		}
+
+		usedVariableNames.Insert(p::Tag{name});
+		return name;
+	}
+
+	p::String CGenerator::GetForIndexName(ast::Id id)
+	{
+		if (const p::String* name = forIndexNames.Find(id))
+		{
+			return *name;
+		}
+
+		p::String name = MakeVariableName("index");
+		forIndexNames.Insert(id, name);
+		return name;
+	}
+
 	void CGenerator::DefineFunctions(p::TView<ast::Id> ids)
 	{
 		code->append("// Function Definitions\n");
 		for (ast::Id id : ids)
 		{
+			ResetVariableNames(id);
+
 			const p::String& signature = scope.Get<const CMIRFunctionSignature>(id).value;
 			code->append(signature);
 			code->append(" {\n");
@@ -322,12 +392,6 @@ namespace rift::MIR
 			code->append("}\n");
 		}
 		code->push_back('\n');
-	}
-
-	// For loop variables are named after their node id, which is unique within a tree
-	static p::String GetForIndexName(ast::Id id)
-	{
-		return p::Format("__rift_for_index_{}_{}", id.GetIndex(), id.GetVersion());
 	}
 
 	void CGenerator::AddStmtBlock(ast::Id firstStmtId)
@@ -457,15 +521,16 @@ namespace rift::MIR
 		const auto* indexType = scope.TryGet<const CMIRType>(i32Id);
 		const p::StringView type  = indexType ? indexType->value.AsString() : p::StringView{"long"};
 		const p::String indexName = GetForIndexName(id);
+		const p::String endName   = MakeVariableName(p::Format("{}_end", indexName));
 
 		// The index stays visible in the continuation block after the loop
 		p::FormatTo(*code, "{} {} = ", type, indexName);
 		AddExpr(exprInputs.linkedOutputs[0]);
 		code->append(";\n{\n");
-		p::FormatTo(*code, "{} {}_end = {} + ", type, indexName, indexName);
+		p::FormatTo(*code, "{} {} = {} + ", type, endName, indexName);
 		AddExpr(exprInputs.linkedOutputs[1]);
 		code->append(";\n");
-		p::FormatTo(*code, "for (; {} < {}_end; ++{}) {{\n", indexName, indexName, indexName);
+		p::FormatTo(*code, "for (; {} < {}; ++{}) {{\n", indexName, endName, indexName);
 		AddStmtBlock(outputs.linkInputNodes[0]);
 		code->append("}\n}\n");
 

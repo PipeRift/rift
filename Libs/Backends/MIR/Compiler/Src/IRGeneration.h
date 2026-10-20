@@ -10,6 +10,7 @@
 #include <AST/Components/Tags/CInvalid.h>
 #include <AST/Id.h>
 #include <Components/Declarations.h>
+#include <Pipe/Core/Map.h>
 #include <Pipe/Core/Set.h>
 #include <PipeECS.h>
 
@@ -41,6 +42,11 @@ namespace rift::MIR
 		MIRScope scope;
 		p::String* code = nullptr;
 
+		// Generated local variable names are unique within each function
+		p::TMap<ast::Id, p::String> forIndexNames;
+		p::TMap<p::Tag, p::i32> variableNameCounts;
+		p::TSet<p::Tag> usedVariableNames;
+
 
 		void GenerateModule(ast::Id moduleId);
 
@@ -52,6 +58,9 @@ namespace rift::MIR
 		void DefineStructs(p::TView<ast::Id> ids);
 		void DeclareFunctions(p::TView<ast::Id> ids, bool useFullName = true);
 		void DefineFunctions(p::TView<ast::Id> ids);
+		void ResetVariableNames(ast::Id functionId);
+		p::String MakeVariableName(p::StringView baseName);
+		p::String GetForIndexName(ast::Id id);
 
 		void AddStmtBlock(ast::Id firstStmtId);
 		void AddStmtIf(ast::Id id);
