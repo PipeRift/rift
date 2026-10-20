@@ -34,7 +34,7 @@ namespace rift::ast
 		    CExprCall, CExprDeclRefId, CExprOutputs, CExprInputs, CStmtReturn, CExprType,
 		    CExprUnaryOperator, CNodePosition, CNamespace, CParent, CLiteralBool, CLiteralFloating,
 		    CLiteralIntegral, CLiteralString, CStmtIf, CStmtOutput, CStmtOutputs, CStmtInput,
-		    CExprConversion>();
+		    CExprCast>();
 	};
 
 	void InitTypeFromFileType(Tree& ast, Id id, p::Tag typeId)
@@ -462,11 +462,11 @@ namespace rift::ast
 		return id;
 	}
 
-	Id AddConversion(TypeRef type, Id fromTypeId, Id toTypeId)
+	Id AddCast(TypeRef type, Id fromTypeId, Id toTypeId)
 	{
 		Tree& ast   = type.GetContext();
 		const Id id = p::AddId(ast);
-		ast.Add<CExprConversion>(id);
+		ast.Add<CExprCast>(id);
 
 		// The input pin takes the value to convert
 		const Id inputId = p::AddId(ast);

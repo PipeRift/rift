@@ -407,7 +407,7 @@ namespace rift::editor::Graph
 		}
 	}
 
-	// The conversions that can be applied to the dropped link. A conversion node takes
+	// The conversions that can be applied to the dropped link. A cast node takes
 	// the value in its input pin and produces the converted value in its output pin
 	static bool MatchesConversionContext(
 	    ast::Tree& ast, const MenuContext& context, const ast::Conversion& conversion)
@@ -551,8 +551,7 @@ namespace rift::editor::Graph
 				}
 				if (ContextItem(name, GetTypeColor(ast, conversion.toType)))
 				{
-					Id newId =
-					    ast::AddConversion({ast, typeId}, conversion.fromType, conversion.toType);
+					Id newId = ast::AddCast({ast, typeId}, conversion.fromType, conversion.toType);
 					SetPositionAndConnect(ast, newId, context);
 				}
 			}

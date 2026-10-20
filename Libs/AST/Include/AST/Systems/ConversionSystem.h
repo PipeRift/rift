@@ -16,7 +16,7 @@ namespace rift::ast
 		None = 0,
 		// Applied automatically when a pin of one type receives a value of another type
 		Implicit = 1 << 0,
-		// Requires an explicit conversion node
+		// Requires an explicit cast node
 		Explicit = 1 << 1,
 		// Both implicit and explicit
 		All = Implicit | Explicit
@@ -44,21 +44,28 @@ namespace rift::ast
 	}
 
 
-	// How a backend must produce the converted value
-	enum class ConversionMethod : p::u8
+	// How a backend produces the converted value. Mirrors the kinds of cast instructions
+	// LLVM uses, so a backend can pick the instruction that matches the conversion
+	enum class CastKind : p::u8
 	{
-		// Reinterpret the value as the target type, like a cast in C
-		ValueCast
+		// Integer to integer, including bool: extension, truncation or sign change
+		IntCast,
+		// Floating point to floating point: extension or truncation
+		FPToFP,
+		// Integer to floating point
+		IntToFP,
+		// Floating point to integer
+		FPToInt
 	};
 
 
 	// Describes how a value of one type becomes a value of another
 	struct Conversion
 	{
-		Id fromType             = NoId;
-		Id toType               = NoId;
-		ConversionMethod method = ConversionMethod::ValueCast;
-		ConversionFlags flags   = ConversionFlags::None;
+		Id fromType           = NoId;
+		Id toType             = NoId;
+		CastKind kind         = CastKind::IntCast;
+		ConversionFlags flags = ConversionFlags::None;
 	};
 
 
@@ -79,7 +86,7 @@ namespace rift::ast::ConversionSystem
 
 	// Registers the conversions between the built-in numeric types, following the C++
 	// rules: conversions that keep every value of the source type are implicit, the
-	// rest (narrowing ones) need an explicit conversion node
+	// rest (narrowing ones) need an explicit cast node
 	void RegisterNumericConversions(Tree& ast);
 
 	// The conversion between two types, or nullptr when they can't convert into each other
@@ -92,10 +99,10 @@ namespace rift::ast::ConversionSystem
 	// flags?
 	bool CanConvert(const Tree& ast, Id fromType, Id toType, ConversionFlags required);
 
-	// Can a value of fromType become a toType without an explicit conversion node?
+	// Can a value of fromType become a toType without an explicit cast node?
 	bool CanConvertImplicitly(const Tree& ast, Id fromType, Id toType);
 
-	// Can a conversion node turn a fromType into a toType? Explicit conversions also
+	// Can a cast node turn a fromType into a toType? Explicit conversions also
 	// perform the implicit ones
 	bool CanConvertExplicitly(const Tree& ast, Id fromType, Id toType);
 }    // namespace rift::ast::ConversionSystem

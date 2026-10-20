@@ -81,9 +81,9 @@ namespace rift::ast
 	Id AddUnaryOperator(TypeRef type, UnaryOperatorType operatorType);
 	Id AddBinaryOperator(TypeRef type, BinaryOperatorType operatorType);
 
-	// Creates a node that converts a value of one type into another. The input pin takes
+	// Creates a node that casts a value of one type into another. The input pin takes
 	// the source type and the output pin the target type
-	Id AddConversion(TypeRef type, Id fromTypeId, Id toTypeId);
+	Id AddCast(TypeRef type, Id fromTypeId, Id toTypeId);
 
 	Id FindChildByName(p::TIdScopeRef<CNamespace, CParent> scope, Id ownerId, p::Tag functionName);
 

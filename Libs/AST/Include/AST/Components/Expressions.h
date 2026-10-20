@@ -116,12 +116,12 @@ namespace rift::ast
 	};
 
 
-	// Explicit conversion of a value into another type. The input pin holds the value to
+	// Explicit cast of a value into another type. The input pin holds the value to
 	// convert and the output pin the converted value, so both types are known by the pins
-	struct CExprConversion : public CExpression
+	struct CExprCast : public CExpression
 	{
 		using Super = CExpression;
-		P_STRUCT(CExprConversion)
+		P_STRUCT(CExprCast)
 	};
 
 

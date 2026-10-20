@@ -62,6 +62,21 @@ namespace rift::ast::ConversionSystem
 			return !from.isSigned && to.size > from.size;
 		}
 
+		// The kind of cast that turns one numeric type into another
+		CastKind GetNumericCastKind(const NumericType& from, const NumericType& to)
+		{
+			if (!from.isFloat && !to.isFloat)
+			{
+				// Bool is an integer too
+				return CastKind::IntCast;
+			}
+			if (from.isFloat && to.isFloat)
+			{
+				return CastKind::FPToFP;
+			}
+			return from.isFloat ? CastKind::FPToInt : CastKind::IntToFP;
+		}
+
 		p::TArray<NumericType> GetNumericTypes(const NativeTypeIds& natives)
 		{
 			return {
@@ -111,12 +126,12 @@ namespace rift::ast::ConversionSystem
 					continue;
 				}
 				// Conversions that keep every value of the source type happen on their own,
-				// the rest need an explicit conversion node
+				// the rest need an explicit cast node
 				const ConversionFlags flags =
 				    IsValuePreserving(from, to) ? ConversionFlags::All : ConversionFlags::Explicit;
 				RegisterConversion(ast, {.fromType  = from.id,
 				                            .toType = to.id,
-				                            .method = ConversionMethod::ValueCast,
+				                            .kind   = GetNumericCastKind(from, to),
 				                            .flags  = flags});
 			}
 		}

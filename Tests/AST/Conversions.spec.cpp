@@ -2,6 +2,7 @@
 
 #include <AST/Systems/ConversionSystem.h>
 #include <AST/Systems/FunctionsSystem.h>
+#include <AST/Systems/TypeSystem.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/TypeUtils.h>
@@ -31,7 +32,7 @@ P_SPEC("AST.Conversions", []()
 		Expect(ast::ConversionSystem::CanConvertImplicitly(ast, natives.i32Id, natives.i64Id))
 		    .ToBeTrue();
 
-		// Narrowing conversions need an explicit conversion node
+		// Narrowing conversions need an explicit cast node
 		Expect(ast::ConversionSystem::CanConvertImplicitly(ast, natives.doubleId, natives.i32Id))
 		    .ToBeFalse();
 		Expect(ast::ConversionSystem::CanConvertImplicitly(ast, natives.doubleId, natives.floatId))
@@ -98,25 +99,88 @@ P_SPEC("AST.Conversions", []()
 		    .ToBeFalse();
 	});
 
-	It("Creates conversion nodes with typed pins", []()
+	It("Connects bool values into bool and integer inputs", []()
 	{
 		ast::Tree ast;
 		const auto& natives = ast.GetNativeTypes();
 
-		ast::Id conversionId =
-		    ast::AddConversion({ast, ast::NoId}, natives.doubleId, natives.i32Id);
-		Expect(conversionId != ast::NoId).ToBeTrue();
-		Expect(ast.Has<ast::CExprConversion>(conversionId)).ToBeTrue();
+		ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
+		ast::AddFunctionInput(ast, functionId, "flag", natives.boolId);
+		ast::AddFunctionInput(ast, functionId, "value", natives.i64Id);
+		ast::Id callId = ast::AddCall({ast, ast::NoId}, functionId);
+		ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
 
-		const auto& inputs  = ast.Get<ast::CExprInputs>(conversionId);
-		const auto& outputs = ast.Get<ast::CExprOutputs>(conversionId);
+		const auto& callInputs = ast.Get<ast::CExprInputs>(callId);
+		Expect(callInputs.pinIds.Size()).ToEqual(2u);
+
+		ast::Id literalId            = ast::AddLiteral({ast, ast::NoId}, natives.boolId);
+		const ast::ExprOutput output = ast::GetExprOutputFromPin(ast, literalId);
+
+		// A bool value fits a bool input
+		Expect(
+		    ast::TryConnectExpr(ast, output, ast::GetExprInputFromPin(ast, callInputs.pinIds[0])))
+		    .ToBeTrue();
+
+		// And converts on its own into an integer one
+		Expect(
+		    ast::TryConnectExpr(ast, output, ast::GetExprInputFromPin(ast, callInputs.pinIds[1])))
+		    .ToBeTrue();
+
+		// The condition of an if takes a bool too
+		ast::Id ifId         = ast::AddIf({ast, ast::NoId});
+		const auto& ifInputs = ast.Get<ast::CExprInputs>(ifId);
+		Expect(ifInputs.pinIds.Size()).ToEqual(1u);
+		Expect(ast::TryConnectExpr(ast, output, ast::GetExprInputFromPin(ast, ifInputs.pinIds[0])))
+		    .ToBeTrue();
+	});
+
+	It("Resolves the types of the pins from their names", []()
+	{
+		ast::Tree ast;
+		const auto& natives = ast.GetNativeTypes();
+
+		Id typeId    = ast::CreateType(ast, p::Tag{"TestType"}, "TestType", "");
+		Id literalId = ast::AddLiteral({ast, typeId}, natives.boolId);
+		Id castId    = ast::AddCast({ast, typeId}, natives.boolId, natives.i64Id);
+
+		// Loading a file doesn't keep the resolved type ids, every pin resolves its type
+		// again from the name stored with it
+		for (Id id : p::FindAllIdsWith<ast::CExprTypeId>(ast))
+		{
+			ast.Remove<ast::CExprTypeId>(id);
+		}
+		ast::TypeSystem::ResolveExprTypeIds(ast);
+
+		const Id inputPinId  = ast.Get<ast::CExprInputs>(castId).pinIds[0];
+		const Id outputPinId = ast.Get<ast::CExprOutputs>(castId).pinIds[0];
+		Expect(ast::GetPinType(ast, literalId)).ToEqual(natives.boolId);
+		Expect(ast::GetPinType(ast, inputPinId)).ToEqual(natives.boolId);
+		Expect(ast::GetPinType(ast, outputPinId)).ToEqual(natives.i64Id);
+
+		// And the bool literal goes into the bool input of the cast
+		Expect(ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, literalId),
+		           ast::GetExprInputFromPin(ast, inputPinId)))
+		    .ToBeTrue();
+	});
+
+	It("Creates cast nodes with typed pins", []()
+	{
+		ast::Tree ast;
+		const auto& natives = ast.GetNativeTypes();
+
+		ast::Id castId = ast::AddCast({ast, ast::NoId}, natives.doubleId, natives.i32Id);
+		Expect(castId != ast::NoId).ToBeTrue();
+		Expect(ast.Has<ast::CExprCast>(castId)).ToBeTrue();
+
+		const auto& inputs  = ast.Get<ast::CExprInputs>(castId);
+		const auto& outputs = ast.Get<ast::CExprOutputs>(castId);
 		Expect(inputs.pinIds.Size()).ToEqual(1u);
 		Expect(outputs.pinIds.Size()).ToEqual(1u);
 		Expect(ast.Get<ast::CExprTypeId>(inputs.pinIds[0]).id).ToEqual(natives.doubleId);
 		Expect(ast.Get<ast::CExprTypeId>(outputs.pinIds[0]).id).ToEqual(natives.i32Id);
 	});
 
-	It("Converts values through a conversion node", []()
+	It("Casts values through a cast node", []()
 	{
 		ast::Tree ast;
 		const auto& natives = ast.GetNativeTypes();
@@ -126,19 +190,18 @@ P_SPEC("AST.Conversions", []()
 		ast::Id callId = ast::AddCall({ast, ast::NoId}, functionId);
 		ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
 
-		ast::Id conversionId =
-		    ast::AddConversion({ast, ast::NoId}, natives.doubleId, natives.i32Id);
+		ast::Id castId = ast::AddCast({ast, ast::NoId}, natives.doubleId, natives.i32Id);
 
-		const auto& conversionInputs  = ast.Get<ast::CExprInputs>(conversionId);
-		const auto& conversionOutputs = ast.Get<ast::CExprOutputs>(conversionId);
-		const auto& callInputs        = ast.Get<ast::CExprInputs>(callId);
+		const auto& castInputs  = ast.Get<ast::CExprInputs>(castId);
+		const auto& castOutputs = ast.Get<ast::CExprOutputs>(castId);
+		const auto& callInputs  = ast.Get<ast::CExprInputs>(callId);
 
-		// The Double value goes into the conversion, and its result into the argument
+		// The Double value goes into the cast, and its result into the argument
 		ast::Id literalId = ast::AddLiteral({ast, ast::NoId}, natives.doubleId);
 		Expect(ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, literalId),
-		           ast::GetExprInputFromPin(ast, conversionInputs.pinIds[0])))
+		           ast::GetExprInputFromPin(ast, castInputs.pinIds[0])))
 		    .ToBeTrue();
-		Expect(ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, conversionOutputs.pinIds[0]),
+		Expect(ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, castOutputs.pinIds[0]),
 		           ast::GetExprInputFromPin(ast, callInputs.pinIds[0])))
 		    .ToBeTrue();
 	});

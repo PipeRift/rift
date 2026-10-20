@@ -782,9 +782,9 @@ namespace rift::editor::Graph
 		}
 	}
 
-	void DrawConversions(ast::Tree& ast, const TArray<ast::Id>& children)
+	void DrawCasts(ast::Tree& ast, const TArray<ast::Id>& children)
 	{
-		for (ast::Id id : FindIdsWith<ast::CExprConversion>(ast, children))
+		for (ast::Id id : FindIdsWith<ast::CExprCast>(ast, children))
 		{
 			const auto* inputs  = ast.TryGet<const ast::CExprInputs>(id);
 			const auto* outputs = ast.TryGet<const ast::CExprOutputs>(id);
@@ -962,7 +962,7 @@ namespace rift::editor::Graph
 				DrawIfs(ast, children);
 				DrawUnaryOperators(ast, children);
 				DrawBinaryOperators(ast, children);
-				DrawConversions(ast, children);
+				DrawCasts(ast, children);
 
 				// Links
 				DrawStatementLinks(ast, children);

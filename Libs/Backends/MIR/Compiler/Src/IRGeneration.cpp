@@ -375,9 +375,9 @@ namespace rift::MIR
 		{
 			AddBinaryOperator(output.nodeId, *binary);
 		}
-		else if (scope.Has<ast::CExprConversion>(output.nodeId))
+		else if (scope.Has<ast::CExprCast>(output.nodeId))
 		{
-			AddConversion(output.nodeId);
+			AddCast(output.nodeId);
 		}
 		else
 		{
@@ -412,9 +412,14 @@ namespace rift::MIR
 			return;
 		}
 
-		switch (conversion->method)
+		switch (conversion->kind)
 		{
-			case ast::ConversionMethod::ValueCast: {
+			// Every numeric cast is expressed as a C cast, no matter which instruction a
+			// backend would lower it to
+			case ast::CastKind::IntCast:
+			case ast::CastKind::FPToFP:
+			case ast::CastKind::IntToFP:
+			case ast::CastKind::FPToInt: {
 				const auto* irType = scope.TryGet<const CMIRType>(targetType);
 				if (!irType) [[unlikely]]
 				{
@@ -463,13 +468,13 @@ namespace rift::MIR
 		code->push_back(')');
 	}
 
-	void CGenerator::AddConversion(ast::Id id)
+	void CGenerator::AddCast(ast::Id id)
 	{
 		const auto* inputs  = scope.TryGet<const ast::CExprInputs>(id);
 		const auto* outputs = scope.TryGet<const ast::CExprOutputs>(id);
 		if (!inputs || inputs->linkedOutputs.IsEmpty() || !outputs || outputs->pinIds.IsEmpty())
 		{
-			compiler.Error("Conversion without a connected value");
+			compiler.Error("Cast without a connected value");
 			return;
 		}
 
@@ -477,7 +482,7 @@ namespace rift::MIR
 		const ast::Id targetType = ast::GetPinType(scope, outputs->pinIds[0]);
 		if (p::IsNone(sourceType) || p::IsNone(targetType))
 		{
-			compiler.Error("Conversion between invalid types");
+			compiler.Error("Cast between invalid types");
 			return;
 		}
 
@@ -485,13 +490,18 @@ namespace rift::MIR
 		    ast::ConversionSystem::FindConversion(compiler.ast, sourceType, targetType);
 		if (!registered) [[unlikely]]
 		{
-			compiler.Error("Unknown conversion between types");
+			compiler.Error("No conversion is registered between the types of the cast");
 			return;
 		}
 
-		switch (registered->method)
+		switch (registered->kind)
 		{
-			case ast::ConversionMethod::ValueCast: {
+			// Every numeric cast is expressed as a C cast, no matter which instruction a
+			// backend would lower it to
+			case ast::CastKind::IntCast:
+			case ast::CastKind::FPToFP:
+			case ast::CastKind::IntToFP:
+			case ast::CastKind::FPToInt: {
 				const auto* irType = scope.TryGet<const CMIRType>(targetType);
 				if (!irType) [[unlikely]]
 				{
