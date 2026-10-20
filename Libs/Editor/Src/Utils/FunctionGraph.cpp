@@ -55,6 +55,12 @@ namespace rift::editor::Graph
 		outHeight            = p::Max(gridSize - padding.y * 2.f, 1.f);
 	}
 
+	// Nodes always sit on whole grid tiles, whatever their pins say
+	static v2 SnapToGrid(const v2& position)
+	{
+		return v2{p::Round(position.x), p::Round(position.y)};
+	}
+
 	namespace
 	{
 		// Persists the current zoom after it stops changing, so scrolling does not write the
@@ -839,10 +845,12 @@ namespace rift::editor::Graph
 				continue;
 			}
 
-			// Move the node by the distance between both pins, so they end up overlapping
+			// Move the node by the distance between both pins, so they end up overlapping, and
+			// keep it on the grid
 			const v2 origin = Nodes::GetNodeGridSpacePos(pending.castId);
-			const v2 position =
+			const v2 offset =
 			    (origin + (inputPosition - outputPosition) / zoom) * settings.GetInvGridSize();
+			const v2 position                                    = SnapToGrid(offset);
 			ast.GetOrAdd<CNodePosition>(pending.castId).position = position;
 			SetNodePosition(pending.castId, position);
 		}
@@ -890,6 +898,10 @@ namespace rift::editor::Graph
 				BeginExprOutput(ast, outputs->pinIds[0], false);
 				UI::TextUnformatted("");
 				EndExprOutput(false);
+
+				// The node is as big as the group ends, so the cursor is left at the bottom
+				// right corner of the tile area. Otherwise the item spacing would add up
+				ImGui::SetCursorPos(ImVec2{start.x + contentWidth, start.y + contentHeight});
 
 				ImGui::PopFont();
 			}

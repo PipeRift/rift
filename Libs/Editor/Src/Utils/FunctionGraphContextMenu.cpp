@@ -533,7 +533,7 @@ namespace rift::editor::Graph
 			ContextTreePop(filter);
 		}
 
-		if (ContextTreeNode("Conversions", filter))
+		if (ContextTreeNode("Casts", filter))
 		{
 			String name;
 			for (const ast::Conversion& conversion : ast::ConversionSystem::GetConversions(ast))
