@@ -36,6 +36,9 @@ namespace rift::editor::Graph
 
 	namespace
 	{
+		// Grid tiles moved per key press while shift is held
+		constexpr float fastMoveTiles = 5.f;
+
 		// Persists the current zoom after it stops changing, so scrolling does not write the
 		// settings file on every notch.
 		void PersistZoom()
@@ -962,7 +965,7 @@ namespace rift::editor::Graph
 				ast::RemoveNodes(ast, Nodes::GetSelectedNodes());
 			}
 
-			// Move selected nodes by one grid tile in the pressed direction
+			// Move selected nodes in the pressed direction, one grid tile at a time
 			const ImGuiKey directionKeys[4] = {
 			    ImGuiKey_UpArrow, ImGuiKey_DownArrow, ImGuiKey_LeftArrow, ImGuiKey_RightArrow};
 			const v2 directionDeltas[4] = {
@@ -971,6 +974,9 @@ namespace rift::editor::Graph
                 {-1.f, 0.f },
                 {1.f,  0.f }
             };
+			const bool fastMove =
+			    UI::IsKeyDown(ImGuiKey_LeftShift) || UI::IsKeyDown(ImGuiKey_RightShift);
+			const float step = fastMove ? fastMoveTiles : 1.f;
 			for (int i = 0; i < 4; ++i)
 			{
 				if (UI::IsKeyPressed(directionKeys[i]))
@@ -981,7 +987,8 @@ namespace rift::editor::Graph
 						ScopedChange(ast, selectedNodes);
 						for (ast::Id nodeId : selectedNodes)
 						{
-							const v2 newPosition = GetNodePosition(nodeId) + directionDeltas[i];
+							const v2 newPosition =
+							    GetNodePosition(nodeId) + directionDeltas[i] * step;
 							SetNodePosition(nodeId, newPosition);
 							ast.GetOrAdd<CNodePosition>(nodeId).position = newPosition;
 						}
