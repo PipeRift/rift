@@ -12,8 +12,5 @@ namespace rift::ast
 	struct SLoadQueue
 	{
 		P_STRUCT(SLoadQueue)
-
-		p::TArray<Id> pendingSyncLoad;
-		p::TArray<Id> pendingAsyncLoad;
 	};
 }    // namespace rift::ast

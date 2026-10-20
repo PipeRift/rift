@@ -89,14 +89,9 @@ namespace rift::editor::Graph
 		return invGridSize;
 	}
 
-	float Settings::GetSpaceHeight(u32 height) const
+	float Settings::GetSpaceHeight() const
 	{
-		return (settings.GetGridSize() - (settings.verticalMargin * 2.f)) * Nodes::GetZoom();
-	}
-
-	v2 Settings::GetContentPadding() const
-	{
-		return {0.f, (settings.verticalMargin + settings.verticalPadding) * Nodes::GetZoom()};
+		return (gridSize - (verticalMargin * 2.f)) * Nodes::GetZoom();
 	}
 
 	v2 Settings::GetGridPosition(v2 screenPosition) const
@@ -127,7 +122,6 @@ namespace rift::editor::Graph
 
 		Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
 		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::ToHovered(pinColor));
-
 		Nodes::BeginInput(i32(id.value),
 		    isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
 	}
@@ -155,7 +149,6 @@ namespace rift::editor::Graph
 
 		Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
 		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::ToHovered(pinColor));
-
 		Nodes::BeginOutput(i32(id.value),
 		    isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
 	}
@@ -351,7 +344,7 @@ namespace rift::editor::Graph
 		{
 			BeginExprOutput(ast, id, false);
 
-			const float zoom = Nodes::GetZoom();
+			const float zoom     = Nodes::GetZoom();
 			const float gridSize = settings.GetGridSize() * zoom;
 			const v2 padding     = Nodes::GetStyle().NodePadding * zoom;
 			const float fontSize = p::Max(gridSize - 2.f * padding.y, 1.f);
@@ -553,23 +546,19 @@ namespace rift::editor::Graph
 		Nodes::PushStyleVar(Nodes::StyleVar_PinTriangleSideLength, 10.f);
 		Nodes::PushStyleVar(Nodes::StyleVar_PinDiamondSideLength, 10.f);
 		Nodes::PushStyleVar(Nodes::StyleVar_NodePadding, v2(8.f, 1.f));
-
 		Nodes::PushStyleVar(Nodes::StyleVar_NodeBorderThickness, 0.f);
-
-		// UI::PushStyleCompact();
 	}
 
 	void PopNodeStyle()
 	{
-		// UI::PopStyleCompact();
-		Nodes::PopStyleVar(4);
+		Nodes::PopStyleVar(6);
 	}
 
 	void PushInnerNodeStyle()
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
 		const float padding =
-		    (settings.GetSpaceHeight(1) - GImGui->FontSize) * 0.5f - settings.verticalPadding;
+		    (settings.GetSpaceHeight() - GImGui->FontSize) * 0.5f - settings.verticalPadding;
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, p::v2{style.FramePadding.x, padding});
 		ImGui::PushStyleVar(
@@ -618,7 +607,6 @@ namespace rift::editor::Graph
 
 	void DrawVariableRefs(ast::Tree& ast, const TArray<ast::Id>& children)
 	{
-		String name;
 		for (ast::Id id : FindIdsWith<ast::CExprDeclRefId>(ast, children))
 		{
 			ast::Id variableId = ast.Get<const ast::CExprDeclRefId>(id).declarationId;

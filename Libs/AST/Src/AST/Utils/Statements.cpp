@@ -181,9 +181,9 @@ namespace rift::ast
 		return false;
 	}
 
-	Id GetPreviousStmt(p::TIdScopeRef<CStmtInput> scope, Id stmtIds)
+	Id GetPreviousStmt(p::TIdScopeRef<CStmtInput> scope, Id stmtId)
 	{
-		if (const auto* input = scope.TryGet<const CStmtInput>(stmtIds))
+		if (const auto* input = scope.TryGet<const CStmtInput>(stmtId))
 		{
 			return input->linkOutputNode;
 		}
@@ -194,7 +194,7 @@ namespace rift::ast
 	    p::TIdScopeRef<CStmtInput> scope, p::TView<const Id> stmtIds, p::TArray<Id>& prevStmtIds)
 	{
 		prevStmtIds.ReserveMore(stmtIds.Size());
-		for (const Id stmtId : stmtIds)
+		for (Id stmtId : stmtIds)
 		{
 			if (const auto* input = scope.TryGet<const CStmtInput>(stmtId))
 			{
@@ -203,9 +203,9 @@ namespace rift::ast
 		}
 	}
 
-	p::TView<Id> GetNextStmts(p::TIdScopeRef<CStmtOutputs> scope, Id stmtIds)
+	p::TView<Id> GetNextStmts(p::TIdScopeRef<CStmtOutputs> scope, Id stmtId)
 	{
-		if (const auto* output = scope.TryGet<const CStmtOutputs>(stmtIds))
+		if (const auto* output = scope.TryGet<const CStmtOutputs>(stmtId))
 		{
 			return output->linkInputNodes;
 		}
@@ -216,7 +216,7 @@ namespace rift::ast
 	    p::TIdScopeRef<CStmtOutputs> scope, p::TView<const Id> stmtIds, p::TArray<Id>& nextStmtIds)
 	{
 		nextStmtIds.ReserveMore(stmtIds.Size());
-		for (const Id stmtId : stmtIds)
+		for (Id stmtId : stmtIds)
 		{
 			if (const auto* output = scope.TryGet<const CStmtOutputs>(stmtId))
 			{

@@ -83,6 +83,7 @@ Build/          - Build output (do not edit)
 - Static analysis: cppcheck via GitHub Action
 - Periodic format: auto-applies clang-format on schedule (Mon/Wed/Sat)
 - Release: triggered by `v*.*.*` tags, builds then publishes zips
+- Commit naming: `[AREA] Commit name`. e.g: `[AST] Refactored expressions`. Some areas: AST, EDITOR, CICD. If area not clear, dont write.
 
 ## PR Rules
 

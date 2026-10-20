@@ -20,13 +20,11 @@ namespace rift
 	void Compiler::Error(p::StringView str)
 	{
 		p::Error(str);
-		CompileError newError{};
-		newError.text = str;
-		errors.Add(newError);
+		errors.AddRef().text = str;
 	}
 
 
-	void Build(ast::Tree& ast, const CompilerConfig& config, p::TPtr<Backend> backend)
+	void Build(ast::Tree& ast, const CompilerConfig& config, const p::TPtr<Backend>& backend)
 	{
 		Compiler compiler{ast, config};
 

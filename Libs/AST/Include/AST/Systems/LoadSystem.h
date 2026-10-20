@@ -8,11 +8,6 @@
 #include <PipeECS.h>
 
 
-namespace rift::ast
-{
-	struct Tree;
-}
-
 namespace rift::ast::LoadSystem
 {
 	struct ModuleTypePaths

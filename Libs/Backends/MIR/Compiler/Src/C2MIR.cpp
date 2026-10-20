@@ -2,8 +2,10 @@
 
 #include "C2MIR.h"
 
+#include <AST/Components/CModule.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Compiler/Compiler.h>
+#include <PipeECS.h>
 extern "C"
 {
 #include <c2mir/c2mir.h>
@@ -82,7 +84,8 @@ namespace rift::MIR
 	void CToMIRModule(Compiler& compiler, MIR_context* ctx, c2mir_options& options, p::Tag name,
 	    const CMIRModule& module)
 	{
-		auto getCode = [](void* data) -> p::i32 {
+		auto getCode = [](void* data) -> p::i32
+		{
 			const char*& codeLeft = *static_cast<const char**>(data);
 			if (*codeLeft == '\0')
 			{

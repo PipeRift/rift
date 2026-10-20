@@ -13,7 +13,6 @@ namespace rift::ast
 {
 	struct NativeTypeIds
 	{
-		ast::Id voidId   = ast::NoId;
 		ast::Id boolId   = ast::NoId;
 		ast::Id floatId  = ast::NoId;
 		ast::Id doubleId = ast::NoId;

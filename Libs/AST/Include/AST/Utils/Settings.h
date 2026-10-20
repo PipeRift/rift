@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "AST/Utils/Settings.h"
 #include "Pipe/Files/Paths.h"
 
 #include <Pipe/Files/Files.h>

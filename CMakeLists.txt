@@ -58,11 +58,7 @@ if(CLANG_FORMAT_EXE)
     # Additional targets to perform clang-format/clang-tidy
     file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS
         Apps/**/*.cpp Apps/**/*.h
-        Libs/AST/**/*.cpp Libs/AST/**/*.h
-        Libs/UI/**/*.cpp Libs/UI/**/*.h
-        Libs/Pipe/Include/**/*.cpp Libs/Pipe/Include/**/*.h
-        Libs/Pipe/Src/**/*.cpp Libs/Pipe/Src/**/*.h
-        Libs/Pipe/Tests/**/*.cpp Libs/Pipe/Tests/**/*.h
+        Libs/**/*.cpp Libs/**/*.h
         Tests/**/*.cpp Tests/**/*.h
     )
 
@@ -73,12 +69,15 @@ endif()
 if(CLANG_TIDY_EXE)
     file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS
         Apps/**/*.cpp
-        Libs/AST/**/*.cpp
-        Libs/UI/**/*.cpp
-        Libs/Pipe/Include/**/*.cpp
-        Libs/Pipe/Src/**/*.cpp
+        Libs/**/*.cpp
+        Tests/**/*.cpp
     )
 
-    add_custom_target(ClangTidy COMMAND ${DO_CLANG_TIDY} --fix-errors --fix-notes ${ALL_SOURCE_FILES})
+    # Reports the findings without touching the sources
+    add_custom_target(ClangTidy COMMAND ${DO_CLANG_TIDY} ${ALL_SOURCE_FILES})
     set_target_properties (ClangTidy PROPERTIES FOLDER Util)
+
+    # Applies the fixes clang-tidy suggests
+    add_custom_target(ClangTidyFix COMMAND ${DO_CLANG_TIDY} --fix-errors --fix-notes ${ALL_SOURCE_FILES})
+    set_target_properties (ClangTidyFix PROPERTIES FOLDER Util)
 endif()

@@ -6,8 +6,8 @@
 #include "UI/UIImgui.h"
 
 #include <IconsFontAwesome5.h>
-#include <PipeTime.h>
 #include <PipeMath.h>
+#include <PipeTime.h>
 
 
 #define NOTIFY_USE_SEPARATOR
@@ -63,10 +63,7 @@ namespace rift::UI
 			{
 				return Phase::Wait;
 			}
-			else
-			{
-				return Phase::FadeIn;
-			}
+			return Phase::FadeIn;
 		}
 
 		p::Timespan GetElapsedTime() const
@@ -87,7 +84,7 @@ namespace rift::UI
 			}
 		}
 
-		p::Color GetColor()
+		p::Color GetColor() const
 		{
 			switch (toast.type)
 			{
@@ -107,19 +104,18 @@ namespace rift::UI
 
 			if (phase == Phase::FadeIn)
 			{
-				return (elapsed / Notification::fadeInDuration) * opacity;
+				return (elapsed / fadeInDuration) * opacity;
 			}
 			else if (phase == Phase::FadeOut)
 			{
 				const float invFadeOpacity =
-				    (elapsed - Notification::fadeOutDuration - toast.durationTime)
-				    / Notification::fadeOutDuration;
+				    (elapsed - fadeOutDuration - toast.durationTime) / fadeOutDuration;
 				return (1.f - invFadeOpacity) * opacity;
 			}
-			return 1.f * opacity;
+			return opacity;
 		}
 
-		void GetPositionAndPivot(float height, p::v2& position, p::v2& pivot)
+		void GetPositionAndPivot(float height, p::v2& position, p::v2& pivot) const
 		{
 			p::v2 pad{padding.x, padding.y + height};
 
@@ -140,7 +136,7 @@ namespace rift::UI
 
 	void AddNotification(Toast toast)
 	{
-		gNotifications.Add(Notification{toast});
+		gNotifications.Add(Notification{.toast = p::Move(toast)});
 	}
 
 	void DrawNotifications()
@@ -148,25 +144,22 @@ namespace rift::UI
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 2.f);
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, UI::GetNeutralColor(0));
 
+		// Remove toasts that have expired
+		gNotifications.RemoveIf([](const Notification& notification)
+		{
+			return notification.GetPhase() == Notification::Phase::Expired;
+		});
+
 		float height = 0.f;
 		for (p::i32 i = 0; i < gNotifications.Size(); ++i)
 		{
 			auto& notification = gNotifications[i];
 
-			// Remove toast if expired
-			if (notification.GetPhase() == Notification::Phase::Expired)
-			{
-				gNotifications.RemoveAt(i);
-				--i;
-				continue;
-			}
-
-			const float opacity      = notification.GetFadePercent();
+			const float fade         = notification.GetFadePercent();
 			p::LinearColor textColor = notification.GetColor();
-			textColor.a              = opacity;
+			textColor.a              = fade;
 
-			// ImGui::PushStyleColor(ImGuiCol_Text, textColor);
-			ImGui::SetNextWindowBgAlpha(opacity);
+			ImGui::SetNextWindowBgAlpha(fade);
 
 			p::v2 position, pivot;
 			notification.GetPositionAndPivot(height, position, pivot);
@@ -210,8 +203,8 @@ namespace rift::UI
 				const p::String& message = notification.toast.message;
 				if (wasTitleRendered && !message.empty())
 				{
-					ImGui::SetCursorPosY(
-					    GetCursorPosY() + 5.f);    // Must be a better way to do this!!!!
+					// Keep the text vertically centered with the title
+					ImGui::SetCursorPosY(GetCursorPosY() + 5.f);
 				}
 
 				// If a content is set
