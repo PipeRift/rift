@@ -35,6 +35,15 @@ namespace rift::editor::Graph
 {
 	static CNodePosition* currentNodeTransform = nullptr;
 
+	// Cast nodes spawned from a dropped link don't know their size until they are drawn, so
+	// they are placed once their first frame is over
+	struct PendingCast
+	{
+		ast::Id castId;
+		v2 pinPosition;    // In grid units, where the link was dropped
+	};
+	static TArray<PendingCast> pendingCasts;
+
 	namespace
 	{
 		// Persists the current zoom after it stops changing, so scrolling does not write the
@@ -533,6 +542,7 @@ namespace rift::editor::Graph
 	void Shutdown()
 	{
 		Nodes::DestroyContext();
+		pendingCasts.Clear();
 	}
 
 
@@ -782,6 +792,40 @@ namespace rift::editor::Graph
 		}
 	}
 
+	// Places a cast once its size is known, keeping the gap with the pin it feeds
+	static void SettleCastPosition(ast::Tree& ast, ast::Id castId)
+	{
+		for (i32 i = 0; i < pendingCasts.Size(); ++i)
+		{
+			if (pendingCasts[i].castId != castId)
+			{
+				continue;
+			}
+
+			const float pixelsPerGrid = Nodes::GetZoom() * settings.GetGridSize();
+			const v2 size             = Nodes::GetNodeDimensions(castId);
+			if (size.x <= 0.f || pixelsPerGrid <= 0.f)
+			{
+				return;
+			}
+
+			const PendingCast pending = pendingCasts[i];
+			pendingCasts.RemoveAt(i);
+			if (!ast.Has<ast::CExprCast>(castId))
+			{
+				return;    // The node is gone before it could be placed
+			}
+
+			const v2 units = size * (1.f / pixelsPerGrid);
+			const v2 position =
+			    v2{pending.pinPosition.x - units.x - 2.f, pending.pinPosition.y - units.y * 0.5f}
+			        .Floor();
+			ast.GetOrAdd<CNodePosition>(castId).position = position;
+			SetNodePosition(castId, position);
+			return;
+		}
+	}
+
 	void DrawCasts(ast::Tree& ast, const TArray<ast::Id>& children)
 	{
 		for (ast::Id id : FindIdsWith<ast::CExprCast>(ast, children))
@@ -815,6 +859,8 @@ namespace rift::editor::Graph
 			}
 			EndNode(ast);
 			PopNodeBackgroundColor();
+
+			SettleCastPosition(ast, id);
 		}
 	}
 
@@ -1031,12 +1077,25 @@ namespace rift::editor::Graph
 			Nodes::Id inputPin;
 			if (Nodes::IsLinkCreated(outputPin, inputPin))
 			{
-				ast::Id pinIds[2]{ast::Id::MakeRaw(outputPin), ast::Id::MakeRaw(inputPin)};
+				const ast::Id outputPinId = ast::Id::MakeRaw(outputPin);
+				const ast::Id inputPinId  = ast::Id::MakeRaw(inputPin);
+				ast::Id pinIds[2]{outputPinId, inputPinId};
 				ScopedChange(ast, pinIds);
-				ast::TryConnectStmt(ast, ast::Id::MakeRaw(outputPin), ast::Id::MakeRaw(inputPin));
-				ast::TryConnectExpr(ast,
-				    ast::GetExprOutputFromPin(ast, ast::Id::MakeRaw(outputPin)),
-				    ast::GetExprInputFromPin(ast, ast::Id::MakeRaw(inputPin)));
+				ast::TryConnectStmt(ast, outputPinId, inputPinId);
+
+				const ast::ExprOutput output = ast::GetExprOutputFromPin(ast, outputPinId);
+				const ast::ExprInput input   = ast::GetExprInputFromPin(ast, inputPinId);
+
+				// Values that only convert explicitly go through a cast node, placed right
+				// before the pin it feeds
+				const ast::Id castId = ast::ConnectExprWithCast({ast, typeId}, output, input);
+				if (!p::IsNone(castId))
+				{
+					// Provisional until the node is drawn and its size is known
+					const v2 pinPosition = settings.GetGridPosition(UI::GetMousePos());
+					ast.Add<CNodePosition>(castId, pinPosition + v2(-5.f, 0.f));
+					pendingCasts.Add({castId, pinPosition});
+				}
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))

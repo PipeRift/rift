@@ -163,6 +163,40 @@ P_SPEC("AST.Conversions", []()
 		    .ToBeTrue();
 	});
 
+	It("Inserts a cast node when a value only casts explicitly", []()
+	{
+		ast::Tree ast;
+		const auto& natives = ast.GetNativeTypes();
+
+		ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TakesInt");
+		ast::AddFunctionInput(ast, functionId, "value", natives.i32Id);
+		ast::Id callId = ast::AddCall({ast, ast::NoId}, functionId);
+		ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
+
+		const ast::ExprInput input =
+		    ast::GetExprInputFromPin(ast, ast.Get<ast::CExprInputs>(callId).pinIds[0]);
+		ast::Id doubleId             = ast::AddLiteral({ast, ast::NoId}, natives.doubleId);
+		const ast::ExprOutput output = ast::GetExprOutputFromPin(ast, doubleId);
+
+		// The Double doesn't fit the I32 on its own, so a cast is created in between
+		const ast::Id castId = ast::ConnectExprWithCast({ast, ast::NoId}, output, input);
+		Expect(castId != ast::NoId).ToBeTrue();
+		Expect(ast.Has<ast::CExprCast>(castId)).ToBeTrue();
+		Expect(ast.Get<ast::CExprInputs>(castId).linkedOutputs[0].pinId).ToEqual(doubleId);
+		Expect(ast.Get<ast::CExprInputs>(callId).linkedOutputs[0].nodeId).ToEqual(castId);
+
+		// A value that fits the pin on its own doesn't need a cast
+		ast::Id intId        = ast::AddLiteral({ast, ast::NoId}, natives.i8Id);
+		ast::Id secondCallId = ast::AddCall({ast, ast::NoId}, functionId);
+		ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
+		const ast::ExprInput secondInput =
+		    ast::GetExprInputFromPin(ast, ast.Get<ast::CExprInputs>(secondCallId).pinIds[0]);
+		Expect(ast::ConnectExprWithCast(
+		           {ast, ast::NoId}, ast::GetExprOutputFromPin(ast, intId), secondInput))
+		    .ToEqual(ast::NoId);
+		Expect(ast.Get<ast::CExprInputs>(secondCallId).linkedOutputs[0].nodeId).ToEqual(intId);
+	});
+
 	It("Creates cast nodes with typed pins", []()
 	{
 		ast::Tree ast;

@@ -85,6 +85,11 @@ namespace rift::ast
 	// the source type and the output pin the target type
 	Id AddCast(TypeRef type, Id fromTypeId, Id toTypeId);
 
+	// Connects the output into the input. When the value only converts with a cast, a cast
+	// node is created in between and returned, so the connection can be drawn with it.
+	// Returns NoId when the value connected directly or when it can't connect at all.
+	Id ConnectExprWithCast(TypeRef type, const ExprOutput& output, const ExprInput& input);
+
 	Id FindChildByName(p::TIdScopeRef<CNamespace, CParent> scope, Id ownerId, p::Tag functionName);
 
 	using RemoveScope =

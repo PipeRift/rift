@@ -13,6 +13,10 @@
 // NOTE: In expression graphs, the Link Id is the Input Pin Id
 namespace rift::ast
 {
+	// True when linking the output into the input would feed the output with itself
+	bool WouldExprLoop(p::TIdScopeRef<CExprInputs, CExprOutputs, CExprTypeId> scope,
+	    Id outputNodeId, Id inputNodeId);
+
 	bool CanConnectExpr(p::TIdScopeRef<CExprInputs, CExprOutputs, CExprTypeId> scope,
 	    const ExprOutput& output, const ExprInput& input);
 

@@ -10,7 +10,9 @@
 #include "AST/Components/Statements.h"
 #include "AST/Components/Views/CNodePosition.h"
 #include "AST/Statics/STypes.h"
+#include "AST/Systems/ConversionSystem.h"
 #include "AST/Systems/LoadSystem.h"
+#include "AST/Utils/Expressions.h"
 #include "AST/Utils/Namespaces.h"
 #include "AST/Utils/Paths.h"
 #include "AST/Utils/TransactionUtils.h"
@@ -487,6 +489,44 @@ namespace rift::ast
 			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
+	}
+
+	Id ConnectExprWithCast(TypeRef type, const ExprOutput& output, const ExprInput& input)
+	{
+		Tree& ast = type.GetContext();
+		if (TryConnectExpr(ast, output, input))
+		{
+			return NoId;    // The value converts into the pin on its own
+		}
+
+		if (output.IsNone() || input.IsNone() || output.nodeId == input.nodeId
+		    || WouldExprLoop(ast, output.nodeId, input.nodeId))
+		{
+			return NoId;    // Nothing a cast could fix
+		}
+
+		const Id outputType = GetPinType(ast, output.pinId);
+		const Id inputType  = GetPinType(ast, input.pinId);
+		if (IsNone(outputType) || IsNone(inputType) || outputType == inputType
+		    || !ConversionSystem::CanConvertExplicitly(ast, outputType, inputType))
+		{
+			return NoId;
+		}
+
+		// The cast goes in between, with its input taking the source type and its output the
+		// type of the pin it feeds
+		const Id castId         = AddCast(type, outputType, inputType);
+		const auto* castInputs  = ast.TryGet<const CExprInputs>(castId);
+		const auto* castOutputs = ast.TryGet<const CExprOutputs>(castId);
+		if (!castInputs || castInputs->pinIds.IsEmpty() || !castOutputs
+		    || castOutputs->pinIds.IsEmpty())
+		{
+			return NoId;
+		}
+
+		TryConnectExpr(ast, output, GetExprInputFromPin(ast, castInputs->pinIds[0]));
+		TryConnectExpr(ast, GetExprOutputFromPin(ast, castOutputs->pinIds[0]), input);
+		return castId;
 	}
 
 	Id FindChildByName(p::TIdScopeRef<CNamespace, CParent> scope, Id ownerId, Tag functionName)
