@@ -3,16 +3,6 @@
 
 #include "Components.h"
 
-#include <AST/Components/CModule.h>
-#include <AST/Components/Expressions.h>
-#include <AST/Components/Literals.h>
-#include <AST/Components/Statements.h>
-#include <AST/Components/Tags/CInvalid.h>
-#include <AST/Id.h>
-#include <Components/Declarations.h>
-#include <mir.h>
-#include <PipeECS.h>
-
 
 struct c2mir_options;
 

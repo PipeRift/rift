@@ -59,7 +59,6 @@ namespace rift::MIR
 
 	void CGenerator::GenerateModule(ast::Id moduleId)
 	{
-		const p::Tag name     = ast::GetModuleName(compiler.ast, moduleId);
 		CMIRModule& mirModule = compiler.ast.Add<CMIRModule>(moduleId);
 		code                  = &mirModule.code;
 
@@ -136,7 +135,8 @@ namespace rift::MIR
 	{
 		code->append("// Native Types\n");
 
-		// Mirrored by the runtime in Std's Std/String.h, which must keep the same member order.
+		// Mirrored by the runtime in Std's Std/IO.h and Std/Strings.h, which must keep the
+		// same member order.
 		// TODO: Emit p::StringView directly once Pipe defines its own string view, whose
 		// layout would be specified instead of depending on the host standard library.
 		code->append(
@@ -163,6 +163,7 @@ namespace rift::MIR
 			scope.Add(id, CMIRLiteral{.value = boolean.value ? "true" : "false"});
 		}
 		p::String strValue;
+		p::String value;
 		for (ast::Id id : FindAllIdsWith<ast::CLiteralIntegral>(scope))
 		{
 			strValue.clear();
@@ -185,7 +186,7 @@ namespace rift::MIR
 		{
 			strValue.clear();
 			const auto& string = scope.Get<const ast::CLiteralString>(id);
-			p::String value;
+			value.clear();
 			AppendCStringLiteral(value, string.value);
 			// Literals are views over static data
 			p::FormatTo(strValue, "(StringView){{{0}, {1}}}", value, string.value.size());
@@ -299,13 +300,15 @@ namespace rift::MIR
 				}
 			};
 
-			if (const auto* inputs = scope.TryGet<const ast::CExprOutputs>(id))
+			// A function's parameters are stored in CExprOutputs and its results in CExprInputs,
+			// which is the opposite of what the names suggest
+			if (const auto* paramPins = scope.TryGet<const ast::CExprOutputs>(id))
 			{
-				appendParams(inputs->pinIds, false);
+				appendParams(paramPins->pinIds, false);
 			}
-			if (const auto* outputs = scope.TryGet<const ast::CExprInputs>(id))
+			if (const auto* outputPins = scope.TryGet<const ast::CExprInputs>(id))
 			{
-				appendParams(outputs->pinIds, true);
+				appendParams(outputPins->pinIds, true);
 			}
 			p::Strings::RemoveFromEnd(signature, ", ");
 			signature.push_back(')');
@@ -349,12 +352,9 @@ namespace rift::MIR
 			}
 		}
 
-		if (splitId != ast::NoId)
+		if (splitId != ast::NoId && scope.Has<ast::CStmtIf>(splitId))
 		{
-			if (scope.Has<const ast::CStmtIf>(splitId))
-			{
-				AddStmtIf(splitId);
-			}
+			AddStmtIf(splitId);
 		}
 		// TODO: Resolve continuation block and generate it
 	}
@@ -449,7 +449,7 @@ namespace rift::MIR
 			compiler.Error("Call to an unknown function");
 			return;
 		}
-		if (!P_Ensure(scope.Has<const CMIRFunctionSignature>(functionId)))
+		if (!P_Ensure(scope.Has<CMIRFunctionSignature>(functionId)))
 		{
 			compiler.Error(p::Format(
 			    "Call to an invalid function: '{}'", ast::GetFullName(scope, functionId)));
@@ -469,11 +469,10 @@ namespace rift::MIR
 		}
 		code->push_back('(');
 
-		if (auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
+		if (const auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
 		{
-			for (p::i32 i = 0; i < inputs->linkedOutputs.Size(); ++i)
+			for (ast::ExprOutput output : inputs->linkedOutputs)
 			{
-				ast::ExprOutput output = inputs->linkedOutputs[i];
 				if (!output.IsNone())
 				{
 					AddExpr(output);

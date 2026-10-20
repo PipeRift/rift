@@ -11,7 +11,5 @@ namespace rift::ast
 	struct SModules
 	{
 		P_STRUCT(SModules)
-
-		p::TMap<p::Tag, ast::Id> modulesByPath;
 	};
 }    // namespace rift::ast

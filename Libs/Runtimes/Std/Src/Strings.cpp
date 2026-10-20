@@ -29,7 +29,7 @@ namespace
 		}
 		return result;
 	}
-}
+}    // namespace
 
 
 extern "C"
@@ -39,8 +39,8 @@ extern "C"
 		*out = ToView(text).size();
 	}
 
-	void StringSubstring(StringView text, unsigned long long start, unsigned long long count,
-	    StringView* out)
+	void StringSubstring(
+	    StringView text, unsigned long long start, unsigned long long count, StringView* out)
 	{
 		const p::StringView view = ToView(text);
 		if (start >= view.size())
@@ -49,13 +49,13 @@ extern "C"
 			return;
 		}
 		const p::StringView substring = view.substr(start, count);
-		*out = StringView{substring.data(), substring.size()};
+		*out                          = StringView{substring.data(), substring.size()};
 	}
 
 	void StringFind(StringView text, StringView needle, long long* out)
 	{
 		const p::sizet found = p::Strings::Find(ToView(text), ToView(needle));
-		*out = found == p::StringView::npos ? -1 : static_cast<long long>(found);
+		*out                 = found == p::StringView::npos ? -1 : static_cast<long long>(found);
 	}
 
 	void StringContains(StringView text, StringView needle, char* out)

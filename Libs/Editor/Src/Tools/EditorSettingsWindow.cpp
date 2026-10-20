@@ -41,11 +41,11 @@ namespace rift::editor
 			    || settings.zoom.step != zoomBefore.step)
 			{
 				// Keep the values sane and push them to the node editor.
-				settings.gridSize         = p::Clamp(settings.gridSize, 4.f, 64.f);
-				settings.zoom.min         = p::Clamp(settings.zoom.min, 0.05f, 0.95f);
-				settings.zoom.max         = p::Clamp(settings.zoom.max, 1.05f, 10.f);
-				settings.zoom.defaultZoom = p::Clamp(
-				    settings.zoom.defaultZoom, settings.zoom.min, settings.zoom.max);
+				settings.gridSize = p::Clamp(settings.gridSize, 4.f, 64.f);
+				settings.zoom.min = p::Clamp(settings.zoom.min, 0.05f, 0.95f);
+				settings.zoom.max = p::Clamp(settings.zoom.max, 1.05f, 10.f);
+				settings.zoom.defaultZoom =
+				    p::Clamp(settings.zoom.defaultZoom, settings.zoom.min, settings.zoom.max);
 				settings.zoom.step = p::Max(settings.zoom.step, 1.01f);
 
 				Graph::ApplyGraphSettings();

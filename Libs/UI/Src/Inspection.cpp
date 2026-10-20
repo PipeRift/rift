@@ -61,12 +61,9 @@ namespace rift::UI
 
 		// Type inspections belong to the current inspection context, so they are registered
 		// when the inspector appears
-		if (UI::IsWindowAppearing())
+		if (UI::IsWindowAppearing() && registerTypes)
 		{
-			if (registerTypes)
-			{
-				registerTypes();
-			}
+			registerTypes();
 		}
 		return true;
 	}

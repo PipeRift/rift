@@ -7,6 +7,7 @@
 #include "AST/Tree.h"
 #include "View.h"
 
+#include <Pipe/Core/Log.h>
 #include <Pipe/Core/Tag.h>
 #include <PipeECS.h>
 #include <PipeReflect.h>
@@ -18,6 +19,9 @@ namespace rift
 	void DisableModule(p::TypeId type);
 	void DisableAllModules();
 	p::TPtr<class Module> GetModule(p::TypeId type);
+
+	// Logger that writes every message to the standard output
+	p::Logger MakeLogger();
 
 
 	template<typename T>

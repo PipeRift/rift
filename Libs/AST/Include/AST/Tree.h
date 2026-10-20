@@ -13,19 +13,19 @@ namespace rift::ast
 {
 	struct NativeTypeIds
 	{
-		ast::Id voidId       = ast::NoId;
-		ast::Id boolId       = ast::NoId;
-		ast::Id floatId      = ast::NoId;
-		ast::Id doubleId     = ast::NoId;
-		ast::Id u8Id         = ast::NoId;
-		ast::Id i8Id         = ast::NoId;
-		ast::Id u16Id        = ast::NoId;
-		ast::Id i16Id        = ast::NoId;
-		ast::Id u32Id        = ast::NoId;
-		ast::Id i32Id        = ast::NoId;
-		ast::Id u64Id        = ast::NoId;
-		ast::Id i64Id        = ast::NoId;
-		ast::Id stringId     = ast::NoId;
+		ast::Id boolId   = ast::NoId;
+		ast::Id floatId  = ast::NoId;
+		ast::Id doubleId = ast::NoId;
+		ast::Id u8Id     = ast::NoId;
+		ast::Id i8Id     = ast::NoId;
+		ast::Id u16Id    = ast::NoId;
+		ast::Id i16Id    = ast::NoId;
+		ast::Id u32Id    = ast::NoId;
+		ast::Id i32Id    = ast::NoId;
+		ast::Id u64Id    = ast::NoId;
+		ast::Id i64Id    = ast::NoId;
+		ast::Id stringId = ast::NoId;
+
 		ast::Id stringViewId = ast::NoId;
 	};
 

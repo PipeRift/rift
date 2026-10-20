@@ -71,6 +71,25 @@ namespace rift::ast
 		return size;
 	}
 
+	bool Namespace::Contains(const Namespace& other) const
+	{
+		const p::i32 size      = Size();
+		const p::i32 otherSize = other.Size();
+		if (otherSize > size)
+		{
+			return false;
+		}
+
+		for (p::i32 i = 0; i < otherSize; ++i)
+		{
+			if (!(scopes[i] == other.scopes[i]))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
 	p::String Namespace::ToString(bool isLocal, char separator) const
 	{
 		p::String ns;

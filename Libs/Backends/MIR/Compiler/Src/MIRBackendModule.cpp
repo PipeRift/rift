@@ -203,18 +203,11 @@ namespace rift
 			return path;
 		}
 
-#if defined(__APPLE__)
-		const char* libExtension = ".dylib";
-#elif defined(_WIN32)
-		const char* libExtension = ".dll";
-#else
-		const char* libExtension = ".so";
-#endif
 		const p::String dir(p::GetParentPath(path));
 		const p::String stem(p::GetStem(path));
 		const p::String candidates[]{
-		    p::JoinPaths(dir, p::Format("lib{}{}", stem, libExtension)),
-		    p::JoinPaths(dir, p::Format("{}{}", stem, libExtension)),
+		    p::JoinPaths(dir, p::Format("lib{}{}", stem, gLibSuffix)),
+		    p::JoinPaths(dir, p::Format("{}{}", stem, gLibSuffix)),
 		};
 		for (const p::String& candidate : candidates)
 		{
@@ -258,16 +251,42 @@ namespace rift
 	}
 #endif
 
+	// Symbols that are already present in the current process and can be resolved by name
+	struct FallbackSymbol
+	{
+		const char* name;
+		void* symbol;
+	};
+
+	static const FallbackSymbol gFallbackSymbols[] = {
+#ifdef _WIN32
+	    {"LoadLibrary",    (void*)LoadLibrary   },
+	    {"FreeLibrary",    (void*)FreeLibrary   },
+	    {"GetProcAddress", (void*)GetProcAddress},
+#else
+	    {"dlopen", (void*)dlopen},
+	    {"dlerror", (void*)dlerror},
+	    {"dlclose", (void*)dlclose},
+	    {"dlsym", (void*)dlsym},
+	    {"stat", (void*)stat},
+	    {"lstat", (void*)lstat},
+	    {"fstat", (void*)fstat},
+	#if defined(__APPLE__) && defined(__aarch64__)
+	    {"__nan", (void*)NanValue},
+	    {"_MIR_set_code", (void*)_MIR_set_code},
+	#endif
+#endif
+	};
+
 	static void* ImportResolver(const char* name)
 	{
-		void *handler, *sym = nullptr;
+		void* sym = nullptr;
 
 		for (Lib& stdLib : gStdLibs)
 		{
-			handler = stdLib.handler;
-			if (handler)
+			if (stdLib.handler)
 			{
-				sym = dlsym(handler, name);
+				sym = dlsym(stdLib.handler, name);
 				if (sym)
 				{
 					break;
@@ -297,59 +316,13 @@ namespace rift
 
 		if (sym == nullptr)
 		{
-#ifdef _WIN32
-			if (strcmp(name, "LoadLibrary") == 0)
+			for (const auto& fallback : gFallbackSymbols)
 			{
-				return LoadLibrary;
+				if (strcmp(name, fallback.name) == 0)
+				{
+					return fallback.symbol;
+				}
 			}
-			if (strcmp(name, "FreeLibrary") == 0)
-			{
-				return FreeLibrary;
-			}
-			if (strcmp(name, "GetProcAddress") == 0)
-			{
-				return GetProcAddress;
-			}
-#else
-			if (strcmp(name, "dlopen") == 0)
-			{
-				return (void*)dlopen;
-			}
-			if (strcmp(name, "dlerror") == 0)
-			{
-				return (void*)dlerror;
-			}
-			if (strcmp(name, "dlclose") == 0)
-			{
-				return (void*)dlclose;
-			}
-			if (strcmp(name, "dlsym") == 0)
-			{
-				return (void*)dlsym;
-			}
-			if (strcmp(name, "stat") == 0)
-			{
-				return (void*)stat;
-			}
-			if (strcmp(name, "lstat") == 0)
-			{
-				return (void*)lstat;
-			}
-			if (strcmp(name, "fstat") == 0)
-			{
-				return (void*)fstat;
-			}
-	#if defined(__APPLE__) && defined(__aarch64__)
-			if (strcmp(name, "__nan") == 0)
-			{
-				return (void*)NanValue;
-			}
-			if (strcmp(name, "_MIR_set_code") == 0)
-			{
-				return (void*)_MIR_set_code;
-			}
-	#endif
-#endif
 			fprintf(stderr, "can not load symbol %s\n", name);
 			CloseSTDLibs();
 			exit(1);
@@ -378,14 +351,14 @@ namespace rift
 
 		MIR::CToMIR(compiler, ctx);
 
-		MIR_item_t func, mainFunc = nullptr;
+		MIR_item_t mainFunc = nullptr;
 
 		{    // Find main
 			for (MIR_module_t module      = DLIST_HEAD(MIR_module_t, *MIR_get_module_list(ctx));
 			    module != nullptr; module = DLIST_NEXT(MIR_module_t, module))
 			{
-				for (func = DLIST_HEAD(MIR_item_t, module->items); func != nullptr;
-				    func  = DLIST_NEXT(MIR_item_t, func))
+				for (MIR_item_t func = DLIST_HEAD(MIR_item_t, module->items); func != nullptr;
+				    func             = DLIST_NEXT(MIR_item_t, func))
 				{
 					if (func->item_type == MIR_func_item && strcmp(func->u.func->name, "main") == 0)
 					{
@@ -404,6 +377,7 @@ namespace rift
 		if (compiler.HasErrors())
 		{
 			PrintBuildFinish(compiler);
+			MIR_finish(ctx);
 			return;
 		}
 
@@ -424,11 +398,6 @@ namespace rift
 		{
 			MIR_gen_set_optimize_level(ctx, (unsigned)compiler.config.optimization);
 		}
-		// if (gen_debug_level >= 0)
-		//{
-		//	MIR_gen_set_debug_file(ctx, i, stderr);
-		//	MIR_gen_set_debug_level(ctx, i, gen_debug_level);
-		// }
 
 		MIR_link(ctx, MIR_set_gen_interface, ImportResolver);
 

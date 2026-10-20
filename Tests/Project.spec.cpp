@@ -9,15 +9,11 @@
 #include <Pipe/Memory/OwnPtr.h>
 #include <PipeTest.h>
 
-#include <chrono>
-#include <thread>
-
 
 using namespace rift;
 using namespace p;
-using namespace std::chrono_literals;
 
-String testProjectPath = p::JoinPaths(PlatformPaths::GetCurrentPath(), "TestProject");
+const String testProjectPath = p::JoinPaths(PlatformPaths::GetCurrentPath(), "TestProject");
 
 
 P_SPEC("Project", []()

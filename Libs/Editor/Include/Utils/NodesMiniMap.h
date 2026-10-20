@@ -3,8 +3,8 @@
 #pragma once
 
 #include <AST/Id.h>
-#include <PipePlatform.h>
 #include <PipeMath.h>
+#include <PipePlatform.h>
 
 
 namespace rift::Nodes

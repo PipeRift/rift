@@ -39,13 +39,9 @@ namespace rift::editor
 		{
 			return GetTypeColor<i32>();
 		}
-		else if (id == nativeIds.stringId)
+		else if (id == nativeIds.stringId || id == nativeIds.stringViewId)
 		{
 			return GetTypeColor<String>();
-		}
-		else if (id == nativeIds.stringViewId)
-		{
-			return GetTypeColor<StringView>();
 		}
 		else if (ast.Has<ast::CDeclClass>(id))
 		{

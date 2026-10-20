@@ -13,7 +13,6 @@ namespace rift::ast
 	{
 		P_STRUCT(STypes)
 
-		p::TMap<p::Tag, Id> typesByName;
 		// TODO: Use StringView to point to CFileRef component's path.
 		// Current TMap lookup of stringviews seems unconsistent
 		p::TMap<p::Tag, Id> typesByPath;
