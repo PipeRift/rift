@@ -4,6 +4,7 @@
 #include "AST/Id.h"
 #include "AST/Tree.h"
 
+#include <Pipe/Core/EnumFlags.h>
 #include <PipeContainers.h>
 #include <PipeReflect.h>
 
@@ -21,27 +22,7 @@ namespace rift::ast
 		// Both implicit and explicit
 		All = Implicit | Explicit
 	};
-
-	constexpr CastFlags operator|(CastFlags lhs, CastFlags rhs)
-	{
-		return static_cast<CastFlags>(p::u8(lhs) | p::u8(rhs));
-	}
-
-	constexpr CastFlags operator&(CastFlags lhs, CastFlags rhs)
-	{
-		return static_cast<CastFlags>(p::u8(lhs) & p::u8(rhs));
-	}
-
-	constexpr CastFlags& operator|=(CastFlags& lhs, CastFlags rhs)
-	{
-		lhs = lhs | rhs;
-		return lhs;
-	}
-
-	constexpr bool HasFlag(CastFlags flags, CastFlags flag)
-	{
-		return (flags & flag) == flag;
-	}
+	P_DEFINE_FLAG_OPERATORS(CastFlags)
 
 
 	// How a backend produces the cast value. Mirrors the kinds of cast instructions
@@ -62,10 +43,15 @@ namespace rift::ast
 	// Describes how a value of one type becomes a value of another
 	struct Cast
 	{
-		Id fromType     = NoId;
-		Id toType       = NoId;
-		CastKind kind   = CastKind::IntCast;
-		CastFlags flags = CastFlags::None;
+		Id fromType   = NoId;
+		Id toType     = NoId;
+		CastKind kind = CastKind::IntCast;
+
+		// Casts are sorted by the types they go between, so they can be looked up in bulk
+		constexpr bool operator<(const Cast& other) const
+		{
+			return fromType != other.fromType ? fromType < other.fromType : toType < other.toType;
+		}
 	};
 
 
@@ -74,7 +60,10 @@ namespace rift::ast
 	{
 		P_STRUCT(SCasts)
 
-		p::TArray<Cast> casts;
+		// Casts a cast node can perform, including the implicit ones
+		p::TArray<Cast> explicitCasts;
+		// Casts a value can go through on its own
+		p::TArray<Cast> implicitCasts;
 	};
 }    // namespace rift::ast
 
@@ -82,27 +71,25 @@ namespace rift::ast
 namespace rift::ast::CastSystem
 {
 	// Adds a cast, replacing any previous cast between the same types
-	void RegisterCast(Tree& ast, const Cast& cast);
+	void RegisterCast(Tree& ast, const Cast& cast, CastFlags flags);
 
 	// Registers the casts between the built-in numeric types, following the C++
 	// rules: casts that keep every value of the source type are implicit, the
 	// rest (narrowing ones) need an explicit cast node
 	void RegisterNumericCasts(Tree& ast);
 
-	// The cast between two types, or nullptr when they can't be cast into each other
-	const Cast* FindCast(const Tree& ast, Id fromType, Id toType);
+	// The cast a value can go through on its own, or nullptr when there is none
+	const Cast* FindImplicitCast(const p::IdContext& ast, Id fromType, Id toType);
+	// The cast a cast node can perform, or nullptr when there is none
+	const Cast* FindExplicitCast(const p::IdContext& ast, Id fromType, Id toType);
 
-	// Every cast registered in the tree
-	p::TView<const Cast> GetCasts(const Tree& ast);
-
-	// Can a value of fromType become a toType with casts supporting all the required
-	// flags?
-	bool CanCast(const Tree& ast, Id fromType, Id toType, CastFlags required);
+	// Every cast a cast node can perform
+	p::TView<const Cast> GetCasts(const p::IdContext& ast);
 
 	// Can a value of fromType become a toType without an explicit cast node?
-	bool CanCastImplicitly(const Tree& ast, Id fromType, Id toType);
+	bool CanCastImplicitly(p::TIdScopeRef<> scope, Id fromType, Id toType);
 
 	// Can a cast node turn a fromType into a toType? Explicit casts also
 	// perform the implicit ones
-	bool CanCastExplicitly(const Tree& ast, Id fromType, Id toType);
+	bool CanCastExplicitly(p::TIdScopeRef<> scope, Id fromType, Id toType);
 }    // namespace rift::ast::CastSystem

@@ -83,12 +83,7 @@ namespace rift::ast
 
 	// Creates a node that casts a value of one type into another. The input pin takes
 	// the source type and the output pin the target type
-	Id AddCast(TypeRef type, Id fromTypeId, Id toTypeId);
-
-	// Connects the output into the input. When the value needs an explicit cast, a cast
-	// node is created in between and returned, so the connection can be drawn with it.
-	// Returns NoId when the value connected directly or when it can't connect at all.
-	Id ConnectExprWithCast(TypeRef type, const ExprOutput& output, const ExprInput& input);
+	Id AddExplicitCast(TypeRef type, Id fromTypeId, Id toTypeId);
 
 	Id FindChildByName(p::TIdScopeRef<CNamespace, CParent> scope, Id ownerId, p::Tag functionName);
 

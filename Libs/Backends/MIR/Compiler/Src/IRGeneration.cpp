@@ -397,16 +397,13 @@ namespace rift::MIR
 
 		// The value doesn't match the type of the pin it feeds, so it's cast into it.
 		// Only the casts that happen on their own can be used here
-		const ast::Cast* cast = ast::CastSystem::FindCast(compiler.ast, sourceType, targetType);
+		const ast::Cast* cast =
+		    ast::CastSystem::FindImplicitCast(compiler.ast, sourceType, targetType);
 		if (!cast) [[unlikely]]
 		{
-			compiler.Error("Cannot cast a value into the type of the pin it feeds");
-			AddExpr(output);
-			return;
-		}
-		if (!ast::HasFlag(cast->flags, ast::CastFlags::Implicit)) [[unlikely]]
-		{
-			compiler.Error("The value needs an explicit cast to fit the pin it feeds");
+			compiler.Error(ast::CastSystem::FindExplicitCast(compiler.ast, sourceType, targetType)
+			                   ? "The value needs an explicit cast to fit the pin it feeds"
+							   : "Cannot cast a value into the type of the pin it feeds");
 			AddExpr(output);
 			return;
 		}
@@ -486,7 +483,7 @@ namespace rift::MIR
 		}
 
 		const ast::Cast* registered =
-		    ast::CastSystem::FindCast(compiler.ast, sourceType, targetType);
+		    ast::CastSystem::FindExplicitCast(compiler.ast, sourceType, targetType);
 		if (!registered) [[unlikely]]
 		{
 			compiler.Error("No cast is registered between the types of the cast");

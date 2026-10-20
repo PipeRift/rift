@@ -750,7 +750,7 @@ namespace rift::editor::Graph
 					}
 					if (ContextCastItem(ast, cast))
 					{
-						Id newId = ast::AddCast({ast, typeId}, cast.fromType, cast.toType);
+						Id newId = ast::AddExplicitCast({ast, typeId}, cast.fromType, cast.toType);
 						SetPositionAndConnect(ast, newId, context);
 					}
 				}
