@@ -27,10 +27,10 @@
         },
         "CExprType": {
             "2": [
-                "String"
+                "StringView"
             ],
             "4": [
-                "String"
+                "StringView"
             ]
         },
         "CNamespace": {

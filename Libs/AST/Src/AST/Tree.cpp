@@ -99,6 +99,10 @@ namespace rift::ast
 		nativeTypes.stringId = AddId(*this);
 		Add<CDeclType, CDeclNative>(nativeTypes.stringId);
 		Add(nativeTypes.stringId, CNamespace{"String"});
+
+		nativeTypes.stringViewId = AddId(*this);
+		Add<CDeclType, CDeclNative>(nativeTypes.stringViewId);
+		Add(nativeTypes.stringViewId, CNamespace{"StringView"});
 	}
 
 	void Tree::CopyFrom(const Tree& other)

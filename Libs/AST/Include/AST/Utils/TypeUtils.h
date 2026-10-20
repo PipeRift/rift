@@ -66,6 +66,9 @@ namespace rift::ast
 	bool HasFunctions(p::TIdScopeRef<CDeclType> scope, Id typeId);
 	bool HasFunctionBodies(p::TIdScopeRef<CDeclType> scope, Id typeId);
 
+	/** Types that can be created from a literal value (see AddLiteral) */
+	bool CanCreateLiteral(const Tree& ast, Id typeId);
+
 	Id AddVariable(TypeRef type, p::Tag name);
 	Id AddFunction(TypeRef type, p::Tag name);
 

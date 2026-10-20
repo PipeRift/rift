@@ -63,6 +63,14 @@
                 ]
             }
         },
+        "CExprType": {
+            "4": [
+                "StringView"
+            ],
+            "6": [
+                "StringView"
+            ]
+        },
         "CNamespace": {
             "0": "Main",
             "1": "Main",

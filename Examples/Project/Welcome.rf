@@ -110,7 +110,7 @@
                 "Double"
             ],
             "7": [
-                "String"
+                "StringView"
             ],
             "8": [
                 "U32"

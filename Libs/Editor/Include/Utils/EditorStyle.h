@@ -48,6 +48,10 @@ namespace rift::editor
 		{
 			return Color::FromHex(0xBF54AE);
 		}
+		else if constexpr (IsSame<T, StringView>)
+		{
+			return Color::FromHex(0xA85ABF);
+		}
 		else if constexpr (IsObject<T>)
 		{
 			return Color::FromHex(0x545FBF);
