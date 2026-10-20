@@ -70,8 +70,7 @@ namespace rift::editor::Graph
 						{
 							return pinId;
 						}
-						if (IsNone(compatiblePin)
-						    && IsTypeCompatible(ast, sourceType, pinType))
+						if (IsNone(compatiblePin) && IsTypeCompatible(ast, sourceType, pinType))
 						{
 							compatiblePin = pinId;
 						}
@@ -89,8 +88,7 @@ namespace rift::editor::Graph
 						{
 							return pinId;
 						}
-						if (IsNone(compatiblePin)
-						    && IsTypeCompatible(ast, pinType, sourceType))
+						if (IsNone(compatiblePin) && IsTypeCompatible(ast, pinType, sourceType))
 						{
 							compatiblePin = pinId;
 						}

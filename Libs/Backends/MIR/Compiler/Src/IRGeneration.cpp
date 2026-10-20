@@ -414,8 +414,7 @@ namespace rift::MIR
 
 		switch (conversion->method)
 		{
-			case ast::ConversionMethod::ValueCast:
-			{
+			case ast::ConversionMethod::ValueCast: {
 				const auto* irType = scope.TryGet<const CMIRType>(targetType);
 				if (!irType) [[unlikely]]
 				{
@@ -492,8 +491,7 @@ namespace rift::MIR
 
 		switch (registered->method)
 		{
-			case ast::ConversionMethod::ValueCast:
-			{
+			case ast::ConversionMethod::ValueCast: {
 				const auto* irType = scope.TryGet<const CMIRType>(targetType);
 				if (!irType) [[unlikely]]
 				{
