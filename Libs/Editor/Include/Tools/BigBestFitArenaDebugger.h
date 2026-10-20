@@ -2,9 +2,9 @@
 #pragma once
 
 #include <Pipe/Core/StringView.h>
+#include <PipeMath.h>
 #include <PipeMemoryArenas.h>
 #include <PipePlatform.h>
-#include <PipeMath.h>
 
 
 namespace rift::editor

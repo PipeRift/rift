@@ -21,18 +21,10 @@ namespace rift::ast::FunctionsSystem
 	{
 		Id id;
 
-		Id functionId;
 		CExprInputs* functionInputs;
 		CExprOutputs* functionOutputs;
-
-		p::TArray<Id> inputArgs;
-		p::TArray<Id> outputArgs;
-		p::TArray<Id> invalidArgs;
-		p::TArray<Id> unrelatedCallChildren;
 	};
 
-
-	void Init(Tree& ast) {}
 
 	void ResolveCallFunctionIds(p::TIdScopeRef<p::Writes<CExprCallId>, CExprCall, CDeclFunction,
 	    CNamespace, CParent, CChild, CModule, CDeclNative>
@@ -145,7 +137,6 @@ namespace rift::ast::FunctionsSystem
 
 			CallToSync cache;
 			cache.id              = id;
-			cache.functionId      = call.functionId;
 			cache.functionOutputs = &scope.GetOrAdd<CExprOutputs>(call.functionId);
 			cache.functionInputs  = &scope.GetOrAdd<CExprInputs>(call.functionId);
 			calls.Add(cache);
@@ -327,15 +318,6 @@ namespace rift::ast::FunctionsSystem
 					{
 						scope.Add<CTmpInvalidKeep>(output.pinId);
 					}
-				}
-				else
-				{
-					// if (scope.Has<CInvalid>(pinId))
-					//{
-					//	// Remove invalid disconnected input
-					//	inputs.pinIds.RemoveAt(i);
-					//	inputs.linkedOutputs.RemoveAt(i);
-					// }
 				}
 			}
 		}

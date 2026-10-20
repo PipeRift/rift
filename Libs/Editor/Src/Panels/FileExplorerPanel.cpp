@@ -71,10 +71,7 @@ namespace rift::editor
 
 	void FileExplorerPanel::DrawList(ast::Tree& ast)
 	{
-		// if (dirty)
-		{
-			CacheProjectFiles(ast);
-		}
+		CacheProjectFiles(ast);
 
 		UI::BeginChild("Files");
 		if (UI::BeginPopupContextWindow())
@@ -293,8 +290,6 @@ namespace rift::editor
 	void FileExplorerPanel::CacheProjectFiles(
 	    TIdScopeRef<ast::CProject, ast::CModule, ast::CFileRef, ast::CDeclType> scope)
 	{
-		dirty = false;
-
 		folders.Clear();
 
 		// Set root folder (not displayed)
@@ -385,7 +380,6 @@ namespace rift::editor
 
 				UI::PushHeaderColor(UI::GetNeutralColor(1));
 				UI::PushStyleCompact();
-				const bool isProject = item.id == projectModuleId;
 				if (item.id == projectModuleId)    // Is project
 				{
 					flags |= ImGuiTreeNodeFlags_DefaultOpen;
@@ -416,7 +410,6 @@ namespace rift::editor
 					}
 					UI::TreePop();
 				}
-				DrawModuleActions(item.id, *module);
 			}
 			else    // Just a folder
 			{
@@ -447,21 +440,7 @@ namespace rift::editor
 			}
 			else if (Strings::EndsWith(fileName, ".rf"))
 			{
-				StringView icon;
-				if (ast::IsStructType(ast, item.id))
-				{
-					icon = ICON_FA_FILE_ALT;
-				}
-				else if (ast::IsClassType(ast, item.id))
-				{
-					icon = ICON_FA_FILE_INVOICE;
-				}
-				else if (ast::IsStaticType(ast, item.id))
-				{
-					icon = ICON_FA_FILE_WORD;
-				}
-
-				text = p::Format("{} {}{}", icon, fileName, dirty);
+				text = p::Format("{} {}{}", GetTypeIcon(ast, item.id), fileName, dirty);
 			}
 			else
 			{
@@ -559,9 +538,6 @@ namespace rift::editor
 			}
 		}
 	}
-
-	void FileExplorerPanel::DrawModuleActions(ast::Id id, ast::CModule& module) {}
-	void FileExplorerPanel::DrawTypeActions(ast::Id id, ast::CDeclType& type) {}
 
 	void FileExplorerPanel::CreateType(
 	    ast::Tree& ast, StringView title, p::Tag typeId, p::StringView folderPath)

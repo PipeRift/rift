@@ -483,7 +483,8 @@ namespace rift::Nodes
 		ImGuiStorage NodeIdxToSubmissionIdx;
 		ImVector<ast::Id> nodeSubmissionOrder;
 		ImVector<ast::Id> nodeIdsOverlappingWithMouse;
-		ImVector<PinIdx> occludedPinIndices;
+		// Channel where every node pin is drawn, above all the node channels
+		i32 pinChannelIdx = -1;
 
 		// Canvas extents
 		v2 CanvasOriginScreenSpace;

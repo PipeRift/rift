@@ -49,17 +49,6 @@ namespace rift::ast
 
 
 		Namespace() = default;
-		template<p::i32 M>
-		Namespace(p::TView<p::Tag> inScopes)
-		{
-			if (P_EnsureMsg(inScopes.Size() <= scopeCount, "Tag count can never exceed 8."))
-			{
-				for (p::i32 i = 0; i < inScopes.Size(); ++i)
-				{
-					scopes[i] = inScopes[i];
-				}
-			}
-		}
 		Namespace(p::StringView value);
 		// Prevent initializer list from stealing string constructor
 		Namespace(const p::String& value) : Namespace(p::StringView{value}) {}
@@ -75,6 +64,7 @@ namespace rift::ast
 		bool Equals(const Namespace& other) const;
 		bool IsEmpty() const;
 		p::i32 Size() const;
+		// True when this namespace lies within 'other', which is then its prefix
 		bool Contains(const Namespace& other) const;
 		p::String ToString(bool isLocal = false, char separator = '.') const;
 		p::Tag& First()
@@ -88,13 +78,13 @@ namespace rift::ast
 		p::Tag& Last()
 		{
 			const p::i32 size      = Size();
-			const p::i32 lastIndex = size > 0 ? (size - 1) : 0;    // Is Size is 0, last is first
+			const p::i32 lastIndex = size > 0 ? (size - 1) : 0;    // If size is 0, last is first
 			return scopes[lastIndex];
 		}
 		const p::Tag& Last() const
 		{
 			const p::i32 size      = Size();
-			const p::i32 lastIndex = size > 0 ? (size - 1) : 0;    // Is Size is 0, last is first
+			const p::i32 lastIndex = size > 0 ? (size - 1) : 0;    // If size is 0, last is first
 			return scopes[lastIndex];
 		}
 		bool operator==(const Namespace& other) const

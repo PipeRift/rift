@@ -21,12 +21,14 @@
 #include <Pipe/Files/Files.h>
 #include <PipeECS.h>
 
+#include <utility>
+
 
 namespace rift::ast
 {
 	static p::TArray<RiftType> gFileTypes;
 
-	auto gTypeComponents = [](auto& rw)
+	static auto gTypeComponents = [](auto& rw)
 	{
 		rw.template SerializePools<CChild, CDeclVariable, CDeclFunction, CExprBinaryOperator,
 		    CExprCall, CExprDeclRefId, CExprOutputs, CExprInputs, CStmtReturn, CExprType,
@@ -58,7 +60,7 @@ namespace rift::ast
 		{
 			ast.Add<CFileRef>(id, path);
 		}
-		InitTypeFromFileType(ast, id, typeId);
+		InitTypeFromFileType(ast, id, Move(typeId));
 
 		if (!name.IsNone() && !ast.Has<CNamespace>(id))
 		{
@@ -342,72 +344,58 @@ namespace rift::ast
 		ast.Add<CExprType>(id).type = GetNamespace(ast, literalTypeId);
 		ast.Add<CExprOutputs>(id).Add(id);
 
-		bool created        = false;
 		const auto& natives = ast.GetNativeTypes();
-		// TODO: Refactor this
 		if (literalTypeId == natives.boolId)
 		{
 			ast.Add<CLiteralBool>(id);
-			created = true;
 		}
 		else if (literalTypeId == natives.floatId)
 		{
 			ast.Add<CLiteralFloating>(id).type = FloatingType::F32;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.doubleId)
 		{
 			ast.Add<CLiteralFloating>(id).type = FloatingType::F64;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.u8Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::U8;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.u16Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::U16;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.u32Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::U32;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.u64Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::U64;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.i8Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::S8;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.i16Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::S16;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.i32Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::S32;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.i64Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::S64;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.stringId)
 		{
 			ast.Add<CLiteralString>(id);
-			created = true;
 		}
-
-		if (!created)
+		else
 		{
+			// Not a literal type, discard the node
 			p::RmId(ast, id);
 			return NoId;
 		}
@@ -424,8 +412,7 @@ namespace rift::ast
 		Tree& ast   = type.GetContext();
 		const Id id = p::AddId(ast);
 
-		ast.Add<CExprDeclRef>(id);
-		ast.Add<CExprOutputs>(id).Add(id);    // Types gets resolved by a system later
+		ast.Add<CExprOutputs>(id).Add(id);
 
 		const Id typeId = p::GetIdParent(ast, declId);
 		P_Check(!IsNone(typeId));
@@ -537,8 +524,11 @@ namespace rift::ast
 
 	const RiftType* FindFileType(p::Tag typeId)
 	{
-		const i32 index = gFileTypes.FindSorted(typeId);
-		return index != NO_INDEX ? gFileTypes.Data() + index : nullptr;
+		if (const i32 index = gFileTypes.FindSorted(typeId); index != NO_INDEX)
+		{
+			return gFileTypes.Data() + index;
+		}
+		return nullptr;
 	}
 
 	const RiftType* FindFileType(p::TIdScopeRef<ast::CDeclType> scope, ast::Id typeId)

@@ -52,53 +52,25 @@ namespace rift::ast
 		// Remove any previous native types
 		RmId(*this, p::FindAllIdsWith<CDeclNative>(*this));
 
-		nativeTypes.boolId = AddId(*this);
-		Add<CDeclType, CDeclNative>(nativeTypes.boolId);
-		Add(nativeTypes.boolId, CNamespace{"Bool"});
+		auto addNativeType = [this](Id& id, const char* name)
+		{
+			id = AddId(*this);
+			Add<CDeclType, CDeclNative>(id);
+			Add(id, CNamespace{name});
+		};
 
-		nativeTypes.floatId = AddId(*this);
-		Add<CDeclType, CDeclNative>(nativeTypes.floatId);
-		Add(nativeTypes.floatId, CNamespace{"Float"});
-
-		nativeTypes.doubleId = AddId(*this);
-		Add<CDeclType, CDeclNative>(nativeTypes.doubleId);
-		Add(nativeTypes.doubleId, CNamespace{"Double"});
-
-		nativeTypes.u8Id = AddId(*this);
-		Add<CDeclType, CDeclNative>(nativeTypes.u8Id);
-		Add(nativeTypes.u8Id, CNamespace{"U8"});
-
-		nativeTypes.i8Id = AddId(*this);
-		Add<CDeclType, CDeclNative>(nativeTypes.i8Id);
-		Add(nativeTypes.i8Id, CNamespace{"I8"});
-
-		nativeTypes.u16Id = AddId(*this);
-		Add<CDeclType, CDeclNative>(nativeTypes.u16Id);
-		Add(nativeTypes.u16Id, CNamespace{"U16"});
-
-		nativeTypes.i16Id = AddId(*this);
-		Add<CDeclType, CDeclNative>(nativeTypes.i16Id);
-		Add(nativeTypes.i16Id, CNamespace{"I16"});
-
-		nativeTypes.u32Id = AddId(*this);
-		Add<CDeclType, CDeclNative>(nativeTypes.u32Id);
-		Add(nativeTypes.u32Id, CNamespace{"U32"});
-
-		nativeTypes.i32Id = AddId(*this);
-		Add<CDeclType, CDeclNative>(nativeTypes.i32Id);
-		Add(nativeTypes.i32Id, CNamespace{"I32"});
-
-		nativeTypes.u64Id = AddId(*this);
-		Add<CDeclType, CDeclNative>(nativeTypes.u64Id);
-		Add(nativeTypes.u64Id, CNamespace{"U64"});
-
-		nativeTypes.i64Id = AddId(*this);
-		Add<CDeclType, CDeclNative>(nativeTypes.i64Id);
-		Add(nativeTypes.i64Id, CNamespace{"I64"});
-
-		nativeTypes.stringId = AddId(*this);
-		Add<CDeclType, CDeclNative>(nativeTypes.stringId);
-		Add(nativeTypes.stringId, CNamespace{"String"});
+		addNativeType(nativeTypes.boolId, "Bool");
+		addNativeType(nativeTypes.floatId, "Float");
+		addNativeType(nativeTypes.doubleId, "Double");
+		addNativeType(nativeTypes.u8Id, "U8");
+		addNativeType(nativeTypes.i8Id, "I8");
+		addNativeType(nativeTypes.u16Id, "U16");
+		addNativeType(nativeTypes.i16Id, "I16");
+		addNativeType(nativeTypes.u32Id, "U32");
+		addNativeType(nativeTypes.i32Id, "I32");
+		addNativeType(nativeTypes.u64Id, "U64");
+		addNativeType(nativeTypes.i64Id, "I64");
+		addNativeType(nativeTypes.stringId, "String");
 	}
 
 	void Tree::CopyFrom(const Tree& other)

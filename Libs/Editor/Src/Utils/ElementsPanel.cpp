@@ -50,9 +50,9 @@ namespace rift::editor
 			ImRect bb = UI::GetWorkRect({0.f, frameHeight}, false, v2::One());
 
 			bool selected = editor.selectedPropertyId == variableId;
-		ImGui::Selectable("##selectArea", &selected,
-		    ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap,
-		    ImVec2(0, frameHeight));
+			ImGui::Selectable("##selectArea", &selected,
+			    ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap,
+			    ImVec2(0, frameHeight));
 
 			if (selected)
 			{

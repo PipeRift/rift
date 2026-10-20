@@ -56,7 +56,7 @@ namespace rift::ast
 	// Resolve a module's name
 	p::Tag GetModuleName(p::TIdScopeRef<CNamespace, CFileRef> scope, Id moduleId);
 
-	// Resolve a module's name
+	// Resolve a module's path
 	p::StringView GetModulePath(p::TIdScopeRef<CFileRef> scope, Id moduleId);
 
 	/** Root of the runtime modules (Std) installed next to the Rift executable */

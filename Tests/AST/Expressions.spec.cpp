@@ -32,6 +32,67 @@ P_SPEC("AST.Expressions", []()
 		    .ToEqual(ast.Get<ast::CExprInputs>(id2).pinIds.Size());
 	});
 
+	It("Connects and disconnects expression pins", []()
+	{
+		ast::Tree ast;
+
+		const ast::Id add = ast::AddBinaryOperator({ast, ast::NoId}, ast::BinaryOperatorType::Add);
+		const ast::Id mul = ast::AddBinaryOperator({ast, ast::NoId}, ast::BinaryOperatorType::Mul);
+		const ast::Id div = ast::AddBinaryOperator({ast, ast::NoId}, ast::BinaryOperatorType::Div);
+
+		// An operator outputs through its own id, and inputs through its child pin ids
+		const auto outputOf = [](ast::Id nodeId)
+		{
+			ast::ExprOutput output;
+			output.nodeId = nodeId;
+			output.pinId  = nodeId;
+			return output;
+		};
+		const auto inputOf = [&ast](ast::Id nodeId, i32 index)
+		{
+			ast::ExprInput input;
+			input.nodeId = nodeId;
+			input.pinId  = ast.Get<ast::CExprInputs>(nodeId).pinIds[index];
+			return input;
+		};
+
+		// mul feeds both inputs of add, and add feeds div
+		Expect(ast::TryConnectExpr(ast, outputOf(mul), inputOf(add, 0))).ToBeTrue();
+		Expect(ast::TryConnectExpr(ast, outputOf(mul), inputOf(add, 1))).ToBeTrue();
+		Expect(ast::TryConnectExpr(ast, outputOf(add), inputOf(div, 0))).ToBeTrue();
+
+		// div feeds back into mul through a shared subexpression, so the link would loop
+		Expect(ast::CanConnectExpr(ast, outputOf(div), inputOf(mul, 0))).ToBeFalse();
+		Expect(ast::TryConnectExpr(ast, outputOf(div), inputOf(mul, 0))).ToBeFalse();
+
+		// Once add no longer reaches mul, the same link is valid
+		Expect(ast::DisconnectExpr(ast, inputOf(add, 0))).ToBeTrue();
+		Expect(ast::CanConnectExpr(ast, outputOf(div), inputOf(mul, 0))).ToBeFalse();
+		Expect(ast::DisconnectExpr(ast, inputOf(add, 1))).ToBeTrue();
+		Expect(ast::CanConnectExpr(ast, outputOf(div), inputOf(mul, 0))).ToBeTrue();
+		Expect(ast::TryConnectExpr(ast, outputOf(div), inputOf(mul, 0))).ToBeTrue();
+	});
+
+	It("Removes pins by marking them as invalid", []()
+	{
+		ast::Tree ast;
+
+		const ast::Id node =
+		    ast::AddBinaryOperator({ast, ast::NoId}, ast::BinaryOperatorType::Add);
+
+		// An operator's output pin is the node itself
+		ast::ExprOutput output;
+		output.nodeId = node;
+		output.pinId  = node;
+		Expect(ast::RemoveExprOutputPin(ast, output)).ToBeTrue();
+		Expect(ast.Has<ast::CInvalid>(node)).ToBeTrue();
+
+		// Removing twice is harmless, and an empty reference removes nothing
+		Expect(ast::RemoveExprOutputPin(ast, output)).ToBeTrue();
+		Expect(ast::RemoveExprOutputPin(ast, ast::ExprOutput{})).ToBeFalse();
+		Expect(ast::RemoveExprInputPin(ast, ast::ExprInput{})).ToBeFalse();
+	});
+
 	It("Syncs the pins of a newly placed call", []()
 	{
 		ast::Tree ast;

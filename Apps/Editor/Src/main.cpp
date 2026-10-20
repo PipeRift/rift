@@ -21,32 +21,7 @@ using namespace rift;
 
 int RunEditor(StringView projectPath)
 {
-	p::Logger logger = p::Logger{.infoCallback =
-	                                 [](StringView msg)
-	{
-		String text;
-		auto now = p::DateTime::Now();
-		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		p::FormatTo(text, "[Info] {}\n", msg);
-		std::cout << text;
-	},
-	    .warningCallback =
-	        [](StringView msg)
-	{
-		String text;
-		auto now = p::DateTime::Now();
-		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		p::FormatTo(text, "[Warning] {}\n", msg);
-		std::cout << text;
-	},
-	    .errorCallback = [](StringView msg)
-	{
-		String text;
-		auto now = p::DateTime::Now();
-		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		p::FormatTo(text, "[Error] {}\n", msg);
-		std::cout << text;
-	}};
+	p::Logger logger = MakeLogger();
 
 	p::Initialize(&logger);
 	EnableModule<ASTModule>();

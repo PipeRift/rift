@@ -309,19 +309,8 @@ namespace rift::editor::Graph
 		{
 			return ICON_FA_TH_LARGE;
 		}
-		else if (ast::IsStructType(ast, typeId))
-		{
-			return ICON_FA_FILE_ALT;
-		}
-		else if (ast::IsClassType(ast, typeId))
-		{
-			return ICON_FA_FILE_INVOICE;
-		}
-		else if (ast::IsStaticType(ast, typeId))
-		{
-			return ICON_FA_FILE_WORD;
-		}
-		return ICON_FA_FILE;
+		const StringView typeIcon = GetTypeIcon(ast, typeId);
+		return typeIcon.empty() ? ICON_FA_FILE : typeIcon;
 	}
 
 	// Recursively draws a list of namespace ids: functions and variables become items,
@@ -431,7 +420,7 @@ namespace rift::editor::Graph
 
 		if (ContextTreeNode("Operators", filter))
 		{
-			static String name;
+			String name;
 			// Unary operators
 			for (auto type : GetEnumValues<ast::UnaryOperatorType>())
 			{
@@ -491,8 +480,6 @@ namespace rift::editor::Graph
 		DrawNamespaceChildren(
 		    ast, typeId, p::FindAllIdsWith<ast::CModule, ast::CNamespace>(ast), filter, context);
 	}
-
-	void DrawLinkContextMenu() {}
 
 	void DrawContextMenu(ast::Tree& ast, Id typeId, MenuContext context)
 	{

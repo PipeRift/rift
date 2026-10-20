@@ -4,12 +4,30 @@
 
 #include "Systems/EditorSystem.h"
 
+#include <IconsFontAwesome5.h>
 #include <Pipe/Core/Checks.h>
 #include <PipeECS.h>
 
 
 namespace rift::editor
 {
+	StringView GetTypeIcon(ast::Tree& ast, ast::Id typeId)
+	{
+		if (ast::IsStructType(ast, typeId))
+		{
+			return ICON_FA_FILE_ALT;
+		}
+		if (ast::IsClassType(ast, typeId))
+		{
+			return ICON_FA_FILE_INVOICE;
+		}
+		if (ast::IsStaticType(ast, typeId))
+		{
+			return ICON_FA_FILE_WORD;
+		}
+		return "";
+	}
+
 	void OpenType(p::TIdScopeRef<Writes<CTypeEditor>, ast::CDeclType> scope, ast::Id id)
 	{
 		P_Check(scope.Has<ast::CDeclType>(id));

@@ -7,7 +7,6 @@
 
 namespace rift::ast::TransactionSystem
 {
-	void Init(Tree& ast) {}
 	void ClearTags(Tree& ast)
 	{
 		ast.AssurePool<CChanged>().Clear();

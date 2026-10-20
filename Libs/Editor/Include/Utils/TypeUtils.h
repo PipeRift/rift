@@ -16,6 +16,9 @@ namespace rift::editor
 	void CloseType(p::TIdScopeRef<Writes<CTypeEditor>, ast::CDeclType> scope, ast::Id id);
 	bool IsTypeOpen(p::TIdScopeRef<CTypeEditor> scope, ast::Id id);
 
+	// Icon representing the kind of a Rift type. Empty when the type has no specific kind.
+	StringView GetTypeIcon(ast::Tree& ast, ast::Id typeId);
+
 	constexpr StringView GetUnaryOperatorName(ast::UnaryOperatorType type)
 	{
 		switch (type)

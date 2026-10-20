@@ -31,19 +31,14 @@ namespace rift::editor::Graph
 		float GetGridSize() const;
 		float GetInvGridSize() const;
 
-		float GetSpaceHeight(u32 height) const;
-		v2 GetContentPadding() const;
+		float GetSpaceHeight() const;
 		v2 GetGridPosition(v2 screenPosition) const;
 	};
 	inline Settings settings{};
 
 
 	void DrawLiteralBool(ast::Tree& ast, ast::Id id, bool& value);
-	void DrawLiteralInt(ast::Tree& ast, ast::Id id, String& value);
 	void DrawLiteralString(ast::Tree& ast, ast::Id id, String& value);
-
-	void DrawFunctionDecl(ast::Tree& ast, ast::Id functionId);
-	void DrawCallNode(ast::Tree& ast, ast::Id id, StringView name, StringView ownerName);
 
 	void Init();
 	void Shutdown();
@@ -60,6 +55,4 @@ namespace rift::editor::Graph
 
 	void SetNodePosition(ast::Id id, v2 position);
 	v2 GetNodePosition(ast::Id id);
-
-	void SnapNodeDimensionsToGrid();
 }    // namespace rift::editor::Graph

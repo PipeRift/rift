@@ -306,7 +306,7 @@ namespace rift::editor::EditorSystem
 
 					UI::AddNotification({UI::ToastType::Success, 1.f,
 					    !fileDatas.IsEmpty() ? p::Format("Saved {} files", fileDatas.Size())
-					                         : "Nothing to save"});
+						                     : "Nothing to save"});
 				}
 				UI::EndMenu();
 			}
@@ -354,8 +354,8 @@ namespace rift::editor::EditorSystem
 					auto& zoom = editorSettings.zoom;
 					settingsChanged |= UI::SliderFloat("Zoom Min", &zoom.min, 0.05f, 1.f, "%.2fx");
 					settingsChanged |= UI::SliderFloat("Zoom Max", &zoom.max, 1.f, 10.f, "%.2fx");
-					settingsChanged |= UI::SliderFloat(
-					    "Zoom Default", &zoom.defaultZoom, 0.05f, 10.f, "%.2fx");
+					settingsChanged |=
+					    UI::SliderFloat("Zoom Default", &zoom.defaultZoom, 0.05f, 10.f, "%.2fx");
 					settingsChanged |=
 					    UI::SliderFloat("Zoom Step", &zoom.step, 1.01f, 2.f, "%.2fx");
 					UI::PopStyleCompact();
@@ -412,21 +412,28 @@ namespace rift::editor::EditorSystem
 		}
 	}
 
+	// Serializes an entity to its file, saves it and notifies the user
+	template<typename TSerialize>
+	void SaveEntityFile(ast::Tree& ast, ast::Id id, TSerialize&& serialize)
+	{
+		const auto& file = ast.Get<const ast::CFileRef>(id);
+		String data;
+		serialize(ast, id, data);
+
+		SaveStringFile(StringView(file.path), data);
+		ast.Remove<ast::CFileDirty>(id);
+
+		UI::AddNotification(
+		    {UI::ToastType::Success, 1.f, p::Format("Saved file {}", p::GetFilename(file.path))});
+	}
+
 	void DrawModuleMenuBar(ast::Tree& ast, ast::Id moduleId)
 	{
 		if (UI::BeginMenuBar())
 		{
 			if (UI::MenuItem(ICON_FA_SAVE, "CTRL+S"))
 			{
-				auto& file = ast.Get<ast::CFileRef>(moduleId);
-				String data;
-				ast::SerializeModule(ast, moduleId, data);
-
-				SaveStringFile(StringView(file.path), data);
-				ast.Remove<ast::CFileDirty>(moduleId);
-
-				UI::AddNotification({UI::ToastType::Success, 1.f,
-				    p::Format("Saved file {}", p::GetFilename(file.path))});
+				SaveEntityFile(ast, moduleId, ast::SerializeModule);
 			}
 			UI::EndMenuBar();
 		}
@@ -525,15 +532,7 @@ namespace rift::editor::EditorSystem
 		{
 			if (UI::MenuItem(ICON_FA_SAVE, "CTRL+S"))
 			{
-				auto& file = ast.Get<ast::CFileRef>(typeId);
-				String data;
-				ast::SerializeType(ast, typeId, data);
-
-				SaveStringFile(StringView(file.path), data);
-				ast.Remove<ast::CFileDirty>(typeId);
-
-				UI::AddNotification({UI::ToastType::Success, 1.f,
-				    p::Format("Saved file {}", p::GetFilename(file.path))});
+				SaveEntityFile(ast, typeId, ast::SerializeType);
 			}
 
 			if (UI::BeginMenu("View"))
@@ -561,19 +560,7 @@ namespace rift::editor::EditorSystem
 			const auto& file = scope.Get<const ast::CFileRef>(typeId);
 
 
-			StringView icon;
-			if (ast::IsStructType(scope, typeId))
-			{
-				icon = ICON_FA_FILE_ALT;
-			}
-			else if (ast::IsClassType(scope, typeId))
-			{
-				icon = ICON_FA_FILE_INVOICE;
-			}
-			else if (ast::IsStaticType(scope, typeId))
-			{
-				icon = ICON_FA_FILE_WORD;
-			}
+			const StringView icon = GetTypeIcon(ast, typeId);
 
 			bool isOpen               = true;
 			const String& path        = file.path;
