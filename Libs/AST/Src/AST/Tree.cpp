@@ -6,6 +6,7 @@
 #include "AST/Components/Declarations.h"
 #include "AST/Statics/SModules.h"
 #include "AST/Statics/STypes.h"
+#include "AST/Systems/CastSystem.h"
 
 #include <PipeECS.h>
 
@@ -71,6 +72,9 @@ namespace rift::ast
 		addNativeType(nativeTypes.u64Id, "U64");
 		addNativeType(nativeTypes.i64Id, "I64");
 		addNativeType(nativeTypes.stringId, "String");
+
+		// Casts between the built-in types depend on their ids
+		CastSystem::RegisterNumericCasts(*this);
 	}
 
 	void Tree::CopyFrom(const Tree& other)
@@ -85,6 +89,7 @@ namespace rift::ast
 		{
 			SetStatic<STypes>(*typesStatic);
 		}
+		SetStatic<SCasts>(other.GetStatic<SCasts>());
 
 		nativeTypes = other.nativeTypes;
 	}

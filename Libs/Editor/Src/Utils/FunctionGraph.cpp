@@ -17,11 +17,13 @@
 #include <AST/Components/Statements.h>
 #include <AST/Components/Tags/CInvalid.h>
 #include <AST/Components/Views/CNodePosition.h>
+#include <AST/Systems/CastSystem.h>
 #include <AST/Systems/FunctionsSystem.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/Settings.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
+#include <IconsFontAwesome5.h>
 #include <Pipe/Core/Log.h>
 #include <PipeECS.h>
 #include <UI/Style.h>
@@ -33,6 +35,51 @@
 namespace rift::editor::Graph
 {
 	static CNodePosition* currentNodeTransform = nullptr;
+
+	// The pins of a cast node are only known once it has been drawn, so casts spawned from a
+	// dropped link are placed on the next frame
+	struct PendingCast
+	{
+		ast::Id castId;
+		ast::Id outputPinId;
+		ast::Id inputPinId;    // Pin of the node the cast feeds
+	};
+	static TArray<PendingCast> pendingCasts;
+
+	// A value that only casts explicitly needs a cast node in between. Returns the new node,
+	// or NoId when the link can't be fixed with a cast
+	static ast::Id InsertCastNode(
+	    ast::Tree& ast, ast::Id typeId, const ast::ExprOutput& output, const ast::ExprInput& input)
+	{
+		if (output.IsNone() || input.IsNone() || output.nodeId == input.nodeId
+		    || ast::WouldExprLoop(ast, output.nodeId, input.nodeId))
+		{
+			return ast::NoId;
+		}
+
+		const ast::Id outputType = ast::GetPinType(ast, output.pinId);
+		const ast::Id inputType  = ast::GetPinType(ast, input.pinId);
+		if (p::IsNone(outputType) || p::IsNone(inputType)
+		    || !ast::CastSystem::FindCast(ast, outputType, inputType))
+		{
+			return ast::NoId;
+		}
+
+		// The cast goes in between, with its input taking the source type and its output the
+		// type of the pin it feeds
+		const ast::Id castId    = ast::AddExplicitCast({ast, typeId}, outputType, inputType);
+		const auto* castInputs  = ast.TryGet<const ast::CExprInputs>(castId);
+		const auto* castOutputs = ast.TryGet<const ast::CExprOutputs>(castId);
+		if (!castInputs || castInputs->pinIds.IsEmpty() || !castOutputs
+		    || castOutputs->pinIds.IsEmpty())
+		{
+			return ast::NoId;
+		}
+
+		ast::TryConnectExpr(ast, output, ast::GetExprInputFromPin(ast, castInputs->pinIds[0]));
+		ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, castOutputs->pinIds[0]), input);
+		return castId;
+	}
 
 	namespace
 	{
@@ -535,6 +582,7 @@ namespace rift::editor::Graph
 	void Shutdown()
 	{
 		Nodes::DestroyContext();
+		pendingCasts.Clear();
 	}
 
 
@@ -784,6 +832,109 @@ namespace rift::editor::Graph
 		}
 	}
 
+	// Places the casts spawned from a link so their output pin lands on the pin they feed.
+	// Both pins are known once the node has been drawn
+	static void SettlePendingCasts(ast::Tree& ast)
+	{
+		if (pendingCasts.IsEmpty())
+		{
+			return;
+		}
+
+		for (i32 i = pendingCasts.Size() - 1; i >= 0; --i)
+		{
+			const PendingCast pending = pendingCasts[i];
+			if (!ast.Has<ast::CExprCast>(pending.castId))
+			{
+				pendingCasts.RemoveAtSwap(i);
+				continue;
+			}
+
+			v2 outputPosition;
+			v2 inputPosition;
+			Color color;
+			if (!Nodes::GetPinScreenData(
+			        i32(pending.outputPinId.value), Nodes::PinType::Output, outputPosition, color)
+			    || !Nodes::GetPinScreenData(
+			        i32(pending.inputPinId.value), Nodes::PinType::Input, inputPosition, color))
+			{
+				continue;    // The pins aren't drawn yet
+			}
+			pendingCasts.RemoveAtSwap(i);
+
+			const float zoom = Nodes::GetZoom();
+			if (zoom <= 0.f)
+			{
+				continue;
+			}
+
+			// Move the node by the distance between both pins, so they end up overlapping, and
+			// keep it on the grid
+			const v2 origin = Nodes::GetNodeGridSpacePos(pending.castId);
+			const v2 offset =
+			    (origin + (inputPosition - outputPosition) / zoom) * settings.GetInvGridSize();
+			const v2 position = v2{p::Round(offset.x), p::Round(offset.y)};
+			ast.GetOrAdd<CNodePosition>(pending.castId).position = position;
+			SetNodePosition(pending.castId, position);
+		}
+	}
+
+	void DrawCasts(ast::Tree& ast, const TArray<ast::Id>& children)
+	{
+		for (ast::Id id : FindIdsWith<ast::CExprCast>(ast, children))
+		{
+			const auto* inputs  = ast.TryGet<const ast::CExprInputs>(id);
+			const auto* outputs = ast.TryGet<const ast::CExprOutputs>(id);
+			if (!inputs || inputs->pinIds.IsEmpty() || !outputs || outputs->pinIds.IsEmpty())
+			{
+				continue;
+			}
+
+			static constexpr Color color = UI::GetNeutralColor(0);
+			PushNodeBackgroundColor(color);
+
+			BeginNode(ast, id);
+			{
+				// The node keeps a 3x1 footprint, so the pins sit on its corners and the
+				// arrow in the middle. The font is scaled to the tile height.
+				const float zoom          = Nodes::GetZoom();
+				const float gridSize      = settings.GetGridSize() * zoom;
+				const v2 padding          = Nodes::GetStyle().NodePadding * zoom;
+				const float contentWidth  = p::Max(gridSize * 3.f - padding.x * 2.f, 1.f);
+				const float contentHeight = p::Max(gridSize - padding.y * 2.f, 1.f);
+
+				const ImVec2 start = ImGui::GetCursorPos();
+				ImGui::PushFont(ImGui::GetFont(), contentHeight);
+
+				BeginExprInput(ast, inputs->pinIds[0], false);
+				UI::TextUnformatted("");
+				EndExprInput(false);
+
+				// The arrow shows the cast, colored as the type it produces
+				const float arrowWidth = UI::CalcTextSize(ICON_FA_LONG_ARROW_ALT_RIGHT).x;
+				ImGui::SetCursorPos(
+				    ImVec2{start.x + p::Max((contentWidth - arrowWidth) * 0.5f, 0.f), start.y});
+				UI::PushTextColor(GetTypeColor(ast, GetPinType(ast, outputs->pinIds[0])));
+				UI::Text(ICON_FA_LONG_ARROW_ALT_RIGHT);
+				UI::PopTextColor();
+
+				// The output pin closes the node, which fixes its width
+				ImGui::SetCursorPos(ImVec2{start.x + contentWidth, start.y});
+				BeginExprOutput(ast, outputs->pinIds[0], false);
+				UI::TextUnformatted("");
+				EndExprOutput(false);
+
+				// The node is as big as the group ends, so the cursor is left at the bottom
+				// right corner of the tile area. Otherwise the item spacing would add up
+				ImGui::SetCursorPos(ImVec2{start.x + contentWidth, start.y + contentHeight});
+
+				ImGui::PopFont();
+			}
+			EndNode(ast);
+			PopNodeBackgroundColor();
+		}
+	}
+
 	void DrawStatementLinks(
 	    p::TIdScopeRef<ast::CParent, ast::CStmtOutput, ast::CStmtOutputs>& scope,
 	    const TArray<ast::Id>& children)
@@ -928,6 +1079,7 @@ namespace rift::editor::Graph
 				DrawIfs(ast, children);
 				DrawUnaryOperators(ast, children);
 				DrawBinaryOperators(ast, children);
+				DrawCasts(ast, children);
 
 				// Links
 				DrawStatementLinks(ast, children);
@@ -936,6 +1088,10 @@ namespace rift::editor::Graph
 				Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
 				PopNodeStyle();
 				Nodes::EndNodeEditor();
+
+				// Now that the pins are drawn, casts spawned from a link can be attached to
+				// the pin they feed
+				SettlePendingCasts(ast);
 			}
 
 			// The focused graph stores the current zoom; the pending write is flushed even if
@@ -1000,12 +1156,31 @@ namespace rift::editor::Graph
 			Nodes::Id inputPin;
 			if (Nodes::IsLinkCreated(outputPin, inputPin))
 			{
-				ast::Id pinIds[2]{ast::Id::MakeRaw(outputPin), ast::Id::MakeRaw(inputPin)};
+				const ast::Id outputPinId = ast::Id::MakeRaw(outputPin);
+				const ast::Id inputPinId  = ast::Id::MakeRaw(inputPin);
+				ast::Id pinIds[2]{outputPinId, inputPinId};
 				ScopedChange(ast, pinIds);
-				ast::TryConnectStmt(ast, ast::Id::MakeRaw(outputPin), ast::Id::MakeRaw(inputPin));
-				ast::TryConnectExpr(ast,
-				    ast::GetExprOutputFromPin(ast, ast::Id::MakeRaw(outputPin)),
-				    ast::GetExprInputFromPin(ast, ast::Id::MakeRaw(inputPin)));
+				ast::TryConnectStmt(ast, outputPinId, inputPinId);
+
+				const ast::ExprOutput output = ast::GetExprOutputFromPin(ast, outputPinId);
+				const ast::ExprInput input   = ast::GetExprInputFromPin(ast, inputPinId);
+				if (!ast::TryConnectExpr(ast, output, input))
+				{
+					// The value needs an explicit cast, which goes in a node of its own placed
+					// over the pin it feeds
+					const ast::Id castId = InsertCastNode(ast, typeId, output, input);
+					if (!p::IsNone(castId))
+					{
+						const auto* castOutputs = ast.TryGet<const ast::CExprOutputs>(castId);
+						if (castOutputs && !castOutputs->pinIds.IsEmpty())
+						{
+							// Rough position until the node is drawn and its pins are known
+							const v2 pinPosition = settings.GetGridPosition(UI::GetMousePos());
+							ast.Add<CNodePosition>(castId, pinPosition - v2(3.f, 0.5f));
+							pendingCasts.Add({castId, castOutputs->pinIds[0], inputPinId});
+						}
+					}
+				}
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))
