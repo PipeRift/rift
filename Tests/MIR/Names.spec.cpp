@@ -100,6 +100,24 @@ P_SPEC("MIR.Names", []()
 		Expect(ast.Get<const ast::CGeneratedName>(local2).name).ToEqual(p::Tag{"l_1"});
 	});
 
+	It("Avoids collisions between suffixed base names", []()
+	{
+		ast::Tree ast;
+
+		ast::Id typeId     = ast::CreateType(ast, ASTModule::staticType, p::Tag{"TestStatic"});
+		ast::Id functionId = ast::AddFunction({ast, typeId}, p::Tag{"Function"});
+
+		ast::Id localX  = AddLocal(ast, functionId, p::Tag{"x"});
+		ast::Id localX1 = AddLocal(ast, functionId, p::Tag{"x_1"});
+		ast::Id localX2 = AddLocal(ast, functionId, p::Tag{"x"});
+
+		AssignNames(ast);
+
+		Expect(ast.Get<const ast::CGeneratedName>(localX).name).ToEqual(p::Tag{"x"});
+		Expect(ast.Get<const ast::CGeneratedName>(localX1).name).ToEqual(p::Tag{"x_1"});
+		Expect(ast.Get<const ast::CGeneratedName>(localX2).name).ToEqual(p::Tag{"x_2"});
+	});
+
 	It("Assigns unique names to for loop indices", []()
 	{
 		ast::Tree ast;

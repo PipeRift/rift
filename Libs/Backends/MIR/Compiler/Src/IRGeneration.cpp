@@ -66,11 +66,11 @@ namespace rift::MIR
 
 	namespace
 	{
-		/** Names visible in a scope. Counts store the next suffix to try per base name. */
+		/** Names visible in a scope. An entry means the exact name is taken; its value
+		 * is the next suffix to try if that name is requested again as a base. */
 		struct NameScope
 		{
 			p::TMap<p::Tag, p::i32> counts;
-			p::TSet<p::Tag> used;
 
 			void Merge(const NameScope& other)
 			{
@@ -78,10 +78,6 @@ namespace rift::MIR
 				{
 					p::i32& count = counts[pair.first];
 					count         = p::Max(count, pair.second);
-				}
-				for (const p::Tag& tag : other.used)
-				{
-					used.Insert(tag);
 				}
 			}
 		};
@@ -123,25 +119,32 @@ namespace rift::MIR
 
 				NameScope& scope             = Current();
 				const p::StringView baseName = base.AsString();
-				p::i32& count                = scope.counts[base];
+
+				// The value of a used base is already the next suffix to try
+				p::i32 suffix = 0;
+				if (const p::i32* next = scope.counts.Find(base))
+				{
+					suffix = *next;
+				}
+
 				p::String name;
 				p::String endName;
 				while (true)
 				{
 					name.clear();
-					if (count == 0)
+					if (suffix == 0)
 					{
 						name.append(baseName);
 					}
 					else
 					{
-						p::FormatTo(name, "{}_{}", baseName, count);
+						p::FormatTo(name, "{}_{}", baseName, suffix);
 					}
 
 					const p::Tag tag{name};
-					if (scope.used.Contains(tag))
+					if (scope.counts.Contains(tag))
 					{
-						++count;
+						++suffix;
 						continue;
 					}
 
@@ -149,16 +152,25 @@ namespace rift::MIR
 					{
 						endName.clear();
 						p::FormatTo(endName, "{}_end", name);
-						if (scope.used.Contains(p::Tag{endName}))
+						if (scope.counts.Contains(p::Tag{endName}))
 						{
-							++count;
+							++suffix;
 							continue;
 						}
-						scope.used.Insert(p::Tag{endName});
 					}
 
-					scope.used.Insert(tag);
-					++count;
+					// Presence means used; the value is the next suffix for this name
+					scope.counts.Insert(tag, 1);
+					if (reserveEnd)
+					{
+						scope.counts.Insert(p::Tag{endName}, 1);
+					}
+
+					if (suffix > 0)
+					{
+						scope.counts[base] = suffix + 1;
+					}
+
 					ast.GetOrAdd<ast::CGeneratedName>(id).name = tag;
 					return;
 				}
