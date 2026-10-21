@@ -2,6 +2,8 @@
 
 #include "IRGeneration.h"
 
+#include <AST/Systems/CastSystem.h>
+#include <AST/Utils/Expressions.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Statements.h>
@@ -359,12 +361,45 @@ namespace rift::MIR
 		// TODO: Resolve continuation block and generate it
 	}
 
-	void CGenerator::AddExpr(const ast::ExprOutput& output)
+	void CGenerator::AddExpr(const ast::ExprOutput& output, ast::Id pinId)
 	{
 		if (output.IsNone())
 		{
 			compiler.Error("Missing expression found while generating code");
 			return;
+		}
+
+		// The value is cast into the type of the pin it feeds when their types differ
+		const ast::Id sourceType = ast::GetPinType(scope, output.pinId);
+		const ast::Id targetType = ast::GetPinType(scope, pinId);
+		if (!p::IsNone(pinId) && !p::IsNone(sourceType) && !p::IsNone(targetType)
+		    && sourceType != targetType)
+		{
+			if (!ast::CastSystem::CanCastImplicit(scope, sourceType, targetType)) [[unlikely]]
+			{
+				const p::StringView fromName = ast::GetName(compiler.ast, sourceType).AsString();
+				const p::StringView toName   = ast::GetName(compiler.ast, targetType).AsString();
+				compiler.Error(
+				    ast::CastSystem::CanCast(scope, sourceType, targetType)
+				        ? p::Format("'{}' needs an explicit cast into '{}'", fromName, toName)
+						: p::Format("'{}' can't cast into '{}'", fromName, toName));
+				// Emit the value as it is, so generation can continue
+			}
+			else if (const auto* irType = scope.TryGet<const CMIRType>(targetType))
+			{
+				// Every cast is expressed as a C cast, no matter which instruction a
+				// backend would lower it to
+				code->append("((");
+				code->append(irType->value.AsString());
+				code->append(")(");
+				AddExpr(output);
+				code->append("))");
+				return;
+			}
+			else [[unlikely]]
+			{
+				compiler.Error("Cannot cast a value into an invalid type");
+			}
 		}
 
 		// Literal nodes are their own output pin
@@ -383,6 +418,10 @@ namespace rift::MIR
 		else if (const auto* binary = scope.TryGet<const ast::CExprBinaryOperator>(output.nodeId))
 		{
 			AddBinaryOperator(output.nodeId, *binary);
+		}
+		else if (scope.Has<ast::CExprCast>(output.nodeId))
+		{
+			AddCast(output.nodeId);
 		}
 		else
 		{
@@ -421,6 +460,48 @@ namespace rift::MIR
 		code->push_back(')');
 	}
 
+	void CGenerator::AddCast(ast::Id id)
+	{
+		const auto* inputs  = scope.TryGet<const ast::CExprInputs>(id);
+		const auto* outputs = scope.TryGet<const ast::CExprOutputs>(id);
+		if (!inputs || inputs->linkedOutputs.IsEmpty() || !outputs || outputs->pinIds.IsEmpty())
+		{
+			compiler.Error("Cast without a connected value");
+			return;
+		}
+
+		const ast::Id sourceType = ast::GetPinType(scope, inputs->pinIds[0]);
+		const ast::Id targetType = ast::GetPinType(scope, outputs->pinIds[0]);
+		if (p::IsNone(sourceType) || p::IsNone(targetType))
+		{
+			compiler.Error("Cast between invalid types");
+			return;
+		}
+
+		if (!ast::CastSystem::CanCast(scope, sourceType, targetType)) [[unlikely]]
+		{
+			compiler.Error(p::Format("'{}' can't cast into '{}'",
+			    ast::GetName(compiler.ast, sourceType).AsString(),
+			    ast::GetName(compiler.ast, targetType).AsString()));
+			return;
+		}
+
+		const auto* irType = scope.TryGet<const CMIRType>(targetType);
+		if (!irType) [[unlikely]]
+		{
+			compiler.Error("Cannot cast a value into an invalid type");
+			return;
+		}
+
+		// Every cast is expressed as a C cast
+		code->append("((");
+		code->append(irType->value.AsString());
+		code->append(")(");
+		// The value is first cast into the type of the input pin
+		AddExpr(inputs->linkedOutputs[0], inputs->pinIds[0]);
+		code->append("))");
+	}
+
 	void CGenerator::AddStmtIf(ast::Id id)
 	{
 		const auto& outputs      = scope.Get<const ast::CStmtOutputs>(id);
@@ -430,7 +511,7 @@ namespace rift::MIR
 		P_Check(exprInputs.linkedOutputs.Size() == 1);
 
 		code->append("if (");
-		AddExpr(exprInputs.linkedOutputs.First());
+		AddExpr(exprInputs.linkedOutputs.First(), exprInputs.pinIds[0]);
 		code->append(") {\n");
 		AddStmtBlock(connectedIds[0]);
 		if (connectedIds.Size() > 1 && !p::IsNone(connectedIds[1]))
@@ -471,11 +552,12 @@ namespace rift::MIR
 
 		if (const auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
 		{
-			for (ast::ExprOutput output : inputs->linkedOutputs)
+			for (p::i32 i = 0; i < inputs->linkedOutputs.Size(); ++i)
 			{
+				const ast::ExprOutput output = inputs->linkedOutputs[i];
 				if (!output.IsNone())
 				{
-					AddExpr(output);
+					AddExpr(output, inputs->pinIds[i]);
 					code->append(", ");
 				}
 			}
