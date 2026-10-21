@@ -61,16 +61,16 @@ P_SPEC("MIR.Names", []()
 
 		AssignNames(ast);
 
-		Expect(ast::GetGeneratedName(ast, globalA)).ToEqual(p::Tag{"a"});
-		Expect(ast::GetGeneratedName(ast, paramA)).ToEqual(p::Tag{"a_1"});
-		Expect(ast::GetGeneratedName(ast, paramC)).ToEqual(p::Tag{"c"});
-		Expect(ast::GetGeneratedName(ast, localA)).ToEqual(p::Tag{"a_2"});
-		Expect(ast::GetGeneratedName(ast, localB)).ToEqual(p::Tag{"b"});
-		Expect(ast::GetGeneratedName(ast, localC)).ToEqual(p::Tag{"c_1"});
+		Expect(ast.Get<const ast::CGeneratedName>(globalA).name).ToEqual(p::Tag{"a"});
+		Expect(ast.Get<const ast::CGeneratedName>(paramA).name).ToEqual(p::Tag{"a_1"});
+		Expect(ast.Get<const ast::CGeneratedName>(paramC).name).ToEqual(p::Tag{"c"});
+		Expect(ast.Get<const ast::CGeneratedName>(localA).name).ToEqual(p::Tag{"a_2"});
+		Expect(ast.Get<const ast::CGeneratedName>(localB).name).ToEqual(p::Tag{"b"});
+		Expect(ast.Get<const ast::CGeneratedName>(localC).name).ToEqual(p::Tag{"c_1"});
 
-		Expect(ast::GetGeneratedName(ast, local2A)).ToEqual(p::Tag{"a_1"});
-		Expect(ast::GetGeneratedName(ast, local2B)).ToEqual(p::Tag{"b"});
-		Expect(ast::GetGeneratedName(ast, local2C)).ToEqual(p::Tag{"c"});
+		Expect(ast.Get<const ast::CGeneratedName>(local2A).name).ToEqual(p::Tag{"a_1"});
+		Expect(ast.Get<const ast::CGeneratedName>(local2B).name).ToEqual(p::Tag{"b"});
+		Expect(ast.Get<const ast::CGeneratedName>(local2C).name).ToEqual(p::Tag{"c"});
 	});
 
 	It("Assigns unique names to same-scope declarations", []()
@@ -92,12 +92,12 @@ P_SPEC("MIR.Names", []()
 
 		AssignNames(ast);
 
-		Expect(ast::GetGeneratedName(ast, global1)).ToEqual(p::Tag{"x"});
-		Expect(ast::GetGeneratedName(ast, global2)).ToEqual(p::Tag{"x_1"});
-		Expect(ast::GetGeneratedName(ast, param1)).ToEqual(p::Tag{"p"});
-		Expect(ast::GetGeneratedName(ast, param2)).ToEqual(p::Tag{"p_1"});
-		Expect(ast::GetGeneratedName(ast, local1)).ToEqual(p::Tag{"l"});
-		Expect(ast::GetGeneratedName(ast, local2)).ToEqual(p::Tag{"l_1"});
+		Expect(ast.Get<const ast::CGeneratedName>(global1).name).ToEqual(p::Tag{"x"});
+		Expect(ast.Get<const ast::CGeneratedName>(global2).name).ToEqual(p::Tag{"x_1"});
+		Expect(ast.Get<const ast::CGeneratedName>(param1).name).ToEqual(p::Tag{"p"});
+		Expect(ast.Get<const ast::CGeneratedName>(param2).name).ToEqual(p::Tag{"p_1"});
+		Expect(ast.Get<const ast::CGeneratedName>(local1).name).ToEqual(p::Tag{"l"});
+		Expect(ast.Get<const ast::CGeneratedName>(local2).name).ToEqual(p::Tag{"l_1"});
 	});
 
 	It("Assigns unique names to for loop indices", []()
@@ -116,7 +116,7 @@ P_SPEC("MIR.Names", []()
 
 		const ast::Id index1 = ast.Get<ast::CExprOutputs>(for1).pinIds[0];
 		const ast::Id index2 = ast.Get<ast::CExprOutputs>(for2).pinIds[0];
-		Expect(ast::GetGeneratedName(ast, index1)).ToEqual(p::Tag{"index"});
-		Expect(ast::GetGeneratedName(ast, index2)).ToEqual(p::Tag{"index_1"});
+		Expect(ast.Get<const ast::CGeneratedName>(index1).name).ToEqual(p::Tag{"index"});
+		Expect(ast.Get<const ast::CGeneratedName>(index2).name).ToEqual(p::Tag{"index_1"});
 	});
 });

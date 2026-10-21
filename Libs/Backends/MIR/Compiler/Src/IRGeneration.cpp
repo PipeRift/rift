@@ -132,7 +132,7 @@ namespace rift::MIR
 			{
 				if (ast.Has<ast::CDeclVariable>(childId))
 				{
-					used.Insert(ast::GetGeneratedName(ast, childId));
+					used.Insert(ast.Get<const ast::CGeneratedName>(childId).name);
 				}
 			}
 		}
@@ -411,7 +411,7 @@ namespace rift::MIR
 			{
 				const auto& var = scope.Get<const ast::CDeclVariable>(memberId);
 
-				const p::Tag memberName = ast::GetGeneratedName(scope, memberId);
+				const p::Tag memberName = scope.Get<const ast::CGeneratedName>(memberId).name;
 				auto* irType            = scope.TryGet<const CMIRType>(var.typeId);
 				if (!irType) [[unlikely]]
 				{
@@ -463,7 +463,7 @@ namespace rift::MIR
 						continue;
 					}
 
-					const p::Tag pinName = ast::GetGeneratedName(scope, pinId);
+					const p::Tag pinName = scope.Get<const ast::CGeneratedName>(pinId).name;
 					const auto* exprId   = scope.TryGet<const ast::CExprTypeId>(pinId);
 					const auto* irType =
 					    exprId ? scope.TryGet<const CMIRType>(exprId->id) : nullptr;
@@ -620,7 +620,7 @@ namespace rift::MIR
 		else if (scope.Has<ast::CStmtFor>(output.nodeId))
 		{
 			// The only expression output of a for node is its loop index
-			const p::Tag indexName = ast::GetGeneratedName(scope, output.pinId);
+			const p::Tag indexName = scope.Get<const ast::CGeneratedName>(output.pinId).name;
 			if (indexName.IsNone())
 			{
 				compiler.Error("For loop index has no generated name");
@@ -742,7 +742,8 @@ namespace rift::MIR
 
 		const auto& exprOutputs = scope.Get<const ast::CExprOutputs>(id);
 		P_Check(!exprOutputs.pinIds.IsEmpty());
-		const p::Tag indexTag = ast::GetGeneratedName(scope, exprOutputs.pinIds.First());
+		const p::Tag indexTag =
+		    scope.Get<const ast::CGeneratedName>(exprOutputs.pinIds.First()).name;
 		if (indexTag.IsNone())
 		{
 			compiler.Error("For loop index has no generated name");
