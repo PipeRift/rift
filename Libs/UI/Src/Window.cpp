@@ -2,7 +2,6 @@
 
 #include "UI/Window.h"
 
-#include "UI/Inspection.h"
 #include "UI/Style.h"
 #include "UI/UI.h"
 
@@ -118,7 +117,6 @@ namespace rift::UI
 
 		SetWindowIcon();
 
-		RegisterCoreKeyValueInspections();
 		return true;
 	}
 
@@ -161,9 +159,7 @@ namespace rift::UI
 
 		// Update and Render additional Platform Windows
 		// (Platform functions may change the current OpenGL context, so we save/restore it to
-		// make it easier to paste this code elsewhere.
-		//  For this specific demo app we could also call glfwMakeContextCurrent(window)
-		//  directly)
+		// make it easier to paste this code elsewhere)
 		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			GLFWwindow* backupCurrentContext = glfwGetCurrentContext();
@@ -200,29 +196,38 @@ namespace rift::UI
 		}
 #endif
 
-		p::String icon64Path =
-		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_64.png");
-		p::String icon128Path =
-		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_128.png");
-		p::String icon256Path =
-		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_256.png");
-		GLFWimage images[3];
-		images[0].pixels =
-		    stbi_load(icon64Path.c_str(), &images[0].width, &images[0].height, nullptr, 0);
-		images[1].pixels =
-		    stbi_load(icon128Path.c_str(), &images[1].width, &images[1].height, nullptr, 0);
-		images[2].pixels =
-		    stbi_load(icon256Path.c_str(), &images[2].width, &images[2].height, nullptr, 0);
-		if (!images[0].pixels || !images[1].pixels || !images[2].pixels)
+		constexpr p::i32 iconCount = 3;
+		GLFWimage images[iconCount];
+		p::String paths[iconCount]{
+		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_64.png"),
+		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_128.png"),
+		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_256.png")};
+		for (p::i32 i = 0; i < iconCount; ++i)
+		{
+			images[i].pixels =
+			    stbi_load(paths[i].c_str(), &images[i].width, &images[i].height, nullptr, 0);
+		}
+
+		bool allLoaded = true;
+		for (const GLFWimage& image : images)
+		{
+			allLoaded = allLoaded && image.pixels != nullptr;
+		}
+		if (!allLoaded)
 		{
 			p::Error("Window icon couldn't be loaded");
+			for (const GLFWimage& image : images)
+			{
+				stbi_image_free(image.pixels);
+			}
 			return;
 		}
-		glfwSetWindowIcon(gWindow, 3, images);
+		glfwSetWindowIcon(gWindow, iconCount, images);
 
-		stbi_image_free(images[0].pixels);
-		stbi_image_free(images[1].pixels);
-		stbi_image_free(images[2].pixels);
+		for (const GLFWimage& image : images)
+		{
+			stbi_image_free(image.pixels);
+		}
 	}
 
 	void ApplyDarkTitleBar(GLFWwindow* window)

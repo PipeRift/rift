@@ -8,9 +8,9 @@
 #include <AST/Components/CNamespace.h>
 #include <Pipe/Core/StringView.h>
 #include <PipeECS.h>
+#include <PipeMath.h>
 #include <PipeMemoryArenas.h>
 #include <PipePlatform.h>
-#include <PipeMath.h>
 #include <UI/UI.h>
 
 

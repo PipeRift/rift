@@ -13,23 +13,17 @@
 #include <PipeECS.h>
 
 
-namespace rift::ast
-{
-	struct Tree;
-}
-
 namespace rift::ast::FunctionsSystem
 {
 	struct CTmpInvalidKeep
 	{};
 
-	void Init(Tree& ast);
 	void ResolveCallFunctionIds(p::TIdScopeRef<p::Writes<CExprCallId>, CExprCall, CDeclFunction,
 	    CNamespace, CParent, CChild, CModule, CDeclNative>
 	        scope);
 	void PushInvalidPinsBack(p::TIdScopeRef<p::Writes<CExprInputs, CExprOutputs>, CInvalid> scope);
 
-	// Marks calls referencing dirty functions as dirty theirselfs
+	// Marks calls referencing dirty functions as dirty themselves
 	void PropagateDirtyIntoCalls(Tree& ast);
 	// Marks every resolved call as dirty. Used by head-less builds, where no
 	// editing transaction tagged functions as changed.

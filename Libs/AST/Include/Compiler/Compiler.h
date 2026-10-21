@@ -42,12 +42,12 @@ namespace rift
 		}
 		bool HasErrors() const
 		{
-			return errors.Size() > 0;
+			return !errors.IsEmpty();
 		}
 	};
 
 
-	void Build(ast::Tree& tree, const CompilerConfig& config, p::TPtr<Backend> backend);
+	void Build(ast::Tree& tree, const CompilerConfig& config, const p::TPtr<Backend>& backend);
 
 	void Build(ast::Tree& ast, const CompilerConfig& config, p::TypeId backendType);
 

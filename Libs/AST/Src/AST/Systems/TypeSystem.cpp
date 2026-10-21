@@ -15,10 +15,7 @@
 
 namespace rift::ast::TypeSystem
 {
-	void Init(Tree& ast)
-	{
-		p::TIdScope<CDeclType, CNamespace> scope{ast};
-	}
+	void Init(Tree& ast) {}
 
 	void SyncTypesByPath(p::TIdScopeRef<CDeclType, CFileRef> scope)
 	{
@@ -50,12 +47,12 @@ namespace rift::ast::TypeSystem
 
 	bool PropagateUnaryOperator(p::TIdScope<p::Writes<CExprTypeId>, CExprInputs> scope, Id nodeId)
 	{
-		const Id outputId  = nodeId;    // Output in unary operator is same as the node itself
+		Id outputId        = nodeId;    // Output in unary operator is same as the node itself
 		const auto& inputs = scope.Get<const CExprInputs>(nodeId);
-		const ExprOutput* linkedOutputId = inputs.linkedOutputs.At(0);
-		if (linkedOutputId && linkedOutputId->pinId != NoId)
+		const ExprOutput* linkedOutput = inputs.linkedOutputs.At(0);
+		if (linkedOutput && linkedOutput->pinId != NoId)
 		{
-			return CopyExpressionType(scope, linkedOutputId->pinId, outputId);
+			return CopyExpressionType(scope, linkedOutput->pinId, outputId);
 		}
 		return false;
 	}
@@ -66,12 +63,12 @@ namespace rift::ast::TypeSystem
 		Id outputId        = nodeId;    // Output in binary operator is same as the node itself
 		if (inputs.pinIds.Size() == 2) [[likely]]
 		{
-			const ExprOutput firstLinkedOutputId = inputs.linkedOutputs[0];
+			const ExprOutput firstLinkedOutput = inputs.linkedOutputs[0];
 			// Set input types
-			CopyExpressionType(scope, firstLinkedOutputId.pinId, inputs.pinIds[0]);
+			CopyExpressionType(scope, firstLinkedOutput.pinId, inputs.pinIds[0]);
 			CopyExpressionType(scope, inputs.linkedOutputs[1].pinId, inputs.pinIds[1]);
 			// Set output type from first connection
-			return CopyExpressionType(scope, firstLinkedOutputId.pinId, outputId);
+			return CopyExpressionType(scope, firstLinkedOutput.pinId, outputId);
 		}
 		return false;
 	}
@@ -89,7 +86,6 @@ namespace rift::ast::TypeSystem
 		// Only Unary or Binary operators propagate as of right now
 		p::ExcludeIdsWithoutAny<CExprUnaryOperator, CExprBinaryOperator>(scope, dirtyNodeIds);
 
-		bool anyPropagated;
 		while (!dirtyNodeIds.IsEmpty())    // Repeat until nothing to propagate
 		{
 			bool anyPropagated = false;
@@ -127,12 +123,12 @@ namespace rift::ast::TypeSystem
 	    CChild, CModule, CDeclNative>
 	        scope)
 	{
-		auto callExprs = p::FindAllIdsWith<CExprType>(scope);
-		p::ExcludeIdsWith<CExprTypeId>(scope, callExprs);
-		for (Id id : callExprs)
+		auto typeExprs = p::FindAllIdsWith<CExprType>(scope);
+		p::ExcludeIdsWith<CExprTypeId>(scope, typeExprs);
+		for (Id id : typeExprs)
 		{
-			auto& expr      = scope.Get<const CExprType>(id);
-			const Id typeId = FindIdFromNamespace(scope, expr.type);
+			const auto& expr = scope.Get<const CExprType>(id);
+			const Id typeId  = FindIdFromNamespace(scope, expr.type);
 			if (!p::IsNone(typeId))
 			{
 				scope.Add(id, CExprTypeId{.id = typeId, .mode = expr.mode});

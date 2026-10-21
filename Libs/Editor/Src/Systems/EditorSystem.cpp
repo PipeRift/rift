@@ -11,6 +11,7 @@
 #include "imgui.h"
 #include "Pipe/Files/Files.h"
 #include "PipeStrings.h"
+#include "Statics/EditorSettings.h"
 #include "Statics/SEditor.h"
 #include "Utils/DetailsPanel.h"
 #include "Utils/ElementsPanel.h"
@@ -23,6 +24,7 @@
 #include <AST/Components/CModule.h>
 #include <AST/Components/Declarations.h>
 #include <AST/Components/Tags/CDirty.h>
+#include <AST/Utils/Settings.h>
 #include <Compiler/Compiler.h>
 #include <IconsFontAwesome5.h>
 #include <MIRBackendModule.h>
@@ -242,6 +244,7 @@ namespace rift::editor::EditorSystem
 		editor.arenaDebugger.Draw(ast);
 		editor.fileExplorer.Draw(ast);
 		editor.graphPlayground.Draw(ast, editor.layout);
+		editor.editorSettings.Draw();
 
 		UI::PopID();
 	}
@@ -303,7 +306,7 @@ namespace rift::editor::EditorSystem
 
 					UI::AddNotification({UI::ToastType::Success, 1.f,
 					    !fileDatas.IsEmpty() ? p::Format("Saved {} files", fileDatas.Size())
-					                         : "Nothing to save"});
+						                     : "Nothing to save"});
 				}
 				UI::EndMenu();
 			}
@@ -341,15 +344,40 @@ namespace rift::editor::EditorSystem
 				UI::Separator();
 				if (UI::BeginMenu("Settings"))
 				{
-					float gridSize = Graph::settings.GetGridSize();
+					auto& editorSettings = GetUserSettings<EditorSettings>();
+
 					UI::PushStyleCompact();
-					if (UI::SliderFloat("Grid Size", &gridSize, 8.f, 32.f, "%.f"))
-					{
-						Graph::settings.SetGridSize(gridSize);
-					}
+					bool settingsChanged = false;
+					settingsChanged |=
+					    UI::SliderFloat("Grid Size", &editorSettings.gridSize, 8.f, 32.f, "%.f");
+
+					auto& zoom = editorSettings.zoom;
+					settingsChanged |= UI::SliderFloat("Zoom Min", &zoom.min, 0.05f, 1.f, "%.2fx");
+					settingsChanged |= UI::SliderFloat("Zoom Max", &zoom.max, 1.f, 10.f, "%.2fx");
+					settingsChanged |=
+					    UI::SliderFloat("Zoom Default", &zoom.defaultZoom, 0.05f, 10.f, "%.2fx");
+					settingsChanged |=
+					    UI::SliderFloat("Zoom Step", &zoom.step, 1.01f, 2.f, "%.2fx");
 					UI::PopStyleCompact();
+
+					if (settingsChanged)
+					{
+						// Keep the values sane and push them to the node editor.
+						editorSettings.gridSize = p::Clamp(editorSettings.gridSize, 4.f, 64.f);
+						zoom.min                = p::Clamp(zoom.min, 0.05f, 0.95f);
+						zoom.max                = p::Clamp(zoom.max, 1.05f, 10.f);
+						zoom.defaultZoom        = p::Clamp(zoom.defaultZoom, zoom.min, zoom.max);
+						zoom.step               = p::Max(zoom.step, 1.01f);
+						zoom.current            = p::Clamp(zoom.current, zoom.min, zoom.max);
+
+						Graph::ApplyGraphSettings();
+						SaveUserSettings<EditorSettings>();
+					}
 					UI::EndMenu();
 				}
+
+				UI::Separator();
+				UI::MenuItem("Editor Settings", nullptr, &editorData.editorSettings.open);
 				UI::EndMenu();
 			}
 
@@ -384,21 +412,28 @@ namespace rift::editor::EditorSystem
 		}
 	}
 
+	// Serializes an entity to its file, saves it and notifies the user
+	template<typename TSerialize>
+	void SaveEntityFile(ast::Tree& ast, ast::Id id, TSerialize&& serialize)
+	{
+		const auto& file = ast.Get<const ast::CFileRef>(id);
+		String data;
+		serialize(ast, id, data);
+
+		SaveStringFile(StringView(file.path), data);
+		ast.Remove<ast::CFileDirty>(id);
+
+		UI::AddNotification(
+		    {UI::ToastType::Success, 1.f, p::Format("Saved file {}", p::GetFilename(file.path))});
+	}
+
 	void DrawModuleMenuBar(ast::Tree& ast, ast::Id moduleId)
 	{
 		if (UI::BeginMenuBar())
 		{
 			if (UI::MenuItem(ICON_FA_SAVE, "CTRL+S"))
 			{
-				auto& file = ast.Get<ast::CFileRef>(moduleId);
-				String data;
-				ast::SerializeModule(ast, moduleId, data);
-
-				SaveStringFile(StringView(file.path), data);
-				ast.Remove<ast::CFileDirty>(moduleId);
-
-				UI::AddNotification({UI::ToastType::Success, 1.f,
-				    p::Format("Saved file {}", p::GetFilename(file.path))});
+				SaveEntityFile(ast, moduleId, ast::SerializeModule);
 			}
 			UI::EndMenuBar();
 		}
@@ -438,7 +473,8 @@ namespace rift::editor::EditorSystem
 
 				DrawModuleMenuBar(ast, moduleId);
 
-				if (UI::BeginInspector("ModuleInspector"))
+				if (UI::BeginInspector("ModuleInspector", p::v2{0.f, 0.f}, false,
+				        RegisterKeyValueInspections, &ast))
 				{
 					auto& module = moduleEditors.Get<ast::CModule>(moduleId);
 					UI::InspectStruct(&module);
@@ -452,7 +488,7 @@ namespace rift::editor::EditorSystem
 							{
 								if (UI::BeginCategory(binding.displayName, true))
 								{
-									UI::InspectChildrenProperties({data, binding.tagType});
+									UI::InspectChildrenProperties(data, binding.tagType);
 									UI::EndCategory();
 								}
 							}
@@ -496,15 +532,7 @@ namespace rift::editor::EditorSystem
 		{
 			if (UI::MenuItem(ICON_FA_SAVE, "CTRL+S"))
 			{
-				auto& file = ast.Get<ast::CFileRef>(typeId);
-				String data;
-				ast::SerializeType(ast, typeId, data);
-
-				SaveStringFile(StringView(file.path), data);
-				ast.Remove<ast::CFileDirty>(typeId);
-
-				UI::AddNotification({UI::ToastType::Success, 1.f,
-				    p::Format("Saved file {}", p::GetFilename(file.path))});
+				SaveEntityFile(ast, typeId, ast::SerializeType);
 			}
 
 			if (UI::BeginMenu("View"))
@@ -532,19 +560,7 @@ namespace rift::editor::EditorSystem
 			const auto& file = scope.Get<const ast::CFileRef>(typeId);
 
 
-			StringView icon;
-			if (ast::IsStructType(scope, typeId))
-			{
-				icon = ICON_FA_FILE_ALT;
-			}
-			else if (ast::IsClassType(scope, typeId))
-			{
-				icon = ICON_FA_FILE_INVOICE;
-			}
-			else if (ast::IsStaticType(scope, typeId))
-			{
-				icon = ICON_FA_FILE_WORD;
-			}
+			const StringView icon = GetTypeIcon(ast, typeId);
 
 			bool isOpen               = true;
 			const String& path        = file.path;

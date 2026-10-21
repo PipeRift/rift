@@ -2,119 +2,133 @@
 
 #include "UI/Widgets.h"
 
+#include "UI/Texture.h"
+
 #include <IconsFontAwesome5.h>
 #include <PipeTime.h>
 
 
 namespace rift::UI
 {
+	AnimatedSprite::~AnimatedSprite()
+	{
+		Unload();
+	}
+
+	AnimatedSprite::AnimatedSprite(AnimatedSprite&& other) noexcept
+	    : size{other.size}
+	    , rate{other.rate}
+	    , columns{other.columns}
+	    , numFrames{p::Move(other.numFrames)}
+	    , currentFrame{other.currentFrame}
+	    , currentFrameRemainingTime{other.currentFrameRemainingTime}
+	    , textureId{other.textureId}
+	{
+		other.textureId = ImTextureID_Invalid;
+	}
+
+	AnimatedSprite& AnimatedSprite::operator=(AnimatedSprite&& other) noexcept
+	{
+		if (this != &other)
+		{
+			Unload();
+			size                      = other.size;
+			rate                      = other.rate;
+			columns                   = other.columns;
+			numFrames                 = p::Move(other.numFrames);
+			currentFrame              = other.currentFrame;
+			currentFrameRemainingTime = other.currentFrameRemainingTime;
+			textureId                 = other.textureId;
+
+			other.textureId = ImTextureID_Invalid;
+		}
+		return *this;
+	}
+
+	bool AnimatedSprite::Load(p::StringView path, p::u32 framesPerRow, p::u32 animations)
+	{
+		Unload();
+
+		const ImTextureID newTextureId = LoadTexture(path);
+		if (newTextureId == ImTextureID_Invalid)
+		{
+			return false;
+		}
+
+		textureId = newTextureId;
+		columns   = p::Max(framesPerRow, 1u);
+		numFrames.Clear();
+		numFrames.Reserve(animations);
+		for (p::u32 i = 0; i < animations; ++i)
+		{
+			numFrames.Add(columns);
+		}
+
+		SetAnimation(0);
+		return true;
+	}
+
+	void AnimatedSprite::Unload()
+	{
+		UnloadTexture(textureId);
+		textureId = ImTextureID_Invalid;
+
+		columns = 1;
+		numFrames.Clear();
+		currentFrame              = {0, 0};
+		currentFrameRemainingTime = 0.f;
+	}
+
 	void AnimatedSprite::SetAnimation(p::u32 id)
 	{
-		currentFrame              = {0, p::Clamp(id, 0u, p::u32(numFrames.Size() - 1))};
+		currentFrame.y = numFrames.IsEmpty() ? 0 : p::Min(id, p::u32(numFrames.Size() - 1));
+		currentFrame.x = 0;
 		currentFrameRemainingTime = rate;
 	}
 
 	void AnimatedSprite::NextFrame(float deltaTime)
 	{
-		currentFrameRemainingTime -= deltaTime;
+		if (numFrames.IsEmpty() || rate <= 0.f)
+		{
+			return;
+		}
 
+		const p::u32 frames =
+		    p::Max(numFrames[p::Min(currentFrame.y, p::u32(numFrames.Size() - 1))], 1u);
+
+		currentFrameRemainingTime -= deltaTime;
 		if (currentFrameRemainingTime <= 0.f)
 		{
-			++currentFrame.x;
-			if (currentFrame.x >= numFrames[p::i32(currentFrame.y)])
-			{
-				currentFrame.x = 0;
-			}
-			currentFrameRemainingTime = rate;
+			// Jump straight to the frame the elapsed time lands on
+			const p::u32 advance = p::u32(p::Floor(-currentFrameRemainingTime / rate)) + 1;
+			currentFrame.x = (currentFrame.x + advance) % frames;
+			currentFrameRemainingTime += float(advance) * rate;
 		}
+	}
+
+	p::v2 AnimatedSprite::GetFrameSize() const
+	{
+		const p::u32 rows = numFrames.IsEmpty() ? 1 : p::u32(numFrames.Size());
+		return p::v2{1.f / static_cast<float>(p::Max(columns, 1u)), 1.f / static_cast<float>(rows)};
 	}
 
 	p::v2 AnimatedSprite::GetUV() const
 	{
-		return size * currentFrame;
+		return GetFrameSize() * p::v2{float(currentFrame.x), float(currentFrame.y)};
 	}
 
-
-	bool SpriteButton(const char* strId, AnimatedSprite& sprite, const p::LinearColor& bgColor,
-	    const p::LinearColor& tintColor)
+	p::v2 AnimatedSprite::GetUVEnd() const
 	{
-		const p::v2 uv = sprite.GetUV();
-		return UI::ImageButton(strId, ImTextureRef(sprite.textureId), sprite.size, uv,
-		    uv + sprite.size, bgColor, tintColor);
+		return GetUV() + GetFrameSize();
 	}
 
-
-	struct InputTextCallbackStringUserData
+	bool SpriteButton(const char* strId, const AnimatedSprite& sprite,
+	    const p::LinearColor& bgColor, const p::LinearColor& tintColor)
 	{
-		p::String* str;
-		ImGuiInputTextCallback chainCallback;
-		void* chainCallbackUserData;
-	};
-
-	static int InputTextCallback(ImGuiInputTextCallbackData* data)
-	{
-		auto* userData = static_cast<InputTextCallbackStringUserData*>(data->UserData);
-		if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
-		{
-			// Resize string callback
-			// If for some reason we refuse the new length (BufTextLen) and/or capacity (BufSize) we
-			// need to set them back to what we want.
-			p::String* str = userData->str;
-			IM_ASSERT(data->Buf == str->c_str());
-			str->resize(data->BufTextLen);
-			data->Buf = (char*)str->c_str();
-		}
-		else if (userData->chainCallback)
-		{
-			// Forward to user callback, if any
-			data->UserData = userData->chainCallbackUserData;
-			return userData->chainCallback(data);
-		}
-		return 0;
+		return UI::ImageButton(strId, ImTextureRef(sprite.GetTextureId()), sprite.size,
+		    sprite.GetUV(), sprite.GetUVEnd(), bgColor, tintColor);
 	}
 
-
-	bool InputText(const char* label, p::String& str, ImGuiInputTextFlags flags,
-	    ImGuiInputTextCallback callback, void* userData)
-	{
-		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
-		flags |= ImGuiInputTextFlags_CallbackResize;
-
-		InputTextCallbackStringUserData cbUserData;
-		cbUserData.str                   = &str;
-		cbUserData.chainCallback         = callback;
-		cbUserData.chainCallbackUserData = userData;
-		return ImGui::InputText(
-		    label, (char*)str.c_str(), str.capacity() + 1, flags, InputTextCallback, &cbUserData);
-	}
-
-	bool InputTextMultiline(const char* label, p::String& str, const ImVec2& size,
-	    ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* userData)
-	{
-		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
-		flags |= ImGuiInputTextFlags_CallbackResize;
-
-		InputTextCallbackStringUserData cbUserData;
-		cbUserData.str                   = &str;
-		cbUserData.chainCallback         = callback;
-		cbUserData.chainCallbackUserData = userData;
-		return ImGui::InputTextMultiline(label, (char*)str.c_str(), str.capacity() + 1, size, flags,
-		    InputTextCallback, &cbUserData);
-	}
-
-	bool InputTextWithHint(const char* label, const char* hint, p::String& str,
-	    ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* userData)
-	{
-		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
-		flags |= ImGuiInputTextFlags_CallbackResize;
-
-		InputTextCallbackStringUserData cbUserData;
-		cbUserData.str                   = &str;
-		cbUserData.chainCallback         = callback;
-		cbUserData.chainCallbackUserData = userData;
-		return ImGui::InputTextWithHint(label, hint, (char*)str.c_str(), str.capacity() + 1, flags,
-		    InputTextCallback, &cbUserData);
-	}
 
 	ImRect GetWorkRect(p::v2 desiredSize, bool addhalfItemSpacing, p::v2 extent)
 	{
@@ -147,13 +161,11 @@ namespace rift::UI
 		return bb;
 	}
 
-	static ImGuiID gPendingEditingId = 0;
-
 	bool MutableText(p::StringView label, p::String& text, ImGuiInputTextFlags flags)
 	{
 		const ImGuiID id     = UI::GetID(label);
 		const bool isEditing = UI::GetActiveID() == id;
-		if (!isEditing)    // Is editing
+		if (!isEditing)    // Blend the input with the background while not being edited
 		{
 			UI::PushStyleColor(ImGuiCol_FrameBg, p::LinearColor::Transparent());
 		}
@@ -213,22 +225,6 @@ namespace rift::UI
 		HelpTooltip(text, 0.f);
 	}
 
-	bool DrawFilterWithHint(
-	    ImGuiTextFilter& filter, const char* label, const char* hint, float width)
-	{
-		if (width != 0.0f)
-		{
-			ImGui::SetNextItemWidth(width);
-		}
-		bool value_changed =
-		    ImGui::InputTextWithHint(label, hint, filter.InputBuf, IM_ARRAYSIZE(filter.InputBuf));
-		if (value_changed)
-		{
-			filter.Build();
-		}
-		return value_changed;
-	}
-
 	bool CollapsingHeaderWithButton(p::StringView label, ImGuiTreeNodeFlags flags,
 	    bool& buttonClicked, p::StringView buttonLabel, p::v2 buttonSize)
 	{
@@ -248,24 +244,24 @@ namespace rift::UI
 		// FIXME: We can evolve this into user scopeible helpers to add extra buttons on title
 		// bars, headers, etc.
 		// FIXME: CloseButton can overlap into text, need find a way to clip the text somehow.
-		ImGuiContext& g                    = *GImGui;
-		ImGuiLastItemData last_item_backup = g.LastItemData;
+		ImGuiContext& g                  = *GImGui;
+		ImGuiLastItemData lastItemBackup = g.LastItemData;
 		UI::PushID(id);
 		const float widthAvailable =
 		    ImGui::GetContentRegionAvail().x + UI::GetCurrentWindow()->DC.Indent.x;
 		ImGui::SameLine(widthAvailable - 25.f);
 		UI::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 		UI::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
-		float backup_padding_y = g.Style.FramePadding.y;
+		float backupPaddingY   = g.Style.FramePadding.y;
 		g.Style.FramePadding.y = 0.0f;
 		if (ImGui::ButtonEx(buttonLabel.data(), buttonSize, ImGuiButtonFlags_AlignTextBaseLine))
 		{
 			buttonClicked = true;
 		}
-		g.Style.FramePadding.y = backup_padding_y;
+		g.Style.FramePadding.y = backupPaddingY;
 		UI::PopStyleVar(2);
 		UI::PopID();
-		g.LastItemData = last_item_backup;
+		g.LastItemData = lastItemBackup;
 
 		return isOpen;
 	}

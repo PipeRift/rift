@@ -19,9 +19,9 @@ namespace rift::editor
 	constexpr Color selectedColor{Color::FromHex(0xdba43f)};
 	constexpr Color executionColor{Color::FromHex(0xdbdbdb)};
 
-	constexpr Color functionColor{Color::FromHex(0xCC3D33)};
-	constexpr Color returnColor{functionColor.Shade(0.1f)};
 	constexpr Color callColor{Color::FromHex(0x3366CC)};
+	constexpr Color functionColor{callColor.Shade(0.25f)};
+	constexpr Color returnColor{functionColor};
 	constexpr Color flowColor{UI::GetNeutralColor(4)};
 	constexpr Color invalidColor{Color::FromHex(0xF95040)};
 

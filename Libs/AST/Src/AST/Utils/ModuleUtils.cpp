@@ -15,6 +15,8 @@
 #include <Pipe/Files/PlatformPaths.h>
 #include <PipeECS.h>
 
+#include <utility>
+
 
 namespace rift::ast
 {
@@ -80,7 +82,6 @@ namespace rift::ast
 		ast.SetStatic<STypes>();
 		LoadSystem::Init(ast);
 		TypeSystem::Init(ast);
-		FunctionsSystem::Init(ast);
 
 		// Create project node (root module)
 		Id projectId = p::AddId(ast);

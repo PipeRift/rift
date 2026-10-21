@@ -29,7 +29,7 @@ namespace rift::MIR
 	    ast::CDeclVariable, ast::CDeclStruct, ast::CDeclClass, ast::CDeclStatic, ast::CParent,
 	    ast::CInvalid, ast::CChild, ast::CModule, ast::CLiteralBool, ast::CLiteralIntegral,
 	    ast::CLiteralFloating, ast::CLiteralString, ast::CDeclFunction, ast::CExprUnaryOperator,
-	    ast::CExprBinaryOperator, CDeclCStruct, CDeclCStatic>;
+	    ast::CExprBinaryOperator, ast::CExprCast, CDeclCStruct, CDeclCStatic>;
 
 	void GenerateC(Compiler& compiler);
 
@@ -65,9 +65,11 @@ namespace rift::MIR
 		void AddStmtBlock(ast::Id firstStmtId);
 		void AddStmtIf(ast::Id id);
 		void AddStmtFor(ast::Id id);
-		void AddExpr(const ast::ExprOutput& output);
+		// Adds the expression, casting it into the type of the pin it feeds when they differ
+		void AddExpr(const ast::ExprOutput& output, ast::Id pinId = ast::NoId);
 		void AddUnaryOperator(ast::Id id, const ast::CExprUnaryOperator& op);
 		void AddBinaryOperator(ast::Id id, const ast::CExprBinaryOperator& op);
+		void AddCast(ast::Id id);
 		void AddCall(ast::Id id, const ast::CExprCallId& call);
 		void CreateMain(ast::Id functionId);
 		ast::Id FindMainFunction(p::TView<ast::Id> functionIds);

@@ -49,9 +49,9 @@ namespace rift
 
 	TPtr<Backend> FindBackendByName(const TArray<TOwnPtr<Backend>>& backends, Tag name)
 	{
-		TOwnPtr<Backend>* backend = backends.FindIf([name](const auto& backend)
+		TOwnPtr<Backend>* backend = backends.FindIf([name](const auto& candidate)
 		{
-			return backend->GetName() == name;
+			return candidate->GetName() == name;
 		});
 		if (backend)
 		{
@@ -64,32 +64,7 @@ namespace rift
 
 int main(int argc, char** argv)
 {
-	p::Logger logger = p::Logger{.infoCallback =
-	                                 [](StringView msg)
-	{
-		String text;
-		auto now = p::DateTime::Now();
-		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		p::FormatTo(text, "[Info] {}\n", msg);
-		std::cout << text;
-	},
-	    .warningCallback =
-	        [](StringView msg)
-	{
-		String text;
-		auto now = p::DateTime::Now();
-		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		p::FormatTo(text, "[Warning] {}\n", msg);
-		std::cout << text;
-	},
-	    .errorCallback = [](StringView msg)
-	{
-		String text;
-		auto now = p::DateTime::Now();
-		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		p::FormatTo(text, "[Error] {}\n", msg);
-		std::cout << text;
-	}};
+	p::Logger logger = MakeLogger();
 
 	p::Initialize(&logger);
 	p::Info(p::PlatformPaths::GetUserSettingsPath());

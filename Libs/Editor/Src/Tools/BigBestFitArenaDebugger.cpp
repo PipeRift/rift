@@ -2,10 +2,10 @@
 
 #include "Tools/BigBestFitArenaDebugger.h"
 
-#include <PipeStrings.h>
 #include <PipeMath.h>
 #include <PipeMemoryArenas.h>
 #include <PipeReflect.h>
+#include <PipeStrings.h>
 #include <UI/UI.h>
 
 
@@ -120,7 +120,6 @@ namespace rift::editor
 		// Return hovered index or -1 if none are hovered.
 		// This is currently not exposed in the public API because we need a larger redesign of the
 		// whole thing, but in the short-term we are making it available in PlotEx().
-		// return idx_hovered;
 		return -1;
 	}
 

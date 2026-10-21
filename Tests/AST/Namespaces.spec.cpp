@@ -98,6 +98,31 @@ P_SPEC("AST.Namespaces", []()
 		}
 	});
 
+	It("Can check if it contains another namespace", []()
+	{
+		ast::Namespace empty{};
+		ast::Namespace a{"A"};
+		ast::Namespace ab{"A", "B"};
+		ast::Namespace abc{"A", "B", "C"};
+		ast::Namespace ac{"A", "C"};
+
+		// A namespace contains itself and every namespace below it
+		Expect(empty.Contains(empty)).ToBeTrue();
+		Expect(a.Contains(empty)).ToBeTrue();
+		Expect(a.Contains(a)).ToBeTrue();
+		Expect(ab.Contains(empty)).ToBeTrue();
+		Expect(ab.Contains(a)).ToBeTrue();
+		Expect(ab.Contains(ab)).ToBeTrue();
+		Expect(abc.Contains(ab)).ToBeTrue();
+
+		// But not the other way around, nor a different branch
+		Expect(empty.Contains(a)).ToBeFalse();
+		Expect(a.Contains(ab)).ToBeFalse();
+		Expect(ab.Contains(abc)).ToBeFalse();
+		Expect(abc.Contains(ac)).ToBeFalse();
+		Expect(ac.Contains(ab)).ToBeFalse();
+	});
+
 	It("Can find id from namespace", []()
 	{
 		ast::Tree ast;

@@ -46,8 +46,7 @@ namespace rift::editor
 		ast::Id projectModuleId = ast::NoId;
 		p::TMap<p::Tag, Folder> folders;
 
-		bool open  = true;
-		bool dirty = true;
+		bool open = true;
 
 		Filter filter    = Filter::All;
 		ast::Id renameId = ast::NoId;
@@ -63,7 +62,6 @@ namespace rift::editor
 	public:
 		FileExplorerPanel() {}
 
-		void BuildLayout();
 		void Draw(ast::Tree& ast);
 
 		void DrawList(ast::Tree& ast);
@@ -78,13 +76,9 @@ namespace rift::editor
 	private:
 		void InsertItem(const Item& item);
 		void DrawItem(ast::Tree& ast, const Item& item);
-		// void DrawFile(ast::Tree& ast, File& file);
 
 		void DrawReloadPopup(ast::Tree& ast);
 		void ReloadFile(ast::Tree& ast, ast::Id id);
-
-		void DrawModuleActions(ast::Id id, struct ast::CModule& module);
-		void DrawTypeActions(ast::Id id, struct ast::CDeclType& type);
 
 		void CreateType(ast::Tree& ast, p::StringView title, p::Tag typeId, p::StringView path);
 	};

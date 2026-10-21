@@ -81,15 +81,10 @@ namespace rift::UI
 
 	void AddTextFont(p::Tag name, UI::FontMode mode, float size, p::StringView file)
 	{
-		FontDescriptor* font = gFonts.Find(name);
-		if (!font)
-		{
-			gFonts.Insert(name, {});
-			font = &gFonts[name];
-		}
+		FontDescriptor& font = gFonts[name];
 
 		ImFont* imFont = AddFont(file.data(), size);
-		(*font)[mode].Add(size, imFont);
+		font[mode].Add(size, imFont);
 
 		// Add Font Awesome icons
 		static const ImWchar iconsRanges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
@@ -107,39 +102,36 @@ namespace rift::UI
 		auto& io = ImGui::GetIO();
 		io.Fonts->AddFontDefault();
 
-		auto resources = p::JoinPaths(rift::Paths::GetResourcesPath(), "Editor");
+		const p::String resources = p::JoinPaths(rift::Paths::GetResourcesPath(), "Editor");
 
-		// Work Sans
-		AddTextFont("WorkSans", UI::FontMode::Bold, 14.f,
-		    p::JoinPaths(resources, "Fonts/WorkSans-Bold.ttf"));
-		AddTextFont("WorkSans", UI::FontMode::BoldItalic, 14.f,
-		    p::JoinPaths(resources, "Fonts/WorkSans-BoldItalic.ttf"));
-		AddTextFont("WorkSans", UI::FontMode::Italic, 14.f,
-		    p::JoinPaths(resources, "Fonts/WorkSans-Italic.ttf"));
-		AddTextFont("WorkSans", UI::FontMode::Light, 14.f,
-		    p::JoinPaths(resources, "Fonts/WorkSans-Light.ttf"));
-		AddTextFont("WorkSans", UI::FontMode::LightItalic, 14.f,
-		    p::JoinPaths(resources, "Fonts/WorkSans-LightItalic.ttf"));
-		AddTextFont("WorkSans", UI::FontMode::Regular, 14.f,
-		    p::JoinPaths(resources, "Fonts/WorkSans-Regular.ttf"));
-		AddTextFont("WorkSans", UI::FontMode::Regular, 18.f,
-		    p::JoinPaths(resources, "Fonts/WorkSans-Regular.ttf"));
-		AddTextFont("WorkSans", UI::FontMode::Regular, 24.f,
-		    p::JoinPaths(resources, "Fonts/WorkSans-Regular.ttf"));
+		struct FontEntry
+		{
+			p::Tag name;
+			UI::FontMode mode;
+			float size;
+			const char* file;
+		};
+		const FontEntry fonts[] = {
+		    {"WorkSans", UI::FontMode::Bold,        14.f, "Fonts/WorkSans-Bold.ttf"       },
+		    {"WorkSans", UI::FontMode::BoldItalic,  14.f, "Fonts/WorkSans-BoldItalic.ttf" },
+		    {"WorkSans", UI::FontMode::Italic,      14.f, "Fonts/WorkSans-Italic.ttf"     },
+		    {"WorkSans", UI::FontMode::Light,       14.f, "Fonts/WorkSans-Light.ttf"      },
+		    {"WorkSans", UI::FontMode::LightItalic, 14.f, "Fonts/WorkSans-LightItalic.ttf"},
+		    {"WorkSans", UI::FontMode::Regular,     14.f, "Fonts/WorkSans-Regular.ttf"    },
+		    {"WorkSans", UI::FontMode::Regular,     18.f, "Fonts/WorkSans-Regular.ttf"    },
+		    {"WorkSans", UI::FontMode::Regular,     24.f, "Fonts/WorkSans-Regular.ttf"    },
+		    {"Karla",    UI::FontMode::Bold,        14.f, "Fonts/Karla-Bold.ttf"          },
+		    {"Karla",    UI::FontMode::BoldItalic,  14.f, "Fonts/Karla-BoldItalic.ttf"    },
+		    {"Karla",    UI::FontMode::Italic,      14.f, "Fonts/Karla-Italic.ttf"        },
+		    {"Karla",    UI::FontMode::Light,       14.f, "Fonts/Karla-Light.ttf"         },
+		    {"Karla",    UI::FontMode::LightItalic, 14.f, "Fonts/Karla-LightItalic.ttf"   },
+		    {"Karla",    UI::FontMode::Regular,     14.f, "Fonts/Karla-Regular.ttf"       },
+		};
 
-		// Karla
-		AddTextFont(
-		    "Karla", UI::FontMode::Bold, 14.f, p::JoinPaths(resources, "Fonts/Karla-Bold.ttf"));
-		AddTextFont("Karla", UI::FontMode::BoldItalic, 14.f,
-		    p::JoinPaths(resources, "Fonts/Karla-BoldItalic.ttf"));
-		AddTextFont(
-		    "Karla", UI::FontMode::Italic, 14.f, p::JoinPaths(resources, "Fonts/Karla-Italic.ttf"));
-		AddTextFont(
-		    "Karla", UI::FontMode::Light, 14.f, p::JoinPaths(resources, "Fonts/Karla-Light.ttf"));
-		AddTextFont("Karla", UI::FontMode::LightItalic, 14.f,
-		    p::JoinPaths(resources, "Fonts/Karla-LightItalic.ttf"));
-		AddTextFont("Karla", UI::FontMode::Regular, 14.f,
-		    p::JoinPaths(resources, "Fonts/Karla-Regular.ttf"));
+		for (const auto& font : fonts)
+		{
+			AddTextFont(font.name, font.mode, font.size, p::JoinPaths(resources, font.file));
+		}
 	}
 
 	ImFont* FindFont(p::Tag name, UI::FontMode mode, float size)
@@ -235,5 +227,10 @@ namespace rift::UI
 		UI::SetDefaultFont("WorkSans");
 	}
 
-	void PopGeneralStyle() {}
+	void PopGeneralStyle()
+	{
+		UI::PopHeaderColor();
+		UI::PopFrameBgColor();
+		UI::PopButtonColor();
+	}
 }    // namespace rift::UI

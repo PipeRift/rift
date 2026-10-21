@@ -2,6 +2,7 @@
 
 #include "Tools/ASTDebugger.h"
 
+#include "Editor.h"
 #include "imgui.h"
 #include "PipeReflect.h"
 #include "UI/Widgets.h"
@@ -190,9 +191,10 @@ namespace rift::editor
 				{
 					UI::Indent();
 					if (p::HasTypeFlags(type, p::TF_Struct)
-					    && UI::BeginInspector("EntityInspector"))
+					    && UI::BeginInspector("EntityInspector", p::v2{0.f, 0.f}, false,
+					        RegisterKeyValueInspections, &ast))
 					{
-						UI::InspectChildrenProperties({data, type});
+						UI::InspectChildrenProperties(data, type);
 						UI::EndInspector();
 					}
 					UI::Unindent();

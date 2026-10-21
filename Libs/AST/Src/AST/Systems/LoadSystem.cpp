@@ -86,34 +86,23 @@ namespace rift::ast::LoadSystem
 	{
 		pathsByModule.Clear(p::Shrink::No);
 
-		// Cache module paths in a Set
-		p::TSet<p::StringView> modulePaths;
-
 		p::TIdScope<CModule, CFileRef> scope{ast};
 		auto modules = FindAllIdsWith<CModule, CFileRef>(scope);
-
-		modulePaths.Reserve(modules.Size());
-		for (Id moduleId : modules)
-		{
-			const auto& moduleFile = scope.Get<const CFileRef>(moduleId);
-			modulePaths.Insert(p::GetParentPath(moduleFile.path));
-		}
 
 		// Find all type files by module
 		pathsByModule.Reserve(modules.Size());
 		for (Id moduleId : modules)
 		{
-			p::StringView path = ast::GetModulePath(scope, moduleId);
+			p::StringView modulePath = ast::GetModulePath(scope, moduleId);
 
-			auto& paths = pathsByModule.AddRef({moduleId}).paths;
-			// Iterate all types ignoring other module paths
-			for (const auto& typePath :
-			    ast::TypeIterator(path /*TODO: Ignore paths | , &modulePaths*/))
+			auto& paths = pathsByModule.AddRef({.moduleId = moduleId}).paths;
+			// TODO: Ignore paths owned by other modules
+			for (const auto& typePath : ast::TypeIterator(modulePath))
 			{
-				p::String path = p::ToString(typePath);
-				if (p::GetStem(path) != ".module")    // Ignore module files
+				p::String typePathStr = p::ToString(typePath);
+				if (p::GetStem(typePathStr) != ".module")    // Ignore module files
 				{
-					paths.Add(path);
+					paths.Add(typePathStr);
 				}
 			}
 		}
@@ -168,7 +157,7 @@ namespace rift::ast::LoadSystem
 		// Remove already existing types
 		for (ModuleTypePaths& modulePaths : pathsByModule)
 		{
-			modulePaths.paths.RemoveIfSwap([types, &modulePaths](const p::String& path)
+			modulePaths.paths.RemoveIfSwap([types](const p::String& path)
 			{
 				return types->typesByPath.Contains(p::Tag{path});
 			});

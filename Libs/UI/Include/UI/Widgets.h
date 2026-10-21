@@ -9,59 +9,60 @@
 namespace rift::UI
 {
 	/**
-	 * Tracks an animation from a texture.
-	 * Each row is one animation
+	 * Tracks an animation from a sprite sheet.
+	 * The sheet is a grid of 'columns' equally wide frames, and each row is one animation.
+	 * numFrames holds how many frames of each row are actually used.
 	 */
 	struct AnimatedSprite
 	{
-		ImTextureID textureId;
-		p::v2 size{};
-		float rate = 1.f / 24.f;
-		// Number of frames in each row
+		AnimatedSprite() = default;
+		~AnimatedSprite();
+		// Sprites own their texture, so they can't be copied
+		AnimatedSprite(const AnimatedSprite&)            = delete;
+		AnimatedSprite& operator=(const AnimatedSprite&) = delete;
+		AnimatedSprite(AnimatedSprite&& other) noexcept;
+		AnimatedSprite& operator=(AnimatedSprite&& other) noexcept;
+
+		// Loads a sprite sheet from an image file. Every row holds the same number of frames
+		bool Load(p::StringView path, p::u32 framesPerRow, p::u32 animations = 1);
+		// Releases the texture and resets the sprite
+		void Unload();
+
+		p::v2 size{};                   // Size of the sprite on screen, in pixels
+		float rate     = 1.f / 24.f;    // Seconds per frame
+		p::u32 columns = 1;             // Frames per row in the sheet
+		// Frames actually used by each row
 		p::TArray<p::u32> numFrames{};
 
 		p::v2_u32 currentFrame{};
 		float currentFrameRemainingTime = 0.f;
 
 
+		// Selects the animation to play, restarting it from its first frame
 		void SetAnimation(p::u32 id);
+		// Advances the animation by the time elapsed since the last call
 		void NextFrame(float deltaTime);
 
+		// Top-left corner of the current frame, in texture UV space
 		p::v2 GetUV() const;
+		// Bottom-right corner of the current frame, in texture UV space
+		p::v2 GetUVEnd() const;
+
+		ImTextureID GetTextureId() const
+		{
+			return textureId;
+		}
+
+	private:
+		// Size of a single frame, in texture UV space
+		p::v2 GetFrameSize() const;
+
+		ImTextureID textureId = ImTextureID_Invalid;
 	};
 
-	static bool SpriteButton(const char* strId, AnimatedSprite& sprite,
+	// Draws the current frame of a sprite as a clickable button
+	bool SpriteButton(const char* strId, const AnimatedSprite& sprite,
 	    const p::LinearColor& bgColor, const p::LinearColor& tintColor);
-
-	inline bool InputText(const char* label, char* buf, size_t buf_size,
-	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
-	    void* user_data = nullptr)
-	{
-		return ImGui::InputText(label, buf, buf_size, flags, callback, user_data);
-	}
-	inline bool InputTextMultiline(const char* label, char* buf, size_t buf_size,
-	    const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0,
-	    ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr)
-	{
-		return ImGui::InputTextMultiline(label, buf, buf_size, size, flags, callback, user_data);
-	}
-	inline bool InputTextWithHint(const char* label, const char* hint, char* buf, size_t buf_size,
-	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
-	    void* user_data = nullptr)
-	{
-		return ImGui::InputTextWithHint(label, hint, buf, buf_size, flags, callback, user_data);
-	}
-
-	// ImGui::InputText() with String
-	// Because text input needs dynamic resizing, we need to setup a callback to grow the capacity
-	bool InputText(const char* label, p::String& str, ImGuiInputTextFlags flags = 0,
-	    ImGuiInputTextCallback callback = nullptr, void* userData = nullptr);
-	bool InputTextMultiline(const char* label, p::String& str, const ImVec2& size = ImVec2(0, 0),
-	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
-	    void* userData = nullptr);
-	bool InputTextWithHint(const char* label, const char* hint, p::String& str,
-	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
-	    void* userData = nullptr);
 
 	static void BeginOuterStyle()
 	{
@@ -112,9 +113,6 @@ namespace rift::UI
 	    p::v2 desiredSize, bool addhalfItemSpacing = true, p::v2 extent = p::v2::Zero());
 
 	bool MutableText(p::StringView label, p::String& text, ImGuiInputTextFlags flags = 0);
-
-	bool DrawFilterWithHint(ImGuiTextFilter& filter, const char* label = "Filter (inc,-exc)",
-	    const char* hint = "...", float width = 0.0f);
 
 	bool CollapsingHeaderWithButton(p::StringView label, ImGuiTreeNodeFlags flags,
 	    bool& buttonClicked, p::StringView buttonLabel, p::v2 buttonSize = p::v2(18.f, 14.f));

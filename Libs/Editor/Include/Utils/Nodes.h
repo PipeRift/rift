@@ -300,6 +300,12 @@ namespace rift::Nodes
 	void ResetPanning(const v2& pos);
 	void MoveToNode(ast::Id nodeId, v2 offset = v2::Zero());
 
+	// Canvas zoom, read from and written to the editor settings. Zooming keeps the point
+	// under the mouse cursor fixed. Use ResetZoom() to return to the default zoom.
+	float GetZoom();
+	void SetZoom(float zoom);
+	void ResetZoom();
+
 	IO& GetIO();
 
 	// Returns the global style struct. See the struct declaration for default values.

@@ -6,7 +6,6 @@
 #include "Utils/NodesInternal.h"
 
 #include <PipeMath.h>
-#include <PipeMath.h>
 
 
 namespace rift::Nodes
@@ -151,7 +150,7 @@ namespace rift::Nodes
 		const Color linkColor =
 		    gNodes->style
 		        .colors[editor.selectedLinkIndices.contains(linkIdx) ? ColorVar_MiniMapLinkSelected
-		                                                             : ColorVar_MiniMapLink];
+				                                                     : ColorVar_MiniMapLink];
 
 		gNodes->CanvasDrawList->AddBezierCubic(cubicBezier.p0, cubicBezier.p1, cubicBezier.p2,
 		    cubicBezier.p3, linkColor.ToPackedABGR(), gNodes->style.LinkThickness * scaling,
@@ -229,7 +228,7 @@ namespace rift::Nodes
 		{
 			v2 target      = MiniMapToGridPosition(editor, ImGui::GetMousePos());
 			v2 center      = gNodes->CanvasRectScreenSpace.GetSize() * 0.5f;
-			editor.panning = ImFloor(center - target);
+			editor.panning = ImFloor(center - target * GetZoom());
 		}
 
 		// Reset callback info after use
