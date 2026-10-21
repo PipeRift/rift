@@ -4,11 +4,13 @@
 
 #include <AST/Components/Declarations.h>
 #include <AST/Systems/CastSystem.h>
+#include <AST/Systems/FunctionsSystem.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Statements.h>
 #include <Compiler/Compiler.h>
+#include <Pipe/Core/Map.h>
 #include <Pipe/Core/StringView.h>
 #include <PipeStrings.h>
 
@@ -137,40 +139,8 @@ namespace rift::MIR
 			}
 		}
 
-		/** Collects loops in statement execution order so the first loop in a function
-		 * gets the unsuffixed name. */
-		void CollectForIds(p::TIdScopeRef<ast::CStmtFor, ast::CStmtOutput, ast::CStmtOutputs> scope,
-		    ast::Id firstStmtId, p::TArray<ast::Id>& forIds, p::TSet<ast::Id>& visited)
-		{
-			ast::Id current = firstStmtId;
-			while (!p::IsNone(current) && !visited.Contains(current))
-			{
-				visited.Insert(current);
-
-				if (const auto* outputs = scope.TryGet<const ast::CStmtOutputs>(current))
-				{
-					if (scope.Has<ast::CStmtFor>(current))
-					{
-						forIds.Add(current);
-					}
-					for (ast::Id nextId : outputs->linkInputNodes)
-					{
-						CollectForIds(scope, nextId, forIds, visited);
-					}
-					return;
-				}
-
-				const auto* output = scope.TryGet<const ast::CStmtOutput>(current);
-				if (!output)
-				{
-					return;
-				}
-				current = output->linkInputNode;
-			}
-		}
-
-		void AssignFunctionNames(ast::Tree& ast, ast::Id functionId, p::TArray<ast::Id>& forIds,
-		    p::TSet<p::Tag>& globalNames)
+		void AssignFunctionNames(ast::Tree& ast, ast::Id functionId, p::TSet<p::Tag>& globalNames,
+		    p::TMap<ast::Id, p::TSet<p::Tag>>& bodyNamesByFunction)
 		{
 			// Functions inherit the global scope and their type's member names
 			p::TSet<p::Tag> functionNames = globalNames;
@@ -200,21 +170,8 @@ namespace rift::MIR
 			// Locals declared directly in the function share its scope
 			AssignVariables(ast, functionId, functionNames);
 
-			// Loop indices and their locals live in the function body
-			p::TSet<p::Tag> bodyNames = functionNames;
-			for (ast::Id forId : forIds)
-			{
-				if (const auto* outputs = ast.TryGet<const ast::CExprOutputs>(forId))
-				{
-					for (p::i32 i = 0; i < outputs->pinIds.Size(); ++i)
-					{
-						// The first expression output is the loop index. Its end bound is
-						// generated as a companion name.
-						AssignName(ast, outputs->pinIds[i], bodyNames, i == 0);
-					}
-				}
-				AssignVariables(ast, forId, bodyNames);
-			}
+			// Keep the function's scope so loop indices can be added to it
+			bodyNamesByFunction.Insert(functionId, functionNames);
 		}
 	}    // namespace
 
@@ -245,15 +202,35 @@ namespace rift::MIR
 			AssignVariables(ast, typeId, memberNames);
 		}
 
+		p::TMap<ast::Id, p::TSet<p::Tag>> bodyNamesByFunction;
 		for (ast::Id functionId : p::FindAllIdsWith<ast::CDeclFunction>(ast))
 		{
-			p::TArray<ast::Id> forIds;
-			p::TSet<ast::Id> visited;
-			if (const auto* output = ast.TryGet<const ast::CStmtOutput>(functionId))
+			AssignFunctionNames(ast, functionId, globalNames, bodyNamesByFunction);
+		}
+
+		// Loop indices are a special case: their variable lives in the owning
+		// function's body scope, but has no CDeclVariable entity of its own.
+		p::TArray<ast::Id> forIds = p::FindAllIdsWith<ast::CStmtFor>(ast);
+		forIds.Sort();
+		for (ast::Id forId : forIds)
+		{
+			const ast::Id functionId   = ast::FunctionsSystem::FindOwningFunction(ast, forId);
+			p::TSet<p::Tag>* bodyNames = bodyNamesByFunction.Find(functionId);
+			if (!bodyNames)
 			{
-				CollectForIds(ast, output->linkInputNode, forIds, visited);
+				continue;
 			}
-			AssignFunctionNames(ast, functionId, forIds, globalNames);
+
+			if (const auto* outputs = ast.TryGet<const ast::CExprOutputs>(forId))
+			{
+				for (p::i32 i = 0; i < outputs->pinIds.Size(); ++i)
+				{
+					// The first expression output is the loop index. Its end bound is
+					// generated as a companion name.
+					AssignName(ast, outputs->pinIds[i], *bodyNames, i == 0);
+				}
+			}
+			AssignVariables(ast, forId, *bodyNames);
 		}
 	}
 
