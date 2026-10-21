@@ -3,6 +3,7 @@
 #include "IRGeneration.h"
 
 #include <AST/Systems/CastSystem.h>
+#include <AST/Systems/NameSystem.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/Namespaces.h>
@@ -49,6 +50,8 @@ namespace rift::MIR
 
 	void GenerateC(Compiler& compiler)
 	{
+		ast::NameSystem::AssignGeneratedNames(compiler.ast);
+
 		MIRScope scope{compiler.ast};
 		CGenerator cGen{compiler, scope};
 		cGen.BindNativeTypes();
@@ -213,7 +216,7 @@ namespace rift::MIR
 			{
 				const auto& var = scope.Get<const ast::CDeclVariable>(memberId);
 
-				const p::Tag memberName = ast::GetName(scope, memberId);
+				const p::Tag memberName = ast::GetGeneratedName(scope, memberId);
 				auto* irType            = scope.TryGet<const CMIRType>(var.typeId);
 				if (!irType) [[unlikely]]
 				{
@@ -265,7 +268,7 @@ namespace rift::MIR
 						continue;
 					}
 
-					const p::Tag pinName = ast::GetName(scope, pinId);
+					const p::Tag pinName = ast::GetGeneratedName(scope, pinId);
 					const auto* exprId   = scope.TryGet<const ast::CExprTypeId>(pinId);
 					const auto* irType =
 					    exprId ? scope.TryGet<const CMIRType>(exprId->id) : nullptr;
@@ -311,81 +314,11 @@ namespace rift::MIR
 		code->push_back('\n');
 	}
 
-	void CGenerator::ResetVariableNames(ast::Id functionId)
-	{
-		forIndexNames.Clear();
-		variableNameCounts.Clear();
-		usedVariableNames.Clear();
-
-		// Function parameters are in scope for the whole body, so generated locals must
-		// not shadow them.
-		auto addPinNames = [this](const p::TArray<ast::Id>& pinIds)
-		{
-			for (ast::Id pinId : pinIds)
-			{
-				const p::Tag name = ast::GetName(scope, pinId);
-				if (!name.IsNone())
-				{
-					usedVariableNames.Insert(name);
-				}
-			}
-		};
-		if (const auto* inputs = scope.TryGet<const ast::CExprOutputs>(functionId))
-		{
-			addPinNames(inputs->pinIds);
-		}
-		if (const auto* outputs = scope.TryGet<const ast::CExprInputs>(functionId))
-		{
-			addPinNames(outputs->pinIds);
-		}
-	}
-
-	p::String CGenerator::MakeVariableName(p::StringView baseName)
-	{
-		p::i32& count = variableNameCounts[p::Tag{baseName}];
-		p::String name;
-		while (true)
-		{
-			name.clear();
-			if (count == 0)
-			{
-				name.append(baseName);
-			}
-			else
-			{
-				p::FormatTo(name, "{}_{}", baseName, count);
-			}
-			++count;
-
-			if (!usedVariableNames.Contains(p::Tag{name}))
-			{
-				break;
-			}
-		}
-
-		usedVariableNames.Insert(p::Tag{name});
-		return name;
-	}
-
-	p::String CGenerator::GetForIndexName(ast::Id id)
-	{
-		if (const p::String* name = forIndexNames.Find(id))
-		{
-			return *name;
-		}
-
-		p::String name = MakeVariableName("index");
-		forIndexNames.Insert(id, name);
-		return name;
-	}
-
 	void CGenerator::DefineFunctions(p::TView<ast::Id> ids)
 	{
 		code->append("// Function Definitions\n");
 		for (ast::Id id : ids)
 		{
-			ResetVariableNames(id);
-
 			const p::String& signature = scope.Get<const CMIRFunctionSignature>(id).value;
 			code->append(signature);
 			code->append(" {\n");
@@ -492,7 +425,15 @@ namespace rift::MIR
 		else if (scope.Has<ast::CStmtFor>(output.nodeId))
 		{
 			// The only expression output of a for node is its loop index
-			code->append(GetForIndexName(output.nodeId));
+			const p::Tag indexName = ast::GetGeneratedName(scope, output.pinId);
+			if (indexName.IsNone())
+			{
+				compiler.Error("For loop index has no generated name");
+			}
+			else
+			{
+				code->append(indexName.AsString());
+			}
 		}
 		else
 		{
@@ -602,9 +543,20 @@ namespace rift::MIR
 
 		const ast::Id i32Id   = static_cast<ast::Tree&>(scope.GetContext()).GetNativeTypes().i32Id;
 		const auto* indexType = scope.TryGet<const CMIRType>(i32Id);
-		const p::StringView type  = indexType ? indexType->value.AsString() : p::StringView{"long"};
-		const p::String indexName = GetForIndexName(id);
-		const p::String endName   = MakeVariableName(p::Format("{}_end", indexName));
+		const p::StringView type = indexType ? indexType->value.AsString() : p::StringView{"long"};
+
+		const auto& exprOutputs = scope.Get<const ast::CExprOutputs>(id);
+		P_Check(!exprOutputs.pinIds.IsEmpty());
+		const p::Tag indexTag = ast::GetGeneratedName(scope, exprOutputs.pinIds.First());
+		if (indexTag.IsNone())
+		{
+			compiler.Error("For loop index has no generated name");
+			return;
+		}
+
+		const p::StringView indexName = indexTag.AsString();
+		p::String endName;
+		p::FormatTo(endName, "{}_end", indexName);
 
 		// The index stays visible in the continuation block after the loop
 		p::FormatTo(*code, "{} {} = ", type, indexName);
