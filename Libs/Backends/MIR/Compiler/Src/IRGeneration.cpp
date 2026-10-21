@@ -467,9 +467,7 @@ namespace rift::MIR
 			return;
 		}
 
-		const ast::Cast* registered =
-		    ast::CastSystem::FindCast(compiler.ast, sourceType, targetType);
-		if (!registered) [[unlikely]]
+		if (!ast::CastSystem::CanCast(scope, sourceType, targetType)) [[unlikely]]
 		{
 			compiler.Error(p::Format("'{}' can't be cast into '{}'",
 			    ast::GetName(compiler.ast, sourceType).AsString(),
@@ -477,29 +475,20 @@ namespace rift::MIR
 			return;
 		}
 
-		switch (registered->kind)
+		const auto* irType = scope.TryGet<const CMIRType>(targetType);
+		if (!irType) [[unlikely]]
 		{
-			// Every numeric cast is expressed as a C cast, no matter which instruction a
-			// backend would lower it to
-			case ast::CastKind::IntToInt:
-			case ast::CastKind::FPToFP:
-			case ast::CastKind::IntToFP:
-			case ast::CastKind::FPToInt: {
-				const auto* irType = scope.TryGet<const CMIRType>(targetType);
-				if (!irType) [[unlikely]]
-				{
-					compiler.Error("Cannot cast a value into an invalid type");
-					return;
-				}
-				code->append("((");
-				code->append(irType->value.AsString());
-				code->append(")(");
-				// The value is first cast into the type of the input pin
-				AddExpr(inputs->linkedOutputs[0], inputs->pinIds[0]);
-				code->append("))");
-				break;
-			}
+			compiler.Error("Cannot cast a value into an invalid type");
+			return;
 		}
+
+		// Every cast is expressed as a C cast
+		code->append("((");
+		code->append(irType->value.AsString());
+		code->append(")(");
+		// The value is first cast into the type of the input pin
+		AddExpr(inputs->linkedOutputs[0], inputs->pinIds[0]);
+		code->append("))");
 	}
 
 	void CGenerator::AddStmtIf(ast::Id id)

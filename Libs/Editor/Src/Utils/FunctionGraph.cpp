@@ -81,12 +81,6 @@ namespace rift::editor::Graph
 		return castId;
 	}
 
-	// Nodes always sit on whole grid tiles, whatever their pins say
-	static v2 SnapToGrid(const v2& position)
-	{
-		return v2{p::Round(position.x), p::Round(position.y)};
-	}
-
 	namespace
 	{
 		// Persists the current zoom after it stops changing, so scrolling does not write the
@@ -876,7 +870,7 @@ namespace rift::editor::Graph
 			const v2 origin = Nodes::GetNodeGridSpacePos(pending.castId);
 			const v2 offset =
 			    (origin + (inputPosition - outputPosition) / zoom) * settings.GetInvGridSize();
-			const v2 position                                    = SnapToGrid(offset);
+			const v2 position = v2{p::Round(offset.x), p::Round(offset.y)};
 			ast.GetOrAdd<CNodePosition>(pending.castId).position = position;
 			SetNodePosition(pending.castId, position);
 		}
