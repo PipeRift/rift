@@ -107,6 +107,15 @@ namespace rift::ast
 		return scope.Get<const CNamespace>(id).name;
 	}
 
+	p::Tag GetGeneratedName(p::TIdScopeRef<CGeneratedName, CNamespace> scope, Id id)
+	{
+		if (const auto* generated = scope.TryGet<const CGeneratedName>(id))
+		{
+			return generated->name;
+		}
+		return GetName(scope, id);
+	}
+
 	p::String GetFullName(p::TIdScopeRef<CNamespace, CChild, CModule> scope, Id id,
 	    bool localNamespace, char separator)
 	{

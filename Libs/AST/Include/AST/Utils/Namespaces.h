@@ -1,6 +1,7 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
+#include "AST/Components/CGeneratedName.h"
 #include "AST/Components/CModule.h"
 #include "AST/Components/CNamespace.h"
 #include "AST/Components/Declarations.h"
@@ -28,6 +29,8 @@ namespace rift::ast
 
 	p::Tag GetName(p::TIdScopeRef<CNamespace> scope, Id id);
 	p::Tag GetNameUnsafe(p::TIdScopeRef<CNamespace> scope, Id id);
+	/** Name used when generating C variables. Falls back to the declared name. */
+	p::Tag GetGeneratedName(p::TIdScopeRef<CGeneratedName, CNamespace> scope, Id id);
 	p::String GetFullName(p::TIdScopeRef<CNamespace, CChild, CModule> scope, Id id,
 	    bool localNamespace = false, char separator = '.');
 }    // namespace rift::ast

@@ -4,6 +4,7 @@
 
 #include "AST/Systems/FunctionsSystem.h"
 #include "AST/Systems/LoadSystem.h"
+#include "AST/Systems/NameSystem.h"
 #include "AST/Systems/TransactionSystem.h"
 #include "AST/Systems/TypeSystem.h"
 #include "AST/Utils/ModuleUtils.h"
@@ -65,6 +66,7 @@ namespace rift
 		ast::FunctionsSystem::SyncReturnPinsFromFunction(ast);
 		ast::TypeSystem::PropagateExpressionTypes(ast);
 		ast::FunctionsSystem::HealGraph(ast);
+		ast::NameSystem::AssignGeneratedNames(ast);
 
 		OptimizationSystem::PruneDisconnectedExpressions(ast);
 
