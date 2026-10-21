@@ -371,7 +371,7 @@ namespace rift::MIR
 				compiler.Error(
 				    ast::CastSystem::CanCast(scope, sourceType, targetType)
 				        ? p::Format("'{}' needs an explicit cast into '{}'", fromName, toName)
-						: p::Format("'{}' can't be cast into '{}'", fromName, toName));
+						: p::Format("'{}' can't cast into '{}'", fromName, toName));
 				// Emit the value as it is, so generation can continue
 			}
 			else if (const auto* irType = scope.TryGet<const CMIRType>(targetType))
@@ -469,7 +469,7 @@ namespace rift::MIR
 
 		if (!ast::CastSystem::CanCast(scope, sourceType, targetType)) [[unlikely]]
 		{
-			compiler.Error(p::Format("'{}' can't be cast into '{}'",
+			compiler.Error(p::Format("'{}' can't cast into '{}'",
 			    ast::GetName(compiler.ast, sourceType).AsString(),
 			    ast::GetName(compiler.ast, targetType).AsString()));
 			return;
@@ -500,7 +500,6 @@ namespace rift::MIR
 		P_Check(exprInputs.linkedOutputs.Size() == 1);
 
 		code->append("if (");
-		// The condition is cast into the bool type of the pin
 		AddExpr(exprInputs.linkedOutputs.First(), exprInputs.pinIds[0]);
 		code->append(") {\n");
 		AddStmtBlock(connectedIds[0]);
@@ -547,7 +546,6 @@ namespace rift::MIR
 				const ast::ExprOutput output = inputs->linkedOutputs[i];
 				if (!output.IsNone())
 				{
-					// The argument is cast into the type of the parameter it feeds
 					AddExpr(output, inputs->pinIds[i]);
 					code->append(", ");
 				}
