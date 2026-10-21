@@ -71,15 +71,6 @@ namespace rift::MIR
 		struct NameScope
 		{
 			p::TMap<p::Tag, p::i32> counts;
-
-			void Merge(const NameScope& other)
-			{
-				for (const auto& pair : other.counts)
-				{
-					p::i32& count = counts[pair.first];
-					count         = p::Max(count, pair.second);
-				}
-			}
 		};
 
 		/** Stack of name scopes. Pushing copies the current one; popping restores it. */
@@ -189,62 +180,11 @@ namespace rift::MIR
 				}
 			}
 		}
-	}    // namespace
 
-	void CGenerator::AssignGeneratedNames()
-	{
-		ast::Tree& ast = compiler.ast;
-
-		// Names are derived from the current graph, never serialized
-		for (ast::Id id : p::FindAllIdsWith<ast::CGeneratedName>(ast))
-		{
-			ast.Remove<ast::CGeneratedName>(id);
-		}
-
-		NameScopeStack names;
-
-		// Globals come first so parameters and locals can avoid them
-		for (ast::Id typeId : p::FindAllIdsWith<ast::CDeclStatic>(ast))
-		{
-			AssignVariables(ast, typeId, names);
-		}
-
-		// Struct and class members have their own scope
-		p::TMap<ast::Id, NameScope> memberScopes;
-		p::TArray<ast::Id> memberTypeIds;
-		memberTypeIds.Append(p::FindAllIdsWith<ast::CDeclStruct>(ast));
-		memberTypeIds.Append(p::FindAllIdsWith<ast::CDeclClass>(ast));
-		for (ast::Id typeId : memberTypeIds)
+		void AssignFunctionNames(ast::Tree& ast, ast::Id functionId, NameScopeStack& names,
+		    const p::TMap<ast::Id, p::TArray<ast::Id>>& forIdsByFunction)
 		{
 			names.Push();
-			AssignVariables(ast, typeId, names);
-			memberScopes.Insert(typeId, names.Current());
-			names.Pop();
-		}
-
-		// Loop indices are gathered as a special case: their variable lives in the
-		// owning function's body scope but has no CDeclVariable entity of its own.
-		p::TArray<ast::Id> forIds = p::FindAllIdsWith<ast::CStmtFor>(ast);
-		forIds.Sort();
-		p::TMap<ast::Id, p::TArray<ast::Id>> forIdsByFunction;
-		for (ast::Id forId : forIds)
-		{
-			const ast::Id functionId = ast::FunctionsSystem::FindOwningFunction(ast, forId);
-			if (!p::IsNone(functionId))
-			{
-				forIdsByFunction[functionId].Add(forId);
-			}
-		}
-
-		for (ast::Id functionId : p::FindAllIdsWith<ast::CDeclFunction>(ast))
-		{
-			names.Push();
-
-			const ast::Id ownerId = p::GetIdParent(ast, functionId);
-			if (const NameScope* memberScope = memberScopes.Find(ownerId))
-			{
-				names.Current().Merge(*memberScope);
-			}
 
 			// Parameters are part of the function scope. Inputs are stored in CExprOutputs
 			// and outputs in CExprInputs.
@@ -288,6 +228,76 @@ namespace rift::MIR
 			}
 
 			names.Pop();
+		}
+	}    // namespace
+
+	void CGenerator::AssignGeneratedNames()
+	{
+		ast::Tree& ast = compiler.ast;
+
+		// Names are derived from the current graph, never serialized
+		for (ast::Id id : p::FindAllIdsWith<ast::CGeneratedName>(ast))
+		{
+			ast.Remove<ast::CGeneratedName>(id);
+		}
+
+		NameScopeStack names;
+
+		// Globals come first so parameters and locals can avoid them
+		for (ast::Id typeId : p::FindAllIdsWith<ast::CDeclStatic>(ast))
+		{
+			AssignVariables(ast, typeId, names);
+		}
+
+		// Loop indices are gathered as a special case: their variable lives in the
+		// owning function's body scope but has no CDeclVariable entity of its own.
+		p::TArray<ast::Id> forIds = p::FindAllIdsWith<ast::CStmtFor>(ast);
+		forIds.Sort();
+		p::TMap<ast::Id, p::TArray<ast::Id>> forIdsByFunction;
+		for (ast::Id forId : forIds)
+		{
+			const ast::Id functionId = ast::FunctionsSystem::FindOwningFunction(ast, forId);
+			if (!p::IsNone(functionId))
+			{
+				forIdsByFunction[functionId].Add(forId);
+			}
+		}
+
+		p::TArray<ast::Id> functionIds = p::FindAllIdsWith<ast::CDeclFunction>(ast);
+		p::TMap<ast::Id, p::TArray<ast::Id>> functionsByType;
+		for (ast::Id functionId : functionIds)
+		{
+			functionsByType[p::GetIdParent(ast, functionId)].Add(functionId);
+		}
+
+		// Struct and class members share the type scope with their functions
+		p::TArray<ast::Id> memberTypeIds;
+		memberTypeIds.Append(p::FindAllIdsWith<ast::CDeclStruct>(ast));
+		memberTypeIds.Append(p::FindAllIdsWith<ast::CDeclClass>(ast));
+		for (ast::Id typeId : memberTypeIds)
+		{
+			names.Push();
+			AssignVariables(ast, typeId, names);
+			if (const auto* functions = functionsByType.Find(typeId))
+			{
+				for (ast::Id functionId : *functions)
+				{
+					AssignFunctionNames(ast, functionId, names, forIdsByFunction);
+				}
+			}
+			names.Pop();
+		}
+
+		// Every other function starts from the global scope
+		for (ast::Id functionId : functionIds)
+		{
+			const ast::Id ownerId = p::GetIdParent(ast, functionId);
+			if (ast.Has<ast::CDeclStruct>(ownerId) || ast.Has<ast::CDeclClass>(ownerId))
+			{
+				continue;
+			}
+
+			AssignFunctionNames(ast, functionId, names, forIdsByFunction);
 		}
 	}
 
