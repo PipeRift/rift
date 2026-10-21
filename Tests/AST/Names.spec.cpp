@@ -53,6 +53,33 @@ P_SPEC("AST.Names", []()
 		Expect(ast::GetGeneratedName(ast, localC)).ToEqual(p::Tag{"c_1"});
 	});
 
+	It("Assigns unique names to same-scope declarations", []()
+	{
+		ast::Tree ast;
+
+		ast::Id typeId     = ast::CreateType(ast, ASTModule::staticType, p::Tag{"TestStatic"});
+		ast::Id global1    = ast::AddVariable({ast, typeId}, p::Tag{"x"});
+		ast::Id global2    = ast::AddVariable({ast, typeId}, p::Tag{"x"});
+		ast::Id functionId = ast::AddFunction({ast, typeId}, p::Tag{"Function"});
+
+		ast::Id param1 =
+		    ast::AddFunctionInput(ast, functionId, p::Tag{"p"}, ast.GetNativeTypes().i32Id);
+		ast::Id param2 =
+		    ast::AddFunctionInput(ast, functionId, p::Tag{"p"}, ast.GetNativeTypes().i32Id);
+
+		ast::Id local1 = AddLocal(ast, functionId, p::Tag{"l"});
+		ast::Id local2 = AddLocal(ast, functionId, p::Tag{"l"});
+
+		ast::NameSystem::AssignGeneratedNames(ast);
+
+		Expect(ast::GetGeneratedName(ast, global1)).ToEqual(p::Tag{"x"});
+		Expect(ast::GetGeneratedName(ast, global2)).ToEqual(p::Tag{"x_1"});
+		Expect(ast::GetGeneratedName(ast, param1)).ToEqual(p::Tag{"p"});
+		Expect(ast::GetGeneratedName(ast, param2)).ToEqual(p::Tag{"p_1"});
+		Expect(ast::GetGeneratedName(ast, local1)).ToEqual(p::Tag{"l"});
+		Expect(ast::GetGeneratedName(ast, local2)).ToEqual(p::Tag{"l_1"});
+	});
+
 	It("Assigns unique names to for loop indices", []()
 	{
 		ast::Tree ast;
