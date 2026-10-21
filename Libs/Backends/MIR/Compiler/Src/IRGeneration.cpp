@@ -412,7 +412,7 @@ namespace rift::MIR
 		{
 			// Every numeric cast is expressed as a C cast, no matter which instruction a
 			// backend would lower it to
-			case ast::CastKind::IntCast:
+			case ast::CastKind::IntToInt:
 			case ast::CastKind::FPToFP:
 			case ast::CastKind::IntToFP:
 			case ast::CastKind::FPToInt: {
@@ -494,7 +494,7 @@ namespace rift::MIR
 		{
 			// Every numeric cast is expressed as a C cast, no matter which instruction a
 			// backend would lower it to
-			case ast::CastKind::IntCast:
+			case ast::CastKind::IntToInt:
 			case ast::CastKind::FPToFP:
 			case ast::CastKind::IntToFP:
 			case ast::CastKind::FPToInt: {

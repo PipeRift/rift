@@ -30,7 +30,7 @@ namespace rift::ast
 	enum class CastKind : p::u8
 	{
 		// Integer to integer, including bool: extension, truncation or sign change
-		IntCast,
+		IntToInt,
 		// Floating point to floating point: extension or truncation
 		FPToFP,
 		// Integer to floating point
@@ -45,7 +45,7 @@ namespace rift::ast
 	{
 		Id fromType   = NoId;
 		Id toType     = NoId;
-		CastKind kind = CastKind::IntCast;
+		CastKind kind = CastKind::IntToInt;
 
 		// Casts are sorted by the types they go between, so they can be looked up in bulk
 		constexpr bool operator<(const Cast& other) const
