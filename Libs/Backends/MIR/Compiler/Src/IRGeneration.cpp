@@ -66,54 +66,106 @@ namespace rift::MIR
 
 	namespace
 	{
-		/** Reserve a name in the scope, adding a numeric suffix when it is already taken. */
-		void AssignName(ast::Tree& ast, ast::Id id, p::TSet<p::Tag>& used, bool reserveEnd = false)
+		/** Names visible in a scope. Counts store the next suffix to try per base name. */
+		struct NameScope
 		{
-			const p::Tag base = ast::GetName(ast, id);
-			if (base.IsNone())
+			p::TMap<p::Tag, p::i32> counts;
+			p::TSet<p::Tag> used;
+
+			void Merge(const NameScope& other)
 			{
-				return;
+				for (const auto& pair : other.counts)
+				{
+					p::i32& count = counts[pair.first];
+					count         = p::Max(count, pair.second);
+				}
+				for (const p::Tag& tag : other.used)
+				{
+					used.Insert(tag);
+				}
+			}
+		};
+
+		/** Stack of name scopes. Pushing copies the current one; popping restores it. */
+		struct NameScopeStack
+		{
+			p::TArray<NameScope> scopes;
+
+			NameScopeStack()
+			{
+				scopes.Add();
 			}
 
-			const p::StringView baseName = base.AsString();
-			p::String name;
-			p::String endName;
-			for (p::i32 suffix = 0;; ++suffix)
+			NameScope& Current()
 			{
-				name.clear();
-				if (suffix == 0)
+				return scopes.Last();
+			}
+
+			void Push()
+			{
+				NameScope next = scopes.Last();
+				scopes.Add(p::Move(next));
+			}
+
+			void Pop()
+			{
+				P_Check(scopes.Size() > 1);
+				scopes.RemoveLast();
+			}
+
+			void AssignName(ast::Tree& ast, ast::Id id, bool reserveEnd = false)
+			{
+				const p::Tag base = ast::GetName(ast, id);
+				if (base.IsNone())
 				{
-					name.append(baseName);
-				}
-				else
-				{
-					p::FormatTo(name, "{}_{}", baseName, suffix);
+					return;
 				}
 
-				const p::Tag tag{name};
-				if (used.Contains(tag))
+				NameScope& scope             = Current();
+				const p::StringView baseName = base.AsString();
+				p::i32& count                = scope.counts[base];
+				p::String name;
+				p::String endName;
+				while (true)
 				{
-					continue;
-				}
-
-				if (reserveEnd)
-				{
-					endName.clear();
-					p::FormatTo(endName, "{}_end", name);
-					if (used.Contains(p::Tag{endName}))
+					name.clear();
+					if (count == 0)
 					{
+						name.append(baseName);
+					}
+					else
+					{
+						p::FormatTo(name, "{}_{}", baseName, count);
+					}
+
+					const p::Tag tag{name};
+					if (scope.used.Contains(tag))
+					{
+						++count;
 						continue;
 					}
-					used.Insert(p::Tag{endName});
+
+					if (reserveEnd)
+					{
+						endName.clear();
+						p::FormatTo(endName, "{}_end", name);
+						if (scope.used.Contains(p::Tag{endName}))
+						{
+							++count;
+							continue;
+						}
+						scope.used.Insert(p::Tag{endName});
+					}
+
+					scope.used.Insert(tag);
+					++count;
+					ast.GetOrAdd<ast::CGeneratedName>(id).name = tag;
+					return;
 				}
-
-				used.Insert(tag);
-				ast.GetOrAdd<ast::CGeneratedName>(id).name = tag;
-				return;
 			}
-		}
+		};
 
-		void AssignVariables(ast::Tree& ast, ast::Id ownerId, p::TSet<p::Tag>& used)
+		void AssignVariables(ast::Tree& ast, ast::Id ownerId, NameScopeStack& names)
 		{
 			p::TArray<ast::Id> children;
 			p::GetIdChildren(ast, ownerId, children);
@@ -121,57 +173,9 @@ namespace rift::MIR
 			{
 				if (ast.Has<ast::CDeclVariable>(childId))
 				{
-					AssignName(ast, childId, used);
+					names.AssignName(ast, childId);
 				}
 			}
-		}
-
-		void AddVariableNames(ast::Tree& ast, ast::Id ownerId, p::TSet<p::Tag>& used)
-		{
-			p::TArray<ast::Id> children;
-			p::GetIdChildren(ast, ownerId, children);
-			for (ast::Id childId : children)
-			{
-				if (ast.Has<ast::CDeclVariable>(childId))
-				{
-					used.Insert(ast.Get<const ast::CGeneratedName>(childId).name);
-				}
-			}
-		}
-
-		void AssignFunctionNames(ast::Tree& ast, ast::Id functionId, p::TSet<p::Tag>& globalNames,
-		    p::TMap<ast::Id, p::TSet<p::Tag>>& bodyNamesByFunction)
-		{
-			// Functions inherit the global scope and their type's member names
-			p::TSet<p::Tag> functionNames = globalNames;
-			const ast::Id ownerId         = p::GetIdParent(ast, functionId);
-			if (!p::IsNone(ownerId))
-			{
-				AddVariableNames(ast, ownerId, functionNames);
-			}
-
-			// Parameters are part of the function scope. Inputs are stored in CExprOutputs
-			// and outputs in CExprInputs.
-			if (const auto* inputs = ast.TryGet<const ast::CExprOutputs>(functionId))
-			{
-				for (ast::Id pinId : inputs->pinIds)
-				{
-					AssignName(ast, pinId, functionNames);
-				}
-			}
-			if (const auto* outputs = ast.TryGet<const ast::CExprInputs>(functionId))
-			{
-				for (ast::Id pinId : outputs->pinIds)
-				{
-					AssignName(ast, pinId, functionNames);
-				}
-			}
-
-			// Locals declared directly in the function share its scope
-			AssignVariables(ast, functionId, functionNames);
-
-			// Keep the function's scope so loop indices can be added to it
-			bodyNamesByFunction.Insert(functionId, functionNames);
 		}
 	}    // namespace
 
@@ -185,52 +189,93 @@ namespace rift::MIR
 			ast.Remove<ast::CGeneratedName>(id);
 		}
 
+		NameScopeStack names;
+
 		// Globals come first so parameters and locals can avoid them
-		p::TSet<p::Tag> globalNames;
 		for (ast::Id typeId : p::FindAllIdsWith<ast::CDeclStatic>(ast))
 		{
-			AssignVariables(ast, typeId, globalNames);
+			AssignVariables(ast, typeId, names);
 		}
 
 		// Struct and class members have their own scope
+		p::TMap<ast::Id, NameScope> memberScopes;
 		p::TArray<ast::Id> memberTypeIds;
 		memberTypeIds.Append(p::FindAllIdsWith<ast::CDeclStruct>(ast));
 		memberTypeIds.Append(p::FindAllIdsWith<ast::CDeclClass>(ast));
 		for (ast::Id typeId : memberTypeIds)
 		{
-			p::TSet<p::Tag> memberNames;
-			AssignVariables(ast, typeId, memberNames);
+			names.Push();
+			AssignVariables(ast, typeId, names);
+			memberScopes.Insert(typeId, names.Current());
+			names.Pop();
 		}
 
-		p::TMap<ast::Id, p::TSet<p::Tag>> bodyNamesByFunction;
-		for (ast::Id functionId : p::FindAllIdsWith<ast::CDeclFunction>(ast))
-		{
-			AssignFunctionNames(ast, functionId, globalNames, bodyNamesByFunction);
-		}
-
-		// Loop indices are a special case: their variable lives in the owning
-		// function's body scope, but has no CDeclVariable entity of its own.
+		// Loop indices are gathered as a special case: their variable lives in the
+		// owning function's body scope but has no CDeclVariable entity of its own.
 		p::TArray<ast::Id> forIds = p::FindAllIdsWith<ast::CStmtFor>(ast);
 		forIds.Sort();
+		p::TMap<ast::Id, p::TArray<ast::Id>> forIdsByFunction;
 		for (ast::Id forId : forIds)
 		{
-			const ast::Id functionId   = ast::FunctionsSystem::FindOwningFunction(ast, forId);
-			p::TSet<p::Tag>* bodyNames = bodyNamesByFunction.Find(functionId);
-			if (!bodyNames)
+			const ast::Id functionId = ast::FunctionsSystem::FindOwningFunction(ast, forId);
+			if (!p::IsNone(functionId))
 			{
-				continue;
+				forIdsByFunction[functionId].Add(forId);
+			}
+		}
+
+		for (ast::Id functionId : p::FindAllIdsWith<ast::CDeclFunction>(ast))
+		{
+			names.Push();
+
+			const ast::Id ownerId = p::GetIdParent(ast, functionId);
+			if (const NameScope* memberScope = memberScopes.Find(ownerId))
+			{
+				names.Current().Merge(*memberScope);
 			}
 
-			if (const auto* outputs = ast.TryGet<const ast::CExprOutputs>(forId))
+			// Parameters are part of the function scope. Inputs are stored in CExprOutputs
+			// and outputs in CExprInputs.
+			if (const auto* inputs = ast.TryGet<const ast::CExprOutputs>(functionId))
 			{
-				for (p::i32 i = 0; i < outputs->pinIds.Size(); ++i)
+				for (ast::Id pinId : inputs->pinIds)
 				{
-					// The first expression output is the loop index. Its end bound is
-					// generated as a companion name.
-					AssignName(ast, outputs->pinIds[i], *bodyNames, i == 0);
+					names.AssignName(ast, pinId);
 				}
 			}
-			AssignVariables(ast, forId, *bodyNames);
+			if (const auto* outputs = ast.TryGet<const ast::CExprInputs>(functionId))
+			{
+				for (ast::Id pinId : outputs->pinIds)
+				{
+					names.AssignName(ast, pinId);
+				}
+			}
+
+			// Locals declared directly in the function share its scope
+			AssignVariables(ast, functionId, names);
+
+			// Loop indices live in the function scope; loop-body locals get a nested scope
+			if (const auto* functionForIds = forIdsByFunction.Find(functionId))
+			{
+				for (ast::Id forId : *functionForIds)
+				{
+					if (const auto* outputs = ast.TryGet<const ast::CExprOutputs>(forId))
+					{
+						for (p::i32 i = 0; i < outputs->pinIds.Size(); ++i)
+						{
+							// The first expression output is the loop index. Its end bound is
+							// generated as a companion name.
+							names.AssignName(ast, outputs->pinIds[i], i == 0);
+						}
+					}
+
+					names.Push();
+					AssignVariables(ast, forId, names);
+					names.Pop();
+				}
+			}
+
+			names.Pop();
 		}
 	}
 
