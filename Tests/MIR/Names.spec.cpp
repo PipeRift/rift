@@ -3,17 +3,27 @@
 #include <AST/Components/CGeneratedName.h>
 #include <AST/Components/Declarations.h>
 #include <AST/Components/Statements.h>
-#include <AST/Systems/NameSystem.h>
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TypeUtils.h>
 #include <ASTModule.h>
+#include <Compiler/Compiler.h>
+#include <IRGeneration.h>
 #include <PipeTest.h>
 
 
 using namespace p;
 using namespace rift;
 
+
+static void AssignNames(ast::Tree& ast)
+{
+	CompilerConfig config{};
+	Compiler compiler{ast, config};
+	MIR::MIRScope scope{ast};
+	MIR::CGenerator generator{compiler, scope};
+	generator.AssignGeneratedNames();
+}
 
 static ast::Id AddLocal(ast::Tree& ast, ast::Id ownerId, p::Tag name)
 {
@@ -24,7 +34,7 @@ static ast::Id AddLocal(ast::Tree& ast, ast::Id ownerId, p::Tag name)
 	return id;
 }
 
-P_SPEC("AST.Names", []()
+P_SPEC("MIR.Names", []()
 {
 	It("Assigns names avoiding global and function scopes", []()
 	{
@@ -43,7 +53,13 @@ P_SPEC("AST.Names", []()
 		ast::Id localB = AddLocal(ast, functionId, p::Tag{"b"});
 		ast::Id localC = AddLocal(ast, functionId, p::Tag{"c"});
 
-		ast::NameSystem::AssignGeneratedNames(ast);
+		// A second function starts with a fresh local scope and only inherits globals
+		ast::Id function2 = ast::AddFunction({ast, typeId}, p::Tag{"Function2"});
+		ast::Id local2A   = AddLocal(ast, function2, p::Tag{"a"});
+		ast::Id local2B   = AddLocal(ast, function2, p::Tag{"b"});
+		ast::Id local2C   = AddLocal(ast, function2, p::Tag{"c"});
+
+		AssignNames(ast);
 
 		Expect(ast::GetGeneratedName(ast, globalA)).ToEqual(p::Tag{"a"});
 		Expect(ast::GetGeneratedName(ast, paramA)).ToEqual(p::Tag{"a_1"});
@@ -51,6 +67,10 @@ P_SPEC("AST.Names", []()
 		Expect(ast::GetGeneratedName(ast, localA)).ToEqual(p::Tag{"a_2"});
 		Expect(ast::GetGeneratedName(ast, localB)).ToEqual(p::Tag{"b"});
 		Expect(ast::GetGeneratedName(ast, localC)).ToEqual(p::Tag{"c_1"});
+
+		Expect(ast::GetGeneratedName(ast, local2A)).ToEqual(p::Tag{"a_1"});
+		Expect(ast::GetGeneratedName(ast, local2B)).ToEqual(p::Tag{"b"});
+		Expect(ast::GetGeneratedName(ast, local2C)).ToEqual(p::Tag{"c"});
 	});
 
 	It("Assigns unique names to same-scope declarations", []()
@@ -70,7 +90,7 @@ P_SPEC("AST.Names", []()
 		ast::Id local1 = AddLocal(ast, functionId, p::Tag{"l"});
 		ast::Id local2 = AddLocal(ast, functionId, p::Tag{"l"});
 
-		ast::NameSystem::AssignGeneratedNames(ast);
+		AssignNames(ast);
 
 		Expect(ast::GetGeneratedName(ast, global1)).ToEqual(p::Tag{"x"});
 		Expect(ast::GetGeneratedName(ast, global2)).ToEqual(p::Tag{"x_1"});
@@ -92,7 +112,7 @@ P_SPEC("AST.Names", []()
 		ast::TryConnectStmt(ast, functionId, for1);
 		ast::TryConnectStmt(ast, ast.Get<ast::CStmtOutputs>(for1).pinIds[1], for2);
 
-		ast::NameSystem::AssignGeneratedNames(ast);
+		AssignNames(ast);
 
 		const ast::Id index1 = ast.Get<ast::CExprOutputs>(for1).pinIds[0];
 		const ast::Id index2 = ast.Get<ast::CExprOutputs>(for2).pinIds[0];

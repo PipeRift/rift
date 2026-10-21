@@ -2,8 +2,8 @@
 
 #include "IRGeneration.h"
 
+#include <AST/Components/Declarations.h>
 #include <AST/Systems/CastSystem.h>
-#include <AST/Systems/NameSystem.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/Namespaces.h>
@@ -50,15 +50,210 @@ namespace rift::MIR
 
 	void GenerateC(Compiler& compiler)
 	{
-		ast::NameSystem::AssignGeneratedNames(compiler.ast);
-
 		MIRScope scope{compiler.ast};
 		CGenerator cGen{compiler, scope};
+		cGen.AssignGeneratedNames();
 		cGen.BindNativeTypes();
 		cGen.GenerateLiterals();
 		for (ast::Id moduleId : FindAllIdsWith<ast::CModule>(scope))
 		{
 			cGen.GenerateModule(moduleId);
+		}
+	}
+
+
+	namespace
+	{
+		/** Reserve a name in the scope, adding a numeric suffix when it is already taken. */
+		void AssignName(ast::Tree& ast, ast::Id id, p::TSet<p::Tag>& used, bool reserveEnd = false)
+		{
+			const p::Tag base = ast::GetName(ast, id);
+			if (base.IsNone())
+			{
+				return;
+			}
+
+			const p::StringView baseName = base.AsString();
+			p::String name;
+			p::String endName;
+			for (p::i32 suffix = 0;; ++suffix)
+			{
+				name.clear();
+				if (suffix == 0)
+				{
+					name.append(baseName);
+				}
+				else
+				{
+					p::FormatTo(name, "{}_{}", baseName, suffix);
+				}
+
+				const p::Tag tag{name};
+				if (used.Contains(tag))
+				{
+					continue;
+				}
+
+				if (reserveEnd)
+				{
+					endName.clear();
+					p::FormatTo(endName, "{}_end", name);
+					if (used.Contains(p::Tag{endName}))
+					{
+						continue;
+					}
+					used.Insert(p::Tag{endName});
+				}
+
+				used.Insert(tag);
+				ast.GetOrAdd<ast::CGeneratedName>(id).name = tag;
+				return;
+			}
+		}
+
+		void AssignVariables(ast::Tree& ast, ast::Id ownerId, p::TSet<p::Tag>& used)
+		{
+			p::TArray<ast::Id> children;
+			p::GetIdChildren(ast, ownerId, children);
+			for (ast::Id childId : children)
+			{
+				if (ast.Has<ast::CDeclVariable>(childId))
+				{
+					AssignName(ast, childId, used);
+				}
+			}
+		}
+
+		void AddVariableNames(ast::Tree& ast, ast::Id ownerId, p::TSet<p::Tag>& used)
+		{
+			p::TArray<ast::Id> children;
+			p::GetIdChildren(ast, ownerId, children);
+			for (ast::Id childId : children)
+			{
+				if (ast.Has<ast::CDeclVariable>(childId))
+				{
+					used.Insert(ast::GetGeneratedName(ast, childId));
+				}
+			}
+		}
+
+		/** Collects loops in statement execution order so the first loop in a function
+		 * gets the unsuffixed name. */
+		void CollectForIds(p::TIdScopeRef<ast::CStmtFor, ast::CStmtOutput, ast::CStmtOutputs> scope,
+		    ast::Id firstStmtId, p::TArray<ast::Id>& forIds, p::TSet<ast::Id>& visited)
+		{
+			ast::Id current = firstStmtId;
+			while (!p::IsNone(current) && !visited.Contains(current))
+			{
+				visited.Insert(current);
+
+				if (const auto* outputs = scope.TryGet<const ast::CStmtOutputs>(current))
+				{
+					if (scope.Has<ast::CStmtFor>(current))
+					{
+						forIds.Add(current);
+					}
+					for (ast::Id nextId : outputs->linkInputNodes)
+					{
+						CollectForIds(scope, nextId, forIds, visited);
+					}
+					return;
+				}
+
+				const auto* output = scope.TryGet<const ast::CStmtOutput>(current);
+				if (!output)
+				{
+					return;
+				}
+				current = output->linkInputNode;
+			}
+		}
+
+		void AssignFunctionNames(ast::Tree& ast, ast::Id functionId, p::TArray<ast::Id>& forIds,
+		    p::TSet<p::Tag>& globalNames)
+		{
+			// Functions inherit the global scope and their type's member names
+			p::TSet<p::Tag> functionNames = globalNames;
+			const ast::Id ownerId         = p::GetIdParent(ast, functionId);
+			if (!p::IsNone(ownerId))
+			{
+				AddVariableNames(ast, ownerId, functionNames);
+			}
+
+			// Parameters are part of the function scope. Inputs are stored in CExprOutputs
+			// and outputs in CExprInputs.
+			if (const auto* inputs = ast.TryGet<const ast::CExprOutputs>(functionId))
+			{
+				for (ast::Id pinId : inputs->pinIds)
+				{
+					AssignName(ast, pinId, functionNames);
+				}
+			}
+			if (const auto* outputs = ast.TryGet<const ast::CExprInputs>(functionId))
+			{
+				for (ast::Id pinId : outputs->pinIds)
+				{
+					AssignName(ast, pinId, functionNames);
+				}
+			}
+
+			// Locals declared directly in the function share its scope
+			AssignVariables(ast, functionId, functionNames);
+
+			// Loop indices and their locals live in the function body
+			p::TSet<p::Tag> bodyNames = functionNames;
+			for (ast::Id forId : forIds)
+			{
+				if (const auto* outputs = ast.TryGet<const ast::CExprOutputs>(forId))
+				{
+					for (p::i32 i = 0; i < outputs->pinIds.Size(); ++i)
+					{
+						// The first expression output is the loop index. Its end bound is
+						// generated as a companion name.
+						AssignName(ast, outputs->pinIds[i], bodyNames, i == 0);
+					}
+				}
+				AssignVariables(ast, forId, bodyNames);
+			}
+		}
+	}    // namespace
+
+	void CGenerator::AssignGeneratedNames()
+	{
+		ast::Tree& ast = compiler.ast;
+
+		// Names are derived from the current graph, never serialized
+		for (ast::Id id : p::FindAllIdsWith<ast::CGeneratedName>(ast))
+		{
+			ast.Remove<ast::CGeneratedName>(id);
+		}
+
+		// Globals come first so parameters and locals can avoid them
+		p::TSet<p::Tag> globalNames;
+		for (ast::Id typeId : p::FindAllIdsWith<ast::CDeclStatic>(ast))
+		{
+			AssignVariables(ast, typeId, globalNames);
+		}
+
+		// Struct and class members have their own scope
+		p::TArray<ast::Id> memberTypeIds;
+		memberTypeIds.Append(p::FindAllIdsWith<ast::CDeclStruct>(ast));
+		memberTypeIds.Append(p::FindAllIdsWith<ast::CDeclClass>(ast));
+		for (ast::Id typeId : memberTypeIds)
+		{
+			p::TSet<p::Tag> memberNames;
+			AssignVariables(ast, typeId, memberNames);
+		}
+
+		for (ast::Id functionId : p::FindAllIdsWith<ast::CDeclFunction>(ast))
+		{
+			p::TArray<ast::Id> forIds;
+			p::TSet<ast::Id> visited;
+			if (const auto* output = ast.TryGet<const ast::CStmtOutput>(functionId))
+			{
+				CollectForIds(ast, output->linkInputNode, forIds, visited);
+			}
+			AssignFunctionNames(ast, functionId, forIds, globalNames);
 		}
 	}
 

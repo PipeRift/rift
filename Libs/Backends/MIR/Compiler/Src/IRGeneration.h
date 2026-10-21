@@ -43,6 +43,9 @@ namespace rift::MIR
 		p::String* code = nullptr;
 
 
+		// Runs before code generation: assigns unique names to every C variable/parameter
+		void AssignGeneratedNames();
+
 		void GenerateModule(ast::Id moduleId);
 
 		void BindNativeTypes();
