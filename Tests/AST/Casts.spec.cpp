@@ -21,32 +21,27 @@ P_SPEC("AST.Casts", []()
 		const auto& natives = ast.GetNativeTypes();
 
 		// Casts that keep every value of the source type happen on their own
-		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.i32Id, natives.doubleId)).ToBeTrue();
-		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.floatId, natives.doubleId))
-		    .ToBeTrue();
-		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.u8Id, natives.i32Id)).ToBeTrue();
-		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.boolId, natives.i32Id)).ToBeTrue();
-		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.i32Id, natives.i64Id)).ToBeTrue();
+		Expect(ast::CastSystem::CanCastImplicit(ast, natives.i32Id, natives.doubleId)).ToBeTrue();
+		Expect(ast::CastSystem::CanCastImplicit(ast, natives.floatId, natives.doubleId)).ToBeTrue();
+		Expect(ast::CastSystem::CanCastImplicit(ast, natives.u8Id, natives.i32Id)).ToBeTrue();
+		Expect(ast::CastSystem::CanCastImplicit(ast, natives.boolId, natives.i32Id)).ToBeTrue();
+		Expect(ast::CastSystem::CanCastImplicit(ast, natives.i32Id, natives.i64Id)).ToBeTrue();
 
 		// Narrowing casts need an explicit cast node
-		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.doubleId, natives.i32Id))
+		Expect(ast::CastSystem::CanCastImplicit(ast, natives.doubleId, natives.i32Id)).ToBeFalse();
+		Expect(ast::CastSystem::CanCastImplicit(ast, natives.doubleId, natives.floatId))
 		    .ToBeFalse();
-		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.doubleId, natives.floatId))
-		    .ToBeFalse();
-		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.i32Id, natives.i8Id)).ToBeFalse();
-		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.i32Id, natives.u32Id)).ToBeFalse();
-		Expect(ast::CastSystem::CanCastImplicitly(ast, natives.i64Id, natives.doubleId))
-		    .ToBeFalse();
+		Expect(ast::CastSystem::CanCastImplicit(ast, natives.i32Id, natives.i8Id)).ToBeFalse();
+		Expect(ast::CastSystem::CanCastImplicit(ast, natives.i32Id, natives.u32Id)).ToBeFalse();
+		Expect(ast::CastSystem::CanCastImplicit(ast, natives.i64Id, natives.doubleId)).ToBeFalse();
 
 		// But they can still be done explicitly
-		Expect(ast::CastSystem::CanCastExplicitly(ast, natives.doubleId, natives.i32Id)).ToBeTrue();
-		Expect(ast::CastSystem::CanCastExplicitly(ast, natives.i32Id, natives.i8Id)).ToBeTrue();
+		Expect(ast::CastSystem::CanCast(ast, natives.doubleId, natives.i32Id)).ToBeTrue();
+		Expect(ast::CastSystem::CanCast(ast, natives.i32Id, natives.i8Id)).ToBeTrue();
 
 		// Types that have nothing to do with each other can't be cast
-		Expect(ast::CastSystem::CanCastExplicitly(ast, natives.stringId, natives.i32Id))
-		    .ToBeFalse();
-		Expect(ast::CastSystem::CanCastExplicitly(ast, natives.i32Id, natives.stringId))
-		    .ToBeFalse();
+		Expect(ast::CastSystem::CanCast(ast, natives.stringId, natives.i32Id)).ToBeFalse();
+		Expect(ast::CastSystem::CanCast(ast, natives.i32Id, natives.stringId)).ToBeFalse();
 	});
 
 	It("Connects values that fit the type of the pin", []()

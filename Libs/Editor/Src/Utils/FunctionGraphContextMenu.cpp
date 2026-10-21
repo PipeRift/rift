@@ -47,7 +47,7 @@ namespace rift::editor::Graph
 		{
 			return true;
 		}
-		return ast::CastSystem::CanCastImplicitly(ast, valueType, targetType);
+		return ast::CastSystem::CanCastImplicit(ast, valueType, targetType);
 	}
 
 	// The first pin on 'nodeId' that the dropped link can connect to. For expression links

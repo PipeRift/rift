@@ -55,10 +55,8 @@ namespace rift::MIR
 
 		void AddStmtBlock(ast::Id firstStmtId);
 		void AddStmtIf(ast::Id id);
-		void AddExpr(const ast::ExprOutput& output);
-		// Adds an expression, casting it into the type of the pin it feeds when the
-		// types differ
-		void AddExprAs(const ast::ExprOutput& output, ast::Id targetPinId);
+		// Adds the expression, casting it into the type of the pin it feeds when they differ
+		void AddExpr(const ast::ExprOutput& output, ast::Id pinId = ast::NoId);
 		void AddUnaryOperator(ast::Id id, const ast::CExprUnaryOperator& op);
 		void AddBinaryOperator(ast::Id id, const ast::CExprBinaryOperator& op);
 		void AddCast(ast::Id id);

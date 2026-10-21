@@ -7,29 +7,13 @@
 
 namespace rift::ast::CastSystem
 {
-	namespace
-	{
-		// Adds the cast keeping the array sorted by its types, replacing an existing one
-		void AddSorted(p::TArray<Cast>& casts, const Cast& cast)
-		{
-			const p::i32 index = casts.FindSorted(cast);
-			if (index != p::NO_INDEX)
-			{
-				casts[index] = cast;
-				return;
-			}
-			casts.AddSorted(cast);
-		}
-	}    // namespace
-
-
-	void RegisterCast(Tree& ast, const Cast& cast, CastFlags flags)
+	void RegisterCast(Tree& ast, const Cast& cast, bool implicit)
 	{
 		auto& registry = ast.GetOrSetStatic<SCasts>();
-		AddSorted(registry.explicitCasts, cast);
-		if (p::HasFlag(flags, CastFlags::Implicit))
+		registry.explicitCasts.AddSorted(cast);
+		if (implicit)
 		{
-			AddSorted(registry.implicitCasts, cast);
+			registry.implicitCasts.AddSorted(cast);
 		}
 	}
 
@@ -175,58 +159,44 @@ namespace rift::ast::CastSystem
 
 		for (const Cast& cast : implicitNumericCasts)
 		{
-			RegisterCast(ast, cast, CastFlags::All);
+			RegisterCast(ast, cast, true);
 		}
 		for (const Cast& cast : explicitNumericCasts)
 		{
-			RegisterCast(ast, cast, CastFlags::Explicit);
+			RegisterCast(ast, cast, false);
 		}
 	}
 
-	const Cast* FindImplicitCast(const p::IdContext& ast, Id fromType, Id toType)
+	const Cast* FindCastImplicit(const p::IdContext& ast, Id fromType, Id toType)
 	{
-		if (const auto* registry = ast.TryGetStatic<SCasts>())
-		{
-			const Cast type{.fromType = fromType, .toType = toType};
-			const p::i32 index = registry->implicitCasts.FindSorted(type);
-			if (index != p::NO_INDEX)
-			{
-				return &registry->implicitCasts[index];
-			}
-		}
-		return nullptr;
+		const auto& casts = ast.GetStatic<SCasts>().implicitCasts;
+		const Cast type{.fromType = fromType, .toType = toType};
+
+		const p::i32 index = casts.FindSorted(type);
+		return index != p::NO_INDEX ? &casts[index] : nullptr;
 	}
 
-	const Cast* FindExplicitCast(const p::IdContext& ast, Id fromType, Id toType)
+	const Cast* FindCast(const p::IdContext& ast, Id fromType, Id toType)
 	{
-		if (const auto* registry = ast.TryGetStatic<SCasts>())
-		{
-			const Cast type{.fromType = fromType, .toType = toType};
-			const p::i32 index = registry->explicitCasts.FindSorted(type);
-			if (index != p::NO_INDEX)
-			{
-				return &registry->explicitCasts[index];
-			}
-		}
-		return nullptr;
+		const auto& casts = ast.GetStatic<SCasts>().explicitCasts;
+		const Cast type{.fromType = fromType, .toType = toType};
+
+		const p::i32 index = casts.FindSorted(type);
+		return index != p::NO_INDEX ? &casts[index] : nullptr;
 	}
 
 	p::TView<const Cast> GetCasts(const p::IdContext& ast)
 	{
-		if (const auto* registry = ast.TryGetStatic<SCasts>())
-		{
-			return registry->explicitCasts;
-		}
-		return {};
+		return ast.GetStatic<SCasts>().explicitCasts;
 	}
 
-	bool CanCastImplicitly(p::TIdScopeRef<> scope, Id fromType, Id toType)
+	bool CanCastImplicit(p::TIdScopeRef<> scope, Id fromType, Id toType)
 	{
-		return FindImplicitCast(scope.GetContext(), fromType, toType) != nullptr;
+		return FindCastImplicit(scope.GetContext(), fromType, toType) != nullptr;
 	}
 
-	bool CanCastExplicitly(p::TIdScopeRef<> scope, Id fromType, Id toType)
+	bool CanCast(p::TIdScopeRef<> scope, Id fromType, Id toType)
 	{
-		return FindExplicitCast(scope.GetContext(), fromType, toType) != nullptr;
+		return FindCast(scope.GetContext(), fromType, toType) != nullptr;
 	}
 }    // namespace rift::ast::CastSystem

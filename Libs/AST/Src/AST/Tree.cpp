@@ -89,10 +89,7 @@ namespace rift::ast
 		{
 			SetStatic<STypes>(*typesStatic);
 		}
-		if (auto* castsStatic = other.TryGetStatic<SCasts>())
-		{
-			SetStatic<SCasts>(*castsStatic);
-		}
+		SetStatic<SCasts>(other.GetStatic<SCasts>());
 
 		nativeTypes = other.nativeTypes;
 	}

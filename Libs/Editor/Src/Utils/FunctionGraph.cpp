@@ -60,7 +60,7 @@ namespace rift::editor::Graph
 		const ast::Id outputType = ast::GetPinType(ast, output.pinId);
 		const ast::Id inputType  = ast::GetPinType(ast, input.pinId);
 		if (p::IsNone(outputType) || p::IsNone(inputType)
-		    || !ast::CastSystem::FindExplicitCast(ast, outputType, inputType))
+		    || !ast::CastSystem::FindCast(ast, outputType, inputType))
 		{
 			return ast::NoId;
 		}

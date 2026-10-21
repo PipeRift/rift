@@ -81,7 +81,7 @@ namespace rift::ast
 				// Different types can still be connected when the value can be cast into the
 				// type of the input on its own
 				if (outputType->id != inputType->id
-				    && !CastSystem::CanCastImplicitly(scope, outputType->id, inputType->id))
+				    && !CastSystem::CanCastImplicit(scope, outputType->id, inputType->id))
 				{
 					return false;
 				}

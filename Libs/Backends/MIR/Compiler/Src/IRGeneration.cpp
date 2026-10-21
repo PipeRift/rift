@@ -350,12 +350,45 @@ namespace rift::MIR
 		// TODO: Resolve continuation block and generate it
 	}
 
-	void CGenerator::AddExpr(const ast::ExprOutput& output)
+	void CGenerator::AddExpr(const ast::ExprOutput& output, ast::Id pinId)
 	{
 		if (output.IsNone())
 		{
 			compiler.Error("Missing expression found while generating code");
 			return;
+		}
+
+		// The value is cast into the type of the pin it feeds when their types differ
+		const ast::Id sourceType = ast::GetPinType(scope, output.pinId);
+		const ast::Id targetType = ast::GetPinType(scope, pinId);
+		if (!p::IsNone(pinId) && !p::IsNone(sourceType) && !p::IsNone(targetType)
+		    && sourceType != targetType)
+		{
+			if (!ast::CastSystem::CanCastImplicit(scope, sourceType, targetType)) [[unlikely]]
+			{
+				const p::StringView fromName = ast::GetName(compiler.ast, sourceType).AsString();
+				const p::StringView toName   = ast::GetName(compiler.ast, targetType).AsString();
+				compiler.Error(
+				    ast::CastSystem::CanCast(scope, sourceType, targetType)
+				        ? p::Format("'{}' needs an explicit cast into '{}'", fromName, toName)
+						: p::Format("'{}' can't be cast into '{}'", fromName, toName));
+				// Emit the value as it is, so generation can continue
+			}
+			else if (const auto* irType = scope.TryGet<const CMIRType>(targetType))
+			{
+				// Every cast is expressed as a C cast, no matter which instruction a
+				// backend would lower it to
+				code->append("((");
+				code->append(irType->value.AsString());
+				code->append(")(");
+				AddExpr(output);
+				code->append("))");
+				return;
+			}
+			else [[unlikely]]
+			{
+				compiler.Error("Cannot cast a value into an invalid type");
+			}
 		}
 
 		// Literal nodes are their own output pin
@@ -382,54 +415,6 @@ namespace rift::MIR
 		else
 		{
 			compiler.Error("Unsupported expression found while generating code");
-		}
-	}
-
-	void CGenerator::AddExprAs(const ast::ExprOutput& output, ast::Id targetPinId)
-	{
-		const ast::Id sourceType = ast::GetPinType(scope, output.pinId);
-		const ast::Id targetType = ast::GetPinType(scope, targetPinId);
-		if (p::IsNone(sourceType) || p::IsNone(targetType) || sourceType == targetType)
-		{
-			AddExpr(output);
-			return;
-		}
-
-		// The value doesn't match the type of the pin it feeds, so it's cast into it.
-		// Only the casts that happen on their own can be used here
-		const ast::Cast* cast =
-		    ast::CastSystem::FindImplicitCast(compiler.ast, sourceType, targetType);
-		if (!cast) [[unlikely]]
-		{
-			compiler.Error(ast::CastSystem::FindExplicitCast(compiler.ast, sourceType, targetType)
-			                   ? "The value needs an explicit cast to fit the pin it feeds"
-							   : "Cannot cast a value into the type of the pin it feeds");
-			AddExpr(output);
-			return;
-		}
-
-		switch (cast->kind)
-		{
-			// Every numeric cast is expressed as a C cast, no matter which instruction a
-			// backend would lower it to
-			case ast::CastKind::IntToInt:
-			case ast::CastKind::FPToFP:
-			case ast::CastKind::IntToFP:
-			case ast::CastKind::FPToInt: {
-				const auto* irType = scope.TryGet<const CMIRType>(targetType);
-				if (!irType) [[unlikely]]
-				{
-					compiler.Error("Cannot cast a value into an invalid type");
-					AddExpr(output);
-					return;
-				}
-				code->append("((");
-				code->append(irType->value.AsString());
-				code->append(")(");
-				AddExpr(output);
-				code->append("))");
-				break;
-			}
 		}
 	}
 
@@ -483,10 +468,12 @@ namespace rift::MIR
 		}
 
 		const ast::Cast* registered =
-		    ast::CastSystem::FindExplicitCast(compiler.ast, sourceType, targetType);
+		    ast::CastSystem::FindCast(compiler.ast, sourceType, targetType);
 		if (!registered) [[unlikely]]
 		{
-			compiler.Error("No cast is registered between the types of the cast");
+			compiler.Error(p::Format("'{}' can't be cast into '{}'",
+			    ast::GetName(compiler.ast, sourceType).AsString(),
+			    ast::GetName(compiler.ast, targetType).AsString()));
 			return;
 		}
 
@@ -508,7 +495,7 @@ namespace rift::MIR
 				code->append(irType->value.AsString());
 				code->append(")(");
 				// The value is first cast into the type of the input pin
-				AddExprAs(inputs->linkedOutputs[0], inputs->pinIds[0]);
+				AddExpr(inputs->linkedOutputs[0], inputs->pinIds[0]);
 				code->append("))");
 				break;
 			}
@@ -525,8 +512,7 @@ namespace rift::MIR
 
 		code->append("if (");
 		// The condition is cast into the bool type of the pin
-		AddExprAs(exprInputs.linkedOutputs.First(),
-		    exprInputs.pinIds.IsEmpty() ? ast::NoId : exprInputs.pinIds[0]);
+		AddExpr(exprInputs.linkedOutputs.First(), exprInputs.pinIds[0]);
 		code->append(") {\n");
 		AddStmtBlock(connectedIds[0]);
 		if (connectedIds.Size() > 1 && !p::IsNone(connectedIds[1]))
@@ -573,7 +559,7 @@ namespace rift::MIR
 				if (!output.IsNone())
 				{
 					// The argument is cast into the type of the parameter it feeds
-					AddExprAs(output, inputs->pinIds[i]);
+					AddExpr(output, inputs->pinIds[i]);
 					code->append(", ");
 				}
 			}
