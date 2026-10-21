@@ -343,12 +343,12 @@ namespace rift::ast
 		p::AttachId(ast, id, firstId);
 		inputs.Add(firstId);
 
-		const Id countId = p::AddId(ast);
-		ast.Add<CNamespace>(countId, p::Tag{"count"});
-		ast.Add<CExprTypeId>(countId, {.id = indexTypeId});
-		ast.Add<CExprType>(countId).type = indexType;
-		p::AttachId(ast, id, countId);
-		inputs.Add(countId);
+		const Id endId = p::AddId(ast);
+		ast.Add<CNamespace>(endId, p::Tag{"end"});
+		ast.Add<CExprTypeId>(endId, {.id = indexTypeId});
+		ast.Add<CExprType>(endId).type = indexType;
+		p::AttachId(ast, id, endId);
+		inputs.Add(endId);
 
 		// Index output
 		const Id indexId = p::AddId(ast);

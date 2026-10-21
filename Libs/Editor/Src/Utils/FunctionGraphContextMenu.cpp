@@ -257,7 +257,7 @@ namespace rift::editor::Graph
 				return !isExpr || (isOutput && sourceType == ast.GetNativeTypes().boolId);
 			case ContextItemKind::For:
 				// for nodes can be connected from execution pins, or from integer
-				// expressions to their "first"/"count" inputs and "index" output
+				// expressions to their "first"/"end" inputs and "index" output
 				return !isExpr || sourceType == ast.GetNativeTypes().i32Id;
 			case ContextItemKind::Variable:
 				if (isExpr && !isOutput)

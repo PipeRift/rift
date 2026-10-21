@@ -17,7 +17,7 @@
 
 namespace rift::MIR
 {
-	const p::TSet<p::Tag> CGenerator::reservedNames{"class", "struct"};
+	const p::TSet<p::Tag> CGenerator::reservedNames{"class", "struct", "if", "for"};
 
 	// Operator strings indexed by their enum value. Binary operators include the
 	// surrounding spaces so they are appended in a single operation.
@@ -66,104 +66,58 @@ namespace rift::MIR
 
 	namespace
 	{
-		/** Names visible in a scope. An entry means the exact name is taken; its value
-		 * is the next suffix to try if that name is requested again as a base. */
-		struct NameScope
-		{
-			p::TMap<p::Tag, p::i32> counts;
-		};
-
-		/** Stack of name scopes. Pushing copies the current one; popping restores it. */
 		struct NameScopeStack
 		{
+			using NameScope = p::TMap<p::Tag, p::i32>;
+
+			NameScope current;
 			p::TArray<NameScope> scopes;
 
-			NameScopeStack()
+			void PushScope()
 			{
-				scopes.Add();
+				scopes.Add(current);
 			}
 
-			NameScope& Current()
+			void PopScope()
 			{
-				return scopes.Last();
-			}
-
-			void Push()
-			{
-				NameScope next = scopes.Last();
-				scopes.Add(p::Move(next));
-			}
-
-			void Pop()
-			{
-				P_Check(scopes.Size() > 1);
+				P_Check(scopes.Size() > 0);
+				current = scopes.Last();
 				scopes.RemoveLast();
 			}
 
-			void AssignName(ast::Tree& ast, ast::Id id, bool reserveEnd = false)
+			p::Tag AssignName(p::Tag base)
 			{
-				const p::Tag base = ast::GetName(ast, id);
 				if (base.IsNone())
 				{
-					return;
+					return p::Tag{};
 				}
 
-				NameScope& scope             = Current();
 				const p::StringView baseName = base.AsString();
 
-				// The value of a used base is already the next suffix to try
 				p::i32 suffix = 0;
-				if (const p::i32* next = scope.counts.Find(base))
+				auto it       = current.FindIt(base);
+				if (it == current.end())
 				{
-					suffix = *next;
+					current.Insert(base, 0);
+					return p::Tag{baseName};
 				}
 
-				p::String name;
-				p::String endName;
+				suffix         = ++(const_cast<p::i32&>(it->second));
+				p::String name = p::Format("{}_{}", baseName, suffix);
+
 				while (true)
 				{
-					name.clear();
-					if (suffix == 0)
-					{
-						name.append(baseName);
-					}
-					else
-					{
-						p::FormatTo(name, "{}_{}", baseName, suffix);
-					}
-
 					const p::Tag tag{name};
-					if (scope.counts.Contains(tag))
+					if (!current.Contains(tag))
 					{
-						++suffix;
-						continue;
+						current.Insert(tag, 0);
+						return tag;
 					}
 
-					if (reserveEnd)
-					{
-						endName.clear();
-						p::FormatTo(endName, "{}_end", name);
-						if (scope.counts.Contains(p::Tag{endName}))
-						{
-							++suffix;
-							continue;
-						}
-					}
-
-					// Presence means used; the value is the next suffix for this name
-					scope.counts.Insert(tag, 1);
-					if (reserveEnd)
-					{
-						scope.counts.Insert(p::Tag{endName}, 1);
-					}
-
-					if (suffix > 0)
-					{
-						scope.counts[base] = suffix + 1;
-					}
-
-					ast.GetOrAdd<ast::CGeneratedName>(id).name = tag;
-					return;
+					// A variable with this name already exists, try the next suffix
+					name.clear();
+					p::FormatTo(name, "{}_{}", baseName, suffix);
+					suffix = ++(const_cast<p::i32&>(it->second));
 				}
 			}
 		};
@@ -176,70 +130,68 @@ namespace rift::MIR
 			{
 				if (ast.Has<ast::CDeclVariable>(childId))
 				{
-					names.AssignName(ast, childId);
+					ast.Add<ast::CGeneratedName>(
+					    childId, {names.AssignName(ast::GetName(ast, childId))});
 				}
 			}
 		}
 
-		void AssignFunctionNames(ast::Tree& ast, ast::Id functionId, NameScopeStack& names,
-		    const p::TMap<ast::Id, p::TArray<ast::Id>>& forIdsByFunction)
+		void AssignStatementNames(ast::Tree& ast, ast::Id nodeId, NameScopeStack& names)
 		{
-			names.Push();
+			auto assignPins = [&](const p::TArray<p::Id>& pinIds)
+			{
+				for (p::Id pinId : pinIds)
+				{
+					ast.Add<ast::CGeneratedName>(
+					    pinId, {names.AssignName(ast::GetName(ast, pinId))});
+				}
+			};
 
-			// Parameters are part of the function scope. Inputs are stored in CExprOutputs
-			// and outputs in CExprInputs.
-			if (const auto* inputs = ast.TryGet<const ast::CExprOutputs>(functionId))
+			// Function inputs and for-loop indices live in CExprOutputs
+			if (const auto* outputs = ast.TryGet<const ast::CExprOutputs>(nodeId))
 			{
-				for (ast::Id pinId : inputs->pinIds)
-				{
-					names.AssignName(ast, pinId);
-				}
+				assignPins(outputs->pinIds);
 			}
-			if (const auto* outputs = ast.TryGet<const ast::CExprInputs>(functionId))
+			if (const auto* inputs = ast.TryGet<const ast::CExprInputs>(nodeId))
 			{
-				for (ast::Id pinId : outputs->pinIds)
-				{
-					names.AssignName(ast, pinId);
-				}
+				assignPins(inputs->pinIds);
 			}
+		}
+
+		void AssignFunctionNames(ast::Tree& ast, ast::Id functionId, NameScopeStack& names,
+		    const p::TMap<ast::Id, p::TArray<ast::Id>>& stmtIdsByFunction)
+		{
+			names.PushScope();
+
+			// Function parameters and outputs
+			AssignStatementNames(ast, functionId, names);
 
 			// Locals declared directly in the function share its scope
 			AssignVariables(ast, functionId, names);
 
-			// Loop indices live in the function scope; loop-body locals get a nested scope
-			if (const auto* functionForIds = forIdsByFunction.Find(functionId))
+			// Every statement in the function body names its expression pins here.
+			// Loop indices land in the function scope; statement-local variables get
+			// their own nested scope.
+			if (const auto* stmtIds = stmtIdsByFunction.Find(functionId))
 			{
-				for (ast::Id forId : *functionForIds)
+				for (ast::Id stmtId : *stmtIds)
 				{
-					if (const auto* outputs = ast.TryGet<const ast::CExprOutputs>(forId))
-					{
-						for (p::i32 i = 0; i < outputs->pinIds.Size(); ++i)
-						{
-							// The first expression output is the loop index. Its end bound is
-							// generated as a companion name.
-							names.AssignName(ast, outputs->pinIds[i], i == 0);
-						}
-					}
+					AssignStatementNames(ast, stmtId, names);
 
-					names.Push();
-					AssignVariables(ast, forId, names);
-					names.Pop();
+					names.PushScope();
+					AssignVariables(ast, stmtId, names);
+					names.PopScope();
 				}
 			}
 
-			names.Pop();
+			names.PopScope();
 		}
 	}    // namespace
 
 	void CGenerator::AssignGeneratedNames()
 	{
 		ast::Tree& ast = compiler.ast;
-
-		// Names are derived from the current graph, never serialized
-		for (ast::Id id : p::FindAllIdsWith<ast::CGeneratedName>(ast))
-		{
-			ast.Remove<ast::CGeneratedName>(id);
-		}
+		ast.ClearPool<ast::CGeneratedName>();
 
 		NameScopeStack names;
 
@@ -249,17 +201,17 @@ namespace rift::MIR
 			AssignVariables(ast, typeId, names);
 		}
 
-		// Loop indices are gathered as a special case: their variable lives in the
-		// owning function's body scope but has no CDeclVariable entity of its own.
-		p::TArray<ast::Id> forIds = p::FindAllIdsWith<ast::CStmtFor>(ast);
-		forIds.Sort();
-		p::TMap<ast::Id, p::TArray<ast::Id>> forIdsByFunction;
-		for (ast::Id forId : forIds)
+		// Statement nodes assign names to their expression pins in the owning
+		// function's scope.
+		p::TArray<ast::Id> stmtIds = p::FindAllIdsWith<ast::CStmtInput>(ast);
+		stmtIds.Sort();
+		p::TMap<ast::Id, p::TArray<ast::Id>> stmtIdsByFunction;
+		for (ast::Id stmtId : stmtIds)
 		{
-			const ast::Id functionId = ast::FunctionsSystem::FindOwningFunction(ast, forId);
+			const ast::Id functionId = ast::FunctionsSystem::FindOwningFunction(ast, stmtId);
 			if (!p::IsNone(functionId))
 			{
-				forIdsByFunction[functionId].Add(forId);
+				stmtIdsByFunction[functionId].Add(stmtId);
 			}
 		}
 
@@ -276,16 +228,16 @@ namespace rift::MIR
 		memberTypeIds.Append(p::FindAllIdsWith<ast::CDeclClass>(ast));
 		for (ast::Id typeId : memberTypeIds)
 		{
-			names.Push();
+			names.PushScope();
 			AssignVariables(ast, typeId, names);
 			if (const auto* functions = functionsByType.Find(typeId))
 			{
 				for (ast::Id functionId : *functions)
 				{
-					AssignFunctionNames(ast, functionId, names, forIdsByFunction);
+					AssignFunctionNames(ast, functionId, names, stmtIdsByFunction);
 				}
 			}
-			names.Pop();
+			names.PopScope();
 		}
 
 		// Every other function starts from the global scope
@@ -297,7 +249,7 @@ namespace rift::MIR
 				continue;
 			}
 
-			AssignFunctionNames(ast, functionId, names, forIdsByFunction);
+			AssignFunctionNames(ast, functionId, names, stmtIdsByFunction);
 		}
 	}
 
@@ -782,32 +734,25 @@ namespace rift::MIR
 
 		const ast::Id i32Id   = static_cast<ast::Tree&>(scope.GetContext()).GetNativeTypes().i32Id;
 		const auto* indexType = scope.TryGet<const CMIRType>(i32Id);
-		const p::StringView type = indexType ? indexType->value.AsString() : p::StringView{"long"};
+		const p::StringView type = indexType->value.AsString();
 
 		const auto& exprOutputs = scope.Get<const ast::CExprOutputs>(id);
-		P_Check(!exprOutputs.pinIds.IsEmpty());
-		const p::Tag indexTag =
-		    scope.Get<const ast::CGeneratedName>(exprOutputs.pinIds.First()).name;
-		if (indexTag.IsNone())
-		{
-			compiler.Error("For loop index has no generated name");
-			return;
-		}
+		P_Check(exprOutputs.pinIds.Size() == 1);
+		const p::Tag indexTag = scope.Get<const ast::CGeneratedName>(exprOutputs.pinIds[0]).name;
+
+		// The end expression is cached in a local named after its input pin
+		const p::Tag endTag = scope.Get<const ast::CGeneratedName>(exprInputs.pinIds[1]).name;
 
 		const p::StringView indexName = indexTag.AsString();
-		p::String endName;
-		p::FormatTo(endName, "{}_end", indexName);
+		const p::StringView endName   = endTag.AsString();
 
-		// The index stays visible in the continuation block after the loop
-		p::FormatTo(*code, "{} {} = ", type, indexName);
+		p::FormatTo(*code, "for ({0} {1}=", type, indexName);
 		AddExpr(exprInputs.linkedOutputs[0], exprInputs.pinIds[0]);
-		code->append(";\n{\n");
-		p::FormatTo(*code, "{} {} = {} + ", type, endName, indexName);
+		p::FormatTo(*code, ", {}=", endName);
 		AddExpr(exprInputs.linkedOutputs[1], exprInputs.pinIds[1]);
-		code->append(";\n");
-		p::FormatTo(*code, "for (; {} < {}; ++{}) {{\n", indexName, endName, indexName);
+		p::FormatTo(*code, "; {0} < {1}; ++{0}) {{\n", indexName, endName);
 		AddStmtBlock(outputs.linkInputNodes[0]);
-		code->append("}\n}\n");
+		code->append("}\n");
 
 		if (outputs.linkInputNodes.Size() > 1 && !p::IsNone(outputs.linkInputNodes[1]))
 		{

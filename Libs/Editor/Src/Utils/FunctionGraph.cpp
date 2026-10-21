@@ -815,7 +815,7 @@ namespace rift::editor::Graph
 						EndExprInput(false);
 
 						BeginExprInput(scope, inputs.pinIds[1], false);
-						UI::TextUnformatted("count");
+						UI::TextUnformatted("end");
 						EndExprInput(false);
 					}
 				}
@@ -826,7 +826,7 @@ namespace rift::editor::Graph
 				UI::BeginGroup();
 				{
 					auto& outputs = scope.Get<const ast::CExprOutputs>(id);
-					if (P_Ensure(outputs.pinIds.Size() == 1))
+					if (P_Ensure(!outputs.pinIds.IsEmpty()))
 					{
 						BeginExprOutput(scope, outputs.pinIds[0], false);
 						UI::TextUnformatted("index");

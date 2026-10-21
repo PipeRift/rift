@@ -77,6 +77,8 @@ P_SPEC("AST.Statements", []()
 		Expect(inputs->linkedOutputs.Size()).ToEqual(2u);
 		Expect(ast.Get<ast::CExprTypeId>(inputs->pinIds[0]).id).ToEqual(ast.GetNativeTypes().i32Id);
 		Expect(ast.Get<ast::CExprTypeId>(inputs->pinIds[1]).id).ToEqual(ast.GetNativeTypes().i32Id);
+		Expect(ast.Get<ast::CNamespace>(inputs->pinIds[0]).name).ToEqual(p::Tag{"first"});
+		Expect(ast.Get<ast::CNamespace>(inputs->pinIds[1]).name).ToEqual(p::Tag{"end"});
 
 		const auto* exprOutputs = ast.TryGet<const ast::CExprOutputs>(forId);
 		Expect(exprOutputs != nullptr).ToBeTrue();

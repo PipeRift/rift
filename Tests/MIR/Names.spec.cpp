@@ -118,6 +118,24 @@ P_SPEC("MIR.Names", []()
 		Expect(ast.Get<const ast::CGeneratedName>(localX2).name).ToEqual(p::Tag{"x_2"});
 	});
 
+	It("Avoids collisions with generated suffixed names", []()
+	{
+		ast::Tree ast;
+
+		ast::Id typeId     = ast::CreateType(ast, ASTModule::staticType, p::Tag{"TestStatic"});
+		ast::Id functionId = ast::AddFunction({ast, typeId}, p::Tag{"Function"});
+
+		ast::Id localX    = AddLocal(ast, functionId, p::Tag{"x"});
+		ast::Id localX1   = AddLocal(ast, functionId, p::Tag{"x"});
+		ast::Id localX1_1 = AddLocal(ast, functionId, p::Tag{"x_1"});
+
+		AssignNames(ast);
+
+		Expect(ast.Get<const ast::CGeneratedName>(localX).name).ToEqual(p::Tag{"x"});
+		Expect(ast.Get<const ast::CGeneratedName>(localX1).name).ToEqual(p::Tag{"x_1"});
+		Expect(ast.Get<const ast::CGeneratedName>(localX1_1).name).ToEqual(p::Tag{"x_1_1"});
+	});
+
 	It("Assigns unique names to for loop indices", []()
 	{
 		ast::Tree ast;
@@ -136,5 +154,35 @@ P_SPEC("MIR.Names", []()
 		const ast::Id index2 = ast.Get<ast::CExprOutputs>(for2).pinIds[0];
 		Expect(ast.Get<const ast::CGeneratedName>(index1).name).ToEqual(p::Tag{"index"});
 		Expect(ast.Get<const ast::CGeneratedName>(index2).name).ToEqual(p::Tag{"index_1"});
+
+		const ast::Id end1 = ast.Get<ast::CExprInputs>(for1).pinIds[1];
+		const ast::Id end2 = ast.Get<ast::CExprInputs>(for2).pinIds[1];
+		Expect(ast.Get<const ast::CGeneratedName>(end1).name).ToEqual(p::Tag{"end"});
+		Expect(ast.Get<const ast::CGeneratedName>(end2).name).ToEqual(p::Tag{"end_1"});
+
+		for (p::Id pinId : ast.Get<const ast::CExprInputs>(for1).pinIds)
+		{
+			Expect(ast.Has<ast::CGeneratedName>(pinId)).ToBeTrue();
+		}
+		for (p::Id pinId : ast.Get<const ast::CExprInputs>(for2).pinIds)
+		{
+			Expect(ast.Has<ast::CGeneratedName>(pinId)).ToBeTrue();
+		}
+	});
+
+	It("Assigns names to statement input pins", []()
+	{
+		ast::Tree ast;
+
+		ast::Id typeId     = ast::CreateType(ast, ASTModule::staticType, p::Tag{"TestStatic"});
+		ast::Id functionId = ast::AddFunction({ast, typeId}, p::Tag{"Function"});
+
+		ast::Id ifId = ast::AddIf({ast, typeId});
+		ast::TryConnectStmt(ast, functionId, ifId);
+
+		AssignNames(ast);
+
+		const ast::Id conditionPin = ast.Get<const ast::CExprInputs>(ifId).pinIds[0];
+		Expect(ast.Has<ast::CGeneratedName>(conditionPin)).ToBeTrue();
 	});
 });
