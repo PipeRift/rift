@@ -156,32 +156,276 @@ namespace rift::editor::Graph
 		If,
 		Function,
 		Variable,
-		Operator,
+		UnaryOperator,
+		BinaryOperator,
 		Cast,
 	};
 
-	bool ContextTreeNode(StringView name, const ImGuiTextFilter& filter)
+	// A name that can match a search: the lowercased name and its standardized form
+	struct SearchKeyword
 	{
-		return filter.IsActive() || UI::TreeNode(name.data());
-	}
-	void ContextTreePop(const ImGuiTextFilter& filter)
+		String name;
+		String standardized;
+	};
+
+	// Whether a character stays in standardized search text
+	static bool IsSearchAlphanumeric(char c)
 	{
-		if (!filter.IsActive())
-		{
-			UI::TreePop();
-		}
+		return p::TCharHelpers<char>::IsAlpha(c) || (c >= '0' && c <= '9');
 	}
 
-	// An item of the context menu matches when any of its keywords passes the search filter
-	bool MatchesFilter(const ImGuiTextFilter& filter, std::initializer_list<StringView> keywords)
+	// Lowercases text so searches match regardless of case
+	static String LowercaseSearchText(StringView text)
 	{
-		if (!filter.IsActive())
+		String lowercased;
+		for (const char c : text)
+		{
+			lowercased.push_back(p::TCharHelpers<char>::ToLower(c));
+		}
+		return lowercased;
+	}
+
+	// Standardizes text to match searches: lowercased and without separators. Lets a
+	// search for "Print Line" also match "PrintLine", "print_line" or "print-line"
+	static String StandardizeSearchText(StringView text)
+	{
+		String standardized;
+		for (const char c : text)
+		{
+			if (IsSearchAlphanumeric(c))
+			{
+				standardized.push_back(p::TCharHelpers<char>::ToLower(c));
+			}
+		}
+		return standardized;
+	}
+
+	// An item of the context menu. Entries are cached before drawing so filtering and
+	// scoring run as a fast step over all of them
+	struct MenuEntry
+	{
+		ContextItemKind kind = ContextItemKind::Literal;
+		// Function, variable or type the item represents
+		Id id = ast::NoId;
+		// Types of a cast entry
+		ast::Cast cast{};
+		// Operator of a unary or binary operator entry
+		i32 operatorType = 0;
+		// Name drawn in simple items
+		String label;
+		// Names that can match a search. The first one is the item's own name
+		TArray<SearchKeyword> keywords;
+		// Background of the item's row, when it has one
+		Color background = Color::Transparent();
+		// Position in the cache, used to keep a stable draw order
+		i32 order = 0;
+		// Whether the item matches the current search. Updated while filtering
+		bool isVisible = true;
+		// How well the item matches the current search. Updated while filtering
+		i32 score = 0;
+
+		// Adds a name that can match a search
+		void AddKeyword(StringView name)
+		{
+			SearchKeyword& keyword = keywords.AddRef();
+			keyword.name           = LowercaseSearchText(name);
+			keyword.standardized   = StandardizeSearchText(name);
+		}
+	};
+
+	// A labelled group of menu entries and subcategories
+	struct MenuCategory
+	{
+		String label;
+		// Category this one is drawn inside. -1 at the root
+		i32 parent = -1;
+		// Position in the cache, used to keep a stable draw order
+		i32 order = 0;
+		// Cached subcategories and entries
+		TArray<i32> children;
+		TArray<i32> entries;
+		// Visible items and their best match score. Updated while filtering
+		TArray<i32> visibleChildren;
+		TArray<i32> visibleEntries;
+		bool isVisible = true;
+		i32 score      = 0;
+	};
+
+	// Entries of the context menu, cached in categories before drawing
+	struct MenuCache
+	{
+		// Every entry is drawn under the hidden root category at index 0
+		TArray<MenuCategory> categories;
+		TArray<MenuEntry> entries;
+		// First entry in draw order, ignoring categories: the item Enter applies. Updated
+		// while filtering
+		i32 defaultEntry = -1;
+
+		void Reset()
+		{
+			categories.Clear(p::Shrink::No);
+			entries.Clear(p::Shrink::No);
+			AddCategory({}, -1);
+		}
+
+		// Adds a category under 'parent', or a root category when 'parent' is -1
+		i32 AddCategory(StringView label, i32 parent)
+		{
+			const i32 categoryIdx  = categories.Size();
+			MenuCategory& category = categories.AddRef();
+			category.label         = String{label};
+			category.parent        = parent;
+			category.order         = categoryIdx;
+			if (parent != -1)
+			{
+				categories[parent].children.Add(categoryIdx);
+			}
+			return categoryIdx;
+		}
+
+		i32 AddEntry(MenuEntry&& entry, i32 category)
+		{
+			const i32 entryIdx = entries.Size();
+			entry.order        = entryIdx;
+			categories[category].entries.Add(entryIdx);
+			entries.Add(p::Move(entry));
+			return entryIdx;
+		}
+	};
+
+	// A word of a search term: the lowercased word and its standardized form
+	struct SearchWord
+	{
+		String name;
+		String standardized;
+	};
+
+	// A parsed search: terms of words that must all match. Terms are alternatives, and a
+	// '-' before a term excludes its matches from the results
+	struct SearchQuery
+	{
+		TArray<TArray<SearchWord>> includes;
+		TArray<TArray<SearchWord>> excludes;
+	};
+
+	// Splits search text into words on its blanks
+	static TArray<SearchWord> ParseSearchWords(StringView text)
+	{
+		TArray<SearchWord> words;
+		i32 wordStart = 0;
+		for (i32 i = 0; i <= i32(text.size()); ++i)
+		{
+			if (i != i32(text.size()) && text[i] != ' ' && text[i] != '\t')
+			{
+				continue;
+			}
+			const StringView wordText = text.substr(wordStart, i - wordStart);
+			wordStart                 = i + 1;
+			if (wordText.empty())
+			{
+				continue;
+			}
+			SearchWord& word  = words.AddRef();
+			word.name         = LowercaseSearchText(wordText);
+			word.standardized = StandardizeSearchText(wordText);
+		}
+		return words;
+	}
+
+	// Parses search text like the search filter does: comma separated terms, with a
+	// leading '-' to exclude
+	static SearchQuery ParseSearch(StringView search)
+	{
+		SearchQuery query;
+		i32 termStart = 0;
+		for (i32 i = 0; i <= i32(search.size()); ++i)
+		{
+			if (i != i32(search.size()) && search[i] != ',')
+			{
+				continue;
+			}
+			StringView term = search.substr(termStart, i - termStart);
+			termStart       = i + 1;
+			while (!term.empty() && (term.front() == ' ' || term.front() == '\t'))
+			{
+				term.remove_prefix(1);
+			}
+			while (!term.empty() && (term.back() == ' ' || term.back() == '\t'))
+			{
+				term.remove_suffix(1);
+			}
+
+			bool isExcluded = false;
+			if (!term.empty() && term.front() == '-')
+			{
+				isExcluded = true;
+				term.remove_prefix(1);
+			}
+
+			TArray<SearchWord> words = ParseSearchWords(term);
+			if (words.IsEmpty())
+			{
+				continue;
+			}
+			(isExcluded ? query.excludes : query.includes).Add(p::Move(words));
+		}
+		return query;
+	}
+
+	// Whether a search word matches a name: a substring of the name, or of its
+	// standardized form. Words of symbols match the name directly
+	static bool MatchesSearchWord(const SearchKeyword& keyword, const SearchWord& word)
+	{
+		if (p::Strings::Contains(keyword.name, word.name))
 		{
 			return true;
 		}
-		for (StringView keyword : keywords)
+		return !word.standardized.empty() && !keyword.standardized.empty()
+		    && p::Strings::Contains(keyword.standardized, word.standardized);
+	}
+
+	// Whether a search term matches an entry: every word of the term must match one of
+	// its names
+	static bool MatchesSearchTerm(
+	    const TArray<SearchWord>& words, const TArray<SearchKeyword>& keywords)
+	{
+		for (const SearchWord& word : words)
 		{
-			if (filter.PassFilter(keyword.data(), keyword.data() + keyword.size()))
+			bool found = false;
+			for (const SearchKeyword& keyword : keywords)
+			{
+				if (MatchesSearchWord(keyword, word))
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	// Whether an entry matches the search: any term can match, all its words must match,
+	// and excluded terms must not match
+	static bool MatchesSearch(const SearchQuery& query, const TArray<SearchKeyword>& keywords)
+	{
+		for (const TArray<SearchWord>& words : query.excludes)
+		{
+			if (MatchesSearchTerm(words, keywords))
+			{
+				return false;
+			}
+		}
+		if (query.includes.IsEmpty())
+		{
+			return true;
+		}
+		for (const TArray<SearchWord>& words : query.includes)
+		{
+			if (MatchesSearchTerm(words, keywords))
 			{
 				return true;
 			}
@@ -189,17 +433,77 @@ namespace rift::editor::Graph
 		return false;
 	}
 
-	// Whether an item of the given kind fits the menu context. It matches the search filter
-	// when any of the keywords does
-	bool MatchesContext(ast::Tree& ast, const MenuContext& context, ContextItemKind kind,
-	    std::initializer_list<StringView> keywords, const ImGuiTextFilter& filter,
+	// Scores of the different ways a search word can match a name. Used to rank results
+	constexpr i32 searchExactScore    = 400;
+	constexpr i32 searchPrefixScore   = 300;
+	constexpr i32 searchContainsScore = 200;
+	// Matches of secondary names rank below matches of the item's own name
+	constexpr i32 searchKeywordPenalty = 150;
+
+	// How well a word matches a name. Exact matches score the highest, followed by
+	// prefixes and substrings
+	static i32 ScoreSearchText(StringView text, StringView word)
+	{
+		if (word.empty())
+		{
+			return 0;
+		}
+		if (p::Strings::Equals(text, word))
+		{
+			return searchExactScore;
+		}
+		const sizet found = p::Strings::Find(text, word);
+		if (found == 0)
+		{
+			return searchPrefixScore;
+		}
+		if (found != StringView::npos)
+		{
+			return searchContainsScore - i32(p::Min(found, sizet(99)));
+		}
+		return 0;
+	}
+
+	// How well a search word matches a name, on its plain or standardized form
+	static i32 ScoreSearchWord(const SearchKeyword& keyword, const SearchWord& word)
+	{
+		i32 score = ScoreSearchText(keyword.name, word.name);
+		if (!word.standardized.empty() && !keyword.standardized.empty())
+		{
+			score = p::Max(score, ScoreSearchText(keyword.standardized, word.standardized));
+		}
+		return score;
+	}
+
+	// The best score of an entry against the search, used to rank results. A term scores
+	// the sum of its words, and matches of the item's own name rank above matches of its
+	// other names
+	static i32 ScoreSearch(const SearchQuery& query, const TArray<SearchKeyword>& keywords)
+	{
+		i32 best = 0;
+		for (const TArray<SearchWord>& words : query.includes)
+		{
+			i32 termScore = 0;
+			for (const SearchWord& word : words)
+			{
+				i32 wordScore = 0;
+				for (i32 keywordIdx = 0; keywordIdx < keywords.Size(); ++keywordIdx)
+				{
+					const i32 penalty = keywordIdx > 0 ? searchKeywordPenalty : 0;
+					wordScore =
+					    p::Max(wordScore, ScoreSearchWord(keywords[keywordIdx], word) - penalty);
+				}
+				termScore += wordScore;
+			}
+			best = p::Max(best, termScore);
+		}
+		return best;
+	}
+
+	// Whether an item of the given kind fits the menu context
+	static bool FitsContext(ast::Tree& ast, const MenuContext& context, ContextItemKind kind,
 	    Id itemId = ast::NoId, const ast::Cast* cast = nullptr)
 	{
-		if (!MatchesFilter(filter, keywords))
-		{
-			return false;
-		}
-
 		if (!context.HasSource())
 		{
 			return true;
@@ -264,7 +568,8 @@ namespace rift::editor::Graph
 					}
 				}
 				break;
-			case ContextItemKind::Operator: return isExpr;
+			case ContextItemKind::UnaryOperator:
+			case ContextItemKind::BinaryOperator: return isExpr;
 			case ContextItemKind::Cast:
 				// A cast takes the value in its input pin and produces it in its output pin
 				if (!isExpr || !cast)
@@ -560,10 +865,36 @@ namespace rift::editor::Graph
 		return typeIcon.empty() ? ICON_FA_FILE : typeIcon;
 	}
 
-	// Recursively draws a list of namespace ids: functions and variables become items,
-	// modules and types become categories.
-	static void DrawNamespaceChildren(ast::Tree& ast, Id typeId, const TArray<Id>& ids,
-	    const ImGuiTextFilter& filter, const MenuContext& context)
+	// Collects the items that pass the filter in draw order: best matches first while
+	// searching, and in cache order otherwise
+	template<typename ItemType>
+	static void CollectVisible(const TArray<i32>& itemIndices, const TArray<ItemType>& items,
+	    TArray<i32>& outIndices, bool isSearching)
+	{
+		outIndices.Clear(p::Shrink::No);
+		for (const i32 itemIdx : itemIndices)
+		{
+			if (items[itemIdx].isVisible)
+			{
+				outIndices.Add(itemIdx);
+			}
+		}
+		if (isSearching)
+		{
+			outIndices.Sort([&items](i32 a, i32 b)
+			{
+				const ItemType& itemA = items[a];
+				const ItemType& itemB = items[b];
+				return itemA.score != itemB.score ? itemA.score > itemB.score
+				                                  : itemA.order < itemB.order;
+			});
+		}
+	}
+
+	// Caches the functions and variables under a namespace: functions and variables become
+	// entries, modules and types become categories
+	static void AddNamespaceEntries(MenuCache& cache, ast::Tree& ast, const MenuContext& context,
+	    const TArray<Id>& ids, i32 parent)
 	{
 		for (Id childId : ids)
 		{
@@ -576,29 +907,31 @@ namespace rift::editor::Graph
 
 			if (ast.Has<ast::CDeclFunction>(childId))
 			{
-				if (MatchesContext(
-				        ast, context, ContextItemKind::Function, {childName}, filter, childId)
-				    && ContextFunctionItem(ast, childId, childName))
+				if (!FitsContext(ast, context, ContextItemKind::Function, childId))
 				{
-					Id newId = ast::AddCall({ast, typeId}, childId);
-					// Populate the new call's pins right away so the dropped link can find
-					// a matching pin to connect to
-					ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
-					SetPositionAndConnect(ast, newId, context);
+					continue;
 				}
+				MenuEntry entry;
+				entry.kind  = ContextItemKind::Function;
+				entry.id    = childId;
+				entry.label = String{childName};
+				entry.AddKeyword(String{childName});
+				cache.AddEntry(p::Move(entry), parent);
 			}
 			else if (ast.Has<ast::CDeclVariable>(childId))
 			{
-				const auto* variable = ast.TryGet<const ast::CDeclVariable>(childId);
-				if (MatchesContext(
-				        ast, context, ContextItemKind::Variable, {childName}, filter, childId)
-				    && ContextItem(childName, childId,
-				        GetTypeColor(ast, variable ? variable->typeId : ast::NoId)))
+				if (!FitsContext(ast, context, ContextItemKind::Variable, childId))
 				{
-					// Attach to the edited type, not the variable's owning type
-					Id newId = ast::AddDeclarationReference({ast, typeId}, childId);
-					SetPositionAndConnect(ast, newId, context);
+					continue;
 				}
+				const auto* variable = ast.TryGet<const ast::CDeclVariable>(childId);
+				MenuEntry entry;
+				entry.kind       = ContextItemKind::Variable;
+				entry.id         = childId;
+				entry.label      = String{childName};
+				entry.background = GetTypeColor(ast, variable ? variable->typeId : ast::NoId);
+				entry.AddKeyword(String{childName});
+				cache.AddEntry(p::Move(entry), parent);
 			}
 			else
 			{
@@ -615,26 +948,314 @@ namespace rift::editor::Graph
 
 				const StringView icon = GetFileIcon(ast, childId);
 				const String label    = p::Format("{} {}", icon, childName);
-				if (ContextTreeNode(label, filter))
-				{
-					DrawNamespaceChildren(ast, typeId, categoryChildren, filter, context);
-					ContextTreePop(filter);
-				}
+				const i32 category    = cache.AddCategory(label, parent);
+				AddNamespaceEntries(cache, ast, context, categoryChildren, category);
 			}
 		}
+	}
+
+	// Caches the flow, operator, constructor and cast entries of the menu
+	static void AddBuiltinEntries(MenuCache& cache, ast::Tree& ast, const MenuContext& context)
+	{
+		const i32 flow = cache.AddCategory("Flow", 0);
+		if (FitsContext(ast, context, ContextItemKind::Return))
+		{
+			MenuEntry entry;
+			entry.kind  = ContextItemKind::Return;
+			entry.label = "Return";
+			entry.AddKeyword("Return");
+			cache.AddEntry(p::Move(entry), flow);
+		}
+		if (FitsContext(ast, context, ContextItemKind::If))
+		{
+			MenuEntry entry;
+			entry.kind  = ContextItemKind::If;
+			entry.label = "If";
+			entry.AddKeyword("If");
+			cache.AddEntry(p::Move(entry), flow);
+		}
+
+		const i32 operators = cache.AddCategory("Operators", 0);
+		String label;
+		// Unary operators
+		for (auto type : GetEnumValues<ast::UnaryOperatorType>())
+		{
+			if (!FitsContext(ast, context, ContextItemKind::UnaryOperator))
+			{
+				continue;
+			}
+			const StringView shortName = GetUnaryOperatorName(type);
+			const StringView longName  = GetUnaryOperatorLongName(type);
+			label.clear();
+			p::FormatTo(label, "{}   ({})", shortName, longName);
+			MenuEntry entry;
+			entry.kind         = ContextItemKind::UnaryOperator;
+			entry.operatorType = i32(type);
+			entry.label        = label;
+			entry.AddKeyword(String{shortName});
+			entry.AddKeyword(String{longName});
+			cache.AddEntry(p::Move(entry), operators);
+		}
+		// Binary operators
+		for (auto type : GetEnumValues<ast::BinaryOperatorType>())
+		{
+			if (!FitsContext(ast, context, ContextItemKind::BinaryOperator))
+			{
+				continue;
+			}
+			const StringView shortName = GetBinaryOperatorName(type);
+			const StringView longName  = GetBinaryOperatorLongName(type);
+			label.clear();
+			p::FormatTo(label, "{}   ({})", shortName, longName);
+			MenuEntry entry;
+			entry.kind         = ContextItemKind::BinaryOperator;
+			entry.operatorType = i32(type);
+			entry.label        = label;
+			entry.AddKeyword(String{shortName});
+			entry.AddKeyword(String{longName});
+			cache.AddEntry(p::Move(entry), operators);
+		}
+
+		const i32 constructors = cache.AddCategory("Constructors", 0);
+		{
+			TIdScope<ast::CDeclType, ast::CNamespace> typesScope{ast};
+			for (Id literalTypeId : FindAllIdsWith<ast::CDeclType>(typesScope))
+			{
+				const auto* ns = typesScope.TryGet<const ast::CNamespace>(literalTypeId);
+				if (!ns || !FitsContext(ast, context, ContextItemKind::Literal, literalTypeId))
+				{
+					continue;
+				}
+				const StringView typeName = ns->name.AsString();
+				MenuEntry entry;
+				entry.kind       = ContextItemKind::Literal;
+				entry.id         = literalTypeId;
+				entry.label      = String{typeName};
+				entry.background = GetTypeColor(ast, literalTypeId);
+				entry.AddKeyword("Make");
+				entry.AddKeyword(String{typeName});
+				cache.AddEntry(p::Move(entry), constructors);
+			}
+		}
+
+		const i32 casts = cache.AddCategory("Casts", 0);
+		for (const ast::Cast& cast : ast::CastSystem::GetCasts(ast))
+		{
+			if (!FitsContext(ast, context, ContextItemKind::Cast, ast::NoId, &cast))
+			{
+				continue;
+			}
+			MenuEntry entry;
+			entry.kind = ContextItemKind::Cast;
+			entry.cast = cast;
+			entry.AddKeyword("Cast");
+			entry.AddKeyword(String{ast::GetName(ast, cast.fromType).AsString()});
+			entry.AddKeyword(String{ast::GetName(ast, cast.toType).AsString()});
+			cache.AddEntry(p::Move(entry), casts);
+		}
+	}
+
+	// Caches every entry of the menu before drawing, so each frame only filters and scores
+	// the cached entries
+	static void BuildMenuCache(MenuCache& cache, ast::Tree& ast, const MenuContext& context)
+	{
+		cache.Reset();
+		AddBuiltinEntries(cache, ast, context);
+		// Functions and variables, grouped under their module and type namespaces
+		AddNamespaceEntries(
+		    cache, ast, context, p::FindAllIdsWith<ast::CModule, ast::CNamespace>(ast), 0);
+	}
+
+	// The first entry of a category in draw order, or -1 when it has none. Categories are
+	// ignored: the default item is the first actual item
+	static i32 FindFirstEntry(const MenuCache& cache, i32 categoryIdx)
+	{
+		const MenuCategory& category = cache.categories[categoryIdx];
+		if (!category.visibleEntries.IsEmpty())
+		{
+			return category.visibleEntries[0];
+		}
+		for (const i32 childIdx : category.visibleChildren)
+		{
+			const i32 entryIdx = FindFirstEntry(cache, childIdx);
+			if (entryIdx != -1)
+			{
+				return entryIdx;
+			}
+		}
+		return -1;
+	}
+
+	// Updates which cached entries match the search and how well they match, along with
+	// the draw order of every category. A category scores as its best entry
+	static void FilterMenuCache(MenuCache& cache, const ImGuiTextFilter& filter)
+	{
+		const bool isSearching  = filter.IsActive();
+		const SearchQuery query = ParseSearch(filter.InputBuf);
+
+		for (MenuEntry& entry : cache.entries)
+		{
+			entry.isVisible = !isSearching || MatchesSearch(query, entry.keywords);
+			entry.score     = entry.isVisible ? ScoreSearch(query, entry.keywords) : 0;
+		}
+
+		// Categories collect their contents bottom-up, so children are scored first
+		for (i32 categoryIdx = cache.categories.Size() - 1; categoryIdx >= 0; --categoryIdx)
+		{
+			MenuCategory& category = cache.categories[categoryIdx];
+			CollectVisible(category.entries, cache.entries, category.visibleEntries, isSearching);
+			CollectVisible(
+			    category.children, cache.categories, category.visibleChildren, isSearching);
+
+			category.isVisible =
+			    !category.visibleEntries.IsEmpty() || !category.visibleChildren.IsEmpty();
+			category.score = 0;
+			for (const i32 entryIdx : category.visibleEntries)
+			{
+				category.score = p::Max(category.score, cache.entries[entryIdx].score);
+			}
+			for (const i32 childIdx : category.visibleChildren)
+			{
+				category.score = p::Max(category.score, cache.categories[childIdx].score);
+			}
+		}
+
+		cache.defaultEntry = FindFirstEntry(cache, 0);
+	}
+
+	// Spawns the node of a picked entry, attached to the edited type
+	static void SpawnEntryNode(
+	    ast::Tree& ast, Id typeId, const MenuContext& context, const MenuEntry& entry)
+	{
+		Id newId = ast::NoId;
+		switch (entry.kind)
+		{
+			case ContextItemKind::Return: newId = ast::AddReturn({ast, typeId}); break;
+			case ContextItemKind::If: newId = ast::AddIf({ast, typeId}); break;
+			case ContextItemKind::UnaryOperator:
+				newId = ast::AddUnaryOperator(
+				    {ast, typeId}, static_cast<ast::UnaryOperatorType>(entry.operatorType));
+				break;
+			case ContextItemKind::BinaryOperator:
+				newId = ast::AddBinaryOperator(
+				    {ast, typeId}, static_cast<ast::BinaryOperatorType>(entry.operatorType));
+				break;
+			case ContextItemKind::Function:
+				newId = ast::AddCall({ast, typeId}, entry.id);
+				// Populate the new call's pins right away so the dropped link can find
+				// a matching pin to connect to
+				ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
+				break;
+			case ContextItemKind::Variable:
+				// Attach to the edited type, not the variable's owning type
+				newId = ast::AddDeclarationReference({ast, typeId}, entry.id);
+				break;
+			case ContextItemKind::Literal:
+				// Attach to the edited type, not the literal's own type
+				newId = ast::AddLiteral({ast, typeId}, entry.id);
+				break;
+			case ContextItemKind::Cast:
+				newId = ast::AddExplicitCast({ast, typeId}, entry.cast.fromType, entry.cast.toType);
+				break;
+		}
+		SetPositionAndConnect(ast, newId, context);
+	}
+
+	// Draws a cached entry and spawns its node when picked
+	static void DrawMenuEntry(
+	    ast::Tree& ast, Id typeId, const MenuContext& context, const MenuEntry& entry)
+	{
+		bool pressed = false;
+		switch (entry.kind)
+		{
+			case ContextItemKind::Function:
+				pressed = ContextFunctionItem(ast, entry.id, entry.label.AsView());
+				break;
+			case ContextItemKind::Literal:
+				pressed = ContextConstructItem(entry.label.AsView(), entry.id, entry.background);
+				break;
+			case ContextItemKind::Cast: pressed = ContextCastItem(ast, entry.cast); break;
+			case ContextItemKind::Return:
+			case ContextItemKind::If:
+			case ContextItemKind::Variable:
+			case ContextItemKind::UnaryOperator:
+			case ContextItemKind::BinaryOperator:
+				pressed = ContextItem(entry.label.AsView(), entry.id, entry.background);
+				break;
+		}
+		if (pressed)
+		{
+			SpawnEntryNode(ast, typeId, context, entry);
+		}
+	}
+
+	// Gives the keyboard focus to the item just drawn, so Enter applies it
+	static void FocusLastItem()
+	{
+		UI::SetFocusID(UI::GetItemID(), UI::GetCurrentWindow());
+	}
+
+	static void DrawMenuCategory(ast::Tree& ast, Id typeId, const MenuContext& context,
+	    const MenuCache& cache, i32 categoryIdx, bool isSearching, bool focusDefault);
+
+	// Draws the entries and subcategories of a category. The default item takes the focus
+	// while the results change, so Enter applies it
+	static void DrawMenuCategoryContents(ast::Tree& ast, Id typeId, const MenuContext& context,
+	    const MenuCache& cache, const MenuCategory& category, bool isSearching, bool focusDefault)
+	{
+		for (const i32 entryIdx : category.visibleEntries)
+		{
+			DrawMenuEntry(ast, typeId, context, cache.entries[entryIdx]);
+			if (focusDefault && entryIdx == cache.defaultEntry)
+			{
+				FocusLastItem();
+			}
+		}
+		for (const i32 childIdx : category.visibleChildren)
+		{
+			DrawMenuCategory(ast, typeId, context, cache, childIdx, isSearching, focusDefault);
+		}
+	}
+
+	// Draws a cached category and its contents. Categories with nothing visible inside are
+	// skipped. While searching they draw open by default
+	static void DrawMenuCategory(ast::Tree& ast, Id typeId, const MenuContext& context,
+	    const MenuCache& cache, i32 categoryIdx, bool isSearching, bool focusDefault)
+	{
+		const MenuCategory& category = cache.categories[categoryIdx];
+		if (category.visibleEntries.IsEmpty() && category.visibleChildren.IsEmpty())
+		{
+			return;
+		}
+
+		// While searching categories open by default, so results show right away
+		if (isSearching)
+		{
+			UI::SetNextItemOpen(true, ImGuiCond_Once);
+		}
+		if (!UI::TreeNode(category.label.c_str()))
+		{
+			return;
+		}
+		DrawMenuCategoryContents(ast, typeId, context, cache, category, isSearching, focusDefault);
+		UI::TreePop();
 	}
 
 	void DrawGraphContextMenu(ast::Tree& ast, Id typeId, MenuContext context)
 	{
 		static ImGuiTextFilter filter;
+		static MenuCache cache;
 		const bool canEditBody = ast::HasFunctionBodies(ast, typeId);
 
-		if (UI::IsWindowAppearing())
+		const bool isAppearing = UI::IsWindowAppearing();
+		if (isAppearing)
 		{
 			UI::SetKeyboardFocusHere();
 			filter.Clear();
 		}
-		filter.Draw("##Filter");
+		const bool filterChanged = filter.Draw("##Filter");
+		// Whether the search input is the focused item, used by the Enter fallback
+		const bool filterFocused = UI::IsItemFocused();
 
 		// Spawn at the release position when the menu came from a dropped link, so the
 		// new node lands where the link was let go
@@ -648,6 +1269,15 @@ namespace rift::editor::Graph
 			return;
 		}
 
+		// Entries are cached once, when the menu opens
+		if (isAppearing)
+		{
+			BuildMenuCache(cache, ast, context);
+		}
+
+		// The default item takes the focus while the results change, so Enter applies it
+		const bool focusDefault = isAppearing || filterChanged;
+
 		// Only the results scroll, so the search bar stays visible. The results take the rest
 		// of the menu height, under the search row
 		const float maxHeight        = p::Max(UI::GetIO().DisplaySize.y * 0.3f, 1.f);
@@ -658,108 +1288,22 @@ namespace rift::editor::Graph
 		UI::BeginChild(
 		    "##Results", v2{0.f, 0.f}, ImGuiChildFlags_AutoResizeY | ImGuiChildFlags_NavFlattened);
 		{
-			if (ContextTreeNode("Flow", filter))
+			// Filtering and scoring run as a previous step to drawing
+			FilterMenuCache(cache, filter);
+			const bool isSearching = filter.IsActive();
+
+			// The hidden root category only wraps the contents of the menu
+			DrawMenuCategoryContents(
+			    ast, typeId, context, cache, cache.categories[0], isSearching, focusDefault);
+
+			// Enter applies the default item when no other item has the focus. It keeps
+			// the first result one key press away, even before anything is selected
+			if (cache.defaultEntry != -1 && UI::IsKeyPressed(ImGuiKey_Enter)
+			    && (filterFocused || !UI::IsAnyItemFocused()))
 			{
-				if (MatchesContext(ast, context, ContextItemKind::Return, {"Return"}, filter)
-				    && ContextItem("Return", p::NoId))
-				{
-					Id newId = ast::AddReturn({ast, typeId});
-					SetPositionAndConnect(ast, newId, context);
-				}
-				if (MatchesContext(ast, context, ContextItemKind::If, {"If"}, filter)
-				    && ContextItem("If", p::NoId))
-				{
-					Id newId = ast::AddIf({ast, typeId});
-					SetPositionAndConnect(ast, newId, context);
-				}
-				ContextTreePop(filter);
+				SpawnEntryNode(ast, typeId, context, cache.entries[cache.defaultEntry]);
+				UI::CloseCurrentPopup();
 			}
-
-			if (ContextTreeNode("Operators", filter))
-			{
-				String name;
-				// Unary operators
-				for (auto type : GetEnumValues<ast::UnaryOperatorType>())
-				{
-					name.clear();
-					StringView shortName = GetUnaryOperatorName(type);
-					StringView longName  = GetUnaryOperatorLongName(type);
-					p::FormatTo(name, "{}   ({})", shortName, longName);
-					if (MatchesContext(
-					        ast, context, ContextItemKind::Operator, {shortName, longName}, filter)
-					    && ContextItem(name, p::NoId))
-					{
-						Id newId = ast::AddUnaryOperator({ast, typeId}, type);
-						SetPositionAndConnect(ast, newId, context);
-					}
-				}
-				// Binary operators
-				for (auto type : GetEnumValues<ast::BinaryOperatorType>())
-				{
-					name.clear();
-					StringView shortName = GetBinaryOperatorName(type);
-					StringView longName  = GetBinaryOperatorLongName(type);
-					p::FormatTo(name, "{}   ({})", shortName, longName);
-					if (MatchesContext(
-					        ast, context, ContextItemKind::Operator, {shortName, longName}, filter)
-					    && ContextItem(name, p::NoId))
-					{
-						Id newId = ast::AddBinaryOperator({ast, typeId}, type);
-						SetPositionAndConnect(ast, newId, context);
-					}
-				}
-				ContextTreePop(filter);
-			}
-
-			if (ContextTreeNode("Constructors", filter))
-			{
-				TIdScope<ast::CDeclType, ast::CNamespace> typesScope{ast};
-				for (Id literalTypeId : FindAllIdsWith<ast::CDeclType>(typesScope))
-				{
-					if (auto* ns = typesScope.TryGet<const ast::CNamespace>(literalTypeId))
-					{
-						if (!MatchesContext(ast, context, ContextItemKind::Literal,
-						        {"Make", ns->name.AsString()}, filter, literalTypeId))
-						{
-							continue;
-						}
-
-						if (ContextConstructItem(ns->name.AsString(), literalTypeId,
-						        GetTypeColor(ast, literalTypeId)))
-						{
-							// Attach to the edited type, not the literal's own type
-							Id newId = ast::AddLiteral({ast, typeId}, literalTypeId);
-							SetPositionAndConnect(ast, newId, context);
-						}
-					}
-				}
-				ContextTreePop(filter);
-			}
-
-			if (ContextTreeNode("Casts", filter))
-			{
-				for (const ast::Cast& cast : ast::CastSystem::GetCasts(ast))
-				{
-					// A cast matches when its kind or either of its types does
-					if (!MatchesContext(ast, context, ContextItemKind::Cast,
-					        {"Cast", ast::GetName(ast, cast.fromType).AsString(),
-					            ast::GetName(ast, cast.toType).AsString()},
-					        filter, ast::NoId, &cast))
-					{
-						continue;
-					}
-					if (ContextCastItem(ast, cast))
-					{
-						Id newId = ast::AddExplicitCast({ast, typeId}, cast.fromType, cast.toType);
-						SetPositionAndConnect(ast, newId, context);
-					}
-				}
-				ContextTreePop(filter);
-			}
-
-			// Functions and variables, grouped under their module and type namespaces
-			DrawNamespaceChildren(ast, typeId,
-			    p::FindAllIdsWith<ast::CModule, ast::CNamespace>(ast), filter, context);
 		}
 		UI::EndChild();
 	}
