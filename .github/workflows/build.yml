@@ -29,25 +29,25 @@ jobs:
           - name: windows-clang
             os: windows-2025
             os-name: windows
-            compiler: clang-21
+            compiler: clang-22
             cxx: clang-cl
             cc: clang-cl
           - name: linux-clang
-            os: ubuntu-24.04
+            os: ubuntu-26.04
             os-name: linux
-            compiler: clang-21
+            compiler: clang-22
             cxx: clang++
             cc: clang
           - name: linux-gcc
-            os: ubuntu-24.04
+            os: ubuntu-26.04
             os-name: linux
-            compiler: gcc-15
-            cxx: g++
-            cc: gcc
+            compiler: gcc-16 # shipped in the Ubuntu archive, no toolchain PPA needed
+            cxx: g++-16
+            cc: gcc-16
           - name: macos-clang
-            os: macos-15
+            os: macos-26
             os-name: macos
-            compiler: clang-21
+            compiler: clang-22
             cxx: clang++
             cc: clang
 

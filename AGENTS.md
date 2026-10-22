@@ -79,7 +79,7 @@ Build/          - Build output (do not edit)
 
 ## CI
 
-- Build matrix: MSVC, Clang 16, GCC 13 across Windows/Linux/macOS
+- Build matrix: MSVC, Clang 22, GCC 16 across Windows/Linux/macOS
 - Static analysis: cppcheck via GitHub Action
 - Periodic format: auto-applies clang-format on schedule (Mon/Wed/Sat)
 - Release: triggered by `v*.*.*` tags, builds then publishes zips

@@ -77,6 +77,7 @@ namespace rift::ast
 	Id AddFunctionOutput(Tree& ast, Id functionId, p::Tag name = p::Tag::None(), Id typeId = NoId);
 
 	Id AddIf(TypeRef type);
+	Id AddFor(TypeRef type);
 	Id AddReturn(TypeRef type);
 
 	Id AddLiteral(TypeRef type, Id literalTypeId);

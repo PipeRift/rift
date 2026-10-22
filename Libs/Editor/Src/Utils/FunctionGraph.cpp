@@ -754,6 +754,93 @@ namespace rift::editor::Graph
 		PopNodeBackgroundColor();
 	}
 
+	void DrawFors(p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
+	                  ast::CFileRef, ast::CStmtFor, ast::CStmtOutputs, ast::CExprInputs,
+	                  ast::CExprOutputs, ast::CExprTypeId>
+	                  scope,
+	    const TArray<ast::Id>& children)
+	{
+		PushNodeBackgroundColor(UI::GetNeutralColor(0));
+		PushNodeTitleColor(flowColor);
+		for (ast::Id id :
+		    FindIdsWith<ast::CStmtFor, ast::CExprInputs, ast::CStmtOutputs, ast::CExprOutputs>(
+		        scope, children))
+		{
+			BeginNode(scope, id);
+			{
+				Nodes::BeginNodeTitleBar();
+				{
+					PushExecutionPinStyle();
+					Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
+					UI::TextUnformatted("");
+					Nodes::EndInput();
+					PopExecutionPinStyle();
+
+					UI::SameLine();
+					UI::BeginGroup();
+					UI::TextUnformatted("for");
+					UI::EndGroup();
+
+					UI::SameLine();
+					UI::BeginGroup();
+					{
+						auto& outputs = scope.Get<const ast::CStmtOutputs>(id);
+						if (!P_Ensure(outputs.pinIds.Size() == 2))
+						{
+							continue;
+						}
+						PushExecutionPinStyle();
+						Nodes::BeginOutput(
+						    i32(outputs.pinIds[0].value), Nodes::PinShape_TriangleFilled);
+						UI::TextUnformatted("each");
+						Nodes::EndOutput();
+						Nodes::BeginOutput(
+						    i32(outputs.pinIds[1].value), Nodes::PinShape_TriangleFilled);
+						UI::TextUnformatted("continue");
+						Nodes::EndOutput();
+						PopExecutionPinStyle();
+					}
+					UI::EndGroup();
+				}
+				Nodes::EndNodeTitleBar();
+
+				// Inputs
+				UI::BeginGroup();
+				{
+					auto& inputs = scope.Get<const ast::CExprInputs>(id);
+					if (P_Ensure(inputs.pinIds.Size() == 2))
+					{
+						BeginExprInput(scope, inputs.pinIds[0], false);
+						UI::TextUnformatted("first");
+						EndExprInput(false);
+
+						BeginExprInput(scope, inputs.pinIds[1], false);
+						UI::TextUnformatted("end");
+						EndExprInput(false);
+					}
+				}
+				UI::EndGroup();
+				UI::SameLine();
+
+				// Outputs
+				UI::BeginGroup();
+				{
+					auto& outputs = scope.Get<const ast::CExprOutputs>(id);
+					if (P_Ensure(!outputs.pinIds.IsEmpty()))
+					{
+						BeginExprOutput(scope, outputs.pinIds[0], false);
+						UI::TextUnformatted("index");
+						EndExprOutput(false);
+					}
+				}
+				UI::EndGroup();
+			}
+			EndNode(scope);
+		}
+		PopNodeTitleColor();
+		PopNodeBackgroundColor();
+	}
+
 	void DrawUnaryOperators(
 	    TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
 	        ast::CParent, ast::CFileRef, ast::CExprUnaryOperator, ast::CExprTypeId>
@@ -1077,6 +1164,7 @@ namespace rift::editor::Graph
 				DrawVariableRefs(ast, children);
 
 				DrawIfs(ast, children);
+				DrawFors(ast, children);
 				DrawUnaryOperators(ast, children);
 				DrawBinaryOperators(ast, children);
 				DrawCasts(ast, children);
