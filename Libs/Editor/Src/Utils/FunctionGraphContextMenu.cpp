@@ -1224,25 +1224,23 @@ namespace rift::editor::Graph
 		}
 	}
 
-	// Scrolls the item just drawn into view
+	// Scrolls the item just drawn into view, with a small margin so the next items ahead
+	// stay visible
 	static void ScrollLastItemIntoView()
 	{
-		// The results are drawn in a child that doesn't scroll, so scroll the popup
-		ImGuiWindow* window = UI::GetCurrentWindow();
-		if (window->ParentWindow)
-		{
-			UI::ScrollToBringRectIntoView(
-			    window->ParentWindow, ImRect(UI::GetItemRectMin(), UI::GetItemRectMax()));
-		}
+		ImRect itemRect(UI::GetItemRectMin(), UI::GetItemRectMax());
+		itemRect.Expand(ImVec2(0.f, UI::GetTextLineHeight()));
+		UI::ScrollToRectEx(UI::GetCurrentWindow(), itemRect, ImGuiScrollFlags_KeepVisibleEdgeY);
 	}
 
 	static void DrawMenuCategory(ast::Tree& ast, Id typeId, const MenuContext& context,
-	    MenuCache& cache, i32 categoryIdx, bool showSelection);
+	    MenuCache& cache, i32 categoryIdx, bool showSelection, bool& scrollToSelection);
 
 	// Draws the entries and subcategories of a category. The first item drawn becomes the
-	// selected one when the results change
+	// selected one when the results change, and the selection is scrolled into view when
+	// it moves
 	static void DrawMenuCategoryContents(ast::Tree& ast, Id typeId, const MenuContext& context,
-	    MenuCache& cache, const MenuCategory& category, bool showSelection)
+	    MenuCache& cache, const MenuCategory& category, bool showSelection, bool& scrollToSelection)
 	{
 		for (const i32 entryIdx : category.visibleEntries)
 		{
@@ -1253,21 +1251,23 @@ namespace rift::editor::Graph
 			const bool isSelected = entryIdx == cache.selectedEntry;
 			DrawMenuEntry(
 			    ast, typeId, context, cache.entries[entryIdx], showSelection && isSelected);
-			if (showSelection && isSelected)
+			if (scrollToSelection && isSelected)
 			{
 				ScrollLastItemIntoView();
+				scrollToSelection = false;
 			}
 		}
 		for (const i32 childIdx : category.visibleChildren)
 		{
-			DrawMenuCategory(ast, typeId, context, cache, childIdx, showSelection);
+			DrawMenuCategory(
+			    ast, typeId, context, cache, childIdx, showSelection, scrollToSelection);
 		}
 	}
 
 	// Draws a cached category and its contents. Categories with nothing visible inside are
 	// skipped, and they draw open by default so the first item is always reachable
 	static void DrawMenuCategory(ast::Tree& ast, Id typeId, const MenuContext& context,
-	    MenuCache& cache, i32 categoryIdx, bool showSelection)
+	    MenuCache& cache, i32 categoryIdx, bool showSelection, bool& scrollToSelection)
 	{
 		const MenuCategory& category = cache.categories[categoryIdx];
 		if (category.visibleEntries.IsEmpty() && category.visibleChildren.IsEmpty())
@@ -1282,7 +1282,8 @@ namespace rift::editor::Graph
 		{
 			return;
 		}
-		DrawMenuCategoryContents(ast, typeId, context, cache, category, showSelection);
+		DrawMenuCategoryContents(
+		    ast, typeId, context, cache, category, showSelection, scrollToSelection);
 		UI::TreePop();
 	}
 
@@ -1348,30 +1349,38 @@ namespace rift::editor::Graph
 			FilterMenuCache(cache, filter);
 
 			// The first item drawn becomes the selected one when the results change
+			bool scrollToSelection = focusDefault;
 			if (focusDefault)
 			{
 				cache.selectedEntry = -1;
 			}
 
-			// While the search input is active, up and down move the selected item
+			// While the search input is active, up and down move the selected item. Holding
+			// shift moves five items at a time
 			if (filterActive && !cache.flatEntries.IsEmpty())
 			{
+				const bool fastMove =
+				    UI::IsKeyDown(ImGuiKey_LeftShift) || UI::IsKeyDown(ImGuiKey_RightShift);
+				const i32 step   = fastMove ? 5 : 1;
 				i32 selectionIdx = cache.flatEntries.FindIndex(cache.selectedEntry);
 				if (UI::IsKeyPressed(ImGuiKey_DownArrow))
 				{
-					++selectionIdx;
+					selectionIdx += step;
 				}
 				if (UI::IsKeyPressed(ImGuiKey_UpArrow))
 				{
-					--selectionIdx;
+					selectionIdx -= step;
 				}
-				selectionIdx        = p::Clamp(selectionIdx, 0, cache.flatEntries.Size() - 1);
-				cache.selectedEntry = cache.flatEntries[selectionIdx];
+				selectionIdx            = p::Clamp(selectionIdx, 0, cache.flatEntries.Size() - 1);
+				const i32 selectedEntry = cache.flatEntries[selectionIdx];
+				scrollToSelection |= selectedEntry != cache.selectedEntry;
+				cache.selectedEntry = selectedEntry;
 			}
 
-			// The hidden root category only wraps the contents of the menu
+			// The hidden root category only wraps the contents of the menu. Scrolling only
+			// follows the selection when it changes, so manual scrolling is left alone
 			DrawMenuCategoryContents(
-			    ast, typeId, context, cache, cache.categories[0], filterActive);
+			    ast, typeId, context, cache, cache.categories[0], filterActive, scrollToSelection);
 
 			// Enter applies the selected item, or the default one when nothing is selected
 			if (filterEditing && UI::IsKeyPressed(ImGuiKey_Enter))
