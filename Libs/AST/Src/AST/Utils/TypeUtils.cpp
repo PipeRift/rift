@@ -384,6 +384,15 @@ namespace rift::ast
 		return returnId;
 	}
 
+	bool CanCreateLiteral(const Tree& ast, Id typeId)
+	{
+		const auto& natives = ast.GetNativeTypes();
+		return typeId == natives.boolId || typeId == natives.floatId || typeId == natives.doubleId
+		    || typeId == natives.u8Id || typeId == natives.u16Id || typeId == natives.u32Id
+		    || typeId == natives.u64Id || typeId == natives.i8Id || typeId == natives.i16Id
+		    || typeId == natives.i32Id || typeId == natives.i64Id || typeId == natives.stringViewId;
+	}
+
 	Id AddLiteral(TypeRef type, Id literalTypeId)
 	{
 		Tree& ast   = type.GetContext();
@@ -437,8 +446,9 @@ namespace rift::ast
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::S64;
 		}
-		else if (literalTypeId == natives.stringId)
+		else if (literalTypeId == natives.stringViewId)
 		{
+			// Literals are views over static data, so they are string views and not owned strings
 			ast.Add<CLiteralString>(id);
 		}
 		else

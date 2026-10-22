@@ -72,6 +72,7 @@ namespace rift::ast
 		addNativeType(nativeTypes.u64Id, "U64");
 		addNativeType(nativeTypes.i64Id, "I64");
 		addNativeType(nativeTypes.stringId, "String");
+		addNativeType(nativeTypes.stringViewId, "StringView");
 
 		// Casts between the built-in types depend on their ids
 		CastSystem::RegisterNumericCasts(*this);

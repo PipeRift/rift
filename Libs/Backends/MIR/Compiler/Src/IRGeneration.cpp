@@ -323,14 +323,16 @@ namespace rift::MIR
 		scope.Add(nativeTypes.i32Id, CMIRType{"long"});
 		scope.Add(nativeTypes.u64Id, CMIRType{"unsigned long long"});
 		scope.Add(nativeTypes.i64Id, CMIRType{"long long"});
-		scope.Add(nativeTypes.stringId, CMIRType{"StringView"});
+		scope.Add(nativeTypes.stringId, CMIRType{"String"});
+		scope.Add(nativeTypes.stringViewId, CMIRType{"StringView"});
 	}
 
 	void CGenerator::DeclareNativeTypes()
 	{
 		code->append("// Native Types\n");
 
-		// Mirrored by the runtime in Std's Std/IO.h, which must keep the same member order.
+		// Mirrored by the runtime in Std's Std/IO.h and Std/Strings.h, which must keep the
+		// same member order.
 		// TODO: Emit p::StringView directly once Pipe defines its own string view, whose
 		// layout would be specified instead of depending on the host standard library.
 		code->append(
@@ -339,6 +341,14 @@ namespace rift::MIR
 		    "    const char* data;"
 		    "    unsigned long long size;"
 		    "} StringView;\n\n");
+
+		// Owned strings own their buffer, which the runtime allocates from the current arena
+		code->append(
+		    "typedef struct String"
+		    "{"
+		    "    char* data;"
+		    "    unsigned long long size;"
+		    "} String;\n\n");
 	}
 
 	void CGenerator::GenerateLiterals()
@@ -374,6 +384,7 @@ namespace rift::MIR
 			const auto& string = scope.Get<const ast::CLiteralString>(id);
 			value.clear();
 			AppendCStringLiteral(value, string.value);
+			// Literals are views over static data
 			p::FormatTo(strValue, "(StringView){{{0}, {1}}}", value, string.value.size());
 			scope.Add(id, CMIRLiteral{.value = p::Tag{strValue}});
 		}

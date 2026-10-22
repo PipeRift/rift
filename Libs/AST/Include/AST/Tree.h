@@ -25,6 +25,8 @@ namespace rift::ast
 		ast::Id u64Id    = ast::NoId;
 		ast::Id i64Id    = ast::NoId;
 		ast::Id stringId = ast::NoId;
+
+		ast::Id stringViewId = ast::NoId;
 	};
 
 

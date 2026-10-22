@@ -727,6 +727,12 @@ namespace rift::editor::Graph
 				TIdScope<ast::CDeclType, ast::CNamespace> typesScope{ast};
 				for (Id literalTypeId : FindAllIdsWith<ast::CDeclType>(typesScope))
 				{
+					if (!ast::CanCreateLiteral(ast, literalTypeId))
+					{
+						// Types without a literal representation (like owned strings) cannot be
+						// constructed from the menu
+						continue;
+					}
 					if (auto* ns = typesScope.TryGet<const ast::CNamespace>(literalTypeId))
 					{
 						if (!MatchesContext(ast, context, ContextItemKind::Literal,

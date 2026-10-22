@@ -7,7 +7,7 @@ pipe_target_shared_output_directory(RiftTests)
 target_include_directories(RiftTests PUBLIC .
     ${CMAKE_CURRENT_SOURCE_DIR}/../Libs/Backends/MIR/Compiler/Src
     ${CMAKE_CURRENT_SOURCE_DIR}/../Extern/mir)
-target_link_libraries(RiftTests PUBLIC RiftASTLib RiftBackendMIRLib Pipe)
+target_link_libraries(RiftTests PUBLIC RiftASTLib RiftBackendMIRLib Pipe RiftRuntimeStd)
 
 add_test(NAME RiftTests COMMAND $<TARGET_FILE:RiftTests>)
 
