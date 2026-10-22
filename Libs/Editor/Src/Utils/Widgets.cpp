@@ -46,7 +46,7 @@ namespace rift::editor
 	bool TypeCombo(p::TIdScopeRef<ast::CNamespace, ast::CDeclType, ast::CDeclNative,
 	                   ast::CDeclStruct, ast::CDeclClass>
 	                   scope,
-	    p::StringView label, ast::Id& selectedId, bool selectedAsChip)
+	    p::StringView label, ast::Id& selectedId, bool selectedAsChip, bool showCategories)
 	{
 		p::Tag ownerName;
 		if (!IsNone(selectedId))
@@ -62,19 +62,6 @@ namespace rift::editor
 		ast::Id lastId = selectedId;
 		const bool open =
 		    UI::BeginCombo(label.data(), previewAsChip ? nullptr : ownerDisplayName.data(), flags);
-		if (previewAsChip)
-		{
-			ast::Tree& ast           = static_cast<ast::Tree&>(scope.GetContext());
-			const ImRect previewRect = UI::GetCurrentContext()->ComboPreviewData.PreviewRect;
-			ImDrawList* drawList     = UI::GetWindowDrawList();
-			drawList->PushClipRect(previewRect.Min, previewRect.Max, true);
-			float x               = previewRect.Min.x + UI::GetStyle().FramePadding.x;
-			const StringView icon = GetTypeIcon(ast, selectedId);
-			UI::DrawChip(*drawList, x, previewRect.GetCenter().y, ownerDisplayName,
-			    GetTypeColor(ast, selectedId), icon.empty() ? nullptr : icon.data());
-			drawList->PopClipRect();
-		}
-
 		if (open)
 		{
 			static ImGuiTextFilter filter;
@@ -91,7 +78,21 @@ namespace rift::editor
 			    p::FindAllIdsWith<ast::CDeclType, ast::CDeclStruct, ast::CNamespace>(scope);
 			auto classIds =
 			    p::FindAllIdsWith<ast::CDeclType, ast::CDeclClass, ast::CNamespace>(scope);
-			if (filter.IsActive())
+			if (!showCategories)
+			{
+				// A flat list of every type, sorted by name
+				p::TArray<ast::Id> typeIds;
+				typeIds.Append(nativeIds);
+				typeIds.Append(structIds);
+				typeIds.Append(classIds);
+				typeIds.Sort([&scope](ast::Id a, ast::Id b)
+				{
+					return scope.Get<const ast::CNamespace>(a).name.AsString()
+					     < scope.Get<const ast::CNamespace>(b).name.AsString();
+				});
+				ListTypesFromFilter(scope, typeIds, selectedId, filter);
+			}
+			else if (filter.IsActive())
 			{
 				if (UI::TreeNodeEx("Native##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
 				{
@@ -128,6 +129,19 @@ namespace rift::editor
 				}
 			}
 			UI::EndCombo();
+		}
+
+		// The custom preview is drawn right after the combo block, inside the combo's frame
+		if (previewAsChip && UI::BeginComboPreview())
+		{
+			ast::Tree& ast        = static_cast<ast::Tree&>(scope.GetContext());
+			const StringView icon = GetTypeIcon(ast, selectedId);
+			const ImVec2 pos      = UI::GetCursorScreenPos();
+			float x               = pos.x;
+			UI::DrawChip(*UI::GetWindowDrawList(), x, pos.y + UI::GetTextLineHeight() * 0.5f,
+			    ownerDisplayName, GetTypeColor(ast, selectedId),
+			    icon.empty() ? nullptr : icon.data());
+			UI::EndComboPreview();
 		}
 		return selectedId != lastId;
 	}
