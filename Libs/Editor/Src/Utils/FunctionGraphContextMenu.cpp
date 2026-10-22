@@ -589,7 +589,8 @@ namespace rift::editor::Graph
 		return false;
 	}
 
-	bool ContextItem(StringView name, Id id, Color background = Color::Transparent())
+	bool ContextItem(
+	    StringView name, Id id, Color background = Color::Transparent(), bool highlighted = false)
 	{
 		if (id != p::NoId)
 		{
@@ -599,10 +600,19 @@ namespace rift::editor::Graph
 
 		// Keep the click area tight to the item so the 1px spacing between items shows
 		ImGuiSelectableFlags flags = ImGuiSelectableFlags_NoPadWithHalfSpacing;
-		const bool hasBackground   = background.a > 0.f;
+		if (highlighted)
+		{
+			flags |= ImGuiSelectableFlags_Highlight;    // Draw as if hovered
+		}
+		const bool hasBackground = background.a > 0.f;
 		if (hasBackground)
 		{
 			UI::PushHeaderColor(background);
+			if (highlighted)
+			{
+				// A highlighted row draws a clearly brighter version of its color
+				UI::PushStyleColor(ImGuiCol_HeaderHovered, background.Tint(0.2f));
+			}
 		}
 
 		UI::PushStyleVar(ImGuiStyleVar_ItemSpacing, v2{UI::GetStyle().ItemSpacing.x, 2.f});
@@ -617,6 +627,10 @@ namespace rift::editor::Graph
 		UI::PopStyleVar(3);
 		if (hasBackground)
 		{
+			if (highlighted)
+			{
+				UI::PopStyleColor();
+			}
 			UI::PopHeaderColor();
 		}
 		if (pressed)
@@ -635,21 +649,35 @@ namespace rift::editor::Graph
 	constexpr float contextChipSpacing  = 4.f;
 
 	// Draws a context menu row. When a background is given it's painted by the row itself,
-	// with the content drawn on top. Returns whether the row was picked
+	// with the content drawn on top. Highlighted rows draw as if hovered. Returns whether
+	// the row was picked
 	bool DrawContextChipRow(StringView label, ImVec2& outMin, ImVec2& outMax,
-	    Color background = Color::Transparent(), float height = 16.f)
+	    Color background = Color::Transparent(), float height = 16.f, bool highlighted = false)
 	{
 		UI::PushStyleVar(ImGuiStyleVar_ItemSpacing, v2{UI::GetStyle().ItemSpacing.x, 2.f});
 		UI::PushStyleVar(ImGuiStyleVar_SelectableRounding, contextChipRounding);
+		ImGuiSelectableFlags flags = ImGuiSelectableFlags_NoPadWithHalfSpacing;
+		if (highlighted)
+		{
+			flags |= ImGuiSelectableFlags_Highlight;    // Draw as if hovered
+		}
 		const bool hasBackground = background.a > 0.f;
 		if (hasBackground)
 		{
 			UI::PushHeaderColor(background);
+			if (highlighted)
+			{
+				// A highlighted row draws a clearly brighter version of its color
+				UI::PushStyleColor(ImGuiCol_HeaderHovered, background.Tint(0.2f));
+			}
 		}
-		const bool pressed = UI::Selectable(
-		    label, hasBackground, ImGuiSelectableFlags_NoPadWithHalfSpacing, v2{0.f, height});
+		const bool pressed = UI::Selectable(label, hasBackground, flags, v2{0.f, height});
 		if (hasBackground)
 		{
+			if (highlighted)
+			{
+				UI::PopStyleColor();
+			}
 			UI::PopHeaderColor();
 		}
 		UI::PopStyleVar(2);
@@ -703,7 +731,7 @@ namespace rift::editor::Graph
 	}
 
 	// A cast of the context menu: each type carries a rounded background of its own color
-	bool ContextCastItem(ast::Tree& ast, const ast::Cast& cast)
+	bool ContextCastItem(ast::Tree& ast, const ast::Cast& cast, bool highlighted = false)
 	{
 		ImDrawList* drawList      = UI::GetWindowDrawList();
 		const StringView fromName = ast::GetName(ast, cast.fromType).AsString();
@@ -714,7 +742,8 @@ namespace rift::editor::Graph
 		UI::PushID(cast.toType);
 		ImVec2 itemMin;
 		ImVec2 itemMax;
-		const bool pressed  = DrawContextChipRow("###Item", itemMin, itemMax);
+		const bool pressed = DrawContextChipRow(
+		    "###Item", itemMin, itemMax, Color::Transparent(), 16.f, highlighted);
 		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
 		float x             = itemMin.x + contextChipPadding;
 		DrawContextTypeChip(*drawList, x, centerY, fromName, GetTypeColor(ast, cast.fromType));
@@ -729,7 +758,7 @@ namespace rift::editor::Graph
 
 	// A function of the context menu: its name followed by its arguments and returns, each a
 	// chip with its name colored as its type. Returns are marked with an upward arrow
-	bool ContextFunctionItem(ast::Tree& ast, Id id, StringView name)
+	bool ContextFunctionItem(ast::Tree& ast, Id id, StringView name, bool highlighted = false)
 	{
 		ImDrawList* drawList = UI::GetWindowDrawList();
 		UI::PushID(id);
@@ -739,7 +768,7 @@ namespace rift::editor::Graph
 		// The function carries its own background, slightly thicker than the pin chips
 		const float rowHeight = UI::GetTextLineHeight() + 4.f;
 		const bool pressed =
-		    DrawContextChipRow("###Item", itemMin, itemMax, functionColor, rowHeight);
+		    DrawContextChipRow("###Item", itemMin, itemMax, functionColor, rowHeight, highlighted);
 		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
 		float x             = itemMin.x + contextChipPadding;
 
@@ -789,13 +818,15 @@ namespace rift::editor::Graph
 	}
 
 	// A constructor of the context menu: the type carries a rounded background of its color
-	bool ContextConstructItem(StringView typeName, Id id, const Color& color)
+	bool ContextConstructItem(
+	    StringView typeName, Id id, const Color& color, bool highlighted = false)
 	{
 		ImDrawList* drawList = UI::GetWindowDrawList();
 		UI::PushID(id);
 		ImVec2 itemMin;
 		ImVec2 itemMax;
-		const bool pressed  = DrawContextChipRow("###Item", itemMin, itemMax);
+		const bool pressed = DrawContextChipRow(
+		    "###Item", itemMin, itemMax, Color::Transparent(), 16.f, highlighted);
 		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
 		float x             = itemMin.x + contextChipPadding;
 		DrawContextItemText(*drawList, x, centerY, "Make ");
@@ -1160,26 +1191,31 @@ namespace rift::editor::Graph
 		SetPositionAndConnect(ast, newId, context);
 	}
 
-	// Draws a cached entry and spawns its node when picked
-	static void DrawMenuEntry(
-	    ast::Tree& ast, Id typeId, const MenuContext& context, const MenuEntry& entry)
+	// Draws a cached entry and spawns its node when picked. Highlighted rows draw as if
+	// hovered
+	static void DrawMenuEntry(ast::Tree& ast, Id typeId, const MenuContext& context,
+	    const MenuEntry& entry, bool highlighted)
 	{
 		bool pressed = false;
 		switch (entry.kind)
 		{
 			case ContextItemKind::Function:
-				pressed = ContextFunctionItem(ast, entry.id, entry.label.AsView());
+				pressed = ContextFunctionItem(ast, entry.id, entry.label.AsView(), highlighted);
 				break;
 			case ContextItemKind::Literal:
-				pressed = ContextConstructItem(entry.label.AsView(), entry.id, entry.background);
+				pressed = ContextConstructItem(
+				    entry.label.AsView(), entry.id, entry.background, highlighted);
 				break;
-			case ContextItemKind::Cast: pressed = ContextCastItem(ast, entry.cast); break;
+			case ContextItemKind::Cast:
+				pressed = ContextCastItem(ast, entry.cast, highlighted);
+				break;
 			case ContextItemKind::Return:
 			case ContextItemKind::If:
 			case ContextItemKind::Variable:
 			case ContextItemKind::UnaryOperator:
 			case ContextItemKind::BinaryOperator:
-				pressed = ContextItem(entry.label.AsView(), entry.id, entry.background);
+				pressed =
+				    ContextItem(entry.label.AsView(), entry.id, entry.background, highlighted);
 				break;
 		}
 		if (pressed)
@@ -1188,12 +1224,9 @@ namespace rift::editor::Graph
 		}
 	}
 
-	// Marks the selected item: highlights it and scrolls it into view
-	static void DrawSelectedItem()
+	// Scrolls the item just drawn into view
+	static void ScrollLastItemIntoView()
 	{
-		UI::GetWindowDrawList()->AddRect(UI::GetItemRectMin(), UI::GetItemRectMax(),
-		    UI::GetColorU32(ImGuiCol_NavCursor), 2.f, 0, 2.f);
-
 		// The results are drawn in a child that doesn't scroll, so scroll the popup
 		ImGuiWindow* window = UI::GetCurrentWindow();
 		if (window->ParentWindow)
@@ -1213,14 +1246,16 @@ namespace rift::editor::Graph
 	{
 		for (const i32 entryIdx : category.visibleEntries)
 		{
-			DrawMenuEntry(ast, typeId, context, cache.entries[entryIdx]);
 			if (cache.selectedEntry == -1)
 			{
 				cache.selectedEntry = entryIdx;
 			}
-			if (showSelection && entryIdx == cache.selectedEntry)
+			const bool isSelected = entryIdx == cache.selectedEntry;
+			DrawMenuEntry(
+			    ast, typeId, context, cache.entries[entryIdx], showSelection && isSelected);
+			if (showSelection && isSelected)
 			{
-				DrawSelectedItem();
+				ScrollLastItemIntoView();
 			}
 		}
 		for (const i32 childIdx : category.visibleChildren)
@@ -1265,6 +1300,11 @@ namespace rift::editor::Graph
 		}
 		const bool filterChanged = filter.Draw("##Filter");
 		const bool filterActive  = UI::IsItemActive();
+		// The search input deactivates itself when Enter is pressed, so keep treating that
+		// frame as active: Enter still applies the selected item
+		const bool filterEditing = filterActive || UI::IsItemDeactivated();
+		// The menu draws its own selection, so no nav focus rectangles
+		UI::SetNavCursorVisible(false);
 		if (filterActive)
 		{
 			// Up and down move the selected item below instead of navigating the window,
@@ -1334,7 +1374,7 @@ namespace rift::editor::Graph
 			    ast, typeId, context, cache, cache.categories[0], filterActive);
 
 			// Enter applies the selected item, or the default one when nothing is selected
-			if (filterActive && UI::IsKeyPressed(ImGuiKey_Enter))
+			if (filterEditing && UI::IsKeyPressed(ImGuiKey_Enter))
 			{
 				const i32 entryToSpawn =
 				    cache.selectedEntry != -1 ? cache.selectedEntry : cache.defaultEntry;
