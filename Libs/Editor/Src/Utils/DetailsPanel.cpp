@@ -82,7 +82,8 @@ namespace rift::editor
 		labelId.clear();
 		p::FormatTo(labelId, "##Type_{}", id);
 		UI::SetNextItemWidth(-FLT_MIN);
-		if (editor::TypeCombo(ast, labelId, typeId))
+		// The pin row already carries the type color, so only the dropdown items draw chips
+		if (editor::TypeCombo(ast, labelId, typeId, false))
 		{
 			ScopedChange(ast, id);
 			ast.GetOrAdd<ast::CExprTypeId>(id).id = typeId;
