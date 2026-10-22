@@ -257,9 +257,12 @@ namespace rift::editor::Graph
 		// Every entry is drawn under the hidden root category at index 0
 		TArray<MenuCategory> categories;
 		TArray<MenuEntry> entries;
-		// First entry in draw order, ignoring categories: the item Enter applies. Updated
-		// while filtering
+		// Visible entries in menu order, ignoring categories. Updated while filtering
+		TArray<i32> flatEntries;
+		// First entry in menu order: the item Enter falls back to. Updated while filtering
 		i32 defaultEntry = -1;
+		// Item selected with the arrow keys, or -1 to select the first item drawn
+		i32 selectedEntry = -1;
 
 		void Reset()
 		{
@@ -610,8 +613,7 @@ namespace rift::editor::Graph
 		const float textAlignX = textWidth < itemWidth ? 4.f / (itemWidth - textWidth) : 0.f;
 		UI::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, v2{textAlignX, 0.f});
 		// A selected Selectable always paints its background
-		const bool pressed = UI::Selectable(name, hasBackground, flags, v2{0.f, 16.f})
-		                  || (UI::IsItemFocused() && UI::IsKeyPressed(ImGuiKey_Enter));
+		const bool pressed = UI::Selectable(name, hasBackground, flags, v2{0.f, 16.f});
 		UI::PopStyleVar(3);
 		if (hasBackground)
 		{
@@ -644,9 +646,8 @@ namespace rift::editor::Graph
 		{
 			UI::PushHeaderColor(background);
 		}
-		const bool pressed = UI::Selectable(label, hasBackground,
-		                         ImGuiSelectableFlags_NoPadWithHalfSpacing, v2{0.f, height})
-		                  || (UI::IsItemFocused() && UI::IsKeyPressed(ImGuiKey_Enter));
+		const bool pressed = UI::Selectable(
+		    label, hasBackground, ImGuiSelectableFlags_NoPadWithHalfSpacing, v2{0.f, height});
 		if (hasBackground)
 		{
 			UI::PopHeaderColor();
@@ -1066,24 +1067,20 @@ namespace rift::editor::Graph
 		    cache, ast, context, p::FindAllIdsWith<ast::CModule, ast::CNamespace>(ast), 0);
 	}
 
-	// The first entry of a category in draw order, or -1 when it has none. Categories are
-	// ignored: the default item is the first actual item
-	static i32 FindFirstEntry(const MenuCache& cache, i32 categoryIdx)
+	// Collects the visible entries of a menu category in order. Categories themselves are
+	// ignored
+	static void CollectFlatEntries(
+	    const MenuCache& cache, i32 categoryIdx, TArray<i32>& outEntryIndices)
 	{
 		const MenuCategory& category = cache.categories[categoryIdx];
-		if (!category.visibleEntries.IsEmpty())
+		for (const i32 entryIdx : category.visibleEntries)
 		{
-			return category.visibleEntries[0];
+			outEntryIndices.Add(entryIdx);
 		}
 		for (const i32 childIdx : category.visibleChildren)
 		{
-			const i32 entryIdx = FindFirstEntry(cache, childIdx);
-			if (entryIdx != -1)
-			{
-				return entryIdx;
-			}
+			CollectFlatEntries(cache, childIdx, outEntryIndices);
 		}
-		return -1;
 	}
 
 	// Updates which cached entries match the search and how well they match, along with
@@ -1120,7 +1117,9 @@ namespace rift::editor::Graph
 			}
 		}
 
-		cache.defaultEntry = FindFirstEntry(cache, 0);
+		cache.flatEntries.Clear(p::Shrink::No);
+		CollectFlatEntries(cache, 0, cache.flatEntries);
+		cache.defaultEntry = cache.flatEntries.IsEmpty() ? -1 : cache.flatEntries[0];
 	}
 
 	// Spawns the node of a picked entry, attached to the edited type
@@ -1189,38 +1188,51 @@ namespace rift::editor::Graph
 		}
 	}
 
-	// Gives the keyboard focus to the item just drawn, so Enter applies it
-	static void FocusLastItem()
+	// Marks the selected item: highlights it and scrolls it into view
+	static void DrawSelectedItem()
 	{
-		UI::SetFocusID(UI::GetItemID(), UI::GetCurrentWindow());
+		UI::GetWindowDrawList()->AddRect(UI::GetItemRectMin(), UI::GetItemRectMax(),
+		    UI::GetColorU32(ImGuiCol_NavCursor), 2.f, 0, 2.f);
+
+		// The results are drawn in a child that doesn't scroll, so scroll the popup
+		ImGuiWindow* window = UI::GetCurrentWindow();
+		if (window->ParentWindow)
+		{
+			UI::ScrollToBringRectIntoView(
+			    window->ParentWindow, ImRect(UI::GetItemRectMin(), UI::GetItemRectMax()));
+		}
 	}
 
 	static void DrawMenuCategory(ast::Tree& ast, Id typeId, const MenuContext& context,
-	    const MenuCache& cache, i32 categoryIdx, bool isSearching, bool focusDefault);
+	    MenuCache& cache, i32 categoryIdx, bool showSelection);
 
-	// Draws the entries and subcategories of a category. The default item takes the focus
-	// while the results change, so Enter applies it
+	// Draws the entries and subcategories of a category. The first item drawn becomes the
+	// selected one when the results change
 	static void DrawMenuCategoryContents(ast::Tree& ast, Id typeId, const MenuContext& context,
-	    const MenuCache& cache, const MenuCategory& category, bool isSearching, bool focusDefault)
+	    MenuCache& cache, const MenuCategory& category, bool showSelection)
 	{
 		for (const i32 entryIdx : category.visibleEntries)
 		{
 			DrawMenuEntry(ast, typeId, context, cache.entries[entryIdx]);
-			if (focusDefault && entryIdx == cache.defaultEntry)
+			if (cache.selectedEntry == -1)
 			{
-				FocusLastItem();
+				cache.selectedEntry = entryIdx;
+			}
+			if (showSelection && entryIdx == cache.selectedEntry)
+			{
+				DrawSelectedItem();
 			}
 		}
 		for (const i32 childIdx : category.visibleChildren)
 		{
-			DrawMenuCategory(ast, typeId, context, cache, childIdx, isSearching, focusDefault);
+			DrawMenuCategory(ast, typeId, context, cache, childIdx, showSelection);
 		}
 	}
 
 	// Draws a cached category and its contents. Categories with nothing visible inside are
-	// skipped. While searching they draw open by default
+	// skipped, and they draw open by default so the first item is always reachable
 	static void DrawMenuCategory(ast::Tree& ast, Id typeId, const MenuContext& context,
-	    const MenuCache& cache, i32 categoryIdx, bool isSearching, bool focusDefault)
+	    MenuCache& cache, i32 categoryIdx, bool showSelection)
 	{
 		const MenuCategory& category = cache.categories[categoryIdx];
 		if (category.visibleEntries.IsEmpty() && category.visibleChildren.IsEmpty())
@@ -1228,16 +1240,14 @@ namespace rift::editor::Graph
 			return;
 		}
 
-		// While searching categories open by default, so results show right away
-		if (isSearching)
-		{
-			UI::SetNextItemOpen(true, ImGuiCond_Once);
-		}
+		// Categories open by default, so the first item is selected even without a search.
+		// Only applies while the user hasn't opened or closed the category themselves
+		UI::SetNextItemOpen(true, ImGuiCond_Once);
 		if (!UI::TreeNode(category.label.c_str()))
 		{
 			return;
 		}
-		DrawMenuCategoryContents(ast, typeId, context, cache, category, isSearching, focusDefault);
+		DrawMenuCategoryContents(ast, typeId, context, cache, category, showSelection);
 		UI::TreePop();
 	}
 
@@ -1254,8 +1264,14 @@ namespace rift::editor::Graph
 			filter.Clear();
 		}
 		const bool filterChanged = filter.Draw("##Filter");
-		// Whether the search input is the focused item, used by the Enter fallback
-		const bool filterFocused = UI::IsItemFocused();
+		const bool filterActive  = UI::IsItemActive();
+		if (filterActive)
+		{
+			// Up and down move the selected item below instead of navigating the window,
+			// so the search can keep being refined while browsing results
+			UI::GetCurrentContext()->ActiveIdUsingNavDirMask |=
+			    (1 << ImGuiDir_Up) | (1 << ImGuiDir_Down);
+		}
 
 		// Spawn at the release position when the menu came from a dropped link, so the
 		// new node lands where the link was let go
@@ -1290,19 +1306,43 @@ namespace rift::editor::Graph
 		{
 			// Filtering and scoring run as a previous step to drawing
 			FilterMenuCache(cache, filter);
-			const bool isSearching = filter.IsActive();
+
+			// The first item drawn becomes the selected one when the results change
+			if (focusDefault)
+			{
+				cache.selectedEntry = -1;
+			}
+
+			// While the search input is active, up and down move the selected item
+			if (filterActive && !cache.flatEntries.IsEmpty())
+			{
+				i32 selectionIdx = cache.flatEntries.FindIndex(cache.selectedEntry);
+				if (UI::IsKeyPressed(ImGuiKey_DownArrow))
+				{
+					++selectionIdx;
+				}
+				if (UI::IsKeyPressed(ImGuiKey_UpArrow))
+				{
+					--selectionIdx;
+				}
+				selectionIdx        = p::Clamp(selectionIdx, 0, cache.flatEntries.Size() - 1);
+				cache.selectedEntry = cache.flatEntries[selectionIdx];
+			}
 
 			// The hidden root category only wraps the contents of the menu
 			DrawMenuCategoryContents(
-			    ast, typeId, context, cache, cache.categories[0], isSearching, focusDefault);
+			    ast, typeId, context, cache, cache.categories[0], filterActive);
 
-			// Enter applies the default item when no other item has the focus. It keeps
-			// the first result one key press away, even before anything is selected
-			if (cache.defaultEntry != -1 && UI::IsKeyPressed(ImGuiKey_Enter)
-			    && (filterFocused || !UI::IsAnyItemFocused()))
+			// Enter applies the selected item, or the default one when nothing is selected
+			if (filterActive && UI::IsKeyPressed(ImGuiKey_Enter))
 			{
-				SpawnEntryNode(ast, typeId, context, cache.entries[cache.defaultEntry]);
-				UI::CloseCurrentPopup();
+				const i32 entryToSpawn =
+				    cache.selectedEntry != -1 ? cache.selectedEntry : cache.defaultEntry;
+				if (entryToSpawn != -1)
+				{
+					SpawnEntryNode(ast, typeId, context, cache.entries[entryToSpawn]);
+					UI::CloseCurrentPopup();
+				}
 			}
 		}
 		UI::EndChild();
