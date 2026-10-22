@@ -3,6 +3,7 @@
 
 #include "Components.h"
 
+#include <AST/Components/CGeneratedName.h>
 #include <AST/Components/CModule.h>
 #include <AST/Components/Expressions.h>
 #include <AST/Components/Literals.h>
@@ -23,12 +24,12 @@ namespace rift::MIR
 {
 	// Defines a single ecs scope dfor the entire IR generation
 	using MIRScope = p::TIdScopeRef<p::Writes<CMIRType, CMIRFunctionSignature, CMIRLiteral>,
-	    ast::CStmtOutput, ast::CStmtOutputs, ast::CExprInputs, ast::CStmtIf, ast::CExprCallId,
-	    ast::CExprTypeId, ast::CExprOutputs, ast::CNamespace, ast::CDeclType, ast::CDeclVariable,
-	    ast::CDeclStruct, ast::CDeclClass, ast::CDeclStatic, ast::CParent, ast::CInvalid,
-	    ast::CChild, ast::CModule, ast::CLiteralBool, ast::CLiteralIntegral, ast::CLiteralFloating,
-	    ast::CLiteralString, ast::CDeclFunction, ast::CExprUnaryOperator, ast::CExprBinaryOperator,
-	    ast::CExprCast, CDeclCStruct, CDeclCStatic>;
+	    ast::CStmtOutput, ast::CStmtOutputs, ast::CExprInputs, ast::CStmtFor, ast::CStmtIf,
+	    ast::CExprCallId, ast::CExprTypeId, ast::CExprOutputs, ast::CNamespace, ast::CDeclType,
+	    ast::CDeclVariable, ast::CDeclStruct, ast::CDeclClass, ast::CDeclStatic, ast::CParent,
+	    ast::CInvalid, ast::CChild, ast::CModule, ast::CLiteralBool, ast::CLiteralIntegral,
+	    ast::CLiteralFloating, ast::CLiteralString, ast::CDeclFunction, ast::CExprUnaryOperator,
+	    ast::CExprBinaryOperator, ast::CExprCast, ast::CGeneratedName, CDeclCStruct, CDeclCStatic>;
 
 	void GenerateC(Compiler& compiler);
 
@@ -41,6 +42,9 @@ namespace rift::MIR
 		MIRScope scope;
 		p::String* code = nullptr;
 
+
+		// Runs before code generation: assigns unique names to every C variable/parameter
+		void AssignGeneratedNames();
 
 		void GenerateModule(ast::Id moduleId);
 
@@ -55,6 +59,7 @@ namespace rift::MIR
 
 		void AddStmtBlock(ast::Id firstStmtId);
 		void AddStmtIf(ast::Id id);
+		void AddStmtFor(ast::Id id);
 		// Adds the expression, casting it into the type of the pin it feeds when they differ
 		void AddExpr(const ast::ExprOutput& output, ast::Id pinId = ast::NoId);
 		void AddUnaryOperator(ast::Id id, const ast::CExprUnaryOperator& op);

@@ -154,6 +154,7 @@ namespace rift::editor::Graph
 		Literal,
 		Return,
 		If,
+		For,
 		Function,
 		Variable,
 		UnaryOperator,
@@ -561,6 +562,10 @@ namespace rift::editor::Graph
 				// if nodes have both an execution input and outputs, and only a bool
 				// output fits the condition input
 				return !isExpr || (isOutput && sourceType == ast.GetNativeTypes().boolId);
+			case ContextItemKind::For:
+				// for nodes can be connected from execution pins, or from integer
+				// expressions to their "first"/"end" inputs and "index" output
+				return !isExpr || sourceType == ast.GetNativeTypes().i32Id;
 			case ContextItemKind::Variable:
 				if (isExpr && !isOutput)
 				{
@@ -1006,6 +1011,14 @@ namespace rift::editor::Graph
 			entry.AddKeyword("If");
 			cache.AddEntry(p::Move(entry), flow);
 		}
+		if (FitsContext(ast, context, ContextItemKind::For))
+		{
+			MenuEntry entry;
+			entry.kind  = ContextItemKind::For;
+			entry.label = "For";
+			entry.AddKeyword("For");
+			cache.AddEntry(p::Move(entry), flow);
+		}
 
 		const i32 operators = cache.AddCategory("Operators", 0);
 		String label;
@@ -1162,6 +1175,7 @@ namespace rift::editor::Graph
 		{
 			case ContextItemKind::Return: newId = ast::AddReturn({ast, typeId}); break;
 			case ContextItemKind::If: newId = ast::AddIf({ast, typeId}); break;
+			case ContextItemKind::For: newId = ast::AddFor({ast, typeId}); break;
 			case ContextItemKind::UnaryOperator:
 				newId = ast::AddUnaryOperator(
 				    {ast, typeId}, static_cast<ast::UnaryOperatorType>(entry.operatorType));
@@ -1211,6 +1225,7 @@ namespace rift::editor::Graph
 				break;
 			case ContextItemKind::Return:
 			case ContextItemKind::If:
+			case ContextItemKind::For:
 			case ContextItemKind::Variable:
 			case ContextItemKind::UnaryOperator:
 			case ContextItemKind::BinaryOperator:

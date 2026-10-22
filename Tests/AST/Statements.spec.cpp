@@ -63,6 +63,35 @@ P_SPEC("AST.Statements", []()
 		Expect(ast::TryConnectStmt(ast, functionId, ifId)).ToBeTrue();
 	});
 
+	It("Initializes for loops", []()
+	{
+		ast::Tree ast;
+
+		ast::Id forId = ast::AddFor({ast, ast::NoId});
+		Expect(ast.Has<ast::CStmtFor>(forId)).ToBeTrue();
+		Expect(ast.Has<ast::CStmtInput>(forId)).ToBeTrue();
+
+		const auto* inputs = ast.TryGet<const ast::CExprInputs>(forId);
+		Expect(inputs != nullptr).ToBeTrue();
+		Expect(inputs->pinIds.Size()).ToEqual(2u);
+		Expect(inputs->linkedOutputs.Size()).ToEqual(2u);
+		Expect(ast.Get<ast::CExprTypeId>(inputs->pinIds[0]).id).ToEqual(ast.GetNativeTypes().i32Id);
+		Expect(ast.Get<ast::CExprTypeId>(inputs->pinIds[1]).id).ToEqual(ast.GetNativeTypes().i32Id);
+		Expect(ast.Get<ast::CNamespace>(inputs->pinIds[0]).name).ToEqual(p::Tag{"first"});
+		Expect(ast.Get<ast::CNamespace>(inputs->pinIds[1]).name).ToEqual(p::Tag{"end"});
+
+		const auto* exprOutputs = ast.TryGet<const ast::CExprOutputs>(forId);
+		Expect(exprOutputs != nullptr).ToBeTrue();
+		Expect(exprOutputs->pinIds.Size()).ToEqual(1u);
+		Expect(ast.Get<ast::CExprTypeId>(exprOutputs->pinIds[0]).id)
+		    .ToEqual(ast.GetNativeTypes().i32Id);
+
+		const auto* outputs = ast.TryGet<const ast::CStmtOutputs>(forId);
+		Expect(outputs != nullptr).ToBeTrue();
+		Expect(outputs->pinIds.Size()).ToEqual(2u);
+		Expect(outputs->linkInputNodes.Size()).ToEqual(2u);
+	});
+
 	It("Can connect with multiple outputs", []()
 	{
 		ast::Tree ast;
@@ -86,6 +115,25 @@ P_SPEC("AST.Statements", []()
 		Expect(ast::TryConnectStmt(ast, ast.Get<ast::CStmtOutputs>(ifId).pinIds[1], call2Id))
 		    .ToBeTrue();
 		Expect(ast.Get<ast::CStmtOutputs>(ifId).linkInputNodes[1]).ToEqual(call2Id);
+	});
+
+	It("Connects for loop outputs independently", []()
+	{
+		ast::Tree ast;
+
+		ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
+		ast::Id forId      = ast::AddFor({ast, ast::NoId});
+		ast::Id eachCallId = ast::AddCall({ast, ast::NoId}, functionId);
+		ast::Id nextCallId = ast::AddCall({ast, ast::NoId}, functionId);
+
+		const auto& outputs = ast.Get<ast::CStmtOutputs>(forId);
+		Expect(outputs.pinIds.Size()).ToEqual(2u);
+
+		// "each" and "continue" accept independent connections
+		Expect(ast::TryConnectStmt(ast, outputs.pinIds[0], eachCallId)).ToBeTrue();
+		Expect(ast::TryConnectStmt(ast, outputs.pinIds[1], nextCallId)).ToBeTrue();
+		Expect(ast.Get<ast::CStmtOutputs>(forId).linkInputNodes[0]).ToEqual(eachCallId);
+		Expect(ast.Get<ast::CStmtOutputs>(forId).linkInputNodes[1]).ToEqual(nextCallId);
 	});
 
 	It("Disconnects a single output", []()

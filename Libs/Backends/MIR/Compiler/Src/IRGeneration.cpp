@@ -2,19 +2,22 @@
 
 #include "IRGeneration.h"
 
+#include <AST/Components/Declarations.h>
 #include <AST/Systems/CastSystem.h>
+#include <AST/Systems/FunctionsSystem.h>
 #include <AST/Utils/Expressions.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <AST/Utils/Namespaces.h>
 #include <AST/Utils/Statements.h>
 #include <Compiler/Compiler.h>
+#include <Pipe/Core/Map.h>
 #include <Pipe/Core/StringView.h>
 #include <PipeStrings.h>
 
 
 namespace rift::MIR
 {
-	const p::TSet<p::Tag> CGenerator::reservedNames{"class", "struct"};
+	const p::TSet<p::Tag> CGenerator::reservedNames{"class", "struct", "if", "for"};
 
 	// Operator strings indexed by their enum value. Binary operators include the
 	// surrounding spaces so they are appended in a single operation.
@@ -51,11 +54,202 @@ namespace rift::MIR
 	{
 		MIRScope scope{compiler.ast};
 		CGenerator cGen{compiler, scope};
+		cGen.AssignGeneratedNames();
 		cGen.BindNativeTypes();
 		cGen.GenerateLiterals();
 		for (ast::Id moduleId : FindAllIdsWith<ast::CModule>(scope))
 		{
 			cGen.GenerateModule(moduleId);
+		}
+	}
+
+
+	namespace
+	{
+		struct NameScopeStack
+		{
+			using NameScope = p::TMap<p::Tag, p::i32>;
+
+			NameScope current;
+			p::TArray<NameScope> scopes;
+
+			void PushScope()
+			{
+				scopes.Add(current);
+			}
+
+			void PopScope()
+			{
+				P_Check(scopes.Size() > 0);
+				current = scopes.Last();
+				scopes.RemoveLast();
+			}
+
+			p::Tag AssignName(p::Tag base)
+			{
+				if (base.IsNone())
+				{
+					return p::Tag{};
+				}
+
+				const p::StringView baseName = base.AsString();
+
+				p::i32 suffix = 0;
+				auto it       = current.FindIt(base);
+				if (it == current.end())
+				{
+					current.Insert(base, 0);
+					return p::Tag{baseName};
+				}
+
+				suffix         = ++(const_cast<p::i32&>(it->second));
+				p::String name = p::Format("{}_{}", baseName, suffix);
+
+				while (true)
+				{
+					const p::Tag tag{name};
+					if (!current.Contains(tag))
+					{
+						current.Insert(tag, 0);
+						return tag;
+					}
+
+					// A variable with this name already exists, try the next suffix
+					name.clear();
+					p::FormatTo(name, "{}_{}", baseName, suffix);
+					suffix = ++(const_cast<p::i32&>(it->second));
+				}
+			}
+		};
+
+		void AssignVariables(ast::Tree& ast, ast::Id ownerId, NameScopeStack& names)
+		{
+			p::TArray<ast::Id> children;
+			p::GetIdChildren(ast, ownerId, children);
+			for (ast::Id childId : children)
+			{
+				if (ast.Has<ast::CDeclVariable>(childId))
+				{
+					ast.Add<ast::CGeneratedName>(
+					    childId, {names.AssignName(ast::GetName(ast, childId))});
+				}
+			}
+		}
+
+		void AssignStatementNames(ast::Tree& ast, ast::Id nodeId, NameScopeStack& names)
+		{
+			auto assignPins = [&](const p::TArray<p::Id>& pinIds)
+			{
+				for (p::Id pinId : pinIds)
+				{
+					ast.Add<ast::CGeneratedName>(
+					    pinId, {names.AssignName(ast::GetName(ast, pinId))});
+				}
+			};
+
+			// Function inputs and for-loop indices live in CExprOutputs
+			if (const auto* outputs = ast.TryGet<const ast::CExprOutputs>(nodeId))
+			{
+				assignPins(outputs->pinIds);
+			}
+			if (const auto* inputs = ast.TryGet<const ast::CExprInputs>(nodeId))
+			{
+				assignPins(inputs->pinIds);
+			}
+		}
+
+		void AssignFunctionNames(ast::Tree& ast, ast::Id functionId, NameScopeStack& names,
+		    const p::TMap<ast::Id, p::TArray<ast::Id>>& stmtIdsByFunction)
+		{
+			names.PushScope();
+
+			// Function parameters and outputs
+			AssignStatementNames(ast, functionId, names);
+
+			// Locals declared directly in the function share its scope
+			AssignVariables(ast, functionId, names);
+
+			// Every statement in the function body names its expression pins here.
+			// Loop indices land in the function scope; statement-local variables get
+			// their own nested scope.
+			if (const auto* stmtIds = stmtIdsByFunction.Find(functionId))
+			{
+				for (ast::Id stmtId : *stmtIds)
+				{
+					AssignStatementNames(ast, stmtId, names);
+
+					names.PushScope();
+					AssignVariables(ast, stmtId, names);
+					names.PopScope();
+				}
+			}
+
+			names.PopScope();
+		}
+	}    // namespace
+
+	void CGenerator::AssignGeneratedNames()
+	{
+		ast::Tree& ast = compiler.ast;
+		ast.ClearPool<ast::CGeneratedName>();
+
+		NameScopeStack names;
+
+		// Globals come first so parameters and locals can avoid them
+		for (ast::Id typeId : p::FindAllIdsWith<ast::CDeclStatic>(ast))
+		{
+			AssignVariables(ast, typeId, names);
+		}
+
+		// Statement nodes assign names to their expression pins in the owning
+		// function's scope.
+		p::TArray<ast::Id> stmtIds = p::FindAllIdsWith<ast::CStmtInput>(ast);
+		stmtIds.Sort();
+		p::TMap<ast::Id, p::TArray<ast::Id>> stmtIdsByFunction;
+		for (ast::Id stmtId : stmtIds)
+		{
+			const ast::Id functionId = ast::FunctionsSystem::FindOwningFunction(ast, stmtId);
+			if (!p::IsNone(functionId))
+			{
+				stmtIdsByFunction[functionId].Add(stmtId);
+			}
+		}
+
+		p::TArray<ast::Id> functionIds = p::FindAllIdsWith<ast::CDeclFunction>(ast);
+		p::TMap<ast::Id, p::TArray<ast::Id>> functionsByType;
+		for (ast::Id functionId : functionIds)
+		{
+			functionsByType[p::GetIdParent(ast, functionId)].Add(functionId);
+		}
+
+		// Struct and class members share the type scope with their functions
+		p::TArray<ast::Id> memberTypeIds;
+		memberTypeIds.Append(p::FindAllIdsWith<ast::CDeclStruct>(ast));
+		memberTypeIds.Append(p::FindAllIdsWith<ast::CDeclClass>(ast));
+		for (ast::Id typeId : memberTypeIds)
+		{
+			names.PushScope();
+			AssignVariables(ast, typeId, names);
+			if (const auto* functions = functionsByType.Find(typeId))
+			{
+				for (ast::Id functionId : *functions)
+				{
+					AssignFunctionNames(ast, functionId, names, stmtIdsByFunction);
+				}
+			}
+			names.PopScope();
+		}
+
+		// Every other function starts from the global scope
+		for (ast::Id functionId : functionIds)
+		{
+			const ast::Id ownerId = p::GetIdParent(ast, functionId);
+			if (ast.Has<ast::CDeclStruct>(ownerId) || ast.Has<ast::CDeclClass>(ownerId))
+			{
+				continue;
+			}
+
+			AssignFunctionNames(ast, functionId, names, stmtIdsByFunction);
 		}
 	}
 
@@ -213,7 +407,7 @@ namespace rift::MIR
 			{
 				const auto& var = scope.Get<const ast::CDeclVariable>(memberId);
 
-				const p::Tag memberName = ast::GetName(scope, memberId);
+				const p::Tag memberName = scope.Get<const ast::CGeneratedName>(memberId).name;
 				auto* irType            = scope.TryGet<const CMIRType>(var.typeId);
 				if (!irType) [[unlikely]]
 				{
@@ -265,7 +459,7 @@ namespace rift::MIR
 						continue;
 					}
 
-					const p::Tag pinName = ast::GetName(scope, pinId);
+					const p::Tag pinName = scope.Get<const ast::CGeneratedName>(pinId).name;
 					const auto* exprId   = scope.TryGet<const ast::CExprTypeId>(pinId);
 					const auto* irType =
 					    exprId ? scope.TryGet<const CMIRType>(exprId->id) : nullptr;
@@ -343,9 +537,16 @@ namespace rift::MIR
 			}
 		}
 
-		if (splitId != ast::NoId && scope.Has<ast::CStmtIf>(splitId))
+		if (splitId != ast::NoId)
 		{
-			AddStmtIf(splitId);
+			if (scope.Has<ast::CStmtIf>(splitId))
+			{
+				AddStmtIf(splitId);
+			}
+			else if (scope.Has<ast::CStmtFor>(splitId))
+			{
+				AddStmtFor(splitId);
+			}
 		}
 		// TODO: Resolve continuation block and generate it
 	}
@@ -411,6 +612,19 @@ namespace rift::MIR
 		else if (scope.Has<ast::CExprCast>(output.nodeId))
 		{
 			AddCast(output.nodeId);
+		}
+		else if (scope.Has<ast::CStmtFor>(output.nodeId))
+		{
+			// The only expression output of a for node is its loop index
+			const p::Tag indexName = scope.Get<const ast::CGeneratedName>(output.pinId).name;
+			if (indexName.IsNone())
+			{
+				compiler.Error("For loop index has no generated name");
+			}
+			else
+			{
+				code->append(indexName.AsString());
+			}
 		}
 		else
 		{
@@ -509,6 +723,41 @@ namespace rift::MIR
 			AddStmtBlock(connectedIds[1]);
 		}
 		code->append("}\n");
+	}
+
+	void CGenerator::AddStmtFor(ast::Id id)
+	{
+		const auto& outputs = scope.Get<const ast::CStmtOutputs>(id);
+		P_Check(outputs.linkInputNodes.Size() >= 1);
+		const auto& exprInputs = scope.Get<const ast::CExprInputs>(id);
+		P_Check(exprInputs.linkedOutputs.Size() == 2);
+
+		const ast::Id i32Id   = static_cast<ast::Tree&>(scope.GetContext()).GetNativeTypes().i32Id;
+		const auto* indexType = scope.TryGet<const CMIRType>(i32Id);
+		const p::StringView type = indexType->value.AsString();
+
+		const auto& exprOutputs = scope.Get<const ast::CExprOutputs>(id);
+		P_Check(exprOutputs.pinIds.Size() == 1);
+		const p::Tag indexTag = scope.Get<const ast::CGeneratedName>(exprOutputs.pinIds[0]).name;
+
+		// The end expression is cached in a local named after its input pin
+		const p::Tag endTag = scope.Get<const ast::CGeneratedName>(exprInputs.pinIds[1]).name;
+
+		const p::StringView indexName = indexTag.AsString();
+		const p::StringView endName   = endTag.AsString();
+
+		p::FormatTo(*code, "for ({0} {1}=", type, indexName);
+		AddExpr(exprInputs.linkedOutputs[0], exprInputs.pinIds[0]);
+		p::FormatTo(*code, ", {}=", endName);
+		AddExpr(exprInputs.linkedOutputs[1], exprInputs.pinIds[1]);
+		p::FormatTo(*code, "; {0} < {1}; ++{0}) {{\n", indexName, endName);
+		AddStmtBlock(outputs.linkInputNodes[0]);
+		code->append("}\n");
+
+		if (outputs.linkInputNodes.Size() > 1 && !p::IsNone(outputs.linkInputNodes[1]))
+		{
+			AddStmtBlock(outputs.linkInputNodes[1]);
+		}
 	}
 
 	void CGenerator::AddCall(ast::Id id, const ast::CExprCallId& call)
