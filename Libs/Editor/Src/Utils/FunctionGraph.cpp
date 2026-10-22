@@ -100,7 +100,6 @@ namespace rift::editor::Graph
 				saveTimer = 0.5f;
 			}
 
-			// Once the value settles, write it, even if the focus moved elsewhere meanwhile.
 			if (saveTimer >= 0.f)
 			{
 				saveTimer -= ImGui::GetIO().DeltaTime;
@@ -222,18 +221,69 @@ namespace rift::editor::Graph
 		}
 	}
 
+	// Draws a pin and its label in one call. An empty label draws the pin without text. The
+	// Begin/End pairs remain for nodes that draw their own content.
+	void DrawPinDefaultValue(p::TIdScopeRef<ast::CExprTypeId> scope, ast::Id pinId);
+
+	void AddExprInput(p::TIdScopeRef<ast::CInvalid, ast::CExprTypeId> scope, ast::Id id,
+	    StringView label = "", bool connected = true)
+	{
+		const bool invalid = scope.Has<ast::CInvalid>(id);
+		BeginExprInput(scope, id, invalid);
+
+		const float startY  = ImGui::GetCursorScreenPos().y;
+		const bool hasLabel = !label.empty();
+		if (hasLabel || connected)
+		{
+			UI::TextUnformatted(label.data(), label.data() + label.size());
+		}
+
+		if (!connected)
+		{
+			const float grid    = Nodes::GetStyle().GridSpacing * Nodes::GetZoom();
+			const float spacing = ImGui::GetStyle().ItemSpacing.y;
+			if (hasLabel)
+			{
+				// The value is a spacing thinner than the tile, so it is centered in it
+				ImGui::SetCursorScreenPos(
+				    ImVec2{ImGui::GetCursorScreenPos().x, startY + grid + spacing * 0.5f});
+			}
+			DrawPinDefaultValue(scope, id);
+			if (hasLabel)
+			{
+				// Close the second tile with what is left, so that the pin block is exactly two
+				// grid tiles tall and every pin lines up
+				const float used = ImGui::GetItemRectMax().y - startY;
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.f, 0.f});
+				ImGui::Dummy(ImVec2{0.f, p::Max(2.f * grid - used, 0.f)});
+				ImGui::PopStyleVar();
+			}
+		}
+
+		EndExprInput(invalid);
+	}
+
+	void AddExprOutput(
+	    p::TIdScopeRef<ast::CInvalid, ast::CExprTypeId> scope, ast::Id id, StringView label = "")
+	{
+		const bool invalid = scope.Has<ast::CInvalid>(id);
+		BeginExprOutput(scope, id, invalid);
+		UI::TextUnformatted(label.data(), label.data() + label.size());
+		EndExprOutput(invalid);
+	}
+
 	void DrawInputs(p::TIdScopeRef<ast::CInvalid, ast::CExprTypeId, ast::CNamespace> scope,
 	    const ast::CExprInputs& inputs)
 	{
-		for (ast::Id pinId : inputs.pinIds)
+		for (i32 i = 0; i < inputs.pinIds.Size(); ++i)
 		{
+			const ast::Id pinId = inputs.pinIds[i];
 			if (scope.IsValid(pinId))
 			{
-				const bool invalid = scope.Has<ast::CInvalid>(pinId);
-				BeginExprInput(scope, pinId, invalid);
+				const bool connected =
+				    i < inputs.linkedOutputs.Size() && !inputs.linkedOutputs[i].IsNone();
 				auto* ns = scope.TryGet<const ast::CNamespace>(pinId);
-				UI::Text(ns ? ns->name.AsString() : "none");
-				EndExprInput(invalid);
+				AddExprInput(scope, pinId, ns ? ns->name.AsString() : "", connected);
 			}
 		}
 	}
@@ -245,11 +295,8 @@ namespace rift::editor::Graph
 		{
 			if (scope.IsValid(pinId))
 			{
-				const bool invalid = scope.Has<ast::CInvalid>(pinId);
-				BeginExprOutput(scope, pinId, invalid);
 				auto* ns = scope.TryGet<const ast::CNamespace>(pinId);
-				UI::Text(ns ? ns->name.AsString() : "none");
-				EndExprOutput(invalid);
+				AddExprOutput(scope, pinId, ns ? ns->name.AsString() : "");
 			}
 		}
 	}
@@ -306,37 +353,48 @@ namespace rift::editor::Graph
 		Nodes::PopStyleColor(2);
 	}
 
-	void DrawLiteralBool(ast::Tree& ast, ast::Id id, bool& value)
+	void AddStmtInput(ast::Id id, StringView label = "")
 	{
-		static constexpr Color color = GetTypeColor<bool>();
-
-		PushNodeBackgroundColor(color);
-
-		BeginNode(ast, id);
-		{
-			BeginExprOutput(ast, id, false);
-			PushInnerNodeStyle();
-			UI::Checkbox("##value", &value);
-			PopInnerNodeStyle();
-			EndExprOutput(false);
-		}
-		EndNode(ast);
-		PopNodeBackgroundColor();
+		PushExecutionPinStyle();
+		Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
+		UI::TextUnformatted(label.data(), label.data() + label.size());
+		Nodes::EndInput();
+		PopExecutionPinStyle();
 	}
 
-	void DrawLiteralIntegral(ast::Tree& ast, ast::Id id, ast::CLiteralIntegral& value)
+	void AddStmtOutput(ast::Id id, StringView label = "")
 	{
-		const bool isSigned = value.IsSigned();
-		const Color color   = isSigned ? GetTypeColor<i32>() : GetTypeColor<u32>();
-		PushNodeBackgroundColor(color);
+		PushExecutionPinStyle();
+		Nodes::BeginOutput(i32(id.value), Nodes::PinShape_TriangleFilled);
+		UI::TextUnformatted(label.data(), label.data() + label.size());
+		Nodes::EndOutput();
+		PopExecutionPinStyle();
+	}
 
-		BeginNode(ast, id);
+
+	// Values are only as wide as their content, keeping a small area when they are empty.
+	// Sizes are in grid tiles, so they scale with the zoom.
+	float GetPinValueWidth(const char* text, float minWidth)
+	{
+		// The frame of the value already adds padding around the text
+		return p::Max(minWidth, UI::CalcTextSize(text).x + 2.f * ImGui::GetStyle().FramePadding.x);
+	}
+
+	// Draws the value of a literal, in a cell one grid tile tall
+	void DrawPinValue(ast::Tree& ast, ast::Id literalId)
+	{
+		const float zoom     = Nodes::GetZoom();
+		const float gridSize = settings.GetGridSize() * zoom;
+		const v2 padding     = Nodes::GetStyle().NodePadding * zoom;
+
+		const float minWidth   = 32.f * zoom;
+		const float spacing    = ImGui::GetStyle().ItemSpacing.y;
+		char text[64]          = {};
+		ImGuiDataType dataType = ImGuiDataType_COUNT;
+		float width            = minWidth;
+		if (const auto* literal = ast.TryGet<const ast::CLiteralIntegral>(literalId))
 		{
-			BeginExprOutput(ast, id, false);
-			PushInnerNodeStyle();
-
-			ImGuiDataType dataType = ImGuiDataType_COUNT;
-			switch (value.type)
+			switch (literal->type)
 			{
 				case ast::IntegralType::S8: dataType = ImGuiDataType_S8; break;
 				case ast::IntegralType::S16: dataType = ImGuiDataType_S16; break;
@@ -347,56 +405,44 @@ namespace rift::editor::Graph
 				case ast::IntegralType::U32: dataType = ImGuiDataType_U32; break;
 				case ast::IntegralType::U64: dataType = ImGuiDataType_U64; break;
 			}
-			const char* format = value.IsSigned() ? "%i" : "%iu";
 
-			char buf[64];
-			UI::DataTypeFormatString(buf, IM_ARRAYSIZE(buf), dataType, &value.value, format);
-			UI::SetNextItemWidth(5.f + p::Max(UI::CalcTextSize(buf).x, 20.f));
-			UI::InputScalar("##value", dataType, &value.value, nullptr, nullptr, format);
-
-			PopInnerNodeStyle();
-			EndExprOutput(false);
+			UI::DataTypeFormatString(text, IM_ARRAYSIZE(text), dataType, &literal->value, "%i");
+			width = GetPinValueWidth(text, minWidth);
 		}
-		EndNode(ast);
-		PopNodeBackgroundColor();
-	}
-
-	void DrawLiteralFloating(ast::Tree& ast, ast::Id id, ast::CLiteralFloating& value)
-	{
-		const bool isDouble = value.type == ast::FloatingType::F64;
-		const Color color   = isDouble ? GetTypeColor<double>() : GetTypeColor<float>();
-		PushNodeBackgroundColor(color);
-		BeginNode(ast, id);
+		else if (const auto* literal = ast.TryGet<const ast::CLiteralFloating>(literalId))
 		{
-			BeginExprOutput(ast, id, false);
-			PushInnerNodeStyle();
-
-			const ImGuiDataType dataType = isDouble ? ImGuiDataType_Double : ImGuiDataType_Float;
-			char buf[64];
-			UI::DataTypeFormatString(buf, IM_ARRAYSIZE(buf), dataType, &value.value, "%.15g");
-			UI::SetNextItemWidth(5.f + p::Max(UI::CalcTextSize(buf).x, 20.f));
-			UI::InputScalar("##value", dataType, &value.value, nullptr, nullptr, "%.15g");
-
-			PopInnerNodeStyle();
-			EndExprOutput(false);
+			dataType = literal->type == ast::FloatingType::F64 ? ImGuiDataType_Double
+			                                                   : ImGuiDataType_Float;
+			UI::DataTypeFormatString(text, IM_ARRAYSIZE(text), dataType, &literal->value, "%.15g");
+			width = GetPinValueWidth(text, minWidth);
 		}
-		EndNode(ast);
-		PopNodeBackgroundColor();
-	}
 
-	void DrawLiteralString(ast::Tree& ast, ast::Id id, String& value)
-	{
-		static constexpr Color color = GetTypeColor<String>();
-		PushNodeBackgroundColor(color);
-
-		BeginNode(ast, id);
+		PushInnerNodeStyle();
+		// The value is exactly one grid tile tall: the font fills it and the frame adds no height
+		ImGui::PushStyleVar(
+		    ImGuiStyleVar_FramePadding, ImVec2{ImGui::GetStyle().FramePadding.x, 0.f});
+		ImGui::PushFont(ImGui::GetFont(), p::Max(gridSize - spacing, 1.f));
+		if (auto* literal = ast.TryGet<ast::CLiteralBool>(literalId))
 		{
-			BeginExprOutput(ast, id, false);
-
-			const float zoom     = Nodes::GetZoom();
-			const float gridSize = settings.GetGridSize() * zoom;
-			const v2 padding     = Nodes::GetStyle().NodePadding * zoom;
-			const float fontSize = p::Max(gridSize - 2.f * padding.y, 1.f);
+			UI::Checkbox("##value", &literal->value);
+			// A checkbox does not stretch, so the rest of the cell is reserved
+			const float checkboxWidth = ImGui::GetItemRectSize().x;
+			UI::SameLine();
+			ImGui::Dummy(ImVec2{p::Max(width - checkboxWidth, 0.f), 0.f});
+		}
+		else if (auto* literal = ast.TryGet<ast::CLiteralIntegral>(literalId))
+		{
+			UI::SetNextItemWidth(width);
+			UI::InputScalar("##value", dataType, &literal->value, nullptr, nullptr, "%i");
+		}
+		else if (auto* literal = ast.TryGet<ast::CLiteralFloating>(literalId))
+		{
+			UI::SetNextItemWidth(width);
+			UI::InputScalar("##value", dataType, &literal->value, nullptr, nullptr, "%.15g");
+		}
+		else if (auto* literal = ast.TryGet<ast::CLiteralString>(literalId))
+		{
+			String& value = literal->value;
 
 			i32 lineCount = 1;
 			for (p::sizet i = 0; i < value.size(); ++i)
@@ -407,30 +453,181 @@ namespace rift::editor::Graph
 				}
 			}
 
-			// One line of text per grid tile: scale the font to the tile and size the field
-			// to the tiles minus the node padding
-			ImGui::PushFont(ImGui::GetFont(), fontSize);
+			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
+			const v2 size{p::Max(minWidth, textSize.x + 2.f * ImGui::GetStyle().FramePadding.x),
+			    lineCount * gridSize - 2.f * padding.y};
+
+			// The value is as tall as its lines, so no spacing may be added around it
 			const ImGuiStyle& style = ImGui::GetStyle();
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{style.FramePadding.x, 0.f});
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{style.ItemSpacing.x, 0.f});
-
-			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
-			// Keep a minimum width: with an empty value the computed width is 0 and ImGui
-			// would stretch the field to the whole available width, making the node huge
-			const float textWidth =
-			    p::Ceil((textSize.x + 2.f * padding.x) / gridSize) * gridSize - 2.f * padding.x;
-			const v2 size{p::Max(textWidth, 128.f * zoom), lineCount * gridSize - 2.f * padding.y};
-
 			UI::InputTextMultiline("##value", value, size);
+			ImGui::PopStyleVar(2);
+		}
+		ImGui::PopFont();
+		ImGui::PopStyleVar();
+		PopInnerNodeStyle();
+	}
+
+	// The default value of an input pin is a literal stored on the pin itself
+	bool HasPinDefaultValue(const ast::Tree& ast, ast::Id pinId)
+	{
+		return ast.Has<ast::CLiteralBool>(pinId) || ast.Has<ast::CLiteralIntegral>(pinId)
+		    || ast.Has<ast::CLiteralFloating>(pinId) || ast.Has<ast::CLiteralString>(pinId);
+	}
+
+	// Draws the default value of a disconnected pin. Nothing is stored until it is edited,
+	// and then the literal is added to the pin.
+	void DrawPinDefaultValue(p::TIdScopeRef<ast::CExprTypeId> scope, ast::Id pinId)
+	{
+		ast::Tree& ast   = static_cast<ast::Tree&>(scope.GetContext());
+		const auto* type = scope.TryGet<const ast::CExprTypeId>(pinId);
+		if (HasPinDefaultValue(ast, pinId))
+		{
+			DrawPinValue(ast, pinId);
+			return;
+		}
+		if (!type)
+		{
+			return;
+		}
+
+		const float gridSize = settings.GetGridSize() * Nodes::GetZoom();
+		const float minWidth = 32.f * Nodes::GetZoom();
+		const float spacing  = ImGui::GetStyle().ItemSpacing.y;
+		const auto& natives  = ast.GetNativeTypes();
+		char text[64]        = {};
+
+		PushInnerNodeStyle();
+		// The value is exactly one grid tile tall: the font fills it and the frame adds no height
+		ImGui::PushStyleVar(
+		    ImGuiStyleVar_FramePadding, ImVec2{ImGui::GetStyle().FramePadding.x, 0.f});
+		ImGui::PushFont(ImGui::GetFont(), p::Max(gridSize - spacing, 1.f));
+
+		if (type->id == natives.boolId)
+		{
+			bool value = false;
+			if (UI::Checkbox("##default", &value))
+			{
+				ast.Add<ast::CLiteralBool>(pinId).value = value;
+			}
+			// A checkbox does not stretch, so the rest of the cell is reserved
+			const float width = GetPinValueWidth(text, minWidth) - ImGui::GetItemRectSize().x;
+			UI::SameLine();
+			ImGui::Dummy(ImVec2{p::Max(width, 0.f), 0.f});
+		}
+		else if (type->id == natives.stringId)
+		{
+			String value;
+			if (UI::InputTextMultiline("##default", value,
+			        ImVec2{GetPinValueWidth(value.c_str(), minWidth), gridSize}))
+			{
+				ast.Add<ast::CLiteralString>(pinId).value = value;
+			}
+		}
+		else if (type->id == natives.floatId || type->id == natives.doubleId)
+		{
+			const bool isDouble          = type->id == natives.doubleId;
+			const ImGuiDataType dataType = isDouble ? ImGuiDataType_Double : ImGuiDataType_Float;
+			double value                 = 0.;
+
+			UI::DataTypeFormatString(text, IM_ARRAYSIZE(text), dataType, &value, "%.15g");
+			UI::SetNextItemWidth(GetPinValueWidth(text, minWidth));
+			if (UI::InputScalar("##default", dataType, &value))
+			{
+				auto& literal = ast.Add<ast::CLiteralFloating>(pinId);
+				literal.value = value;
+				literal.type  = isDouble ? ast::FloatingType::F64 : ast::FloatingType::F32;
+			}
+		}
+		else
+		{
+			// Integral values keep the exact width of the pin
+			ast::IntegralType integralType = ast::IntegralType::S64;
+			bool isSigned                  = true;
+			if (type->id == natives.i8Id)
+			{
+				integralType = ast::IntegralType::S8;
+			}
+			else if (type->id == natives.i16Id)
+			{
+				integralType = ast::IntegralType::S16;
+			}
+			else if (type->id == natives.i32Id)
+			{
+				integralType = ast::IntegralType::S32;
+			}
+			else if (type->id == natives.u8Id)
+			{
+				integralType = ast::IntegralType::U8;
+				isSigned     = false;
+			}
+			else if (type->id == natives.u16Id)
+			{
+				integralType = ast::IntegralType::U16;
+				isSigned     = false;
+			}
+			else if (type->id == natives.u32Id)
+			{
+				integralType = ast::IntegralType::U32;
+				isSigned     = false;
+			}
+			else if (type->id == natives.u64Id)
+			{
+				integralType = ast::IntegralType::U64;
+				isSigned     = false;
+			}
+
+			const ImGuiDataType dataType = isSigned ? ImGuiDataType_S64 : ImGuiDataType_U64;
+			p::u64 value                 = 0;
+
+			UI::DataTypeFormatString(text, IM_ARRAYSIZE(text), dataType, &value, "%i");
+			UI::SetNextItemWidth(GetPinValueWidth(text, minWidth));
+			if (UI::InputScalar("##default", dataType, &value))
+			{
+				auto& literal = ast.Add<ast::CLiteralIntegral>(pinId);
+				literal.value = value;
+				literal.type  = integralType;
+			}
+		}
+
+		ImGui::PopFont();
+		ImGui::PopStyleVar();
+		PopInnerNodeStyle();
+	}
+
+	// Draws a literal node: its value in a cell of its own, and the pin that carries it
+	void DrawLiteral(ast::Tree& ast, ast::Id id)
+	{
+		Color color = GetTypeColor<void>();
+		if (ast.Has<ast::CLiteralBool>(id))
+		{
+			color = GetTypeColor<bool>();
+		}
+		else if (const auto* literal = ast.TryGet<const ast::CLiteralIntegral>(id))
+		{
+			color = literal->IsSigned() ? GetTypeColor<i32>() : GetTypeColor<u32>();
+		}
+		else if (const auto* literal = ast.TryGet<const ast::CLiteralFloating>(id))
+		{
+			color = literal->type == ast::FloatingType::F64 ? GetTypeColor<double>()
+			                                                : GetTypeColor<float>();
+		}
+		else if (ast.Has<ast::CLiteralString>(id))
+		{
+			color = GetTypeColor<String>();
+		}
+
+		PushNodeBackgroundColor(color);
+		BeginNode(ast, id);
+		{
+			DrawPinValue(ast, id);
+
+			BeginExprOutput(ast, id, false);
+			UI::TextUnformatted("");
 			EndExprOutput(false);
 		}
 		EndNode(ast);
-
-		// Keep the zero spacing active until the node group is closed so the node ends up
-		// exactly as its content plus the node padding
-		ImGui::PopStyleVar(2);
-		ImGui::PopFont();
-
 		PopNodeBackgroundColor();
 	}
 
@@ -451,18 +648,12 @@ namespace rift::editor::Graph
 			PushNodeTitleColor(functionColor);
 			BeginNode(scope, functionId);
 			{
-				Nodes::BeginNodeTitleBar();
+				Nodes::BeginTitleBar();
 				{
 					UI::Text(name.AsString());
-					UI::SameLine();
-
-					PushExecutionPinStyle();
-					Nodes::BeginOutput(i32(functionId.value), Nodes::PinShape_TriangleFilled);
-					UI::Text("");
-					Nodes::EndOutput();
-					PopExecutionPinStyle();
+					AddStmtOutput(functionId);
 				}
-				Nodes::EndNodeTitleBar();
+				Nodes::EndTitleBar();
 
 				if (auto* outputs = scope.TryGet<const ast::CExprOutputs>(functionId))
 				{
@@ -485,20 +676,12 @@ namespace rift::editor::Graph
 		PushNodeTitleColor(returnColor);
 		BeginNode(scope, id);
 		{
-			Nodes::BeginNodeTitleBar();
+			Nodes::BeginTitleBar();
 			{
-				PushExecutionPinStyle();
-				Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
-				UI::TextUnformatted("");
-				Nodes::EndInput();
-				UI::SameLine();
-				PopExecutionPinStyle();
-
-				UI::BeginGroup();
+				AddStmtInput(id);
 				UI::TextUnformatted("Return");
-				UI::EndGroup();
 			}
-			Nodes::EndNodeTitleBar();
+			Nodes::EndTitleBar();
 
 			// Return arguments are populated from the connected function's outputs
 			if (const auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
@@ -526,44 +709,23 @@ namespace rift::editor::Graph
 				PushNodeTitleColor(callColor);
 				BeginNode(scope, id);
 				{
-					Nodes::BeginNodeTitleBar();
+					Nodes::BeginTitleBar();
 					{
-						PushExecutionPinStyle();
-
-						Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
-						UI::TextUnformatted("");
-						Nodes::EndInput();
-						UI::SameLine();
-
-						UI::BeginGroup();
+						AddStmtInput(id);
 						UI::TextUnformatted(functionName.data());
-						UI::EndGroup();
-
-						UI::SameLine();
-						Nodes::BeginOutput(i32(id.value), Nodes::PinShape_TriangleFilled);
-						UI::TextUnformatted("");
-						Nodes::EndOutput();
-
-						PopExecutionPinStyle();
+						AddStmtOutput(id);
 					}
-					Nodes::EndNodeTitleBar();
+					Nodes::EndTitleBar();
 
-					// Inputs
-					UI::BeginGroup();
 					if (const auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
 					{
 						DrawInputs(scope, *inputs);
 					}
-					UI::EndGroup();
-					UI::SameLine();
 
-					// Outputs
-					UI::BeginGroup();
 					if (const auto* outputs = scope.TryGet<const ast::CExprOutputs>(id))
 					{
 						DrawOutputs(scope, *outputs);
 					}
-					UI::EndGroup();
 				}
 				EndNode(scope);
 				PopNodeTitleColor();
@@ -634,24 +796,13 @@ namespace rift::editor::Graph
 
 	void DrawLiterals(ast::Tree& ast, const TArray<ast::Id>& children)
 	{
-		for (ast::Id id : FindIdsWith<ast::CLiteralBool>(ast, children))
+		for (ast::Id id : children)
 		{
-			DrawLiteralBool(ast, id, ast.Get<ast::CLiteralBool>(id).value);
-		}
-
-		for (ast::Id id : FindIdsWith<ast::CLiteralIntegral>(ast, children))
-		{
-			DrawLiteralIntegral(ast, id, ast.Get<ast::CLiteralIntegral>(id));
-		}
-
-		for (ast::Id id : FindIdsWith<ast::CLiteralFloating>(ast, children))
-		{
-			DrawLiteralFloating(ast, id, ast.Get<ast::CLiteralFloating>(id));
-		}
-
-		for (ast::Id id : FindIdsWith<ast::CLiteralString>(ast, children))
-		{
-			DrawLiteralString(ast, id, ast.Get<ast::CLiteralString>(id).value);
+			if (ast.Has<ast::CLiteralBool>(id) || ast.Has<ast::CLiteralIntegral>(id)
+			    || ast.Has<ast::CLiteralFloating>(id) || ast.Has<ast::CLiteralString>(id))
+			{
+				DrawLiteral(ast, id);
+			}
 		}
 	}
 
@@ -669,16 +820,12 @@ namespace rift::editor::Graph
 
 			BeginNode(ast, id);
 			{
-				BeginExprOutput(ast, id, false);
-				PushInnerNodeStyle();
 				StringView name = "Invalid";
 				if (ast.IsValid(variableId) && ast.Has<ast::CNamespace>(variableId))
 				{
 					name = ast.Get<const ast::CNamespace>(variableId).name.AsString();
 				}
-				UI::Text(name);
-				PopInnerNodeStyle();
-				EndExprOutput(false);
+				AddExprOutput(ast, id, name);
 			}
 			EndNode(ast);
 
@@ -688,7 +835,7 @@ namespace rift::editor::Graph
 
 	void DrawIfs(p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
 	                 ast::CFileRef, ast::CStmtIf, ast::CStmtOutputs, ast::CExprInputs, ast::CParent,
-	                 ast::CExprTypeId>
+	                 ast::CExprTypeId, ast::CInvalid>
 	                 scope,
 	    const TArray<ast::Id>& children)
 	{
@@ -697,56 +844,27 @@ namespace rift::editor::Graph
 		for (ast::Id id :
 		    FindIdsWith<ast::CStmtIf, ast::CExprInputs, ast::CStmtOutputs>(scope, children))
 		{
+			// Both pins are known upfront, so the node is skipped instead of left half built
+			auto& inputs            = scope.Get<const ast::CExprInputs>(id);
+			auto& outputs           = scope.Get<const ast::CStmtOutputs>(id);
+			const bool validInputs  = P_Ensure(inputs.pinIds.Size() == 1);
+			const bool validOutputs = P_Ensure(outputs.pinIds.Size() == 2);
+			if (!validInputs || !validOutputs)
+			{
+				continue;
+			}
+
 			BeginNode(scope, id);
 			{
-				Nodes::BeginNodeTitleBar();
+				Nodes::BeginTitleBar();
 				{
-					UI::BeginGroup();
-					{
-						PushExecutionPinStyle();
-						Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
-						UI::TextUnformatted("");
-						Nodes::EndInput();
-						PopExecutionPinStyle();
-
-						auto& inputs = scope.Get<const ast::CExprInputs>(id);
-						if (!P_Ensure(inputs.pinIds.Size() == 1))
-						{
-							continue;
-						}
-						BeginExprInput(scope, inputs.pinIds[0], false);
-						UI::TextUnformatted("");
-						EndExprInput(false);
-					}
-					UI::EndGroup();
-					UI::SameLine();
-
-					UI::BeginGroup();
+					AddStmtInput(id);
+					AddExprInput(scope, inputs.pinIds[0], "", !inputs.linkedOutputs[0].IsNone());
 					UI::TextUnformatted("if");
-					UI::EndGroup();
-
-					UI::SameLine();
-					UI::BeginGroup();
-					{
-						auto& outputs = scope.Get<const ast::CStmtOutputs>(id);
-						if (!P_Ensure(outputs.pinIds.Size() == 2))
-						{
-							continue;
-						}
-						PushExecutionPinStyle();
-						Nodes::BeginOutput(
-						    i32(outputs.pinIds[0].value), Nodes::PinShape_TriangleFilled);
-						UI::TextUnformatted("true");
-						Nodes::EndOutput();
-						Nodes::BeginOutput(
-						    i32(outputs.pinIds[1].value), Nodes::PinShape_TriangleFilled);
-						UI::TextUnformatted("false");
-						Nodes::EndOutput();
-						PopExecutionPinStyle();
-					}
-					UI::EndGroup();
+					AddStmtOutput(outputs.pinIds[0], "true");
+					AddStmtOutput(outputs.pinIds[1], "false");
 				}
-				Nodes::EndNodeTitleBar();
+				Nodes::EndTitleBar();
 			}
 			EndNode(scope);
 		}
@@ -756,7 +874,7 @@ namespace rift::editor::Graph
 
 	void DrawFors(p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
 	                  ast::CFileRef, ast::CStmtFor, ast::CStmtOutputs, ast::CExprInputs,
-	                  ast::CExprOutputs, ast::CExprTypeId>
+	                  ast::CExprOutputs, ast::CExprTypeId, ast::CInvalid>
 	                  scope,
 	    const TArray<ast::Id>& children)
 	{
@@ -766,74 +884,32 @@ namespace rift::editor::Graph
 		    FindIdsWith<ast::CStmtFor, ast::CExprInputs, ast::CStmtOutputs, ast::CExprOutputs>(
 		        scope, children))
 		{
+			// The pins are known upfront, so the node is skipped instead of left half built
+			auto& stmtOutputs        = scope.Get<const ast::CStmtOutputs>(id);
+			auto& inputs             = scope.Get<const ast::CExprInputs>(id);
+			auto& outputs            = scope.Get<const ast::CExprOutputs>(id);
+			const bool validStmtOuts = P_Ensure(stmtOutputs.pinIds.Size() == 2);
+			const bool validInputs   = P_Ensure(inputs.pinIds.Size() == 2);
+			const bool validOutputs  = P_Ensure(!outputs.pinIds.IsEmpty());
+			if (!validStmtOuts || !validInputs || !validOutputs)
+			{
+				continue;
+			}
+
 			BeginNode(scope, id);
 			{
-				Nodes::BeginNodeTitleBar();
+				Nodes::BeginTitleBar();
 				{
-					PushExecutionPinStyle();
-					Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
-					UI::TextUnformatted("");
-					Nodes::EndInput();
-					PopExecutionPinStyle();
-
-					UI::SameLine();
-					UI::BeginGroup();
+					AddStmtInput(id);
 					UI::TextUnformatted("for");
-					UI::EndGroup();
-
-					UI::SameLine();
-					UI::BeginGroup();
-					{
-						auto& outputs = scope.Get<const ast::CStmtOutputs>(id);
-						if (!P_Ensure(outputs.pinIds.Size() == 2))
-						{
-							continue;
-						}
-						PushExecutionPinStyle();
-						Nodes::BeginOutput(
-						    i32(outputs.pinIds[0].value), Nodes::PinShape_TriangleFilled);
-						UI::TextUnformatted("each");
-						Nodes::EndOutput();
-						Nodes::BeginOutput(
-						    i32(outputs.pinIds[1].value), Nodes::PinShape_TriangleFilled);
-						UI::TextUnformatted("continue");
-						Nodes::EndOutput();
-						PopExecutionPinStyle();
-					}
-					UI::EndGroup();
+					AddStmtOutput(stmtOutputs.pinIds[0], "each");
+					AddStmtOutput(stmtOutputs.pinIds[1], "continue");
 				}
-				Nodes::EndNodeTitleBar();
+				Nodes::EndTitleBar();
 
-				// Inputs
-				UI::BeginGroup();
-				{
-					auto& inputs = scope.Get<const ast::CExprInputs>(id);
-					if (P_Ensure(inputs.pinIds.Size() == 2))
-					{
-						BeginExprInput(scope, inputs.pinIds[0], false);
-						UI::TextUnformatted("first");
-						EndExprInput(false);
-
-						BeginExprInput(scope, inputs.pinIds[1], false);
-						UI::TextUnformatted("end");
-						EndExprInput(false);
-					}
-				}
-				UI::EndGroup();
-				UI::SameLine();
-
-				// Outputs
-				UI::BeginGroup();
-				{
-					auto& outputs = scope.Get<const ast::CExprOutputs>(id);
-					if (P_Ensure(!outputs.pinIds.IsEmpty()))
-					{
-						BeginExprOutput(scope, outputs.pinIds[0], false);
-						UI::TextUnformatted("index");
-						EndExprOutput(false);
-					}
-				}
-				UI::EndGroup();
+				AddExprInput(scope, inputs.pinIds[0], "first", !inputs.linkedOutputs[0].IsNone());
+				AddExprInput(scope, inputs.pinIds[1], "end", !inputs.linkedOutputs[1].IsNone());
+				AddExprOutput(scope, outputs.pinIds[0], "index");
 			}
 			EndNode(scope);
 		}
@@ -843,7 +919,7 @@ namespace rift::editor::Graph
 
 	void DrawUnaryOperators(
 	    TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
-	        ast::CParent, ast::CFileRef, ast::CExprUnaryOperator, ast::CExprTypeId>
+	        ast::CParent, ast::CFileRef, ast::CExprUnaryOperator, ast::CExprTypeId, ast::CInvalid>
 	        scope,
 	    const TArray<ast::Id>& children)
 	{
@@ -855,19 +931,13 @@ namespace rift::editor::Graph
 
 			BeginNode(scope, id);
 			{
-				BeginExprInput(scope, id, false);
-				UI::TextUnformatted("");
-				EndExprInput(false);
-				UI::SameLine();
+				AddExprInput(scope, id);
 
 				const auto& op       = scope.Get<const ast::CExprUnaryOperator>(id);
 				StringView shortName = editor::GetUnaryOperatorName(op.type);
 				UI::Text(shortName);
 
-				UI::SameLine();
-				BeginExprOutput(scope, id, false);
-				UI::TextUnformatted("");
-				EndExprOutput(false);
+				AddExprOutput(scope, id);
 			}
 			EndNode(scope);
 			PopNodeBackgroundColor();
@@ -876,7 +946,7 @@ namespace rift::editor::Graph
 
 	void DrawBinaryOperators(
 	    TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
-	        ast::CParent, ast::CFileRef, ast::CExprBinaryOperator, ast::CExprTypeId>
+	        ast::CParent, ast::CFileRef, ast::CExprBinaryOperator, ast::CExprTypeId, ast::CInvalid>
 	        scope,
 	    const TArray<ast::Id>& children)
 	{
@@ -884,43 +954,33 @@ namespace rift::editor::Graph
 		for (ast::Id id : FindIdsWith<ast::CExprBinaryOperator>(scope, children))
 		{
 			static constexpr Color color = UI::GetNeutralColor(0);
-			PushNodeBackgroundColor(color);
 
+			// Both pins are known upfront, so the node is skipped instead of left half built
+			pinIds.Clear(p::Shrink::No);
+			p::GetIdChildren(scope, id, pinIds);
+			if (!P_Ensure(pinIds.Size() >= 2))
+			{
+				continue;
+			}
+
+			PushNodeBackgroundColor(color);
 			BeginNode(scope, id);
 			{
-				pinIds.Clear(p::Shrink::No);
-				p::GetIdChildren(scope, id, pinIds);
-				if (!P_Ensure(pinIds.Size() >= 2))
-				{
-					continue;
-				}
-				UI::BeginGroup();
-				BeginExprInput(scope, pinIds[0], false);
-				UI::TextUnformatted("");
-				EndExprInput(false);
-
-				BeginExprInput(scope, pinIds[1], false);
-				UI::TextUnformatted("");
-				EndExprInput(false);
-				UI::EndGroup();
-				UI::SameLine();
+				AddExprInput(scope, pinIds[0]);
+				AddExprInput(scope, pinIds[1]);
 
 				const auto& op       = scope.Get<const ast::CExprBinaryOperator>(id);
 				StringView shortName = editor::GetBinaryOperatorName(op.type);
 				UI::Text(shortName);
 
-				UI::SameLine();
-				BeginExprOutput(scope, id, false);
-				UI::TextUnformatted("");
-				EndExprOutput(false);
+				AddExprOutput(scope, id);
 			}
 			EndNode(scope);
 			PopNodeBackgroundColor();
 		}
 	}
 
-	// Places the casts spawned from a link so their output pin lands on the pin they feed.
-	// Both pins are known once the node has been drawn
+	// Both pins of a cast are only known once its node has been drawn
 	static void SettlePendingCasts(ast::Tree& ast)
 	{
 		if (pendingCasts.IsEmpty())
@@ -955,8 +1015,7 @@ namespace rift::editor::Graph
 				continue;
 			}
 
-			// Move the node by the distance between both pins, so they end up overlapping, and
-			// keep it on the grid
+			// Overlap the pins, and keep the node on the grid
 			const v2 origin = Nodes::GetNodeGridSpacePos(pending.castId);
 			const v2 offset =
 			    (origin + (inputPosition - outputPosition) / zoom) * settings.GetInvGridSize();
@@ -982,38 +1041,30 @@ namespace rift::editor::Graph
 
 			BeginNode(ast, id);
 			{
-				// The node keeps a 3x1 footprint, so the pins sit on its corners and the
-				// arrow in the middle. The font is scaled to the tile height.
+				// The node keeps a 3x1 grid footprint, with the pins on its corners
 				const float zoom          = Nodes::GetZoom();
 				const float gridSize      = settings.GetGridSize() * zoom;
 				const v2 padding          = Nodes::GetStyle().NodePadding * zoom;
-				const float contentWidth  = p::Max(gridSize * 3.f - padding.x * 2.f, 1.f);
 				const float contentHeight = p::Max(gridSize - padding.y * 2.f, 1.f);
+				// Every column is padded on both sides
+				const float contentWidth = p::Max(gridSize * 3.f - padding.x * 6.f, 1.f);
 
-				const ImVec2 start = ImGui::GetCursorPos();
 				ImGui::PushFont(ImGui::GetFont(), contentHeight);
 
-				BeginExprInput(ast, inputs->pinIds[0], false);
-				UI::TextUnformatted("");
-				EndExprInput(false);
+				AddExprInput(ast, inputs->pinIds[0]);
 
-				// The arrow shows the cast, colored as the type it produces
-				const float arrowWidth = UI::CalcTextSize(ICON_FA_LONG_ARROW_ALT_RIGHT).x;
-				ImGui::SetCursorPos(
-				    ImVec2{start.x + p::Max((contentWidth - arrowWidth) * 0.5f, 0.f), start.y});
+				const char* arrow      = ICON_FA_LONG_ARROW_ALT_RIGHT;
+				const float arrowWidth = UI::CalcTextSize(arrow).x;
+				const float arrowInset = p::Max((contentWidth - arrowWidth) * 0.5f, 0.f);
+				ImGui::Dummy(ImVec2{arrowInset, 0.f});
+				UI::SameLine(0.f, 0.f);
 				UI::PushTextColor(GetTypeColor(ast, GetPinType(ast, outputs->pinIds[0])));
-				UI::Text(ICON_FA_LONG_ARROW_ALT_RIGHT);
+				UI::Text(arrow);
 				UI::PopTextColor();
+				UI::SameLine(0.f, 0.f);
+				ImGui::Dummy(ImVec2{arrowInset, 0.f});
 
-				// The output pin closes the node, which fixes its width
-				ImGui::SetCursorPos(ImVec2{start.x + contentWidth, start.y});
-				BeginExprOutput(ast, outputs->pinIds[0], false);
-				UI::TextUnformatted("");
-				EndExprOutput(false);
-
-				// The node is as big as the group ends, so the cursor is left at the bottom
-				// right corner of the tile area. Otherwise the item spacing would add up
-				ImGui::SetCursorPos(ImVec2{start.x + contentWidth, start.y + contentHeight});
+				AddExprOutput(ast, outputs->pinIds[0]);
 
 				ImGui::PopFont();
 			}
@@ -1279,8 +1330,7 @@ namespace rift::editor::Graph
 				ast::DisconnectExpr(ast, ast::GetExprInputFromPin(ast, ast::Id::MakeRaw(linkId)));
 			}
 
-			// A link dropped over empty canvas opens the context menu instead of silently
-			// doing nothing, so the user can pick the node to connect it to.
+			// A link dropped over the canvas opens the context menu to pick a node for it
 			Nodes::Id droppedOutput;
 			Nodes::Id droppedInput;
 			if (Nodes::IsLinkDropped(&droppedOutput, &droppedInput))
