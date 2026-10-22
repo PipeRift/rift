@@ -116,4 +116,25 @@ namespace rift::UI
 
 	bool CollapsingHeaderWithButton(p::StringView label, ImGuiTreeNodeFlags flags,
 	    bool& buttonClicked, p::StringView buttonLabel, p::v2 buttonSize = p::v2(18.f, 14.f));
+
+
+	// Rounding, padding and spacing shared by chips
+	inline constexpr float chipRounding = 2.f;
+	inline constexpr float chipPadding  = 4.f;
+	inline constexpr float chipSpacing  = 4.f;
+
+	// Draws text centered on a row, advancing 'x'
+	void DrawChipText(ImDrawList& drawList, float& x, float centerY, p::StringView text);
+
+	// Draws a name over a rounded background of the given color, advancing 'x'. The icon,
+	// when given, is drawn smaller and before the name
+	void DrawChip(ImDrawList& drawList, float& x, float centerY, p::StringView name,
+	    const p::Color& color, const char* icon = nullptr);
+
+	// Draws a selectable row. 'label' must be zero-terminated. When a background is given
+	// it's painted by the row itself, with content drawn on top. Highlighted rows draw as
+	// if hovered. Returns whether the row was picked
+	bool SelectableRow(p::StringView label, ImVec2& outMin, ImVec2& outMax,
+	    const p::LinearColor& background = p::LinearColor::Transparent(), float height = 16.f,
+	    bool highlighted = false);
 }    // namespace rift::UI

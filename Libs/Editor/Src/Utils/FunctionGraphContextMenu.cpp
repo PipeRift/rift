@@ -649,90 +649,17 @@ namespace rift::editor::Graph
 		return pressed;
 	}
 
-	constexpr float contextChipRounding = 2.f;
-	constexpr float contextChipPadding  = 4.f;
-	constexpr float contextChipSpacing  = 4.f;
-
-	// Draws a context menu row. When a background is given it's painted by the row itself,
-	// with the content drawn on top. Highlighted rows draw as if hovered. Returns whether
-	// the row was picked
-	bool DrawContextChipRow(StringView label, ImVec2& outMin, ImVec2& outMax,
+	// Draws a context menu row and closes the menu when it's picked
+	bool ContextChipRow(StringView label, ImVec2& outMin, ImVec2& outMax,
 	    Color background = Color::Transparent(), float height = 16.f, bool highlighted = false)
 	{
-		UI::PushStyleVar(ImGuiStyleVar_ItemSpacing, v2{UI::GetStyle().ItemSpacing.x, 2.f});
-		UI::PushStyleVar(ImGuiStyleVar_SelectableRounding, contextChipRounding);
-		ImGuiSelectableFlags flags = ImGuiSelectableFlags_NoPadWithHalfSpacing;
-		if (highlighted)
-		{
-			flags |= ImGuiSelectableFlags_Highlight;    // Draw as if hovered
-		}
-		const bool hasBackground = background.a > 0.f;
-		if (hasBackground)
-		{
-			UI::PushHeaderColor(background);
-			if (highlighted)
-			{
-				// A highlighted row draws a clearly brighter version of its color
-				UI::PushStyleColor(ImGuiCol_HeaderHovered, background.Tint(0.2f));
-			}
-		}
-		const bool pressed = UI::Selectable(label, hasBackground, flags, v2{0.f, height});
-		if (hasBackground)
-		{
-			if (highlighted)
-			{
-				UI::PopStyleColor();
-			}
-			UI::PopHeaderColor();
-		}
-		UI::PopStyleVar(2);
+		const bool pressed =
+		    UI::SelectableRow(label, outMin, outMax, background, height, highlighted);
 		if (pressed)
 		{
 			UI::CloseCurrentPopup();
 		}
-
-		outMin = UI::GetItemRectMin();
-		outMax = UI::GetItemRectMax();
 		return pressed;
-	}
-
-	// Draws text centered on the row, advancing 'x'
-	void DrawContextItemText(ImDrawList& drawList, float& x, float centerY, StringView text)
-	{
-		const ImVec2 size = UI::CalcTextSize(text);
-		drawList.AddText(ImVec2{x, centerY - size.y * 0.5f}, UI::GetColorU32(ImGuiCol_Text),
-		    text.data(), text.data() + text.size());
-		x += size.x;
-	}
-
-	// Draws a type name over a rounded background of its own color, advancing 'x'. The icon,
-	// when given, is drawn smaller and before the name
-	void DrawContextTypeChip(ImDrawList& drawList, float& x, float centerY, StringView name,
-	    const Color& color, const char* icon = nullptr)
-	{
-		ImFont* font          = UI::GetFont();
-		const float fontSize  = UI::GetFontSize();
-		const float iconSize  = fontSize * 0.75f;
-		const float iconWidth = icon ? font->CalcTextSizeA(iconSize, FLT_MAX, 0.f, icon).x : 0.f;
-
-		const ImVec2 textSize    = UI::CalcTextSize(name);
-		const float contentWidth = iconWidth + textSize.x;
-		const float height       = UI::GetTextLineHeight() + 2.f;
-		const ImVec2 chipMin{x, centerY - height * 0.5f};
-		const ImVec2 chipMax{x + contentWidth + contextChipPadding * 2.f, centerY + height * 0.5f};
-
-		drawList.AddRectFilled(chipMin, chipMax, color.ToPackedABGR(), contextChipRounding);
-		// The icon shares the top of the text line, instead of being centred on its own
-		if (icon)
-		{
-			const float textY = centerY - (iconSize * 0.5f) + 2.f;
-			drawList.AddText(font, iconSize, ImVec2{chipMin.x + contextChipPadding, textY},
-			    UI::GetColorU32(ImGuiCol_Text), icon);
-		}
-		const float textY = centerY - textSize.y * 0.5f;
-		drawList.AddText(ImVec2{chipMin.x + contextChipPadding + iconWidth, textY},
-		    UI::GetColorU32(ImGuiCol_Text), name.data(), name.data() + name.size());
-		x = chipMax.x;
 	}
 
 	// A cast of the context menu: each type carries a rounded background of its own color
@@ -747,15 +674,15 @@ namespace rift::editor::Graph
 		UI::PushID(cast.toType);
 		ImVec2 itemMin;
 		ImVec2 itemMax;
-		const bool pressed = DrawContextChipRow(
-		    "###Item", itemMin, itemMax, Color::Transparent(), 16.f, highlighted);
+		const bool pressed =
+		    ContextChipRow("###Item", itemMin, itemMax, Color::Transparent(), 16.f, highlighted);
 		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
-		float x             = itemMin.x + contextChipPadding;
-		DrawContextTypeChip(*drawList, x, centerY, fromName, GetTypeColor(ast, cast.fromType));
-		x += contextChipSpacing;
-		DrawContextItemText(*drawList, x, centerY, ICON_FA_ARROW_RIGHT);
-		x += contextChipSpacing;
-		DrawContextTypeChip(*drawList, x, centerY, toName, GetTypeColor(ast, cast.toType));
+		float x             = itemMin.x + UI::chipPadding;
+		UI::DrawChip(*drawList, x, centerY, fromName, GetTypeColor(ast, cast.fromType));
+		x += UI::chipSpacing;
+		UI::DrawChipText(*drawList, x, centerY, ICON_FA_ARROW_RIGHT);
+		x += UI::chipSpacing;
+		UI::DrawChip(*drawList, x, centerY, toName, GetTypeColor(ast, cast.toType));
 		UI::PopID();
 		UI::PopID();
 		return pressed;
@@ -773,9 +700,9 @@ namespace rift::editor::Graph
 		// The function carries its own background, slightly thicker than the pin chips
 		const float rowHeight = UI::GetTextLineHeight() + 4.f;
 		const bool pressed =
-		    DrawContextChipRow("###Item", itemMin, itemMax, functionColor, rowHeight, highlighted);
+		    ContextChipRow("###Item", itemMin, itemMax, functionColor, rowHeight, highlighted);
 		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
-		float x             = itemMin.x + contextChipPadding;
+		float x             = itemMin.x + UI::chipPadding;
 
 		// Arguments produce a value inside the function, returns consume one
 		const auto* args    = ast.TryGet<const ast::CExprOutputs>(id);
@@ -784,14 +711,13 @@ namespace rift::editor::Graph
 		bool first   = true;
 		auto drawPin = [&](Id pinId, bool isReturn)
 		{
-			DrawContextItemText(*drawList, x, centerY, first ? "" : ", ");
+			UI::DrawChipText(*drawList, x, centerY, first ? "" : ", ");
 			first = false;
 
 			// The chip carries the name of the pin, colored as its type. Returns lead with an
 			// arrow inside of the chip
 			const auto* ns = ast.TryGet<const ast::CNamespace>(pinId);
-			DrawContextTypeChip(*drawList, x, centerY,
-			    ns ? ns->name.AsString() : StringView{"none"},
+			UI::DrawChip(*drawList, x, centerY, ns ? ns->name.AsString() : StringView{"none"},
 			    GetTypeColor(ast, GetPinType(ast, pinId)),
 			    isReturn ? ICON_FA_LONG_ARROW_ALT_UP : nullptr);
 		};
@@ -807,8 +733,8 @@ namespace rift::editor::Graph
 			}
 		};
 
-		DrawContextItemText(*drawList, x, centerY, name);
-		DrawContextItemText(*drawList, x, centerY, "(");
+		UI::DrawChipText(*drawList, x, centerY, name);
+		UI::DrawChipText(*drawList, x, centerY, "(");
 		if (args)
 		{
 			drawPins(args->pinIds, false);
@@ -817,7 +743,7 @@ namespace rift::editor::Graph
 		{
 			drawPins(returns->pinIds, true);
 		}
-		DrawContextItemText(*drawList, x, centerY, ")");
+		UI::DrawChipText(*drawList, x, centerY, ")");
 		UI::PopID();
 		return pressed;
 	}
@@ -830,13 +756,13 @@ namespace rift::editor::Graph
 		UI::PushID(id);
 		ImVec2 itemMin;
 		ImVec2 itemMax;
-		const bool pressed = DrawContextChipRow(
-		    "###Item", itemMin, itemMax, Color::Transparent(), 16.f, highlighted);
+		const bool pressed =
+		    ContextChipRow("###Item", itemMin, itemMax, Color::Transparent(), 16.f, highlighted);
 		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
-		float x             = itemMin.x + contextChipPadding;
-		DrawContextItemText(*drawList, x, centerY, "Make ");
-		x += contextChipSpacing;
-		DrawContextTypeChip(*drawList, x, centerY, typeName, color);
+		float x             = itemMin.x + UI::chipPadding;
+		UI::DrawChipText(*drawList, x, centerY, "Make ");
+		x += UI::chipSpacing;
+		UI::DrawChip(*drawList, x, centerY, typeName, color);
 		UI::PopID();
 		return pressed;
 	}

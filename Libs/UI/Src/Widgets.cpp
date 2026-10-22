@@ -265,4 +265,76 @@ namespace rift::UI
 
 		return isOpen;
 	}
+
+	void DrawChipText(ImDrawList& drawList, float& x, float centerY, p::StringView text)
+	{
+		const ImVec2 size = UI::CalcTextSize(text);
+		drawList.AddText(ImVec2{x, centerY - size.y * 0.5f}, UI::GetColorU32(ImGuiCol_Text),
+		    text.data(), text.data() + text.size());
+		x += size.x;
+	}
+
+	void DrawChip(ImDrawList& drawList, float& x, float centerY, p::StringView name,
+	    const p::Color& color, const char* icon)
+	{
+		ImFont* font          = UI::GetFont();
+		const float fontSize  = UI::GetFontSize();
+		const float iconSize  = fontSize * 0.75f;
+		const float iconWidth = icon ? font->CalcTextSizeA(iconSize, FLT_MAX, 0.f, icon).x : 0.f;
+
+		const ImVec2 textSize    = UI::CalcTextSize(name);
+		const float contentWidth = iconWidth + textSize.x;
+		const float height       = UI::GetTextLineHeight() + 2.f;
+		const ImVec2 chipMin{x, centerY - height * 0.5f};
+		const ImVec2 chipMax{x + contentWidth + chipPadding * 2.f, centerY + height * 0.5f};
+
+		drawList.AddRectFilled(chipMin, chipMax, color.ToPackedABGR(), chipRounding);
+		// The icon shares the top of the text line, instead of being centred on its own
+		if (icon)
+		{
+			const float textY = centerY - (iconSize * 0.5f) + 2.f;
+			drawList.AddText(font, iconSize, ImVec2{chipMin.x + chipPadding, textY},
+			    UI::GetColorU32(ImGuiCol_Text), icon);
+		}
+		const float textY = centerY - textSize.y * 0.5f;
+		drawList.AddText(ImVec2{chipMin.x + chipPadding + iconWidth, textY},
+		    UI::GetColorU32(ImGuiCol_Text), name.data(), name.data() + name.size());
+		x = chipMax.x;
+	}
+
+	bool SelectableRow(p::StringView label, ImVec2& outMin, ImVec2& outMax,
+	    const p::LinearColor& background, float height, bool highlighted)
+	{
+		UI::PushStyleVar(ImGuiStyleVar_ItemSpacing, p::v2{UI::GetStyle().ItemSpacing.x, 2.f});
+		UI::PushStyleVar(ImGuiStyleVar_SelectableRounding, chipRounding);
+		ImGuiSelectableFlags flags = ImGuiSelectableFlags_NoPadWithHalfSpacing;
+		if (highlighted)
+		{
+			flags |= ImGuiSelectableFlags_Highlight;    // Draw as if hovered
+		}
+		const bool hasBackground = background.a > 0.f;
+		if (hasBackground)
+		{
+			UI::PushHeaderColor(background);
+			if (highlighted)
+			{
+				// A highlighted row draws a clearly brighter version of its color
+				UI::PushStyleColor(ImGuiCol_HeaderHovered, background.Tint(0.2f));
+			}
+		}
+		const bool pressed = UI::Selectable(label.data(), hasBackground, flags, p::v2{0.f, height});
+		if (hasBackground)
+		{
+			if (highlighted)
+			{
+				UI::PopStyleColor();
+			}
+			UI::PopHeaderColor();
+		}
+		UI::PopStyleVar(2);
+
+		outMin = UI::GetItemRectMin();
+		outMax = UI::GetItemRectMax();
+		return pressed;
+	}
 }    // namespace rift::UI
