@@ -75,24 +75,24 @@ namespace rift::editor
 			UI::SetNextItemWidth(-FLT_MIN);
 			filter.Draw("##Filter");
 
-			TArray<ast::Id> typeIds = p::FindAllIdsWith<ast::CDeclType, ast::CNamespace>(scope);
+			TArray<ast::Id> typeIds   = p::FindAllIdsWith<ast::CDeclType, ast::CNamespace>(scope);
+			TArray<ast::Id> nativeIds = ExtractIdsWithStable<ast::CDeclNative>(scope, typeIds);
+			TArray<ast::Id> structIds = ExtractIdsWithStable<ast::CDeclStruct>(scope, typeIds);
+			TArray<ast::Id> classIds  = ExtractIdsWithStable<ast::CDeclClass>(scope, typeIds);
 			if (!showCategories)
 			{
-				ListTypesFromFilter(scope, typeIds, selectedId, filter);
+				ListTypesFromFilter(scope, nativeIds, selectedId, filter);
+				ListTypesFromFilter(scope, structIds, selectedId, filter);
+				ListTypesFromFilter(scope, classIds, selectedId, filter);
 			}
 			else
 			{
-				// Ordered by expected quantities
-				TArray<ast::Id> structIds = ExtractIdsWith<ast::CDeclStruct>(scope, typeIds);
-				TArray<ast::Id> classIds  = ExtractIdsWith<ast::CDeclClass>(scope, typeIds);
-				ExcludeIdsWithout<ast::CDeclNative>(scope, typeIds);
-
 				// Categories stay open while searching
 				const ImGuiTreeNodeFlags categoryFlags =
 				    filter.IsActive() ? ImGuiTreeNodeFlags_DefaultOpen : 0;
 				if (UI::TreeNodeEx("Native", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					ListTypesFromFilter(scope, typeIds, selectedId, filter);
+					ListTypesFromFilter(scope, nativeIds, selectedId, filter);
 					UI::TreePop();
 				}
 				if (UI::TreeNodeEx("Structs", categoryFlags))
