@@ -689,6 +689,17 @@ namespace rift::editor::Graph
 		ImVec2 itemMax;
 		const bool pressed =
 		    ContextChipRow("###Item", itemMin, itemMax, Color::Transparent(), 16.f, false);
+		if (UI::IsItemHovered(ImGuiHoveredFlags_ForTooltip))
+		{
+			UI::PushStyleVar(ImGuiStyleVar_WindowPadding, v2{4.f, 3.f});
+			UI::BeginTooltip();
+			UI::Chip(isSetter ? "Set value of" : "Get value of", Color::Transparent(), nullptr,
+			    FLT_MAX, UI::ChipFlags::None);
+			UI::SameLine(0.f, UI::chipSpacing);
+			UI::Chip(name, color);
+			UI::EndTooltip();
+			UI::PopStyleVar();
+		}
 
 		UI::SetCursorScreenPos(ImVec2{itemMin.x + UI::chipPadding, itemMin.y});
 		UI::Chip(isSetter ? ICON_FA_SIGN_IN_ALT : ICON_FA_SIGN_OUT_ALT, Color::Transparent(),
@@ -698,8 +709,6 @@ namespace rift::editor::Graph
 		UI::PopID();
 		UI::PopID();
 
-		UI::SetItemTooltip(
-		    "%s value of variable %.*s", isSetter ? "Set" : "Get", i32(name.size()), name.data());
 		return pressed;
 	}
 
@@ -716,6 +725,20 @@ namespace rift::editor::Graph
 		ImVec2 itemMax;
 		const bool pressed =
 		    ContextChipRow("###Item", itemMin, itemMax, Color::Transparent(), 16.f, highlighted);
+		if (UI::IsItemHovered(ImGuiHoveredFlags_ForTooltip))
+		{
+			UI::PushStyleVar(ImGuiStyleVar_WindowPadding, v2{4.f, 3.f});
+			UI::BeginTooltip();
+			UI::Chip("Cast", Color::Transparent(), nullptr, FLT_MAX, UI::ChipFlags::None);
+			UI::SameLine(0.f, UI::chipSpacing);
+			UI::Chip(fromName, GetTypeColor(ast, cast.fromType));
+			UI::SameLine(0.f, UI::chipSpacing);
+			UI::Chip("into", Color::Transparent(), nullptr, FLT_MAX, UI::ChipFlags::None);
+			UI::SameLine(0.f, UI::chipSpacing);
+			UI::Chip(toName, GetTypeColor(ast, cast.toType));
+			UI::EndTooltip();
+			UI::PopStyleVar();
+		}
 
 		UI::SetCursorScreenPos(ImVec2{itemMin.x + UI::chipPadding, itemMin.y});
 		UI::Chip(fromName, GetTypeColor(ast, cast.fromType));
@@ -726,8 +749,6 @@ namespace rift::editor::Graph
 		UI::PopID();
 		UI::PopID();
 
-		UI::SetItemTooltip("Cast %.*s into %.*s", i32(fromName.size()), fromName.data(),
-		    i32(toName.size()), toName.data());
 		return pressed;
 	}
 
@@ -742,6 +763,18 @@ namespace rift::editor::Graph
 		const float rowHeight = UI::GetTextLineHeight() + 4.f;
 		const bool pressed =
 		    ContextChipRow("###Item", itemMin, itemMax, functionColor, rowHeight, highlighted);
+		if (UI::IsItemHovered(ImGuiHoveredFlags_ForTooltip))
+		{
+			UI::PushStyleVar(ImGuiStyleVar_WindowPadding, v2{4.f, 3.f});
+			UI::BeginTooltip();
+			UI::Chip("Call", Color::Transparent(), nullptr, FLT_MAX, UI::ChipFlags::None);
+			UI::SameLine(0.f, UI::chipSpacing);
+			UI::Chip(name, functionColor);
+			UI::SameLine(0.f, UI::chipSpacing);
+			UI::Chip("function.", Color::Transparent(), nullptr, FLT_MAX, UI::ChipFlags::None);
+			UI::EndTooltip();
+			UI::PopStyleVar();
+		}
 
 		// Arguments produce a value inside the function, returns consume one
 		const auto* args    = ast.TryGet<const ast::CExprOutputs>(id);
@@ -803,6 +836,17 @@ namespace rift::editor::Graph
 		ImVec2 itemMax;
 		const bool pressed =
 		    ContextChipRow("###Item", itemMin, itemMax, Color::Transparent(), 16.f, highlighted);
+		if (UI::IsItemHovered(ImGuiHoveredFlags_ForTooltip))
+		{
+			UI::PushStyleVar(ImGuiStyleVar_WindowPadding, v2{4.f, 3.f});
+			UI::BeginTooltip();
+			UI::Chip(
+			    "Make a new value of", Color::Transparent(), nullptr, FLT_MAX, UI::ChipFlags::None);
+			UI::SameLine(0.f, UI::chipSpacing);
+			UI::Chip(typeName, color);
+			UI::EndTooltip();
+			UI::PopStyleVar();
+		}
 
 		UI::SetCursorScreenPos(ImVec2{itemMin.x + UI::chipPadding, itemMin.y});
 		UI::Chip("Make ", Color::Transparent(), nullptr, FLT_MAX, UI::ChipFlags::None);
@@ -810,7 +854,6 @@ namespace rift::editor::Graph
 		UI::Chip(typeName, color);
 		UI::PopID();
 
-		UI::SetItemTooltip("Make a new value of %.*s", i32(typeName.size()), typeName.data());
 		return pressed;
 	}
 
