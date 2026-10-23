@@ -118,10 +118,11 @@
             "9": [
                 "U32"
             ],
-            "10": [],
+            "10": [
+                "I64"
+            ],
             "11": [
-                "TestProject",
-                "TestStruct"
+                "I64"
             ]
         },
         "CNodePosition": {
@@ -165,8 +166,8 @@
         "CNamespace": {
             "0": "Welcome",
             "1": "Print",
-            "10": "class",
-            "11": "struct"
+            "10": "in1",
+            "11": "in2"
         },
         "CParent": {
             "0": [

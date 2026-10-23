@@ -1,14 +1,18 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include <AST/Tree.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::Editor::Graph
+namespace rift::editor
 {
-	void DrawNodesContextMenu(AST::Tree& ast, AST::Id typeId, p::TView<AST::Id> nodeIds);
-	void DrawGraphContextMenu(AST::Tree& ast, AST::Id typeId, AST::Id hoveredNodeId);
-	void DrawContextMenu(
-	    AST::Tree& ast, AST::Id typeId, AST::Id hoveredNodeId, AST::Id hoveredLinkId);
-}    // namespace rift::Editor::Graph
+	struct MenuContext;
+}
+
+namespace rift::editor::Graph
+{
+	void DrawNodesContextMenu(ast::Tree& ast, ast::Id typeId, p::TView<ast::Id> nodeIds);
+	void DrawGraphContextMenu(ast::Tree& ast, ast::Id typeId, MenuContext context);
+	void DrawContextMenu(ast::Tree& ast, ast::Id typeId, MenuContext context);
+}    // namespace rift::editor::Graph

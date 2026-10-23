@@ -1,20 +1,22 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Tools/GraphPlayground.h"
 
 #include "DockSpaceLayout.h"
+#include "Statics/EditorSettings.h"
 #include "Statics/SEditor.h"
 #include "Utils/FunctionGraph.h"
 
+#include <AST/Utils/Settings.h>
 #include <Utils/Nodes.h>
 #include <Utils/NodesMiniMap.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	using namespace Nodes;
 
-	void GraphPlayground::Draw(AST::Tree& ast, DockSpaceLayout& layout)
+	void GraphPlayground::Draw(ast::Tree& ast, DockSpaceLayout& layout)
 	{
 		if (!open)
 		{
@@ -27,19 +29,23 @@ namespace rift::Editor
 			Graph::PushNodeStyle();
 
 			Nodes::SetEditorContext(&nodesEditor);
+			if (UI::IsWindowAppearing())
+			{
+				Nodes::SetZoom(GetUserSettings<EditorSettings>().zoom.current);
+			}
 			Nodes::BeginNodeEditor();
 
 			if (UI::IsWindowAppearing())
 			{
-				Graph::SetNodePosition(AST::Id(0), v2::Zero());
+				Graph::SetNodePosition(ast::Id::MakeRaw(0), v2::Zero());
 			}
 
 			static bool boolValue = false;
-			// Graph::Literals::DrawBoolNode(AST::Id(0), boolValue);
+			// Graph::Literals::DrawBoolNode(ast::Id(0), boolValue);
 			static String stringValue;
-			// Graph::Literals::DrawStringNode(AST::Id(1), stringValue);
+			// Graph::Literals::DrawStringNode(ast::Id(1), stringValue);
 
-			// Graph::DrawCallNode({}, AST::Id(958), "ApplyDamage", "DamageSystem");
+			// Graph::DrawCallNode({}, ast::Id(958), "ApplyDamage", "DamageSystem");
 
 			Nodes::DrawMiniMap(0.2f, MiniMapCorner::TopRight);
 			Nodes::EndNodeEditor();
@@ -47,4 +53,4 @@ namespace rift::Editor
 		}
 		UI::End();
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

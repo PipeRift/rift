@@ -1,8 +1,10 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Compiler/Compiler.h"
 
+#include "AST/Systems/FunctionsSystem.h"
 #include "AST/Systems/LoadSystem.h"
+#include "AST/Systems/TransactionSystem.h"
 #include "AST/Systems/TypeSystem.h"
 #include "AST/Utils/ModuleUtils.h"
 #include "Compiler/Backend.h"
@@ -15,64 +17,70 @@
 
 namespace rift
 {
-	void Compiler::AddError(StringView str)
+	void Compiler::Error(p::StringView str)
 	{
 		p::Error(str);
-		CompileError newError{};
-		newError.text = str;
-		errors.Add(newError);
+		errors.AddRef().text = str;
 	}
 
 
-	void Build(AST::Tree& ast, const CompilerConfig& config, TPtr<Backend> backend)
+	void Build(ast::Tree& ast, const CompilerConfig& config, const p::TPtr<Backend>& backend)
 	{
-		ZoneScoped;
 		Compiler compiler{ast, config};
 
 		if (!backend)
 		{
-			compiler.AddError("Invalid backend.");
+			compiler.Error("Invalid backend.");
 			return;
 		}
 
+		if (!ast::HasProject(ast))
 		{
-			ZoneScopedN("Frontend");
-
-			if (!AST::HasProject(ast))
-			{
-				p::Error("No existing project to build.");
-				return;
-			}
-			compiler.config.Init(ast);
-
-			if (auto* nativeBindings = GetModule<NativeBindingModule>().Get())
-			{
-				p::Info("Interpret native modules");
-				nativeBindings->SyncIncludes(ast);
-			}
-
-			p::Info("Loading files");
-			AST::LoadSystem::Run(ast);
-
-			OptimizationSystem::PruneDisconnectedExpressions(ast);
-			AST::TypeSystem::PropagateVariableTypes(ast);
-			AST::TypeSystem::PropagateExpressionTypes(ast);
+			p::Error("No existing project to build.");
+			return;
 		}
 
-		p::Info("Building project '{}'", AST::GetProjectName(compiler.ast));
-		// Clean build folders
+		compiler.config.Init(ast);
+
+		if (auto* nativeBindings = GetModule<NativeBindingModule>().Get())
+		{
+			p::Info("Interpret native modules");
+			nativeBindings->SyncIncludes(ast);
+		}
+
+		p::Info("Loading files");
+		ast::LoadSystem::Run(ast);
+		ast::TypeSystem::SyncTypesByPath(ast);
+
+		// Resolve graph connectivity. On the editor these steps run while editing;
+		// a head-less build has to run them once for the loaded project.
+		ast::FunctionsSystem::ClearAddedTags(ast);
+		ast::TransactionSystem::ClearTags(ast);
+		ast::FunctionsSystem::ResolveCallFunctionIds(ast);
+		ast::TypeSystem::ResolveExprTypeIds(ast);
+		ast::FunctionsSystem::MarkAllCallsDirty(ast);
+		ast::FunctionsSystem::PushInvalidPinsBack(ast);
+		ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
+		ast::FunctionsSystem::SyncReturnPinsFromFunction(ast);
+		ast::TypeSystem::PropagateTypes(ast);
+		ast::FunctionsSystem::HealGraph(ast);
+
+		OptimizationSystem::PruneDisconnectedExpressions(ast);
+
+
+		p::Info("Building project '{}'", ast::GetProjectName(compiler.ast));
 		p::Info("Cleaning previous build");
-		files::Delete(compiler.config.binariesPath, true, false);
-		files::CreateFolder(compiler.config.binariesPath, true);
+		Delete(compiler.config.binariesPath, true, false);
+		CreateFolder(compiler.config.binariesPath, true);
 
 		backend->Build(compiler);
 	}
 
-	void Build(AST::Tree& ast, const CompilerConfig& config, ClassType* backendType)
+	void Build(ast::Tree& ast, const CompilerConfig& config, p::TypeId backendType)
 	{
-		if (backendType)
+		if (backendType.IsValid())
 		{
-			TOwnPtr<Backend> backend = MakeOwned<Backend>(backendType);
+			p::TOwnPtr<Backend> backend = p::MakeOwned<Backend>(backendType);
 			Build(ast, config, backend);
 		}
 	}

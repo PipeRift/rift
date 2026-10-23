@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
@@ -6,12 +6,12 @@
 #include "AST/Components/Tags/CChanged.h"
 #include "AST/Components/Tags/CDirty.h"
 
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	using TransactionAccess = TAccessRef<TWrite<CChanged>, TWrite<CFileDirty>, CChild, CFileRef>;
+	using TransactionScope = p::TIdScopeRef<p::Writes<CChanged, CFileDirty>, CChild, CFileRef>;
 
 	namespace Transactions
 	{
@@ -25,16 +25,16 @@ namespace rift::AST
 			bool active = false;
 
 			ScopedTransaction() {}
-			ScopedTransaction(const TransactionAccess& access, TView<const Id> entityIds);
+			ScopedTransaction(const TransactionScope& scope, p::TView<const Id> entityIds);
 			ScopedTransaction(ScopedTransaction&& other) noexcept;
 			~ScopedTransaction();
 		};
 
 
-		bool PreChange(const TransactionAccess& access, TView<const Id> entityIds);
+		bool PreChange(const TransactionScope& scope, p::TView<const Id> entityIds);
 		void PostChange();
 	}    // namespace Transactions
-}    // namespace rift::AST
+}    // namespace rift::ast
 
-#define ScopedChange(access, entityIds) \
-	rift::AST::Transactions::ScopedTransaction _transaction{access, entityIds};
+#define ScopedChange(scope, entityIds) \
+	rift::ast::Transactions::ScopedTransaction _transaction{scope, entityIds};

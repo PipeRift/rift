@@ -1,10 +1,10 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
 #include <Pipe/Core/Function.h>
-#include <Pipe/Core/Platform.h>
 #include <Pipe/Core/Tag.h>
+#include <PipePlatform.h>
 
 
 struct GLFWwindow;
@@ -22,4 +22,6 @@ namespace rift::UI
 	bool WantsToClose();
 
 	GLFWwindow* GetWindow();
+
+	void SetWindowIcon();
 };    // namespace rift::UI

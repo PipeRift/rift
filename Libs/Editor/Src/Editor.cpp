@@ -1,9 +1,11 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Editor.h"
 
 #include "AST/Systems/FunctionsSystem.h"
 #include "AST/Utils/Namespaces.h"
+#include "AST/Utils/Settings.h"
+#include "Statics/EditorSettings.h"
 #include "Statics/SEditor.h"
 #include "Systems/EditorSystem.h"
 #include "Utils/FunctionGraph.h"
@@ -15,40 +17,36 @@
 #include <AST/Systems/TypeSystem.h>
 #include <AST/Utils/ModuleUtils.h>
 #include <Pipe/Core/Log.h>
-#include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Files.h>
 #include <UI/Inspection.h>
 #include <UI/Window.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
 	void RegisterKeyValueInspections()
 	{
-		UI::RegisterCustomInspection<AST::Id>([](StringView label, void* data, Type* type) {
-			UI::DrawKeyValue(label, data, GetType<IdTraits<AST::Id>::Entity>());
-		});
-
-		UI::RegisterCustomInspection<AST::Namespace>([](StringView label, void* data, Type* type) {
+		UI::RegisterCustomInspection<ast::Namespace>(
+		    [](p::StringView label, void* data, p::TypeId type)
+		{
 			UI::TableNextRow();
 			UI::TableSetColumnIndex(0);
 			UI::AlignTextToFramePadding();
 			UI::Text(label);
 			UI::TableSetColumnIndex(1);
-			auto* ns        = static_cast<AST::Namespace*>(data);
+			auto* ns        = static_cast<ast::Namespace*>(data);
 			String asString = ns->ToString();
 			if (UI::InputText("##value", asString))
 			{
-				*ns = AST::Namespace{asString};
+				*ns = ast::Namespace{asString};
 			}
 		});
 	}
 
 	int Editor::Run(StringView projectPath)
 	{
-		FileWatcher::StartAsync();
+		fileWatcher.StartWatchingAsync();
 
-		// Setup window
 		p::Info("Initializing editor...");
 		if (!rift::UI::Init())
 		{
@@ -56,10 +54,10 @@ namespace rift::Editor
 			return 1;
 		}
 		Graph::Init();
-		RegisterKeyValueInspections();
 		p::Info("Editor is ready");
+		// Don't write an imgui.ini in the working directory while no project is open.
+		ImGui::GetIO().IniFilename = nullptr;
 
-		// Open a project if a path has been provided
 		OpenProject(projectPath, false);
 
 		while (!UI::WantsToClose())
@@ -73,8 +71,9 @@ namespace rift::Editor
 			UI::Render();
 
 			frameTime.PostTick();
-			FrameMark;
 		}
+
+		CloseProject();
 
 		Graph::Shutdown();
 		UI::Shutdown();
@@ -88,50 +87,64 @@ namespace rift::Editor
 
 	void Editor::Tick()
 	{
-		if (AST::HasProject(ast))
+		if (ast::HasProject(ast))
 		{
-			AST::FunctionsSystem::ClearAddedTags(ast);
-			AST::TransactionSystem::ClearTags(ast);
+			ast::FunctionsSystem::ClearAddedTags(ast);
+			ast::TransactionSystem::ClearTags(ast);
 
-			AST::LoadSystem::Run(ast);
-			AST::FunctionsSystem::ResolveCallFunctionIds(ast);
-			AST::TypeSystem::ResolveExprTypeIds(ast);
+			if (filesDirty)
+			{
+				ast::LoadSystem::Run(ast);
+				ast::TypeSystem::SyncTypesByPath(ast);
+				filesDirty = false;
+			}
+			ast::FunctionsSystem::ResolveCallFunctionIds(ast);
+			ast::TypeSystem::ResolveExprTypeIds(ast);
+
+			// Repair any invalid graph connectivity before drawing it
+			ast::FunctionsSystem::HealGraph(ast);
 
 			EditorSystem::Draw(ast);
-			AST::TypeSystem::PropagateVariableTypes(ast);
-			AST::FunctionsSystem::PropagateDirtyIntoCalls(ast);
-			AST::FunctionsSystem::PushInvalidPinsBack(ast);
-			AST::FunctionsSystem::SyncCallPinsFromFunction(ast);
-			AST::TypeSystem::PropagateExpressionTypes(ast);
+			ast::FunctionsSystem::PropagateDirtyIntoCalls(ast);
+			ast::FunctionsSystem::PushInvalidPinsBack(ast);
+			ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
+			ast::FunctionsSystem::SyncReturnPinsFromFunction(ast);
+			ast::TypeSystem::PropagateTypes(ast);
 		}
 		else
 		{
 			EditorSystem::Draw(ast);
 		}
+
+		p::FlushDeferredRemovals(ast);
 	}
 
-	void Editor::SetUIConfigFile(Path path)
+	void Editor::SetUIConfigFile(p::StringView path)
 	{
 		if (UI::GetWindow())
 		{
+			// Ensure the project's Saved folder exists so the layout can persist there
+			// instead of falling back to an imgui.ini in the working directory.
+			p::CreateFolder(p::GetParentPath(path), true);
 			configFileChanged          = true;
-			configFile                 = p::ToString(path);
+			configFile                 = path;
 			ImGui::GetIO().IniFilename = configFile.c_str();
 		}
 	}
 
 	bool Editor::CreateProject(p::StringView path, bool closeFirst)
 	{
-		if (!closeFirst && AST::HasProject(ast))
+		if (!closeFirst && ast::HasProject(ast))
 		{
 			return false;
 		}
 
-		if (AST::CreateProject(ast, path) && AST::OpenProject(ast, path))
+		if (ast::CreateProject(ast, path) && ast::OpenProject(ast, path))
 		{
 			ast.SetStatic<SEditor>();
 			EditorSystem::Init(ast);
-			SetUIConfigFile(p::JoinPaths(AST::GetProjectPath(ast), "Saved/UI.ini"));
+			SetUIConfigFile(p::JoinPaths(ast::GetProjectPath(ast), "Saved/UI.ini"));
+			filesDirty = true;
 			return true;
 		}
 		return false;
@@ -139,19 +152,50 @@ namespace rift::Editor
 
 	bool Editor::OpenProject(p::StringView path, bool closeFirst)
 	{
-		if (!closeFirst && AST::HasProject(ast))
+		if (!closeFirst && ast::HasProject(ast))
 		{
 			return false;
 		}
 
-		if (AST::OpenProject(ast, path))
+		if (ast::OpenProject(ast, path))
 		{
 			ast.SetStatic<SEditor>();
 			EditorSystem::Init(ast);
-			SetUIConfigFile(p::JoinPaths(AST::GetProjectPath(ast), "Saved/UI.ini"));
+			auto projectPath = ast::GetProjectPath(ast);
+			SetUIConfigFile(p::JoinPaths(projectPath, "Saved/UI.ini"));
+
+			ast.Add(GetProjectId(ast), fileWatcher.ListenPath(projectPath, true,
+			                               [](FileWatchId id, StringView path, StringView filename,
+			                                   FileWatchAction action, StringView oldFilename)
+			{
+				Editor::Get().filesDirty = true;
+			}));
+
+
+			auto& editorSettings = GetUserSettings<EditorSettings>();
+			p::String projectPathStr{projectPath};
+			p::SetWeaklyCanonical(projectPathStr);    // Prevent / \\ mismatch duplicates
+			editorSettings.recentProjects.AddUnique(p::Move(projectPathStr));
+			SaveUserSettings<EditorSettings>();
+			filesDirty = true;
 			return true;
 		}
 		return false;
+	}
+
+	void Editor::CloseProject()
+	{
+		Id id = GetProjectId(ast);
+		if (ast.IsValid(id) && ast.Has<p::FileWatchId>(id))
+		{
+			fileWatcher.StopListening(ast.Get<p::FileWatchId>(id));
+		}
+		ast::CloseProject(ast);
+
+		// Stop writing a project layout file and never fall back to imgui.ini
+		configFile.clear();
+		configFileChanged          = false;
+		ImGui::GetIO().IniFilename = nullptr;
 	}
 
 	void Editor::Close()
@@ -169,7 +213,7 @@ namespace rift::Editor
 				return;
 			}
 
-			if (files::ExistsAsFile(configFile))
+			if (ExistsAsFile(configFile))
 			{
 				// FIX: Delay this until new frame (essentially, not while already drawing)
 				ImGui::LoadIniSettingsFromDisk(configFile.c_str());
@@ -181,4 +225,4 @@ namespace rift::Editor
 			configFileChanged = false;
 		}
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

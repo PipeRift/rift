@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include "UI/UIImgui.h"
@@ -8,18 +8,10 @@
 #include <assert.h>
 #include <AST/Id.h>
 #include <limits.h>
-#include <Pipe/Core/BitArray.h>
 #include <Pipe/Core/EnumFlags.h>
-#include <Pipe/Math/Vector.h>
-#include <Pipe/PipeArrays.h>
+#include <PipeContainers.h>
+#include <PipeMath.h>
 
-
-// the structure of this file:
-//
-// [SECTION] internal enums
-// [SECTION] internal data structures
-// [SECTION] global and editor context structs
-// [SECTION] object pool implementation
 
 namespace rift::Nodes
 {
@@ -71,14 +63,7 @@ namespace rift::Nodes
 
 	// [SECTION] internal data structures
 
-	// The object T must have the following interface:
-	//
-	// struct T
-	// {
-	//     T();
-	//
-	//     i32 id;
-	// };
+	// T must be default constructible and hold an i32 id
 	template<typename T>
 	struct ObjectPool
 	{
@@ -91,25 +76,24 @@ namespace rift::Nodes
 	template<typename T>
 	struct TIndexedArray
 	{
-		using Iterator      = TArray<AST::Id>::Iterator;
-		using ConstIterator = TArray<AST::Id>::ConstIterator;
+		using Iterator      = TArray<ast::Id>::Iterator;
+		using ConstIterator = TArray<ast::Id>::ConstIterator;
 
 
-		TArray<AST::Id> frameIds;
+		TArray<ast::Id> frameIds;
 		TArray<T> data;
-		TArray<AST::Id> lastFrameIds;
-		TArray<AST::Id> invalidIds;
+		TArray<ast::Id> lastFrameIds;
+		TArray<ast::Id> invalidIds;
 
 
 	public:
-		T& GetOrAdd(AST::Id id, bool* outAdded = nullptr)
+		T& GetOrAdd(ast::Id id, bool* outAdded = nullptr)
 		{
-			const u32 index = GetIdIndex(id);
+			const u32 index = id.GetIndex();
 			bool added;
 			frameIds.AddUniqueSorted(id, {}, &added);
 			if (added && !lastFrameIds.ContainsSorted(id))
 			{
-				// Id added
 				if (outAdded)
 				{
 					*outAdded = true;
@@ -125,43 +109,43 @@ namespace rift::Nodes
 			return *GetByIndex(index);
 		}
 
-		T& Get(AST::Id id)
+		T& Get(ast::Id id)
 		{
-			return *GetByIndex(GetIdIndex(id));
+			return *GetByIndex(id.GetIndex());
 		}
 
-		const T& Get(AST::Id id) const
+		const T& Get(ast::Id id) const
 		{
 			return const_cast<TIndexedArray<T>*>(this)->Get(id);
 		}
 
-		T* TryGet(AST::Id id)
+		T* TryGet(ast::Id id)
 		{
 			if (Contains(id))
 			{
-				return GetByIndex(GetIdIndex(id));
+				return GetByIndex(id.GetIndex());
 			}
 			return nullptr;
 		}
 
-		bool Contains(AST::Id id) const
+		bool Contains(ast::Id id) const
 		{
 			return frameIds.ContainsSorted(id);
 		}
 
-		T& operator[](AST::Id id)
+		T& operator[](ast::Id id)
 		{
 			return Get(id);
 		}
-		const T& operator[](AST::Id id) const
+		const T& operator[](ast::Id id) const
 		{
 			return Get(id);
 		}
 
 		void CacheInvalidIds()
 		{
-			invalidIds.Clear(false);
-			for (AST::Id id : lastFrameIds)
+			invalidIds.Clear(p::Shrink::No);
+			for (ast::Id id : lastFrameIds)
 			{
 				if (!frameIds.ContainsSorted(id))
 				{
@@ -170,8 +154,6 @@ namespace rift::Nodes
 			}
 		}
 
-		// Clears ids that have not been used for one frame from the container
-		// @returns the invalid ids
 		void SwapFrameIds()
 		{
 			lastFrameIds = Move(frameIds);
@@ -190,7 +172,7 @@ namespace rift::Nodes
 	private:
 		T* GetByIndex(u32 index)
 		{
-			Check(data.IsValidIndex(index));
+			P_Check(data.IsValidIndex(index));
 			return data.Data() + index;
 		}
 	};
@@ -198,14 +180,13 @@ namespace rift::Nodes
 	template<typename T>
 	struct NodeArray : public TIndexedArray<T>
 	{
-		TArray<AST::Id> depthOrder;
+		TArray<ast::Id> depthOrder;
 
 
-		T& GetOrAdd(AST::Id id, bool* outAdded = nullptr)
+		T& GetOrAdd(ast::Id id, bool* outAdded = nullptr)
 		{
 			bool added = false;
 			T& node    = TIndexedArray<T>::GetOrAdd(id, &added);
-			// If id has not been added before
 			if (added)
 			{
 				depthOrder.Add(id);
@@ -217,15 +198,16 @@ namespace rift::Nodes
 			return node;
 		}
 
-		void PushToTheFront(AST::Id id)
+		void PushToTheFront(ast::Id id)
 		{
-			depthOrder.Remove(id, false);
+			depthOrder.Remove(id, p::Shrink::No);
 			depthOrder.Add(id);
 		}
 
 		void ClearDepthOrder()
 		{
-			depthOrder.RemoveIf([this](AST::Id id) {
+			depthOrder.RemoveIf([this](ast::Id id)
+			{
 				return TIndexedArray<T>::invalidIds.ContainsSorted(id);
 			});
 		}
@@ -285,11 +267,35 @@ namespace rift::Nodes
 	};
 
 
+	// Rows and columns of the table a node is laid out as
+	enum NodeRow_
+	{
+		NodeRow_Header = 0,
+		NodeRow_Body,
+		NodeRow_COUNT
+	};
+
+	enum NodeColumn_
+	{
+		NodeColumn_Inputs = 0,
+		NodeColumn_Name,
+		NodeColumn_Outputs,
+		NodeColumn_COUNT
+	};
+
+
 	struct NodeData
 	{
 		v2 Origin = v2::Zero();    // The node origin is in editor space
-		Rect TitleBarContentRect;
 		Rect rect{v2::Zero(), v2::Zero()};
+
+		// Measurements of the node's cells on the last frame, used to lay it out
+		v2 cellContentSize[NodeRow_COUNT][NodeColumn_COUNT]{};
+		float blockHeight[NodeRow_COUNT][NodeColumn_COUNT]{};
+		float rowHeight[NodeRow_COUNT]{};
+		float nodeWidth = 0.f;
+		// The zoom the measurements were taken at, so that they can be scaled back
+		float contentZoom = 0.f;
 
 		struct
 		{
@@ -313,10 +319,39 @@ namespace rift::Nodes
 	};
 
 
+	// Table layout of the node being submitted, valid between BeginNode() and EndNode()
+	struct NodeLayout
+	{
+		// Row and column being submitted
+		NodeRow_ row       = NodeRow_Body;
+		NodeColumn_ column = NodeColumn_Name;
+		bool cellOpen      = false;
+		// True between BeginNode() and EndNode(), so that a leaked node can be cleaned up
+		bool nodeOpen = false;
+		// Depth of the ImGui group stack when the node started
+		i32 groupDepth = 0;
+
+		// Screen space position of the node's top left corner and padding of every cell
+		v2 origin  = v2::Zero();
+		v2 padding = v2::Zero();
+		// The width of the node, from the last frame
+		float nodeWidth = 0.f;
+
+		// Measurements of each cell, this frame and the one before. The last one lays the
+		// node out, the current one is picked up by the next frame.
+		v2 cellContentSize[NodeRow_COUNT][NodeColumn_COUNT]     = {};
+		v2 prevCellContentSize[NodeRow_COUNT][NodeColumn_COUNT] = {};
+		float blockHeight[NodeRow_COUNT][NodeColumn_COUNT]      = {};
+		float prevBlockHeight[NodeRow_COUNT][NodeColumn_COUNT]  = {};
+		// How far the next cell of each column has stacked in the row being submitted
+		float cellY[NodeColumn_COUNT] = {};
+	};
+
+
 	struct PinData
 	{
 		Id id;
-		AST::Id parentNodeId = AST::NoId;
+		ast::Id parentNodeId = ast::NoId;
 		Rect rect;
 		PinShape Shape = PinShape_CircleFilled;
 		v2 position;    // screen-space coordinates
@@ -391,6 +426,34 @@ namespace rift::Nodes
 	// [SECTION] global and editor context structs
 
 
+	// Visual overlay indicating the current canvas zoom. It stays hidden until the mouse
+	// hovers over it or the zoom changes, in which case it is shown for a short while.
+	struct ZoomIndicator
+	{
+		// Screen-space rectangle of the indicator, valid while it is drawn.
+		Rect rectScreenSpace;
+		// Time at which the indicator stops being visible after the last zoom change.
+		double visibleEndTime = 0.0;
+		// Current fade alpha in [0, 1].
+		float alpha = 0.f;
+		// Zoom observed on the previous frame, used to detect changes.
+		float lastZoom = 1.f;
+
+		bool hovered  = false;
+		bool dragging = false;
+
+		void Update();
+		void Draw();
+	};
+
+
+	// A node dragged along with the primary node, and its origin relative to it
+	struct NodeDragOrigin
+	{
+		ast::Id id;
+		v2 origin;
+	};
+
 	struct EditorContext
 	{
 		NodeArray<NodeData> nodes;
@@ -405,17 +468,19 @@ namespace rift::Nodes
 		// Nodes::EndNode() call.
 		Rect gridContentBounds;
 
-		TArray<AST::Id> selectedNodeIds;
+		TArray<ast::Id> selectedNodeIds;
 		ImVector<i32> selectedLinkIndices;
 
-		// Relative origins of selected nodes for snapping of dragged nodes
-		ImVector<v2> SelectedNodeOrigins;
+		// Nodes dragged along with the primary node, recorded when the drag starts
+		ImVector<NodeDragOrigin> DragOrigins;
 		// Offset of the primary node origin relative to the mouse cursor.
 		v2 PrimaryNodeOffset;
 
 		ClickInteractionState clickInteraction;
 
 		MiniMap miniMap;
+
+		ZoomIndicator zoomIndicator;
 
 		bool canCreateLinks = true;
 
@@ -458,9 +523,10 @@ namespace rift::Nodes
 		// Canvas draw list and helper state
 		ImDrawList* CanvasDrawList;
 		ImGuiStorage NodeIdxToSubmissionIdx;
-		ImVector<AST::Id> nodeSubmissionOrder;
-		ImVector<AST::Id> nodeIdsOverlappingWithMouse;
-		ImVector<PinIdx> occludedPinIndices;
+		ImVector<ast::Id> nodeSubmissionOrder;
+		ImVector<ast::Id> nodeIdsOverlappingWithMouse;
+		// Channel where every node pin is drawn, above all the node channels
+		i32 pinChannelIdx = -1;
 
 		// Canvas extents
 		v2 CanvasOriginScreenSpace;
@@ -480,11 +546,12 @@ namespace rift::Nodes
 		ImVector<i32> pinFlagStack;
 
 		// UI element state
-		AST::Id currentNodeId;
+		ast::Id currentNodeId;
+		NodeLayout nodeLayout;
 		PinIdx CurrentPinIdx;
 		i32 CurrentPinId;
 
-		AST::Id hoveredNodeId;
+		ast::Id hoveredNodeId;
 		OptionalIndex HoveredLinkIdx;
 		PinIdx HoveredPinIdx;
 
@@ -546,7 +613,7 @@ namespace rift::Nodes
 	{
 		if (!objects.inUse.IsEmpty())
 		{
-			objects.inUse.ClearBits();
+			objects.inUse.SetAllFalse();
 		}
 	}
 
@@ -555,13 +622,12 @@ namespace rift::Nodes
 	{
 		i32 index = objects.idMap.GetInt(static_cast<ImGuiID>(id), -1);
 
-		// Construct new object
 		if (index == -1)
 		{
 			if (objects.availableIds.IsEmpty())
 			{
 				index = objects.pool.Size();
-				Check(objects.pool.Size() == objects.inUse.Size());
+				P_Check(objects.pool.Size() == objects.inUse.Size());
 				const i32 newSize = objects.pool.Size() + 1;
 				objects.pool.Resize(newSize);
 				objects.inUse.Resize(newSize);
@@ -575,8 +641,7 @@ namespace rift::Nodes
 			objects.idMap.SetInt(static_cast<ImGuiID>(id), index);
 		}
 
-		// Flag it as used
-		objects.inUse.FillBit(index);
+		objects.inUse.SetTrue(index);
 		return index;
 	}
 

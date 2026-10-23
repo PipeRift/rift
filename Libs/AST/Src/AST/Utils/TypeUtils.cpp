@@ -1,29 +1,16 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "AST/Utils/TypeUtils.h"
 
-#include "AST/Components/CDeclClass.h"
-#include "AST/Components/CDeclStatic.h"
-#include "AST/Components/CDeclStruct.h"
-#include "AST/Components/CDeclType.h"
-#include "AST/Components/CDeclVariable.h"
-#include "AST/Components/CExprCall.h"
-#include "AST/Components/CExprDeclRef.h"
-#include "AST/Components/CExprInputs.h"
-#include "AST/Components/CExprOutputs.h"
-#include "AST/Components/CExprType.h"
 #include "AST/Components/CFileRef.h"
-#include "AST/Components/CLiteralBool.h"
-#include "AST/Components/CLiteralFloating.h"
-#include "AST/Components/CLiteralIntegral.h"
-#include "AST/Components/CLiteralString.h"
 #include "AST/Components/CNamespace.h"
-#include "AST/Components/CStmtIf.h"
-#include "AST/Components/CStmtInput.h"
-#include "AST/Components/CStmtOutputs.h"
-#include "AST/Components/CStmtReturn.h"
+#include "AST/Components/Declarations.h"
+#include "AST/Components/Expressions.h"
+#include "AST/Components/Literals.h"
+#include "AST/Components/Statements.h"
 #include "AST/Components/Views/CNodePosition.h"
 #include "AST/Statics/STypes.h"
+#include "AST/Systems/LoadSystem.h"
 #include "AST/Utils/Namespaces.h"
 #include "AST/Utils/Paths.h"
 #include "AST/Utils/TransactionUtils.h"
@@ -31,26 +18,28 @@
 #include "Rift.h"
 
 #include <Pipe/Core/Checks.h>
-#include <Pipe/Core/Profiler.h>
 #include <Pipe/Files/Files.h>
-#include <Pipe/PipeECS.h>
-#include <Pipe/Serialize/Formats/JsonFormat.h>
+#include <PipeECS.h>
+
+#include <utility>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	static p::TArray<RiftType> gFileTypes;
 
-	auto gTypeComponents = [](auto& rw) {
+	static auto gTypeComponents = [](auto& rw)
+	{
 		rw.template SerializePools<CChild, CDeclVariable, CDeclFunction, CExprBinaryOperator,
 		    CExprCall, CExprDeclRefId, CExprOutputs, CExprInputs, CStmtReturn, CExprType,
 		    CExprUnaryOperator, CNodePosition, CNamespace, CParent, CLiteralBool, CLiteralFloating,
-		    CLiteralIntegral, CLiteralString, CStmtIf, CStmtOutput, CStmtOutputs, CStmtInput>();
+		    CLiteralIntegral, CLiteralString, CStmtAssign, CStmtFor, CStmtIf, CStmtOutput,
+		    CStmtOutputs, CStmtInput, CExprCast>();
 	};
 
 	void InitTypeFromFileType(Tree& ast, Id id, p::Tag typeId)
 	{
-		if (auto* fileRef = ast.TryGet<CFileRef>(id))
+		if (const auto* fileRef = ast.TryGet<const CFileRef>(id))
 		{
 			p::StringView fileName{p::GetFilename(fileRef->path)};
 			fileName = Strings::RemoveFromEnd(fileName, Paths::typeExtension);
@@ -61,18 +50,18 @@ namespace rift::AST
 
 		if (auto* fileType = FindFileType(typeId))
 		{
-			ast.AddDefault(fileType->tagType->GetId(), id);
+			ast.AddByTypeId(fileType->tagType, id);
 		}
 	}
 
 	Id CreateType(Tree& ast, p::Tag typeId, Tag name, StringView path)
 	{
-		Id id = ast.Create();
+		Id id = p::AddId(ast);
 		if (!path.empty())
 		{
 			ast.Add<CFileRef>(id, path);
 		}
-		InitTypeFromFileType(ast, id, typeId);
+		InitTypeFromFileType(ast, id, Move(typeId));
 
 		if (!name.IsNone() && !ast.Has<CNamespace>(id))
 		{
@@ -81,27 +70,25 @@ namespace rift::AST
 		return id;
 	}
 
-	void RemoveTypes(TAccessRef<TWrite<CChild>, TWrite<CParent>, CFileRef> access,
-	    TView<Id> typeIds, bool removeFromDisk)
+	void RemoveTypes(p::TIdScopeRef<Writes<CChild, CParent>, CFileRef> scope, TView<Id> typeIds,
+	    bool removeFromDisk)
 	{
 		if (removeFromDisk)
 		{
 			for (Id id : typeIds)
 			{
-				if (const auto* file = access.TryGet<const CFileRef>(id))
+				if (const auto* file = scope.TryGet<const CFileRef>(id))
 				{
-					files::Delete(file->path, true, false);
+					Delete(file->path, true, false);
 				}
 			}
 		}
-		p::Remove(access, typeIds, true);
+		p::RmId(scope.GetContext(), typeIds);
 	}
 
 	void SerializeType(Tree& ast, Id id, String& data)
 	{
-		ZoneScoped;
-
-		if (!Ensure(ast.Has<CDeclType>(id)))
+		if (!P_Ensure(ast.Has<CDeclType>(id)))
 		{
 			return;
 		}
@@ -118,8 +105,6 @@ namespace rift::AST
 
 	void DeserializeType(Tree& ast, Id id, const String& data)
 	{
-		ZoneScoped;
-
 		JsonFormatReader reader{data};
 		if (!reader.IsValid())
 		{
@@ -136,6 +121,46 @@ namespace rift::AST
 		r.SerializeEntity(id, gTypeComponents);
 	}
 
+	bool ReloadType(Tree& ast, Id id)
+	{
+		if (!P_Ensure(ast.Has<CDeclType>(id)))
+		{
+			return false;
+		}
+
+		const auto* file = ast.TryGet<const CFileRef>(id);
+		if (!file)
+		{
+			return false;
+		}
+
+		String data;
+		if (!p::LoadStringFile(file->path, data, 4))
+		{
+			p::Error("File could not be loaded from disk ({})", file->path);
+			return false;
+		}
+
+		// Deserializing reuses/creates the entities referenced by the file. Remove the
+		// existing ones first, otherwise the file contents would be appended to the
+		// current graph instead of replacing it.
+		TArray<Id> children;
+		p::GetIdChildren(ast, id, children);
+		if (!children.IsEmpty())
+		{
+			p::RmId(ast, children, p::RmIdFlags::Instant);
+		}
+
+		// Remove the type kind so it's fully re-derived from the file (the kind itself
+		// isn't stored as a serialized component).
+		ast.Remove<CDeclClass>(id);
+		ast.Remove<CDeclStruct>(id);
+		ast.Remove<CDeclStatic>(id);
+
+		LoadSystem::DeserializeTypes(ast, id, data);
+		return true;
+	}
+
 
 	Id FindTypeByPath(Tree& ast, p::StringView path)
 	{
@@ -150,42 +175,42 @@ namespace rift::AST
 		return NoId;
 	}
 
-	bool IsClassType(const Tree& ast, Id typeId)
+	bool IsClassType(p::TIdScopeRef<CDeclClass> scope, Id typeId)
 	{
-		return ast.Has<CDeclClass>(typeId);
+		return scope.Has<CDeclClass>(typeId);
 	}
 
-	bool IsStructType(const Tree& ast, Id typeId)
+	bool IsStructType(p::TIdScopeRef<CDeclStruct> scope, Id typeId)
 	{
-		return ast.Has<CDeclStruct>(typeId);
+		return scope.Has<CDeclStruct>(typeId);
 	}
 
-	bool IsStaticType(const Tree& ast, Id typeId)
+	bool IsStaticType(p::TIdScopeRef<CDeclStatic> scope, Id typeId)
 	{
-		return ast.Has<CDeclStatic>(typeId);
+		return scope.Has<CDeclStatic>(typeId);
 	}
 
-	bool HasVariables(TAccess<CDeclType> access, Id typeId)
+	bool HasVariables(p::TIdScopeRef<CDeclType> scope, Id typeId)
 	{
-		if (const RiftType* fileType = FindFileType(access, typeId))
+		if (const RiftType* fileType = FindFileType(scope, typeId))
 		{
 			return fileType->settings.hasVariables;
 		}
 		return false;
 	}
 
-	bool HasFunctions(TAccess<CDeclType> access, Id typeId)
+	bool HasFunctions(p::TIdScopeRef<CDeclType> scope, Id typeId)
 	{
-		if (const RiftType* fileType = FindFileType(access, typeId))
+		if (const RiftType* fileType = FindFileType(scope, typeId))
 		{
 			return fileType->settings.hasFunctions;
 		}
 		return false;
 	}
 
-	bool HasFunctionBodies(TAccess<CDeclType> access, Id typeId)
+	bool HasFunctionBodies(p::TIdScopeRef<CDeclType> scope, Id typeId)
 	{
-		if (const RiftType* fileType = FindFileType(access, typeId))
+		if (const RiftType* fileType = FindFileType(scope, typeId))
 		{
 			return fileType->settings.hasFunctions && fileType->settings.hasFunctionBodies;
 		}
@@ -197,13 +222,13 @@ namespace rift::AST
 	{
 		Tree& ast = type.GetContext();
 
-		Id id = ast.Create();
+		Id id = p::AddId(ast);
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CDeclVariable, CParent>(id);
 
 		if (type)
 		{
-			p::Attach(ast, type, id);
+			p::AttachId(ast, type, id);
 		}
 		return id;
 	}
@@ -212,14 +237,14 @@ namespace rift::AST
 	{
 		Tree& ast = type.GetContext();
 
-		Id id = ast.Create();
+		Id id = p::AddId(ast);
 		ast.Add<CNamespace>(id, name);
 		ast.Add<CDeclFunction, CParent>(id);
 		ast.Add<CStmtOutput>(id);
 
 		if (type)
 		{
-			p::Attach(ast, type, id);
+			p::AttachId(ast, type, id);
 		}
 		return id;
 	}
@@ -227,7 +252,7 @@ namespace rift::AST
 	Id AddCall(TypeRef type, Id functionId)
 	{
 		Tree& ast   = type.GetContext();
-		const Id id = ast.Create();
+		const Id id = p::AddId(ast);
 
 		ast.Add<CStmtInput, CStmtOutput, CExprOutputs, CExprInputs>(id);
 
@@ -236,29 +261,39 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
 
-	Id AddFunctionInput(Tree& ast, Id functionId, Tag name)
+	Id AddFunctionInput(Tree& ast, Id functionId, Tag name, Id typeId)
 	{
-		Id id = ast.Create();
+		Id id = p::AddId(ast);
 		ast.Add<CNamespace>(id, name);
-		ast.Add<CExprTypeId>(id);
-		ast.Add<CExprType>(id);
-		p::Attach(ast, functionId, id);
+		auto& exprTypeId = ast.Add<CExprTypeId>(id);
+		exprTypeId.id    = typeId;
+		auto& exprType   = ast.Add<CExprType>(id);
+		if (!IsNone(typeId))
+		{
+			exprType.type = GetNamespace(ast, typeId);
+		}
+		p::AttachId(ast, functionId, id);
 		ast.GetOrAdd<CExprOutputs>(functionId).Add(id);
 		return id;
 	}
 
-	Id AddFunctionOutput(Tree& ast, Id functionId, Tag name)
+	Id AddFunctionOutput(Tree& ast, Id functionId, Tag name, Id typeId)
 	{
-		Id id = ast.Create();
+		Id id = p::AddId(ast);
 		ast.Add<CNamespace>(id, name);
-		ast.Add<CExprTypeId>(id);
-		ast.Add<CExprType>(id);
-		p::Attach(ast, functionId, id);
+		auto& exprTypeId = ast.Add<CExprTypeId>(id);
+		exprTypeId.id    = typeId;
+		auto& exprType   = ast.Add<CExprType>(id);
+		if (!IsNone(typeId))
+		{
+			exprType.type = GetNamespace(ast, typeId);
+		}
+		p::AttachId(ast, functionId, id);
 		ast.GetOrAdd<CExprInputs>(functionId).Add(id);
 		return id;
 	}
@@ -266,25 +301,70 @@ namespace rift::AST
 	Id AddIf(TypeRef type)
 	{
 		Tree& ast   = type.GetContext();
-		const Id id = ast.Create();
+		const Id id = p::AddId(ast);
 		ast.Add<CStmtIf>(id);
 		ast.Add<CStmtInput>(id);
 
-		// Bool input
-		const Id valueId = ast.Create();
+		const Id valueId = p::AddId(ast);
 		ast.Add<CExprTypeId>(valueId, {.id = ast.GetNativeTypes().boolId});
 		ast.Add<CExprType>(id).type = GetNamespace(ast, ast.GetNativeTypes().boolId);
-		p::Attach(ast, id, valueId);
+		p::AttachId(ast, id, valueId);
 		ast.Add<CExprInputs>(id).Add(valueId);
 
 		TArray<Id> outIds(2);
-		ast.Create(outIds);
-		p::Attach(ast, id, outIds);
+		p::AddId(ast, outIds);
+		p::AttachId(ast, id, outIds);
 		ast.Add<CStmtOutputs>(id, Move(outIds));
 
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
+		}
+		return id;
+	}
+
+	Id AddFor(TypeRef type)
+	{
+		Tree& ast   = type.GetContext();
+		const Id id = p::AddId(ast);
+		ast.Add<CStmtFor>(id);
+		ast.Add<CStmtInput>(id);
+
+		// Loop bounds and index are always integers
+		const Id indexTypeId = ast.GetNativeTypes().i32Id;
+		const Namespace indexType{GetNamespace(ast, indexTypeId)};
+		auto& inputs = ast.Add<CExprInputs>(id);
+
+		const Id firstId = p::AddId(ast);
+		ast.Add<CNamespace>(firstId, p::Tag{"first"});
+		ast.Add<CExprTypeId>(firstId, {.id = indexTypeId});
+		ast.Add<CExprType>(firstId).type = indexType;
+		p::AttachId(ast, id, firstId);
+		inputs.Add(firstId);
+
+		const Id endId = p::AddId(ast);
+		ast.Add<CNamespace>(endId, p::Tag{"end"});
+		ast.Add<CExprTypeId>(endId, {.id = indexTypeId});
+		ast.Add<CExprType>(endId).type = indexType;
+		p::AttachId(ast, id, endId);
+		inputs.Add(endId);
+
+		const Id indexId = p::AddId(ast);
+		ast.Add<CNamespace>(indexId, p::Tag{"index"});
+		ast.Add<CExprTypeId>(indexId, {.id = indexTypeId});
+		ast.Add<CExprType>(indexId).type = indexType;
+		p::AttachId(ast, id, indexId);
+		ast.Add<CExprOutputs>(id).Add(indexId);
+
+		// "each" and "continue" outputs
+		TArray<Id> outIds(2);
+		p::AddId(ast, outIds);
+		p::AttachId(ast, id, outIds);
+		ast.Add<CStmtOutputs>(id, Move(outIds));
+
+		if (type)
+		{
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -292,97 +372,107 @@ namespace rift::AST
 	Id AddReturn(TypeRef type)
 	{
 		Tree& ast         = type.GetContext();
-		const Id returnId = ast.Create();
+		const Id returnId = p::AddId(ast);
 		ast.Add<CStmtReturn>(returnId);
 		ast.Add<CStmtInput>(returnId);
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), returnId);
+			p::AttachId(ast, type.GetId(), returnId);
 		}
 		return returnId;
+	}
+
+	Id AddAssign(TypeRef type, Id variableId)
+	{
+		Tree& ast   = type.GetContext();
+		const Id id = p::AddId(ast);
+
+		ast.Add<CStmtInput, CStmtOutput>(id);
+
+		// Value pins are unnamed, like the ones of casts
+		const Id valueInId = p::AddId(ast);
+		p::AttachId(ast, id, valueInId);
+		ast.Add<CExprInputs>(id).Add(valueInId);
+
+		const Id valueOutId = p::AddId(ast);
+		p::AttachId(ast, id, valueOutId);
+		ast.Add<CExprOutputs>(id).Add(valueOutId);
+
+		ast.Add<CStmtAssign>(id, {variableId});
+
+		if (type)
+		{
+			p::AttachId(ast, type.GetId(), id);
+		}
+		return id;
 	}
 
 	Id AddLiteral(TypeRef type, Id literalTypeId)
 	{
 		Tree& ast   = type.GetContext();
-		const Id id = ast.Create();
+		const Id id = p::AddId(ast);
 		ast.Add<CExprTypeId>(id, {.id = literalTypeId});
 		ast.Add<CExprType>(id).type = GetNamespace(ast, literalTypeId);
 		ast.Add<CExprOutputs>(id).Add(id);
 
-		bool created        = false;
 		const auto& natives = ast.GetNativeTypes();
-		// TODO: Refactor this
 		if (literalTypeId == natives.boolId)
 		{
 			ast.Add<CLiteralBool>(id);
-			created = true;
 		}
 		else if (literalTypeId == natives.floatId)
 		{
 			ast.Add<CLiteralFloating>(id).type = FloatingType::F32;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.doubleId)
 		{
 			ast.Add<CLiteralFloating>(id).type = FloatingType::F64;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.u8Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::U8;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.u16Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::U16;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.u32Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::U32;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.u64Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::U64;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.i8Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::S8;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.i16Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::S16;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.i32Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::S32;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.i64Id)
 		{
 			ast.Add<CLiteralIntegral>(id).type = IntegralType::S64;
-			created                            = true;
 		}
 		else if (literalTypeId == natives.stringId)
 		{
 			ast.Add<CLiteralString>(id);
-			created = true;
 		}
-
-		if (!created)
+		else
 		{
-			ast.Destroy(id);
+			p::RmId(ast, id);
 			return NoId;
 		}
 
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -390,13 +480,12 @@ namespace rift::AST
 	Id AddDeclarationReference(TypeRef type, Id declId)
 	{
 		Tree& ast   = type.GetContext();
-		const Id id = ast.Create();
+		const Id id = p::AddId(ast);
 
-		ast.Add<CExprDeclRef>(id);
-		ast.Add<CExprOutputs>(id).Add(id);    // Types gets resolved by a system later
+		ast.Add<CExprOutputs>(id).Add(id);
 
-		const Id typeId = p::GetParent(ast, declId);
-		Check(!IsNone(typeId));
+		const Id typeId = p::GetIdParent(ast, declId);
+		P_Check(!IsNone(typeId));
 		auto& declRefExpr           = ast.Add<CExprDeclRef>(id);
 		declRefExpr.ownerName       = ast.Get<CNamespace>(typeId).name;
 		declRefExpr.name            = ast.Get<CNamespace>(declId).name;
@@ -405,7 +494,7 @@ namespace rift::AST
 
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -413,13 +502,13 @@ namespace rift::AST
 	Id AddUnaryOperator(TypeRef type, UnaryOperatorType operatorType)
 	{
 		Tree& ast   = type.GetContext();
-		const Id id = ast.Create();
+		const Id id = p::AddId(ast);
 		ast.Add<CExprUnaryOperator>(id, {operatorType});
 		ast.Add<CExprInputs>(id).Add(id);
 		ast.Add<CExprOutputs>(id).Add(id);
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
@@ -427,30 +516,55 @@ namespace rift::AST
 	Id AddBinaryOperator(TypeRef type, BinaryOperatorType operatorType)
 	{
 		Tree& ast   = type.GetContext();
-		const Id id = ast.Create();
+		const Id id = p::AddId(ast);
 		ast.Add<CExprBinaryOperator>(id, {operatorType});
 		ast.Add<CExprOutputs>(id).Add(id);
 
 		auto& inputs = ast.Add<CExprInputs>(id);
 		inputs.Resize(2);
-		ast.Create(inputs.pinIds);
-		p::Attach(ast, id, inputs.pinIds);
+		p::AddId(ast, inputs.pinIds);
+		p::AttachId(ast, id, inputs.pinIds);
 		if (type)
 		{
-			p::Attach(ast, type.GetId(), id);
+			p::AttachId(ast, type.GetId(), id);
 		}
 		return id;
 	}
 
-	Id FindChildByName(TAccessRef<CNamespace, CParent> access, Id ownerId, Tag functionName)
+	Id AddExplicitCast(TypeRef type, Id fromTypeId, Id toTypeId)
+	{
+		Tree& ast   = type.GetContext();
+		const Id id = p::AddId(ast);
+		ast.Add<CExprCast>(id);
+
+		const Id inputId = p::AddId(ast);
+		ast.Add<CExprTypeId>(inputId, {.id = fromTypeId});
+		ast.Add<CExprType>(inputId).type = GetNamespace(ast, fromTypeId);
+		p::AttachId(ast, id, inputId);
+		ast.Add<CExprInputs>(id).Add(inputId);
+
+		const Id outputId = p::AddId(ast);
+		ast.Add<CExprTypeId>(outputId, {.id = toTypeId});
+		ast.Add<CExprType>(outputId).type = GetNamespace(ast, toTypeId);
+		p::AttachId(ast, id, outputId);
+		ast.Add<CExprOutputs>(id).Add(outputId);
+
+		if (type)
+		{
+			p::AttachId(ast, type.GetId(), id);
+		}
+		return id;
+	}
+
+	Id FindChildByName(p::TIdScopeRef<CNamespace, CParent> scope, Id ownerId, Tag functionName)
 	{
 		if (!IsNone(ownerId))
 		{
 			TArray<Id> children;
-			p::GetChildren(access, ownerId, children);
+			p::GetIdChildren(scope, ownerId, children);
 			for (Id childId : children)
 			{
-				const auto* ns = access.TryGet<const CNamespace>(childId);
+				const auto* ns = scope.TryGet<const CNamespace>(childId);
 				if (ns && ns->name == functionName)
 				{
 					return childId;
@@ -460,16 +574,17 @@ namespace rift::AST
 		return NoId;
 	}
 
-	void RemoveNodes(const RemoveAccess& access, TView<Id> ids)
+	void RemoveNodes(const RemoveScope& scope, TView<Id> ids)
 	{
-		ScopedChange(access, ids);
-		p::Remove(access, ids, true);
+		ScopedChange(scope, ids);
+		p::RmId(scope.GetContext(), ids);
 	}
 
-	bool CopyExpressionType(TAccessRef<TWrite<CExprTypeId>> access, Id sourcePinId, Id targetPinId)
+	bool CopyExpressionType(
+	    p::TIdScopeRef<Writes<CExprTypeId>> scope, Id sourcePinId, Id targetPinId)
 	{
-		auto* sourceType = access.TryGet<const CExprTypeId>(sourcePinId);
-		auto* targetType = access.TryGet<CExprTypeId>(targetPinId);
+		auto* sourceType = scope.TryGet<const CExprTypeId>(sourcePinId);
+		auto* targetType = scope.TryGet<CExprTypeId>(targetPinId);
 		if (!sourceType || IsNone(sourceType->id)
 		    || (targetType && sourceType->id == targetType->id))
 		{
@@ -482,7 +597,7 @@ namespace rift::AST
 		}
 		else
 		{
-			access.Add<CExprTypeId>(targetPinId, *sourceType);
+			scope.Add<CExprTypeId>(targetPinId, *sourceType);
 		}
 		return true;
 	}
@@ -504,16 +619,19 @@ namespace rift::AST
 
 	const RiftType* FindFileType(p::Tag typeId)
 	{
-		const i32 index = gFileTypes.FindSortedEqual(typeId);
-		return index != NO_INDEX ? gFileTypes.Data() + index : nullptr;
+		if (const i32 index = gFileTypes.FindSorted(typeId); index != NO_INDEX)
+		{
+			return gFileTypes.Data() + index;
+		}
+		return nullptr;
 	}
 
-	const RiftType* FindFileType(p::TAccessRef<AST::CDeclType> access, AST::Id typeId)
+	const RiftType* FindFileType(p::TIdScopeRef<ast::CDeclType> scope, ast::Id typeId)
 	{
-		if (const auto* type = access.TryGet<const AST::CDeclType>(typeId))
+		if (const auto* type = scope.TryGet<const ast::CDeclType>(typeId))
 		{
 			return FindFileType(type->typeId);
 		}
 		return nullptr;
 	}
-}    // namespace rift::AST
+}    // namespace rift::ast

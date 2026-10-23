@@ -1,39 +1,38 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
-#include "AST/Components/CExprInputs.h"
-#include "AST/Components/CExprOutputs.h"
-#include "AST/Components/CExprType.h"
+#include "AST/Components/Expressions.h"
 #include "AST/Components/Tags/CInvalid.h"
 #include "AST/Id.h"
 #include "AST/Tree.h"
 
-#include <Pipe/PipeArrays.h>
-#include <Pipe/PipeECS.h>
+#include <PipeContainers.h>
+#include <PipeECS.h>
 
 
 // NOTE: In expression graphs, the Link Id is the Input Pin Id
-namespace rift::AST
+namespace rift::ast
 {
-	bool CanConnectExpr(TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access,
-	    ExprOutput output, ExprInput input);
+	// True when linking the output into the input would feed the output with itself
+	bool WouldExprLoop(p::TIdScopeRef<CExprInputs, CExprOutputs, CExprTypeId> scope,
+	    Id outputNodeId, Id inputNodeId);
 
-	bool TryConnectExpr(TAccessRef<TWrite<CExprInputs>, CExprOutputs, CExprTypeId> access,
-	    ExprOutput output, ExprInput input);
+	bool CanConnectExpr(p::TIdScopeRef<CExprInputs, CExprOutputs, CExprTypeId> scope,
+	    const ExprOutput& output, const ExprInput& input);
+
+	bool TryConnectExpr(p::TIdScopeRef<p::Writes<CExprInputs>, CExprOutputs, CExprTypeId> scope,
+	    const ExprOutput& output, ExprInput input);
 	// Disconnects a particular link. (Note: link ids are the same as input nodes)
-	bool DisconnectExpr(Tree& ast, ExprInput input);
+	bool DisconnectExpr(Tree& ast, const ExprInput& input);
 
-	/**
-	 * @brief Disconnects all inputs and outputs from this ids and the children nodes
-	 *
-	 * @param ids
-	 * @param ignoreRoot ignore ids's inputs and outputs and only remove from children
-	 */
-	void DisconnectAllExprDeep(Tree& ast, TView<const Id> ids, bool ignoreRoot = false);
+	bool RemoveExprInputPin(
+	    p::TIdScopeRef<p::Writes<CInvalid>, CExprInputs> scope, const ExprInput& id);
+	bool RemoveExprOutputPin(
+	    p::TIdScopeRef<p::Writes<CInvalid>, CExprOutputs> scope, const ExprOutput& id);
 
-	bool RemoveExprInputPin(TAccessRef<CExprInputs, TWrite<CInvalid>> access, ExprInput id);
-	bool RemoveExprOutputPin(TAccessRef<CExprOutputs, TWrite<CInvalid>> access, ExprOutput id);
+	ExprInput GetExprInputFromPin(p::TIdScopeRef<CExprInputs, CChild> scope, Id pinId);
+	ExprOutput GetExprOutputFromPin(p::TIdScopeRef<CExprOutputs, CChild> scope, Id pinId);
 
-	ExprInput GetExprInputFromPin(TAccessRef<CExprInputs, CChild> access, Id pinId);
-	ExprOutput GetExprOutputFromPin(TAccessRef<CExprOutputs, CChild> access, Id pinId);
-}    // namespace rift::AST
+	// Type of an expression pin, or NoId when it has none
+	Id GetPinType(p::TIdScopeRef<CExprTypeId> scope, Id pinId);
+}    // namespace rift::ast

@@ -1,104 +1,145 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
 #include "UI/Style.h"
 #include "UI/UIImgui.h"
 
+#include <Pipe/Core/EnumFlags.h>
+
 
 namespace rift::UI
 {
 	/**
-	 * Tracks an animation from a texture.
-	 * Each row is one animation
+	 * Tracks an animation from a sprite sheet.
+	 * The sheet is a grid of 'columns' equally wide frames, and each row is one animation.
+	 * numFrames holds how many frames of each row are actually used.
 	 */
 	struct AnimatedSprite
 	{
-		ImTextureID textureId;
-		v2 size{};
-		float rate = 1.f / 24.f;
-		// Number of frames in each row
-		TArray<u32> numFrames{};
+		AnimatedSprite() = default;
+		~AnimatedSprite();
+		// Sprites own their texture, so they can't be copied
+		AnimatedSprite(const AnimatedSprite&)            = delete;
+		AnimatedSprite& operator=(const AnimatedSprite&) = delete;
+		AnimatedSprite(AnimatedSprite&& other) noexcept;
+		AnimatedSprite& operator=(AnimatedSprite&& other) noexcept;
 
-		v2_u32 currentFrame{};
+		// Loads a sprite sheet from an image file. Every row holds the same number of frames
+		bool Load(p::StringView path, p::u32 framesPerRow, p::u32 animations = 1);
+		// Releases the texture and resets the sprite
+		void Unload();
+
+		p::v2 size{};                   // Size of the sprite on screen, in pixels
+		float rate     = 1.f / 24.f;    // Seconds per frame
+		p::u32 columns = 1;             // Frames per row in the sheet
+		// Frames actually used by each row
+		p::TArray<p::u32> numFrames{};
+
+		p::v2_u32 currentFrame{};
 		float currentFrameRemainingTime = 0.f;
 
 
-		void SetAnimation(u32 id);
+		// Selects the animation to play, restarting it from its first frame
+		void SetAnimation(p::u32 id);
+		// Advances the animation by the time elapsed since the last call
 		void NextFrame(float deltaTime);
 
-		v2 GetUV() const;
+		// Top-left corner of the current frame, in texture UV space
+		p::v2 GetUV() const;
+		// Bottom-right corner of the current frame, in texture UV space
+		p::v2 GetUVEnd() const;
+
+		ImTextureID GetTextureId() const
+		{
+			return textureId;
+		}
+
+	private:
+		// Size of a single frame, in texture UV space
+		p::v2 GetFrameSize() const;
+
+		ImTextureID textureId = ImTextureID_Invalid;
 	};
 
-	static bool SpriteButton(AnimatedSprite& sprite, i32 framePadding, const LinearColor& bgColor,
-	    const LinearColor& tintColor);
+	// Draws the current frame of a sprite as a clickable button
+	bool SpriteButton(const char* strId, const AnimatedSprite& sprite,
+	    const p::LinearColor& bgColor, const p::LinearColor& tintColor);
 
-	inline bool InputText(const char* label, char* buf, size_t buf_size,
-	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
-	    void* user_data = nullptr)
+	static void BeginOuterStyle()
 	{
-		return ImGui::InputText(label, buf, buf_size, flags, callback, user_data);
-	}
-	inline bool InputTextMultiline(const char* label, char* buf, size_t buf_size,
-	    const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0,
-	    ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr)
-	{
-		return ImGui::InputTextMultiline(label, buf, buf_size, size, flags, callback, user_data);
-	}
-	inline bool InputTextWithHint(const char* label, const char* hint, char* buf, size_t buf_size,
-	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
-	    void* user_data = nullptr)
-	{
-		return ImGui::InputTextWithHint(label, hint, buf, buf_size, flags, callback, user_data);
-	}
-
-	// ImGui::InputText() with String
-	// Because text input needs dynamic resizing, we need to setup a callback to grow the capacity
-	bool InputText(const char* label, p::String& str, ImGuiInputTextFlags flags = 0,
-	    ImGuiInputTextCallback callback = nullptr, void* userData = nullptr);
-	bool InputTextMultiline(const char* label, p::String& str, const ImVec2& size = ImVec2(0, 0),
-	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
-	    void* userData = nullptr);
-	bool InputTextWithHint(const char* label, const char* hint, String& str,
-	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
-	    void* userData = nullptr);
-
-
-	static bool Begin(const char* name, bool* pOpen = nullptr, ImGuiWindowFlags flags = 0)
-	{
-		LinearColor titleColor = UI::GetNeutralColor(0);
+		p::LinearColor titleColor = UI::GetNeutralColor(0);
 		UI::PushStyleColor(ImGuiCol_TitleBg, titleColor);
 		UI::PushStyleColor(ImGuiCol_TitleBgActive, titleColor);
-		UI::PushStyleColor(ImGuiCol_TitleBgCollapsed, UI::Disabled(titleColor));
+		UI::PushStyleColor(ImGuiCol_TitleBgCollapsed, UI::ToDisabled(titleColor));
 
-		LinearColor tabColorActive = UI::GetNeutralColor(1);
-		LinearColor tabColor       = UI::Disabled(tabColorActive);
+		p::LinearColor tabColorActive = UI::GetNeutralColor(1);
+		p::LinearColor tabColor       = UI::ToDisabled(tabColorActive);
 		UI::PushStyleColor(ImGuiCol_Tab, tabColor);
 		UI::PushStyleColor(ImGuiCol_TabActive, tabColorActive);
 		UI::PushStyleColor(ImGuiCol_TabUnfocused, tabColor);
 		UI::PushStyleColor(ImGuiCol_TabUnfocusedActive, tabColorActive);
-		UI::PushStyleColor(ImGuiCol_TabHovered, UI::Hovered(tabColorActive));
+		UI::PushStyleColor(ImGuiCol_TabHovered, UI::ToHovered(tabColorActive));
 		UI::PushTextColor(UI::GetNeutralTextColor(1));
-
-		const bool value = ImGui::Begin(name, pOpen, flags);
-
+	}
+	static void BeginInnerStyle()
+	{
 		UI::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.f, 3.f));
+	}
+	static void EndOuterStyle()
+	{
+		UI::PopTextColor();
+		UI::PopStyleColor(8);
+	}
+	static void EndInnerStyle()
+	{
+		UI::PopStyleVar();
+	}
+
+	static bool Begin(const char* name, bool* pOpen = nullptr, ImGuiWindowFlags flags = 0)
+	{
+		BeginOuterStyle();
+		const bool value = ImGui::Begin(name, pOpen, flags);
+		BeginInnerStyle();
 		return value;
 	}
 
 	static void End()
 	{
-		UI::PopStyleVar();
+		EndInnerStyle();
 		ImGui::End();
-		UI::PopTextColor();
-		UI::PopStyleColor(5);
-		UI::PopStyleColor(3);
+		EndOuterStyle();
 	}
 
-	ImRect GetWorkRect(v2 desiredSize, bool addhalfItemSpacing = true, v2 extent = v2::Zero());
+	ImRect GetWorkRect(
+	    p::v2 desiredSize, bool addhalfItemSpacing = true, p::v2 extent = p::v2::Zero());
 
 	bool MutableText(p::StringView label, p::String& text, ImGuiInputTextFlags flags = 0);
 
-	void HelpTooltip(p::StringView text, float delay = 1.f);
-	void HelpMarker(p::StringView text);
+	bool CollapsingHeaderWithButton(p::StringView label, ImGuiTreeNodeFlags flags,
+	    bool& buttonClicked, p::StringView buttonLabel, p::v2 buttonSize = p::v2(18.f, 14.f));
+
+
+	// Rounding, padding and spacing shared by chips
+	inline constexpr float chipRounding = 2.f;
+	inline constexpr float chipPadding  = 4.f;
+	inline constexpr float chipSpacing  = 4.f;
+
+	enum class ChipFlags
+	{
+		None       = 0,
+		Background = 1 << 0,    // Paints the chip's background
+	};
+	P_DEFINE_FLAG_OPERATORS(ChipFlags)
+
+	// Draws a chip as a non-interactive item: it takes layout space but has no id, so it
+	// can't be clicked or navigated. Long names are ellipsized to fit 'maxWidth'
+	void Chip(p::StringView name, const p::Color& color, const char* icon = nullptr,
+	    float maxWidth = FLT_MAX, ChipFlags flags = ChipFlags::Background);
+
+	// Draws a selectable row, painting 'background' behind content drawn on top.
+	// Highlighted rows draw as if hovered. 'label' must be zero-terminated
+	bool SelectableRow(p::StringView label, ImVec2& outMin, ImVec2& outMax,
+	    const p::LinearColor& background = p::LinearColor::Transparent(), float height = 16.f,
+	    bool highlighted = false);
 }    // namespace rift::UI

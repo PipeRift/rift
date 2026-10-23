@@ -4,6 +4,7 @@ function(rift_module target)
     pipe_target_define_platform(${target})
     pipe_target_shared_output_directory(${target})
     pipe_target_enable_CPP20(${target})
+    pipe_target_disable_rtti(${target} PRIVATE)
     set_target_properties(${target} PROPERTIES FOLDER Rift)
 endfunction(rift_module)
 
@@ -32,7 +33,9 @@ function(rift_runtime_module module)
     set(RIFT_BINARY_DIR ${CMAKE_BINARY_DIR}/Bin/${CMAKE_CFG_INTDIR})
 
     set(target RiftRuntime${module})
-    add_library(${target} STATIC)
+    # Runtimes are loaded at runtime by the compiler backends (native bindings),
+    # so they must be shared libraries and not static archives.
+    add_library(${target} SHARED)
     rift_module(${target})
 
     target_include_directories(${target} PUBLIC ${module}/Include)

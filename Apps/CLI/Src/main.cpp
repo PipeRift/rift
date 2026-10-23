@@ -1,6 +1,6 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <Pipe/Memory/NewDelete.h>
+#include <PipeNewDelete.h>
 //  Override as first include
 
 #include <AST/Utils/ModuleUtils.h>
@@ -8,16 +8,14 @@
 #include <Compiler/Compiler.h>
 #include <Compiler/Utils/BackendUtils.h>
 #include <GraphViewModule.h>
-#include <LLVMBackendModule.h>
 #include <MIRBackendModule.h>
-#include <Pipe/Core/Profiler.h>
+#include <Pipe.h>
 #include <Pipe/Files/Paths.h>
-#include <Pipe/Pipe.h>
+#include <Pipe/Files/PlatformPaths.h>
+#include <PipeTime.h>
 #include <Rift.h>
 
-#include <chrono>
 #include <CLI/CLI.hpp>
-
 
 
 using namespace rift;
@@ -32,27 +30,28 @@ namespace rift
 		{
 			for (const auto& backend : backends)
 			{
-				Strings::FormatTo(desc, "{}, ", backend->GetName());
+				p::FormatTo(desc, "{}, ", backend->GetName());
 			}
 			Strings::RemoveFromEnd(desc, 2);
 		}
 		else
 		{
-			Strings::FormatTo(desc, "None");
+			p::FormatTo(desc, "None");
 		}
 
 		// Set default value
 		const Tag def = backends.IsEmpty() ? Tag::None() : backends[0]->GetName();
 		selected      = def.AsString();
 
-		auto stdDesc = Strings::Convert<std::string, TChar>(desc);
-		app.add_option("-b,--backend", selected, stdDesc, true);
+		auto stdDesc = Strings::Convert<std::string, char>(desc);
+		app.add_option("-b,--backend", selected, stdDesc)->capture_default_str();
 	}
 
 	TPtr<Backend> FindBackendByName(const TArray<TOwnPtr<Backend>>& backends, Tag name)
 	{
-		TOwnPtr<Backend>* backend = backends.Find([name](const auto& backend) {
-			return backend->GetName() == name;
+		TOwnPtr<Backend>* backend = backends.FindIf([name](const auto& candidate)
+		{
+			return candidate->GetName() == name;
 		});
 		if (backend)
 		{
@@ -65,15 +64,22 @@ namespace rift
 
 int main(int argc, char** argv)
 {
-	p::Initialize("Saved/Logs");
+	p::Logger logger = MakeLogger();
+
+	p::Initialize(&logger);
+	p::Info(p::PlatformPaths::GetUserSettingsPath());
 	EnableModule<ASTModule>();
-	EnableModule<LLVMBackendModule>();
 	EnableModule<MIRBackendModule>();
 	EnableModule<GraphViewModule>();
+
+	CompilerConfig config;
 
 	CLI::App app{"Rift compiler"};
 	String path;
 	app.add_option("-p,--project", path, "Project path")->required();
+	app.add_option("-v,--verbose", config.verbose, "Verbose")->required();
+	// CLI11 requires long names to start with two dashes, so use `--O0`..`--O3`.
+	app.add_flag("--O0{0},--O1{1},--O2{2},--O3{3}", config.optimization, "Optimization");
 
 
 	String selectedBackendStr;
@@ -84,25 +90,19 @@ int main(int argc, char** argv)
 
 	TPtr<Backend> backend = FindBackendByName(availableBackends, Tag(selectedBackendStr));
 
-	ZoneScopedNC("CLI Execution", 0x459bd1);
+	ast::Tree ast;
+	ast::OpenProject(ast, path);
 
-	AST::Tree ast;
-	AST::OpenProject(ast, path);
-
-	if (!AST::HasProject(ast))
+	if (!ast::HasProject(ast))
 	{
-		p::Error("Couldn't open project '{}'", p::ToString(path));
+		p::Error("Couldn't open project '{}'", path);
 		return 1;
 	}
 
-	CompilerConfig config;
 	Build(ast, config, backend);
 
-	while (true)
-	{
-		// Live for a second to let the profiler connect. Temporal
-		std::this_thread::sleep_for(std::chrono::seconds(3));
-	}
+	// Destroy the enabled modules before Pipe shuts down so nothing leaks.
+	DisableAllModules();
 
 	p::Shutdown();
 	return 0;

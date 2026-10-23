@@ -1,17 +1,16 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Utils/EditorStyle.h"
 
-#include "AST/Components/CDeclClass.h"
-#include "AST/Components/CDeclStruct.h"
+#include "AST/Components/Declarations.h"
 
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	const Color GetTypeColor(const AST::Tree& ast, AST::Id id)
+	const Color GetTypeColor(const ast::Tree& ast, ast::Id id)
 	{
 		if (!ast.IsValid(id))
 		{
@@ -44,13 +43,13 @@ namespace rift::Editor
 		{
 			return GetTypeColor<String>();
 		}
-		else if (ast.Has<AST::CDeclClass>(id))
+		else if (ast.Has<ast::CDeclClass>(id))
 		{
-			return GetTypeColor<Class>();
+			return GetTypeColor<Object>();
 		}
-		else if (ast.Has<AST::CDeclStruct>(id))
+		else if (ast.Has<ast::CDeclStruct>(id))
 		{
-			return GetTypeColor<Struct>();
+			return GetTypeColor<ast::CDeclStruct>();    // Pass any struct to get struct color
 		}
 		return GetTypeColor<void>();
 	}
@@ -59,7 +58,7 @@ namespace rift::Editor
 	void PushNodeTitleColor(Color color)
 	{
 		Nodes::PushStyleColor(Nodes::ColorVar_TitleBar, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, UI::Hovered(color));
+		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarHovered, UI::ToHovered(color));
 		Nodes::PushStyleColor(Nodes::ColorVar_TitleBarSelected, color);
 	}
 
@@ -71,7 +70,7 @@ namespace rift::Editor
 	void PushNodeBackgroundColor(Color color)
 	{
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackground, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, UI::Hovered(color));
+		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundHovered, UI::ToHovered(color));
 		Nodes::PushStyleColor(Nodes::ColorVar_NodeBackgroundSelected, color);
 	}
 
@@ -79,4 +78,4 @@ namespace rift::Editor
 	{
 		Nodes::PopStyleColor(3);
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

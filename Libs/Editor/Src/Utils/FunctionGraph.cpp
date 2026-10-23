@@ -1,49 +1,124 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Utils/FunctionGraph.h"
 
 #include "Components/CTypeEditor.h"
 #include "DockSpaceLayout.h"
 #include "imgui.h"
+#include "Statics/EditorSettings.h"
 #include "Utils/EditorStyle.h"
 #include "Utils/FunctionGraphContextMenu.h"
 #include "Utils/TypeUtils.h"
 
-#include <AST/Components/CDeclFunction.h>
-#include <AST/Components/CDeclType.h>
-#include <AST/Components/CDeclVariable.h>
-#include <AST/Components/CExprBinaryOperator.h>
-#include <AST/Components/CExprCall.h>
-#include <AST/Components/CExprDeclRef.h>
-#include <AST/Components/CExprInputs.h>
-#include <AST/Components/CExprOutputs.h>
-#include <AST/Components/CExprType.h>
-#include <AST/Components/CExprUnaryOperator.h>
-#include <AST/Components/CLiteralBool.h>
-#include <AST/Components/CLiteralFloating.h>
-#include <AST/Components/CLiteralIntegral.h>
-#include <AST/Components/CLiteralString.h>
 #include <AST/Components/CNamespace.h>
-#include <AST/Components/CStmtIf.h>
-#include <AST/Components/CStmtInput.h>
-#include <AST/Components/CStmtOutputs.h>
-#include <AST/Components/CStmtReturn.h>
+#include <AST/Components/Declarations.h>
+#include <AST/Components/Expressions.h>
+#include <AST/Components/Literals.h>
+#include <AST/Components/Statements.h>
 #include <AST/Components/Tags/CInvalid.h>
 #include <AST/Components/Views/CNodePosition.h>
+#include <AST/Systems/CastSystem.h>
+#include <AST/Systems/FunctionsSystem.h>
 #include <AST/Utils/Expressions.h>
+#include <AST/Utils/Settings.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TransactionUtils.h>
-#include <GLFW/glfw3.h>
-#include <Pipe/PipeECS.h>
+#include <IconsFontAwesome5.h>
+#include <Pipe/Core/Log.h>
+#include <PipeECS.h>
 #include <UI/Style.h>
 #include <Utils/Nodes.h>
 #include <Utils/NodesInternal.h>
 #include <Utils/NodesMiniMap.h>
 
 
-namespace rift::Editor::Graph
+namespace rift::editor::Graph
 {
 	static CNodePosition* currentNodeTransform = nullptr;
+
+	// The pins of a cast node are only known once it has been drawn, so casts spawned from a
+	// dropped link are placed on the next frame
+	struct PendingCast
+	{
+		ast::Id castId;
+		ast::Id outputPinId;
+		ast::Id inputPinId;    // Pin of the node the cast feeds
+	};
+	static TArray<PendingCast> pendingCasts;
+
+	// A value that only casts explicitly needs a cast node in between. Returns the new node,
+	// or NoId when the link can't be fixed with a cast
+	static ast::Id InsertCastNode(
+	    ast::Tree& ast, ast::Id typeId, const ast::ExprOutput& output, const ast::ExprInput& input)
+	{
+		if (output.IsNone() || input.IsNone() || output.nodeId == input.nodeId
+		    || ast::WouldExprLoop(ast, output.nodeId, input.nodeId))
+		{
+			return ast::NoId;
+		}
+
+		const ast::Id outputType = ast::GetPinType(ast, output.pinId);
+		const ast::Id inputType  = ast::GetPinType(ast, input.pinId);
+		if (p::IsNone(outputType) || p::IsNone(inputType)
+		    || !ast::CastSystem::FindCast(ast, outputType, inputType))
+		{
+			return ast::NoId;
+		}
+
+		// The cast goes in between, with its input taking the source type and its output the
+		// type of the pin it feeds
+		const ast::Id castId    = ast::AddExplicitCast({ast, typeId}, outputType, inputType);
+		const auto* castInputs  = ast.TryGet<const ast::CExprInputs>(castId);
+		const auto* castOutputs = ast.TryGet<const ast::CExprOutputs>(castId);
+		if (!castInputs || castInputs->pinIds.IsEmpty() || !castOutputs
+		    || castOutputs->pinIds.IsEmpty())
+		{
+			return ast::NoId;
+		}
+
+		ast::TryConnectExpr(ast, output, ast::GetExprInputFromPin(ast, castInputs->pinIds[0]));
+		ast::TryConnectExpr(ast, ast::GetExprOutputFromPin(ast, castOutputs->pinIds[0]), input);
+		return castId;
+	}
+
+	namespace
+	{
+		// Grid tiles moved per key press while shift is held
+		constexpr float fastMoveTiles = 5.f;
+
+		// Persists the current zoom after it stops changing, so scrolling does not write the
+		// settings file on every notch.
+		void PersistZoom()
+		{
+			static float saveTimer = -1.f;
+			static float lastSaved = 0.f;
+
+			ZoomSettings& zoom = GetUserSettings<EditorSettings>().zoom;
+
+			if (zoom.current != lastSaved)
+			{
+				saveTimer = 0.5f;
+			}
+
+			if (saveTimer >= 0.f)
+			{
+				saveTimer -= ImGui::GetIO().DeltaTime;
+				if (saveTimer < 0.f)
+				{
+					SaveUserSettings<EditorSettings>();
+					lastSaved = zoom.current;
+				}
+			}
+		}
+	}    // namespace
+
+	void ApplyGraphSettings()
+	{
+		const EditorSettings& editorSettings = GetUserSettings<EditorSettings>();
+
+		// Grid size also publishes the spacing into the node style.
+		settings.SetGridSize(p::Clamp(editorSettings.gridSize, 4.f, 64.f));
+	}
 
 	void Settings::SetGridSize(float size)
 	{
@@ -62,14 +137,9 @@ namespace rift::Editor::Graph
 		return invGridSize;
 	}
 
-	float Settings::GetSpaceHeight(u32 height) const
+	float Settings::GetSpaceHeight() const
 	{
-		return settings.GetGridSize() - (settings.verticalMargin * 2.f);
-	}
-
-	v2 Settings::GetContentPadding() const
-	{
-		return {0.f, settings.verticalMargin + settings.verticalPadding};
+		return (gridSize - (verticalMargin * 2.f)) * Nodes::GetZoom();
 	}
 
 	v2 Settings::GetGridPosition(v2 screenPosition) const
@@ -77,14 +147,14 @@ namespace rift::Editor::Graph
 		return Nodes::ScreenToGridPosition(screenPosition) * GetInvGridSize();
 	}
 
-	void BeginExprInput(TAccessRef<AST::CExprTypeId> access, AST::Id id, const bool& invalid)
+	void BeginExprInput(p::TIdScopeRef<ast::CExprTypeId> scope, ast::Id id, const bool& invalid)
 	{
 		bool isPointer = false;
-		AST::Id typeId = AST::NoId;
-		if (auto* type = access.TryGet<const AST::CExprTypeId>(id))
+		ast::Id typeId = ast::NoId;
+		if (auto* type = scope.TryGet<const ast::CExprTypeId>(id))
 		{
 			typeId    = type->id;
-			isPointer = type->mode != AST::TypeMode::Value;
+			isPointer = type->mode != ast::TypeMode::Value;
 		}
 
 		Color pinColor = GetTypeColor<void>();
@@ -95,24 +165,23 @@ namespace rift::Editor::Graph
 		}
 		else
 		{
-			pinColor = GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), typeId);
+			pinColor = GetTypeColor(static_cast<ast::Tree&>(scope.GetContext()), typeId);
 		}
 
 		Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::Hovered(pinColor));
-
-		Nodes::BeginInput(
-		    i32(id), isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::ToHovered(pinColor));
+		Nodes::BeginInput(i32(id.value),
+		    isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
 	}
 
-	void BeginExprOutput(TAccessRef<AST::CExprTypeId> access, AST::Id id, const bool& invalid)
+	void BeginExprOutput(p::TIdScopeRef<ast::CExprTypeId> scope, ast::Id id, const bool& invalid)
 	{
 		bool isPointer = false;
-		AST::Id typeId = AST::NoId;
-		if (auto* type = access.TryGet<const AST::CExprTypeId>(id))
+		ast::Id typeId = ast::NoId;
+		if (auto* type = scope.TryGet<const ast::CExprTypeId>(id))
 		{
 			typeId    = type->id;
-			isPointer = type->mode != AST::TypeMode::Value;
+			isPointer = type->mode != ast::TypeMode::Value;
 		}
 
 		Color pinColor = GetTypeColor<void>();
@@ -123,14 +192,13 @@ namespace rift::Editor::Graph
 		}
 		else
 		{
-			pinColor = GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), typeId);
+			pinColor = GetTypeColor(static_cast<ast::Tree&>(scope.GetContext()), typeId);
 		}
 
 		Nodes::PushStyleColor(Nodes::ColorVar_Pin, pinColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::Hovered(pinColor));
-
-		Nodes::BeginOutput(
-		    i32(id), isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::ToHovered(pinColor));
+		Nodes::BeginOutput(i32(id.value),
+		    isPointer ? Nodes::PinShape_DiamondFilled : Nodes::PinShape_CircleFilled);
 	}
 
 	void EndExprInput(const bool& invalid)
@@ -153,41 +221,89 @@ namespace rift::Editor::Graph
 		}
 	}
 
-	void DrawInputs(TAccessRef<AST::CInvalid, AST::CExprTypeId, AST::CNamespace> access,
-	    const AST::CExprInputs& inputs)
+	// Draws a pin and its label in one call. An empty label draws the pin without text. The
+	// Begin/End pairs remain for nodes that draw their own content.
+	void DrawPinDefaultValue(p::TIdScopeRef<ast::CExprTypeId> scope, ast::Id pinId);
+
+	void AddExprInput(p::TIdScopeRef<ast::CInvalid, ast::CExprTypeId> scope, ast::Id id,
+	    StringView label = "", bool connected = true)
 	{
-		for (AST::Id pinId : inputs.pinIds)
+		const bool invalid = scope.Has<ast::CInvalid>(id);
+		BeginExprInput(scope, id, invalid);
+
+		const float startY  = ImGui::GetCursorScreenPos().y;
+		const bool hasLabel = !label.empty();
+		if (hasLabel || connected)
 		{
-			if (access.IsValid(pinId))
+			UI::TextUnformatted(label.data(), label.data() + label.size());
+		}
+
+		if (!connected)
+		{
+			const float grid    = Nodes::GetStyle().GridSpacing * Nodes::GetZoom();
+			const float spacing = ImGui::GetStyle().ItemSpacing.y;
+			if (hasLabel)
 			{
-				const bool invalid = access.Has<AST::CInvalid>(pinId);
-				BeginExprInput(access, pinId, invalid);
-				auto* ns = access.TryGet<const AST::CNamespace>(pinId);
-				UI::Text(ns ? ns->name.AsString() : "none");
-				EndExprInput(invalid);
+				// The value is a spacing thinner than the tile, so it is centered in it
+				ImGui::SetCursorScreenPos(
+				    ImVec2{ImGui::GetCursorScreenPos().x, startY + grid + spacing * 0.5f});
+			}
+			DrawPinDefaultValue(scope, id);
+			if (hasLabel)
+			{
+				// Close the second tile with what is left, so that the pin block is exactly two
+				// grid tiles tall and every pin lines up
+				const float used = ImGui::GetItemRectMax().y - startY;
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.f, 0.f});
+				ImGui::Dummy(ImVec2{0.f, p::Max(2.f * grid - used, 0.f)});
+				ImGui::PopStyleVar();
+			}
+		}
+
+		EndExprInput(invalid);
+	}
+
+	void AddExprOutput(
+	    p::TIdScopeRef<ast::CInvalid, ast::CExprTypeId> scope, ast::Id id, StringView label = "")
+	{
+		const bool invalid = scope.Has<ast::CInvalid>(id);
+		BeginExprOutput(scope, id, invalid);
+		UI::TextUnformatted(label.data(), label.data() + label.size());
+		EndExprOutput(invalid);
+	}
+
+	void DrawInputs(p::TIdScopeRef<ast::CInvalid, ast::CExprTypeId, ast::CNamespace> scope,
+	    const ast::CExprInputs& inputs)
+	{
+		for (i32 i = 0; i < inputs.pinIds.Size(); ++i)
+		{
+			const ast::Id pinId = inputs.pinIds[i];
+			if (scope.IsValid(pinId))
+			{
+				const bool connected =
+				    i < inputs.linkedOutputs.Size() && !inputs.linkedOutputs[i].IsNone();
+				auto* ns = scope.TryGet<const ast::CNamespace>(pinId);
+				AddExprInput(scope, pinId, ns ? ns->name.AsString() : "", connected);
 			}
 		}
 	}
 
-	void DrawOutputs(TAccessRef<AST::CInvalid, AST::CExprTypeId, AST::CNamespace> access,
-	    const AST::CExprOutputs& outputs)
+	void DrawOutputs(p::TIdScopeRef<ast::CInvalid, ast::CExprTypeId, ast::CNamespace> scope,
+	    const ast::CExprOutputs& outputs)
 	{
-		for (AST::Id pinId : outputs.pinIds)
+		for (ast::Id pinId : outputs.pinIds)
 		{
-			if (access.IsValid(pinId))
+			if (scope.IsValid(pinId))
 			{
-				const bool invalid = access.Has<AST::CInvalid>(pinId);
-				BeginExprOutput(access, pinId, invalid);
-				auto* ns = access.TryGet<const AST::CNamespace>(pinId);
-				UI::Text(ns ? ns->name.AsString() : "none");
-				EndExprOutput(invalid);
+				auto* ns = scope.TryGet<const ast::CNamespace>(pinId);
+				AddExprOutput(scope, pinId, ns ? ns->name.AsString() : "");
 			}
 		}
 	}
 
-	void BeginNode(TAccessRef<TWrite<CNodePosition>> access, AST::Id id)
+	void BeginNode(p::TIdScopeRef<Writes<CNodePosition>> scope, ast::Id id)
 	{
-		currentNodeTransform = &access.GetOrAdd<CNodePosition>(id);
+		currentNodeTransform = &scope.GetOrAdd<CNodePosition>(id);
 		auto* context        = Nodes::GetCurrentContext();
 		if (UI::IsWindowAppearing()
 		    || (!context->leftMouseDragging && !context->leftMouseReleased
@@ -200,25 +316,25 @@ namespace rift::Editor::Graph
 		Nodes::BeginNode(id);
 	}
 
-	void EndNode(const AST::TransactionAccess& access)
+	void EndNode(const ast::TransactionScope& scope)
 	{
 		// Selection outline
 		const auto* context = Nodes::GetCurrentContext();
 		if (Nodes::IsNodeSelected(context->currentNodeId))
 		{
 			Nodes::GetEditorContext().nodes[context->currentNodeId].LayoutStyle.BorderThickness =
-			    2.f;
+			    2.f * Nodes::GetZoom();
 		}
 		Nodes::EndNode();
 		Nodes::PopStyleColor(1);
 
 		if (currentNodeTransform && context->leftMouseReleased)
 		{
-			const AST::Id id = context->currentNodeId;
+			const ast::Id id = context->currentNodeId;
 			v2 newPosition   = GetNodePosition(id);
 			if (!newPosition.Equals(currentNodeTransform->position, 0.1f))
 			{
-				ScopedChange(access, id);
+				ScopedChange(scope, id);
 				currentNodeTransform->position = newPosition;
 			}
 		}
@@ -229,7 +345,7 @@ namespace rift::Editor::Graph
 	{
 		static constexpr Color color = executionColor;
 		Nodes::PushStyleColor(Nodes::ColorVar_Pin, color);
-		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::Hovered(color));
+		Nodes::PushStyleColor(Nodes::ColorVar_PinHovered, UI::ToHovered(color));
 	}
 
 	void PopExecutionPinStyle()
@@ -237,231 +353,418 @@ namespace rift::Editor::Graph
 		Nodes::PopStyleColor(2);
 	}
 
-	void DrawLiteralBool(AST::Tree& ast, AST::Id id, bool& value)
+	void AddStmtInput(ast::Id id, StringView label = "")
 	{
-		static constexpr Color color = GetTypeColor<bool>();
-
-		PushNodeBackgroundColor(color);
-
-		BeginNode(ast, id);
-		{
-			BeginExprOutput(ast, id, false);
-			PushInnerNodeStyle();
-			UI::Checkbox("##value", &value);
-			PopInnerNodeStyle();
-			EndExprOutput(false);
-		}
-		EndNode(ast);
-		PopNodeBackgroundColor();
+		PushExecutionPinStyle();
+		Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
+		UI::TextUnformatted(label.data(), label.data() + label.size());
+		Nodes::EndInput();
+		PopExecutionPinStyle();
 	}
 
-	void DrawLiteralIntegral(AST::Tree& ast, AST::Id id, AST::CLiteralIntegral& value)
+	void AddStmtOutput(ast::Id id, StringView label = "")
 	{
-		const bool isSigned = value.IsSigned();
-		const Color color   = isSigned ? GetTypeColor<i32>() : GetTypeColor<u32>();
-		PushNodeBackgroundColor(color);
+		PushExecutionPinStyle();
+		Nodes::BeginOutput(i32(id.value), Nodes::PinShape_TriangleFilled);
+		UI::TextUnformatted(label.data(), label.data() + label.size());
+		Nodes::EndOutput();
+		PopExecutionPinStyle();
+	}
 
-		BeginNode(ast, id);
+
+	// Values are only as wide as their content, keeping a small area when they are empty.
+	// Sizes are in grid tiles, so they scale with the zoom.
+	float GetPinValueWidth(const char* text, float minWidth)
+	{
+		// The frame of the value already adds padding around the text
+		return p::Max(minWidth, UI::CalcTextSize(text).x + 2.f * ImGui::GetStyle().FramePadding.x);
+	}
+
+	// Draws the value of a literal, in a cell one grid tile tall
+	void DrawPinValue(ast::Tree& ast, ast::Id literalId)
+	{
+		const float zoom     = Nodes::GetZoom();
+		const float gridSize = settings.GetGridSize() * zoom;
+		const v2 padding     = Nodes::GetStyle().NodePadding * zoom;
+
+		const float minWidth   = 32.f * zoom;
+		const float spacing    = ImGui::GetStyle().ItemSpacing.y;
+		char text[64]          = {};
+		ImGuiDataType dataType = ImGuiDataType_COUNT;
+		float width            = minWidth;
+		if (const auto* literal = ast.TryGet<const ast::CLiteralIntegral>(literalId))
 		{
-			BeginExprOutput(ast, id, false);
-			PushInnerNodeStyle();
-
-			ImGuiDataType dataType = ImGuiDataType_COUNT;
-			switch (value.type)
+			switch (literal->type)
 			{
-				case AST::IntegralType::S8: dataType = ImGuiDataType_S8; break;
-				case AST::IntegralType::S16: dataType = ImGuiDataType_S16; break;
-				case AST::IntegralType::S32: dataType = ImGuiDataType_S32; break;
-				case AST::IntegralType::S64: dataType = ImGuiDataType_S64; break;
-				case AST::IntegralType::U8: dataType = ImGuiDataType_U8; break;
-				case AST::IntegralType::U16: dataType = ImGuiDataType_U16; break;
-				case AST::IntegralType::U32: dataType = ImGuiDataType_U32; break;
-				case AST::IntegralType::U64: dataType = ImGuiDataType_U64; break;
+				case ast::IntegralType::S8: dataType = ImGuiDataType_S8; break;
+				case ast::IntegralType::S16: dataType = ImGuiDataType_S16; break;
+				case ast::IntegralType::S32: dataType = ImGuiDataType_S32; break;
+				case ast::IntegralType::S64: dataType = ImGuiDataType_S64; break;
+				case ast::IntegralType::U8: dataType = ImGuiDataType_U8; break;
+				case ast::IntegralType::U16: dataType = ImGuiDataType_U16; break;
+				case ast::IntegralType::U32: dataType = ImGuiDataType_U32; break;
+				case ast::IntegralType::U64: dataType = ImGuiDataType_U64; break;
 			}
-			const char* format = value.IsSigned() ? "%i" : "%iu";
 
-			char buf[64];
-			UI::DataTypeFormatString(buf, IM_ARRAYSIZE(buf), dataType, &value.value, format);
-			UI::SetNextItemWidth(5.f + math::Max(UI::CalcTextSize(buf).x, 20.f));
-			UI::InputScalar("##value", dataType, &value.value, nullptr, nullptr, format);
-
-			PopInnerNodeStyle();
-			EndExprOutput(false);
+			UI::DataTypeFormatString(text, IM_ARRAYSIZE(text), dataType, &literal->value, "%i");
+			width = GetPinValueWidth(text, minWidth);
 		}
-		EndNode(ast);
-		PopNodeBackgroundColor();
-	}
-
-	void DrawLiteralFloating(AST::Tree& ast, AST::Id id, AST::CLiteralFloating& value)
-	{
-		const bool isDouble = value.type == AST::FloatingType::F64;
-		const Color color   = isDouble ? GetTypeColor<double>() : GetTypeColor<float>();
-		PushNodeBackgroundColor(color);
-		BeginNode(ast, id);
+		else if (const auto* literal = ast.TryGet<const ast::CLiteralFloating>(literalId))
 		{
-			BeginExprOutput(ast, id, false);
-			PushInnerNodeStyle();
-
-			const ImGuiDataType dataType = isDouble ? ImGuiDataType_Double : ImGuiDataType_Float;
-			char buf[64];
-			UI::DataTypeFormatString(buf, IM_ARRAYSIZE(buf), dataType, &value.value, "%.15g");
-			UI::SetNextItemWidth(5.f + math::Max(UI::CalcTextSize(buf).x, 20.f));
-			UI::InputScalar("##value", dataType, &value.value, nullptr, nullptr, "%.15g");
-
-			PopInnerNodeStyle();
-			EndExprOutput(false);
+			dataType = literal->type == ast::FloatingType::F64 ? ImGuiDataType_Double
+			                                                   : ImGuiDataType_Float;
+			UI::DataTypeFormatString(text, IM_ARRAYSIZE(text), dataType, &literal->value, "%.15g");
+			width = GetPinValueWidth(text, minWidth);
 		}
-		EndNode(ast);
-		PopNodeBackgroundColor();
-	}
 
-	void DrawLiteralString(AST::Tree& ast, AST::Id id, String& value)
-	{
-		static constexpr Color color = GetTypeColor<String>();
-		PushNodeBackgroundColor(color);
-
-		BeginNode(ast, id);
+		PushInnerNodeStyle();
+		// The value is exactly one grid tile tall: the font fills it and the frame adds no height
+		ImGui::PushStyleVar(
+		    ImGuiStyleVar_FramePadding, ImVec2{ImGui::GetStyle().FramePadding.x, 0.f});
+		ImGui::PushFont(ImGui::GetFont(), p::Max(gridSize - spacing, 1.f));
+		if (auto* literal = ast.TryGet<ast::CLiteralBool>(literalId))
 		{
-			BeginExprOutput(ast, id, false);
-			PushInnerNodeStyle();
-			ImGuiStyle& style     = ImGui::GetStyle();
+			UI::Checkbox("##value", &literal->value);
+			// A checkbox does not stretch, so the rest of the cell is reserved
+			const float checkboxWidth = ImGui::GetItemRectSize().x;
+			UI::SameLine();
+			ImGui::Dummy(ImVec2{p::Max(width - checkboxWidth, 0.f), 0.f});
+		}
+		else if (auto* literal = ast.TryGet<ast::CLiteralIntegral>(literalId))
+		{
+			UI::SetNextItemWidth(width);
+			UI::InputScalar("##value", dataType, &literal->value, nullptr, nullptr, "%i");
+		}
+		else if (auto* literal = ast.TryGet<ast::CLiteralFloating>(literalId))
+		{
+			UI::SetNextItemWidth(width);
+			UI::InputScalar("##value", dataType, &literal->value, nullptr, nullptr, "%.15g");
+		}
+		else if (auto* literal = ast.TryGet<ast::CLiteralString>(literalId))
+		{
+			String& value = literal->value;
+
+			i32 lineCount = 1;
+			for (p::sizet i = 0; i < value.size(); ++i)
+			{
+				if (value[i] == '\n')
+				{
+					++lineCount;
+				}
+			}
+
 			const ImVec2 textSize = ImGui::CalcTextSize(value.data(), value.data() + value.size());
-			const v2 minSize{settings.GetGridSize() * 4.f, settings.GetGridSize()};
-			const v2 size{math::Max(minSize.x, textSize.x), math::Max(minSize.y, textSize.y)};
-			UI::InputTextMultiline("##value", value, v2(size - settings.GetContentPadding()));
-			PopInnerNodeStyle();
+			const v2 size{p::Max(minWidth, textSize.x + 2.f * ImGui::GetStyle().FramePadding.x),
+			    lineCount * gridSize - 2.f * padding.y};
+
+			// The value is as tall as its lines, so no spacing may be added around it
+			const ImGuiStyle& style = ImGui::GetStyle();
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{style.FramePadding.x, 0.f});
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{style.ItemSpacing.x, 0.f});
+			UI::InputTextMultiline("##value", value, size);
+			ImGui::PopStyleVar(2);
+		}
+		ImGui::PopFont();
+		ImGui::PopStyleVar();
+		PopInnerNodeStyle();
+	}
+
+	// The default value of an input pin is a literal stored on the pin itself
+	bool HasPinDefaultValue(const ast::Tree& ast, ast::Id pinId)
+	{
+		return ast.Has<ast::CLiteralBool>(pinId) || ast.Has<ast::CLiteralIntegral>(pinId)
+		    || ast.Has<ast::CLiteralFloating>(pinId) || ast.Has<ast::CLiteralString>(pinId);
+	}
+
+	// Draws the default value of a disconnected pin. Nothing is stored until it is edited,
+	// and then the literal is added to the pin.
+	void DrawPinDefaultValue(p::TIdScopeRef<ast::CExprTypeId> scope, ast::Id pinId)
+	{
+		ast::Tree& ast   = static_cast<ast::Tree&>(scope.GetContext());
+		const auto* type = scope.TryGet<const ast::CExprTypeId>(pinId);
+		if (HasPinDefaultValue(ast, pinId))
+		{
+			DrawPinValue(ast, pinId);
+			return;
+		}
+		if (!type)
+		{
+			return;
+		}
+
+		const float gridSize = settings.GetGridSize() * Nodes::GetZoom();
+		const float minWidth = 32.f * Nodes::GetZoom();
+		const float spacing  = ImGui::GetStyle().ItemSpacing.y;
+		const auto& natives  = ast.GetNativeTypes();
+		char text[64]        = {};
+
+		PushInnerNodeStyle();
+		// The value is exactly one grid tile tall: the font fills it and the frame adds no height
+		ImGui::PushStyleVar(
+		    ImGuiStyleVar_FramePadding, ImVec2{ImGui::GetStyle().FramePadding.x, 0.f});
+		ImGui::PushFont(ImGui::GetFont(), p::Max(gridSize - spacing, 1.f));
+
+		if (type->id == natives.boolId)
+		{
+			bool value = false;
+			if (UI::Checkbox("##default", &value))
+			{
+				ast.Add<ast::CLiteralBool>(pinId).value = value;
+			}
+			// A checkbox does not stretch, so the rest of the cell is reserved
+			const float width = GetPinValueWidth(text, minWidth) - ImGui::GetItemRectSize().x;
+			UI::SameLine();
+			ImGui::Dummy(ImVec2{p::Max(width, 0.f), 0.f});
+		}
+		else if (type->id == natives.stringId)
+		{
+			String value;
+			if (UI::InputTextMultiline("##default", value,
+			        ImVec2{GetPinValueWidth(value.c_str(), minWidth), gridSize}))
+			{
+				ast.Add<ast::CLiteralString>(pinId).value = value;
+			}
+		}
+		else if (type->id == natives.floatId || type->id == natives.doubleId)
+		{
+			const bool isDouble          = type->id == natives.doubleId;
+			const ImGuiDataType dataType = isDouble ? ImGuiDataType_Double : ImGuiDataType_Float;
+			double value                 = 0.;
+
+			UI::DataTypeFormatString(text, IM_ARRAYSIZE(text), dataType, &value, "%.15g");
+			UI::SetNextItemWidth(GetPinValueWidth(text, minWidth));
+			if (UI::InputScalar("##default", dataType, &value))
+			{
+				auto& literal = ast.Add<ast::CLiteralFloating>(pinId);
+				literal.value = value;
+				literal.type  = isDouble ? ast::FloatingType::F64 : ast::FloatingType::F32;
+			}
+		}
+		else
+		{
+			// Integral values keep the exact width of the pin
+			ast::IntegralType integralType = ast::IntegralType::S64;
+			bool isSigned                  = true;
+			if (type->id == natives.i8Id)
+			{
+				integralType = ast::IntegralType::S8;
+			}
+			else if (type->id == natives.i16Id)
+			{
+				integralType = ast::IntegralType::S16;
+			}
+			else if (type->id == natives.i32Id)
+			{
+				integralType = ast::IntegralType::S32;
+			}
+			else if (type->id == natives.u8Id)
+			{
+				integralType = ast::IntegralType::U8;
+				isSigned     = false;
+			}
+			else if (type->id == natives.u16Id)
+			{
+				integralType = ast::IntegralType::U16;
+				isSigned     = false;
+			}
+			else if (type->id == natives.u32Id)
+			{
+				integralType = ast::IntegralType::U32;
+				isSigned     = false;
+			}
+			else if (type->id == natives.u64Id)
+			{
+				integralType = ast::IntegralType::U64;
+				isSigned     = false;
+			}
+
+			const ImGuiDataType dataType = isSigned ? ImGuiDataType_S64 : ImGuiDataType_U64;
+			p::u64 value                 = 0;
+
+			UI::DataTypeFormatString(text, IM_ARRAYSIZE(text), dataType, &value, "%i");
+			UI::SetNextItemWidth(GetPinValueWidth(text, minWidth));
+			if (UI::InputScalar("##default", dataType, &value))
+			{
+				auto& literal = ast.Add<ast::CLiteralIntegral>(pinId);
+				literal.value = value;
+				literal.type  = integralType;
+			}
+		}
+
+		ImGui::PopFont();
+		ImGui::PopStyleVar();
+		PopInnerNodeStyle();
+	}
+
+	// Draws a literal node: its value in a cell of its own, and the pin that carries it
+	void DrawLiteral(ast::Tree& ast, ast::Id id)
+	{
+		Color color = GetTypeColor<void>();
+		if (ast.Has<ast::CLiteralBool>(id))
+		{
+			color = GetTypeColor<bool>();
+		}
+		else if (const auto* literal = ast.TryGet<const ast::CLiteralIntegral>(id))
+		{
+			color = literal->IsSigned() ? GetTypeColor<i32>() : GetTypeColor<u32>();
+		}
+		else if (const auto* literal = ast.TryGet<const ast::CLiteralFloating>(id))
+		{
+			color = literal->type == ast::FloatingType::F64 ? GetTypeColor<double>()
+			                                                : GetTypeColor<float>();
+		}
+		else if (ast.Has<ast::CLiteralString>(id))
+		{
+			color = GetTypeColor<String>();
+		}
+
+		PushNodeBackgroundColor(color);
+		BeginNode(ast, id);
+		{
+			DrawPinValue(ast, id);
+
+			BeginExprOutput(ast, id, false);
+			UI::TextUnformatted("");
 			EndExprOutput(false);
 		}
 		EndNode(ast);
-
 		PopNodeBackgroundColor();
 	}
 
-	using FunctionDeclsAccess = p::TAccessRef<AST::CExprOutputs, AST::CInvalid, AST::CExprTypeId,
-	    AST::CNamespace, p::TWrite<AST::CChanged>, p::TWrite<AST::CFileDirty>, AST::CChild,
-	    AST::CFileRef, p::TWrite<CNodePosition>>;
-	void DrawFunctionDecls(FunctionDeclsAccess access, const TArray<AST::Id>& functionDecls)
+	using FunctionDeclsScope =
+	    p::TIdScopeRef<p::Writes<ast::CChanged, ast::CFileDirty, CNodePosition>, ast::CExprOutputs,
+	        ast::CInvalid, ast::CExprTypeId, ast::CNamespace, ast::CChild, ast::CFileRef>;
+	void DrawFunctionDecls(FunctionDeclsScope scope, const TArray<ast::Id>& functionDecls)
 	{
-		for (AST::Id functionId : functionDecls)
+		for (ast::Id functionId : functionDecls)
 		{
 			Tag name;
-			if (auto* ns = access.TryGet<const AST::CNamespace>(functionId))
+			if (auto* ns = scope.TryGet<const ast::CNamespace>(functionId))
 			{
 				name = ns->name;
 			}
 
 			PushNodeBackgroundColor(UI::GetNeutralColor(0));
 			PushNodeTitleColor(functionColor);
-			BeginNode(access, functionId);
+			BeginNode(scope, functionId);
 			{
-				Nodes::BeginNodeTitleBar();
+				Nodes::BeginTitleBar();
 				{
 					UI::Text(name.AsString());
-					UI::SameLine();
-
-					PushExecutionPinStyle();
-					Nodes::BeginOutput(i32(functionId), Nodes::PinShape_QuadFilled);
-					UI::Text("");
-					Nodes::EndOutput();
-					PopExecutionPinStyle();
+					AddStmtOutput(functionId);
 				}
-				Nodes::EndNodeTitleBar();
+				Nodes::EndTitleBar();
 
-				if (auto* outputs = access.TryGet<const AST::CExprOutputs>(functionId))
+				if (auto* outputs = scope.TryGet<const ast::CExprOutputs>(functionId))
 				{
-					DrawOutputs(access, *outputs);
+					DrawOutputs(scope, *outputs);
 				}
 			}
-			EndNode(access);
+			EndNode(scope);
 			PopNodeTitleColor();
 			PopNodeBackgroundColor();
 		}
 	}
 
-	void DrawReturnNode(TAccessRef<TWrite<CNodePosition>, TWrite<AST::CChanged>,
-	                        TWrite<AST::CFileDirty>, AST::CChild, AST::CFileRef>
-	                        access,
-	    AST::Id id)
+	void DrawReturnNode(
+	    p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
+	        ast::CFileRef, ast::CExprInputs, ast::CInvalid, ast::CExprTypeId, ast::CNamespace>
+	        scope,
+	    ast::Id id)
 	{
 		PushNodeBackgroundColor(rift::UI::GetNeutralColor(0));
 		PushNodeTitleColor(returnColor);
-		BeginNode(access, id);
+		BeginNode(scope, id);
 		{
-			Nodes::BeginNodeTitleBar();
+			Nodes::BeginTitleBar();
 			{
-				PushExecutionPinStyle();
-				Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
-				UI::TextUnformatted("");
-				Nodes::EndInput();
-				UI::SameLine();
-				PopExecutionPinStyle();
-
-				UI::BeginGroup();
+				AddStmtInput(id);
 				UI::TextUnformatted("Return");
-				UI::EndGroup();
 			}
-			Nodes::EndNodeTitleBar();
+			Nodes::EndTitleBar();
+
+			// Return arguments are populated from the connected function's outputs
+			if (const auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
+			{
+				DrawInputs(scope, *inputs);
+			}
 		}
-		EndNode(access);
+		EndNode(scope);
 		PopNodeTitleColor();
 		PopNodeBackgroundColor();
 	}
 
-	using CallsAccess = TAccessRef<TWrite<AST::CChanged>, TWrite<AST::CFileDirty>, AST::CChild,
-	    AST::CFileRef, AST::CExprCall, AST::CExprInputs, AST::CExprOutputs, AST::CNamespace,
-	    AST::CExprTypeId, AST::CInvalid, TWrite<CNodePosition>, AST::CDeclType>;
-	void DrawCalls(CallsAccess access, AST::Id typeId, const TArray<AST::Id>& childrenIds)
+	// Id of the type whose graph is being drawn
+	static ast::Id GetCurrentType(p::TIdScopeRef<const CTypeEditor> scope)
 	{
-		for (AST::Id id : childrenIds)
+		const Nodes::Context* context = Nodes::GetCurrentContext();
+		for (ast::Id typeId : p::FindAllIdsWith<CTypeEditor>(scope))
 		{
-			if (auto* call = access.TryGet<const AST::CExprCall>(id))
+			if (&scope.Get<const CTypeEditor>(typeId).nodesEditor == context->EditorCtx)
+			{
+				return typeId;
+			}
+		}
+		return ast::NoId;
+	}
+
+	// Opens the type that owns a function and selects its node there
+	void ShowFunction(ShowFunctionScope scope, ast::Id functionId)
+	{
+		const ast::Id owner = p::GetIdParent(scope, functionId);
+		if (IsNone(owner))
+		{
+			return;
+		}
+
+		if (owner == GetCurrentType(scope))
+		{
+			// The function is already in this graph. Select it
+			Nodes::ClearNodeSelection();
+			Nodes::SelectNode(functionId);
+			Nodes::MoveToNode(functionId, v2{150.f, 150.f});
+			return;
+		}
+
+		// Open the owning type and let its graph focus the function once drawn
+		OpenType(scope, owner);
+		scope.Get<CTypeEditor>(owner).pendingFocusId = functionId;
+	}
+
+	using CallsScope = TIdScopeRef<Writes<ast::CChanged, ast::CFileDirty, CNodePosition>,
+	    ast::CChild, ast::CFileRef, ast::CExprCall, ast::CExprInputs, ast::CExprOutputs,
+	    ast::CNamespace, ast::CExprTypeId, ast::CInvalid, ast::CDeclType>;
+	void DrawCalls(CallsScope scope, ast::Id typeId, const TArray<ast::Id>& childrenIds)
+	{
+		for (ast::Id id : childrenIds)
+		{
+			if (auto* call = scope.TryGet<const ast::CExprCall>(id))
 			{
 				StringView functionName = call->function.Last().AsString();
 
 				PushNodeBackgroundColor(rift::UI::GetNeutralColor(0));
 				PushNodeTitleColor(callColor);
-				BeginNode(access, id);
+				BeginNode(scope, id);
 				{
-					Nodes::BeginNodeTitleBar();
+					Nodes::BeginTitleBar();
 					{
-						PushExecutionPinStyle();
-
-						Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
-						UI::TextUnformatted("");
-						Nodes::EndInput();
-						UI::SameLine();
-
-						UI::BeginGroup();
+						AddStmtInput(id);
 						UI::TextUnformatted(functionName.data());
-						UI::EndGroup();
-
-						UI::SameLine();
-						Nodes::BeginOutput(i32(id), Nodes::PinShape_QuadFilled);
-						UI::TextUnformatted("");
-						Nodes::EndOutput();
-
-						PopExecutionPinStyle();
+						AddStmtOutput(id);
 					}
-					Nodes::EndNodeTitleBar();
+					Nodes::EndTitleBar();
 
-					// Inputs
-					UI::BeginGroup();
-					if (const auto* inputs = access.TryGet<const AST::CExprInputs>(id))
+					if (const auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
 					{
-						DrawInputs(access, *inputs);
+						DrawInputs(scope, *inputs);
 					}
-					UI::EndGroup();
-					UI::SameLine();
 
-					// Outputs
-					UI::BeginGroup();
-					if (const auto* outputs = access.TryGet<const AST::CExprOutputs>(id))
+					if (const auto* outputs = scope.TryGet<const ast::CExprOutputs>(id))
 					{
-						DrawOutputs(access, *outputs);
+						DrawOutputs(scope, *outputs);
 					}
-					UI::EndGroup();
 				}
-				EndNode(access);
+				EndNode(scope);
 				PopNodeTitleColor();
 				PopNodeBackgroundColor();
 			}
@@ -469,15 +772,81 @@ namespace rift::Editor::Graph
 	}
 
 
+	using AssignsScope = TIdScopeRef<Writes<ast::CChanged, ast::CFileDirty, CNodePosition>,
+	    ast::CChild, ast::CFileRef, ast::CStmtAssign, ast::CExprInputs, ast::CExprOutputs,
+	    ast::CNamespace, ast::CExprTypeId, ast::CInvalid, ast::CDeclVariable>;
+
+	// Assigns the value of an expression to a variable
+	void DrawAssigns(AssignsScope scope, const TArray<ast::Id>& children)
+	{
+		for (ast::Id id : FindIdsWith<ast::CStmtAssign>(scope, children))
+		{
+			const auto* assign = scope.TryGet<const ast::CStmtAssign>(id);
+			if (!assign)
+			{
+				continue;
+			}
+			const ast::Id variableId = assign->declarationId;
+
+			StringView name = "Invalid";
+			ast::Id typeId  = ast::NoId;
+			if (const auto* variable = scope.TryGet<const ast::CDeclVariable>(variableId))
+			{
+				typeId = variable->typeId;
+			}
+			if (scope.IsValid(variableId) && scope.Has<ast::CNamespace>(variableId))
+			{
+				name = scope.Get<const ast::CNamespace>(variableId).name.AsString();
+			}
+
+			const Color typeColor =
+			    GetTypeColor(static_cast<ast::Tree&>(scope.GetContext()), typeId);
+			PushNodeBackgroundColor(typeColor.Shade(0.25f));
+			PushNodeTitleColor(typeColor);
+			BeginNode(scope, id);
+			{
+				Nodes::BeginTitleBar();
+				{
+					AddStmtInput(id);
+					UI::TextUnformatted(name.data());
+					AddStmtOutput(id);
+				}
+				Nodes::EndTitleBar();
+
+				if (const auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
+				{
+					if (!inputs->pinIds.IsEmpty())
+					{
+						const bool connected = !inputs->linkedOutputs[0].IsNone();
+						AddExprInput(scope, inputs->pinIds[0], "", connected);
+					}
+				}
+
+				if (const auto* outputs = scope.TryGet<const ast::CExprOutputs>(id))
+				{
+					for (ast::Id pinId : outputs->pinIds)
+					{
+						AddExprOutput(scope, pinId);
+					}
+				}
+			}
+			EndNode(scope);
+			PopNodeTitleColor();
+			PopNodeBackgroundColor();
+		}
+	}
+
+
 	void Init()
 	{
 		Nodes::CreateContext();
-		settings.SetGridSize(settings.GetGridSize());
+		ApplyGraphSettings();
 	}
 
 	void Shutdown()
 	{
 		Nodes::DestroyContext();
+		pendingCasts.Clear();
 	}
 
 
@@ -488,30 +857,26 @@ namespace rift::Editor::Graph
 
 		Nodes::PushStyleVar(Nodes::StyleVar_PinLineThickness, 2.5f);
 		Nodes::PushStyleVar(Nodes::StyleVar_NodeCornerRounding, 1.f);
-		Nodes::PushStyleVar(Nodes::StyleVar_PinQuadSideLength, 10.f);
+		Nodes::PushStyleVar(Nodes::StyleVar_PinTriangleSideLength, 10.f);
 		Nodes::PushStyleVar(Nodes::StyleVar_PinDiamondSideLength, 10.f);
-		Nodes::PushStyleVar(Nodes::StyleVar_NodePadding, v2(10.f, 2.f));
-
+		Nodes::PushStyleVar(Nodes::StyleVar_NodePadding, v2(8.f, 1.f));
 		Nodes::PushStyleVar(Nodes::StyleVar_NodeBorderThickness, 0.f);
-
-		// UI::PushStyleCompact();
 	}
 
 	void PopNodeStyle()
 	{
-		// UI::PopStyleCompact();
-		Nodes::PopStyleVar(4);
+		Nodes::PopStyleVar(6);
 	}
 
 	void PushInnerNodeStyle()
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
 		const float padding =
-		    (settings.GetSpaceHeight(1) - GImGui->FontSize) * 0.5f - settings.verticalPadding;
+		    (settings.GetSpaceHeight() - GImGui->FontSize) * 0.5f - settings.verticalPadding;
 
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {style.FramePadding.x, padding});
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, p::v2{style.FramePadding.x, padding});
 		ImGui::PushStyleVar(
-		    ImGuiStyleVar_ItemSpacing, {style.ItemSpacing.x, settings.verticalPadding});
+		    ImGuiStyleVar_ItemSpacing, p::v2{style.ItemSpacing.x, settings.verticalPadding});
 	}
 
 	void PopInnerNodeStyle()
@@ -519,65 +884,50 @@ namespace rift::Editor::Graph
 		ImGui::PopStyleVar(2);
 	}
 
-	void DrawReturns(TAccessRef<TWrite<CNodePosition>, TWrite<AST::CChanged>,
-	                     TWrite<AST::CFileDirty>, AST::CChild, AST::CFileRef, AST::CStmtReturn>
-	                     access,
-	    const TArray<AST::Id>& children)
+	void DrawReturns(p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>,
+	                     ast::CChild, ast::CFileRef, ast::CStmtReturn, ast::CExprInputs,
+	                     ast::CInvalid, ast::CExprTypeId, ast::CNamespace>
+	                     scope,
+	    const TArray<ast::Id>& children)
 	{
-		for (AST::Id id : FindIdsWith<AST::CStmtReturn>(access, children))
+		for (ast::Id id : FindIdsWith<ast::CStmtReturn>(scope, children))
 		{
-			DrawReturnNode(access, id);
+			DrawReturnNode(scope, id);
 		}
 	}
 
-	void DrawLiterals(AST::Tree& ast, const TArray<AST::Id>& children)
+	void DrawLiterals(ast::Tree& ast, const TArray<ast::Id>& children)
 	{
-		for (AST::Id id : FindIdsWith<AST::CLiteralBool>(ast, children))
+		for (ast::Id id : children)
 		{
-			DrawLiteralBool(ast, id, ast.Get<AST::CLiteralBool>(id).value);
-		}
-
-		for (AST::Id id : FindIdsWith<AST::CLiteralIntegral>(ast, children))
-		{
-			DrawLiteralIntegral(ast, id, ast.Get<AST::CLiteralIntegral>(id));
-		}
-
-		for (AST::Id id : FindIdsWith<AST::CLiteralFloating>(ast, children))
-		{
-			DrawLiteralFloating(ast, id, ast.Get<AST::CLiteralFloating>(id));
-		}
-
-		for (AST::Id id : FindIdsWith<AST::CLiteralString>(ast, children))
-		{
-			DrawLiteralString(ast, id, ast.Get<AST::CLiteralString>(id).value);
+			if (ast.Has<ast::CLiteralBool>(id) || ast.Has<ast::CLiteralIntegral>(id)
+			    || ast.Has<ast::CLiteralFloating>(id) || ast.Has<ast::CLiteralString>(id))
+			{
+				DrawLiteral(ast, id);
+			}
 		}
 	}
 
-	void DrawVariableRefs(AST::Tree& ast, const TArray<AST::Id>& children)
+	void DrawVariableRefs(ast::Tree& ast, const TArray<ast::Id>& children)
 	{
-		String name;
-		for (AST::Id id : FindIdsWith<AST::CExprDeclRefId>(ast, children))
+		for (ast::Id id : FindIdsWith<ast::CExprDeclRefId>(ast, children))
 		{
-			AST::Id variableId = ast.Get<const AST::CExprDeclRefId>(id).declarationId;
+			ast::Id variableId = ast.Get<const ast::CExprDeclRefId>(id).declarationId;
 
-			const AST::CExprTypeId* exprType = ast.TryGet<AST::CExprTypeId>(id);
-			AST::Id typeId                   = exprType ? exprType->id : AST::NoId;
+			const ast::CExprTypeId* exprType = ast.TryGet<ast::CExprTypeId>(id);
+			ast::Id typeId                   = exprType ? exprType->id : ast::NoId;
 
 			const Color color = GetTypeColor(ast, typeId);
 			PushNodeBackgroundColor(color);
 
 			BeginNode(ast, id);
 			{
-				BeginExprOutput(ast, id, false);
-				PushInnerNodeStyle();
 				StringView name = "Invalid";
-				if (ast.IsValid(variableId) && ast.Has<AST::CNamespace>(variableId))
+				if (ast.IsValid(variableId) && ast.Has<ast::CNamespace>(variableId))
 				{
-					name = ast.Get<const AST::CNamespace>(variableId).name.AsString();
+					name = ast.Get<const ast::CNamespace>(variableId).name.AsString();
 				}
-				UI::Text(name);
-				PopInnerNodeStyle();
-				EndExprOutput(false);
+				AddExprOutput(ast, id, name);
 			}
 			EndNode(ast);
 
@@ -585,186 +935,285 @@ namespace rift::Editor::Graph
 		}
 	}
 
-	void DrawIfs(TAccessRef<TWrite<CNodePosition>, TWrite<AST::CChanged>, TWrite<AST::CFileDirty>,
-	                 AST::CChild, AST::CFileRef, AST::CStmtIf, AST::CStmtOutputs, AST::CExprInputs,
-	                 AST::CParent, AST::CExprTypeId>
-	                 access,
-	    const TArray<AST::Id>& children)
+	void DrawIfs(p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
+	                 ast::CFileRef, ast::CStmtIf, ast::CStmtOutputs, ast::CExprInputs, ast::CParent,
+	                 ast::CExprTypeId, ast::CInvalid>
+	                 scope,
+	    const TArray<ast::Id>& children)
 	{
 		PushNodeBackgroundColor(UI::GetNeutralColor(0));
 		PushNodeTitleColor(flowColor);
-		for (AST::Id id :
-		    FindIdsWith<AST::CStmtIf, AST::CExprInputs, AST::CStmtOutputs>(access, children))
+		for (ast::Id id :
+		    FindIdsWith<ast::CStmtIf, ast::CExprInputs, ast::CStmtOutputs>(scope, children))
 		{
-			BeginNode(access, id);
+			// Both pins are known upfront, so the node is skipped instead of left half built
+			auto& inputs            = scope.Get<const ast::CExprInputs>(id);
+			auto& outputs           = scope.Get<const ast::CStmtOutputs>(id);
+			const bool validInputs  = P_Ensure(inputs.pinIds.Size() == 1);
+			const bool validOutputs = P_Ensure(outputs.pinIds.Size() == 2);
+			if (!validInputs || !validOutputs)
 			{
-				Nodes::BeginNodeTitleBar();
-				{
-					UI::BeginGroup();
-					{
-						PushExecutionPinStyle();
-						Nodes::BeginInput(i32(id), Nodes::PinShape_QuadFilled);
-						UI::TextUnformatted("");
-						Nodes::EndInput();
-						PopExecutionPinStyle();
-
-						auto& inputs = access.Get<const AST::CExprInputs>(id);
-						if (!Ensure(inputs.pinIds.Size() == 1))
-						{
-							continue;
-						}
-						BeginExprInput(access, inputs.pinIds[0], false);
-						UI::TextUnformatted("");
-						EndExprInput(false);
-					}
-					UI::EndGroup();
-					UI::SameLine();
-
-					UI::BeginGroup();
-					UI::TextUnformatted("if");
-					UI::EndGroup();
-
-					UI::SameLine();
-					UI::BeginGroup();
-					{
-						auto& outputs = access.Get<const AST::CStmtOutputs>(id);
-						if (!Ensure(outputs.pinIds.Size() == 2))
-						{
-							continue;
-						}
-						PushExecutionPinStyle();
-						Nodes::BeginOutput(i32(outputs.pinIds[0]), Nodes::PinShape_QuadFilled);
-						UI::TextUnformatted("true");
-						Nodes::EndOutput();
-						Nodes::BeginOutput(i32(outputs.pinIds[1]), Nodes::PinShape_QuadFilled);
-						UI::TextUnformatted("false");
-						Nodes::EndOutput();
-						PopExecutionPinStyle();
-					}
-					UI::EndGroup();
-				}
-				Nodes::EndNodeTitleBar();
+				continue;
 			}
-			EndNode(access);
+
+			BeginNode(scope, id);
+			{
+				Nodes::BeginTitleBar();
+				{
+					AddStmtInput(id);
+					AddExprInput(scope, inputs.pinIds[0], "", !inputs.linkedOutputs[0].IsNone());
+					UI::TextUnformatted("if");
+					AddStmtOutput(outputs.pinIds[0], "true");
+					AddStmtOutput(outputs.pinIds[1], "false");
+				}
+				Nodes::EndTitleBar();
+			}
+			EndNode(scope);
+		}
+		PopNodeTitleColor();
+		PopNodeBackgroundColor();
+	}
+
+	void DrawFors(p::TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
+	                  ast::CFileRef, ast::CStmtFor, ast::CStmtOutputs, ast::CExprInputs,
+	                  ast::CExprOutputs, ast::CExprTypeId, ast::CInvalid>
+	                  scope,
+	    const TArray<ast::Id>& children)
+	{
+		PushNodeBackgroundColor(UI::GetNeutralColor(0));
+		PushNodeTitleColor(flowColor);
+		for (ast::Id id :
+		    FindIdsWith<ast::CStmtFor, ast::CExprInputs, ast::CStmtOutputs, ast::CExprOutputs>(
+		        scope, children))
+		{
+			// The pins are known upfront, so the node is skipped instead of left half built
+			auto& stmtOutputs        = scope.Get<const ast::CStmtOutputs>(id);
+			auto& inputs             = scope.Get<const ast::CExprInputs>(id);
+			auto& outputs            = scope.Get<const ast::CExprOutputs>(id);
+			const bool validStmtOuts = P_Ensure(stmtOutputs.pinIds.Size() == 2);
+			const bool validInputs   = P_Ensure(inputs.pinIds.Size() == 2);
+			const bool validOutputs  = P_Ensure(!outputs.pinIds.IsEmpty());
+			if (!validStmtOuts || !validInputs || !validOutputs)
+			{
+				continue;
+			}
+
+			BeginNode(scope, id);
+			{
+				Nodes::BeginTitleBar();
+				{
+					AddStmtInput(id);
+					UI::TextUnformatted("for");
+					AddStmtOutput(stmtOutputs.pinIds[0], "each");
+					AddStmtOutput(stmtOutputs.pinIds[1], "continue");
+				}
+				Nodes::EndTitleBar();
+
+				AddExprInput(scope, inputs.pinIds[0], "first", !inputs.linkedOutputs[0].IsNone());
+				AddExprInput(scope, inputs.pinIds[1], "end", !inputs.linkedOutputs[1].IsNone());
+				AddExprOutput(scope, outputs.pinIds[0], "index");
+			}
+			EndNode(scope);
 		}
 		PopNodeTitleColor();
 		PopNodeBackgroundColor();
 	}
 
 	void DrawUnaryOperators(
-	    TAccessRef<TWrite<CNodePosition>, TWrite<AST::CChanged>, TWrite<AST::CFileDirty>,
-	        AST::CChild, AST::CParent, AST::CFileRef, AST::CExprUnaryOperator, AST::CExprTypeId>
-	        access,
-	    const TArray<AST::Id>& children)
+	    TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
+	        ast::CParent, ast::CFileRef, ast::CExprUnaryOperator, ast::CExprTypeId, ast::CInvalid>
+	        scope,
+	    const TArray<ast::Id>& children)
 	{
-		for (AST::Id id : FindIdsWith<AST::CExprUnaryOperator>(access, children))
+		for (ast::Id id : FindIdsWith<ast::CExprUnaryOperator>(scope, children))
 		{
 			static constexpr Color color = UI::GetNeutralColor(0);
 
 			PushNodeBackgroundColor(color);
 
-			BeginNode(access, id);
+			BeginNode(scope, id);
 			{
-				BeginExprInput(access, id, false);
-				UI::TextUnformatted("");
-				EndExprInput(false);
-				UI::SameLine();
+				AddExprInput(scope, id);
 
-				const auto& op       = access.Get<const AST::CExprUnaryOperator>(id);
-				StringView shortName = Editor::GetUnaryOperatorName(op.type);
+				const auto& op       = scope.Get<const ast::CExprUnaryOperator>(id);
+				StringView shortName = editor::GetUnaryOperatorName(op.type);
 				UI::Text(shortName);
 
-				UI::SameLine();
-				BeginExprOutput(access, id, false);
-				UI::TextUnformatted("");
-				EndExprOutput(false);
+				AddExprOutput(scope, id);
 			}
-			EndNode(access);
+			EndNode(scope);
 			PopNodeBackgroundColor();
 		}
 	}
 
 	void DrawBinaryOperators(
-	    TAccessRef<TWrite<CNodePosition>, TWrite<AST::CChanged>, TWrite<AST::CFileDirty>,
-	        AST::CChild, AST::CParent, AST::CFileRef, AST::CExprBinaryOperator, AST::CExprTypeId>
-	        access,
-	    const TArray<AST::Id>& children)
+	    TIdScopeRef<Writes<CNodePosition, ast::CChanged, ast::CFileDirty>, ast::CChild,
+	        ast::CParent, ast::CFileRef, ast::CExprBinaryOperator, ast::CExprTypeId, ast::CInvalid>
+	        scope,
+	    const TArray<ast::Id>& children)
 	{
-		TArray<AST::Id> pinIds;
-		for (AST::Id id : FindIdsWith<AST::CExprBinaryOperator>(access, children))
+		TArray<ast::Id> pinIds;
+		for (ast::Id id : FindIdsWith<ast::CExprBinaryOperator>(scope, children))
 		{
 			static constexpr Color color = UI::GetNeutralColor(0);
-			PushNodeBackgroundColor(color);
 
-			BeginNode(access, id);
+			// Both pins are known upfront, so the node is skipped instead of left half built
+			pinIds.Clear(p::Shrink::No);
+			p::GetIdChildren(scope, id, pinIds);
+			if (!P_Ensure(pinIds.Size() >= 2))
 			{
-				pinIds.Clear(false);
-				p::GetChildren(access, id, pinIds);
-				if (!Ensure(pinIds.Size() >= 2))
-				{
-					continue;
-				}
-				UI::BeginGroup();
-				BeginExprInput(access, pinIds[0], false);
-				UI::TextUnformatted("");
-				EndExprInput(false);
+				continue;
+			}
 
-				BeginExprInput(access, pinIds[1], false);
-				UI::TextUnformatted("");
-				EndExprInput(false);
-				UI::EndGroup();
-				UI::SameLine();
+			PushNodeBackgroundColor(color);
+			BeginNode(scope, id);
+			{
+				AddExprInput(scope, pinIds[0]);
+				AddExprInput(scope, pinIds[1]);
 
-				const auto& op       = access.Get<const AST::CExprBinaryOperator>(id);
-				StringView shortName = Editor::GetBinaryOperatorName(op.type);
+				const auto& op       = scope.Get<const ast::CExprBinaryOperator>(id);
+				StringView shortName = editor::GetBinaryOperatorName(op.type);
 				UI::Text(shortName);
 
-				UI::SameLine();
-				BeginExprOutput(access, id, false);
-				UI::TextUnformatted("");
-				EndExprOutput(false);
+				AddExprOutput(scope, id);
 			}
-			EndNode(access);
+			EndNode(scope);
 			PopNodeBackgroundColor();
 		}
 	}
 
-	void DrawStatementLinks(TAccessRef<AST::CParent, AST::CStmtOutput, AST::CStmtOutputs>& access,
-	    const TArray<AST::Id>& children)
+	// Both pins of a cast are only known once its node has been drawn
+	static void SettlePendingCasts(ast::Tree& ast)
+	{
+		if (pendingCasts.IsEmpty())
+		{
+			return;
+		}
+
+		for (i32 i = pendingCasts.Size() - 1; i >= 0; --i)
+		{
+			const PendingCast pending = pendingCasts[i];
+			if (!ast.Has<ast::CExprCast>(pending.castId))
+			{
+				pendingCasts.RemoveAtSwap(i);
+				continue;
+			}
+
+			v2 outputPosition;
+			v2 inputPosition;
+			Color color;
+			if (!Nodes::GetPinScreenData(
+			        i32(pending.outputPinId.value), Nodes::PinType::Output, outputPosition, color)
+			    || !Nodes::GetPinScreenData(
+			        i32(pending.inputPinId.value), Nodes::PinType::Input, inputPosition, color))
+			{
+				continue;    // The pins aren't drawn yet
+			}
+			pendingCasts.RemoveAtSwap(i);
+
+			const float zoom = Nodes::GetZoom();
+			if (zoom <= 0.f)
+			{
+				continue;
+			}
+
+			// Overlap the pins, and keep the node on the grid
+			const v2 origin = Nodes::GetNodeGridSpacePos(pending.castId);
+			const v2 offset =
+			    (origin + (inputPosition - outputPosition) / zoom) * settings.GetInvGridSize();
+			const v2 position = v2{p::Round(offset.x), p::Round(offset.y)};
+			ast.GetOrAdd<CNodePosition>(pending.castId).position = position;
+			SetNodePosition(pending.castId, position);
+		}
+	}
+
+	void DrawCasts(ast::Tree& ast, const TArray<ast::Id>& children)
+	{
+		for (ast::Id id : FindIdsWith<ast::CExprCast>(ast, children))
+		{
+			const auto* inputs  = ast.TryGet<const ast::CExprInputs>(id);
+			const auto* outputs = ast.TryGet<const ast::CExprOutputs>(id);
+			if (!inputs || inputs->pinIds.IsEmpty() || !outputs || outputs->pinIds.IsEmpty())
+			{
+				continue;
+			}
+
+			static constexpr Color color = UI::GetNeutralColor(0);
+			PushNodeBackgroundColor(color);
+
+			BeginNode(ast, id);
+			{
+				// The node keeps a 3x1 grid footprint, with the pins on its corners
+				const float zoom          = Nodes::GetZoom();
+				const float gridSize      = settings.GetGridSize() * zoom;
+				const v2 padding          = Nodes::GetStyle().NodePadding * zoom;
+				const float contentHeight = p::Max(gridSize - padding.y * 2.f, 1.f);
+				// Every column is padded on both sides
+				const float contentWidth = p::Max(gridSize * 3.f - padding.x * 6.f, 1.f);
+
+				ImGui::PushFont(ImGui::GetFont(), contentHeight);
+
+				AddExprInput(ast, inputs->pinIds[0]);
+
+				const char* arrow      = ICON_FA_LONG_ARROW_ALT_RIGHT;
+				const float arrowWidth = UI::CalcTextSize(arrow).x;
+				const float arrowInset = p::Max((contentWidth - arrowWidth) * 0.5f, 0.f);
+				ImGui::Dummy(ImVec2{arrowInset, 0.f});
+				UI::SameLine(0.f, 0.f);
+				UI::PushTextColor(GetTypeColor(ast, GetPinType(ast, outputs->pinIds[0])));
+				UI::Text(arrow);
+				UI::PopTextColor();
+				UI::SameLine(0.f, 0.f);
+				ImGui::Dummy(ImVec2{arrowInset, 0.f});
+
+				AddExprOutput(ast, outputs->pinIds[0]);
+
+				ImGui::PopFont();
+			}
+			EndNode(ast);
+			PopNodeBackgroundColor();
+		}
+	}
+
+	void DrawStatementLinks(
+	    p::TIdScopeRef<ast::CParent, ast::CStmtOutput, ast::CStmtOutputs>& scope,
+	    const TArray<ast::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 2.f);
 		Nodes::PushStyleColor(Nodes::ColorVar_Link, executionColor);
-		Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, UI::Hovered(executionColor));
+		Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, UI::ToHovered(executionColor));
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, selectedColor);
 
-		for (AST::Id outputId : FindIdsWith<AST::CStmtOutput>(access, children))
+		for (ast::Id outputId : FindIdsWith<ast::CStmtOutput>(scope, children))
 		{
-			const auto* output = access.TryGet<const AST::CStmtOutput>(outputId);
-			if (output && access.IsValid(output->linkInputNode))
+			const auto* output = scope.TryGet<const ast::CStmtOutput>(outputId);
+			if (output && scope.IsValid(output->linkInputNode))
 			{
 				// Input pin ids equal input node ids
 				// Output pin ids equal output node ids
-				Nodes::Link(i32(output->linkInputNode), i32(outputId), i32(output->linkInputNode));
+				Nodes::Link(i32(output->linkInputNode.value), i32(outputId.value),
+				    i32(output->linkInputNode.value));
 			}
 		}
 
-		for (AST::Id outputId : FindIdsWith<AST::CStmtOutputs>(access, children))
+		for (ast::Id outputId : FindIdsWith<ast::CStmtOutputs>(scope, children))
 		{
-			if (const auto* outputs = access.TryGet<const AST::CStmtOutputs>(outputId))
+			if (const auto* outputs = scope.TryGet<const ast::CStmtOutputs>(outputId))
 			{
-				if (EnsureMsg(outputs->linkInputNodes.Size() == outputs->pinIds.Size(),
+				if (P_EnsureMsg(outputs->linkInputNodes.Size() == outputs->pinIds.Size(),
 				        "Inputs and pins must match. Graph might be corrupted."))
 				{
 					for (i32 i = 0; i < outputs->linkInputNodes.Size(); ++i)
 					{
-						const AST::Id outputPinId = outputs->pinIds[i];
-						const AST::Id inputNodeId = outputs->linkInputNodes[i];
-						if (access.IsValid(outputPinId) && access.IsValid(inputNodeId))
+						const ast::Id outputPinId = outputs->pinIds[i];
+						const ast::Id inputNodeId = outputs->linkInputNodes[i];
+						if (scope.IsValid(outputPinId) && scope.IsValid(inputNodeId))
 						{
 							// Input pin ids equal input node ids
 							// TODO: Execution pin ids atm are the same as the node id.
 							// Implement proper output pin support
-							Nodes::Link(i32(inputNodeId), i32(outputPinId), i32(inputNodeId));
+							Nodes::Link(i32(inputNodeId.value), i32(outputPinId.value),
+							    i32(inputNodeId.value));
 						}
 					}
 				}
@@ -775,48 +1224,49 @@ namespace rift::Editor::Graph
 	}
 
 	void DrawExpressionLinks(
-	    TAccessRef<AST::CParent, AST::CExprInputs, AST::CExprTypeId, AST::CInvalid>& access,
-	    const TArray<AST::Id>& children)
+	    TIdScopeRef<ast::CParent, ast::CExprInputs, ast::CExprTypeId, ast::CInvalid>& scope,
+	    const TArray<ast::Id>& children)
 	{
 		Nodes::PushStyleVar(Nodes::StyleVar_LinkThickness, 1.5f);
 		Nodes::PushStyleColor(Nodes::ColorVar_LinkSelected, selectedColor);
 
-		for (AST::Id nodeId : FindIdsWith<AST::CExprInputs>(access, children))
+		for (ast::Id nodeId : FindIdsWith<ast::CExprInputs>(scope, children))
 		{
-			const auto& inputs = access.Get<const AST::CExprInputs>(nodeId);
-			if (!EnsureMsg(inputs.pinIds.Size() == inputs.linkedOutputs.Size(),
-			        "Inputs are invalid. The graph might be corrupted.")) [[likely]]
+			const auto& inputs = scope.Get<const ast::CExprInputs>(nodeId);
+			if (inputs.pinIds.Size() != inputs.linkedOutputs.Size()) [[unlikely]]
 			{
+				p::Warning("Corrupted expression '{}' ({} pins vs {} links). Skipping its links.",
+				    nodeId, inputs.pinIds.Size(), inputs.linkedOutputs.Size());
 				continue;
 			}
 
 			for (i32 i = 0; i < inputs.linkedOutputs.Size(); ++i)
 			{
-				AST::Id inputId        = inputs.pinIds[i];
-				AST::ExprOutput output = inputs.linkedOutputs[i];
-				if (!access.IsValid(inputId) || !access.IsValid(output.pinId))
+				ast::Id inputId        = inputs.pinIds[i];
+				ast::ExprOutput output = inputs.linkedOutputs[i];
+				if (!scope.IsValid(inputId) || !scope.IsValid(output.pinId))
 				{
 					continue;
 				}
 
 				Color color = GetTypeColor<void>();
-				if (access.Has<AST::CInvalid>(inputId) || access.Has<AST::CInvalid>(output.pinId))
+				if (scope.Has<ast::CInvalid>(inputId) || scope.Has<ast::CInvalid>(output.pinId))
 				{
 					color = invalidColor;
 				}
-				else if (const auto* type = access.TryGet<const AST::CExprTypeId>(output.pinId))
+				else if (const auto* type = scope.TryGet<const ast::CExprTypeId>(output.pinId))
 				{
-					color = GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), type->id);
+					color = GetTypeColor(static_cast<ast::Tree&>(scope.GetContext()), type->id);
 				}
-				else if (const auto* type = access.TryGet<const AST::CExprTypeId>(inputId))
+				else if (const auto* type = scope.TryGet<const ast::CExprTypeId>(inputId))
 				{
-					color = GetTypeColor(static_cast<AST::Tree&>(access.GetContext()), type->id);
+					color = GetTypeColor(static_cast<ast::Tree&>(scope.GetContext()), type->id);
 				}
 
 				Nodes::PushStyleColor(Nodes::ColorVar_Link, color);
-				Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, UI::Hovered(color));
+				Nodes::PushStyleColor(Nodes::ColorVar_LinkHovered, UI::ToHovered(color));
 
-				Nodes::Link(i32(inputId), i32(output.pinId), i32(inputId));
+				Nodes::Link(i32(inputId.value), i32(output.pinId.value), i32(inputId.value));
 
 				Nodes::PopStyleColor(2);
 			}
@@ -825,7 +1275,7 @@ namespace rift::Editor::Graph
 		Nodes::PopStyleVar();
 	}
 
-	void DrawTypeGraph(AST::Tree& ast, AST::Id typeId, CTypeEditor& typeEditor)
+	void DrawTypeGraph(ast::Tree& ast, ast::Id typeId, CTypeEditor& typeEditor)
 	{
 		if (!typeEditor.showGraph)
 		{
@@ -834,99 +1284,292 @@ namespace rift::Editor::Graph
 
 		static String graphId;
 		graphId.clear();
-		Strings::FormatTo(graphId, "Graph##{}", typeId);
+		p::FormatTo(graphId, "Graph##{}", typeId);
 
 		bool wantsToOpenContextMenu = false;
 		typeEditor.layout.BindNextWindowToNode(CTypeEditor::centralNode, ImGuiCond_Appearing);
 		if (UI::Begin(graphId.c_str(), &typeEditor.showGraph, ImGuiWindowFlags_NoCollapse))
 		{
 			Nodes::SetEditorContext(&typeEditor.nodesEditor);
-			Nodes::GetCurrentContext()->canCreateLinks = AST::HasFunctionBodies(ast, typeId);
-			Nodes::BeginNodeEditor();
-			PushNodeStyle();
-
-			if (!ImGui::IsAnyItemHovered() && Nodes::IsEditorHovered()
-			    && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+			if (UI::IsWindowAppearing())
 			{
-				wantsToOpenContextMenu = true;
+				Nodes::SetZoom(GetUserSettings<EditorSettings>().zoom.current);
+			}
+			Nodes::GetCurrentContext()->canCreateLinks = ast::HasFunctionBodies(ast, typeId);
+			{
+				Nodes::BeginNodeEditor();
+				PushNodeStyle();
+
+				if (!ImGui::IsAnyItemHovered() && Nodes::IsEditorHovered()
+				    && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+				{
+					wantsToOpenContextMenu = true;
+				}
+
+				TArray<ast::Id> children;
+				p::GetIdChildren(ast, typeId, children);
+
+				// Nodes
+				DrawFunctionDecls(ast, FindIdsWith<ast::CDeclFunction>(ast, children));
+				DrawReturns(ast, children);
+				DrawCalls(ast, typeId, children);
+				DrawLiterals(ast, children);
+				DrawVariableRefs(ast, children);
+				DrawAssigns(ast, children);
+
+				DrawIfs(ast, children);
+				DrawFors(ast, children);
+				DrawUnaryOperators(ast, children);
+				DrawBinaryOperators(ast, children);
+				DrawCasts(ast, children);
+
+				// Links
+				DrawStatementLinks(ast, children);
+				DrawExpressionLinks(ast, children);
+
+				Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
+				PopNodeStyle();
+				Nodes::EndNodeEditor();
+
+				// Focus a node requested by another graph now that it's been drawn
+				if (!IsNone(typeEditor.pendingFocusId))
+				{
+					const ast::Id nodeId      = typeEditor.pendingFocusId;
+					typeEditor.pendingFocusId = ast::NoId;
+					ShowFunction(ast, nodeId);
+				}
+				// The hovered node is known once the editor has been drawn
+				if (UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				{
+					const ast::Id hoveredId = Nodes::GetHoveredNode();
+					if (const auto* callId = ast.TryGet<const ast::CExprCallId>(hoveredId))
+					{
+						ShowFunction(ast, callId->functionId);
+					}
+				}
+
+				// Now that the pins are drawn, casts spawned from a link can be attached to
+				// the pin they feed
+				SettlePendingCasts(ast);
 			}
 
-			TArray<AST::Id> children;
-			p::GetChildren(ast, typeId, children);
+			// The focused graph stores the current zoom; the pending write is flushed even if
+			// focus moves elsewhere before it settles.
+			PersistZoom();
 
-			// Nodes
-			DrawFunctionDecls(ast, FindIdsWith<AST::CDeclFunction>(ast, children));
-			DrawReturns(ast, children);
-			DrawCalls(ast, typeId, children);
-			DrawLiterals(ast, children);
-			DrawVariableRefs(ast, children);
-
-			DrawIfs(ast, children);
-			DrawUnaryOperators(ast, children);
-			DrawBinaryOperators(ast, children);
-
-			// Links
-			DrawStatementLinks(ast, children);
-			DrawExpressionLinks(ast, children);
-
-			Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
-			PopNodeStyle();
-
-			if (UI::IsKeyReleased(GLFW_KEY_DELETE))
+			if (UI::IsKeyReleased(ImGuiKey_Delete))
 			{
-				AST::RemoveNodes(ast, Nodes::GetSelectedNodes());
+				// Remove both selected and hovered links, so a link can be deleted without
+				// having to box-select it first
+				TArray<ast::Id> linksToRemove;
+				Nodes::GetSelectedLinks(linksToRemove);
+				const ast::Id hoveredLinkId = Nodes::GetHoveredLink();
+				if (!IsNone(hoveredLinkId))
+				{
+					linksToRemove.AddUnique(hoveredLinkId);
+				}
+				if (!linksToRemove.IsEmpty())
+				{
+					ScopedChange(ast, linksToRemove);
+					for (ast::Id linkId : linksToRemove)
+					{
+						ast::DisconnectStmtLink(ast, linkId);
+						ast::DisconnectExpr(ast, ast::GetExprInputFromPin(ast, linkId));
+					}
+				}
+				ast::RemoveNodes(ast, Nodes::GetSelectedNodes());
 			}
-			Nodes::EndNodeEditor();
 
+			// Move selected nodes in the pressed direction, one grid tile at a time
+			const ImGuiKey directionKeys[4] = {
+			    ImGuiKey_UpArrow, ImGuiKey_DownArrow, ImGuiKey_LeftArrow, ImGuiKey_RightArrow};
+			const v2 directionDeltas[4] = {
+			    {0.f,  -1.f},
+                {0.f,  1.f },
+                {-1.f, 0.f },
+                {1.f,  0.f }
+            };
+			const bool fastMove =
+			    UI::IsKeyDown(ImGuiKey_LeftShift) || UI::IsKeyDown(ImGuiKey_RightShift);
+			const float step = fastMove ? fastMoveTiles : 1.f;
+			for (int i = 0; i < 4; ++i)
+			{
+				if (UI::IsKeyPressed(directionKeys[i]))
+				{
+					const TArray<ast::Id>& selectedNodes = Nodes::GetSelectedNodes();
+					if (!selectedNodes.IsEmpty())
+					{
+						ScopedChange(ast, selectedNodes);
+						for (ast::Id nodeId : selectedNodes)
+						{
+							const v2 newPosition =
+							    GetNodePosition(nodeId) + directionDeltas[i] * step;
+							SetNodePosition(nodeId, newPosition);
+							ast.GetOrAdd<CNodePosition>(nodeId).position = newPosition;
+						}
+					}
+				}
+			}
 
 			Nodes::Id outputPin;
 			Nodes::Id inputPin;
 			if (Nodes::IsLinkCreated(outputPin, inputPin))
 			{
-				AST::Id pinIds[2]{AST::Id(outputPin), AST::Id(inputPin)};
+				const ast::Id outputPinId = ast::Id::MakeRaw(outputPin);
+				const ast::Id inputPinId  = ast::Id::MakeRaw(inputPin);
+				ast::Id pinIds[2]{outputPinId, inputPinId};
 				ScopedChange(ast, pinIds);
-				AST::TryConnectStmt(ast, AST::Id(outputPin), AST::Id(inputPin));
-				AST::TryConnectExpr(ast, AST::GetExprOutputFromPin(ast, AST::Id(outputPin)),
-				    AST::GetExprInputFromPin(ast, AST::Id(inputPin)));
+				ast::TryConnectStmt(ast, outputPinId, inputPinId);
+
+				const ast::ExprOutput output = ast::GetExprOutputFromPin(ast, outputPinId);
+				const ast::ExprInput input   = ast::GetExprInputFromPin(ast, inputPinId);
+				if (!ast::TryConnectExpr(ast, output, input))
+				{
+					// The value needs an explicit cast, which goes in a node of its own placed
+					// over the pin it feeds
+					const ast::Id castId = InsertCastNode(ast, typeId, output, input);
+					if (!p::IsNone(castId))
+					{
+						const auto* castOutputs = ast.TryGet<const ast::CExprOutputs>(castId);
+						if (castOutputs && !castOutputs->pinIds.IsEmpty())
+						{
+							// Rough position until the node is drawn and its pins are known
+							const v2 pinPosition = settings.GetGridPosition(UI::GetMousePos());
+							ast.Add<CNodePosition>(castId, pinPosition - v2(3.f, 0.5f));
+							pendingCasts.Add({castId, castOutputs->pinIds[0], inputPinId});
+						}
+					}
+				}
 			}
 			Nodes::Id linkId;
 			if (Nodes::IsLinkDestroyed(linkId))
 			{
-				ScopedChange(ast, AST::Id(linkId));
+				ScopedChange(ast, ast::Id::MakeRaw(linkId));
 				// linkId is always the outputId
-				AST::DisconnectStmtLink(ast, AST::Id(linkId));
-				AST::DisconnectExpr(ast, AST::GetExprInputFromPin(ast, AST::Id(linkId)));
+				ast::DisconnectStmtLink(ast, ast::Id::MakeRaw(linkId));
+				ast::DisconnectExpr(ast, ast::GetExprInputFromPin(ast, ast::Id::MakeRaw(linkId)));
 			}
 
-			AST::Id hoveredNodeId = Nodes::GetHoveredNode();
+			// A link dropped over the canvas opens the context menu to pick a node for it
+			Nodes::Id droppedOutput;
+			Nodes::Id droppedInput;
+			if (Nodes::IsLinkDropped(&droppedOutput, &droppedInput))
+			{
+				const v2 releasePos = UI::GetMousePos();
+				if (droppedOutput != 0)
+				{
+					typeEditor.menuContext = {
+					    ast::Id::MakeRaw(droppedOutput), Nodes::PinType::Output, releasePos};
+				}
+				else if (droppedInput != 0)
+				{
+					typeEditor.menuContext = {
+					    ast::Id::MakeRaw(droppedInput), Nodes::PinType::Input, releasePos};
+				}
+				wantsToOpenContextMenu = typeEditor.menuContext.HasSource();
+			}
+
+			// Keep the dropped link visible under the context menu until it closes
+			{
+				v2 startPos;
+				Color startColor;
+				if (typeEditor.menuContext.HasSource()
+				    && Nodes::GetPinScreenData(i32(typeEditor.menuContext.sourcePin.value),
+				        typeEditor.menuContext.type, startPos, startColor))
+				{
+					// Keep the link anchored where it was released instead of following
+					// the mouse, so it stays put while the menu is open
+					const v2 endPos                 = typeEditor.menuContext.location;
+					const Nodes::CubicBezier bezier = Nodes::MakeCubicBezier(startPos, endPos,
+					    typeEditor.menuContext.type, Nodes::GetStyle().linkLineSegmentsPerLength);
+					ImGui::GetWindowDrawList()->AddBezierCubic(bezier.p0, bezier.p1, bezier.p2,
+					    bezier.p3, startColor.ToPackedABGR(), Nodes::GetStyle().LinkThickness,
+					    bezier.numSegments);
+				}
+			}
+
+			// Show the hovered pin's type in a tooltip
+			Nodes::Id hoveredPinId;
+			Nodes::PinType hoveredPinType;
+			if (Nodes::GetHoveredPin(hoveredPinId, hoveredPinType))
+			{
+				const ast::Id pinId = ast::Id::MakeRaw(hoveredPinId);
+				StringView typeName;
+				if (const auto* typeId = ast.TryGet<const ast::CExprTypeId>(pinId))
+				{
+					if (const auto* typeNs = ast.TryGet<const ast::CNamespace>(typeId->id))
+					{
+						typeName = typeNs->name.AsString();
+					}
+				}
+				else
+				{
+					typeName = "Statement";
+				}
+				if (typeName.empty())
+				{
+					typeName = "?";
+				}
+				UI::SetTooltip(typeName);
+			}
+
+			ast::Id hoveredNodeId = Nodes::GetHoveredNode();
 			if (!IsNone(hoveredNodeId) && Nodes::IsNodeSelected(hoveredNodeId)
 			    && UI::IsMouseClicked(ImGuiMouseButton_Left))
 			{
-				typeEditor.selectedPropertyId = Nodes::GetHoveredNode();
+				if (ast.Has<ast::CStmtReturn>(hoveredNodeId))
+				{
+					// A return node has no details of its own. Instead show the function it
+					// returns into, and only when it's connected to one.
+					const ast::Id functionId =
+					    ast::FunctionsSystem::FindOwningFunction(ast, hoveredNodeId);
+					if (!IsNone(functionId))
+					{
+						typeEditor.selectedPropertyId = functionId;
+					}
+				}
+				else
+				{
+					typeEditor.selectedPropertyId = hoveredNodeId;
+				}
 			}
 
-			static AST::Id contextHoveredNodeId = AST::NoId;
-			static AST::Id contextHoveredLinkId = AST::NoId;
 			if (wantsToOpenContextMenu)
 			{
-				contextHoveredNodeId = Nodes::GetHoveredNode();
-				contextHoveredLinkId = Nodes::GetHoveredLink();
+				if (typeEditor.menuContext.HasSource())
+				{
+					// Always show the (filtered) graph menu when a link was dropped, even
+					// if the cursor ended over a node
+					typeEditor.menuContext.hoveredNodeId = ast::NoId;
+					typeEditor.menuContext.hoveredLinkId = ast::NoId;
+				}
+				else
+				{
+					typeEditor.menuContext.hoveredNodeId = Nodes::GetHoveredNode();
+					typeEditor.menuContext.hoveredLinkId = Nodes::GetHoveredLink();
+				}
 				ImGui::OpenPopup("ContextMenu", ImGuiPopupFlags_AnyPopup);
 			}
-			DrawContextMenu(ast, typeId, contextHoveredNodeId, contextHoveredLinkId);
+			DrawContextMenu(ast, typeId, typeEditor.menuContext);
+
+			// Forget the pin that was dropped once the menu goes away
+			if (!ImGui::IsPopupOpen("ContextMenu"))
+			{
+				typeEditor.menuContext = {};
+			}
 		}
 		UI::End();
 	}
 
-	void SetNodePosition(AST::Id id, v2 position)
+	void SetNodePosition(ast::Id id, v2 position)
 	{
 		position *= settings.GetGridSize();
 		Nodes::SetNodeGridSpacePos(id, position);
 	}
 
-	v2 GetNodePosition(AST::Id id)
+	v2 GetNodePosition(ast::Id id)
 	{
 		const v2 pos = Nodes::GetNodeGridSpacePos(id);
 		return v2{pos.x * settings.GetInvGridSize(), pos.y * settings.GetInvGridSize()}.Floor();
 	}
-}    // namespace rift::Editor::Graph
+}    // namespace rift::editor::Graph

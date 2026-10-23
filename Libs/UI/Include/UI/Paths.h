@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
@@ -7,8 +7,5 @@
 
 namespace rift::Paths
 {
-	using namespace p;
-
-
-	Path GetResourcesPath();
+	p::String GetResourcesPath();
 };    // namespace rift::Paths

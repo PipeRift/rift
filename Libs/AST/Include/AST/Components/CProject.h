@@ -1,13 +1,12 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
-
-namespace rift::AST
+namespace rift::ast
 {
-	struct CProject : public p::Struct
+	struct CProject
 	{
-		STRUCT(CProject, p::Struct)
+		P_STRUCT(CProject)
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

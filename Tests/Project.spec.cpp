@@ -1,75 +1,74 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include <AST/Components/CModule.h>
 #include <AST/Systems/LoadSystem.h>
 #include <AST/Utils/ModuleUtils.h>
-#include <bandit/bandit.h>
 #include <Pipe/Files/Files.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/Files/PlatformPaths.h>
 #include <Pipe/Memory/OwnPtr.h>
-
-#include <chrono>
-#include <thread>
+#include <PipeTest.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace rift;
 using namespace p;
-using namespace std::chrono_literals;
 
-String testProjectPath = p::JoinPaths(GetCurrentPath(), "TestProject");
+const String testProjectPath = p::JoinPaths(PlatformPaths::GetCurrentPath(), "TestProject");
 
 
-go_bandit([]() {
-	describe("Project", []() {
-		before_each([]() {
-			files::Delete(testProjectPath, true, false);
+P_SPEC("Project", []()
+{
+	BeforeEach([]()
+	{
+		Delete(testProjectPath, true, false);
 
-			if (!files::ExistsAsFolder(testProjectPath))
-			{
-				files::CreateFolder(testProjectPath);
-			}
-		});
+		if (!ExistsAsFolder(testProjectPath))
+		{
+			CreateFolder(testProjectPath);
+		}
+	});
 
-		after_each([]() {
-			files::Delete(testProjectPath);
-		});
+	AfterEach([]()
+	{
+		Delete(testProjectPath);
+	});
 
-		it("Can load empty descriptor", [&]() {
-			files::SaveStringFile(p::JoinPaths(testProjectPath, AST::moduleFilename), "{}");
+	It("Can load empty descriptor", [&]()
+	{
+		SaveStringFile(p::JoinPaths(testProjectPath, ast::moduleFilename), "{}");
 
-			AST::Tree ast;
-			bool result = AST::OpenProject(ast, testProjectPath);
-			AssertThat(result, Equals(true));
-			AssertThat(AST::HasProject(ast), Equals(true));
-		});
+		ast::Tree ast;
+		bool result = ast::OpenProject(ast, testProjectPath);
+		Expect(result).ToBeTrue();
+		Expect(ast::HasProject(ast)).ToBeTrue();
+	});
 
-		it("Project name equals the folder", [&]() {
-			files::SaveStringFile(p::JoinPaths(testProjectPath, AST::moduleFilename), "{}");
+	It("Project name equals the folder", [&]()
+	{
+		SaveStringFile(p::JoinPaths(testProjectPath, ast::moduleFilename), "{}");
 
-			AST::Tree ast;
-			bool result = AST::OpenProject(ast, testProjectPath);
-			AssertThat(result, Equals(true));
-			AssertThat(AST::HasProject(ast), Equals(true));
+		ast::Tree ast;
+		bool result = ast::OpenProject(ast, testProjectPath);
+		Expect(result).ToBeTrue();
+		Expect(ast::HasProject(ast)).ToBeTrue();
 
-			StringView projectName = AST::GetProjectName(ast).AsString();
-			AssertThat(projectName, Equals("TestProject"));
-		});
+		StringView projectName = ast::GetProjectName(ast).AsString();
+		Expect(projectName).ToEqual("TestProject");
+	});
 
-		// TODO: Fix module loading. They can't load from CFileRef pointing to the folder and not
-		// the file
-		it("Project name can be overriden", [&]() {
-			files::SaveStringFile(
-			    p::JoinPaths(testProjectPath, AST::moduleFilename), "{\"name\": \"SomeProject\"}");
+	// TODO: Fix module loading. They can't load from CFileRef pointing to the folder and not
+	// the file
+	It("Project name can be overriden", [&]()
+	{
+		SaveStringFile(
+		    p::JoinPaths(testProjectPath, ast::moduleFilename), "{\"CNamespace\": \"SomeProject\"}");
 
-			AST::Tree ast;
-			bool result = AST::OpenProject(ast, testProjectPath);
-			AssertThat(result, Equals(true));
-			AssertThat(AST::HasProject(ast), Equals(true));
+		ast::Tree ast;
+		bool result = ast::OpenProject(ast, testProjectPath);
+		Expect(result).ToBeTrue();
+		Expect(ast::HasProject(ast)).ToBeTrue();
 
-			StringView projectName = AST::GetProjectName(ast).AsString();
-			AssertThat(projectName, Equals("SomeProject"));
-		});
+		StringView projectName = ast::GetProjectName(ast).AsString();
+		Expect(projectName).ToEqual("SomeProject");
 	});
 });

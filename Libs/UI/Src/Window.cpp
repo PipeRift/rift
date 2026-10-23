@@ -1,8 +1,7 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "UI/Window.h"
 
-#include "UI/Inspection.h"
 #include "UI/Style.h"
 #include "UI/UI.h"
 
@@ -15,22 +14,38 @@
 #include <GL/gl3w.h>
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
+#if P_PLATFORM_WINDOWS
+	#define GLFW_EXPOSE_NATIVE_WIN32
+#endif
+#include "UI/Style.h"
+
+#include <GLFW/glfw3native.h>
 #include <Pipe/Core/Log.h>
-#include <Pipe/Core/Profiler.h>
-#include <Pipe/Math/Color.h>
+#include <Pipe/Files/Paths.h>
+#include <Pipe/Files/PlatformPaths.h>
+#include <PipeColor.h>
+
+#if P_PLATFORM_WINDOWS
+	#include <dwmapi.h>
+	#pragma comment(lib, "dwmapi")
+#endif
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 
 namespace rift::UI
 {
-	using namespace p::math;
-
-
-	static GLFWwindow* gWindow = nullptr;
+	static GLFWwindow* gWindow             = nullptr;
+	constexpr p::LinearColor titleBarColor = GetNeutralColor(0);
 
 	void OnGl3WError(int error, const char* description)
 	{
-		p::Error("Glfw Error {}: {}", error, description);
+		p::Error("Glfw Error {}: {}", error, p::StringView{description});
 	}
+
+	void ApplyDarkTitleBar(GLFWwindow* window);
 
 	bool Init()
 	{
@@ -64,6 +79,8 @@ namespace rift::UI
 			return false;
 		}
 
+		ApplyDarkTitleBar(gWindow);
+
 		glfwMakeContextCurrent(gWindow);
 		glfwSwapInterval(1);    // Enable vsync
 
@@ -95,7 +112,11 @@ namespace rift::UI
 		ImGui_ImplGlfw_InitForOpenGL(gWindow, true);
 		ImGui_ImplOpenGL3_Init(glslVersion);
 
-		RegisterCoreKeyValueInspections();
+		// Build fonts after backends set ImGuiBackendFlags_RendererHasTextures
+		ImGui::GetIO().Fonts->Build();
+
+		SetWindowIcon();
+
 		return true;
 	}
 
@@ -117,7 +138,6 @@ namespace rift::UI
 
 	void PreFrame()
 	{
-		ZoneScopedN("PreFrame");
 		glfwPollEvents();
 
 		ImGui_ImplOpenGL3_NewFrame();
@@ -127,23 +147,19 @@ namespace rift::UI
 
 	void Render()
 	{
-		ZoneScopedC(0xA245D1);
-
 		ImGui::Render();
-		i32 displayW, displayH;
+		p::i32 displayW, displayH;
 		glfwGetFramebufferSize(gWindow, &displayW, &displayH);
 		glViewport(0, 0, displayW, displayH);
 
-		static constexpr LinearColor clearColor{0.1f, 0.1f, 0.1f, 1.00f};
+		static constexpr p::LinearColor clearColor{0.1f, 0.1f, 0.1f, 1.00f};
 		glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 		glClear(GL_COLOR_BUFFER_BIT);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		// Update and Render additional Platform Windows
 		// (Platform functions may change the current OpenGL context, so we save/restore it to
-		// make it easier to paste this code elsewhere.
-		//  For this specific demo app we could also call glfwMakeContextCurrent(window)
-		//  directly)
+		// make it easier to paste this code elsewhere)
 		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			GLFWwindow* backupCurrentContext = glfwGetCurrentContext();
@@ -167,5 +183,74 @@ namespace rift::UI
 	GLFWwindow* GetWindow()
 	{
 		return gWindow;
+	}
+
+	void SetWindowIcon()
+	{
+		// Wayland doesn't support window icons (they come from the .desktop file),
+		// so calling glfwSetWindowIcon there just emits an error.
+#if defined(GLFW_PLATFORM_WAYLAND)
+		if (glfwGetPlatform() == GLFW_PLATFORM_WAYLAND)
+		{
+			return;
+		}
+#endif
+
+		constexpr p::i32 iconCount = 3;
+		GLFWimage images[iconCount];
+		p::String paths[iconCount]{
+		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_64.png"),
+		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_128.png"),
+		    p::JoinPaths(p::PlatformPaths::GetBasePath(), "Resources/Editor/Icons/Logo_256.png")};
+		for (p::i32 i = 0; i < iconCount; ++i)
+		{
+			images[i].pixels =
+			    stbi_load(paths[i].c_str(), &images[i].width, &images[i].height, nullptr, 0);
+		}
+
+		bool allLoaded = true;
+		for (const GLFWimage& image : images)
+		{
+			allLoaded = allLoaded && image.pixels != nullptr;
+		}
+		if (!allLoaded)
+		{
+			p::Error("Window icon couldn't be loaded");
+			for (const GLFWimage& image : images)
+			{
+				stbi_image_free(image.pixels);
+			}
+			return;
+		}
+		glfwSetWindowIcon(gWindow, iconCount, images);
+
+		for (const GLFWimage& image : images)
+		{
+			stbi_image_free(image.pixels);
+		}
+	}
+
+	void ApplyDarkTitleBar(GLFWwindow* window)
+	{
+#if P_PLATFORM_WINDOWS
+		HWND hwnd = glfwGetWin32Window(window);
+		if (!hwnd)
+		{
+			return;
+		}
+
+		// Best: match the UI background exactly (Win 11 22H2+)
+		constexpr DWORD DWMWA_CAPTION_COLOR = 35;
+		const COLORREF captionColor =
+		    RGB(titleBarColor.r * 255, titleBarColor.g * 255, titleBarColor.b * 255);
+		if (FAILED(DwmSetWindowAttribute(
+		        hwnd, DWMWA_CAPTION_COLOR, &captionColor, sizeof(captionColor))))
+		{
+			// Fallback: ask Windows to use its immersive dark title bar
+			const BOOL useDark = TRUE;
+			DwmSetWindowAttribute(hwnd, 20, &useDark, sizeof(useDark));    // Win 11 build 22621
+			DwmSetWindowAttribute(hwnd, 19, &useDark, sizeof(useDark));    // Older Win 10/11
+		}
+#endif
 	}
 }    // namespace rift::UI

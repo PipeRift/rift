@@ -1,39 +1,35 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
-#include "AST/Components/CDeclType.h"
-#include "AST/Components/CDeclVariable.h"
-#include "AST/Components/CExprBinaryOperator.h"
-#include "AST/Components/CExprDeclRef.h"
-#include "AST/Components/CExprInputs.h"
-#include "AST/Components/CExprOutputs.h"
-#include "AST/Components/CExprType.h"
-#include "AST/Components/CExprUnaryOperator.h"
+#include "AST/Components/CFileRef.h"
+#include "AST/Components/CModule.h"
+#include "AST/Components/Declarations.h"
+#include "AST/Components/Expressions.h"
+#include "AST/Components/Statements.h"
 #include "AST/Components/Tags/CChanged.h"
 
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
 	struct Tree;
 }
 
-namespace rift::AST::TypeSystem
+namespace rift::ast::TypeSystem
 {
-	using namespace p;
-
-
 	void Init(Tree& ast);
 
-	using PropagateVariableTypesAccess =
-	    TAccessRef<CExprDeclRefId, CDeclVariable, TWrite<CExprTypeId>>;
-	void PropagateVariableTypes(PropagateVariableTypesAccess access);
+	void SyncTypesByPath(p::TIdScopeRef<CDeclType, CFileRef> scope);
 
-	using PropagateExpressionTypesAccess = TAccessRef<CDeclType, CChanged, CExprInputs,
-	    CExprOutputs, TWrite<CExprTypeId>, CExprUnaryOperator, CExprBinaryOperator, CParent>;
-	void PropagateExpressionTypes(PropagateExpressionTypesAccess access);
+	using PropagateTypesScope = p::TIdScopeRef<p::Writes<CExprTypeId, CStmtAssign>, CExprDeclRefId,
+	    CDeclVariable, CExprInputs, CExprOutputs, CExprUnaryOperator, CExprBinaryOperator,
+	    CDeclType, CChanged, p::CParent>;
+	// Propagates the type of every expression from the variable it references or assigns and
+	// from the expressions it is connected to. Operators pass on the first type they receive.
+	void PropagateTypes(PropagateTypesScope scope);
 
-	void ResolveExprTypeIds(
-	    TAccessRef<TWrite<CExprTypeId>, CExprType, CNamespace, CParent, CChild> access);
-}    // namespace rift::AST::TypeSystem
+	void ResolveExprTypeIds(p::TIdScopeRef<p::Writes<CExprTypeId>, CExprType, CNamespace,
+	    p::CParent, p::CChild, CModule, CDeclNative>
+	        scope);
+}    // namespace rift::ast::TypeSystem

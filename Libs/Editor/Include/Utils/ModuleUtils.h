@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
@@ -9,9 +9,9 @@
 #include <AST/Utils/ModuleUtils.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	void OpenModuleEditor(TAccessRef<TWrite<CModuleEditor>, AST::CModule> access, AST::Id id);
-	void CloseModuleEditor(TAccessRef<TWrite<CModuleEditor>, AST::CModule> access, AST::Id id);
-	bool IsEditingModule(TAccessRef<CModuleEditor> access, AST::Id id);
-}    // namespace rift::Editor
+	void OpenModuleEditor(p::TIdScopeRef<Writes<CModuleEditor>, ast::CModule> scope, ast::Id id);
+	void CloseModuleEditor(p::TIdScopeRef<Writes<CModuleEditor>, ast::CModule> scope, ast::Id id);
+	bool IsEditingModule(p::TIdScopeRef<CModuleEditor> scope, ast::Id id);
+}    // namespace rift::editor

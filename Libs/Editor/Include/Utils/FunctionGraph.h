@@ -1,11 +1,13 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
 #include "Components/CTypeEditor.h"
+#include "Utils/Nodes.h"
 
+#include <AST/Components/Declarations.h>
 #include <AST/Tree.h>
-#include <Pipe/Math/Vector.h>
+#include <PipeMath.h>
 
 
 namespace rift
@@ -13,7 +15,7 @@ namespace rift
 	struct DockSpaceLayout;
 }
 
-namespace rift::Editor::Graph
+namespace rift::editor::Graph
 {
 	struct Settings
 	{
@@ -30,32 +32,28 @@ namespace rift::Editor::Graph
 		float GetGridSize() const;
 		float GetInvGridSize() const;
 
-		float GetSpaceHeight(u32 height) const;
-		v2 GetContentPadding() const;
+		float GetSpaceHeight() const;
 		v2 GetGridPosition(v2 screenPosition) const;
 	};
 	inline Settings settings{};
 
 
-	void DrawLiteralBool(AST::Tree& ast, AST::Id id, bool& value);
-	void DrawLiteralInt(AST::Tree& ast, AST::Id id, String& value);
-	void DrawLiteralString(AST::Tree& ast, AST::Id id, String& value);
-
-	void DrawFunctionDecl(AST::Tree& ast, AST::Id functionId);
-	void DrawCallNode(AST::Tree& ast, AST::Id id, StringView name, StringView ownerName);
-
 	void Init();
 	void Shutdown();
+
+	// Applies the grid size and zoom configuration from the user settings to the node editor.
+	void ApplyGraphSettings();
 
 	void PushNodeStyle();
 	void PopNodeStyle();
 	void PushInnerNodeStyle();
 	void PopInnerNodeStyle();
 
-	void DrawTypeGraph(AST::Tree& ast, AST::Id typeId, CTypeEditor& typeEditor);
+	void DrawTypeGraph(ast::Tree& ast, ast::Id typeId, CTypeEditor& typeEditor);
 
-	void SetNodePosition(AST::Id id, v2 position);
-	v2 GetNodePosition(AST::Id id);
+	using ShowFunctionScope = p::TIdScopeRef<p::Writes<CTypeEditor>, ast::CDeclType, ast::CChild>;
+	void ShowFunction(ShowFunctionScope scope, ast::Id functionId);
 
-	void SnapNodeDimensionsToGrid();
-}    // namespace rift::Editor::Graph
+	void SetNodePosition(ast::Id id, v2 position);
+	v2 GetNodePosition(ast::Id id);
+}    // namespace rift::editor::Graph

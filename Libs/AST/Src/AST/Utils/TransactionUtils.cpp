@@ -1,20 +1,21 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "AST/Utils/TransactionUtils.h"
 
-#include "AST/Components/CDeclType.h"
+#include "AST/Components/Declarations.h"
 
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
-namespace rift::AST::Transactions
+namespace rift::ast::Transactions
 {
 	// Transaction being recorded
 	static Transaction gActiveTransaction = {};
 
-	ScopedTransaction::ScopedTransaction(const TransactionAccess& access, TView<const Id> entityIds)
+	ScopedTransaction::ScopedTransaction(
+	    const TransactionScope& scope, p::TView<const Id> entityIds)
 	{
-		active = PreChange(access, entityIds);
+		active = PreChange(scope, entityIds);
 	}
 	ScopedTransaction::ScopedTransaction(ScopedTransaction&& other) noexcept
 	{
@@ -29,9 +30,9 @@ namespace rift::AST::Transactions
 		}
 	}
 
-	bool PreChange(const TransactionAccess& access, TView<const Id> entityIds)
+	bool PreChange(const TransactionScope& scope, p::TView<const Id> entityIds)
 	{
-		if (!EnsureMsg(!gActiveTransaction.active,
+		if (!P_EnsureMsg(!gActiveTransaction.active,
 		        "Tried to record a transaction while another is already being recorded"))
 		{
 			return false;
@@ -40,17 +41,17 @@ namespace rift::AST::Transactions
 		gActiveTransaction = Transaction{true};
 
 		// Mark files dirty
-		TArray<Id> parentIds;
-		p::GetAllParents(access, entityIds, parentIds);
+		p::TArray<Id> parentIds;
+		p::GetAllIdParents(scope, entityIds, parentIds);
 
 		parentIds.Append(entityIds);
-		access.AddN<CChanged>(parentIds);
+		scope.AddN<CChanged>(parentIds);
 
 		// Transaction ids can also be files. FindParents doesn't consider them, so we merge it
-		ExcludeIdsWithout<CFileRef>(access, parentIds);
+		ExcludeIdsWithout<CFileRef>(scope, parentIds);
 		if (!parentIds.IsEmpty())
 		{
-			access.AddN<CFileDirty>(parentIds);
+			scope.AddN<CFileDirty>(parentIds);
 		}
 
 		// TODO: Capture AST state
@@ -59,10 +60,10 @@ namespace rift::AST::Transactions
 
 	void PostChange()
 	{
-		if (EnsureMsg(gActiveTransaction.active,
+		if (P_EnsureMsg(gActiveTransaction.active,
 		        "Cant finish a transaction while none is being recorded"))
 		{
 			gActiveTransaction = {};
 		}
 	}
-}    // namespace rift::AST::Transactions
+}    // namespace rift::ast::Transactions

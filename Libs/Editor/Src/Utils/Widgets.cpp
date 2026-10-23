@@ -1,47 +1,71 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Utils/Widgets.h"
+
+#include "Utils/EditorStyle.h"
+#include "Utils/TypeUtils.h"
 
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	void ListTypesFromFilter(p::TAccessRef<AST::CNamespace> access, p::TArray<AST::Id> typeIds,
-	    AST::Id& selectedId, ImGuiTextFilter& searchFilter)
+	void ListTypesFromFilter(p::TIdScopeRef<ast::CNamespace> scope, p::TArray<ast::Id> typeIds,
+	    ast::Id& selectedId, ImGuiTextFilter& searchFilter)
 	{
-		for (AST::Id id : typeIds)
+		ast::Tree& ast        = static_cast<ast::Tree&>(scope.GetContext());
+		const float rowHeight = UI::GetTextLineHeight() + 6.f;
+		for (ast::Id id : typeIds)
 		{
-			const auto& type   = access.Get<const AST::CNamespace>(id);
-			p::StringView name = type.name.AsString();
+			const auto& type = scope.Get<const ast::CNamespace>(id);
+			StringView name  = type.name.AsString();
 
 			if (!searchFilter.PassFilter(name.data(), name.data() + name.size()))
 			{
 				continue;
 			}
 
-			UI::PushID(p::u32(id));
-			if (UI::Selectable(name.data(), id == selectedId))
+			UI::PushID(id);
+			const StringView icon = GetTypeIcon(ast, id);
+			UI::SetNextItemAllowOverlap();
+			ImVec2 rowMin;
+			ImVec2 rowMax;
+			const bool pressed = UI::SelectableRow("###Type", rowMin, rowMax,
+			    p::LinearColor::Transparent(), rowHeight, id == selectedId);
+			// The chip is a non-interactive item laid over the row, so the dropdown grows
+			// to fit it
+			UI::SetCursorScreenPos(ImVec2{rowMin.x + UI::chipPadding, rowMin.y});
+			UI::Chip(name, GetTypeColor(ast, id), icon.empty() ? nullptr : icon.data());
+			UI::PopID();
+			if (pressed)
 			{
 				selectedId = id;
 			}
-			UI::PopID();
 		}
 	}
 
-	bool TypeCombo(p::TAccessRef<AST::CNamespace, AST::CDeclType, AST::CDeclNative,
-	                   AST::CDeclStruct, AST::CDeclClass>
-	                   access,
-	    p::StringView label, AST::Id& selectedId)
+	bool TypeCombo(p::TIdScopeRef<ast::CNamespace, ast::CDeclType, ast::CDeclNative,
+	                   ast::CDeclStruct, ast::CDeclClass>
+	                   scope,
+	    p::StringView label, ast::Id& selectedId, TypeComboFlags flags)
 	{
 		p::Tag ownerName;
 		if (!IsNone(selectedId))
 		{
-			ownerName = access.Get<const AST::CNamespace>(selectedId).name;
+			ownerName = scope.Get<const ast::CNamespace>(selectedId).name;
 		}
+		const StringView ownerDisplayName = ownerName.AsString();
 
-		AST::Id lastId = selectedId;
-		if (UI::BeginCombo(label.data(), ownerName.AsString().data()))
+		const bool selectedAsChip = p::HasFlag(flags, TypeComboFlags::SelectedAsChip);
+		const bool showCategories = p::HasFlag(flags, TypeComboFlags::ShowCategories);
+		const bool previewAsChip  = selectedAsChip && !IsNone(selectedId);
+
+		ast::Tree& ast                = static_cast<ast::Tree&>(scope.GetContext());
+		const StringView selectedIcon = previewAsChip ? GetTypeIcon(ast, selectedId) : StringView{};
+
+		ast::Id lastId = selectedId;
+		if (UI::BeginCombo(label.data(), previewAsChip ? nullptr : ownerDisplayName.data(),
+		        previewAsChip ? ImGuiComboFlags_CustomPreview : 0))
 		{
 			static ImGuiTextFilter filter;
 			if (UI::IsWindowAppearing())
@@ -51,55 +75,54 @@ namespace rift::Editor
 			UI::SetNextItemWidth(-FLT_MIN);
 			filter.Draw("##Filter");
 
-			auto nativeIds =
-			    p::FindAllIdsWith<AST::CDeclType, AST::CDeclNative, AST::CNamespace>(access);
-			auto structIds =
-			    p::FindAllIdsWith<AST::CDeclType, AST::CDeclStruct, AST::CNamespace>(access);
-			auto classIds =
-			    p::FindAllIdsWith<AST::CDeclType, AST::CDeclClass, AST::CNamespace>(access);
-			if (filter.IsActive())
+			TArray<ast::Id> typeIds   = p::FindAllIdsWith<ast::CDeclType, ast::CNamespace>(scope);
+			TArray<ast::Id> nativeIds = ExtractIdsWithStable<ast::CDeclNative>(scope, typeIds);
+			TArray<ast::Id> structIds = ExtractIdsWithStable<ast::CDeclStruct>(scope, typeIds);
+			TArray<ast::Id> classIds  = ExtractIdsWithStable<ast::CDeclClass>(scope, typeIds);
+			if (!showCategories)
 			{
-				if (UI::TreeNodeEx("Native##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					ListTypesFromFilter(access, nativeIds, selectedId, filter);
-					UI::TreePop();
-				}
-				if (UI::TreeNodeEx("Structs##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					ListTypesFromFilter(access, structIds, selectedId, filter);
-					UI::TreePop();
-				}
-				if (UI::TreeNodeEx("Classes##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					ListTypesFromFilter(access, classIds, selectedId, filter);
-					UI::TreePop();
-				}
+				ListTypesFromFilter(scope, nativeIds, selectedId, filter);
+				ListTypesFromFilter(scope, structIds, selectedId, filter);
+				ListTypesFromFilter(scope, classIds, selectedId, filter);
 			}
 			else
 			{
+				// Categories stay open while searching
+				const ImGuiTreeNodeFlags categoryFlags =
+				    filter.IsActive() ? ImGuiTreeNodeFlags_DefaultOpen : 0;
 				if (UI::TreeNodeEx("Native", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					ListTypesFromFilter(access, nativeIds, selectedId, filter);
+					ListTypesFromFilter(scope, nativeIds, selectedId, filter);
 					UI::TreePop();
 				}
-				if (UI::TreeNode("Structs"))
+				if (UI::TreeNodeEx("Structs", categoryFlags))
 				{
-					ListTypesFromFilter(access, structIds, selectedId, filter);
+					ListTypesFromFilter(scope, structIds, selectedId, filter);
 					UI::TreePop();
 				}
-				if (UI::TreeNode("Classes"))
+				if (UI::TreeNodeEx("Classes", categoryFlags))
 				{
-					ListTypesFromFilter(access, classIds, selectedId, filter);
+					ListTypesFromFilter(scope, classIds, selectedId, filter);
 					UI::TreePop();
 				}
 			}
 			UI::EndCombo();
 		}
+
+		// The custom preview is drawn right after the combo block, inside the combo's frame
+		if (previewAsChip && UI::BeginComboPreview())
+		{
+			const ImRect previewRect = UI::GetCurrentContext()->ComboPreviewData.PreviewRect;
+			const float maxWidth     = previewRect.GetWidth() - UI::GetStyle().FramePadding.x * 2.f;
+			UI::Chip(ownerDisplayName, GetTypeColor(ast, selectedId),
+			    selectedIcon.empty() ? nullptr : selectedIcon.data(), maxWidth);
+			UI::EndComboPreview();
+		}
 		return selectedId != lastId;
 	}
 
-	bool InputLiteralValue(AST::Tree& ast, p::StringView label, AST::Id literalId)
+	bool InputLiteralValue(ast::Tree& ast, p::StringView label, ast::Id literalId)
 	{
 		return false;
 	}
-}    // namespace rift::Editor
+}    // namespace rift::editor

@@ -1,21 +1,15 @@
-// Copyright 2015-2023 Piperift - All rights reserved
-
-// the structure of this file:
-//
-// [SECTION] bezier curve helpers
-// [SECTION] draw list helper
-// [SECTION] ui state logic
-// [SECTION] render helpers
-// [SECTION] API implementation
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Utils/Nodes.h"
 
+#include "Statics/EditorSettings.h"
 #include "Utils/NodesInternal.h"
 #include "Utils/NodesMiniMap.h"
 
+#include <AST/Utils/Settings.h>
 #include <Pipe/Core/Checks.h>
 #include <Pipe/Core/Log.h>
-#include <Pipe/Math/Bezier.h>
+#include <PipeMath.h>
 
 #include <cassert>
 #include <cstring>    // strlen, strncmp
@@ -26,10 +20,19 @@ namespace rift::Nodes
 {
 	Context* gNodes = nullptr;
 
+	namespace
+	{
+		// Canvas zoom is configured through the editor user settings
+		editor::ZoomSettings& ZoomConfig()
+		{
+			return GetUserSettings<editor::EditorSettings>().zoom;
+		}
+	}    // namespace
+
 	EditorContext& GetEditorContext()
 	{
 		// No editor context was set! Did you forget to call Nodes::CreateContext()?
-		Check(gNodes->EditorCtx != nullptr);
+		P_Check(gNodes->EditorCtx != nullptr);
 		return *gNodes->EditorCtx;
 	}
 
@@ -58,7 +61,7 @@ namespace rift::Nodes
 	// Calculates the closest point along each bezier curve segment.
 	v2 GetClosestPointOnCubicBezier(const i32 numSegments, const v2& p, const CubicBezier& cb)
 	{
-		Ensure(numSegments > 0);
+		P_Ensure(numSegments > 0);
 		v2 pLast = cb.p0;
 		v2 pClosest;
 		float pClosestDist = FLT_MAX;
@@ -87,8 +90,8 @@ namespace rift::Nodes
 
 	Rect GetContainingRectForCubicBezier(const CubicBezier& cb)
 	{
-		const v2 min = v2(math::Min(cb.p0.x, cb.p3.x), math::Min(cb.p0.y, cb.p3.y));
-		const v2 max = v2(math::Max(cb.p0.x, cb.p3.x), math::Max(cb.p0.y, cb.p3.y));
+		const v2 min = v2(p::Min(cb.p0.x, cb.p3.x), p::Min(cb.p0.y, cb.p3.y));
+		const v2 max = v2(p::Max(cb.p0.x, cb.p3.x), p::Max(cb.p0.y, cb.p3.y));
 
 		const float hoverDistance = gNodes->style.LinkHoverDistance;
 
@@ -224,22 +227,22 @@ namespace rift::Nodes
 
 	v2 ScreenToGridPosition(const EditorContext& editor, const v2& v)
 	{
-		return v - gNodes->CanvasOriginScreenSpace - editor.panning;
+		return (v - gNodes->CanvasOriginScreenSpace - editor.panning) / GetZoom();
 	}
 
 	v2 GridToScreenPosition(const EditorContext& editor, const v2& v)
 	{
-		return v + gNodes->CanvasOriginScreenSpace + editor.panning;
+		return v * GetZoom() + gNodes->CanvasOriginScreenSpace + editor.panning;
 	}
 
 	v2 GridToEditorPosition(const EditorContext& editor, const v2& v)
 	{
-		return v + editor.panning;
+		return v * GetZoom() + editor.panning;
 	}
 
 	v2 EditorToGridPosition(const EditorContext& editor, const v2& v)
 	{
-		return v - editor.panning;
+		return (v - editor.panning) / GetZoom();
 	}
 
 	v2 MiniMapToGridPosition(const EditorContext& editor, const v2& v)
@@ -293,13 +296,9 @@ namespace rift::Nodes
 			return;
 		}
 
-		// NOTE: this logic has been lifted from ImDrawListSplitter::Split with slight
-		// modifications to allow nested splits. The main modification is that we only create
-		// new ImDrawChannel instances after splitter._Count, instead of over the whole
-		// splitter._Channels array like the regular ImDrawListSplitter::Split method does.
+		// Same as ImDrawListSplitter::Split, but growing the channels in smaller steps
 
-		const i32 oldChannelCapacity = splitter._Channels.Size;
-		// NOTE: _Channels is not resized down, and therefore _Count <= _Channels.size()!
+		const i32 oldChannelCapacity    = splitter._Channels.Size;
 		const i32 oldChannelCount       = splitter._Count;
 		const i32 requestedChannelCount = oldChannelCount + numChannels;
 		if (oldChannelCapacity < oldChannelCount + numChannels)
@@ -313,14 +312,11 @@ namespace rift::Nodes
 		{
 			ImDrawChannel& channel = splitter._Channels[i];
 
-			// If we're inside the old capacity region of the array, we need to reuse the
-			// existing memory of the command and index buffers.
 			if (i < oldChannelCapacity)
 			{
 				channel._CmdBuffer.resize(0);
 				channel._IdxBuffer.resize(0);
 			}
-			// Else, we need to construct new draw channels.
 			else
 			{
 				IM_PLACEMENT_NEW(&channel) ImDrawChannel();
@@ -328,8 +324,8 @@ namespace rift::Nodes
 
 			{
 				ImDrawCmd drawCmd;
-				drawCmd.ClipRect  = drawList->_ClipRectStack.back();
-				drawCmd.TextureId = drawList->_TextureIdStack.back();
+				drawCmd.ClipRect = drawList->_ClipRectStack.back();
+				drawCmd.TexRef   = drawList->_TextureStack.back();
 				channel._CmdBuffer.push_back(drawCmd);
 			}
 		}
@@ -370,29 +366,13 @@ namespace rift::Nodes
 		gNodes->nodeSubmissionOrder.clear();
 	}
 
-	// The draw list channels are structured as follows. First we have our base channel, the
-	// canvas grid on which we render the grid lines in BeginNodeEditor(). The base channel is
-	// the reason draw_list_submission_idx_to_background_channel_idx offsets the index by one.
-	// Each BeginNode() call appends two new draw channels, for the node background and
-	// foreground. The node foreground is the channel i32o which the node's ImGui content is
-	// rendered. Finally, in EndNodeEditor() we append one last draw channel for rendering the
-	// selection box and the incomplete link on top of everything else.
-	//
-	// +----------+----------+----------+----------+----------+----------+
-	// |          |          |          |          |          |          |
-	// |canvas    |node      |node      |...       |...       |click     |
-	// |grid      |background|foreground|          |          |i32eraction
-	// |          |          |          |          |          |          |
-	// +----------+----------+----------+----------+----------+----------+
-	//            |                     |
-	//            |   submission idx    |
-	//            |                     |
-	//            -----------------------
+	// Channels, from back to front: the canvas grid, two channels for each submitted node
+	// (background and content) and one last channel for the selection box and active link
 
-	void DrawListAddNode(AST::Id nodeId)
+	void DrawListAddNode(ast::Id nodeId)
 	{
 		gNodes->NodeIdxToSubmissionIdx.SetInt(
-		    static_cast<ImGuiID>(GetIdIndex(nodeId)), gNodes->nodeSubmissionOrder.Size);
+		    static_cast<ImGuiID>(nodeId.GetIndex()), gNodes->nodeSubmissionOrder.Size);
 		gNodes->nodeSubmissionOrder.push_back(nodeId);
 		ImDrawListGrowChannels(gNodes->CanvasDrawList, 2);
 	}
@@ -402,6 +382,23 @@ namespace rift::Nodes
 		// NOTE: don't use this function outside of EndNodeEditor. Using this before all nodes
 		// have been added will screw up the node draw order.
 		ImDrawListGrowChannels(gNodes->CanvasDrawList, 1);
+	}
+
+	// Pins are drawn on a channel of their own, above every node, so that a node body can
+	// never cover the pins of another node.
+	void DrawListAppendPinChannel()
+	{
+		// NOTE: don't use this function outside of EndNodeEditor. Using this before all nodes
+		// have been added will screw up the node draw order.
+		ImDrawListGrowChannels(gNodes->CanvasDrawList, 1);
+		gNodes->pinChannelIdx = gNodes->CanvasDrawList->_Splitter._Count - 1;
+	}
+
+	void DrawListActivatePinChannel()
+	{
+		assert(gNodes->pinChannelIdx >= 0);
+		gNodes->CanvasDrawList->_Splitter.SetCurrentChannel(
+		    gNodes->CanvasDrawList, gNodes->pinChannelIdx);
 	}
 
 	i32 DrawListSubmissionIdxToBackgroundChannelIdx(const i32 submissionIdx)
@@ -429,10 +426,10 @@ namespace rift::Nodes
 		    gNodes->CanvasDrawList, foregroundChannelIdx);
 	}
 
-	void DrawListActivateNodeBackground(AST::Id nodeId)
+	void DrawListActivateNodeBackground(ast::Id nodeId)
 	{
 		const i32 submissionIdx =
-		    gNodes->NodeIdxToSubmissionIdx.GetInt(static_cast<ImGuiID>(GetIdIndex(nodeId)), -1);
+		    gNodes->NodeIdxToSubmissionIdx.GetInt(static_cast<ImGuiID>(nodeId.GetIndex()), -1);
 		// There is a discrepancy in the submitted node count and the rendered node count! Did
 		// you call one of the following functions
 		// * MoveToNode
@@ -461,7 +458,7 @@ namespace rift::Nodes
 		    gNodes->CanvasDrawList->_Splitter, lhsForegroundChannelIdx, rhsForegroundChannelIdx);
 	}
 
-	void DrawListSortChannelsByDepth(const TArray<AST::Id>& nodeDepthOrder)
+	void DrawListSortChannelsByDepth(const TArray<ast::Id>& nodeDepthOrder)
 	{
 		if (gNodes->NodeIdxToSubmissionIdx.Data.Size < 2)
 		{
@@ -485,7 +482,7 @@ namespace rift::Nodes
 
 		for (i32 depthIdx = startIdx; depthIdx > 0; --depthIdx)
 		{
-			const AST::Id nodeId = nodeDepthOrder[depthIdx];
+			const ast::Id nodeId = nodeDepthOrder[depthIdx];
 
 			// Find the current index of the nodeIdx in the submission order array
 			i32 submissionIdx = -1;
@@ -514,17 +511,22 @@ namespace rift::Nodes
 
 	// [SECTION] ui state logic
 
-	v2 GetScreenSpacePinCoordinates(const Rect& nodeRect, const PinType type, const Rect& pinRect)
+	v2 GetScreenSpacePinCoordinates(
+	    const Rect& nodeRect, const PinType type, const Rect& pinRect, const float zoom)
 	{
-		const float x = type == PinType::Input ? (nodeRect.min.x - gNodes->style.PinOffset)
-		                                       : (nodeRect.max.x + gNodes->style.PinOffset);
-		return {x, 0.5f * (pinRect.min.y + pinRect.max.y)};
+		const float pinOffset = gNodes->style.PinOffset * zoom;
+		const float x =
+		    type == PinType::Input ? (nodeRect.min.x - pinOffset) : (nodeRect.max.x + pinOffset);
+		// Pins sit on the first grid tile of their block, so a pin with content below its
+		// label keeps the shape next to the label. A single line block is centered as a whole.
+		const float grid = gNodes->style.GridSpacing * zoom;
+		return {x, pinRect.min.y + ImMin(0.5f * pinRect.GetSize().y, 0.5f * grid)};
 	}
 
 	v2 GetScreenSpacePinCoordinates(const EditorContext& editor, PinType type, const PinData& pin)
 	{
 		const Rect& parentNodeRect = editor.nodes.Get(pin.parentNodeId).rect;
-		return GetScreenSpacePinCoordinates(parentNodeRect, type, pin.rect);
+		return GetScreenSpacePinCoordinates(parentNodeRect, type, pin.rect, GetZoom());
 	}
 
 	bool IsMouseInCanvas()
@@ -536,30 +538,22 @@ namespace rift::Nodes
 		    && gNodes->CanvasRectScreenSpace.Contains(ImGui::GetMousePos());
 	}
 
-	void BeginNodeSelection(EditorContext& editor, AST::Id nodeId)
+	void BeginNodeSelection(EditorContext& editor, ast::Id nodeId)
 	{
-		// Don't start selecting a node if we are e.g. already creating and dragging
-		// a new link! New link creation can happen when the mouse is clicked over
-		// a node, but within the hover radius of a pin.
+		// A link can start being created over a node, within the hover radius of a pin
 		if (editor.clickInteraction.type != ClickInteractionType_None)
 		{
 			return;
 		}
 
 		editor.clickInteraction.type = ClickInteractionType_Node;
-		// If the node is not already contained in the selection, then we want only
-		// the i32eraction node to be selected, effective immediately.
-		//
-		// If the multiple selection modifier is active, we want to add this node
-		// to the current list of selected nodes.
-		//
-		// Otherwise, we want to allow for the possibility of multiple nodes to be
-		// moved at once.
 		if (!editor.selectedNodeIds.Contains(nodeId))
 		{
 			editor.selectedLinkIndices.clear();
 			if (!gNodes->multipleSelectModifier)
+			{
 				editor.selectedNodeIds.Clear();
+			}
 			editor.selectedNodeIds.Add(nodeId);
 
 			// Ensure that individually selected nodes get rendered on top
@@ -577,14 +571,16 @@ namespace rift::Nodes
 		// To support snapping of multiple nodes, we need to store the offset of
 		// each node in the selection to the origin of the dragged node.
 		const v2 refOrigin = editor.nodes.Get(nodeId).Origin;
-		editor.PrimaryNodeOffset =
-		    refOrigin + gNodes->CanvasOriginScreenSpace + editor.panning - gNodes->mousePosition;
+		// Screen-space offset between the dragged node origin and the mouse cursor. Keeping it
+		// in screen space keeps dragging consistent at any zoom level.
+		editor.PrimaryNodeOffset = refOrigin * GetZoom() + gNodes->CanvasOriginScreenSpace
+		                         + editor.panning - gNodes->mousePosition;
 
-		editor.SelectedNodeOrigins.clear();
-		for (AST::Id id : editor.selectedNodeIds)
+		editor.DragOrigins.clear();
+		for (ast::Id id : editor.selectedNodeIds)
 		{
 			const v2 nodeOrigin = editor.nodes.Get(id).Origin - refOrigin;
-			editor.SelectedNodeOrigins.push_back(nodeOrigin);
+			editor.DragOrigins.push_back({id, nodeOrigin});
 		}
 	}
 
@@ -722,7 +718,7 @@ namespace rift::Nodes
 
 		// Test for overlap against node rectangles
 
-		for (AST::Id nodeId : editor.nodes)
+		for (ast::Id nodeId : editor.nodes)
 		{
 			NodeData& node = editor.nodes.Get(nodeId);
 			if (boxRect.Overlaps(node.rect))
@@ -737,6 +733,7 @@ namespace rift::Nodes
 
 		// Test for overlap against links
 
+		const float zoom = GetZoom();
 		for (i32 linkIdx = 0; linkIdx < editor.links.pool.Size(); ++linkIdx)
 		{
 			if (editor.links.inUse.IsSet(linkIdx))
@@ -748,10 +745,10 @@ namespace rift::Nodes
 				const Rect& nodeStartRect = editor.nodes[outputPin.parentNodeId].rect;
 				const Rect& nodeEndRect   = editor.nodes[inputPin.parentNodeId].rect;
 
-				const v2 start =
-				    GetScreenSpacePinCoordinates(nodeStartRect, PinType::Output, outputPin.rect);
+				const v2 start = GetScreenSpacePinCoordinates(
+				    nodeStartRect, PinType::Output, outputPin.rect, zoom);
 				const v2 end =
-				    GetScreenSpacePinCoordinates(nodeEndRect, PinType::Input, inputPin.rect);
+				    GetScreenSpacePinCoordinates(nodeEndRect, PinType::Input, inputPin.rect, zoom);
 
 				// Test
 				if (RectangleOverlapsLink(boxRect, start, end, PinType::Output))
@@ -797,9 +794,9 @@ namespace rift::Nodes
 
 		for (i32 i = 0; i < editor.links.pool.Size(); ++i)
 		{
-			if (editor.links.inUse.IsSet(i))
+			if (!editor.links.inUse.IsSet(i))
 			{
-				continue;
+				continue;    // Only existing links are duplicates
 			}
 
 			const LinkData& link = editor.links.pool[i];
@@ -845,17 +842,17 @@ namespace rift::Nodes
 		if (gNodes->leftMouseDragging || gNodes->leftMouseReleased)
 		{
 			const v2 origin =
-			    SnapOriginToGrid(gNodes->mousePosition - gNodes->CanvasOriginScreenSpace
-			                     - editor.panning + editor.PrimaryNodeOffset);
-			for (i32 i = 0; i < editor.selectedNodeIds.Size(); ++i)
+			    SnapOriginToGrid((gNodes->mousePosition + editor.PrimaryNodeOffset
+			                         - gNodes->CanvasOriginScreenSpace - editor.panning)
+			                     / GetZoom());
+			// Only the nodes captured when the drag started move, even if the selection
+			// changes while dragging
+			for (const NodeDragOrigin& dragOrigin : editor.DragOrigins)
 			{
-				const v2 nodeRel     = editor.SelectedNodeOrigins[i];
-				const AST::Id nodeId = editor.selectedNodeIds[i];
-				NodeData& node       = editor.nodes[nodeId];
+				NodeData& node = editor.nodes[dragOrigin.id];
 				if (node.Draggable)
 				{
-					// node.Origin += io.MouseDelta - editor.AutoPanningDelta;
-					node.Origin = origin + nodeRel;
+					node.Origin = origin + dragOrigin.origin;
 				}
 			}
 		}
@@ -885,8 +882,8 @@ namespace rift::Nodes
 
 		if (gNodes->leftMouseReleased)
 		{
-			TArray<AST::Id>& depthStack        = editor.nodes.depthOrder;
-			const TArray<AST::Id>& selectedIds = editor.selectedNodeIds;
+			TArray<ast::Id>& depthStack        = editor.nodes.depthOrder;
+			const TArray<ast::Id>& selectedIds = editor.selectedNodeIds;
 
 			// Bump the selected node indices, in order, to the top of the depth stack.
 			// NOTE: this algorithm has worst case time complexity of O(N^2), if the
@@ -898,8 +895,8 @@ namespace rift::Nodes
 				i32 numMoved = 0;
 				for (i32 i = 0; i < depthStack.Size() - selectedIds.Size(); ++i)
 				{
-					for (AST::Id nodeId = depthStack[i]; selectedIds.Contains(nodeId);
-					     nodeId         = depthStack[i])
+					for (ast::Id nodeId = depthStack[i]; selectedIds.Contains(nodeId);
+					    nodeId          = depthStack[i])
 					{
 						depthStack.RemoveAt(i, false);
 						depthStack.Add(nodeId);
@@ -949,16 +946,18 @@ namespace rift::Nodes
 		const v2 startPos = GetScreenSpacePinCoordinates(editor, startIdx.type, startPinData);
 		// If we are within the hover radius of a receiving pin, snap the link
 		// endpoint to it
-		const v2 endPos = shouldSnap ? GetScreenSpacePinCoordinates(editor,
-		                      gNodes->HoveredPinIdx.type, editor.GetPinData(gNodes->HoveredPinIdx))
-		                             : gNodes->mousePosition;
+		const v2 endPos = shouldSnap
+		                    ? GetScreenSpacePinCoordinates(editor, gNodes->HoveredPinIdx.type,
+		                          editor.GetPinData(gNodes->HoveredPinIdx))
+		                    : gNodes->mousePosition;
 
 		const CubicBezier cubicBezier = MakeCubicBezier(
-		    startPos, endPos, startIdx.type, gNodes->style.linkLineSegmentsPerLength);
+		    startPos, endPos, startIdx.type, gNodes->style.linkLineSegmentsPerLength * GetZoom());
 
+		// Keep the in-progress link colored like the pin it's dragged from
 		gNodes->CanvasDrawList->AddBezierCubic(cubicBezier.p0, cubicBezier.p1, cubicBezier.p2,
-		    cubicBezier.p3, gNodes->style.colors[ColorVar_Link].ToPackedABGR(),
-		    gNodes->style.LinkThickness, cubicBezier.numSegments);
+		    cubicBezier.p3, startPinData.colorStyle.Background.ToPackedABGR(),
+		    gNodes->style.LinkThickness * GetZoom(), cubicBezier.numSegments);
 
 		const bool linkCreationOnSnap =
 		    gNodes->HoveredPinIdx
@@ -1048,68 +1047,17 @@ namespace rift::Nodes
 		}
 	}
 
-	void ResolveOccludedPins(const EditorContext& editor, ImVector<PinIdx>& occludedPinIndices)
-	{
-		const TArray<AST::Id>& depthStack = editor.nodes.depthOrder;
-
-		occludedPinIndices.resize(0);
-
-		if (depthStack.Size() < 2)
-		{
-			return;
-		}
-
-		// For each node in the depth stack
-		for (i32 i = 0; i < (depthStack.Size() - 1); ++i)
-		{
-			const NodeData& nodeBelow = editor.nodes[depthStack[i]];
-
-			// Iterate over the rest of the depth stack to find nodes overlapping the pins
-			for (i32 e = i + 1; e < depthStack.Size(); ++e)
-			{
-				const Rect& rectAbove = editor.nodes[depthStack[e]].rect;
-
-				// Iterate over each pin
-				for (i32 i = 0; i < nodeBelow.inputs.Size; ++i)
-				{
-					const i32 pinIdx = nodeBelow.inputs[i];
-					const v2& pinPos = editor.inputs.pool[pinIdx].position;
-
-					if (rectAbove.Contains(pinPos))
-					{
-						occludedPinIndices.push_back({pinIdx, PinType::Input});
-					}
-				}
-				for (i32 i = 0; i < nodeBelow.outputs.Size; ++i)
-				{
-					const i32 pinIdx = nodeBelow.outputs[i];
-					const v2& pinPos = editor.outputs.pool[pinIdx].position;
-
-					if (rectAbove.Contains(pinPos))
-					{
-						occludedPinIndices.push_back({pinIdx, PinType::Output});
-					}
-				}
-			}
-		}
-	}
-
-	PinIdx ResolveHoveredPin(
-	    const ObjectPool<PinData>& pins, PinType type, const ImVector<PinIdx>& occludedPinIndices)
+	PinIdx ResolveHoveredPin(const ObjectPool<PinData>& pins, PinType type)
 	{
 		float smallestDistance         = FLT_MAX;
 		i32 pinIdxWithSmallestDistance = NO_INDEX;
 
-		const float hoverRadiusSqr = gNodes->style.PinHoverRadius * gNodes->style.PinHoverRadius;
+		const float hoverRadius    = gNodes->style.PinHoverRadius * GetZoom();
+		const float hoverRadiusSqr = hoverRadius * hoverRadius;
 
 		for (i32 idx = 0; idx < pins.pool.Size(); ++idx)
 		{
 			if (!pins.inUse.IsSet(idx))
-			{
-				continue;
-			}
-
-			if (occludedPinIndices.contains({idx, type}))
 			{
 				continue;
 			}
@@ -1131,11 +1079,11 @@ namespace rift::Nodes
 		return {pinIdxWithSmallestDistance, type};
 	}
 
-	AST::Id ResolveHoveredNode(const TArray<AST::Id>& depthStack)
+	ast::Id ResolveHoveredNode(const TArray<ast::Id>& depthStack)
 	{
 		if (gNodes->nodeIdsOverlappingWithMouse.size() == 0)
 		{
-			return AST::NoId;
+			return ast::NoId;
 		}
 
 		if (gNodes->nodeIdsOverlappingWithMouse.size() == 1)
@@ -1143,22 +1091,20 @@ namespace rift::Nodes
 			return gNodes->nodeIdsOverlappingWithMouse[0];
 		}
 
-		i32 largestDepthIdx = -1;
-		AST::Id nodeIdOnTop = AST::NoId;
-
-		for (AST::Id nodeId : gNodes->nodeIdsOverlappingWithMouse)
+		// The node drawn last is the one on top, so search the depth stack backwards for the
+		// first node under the mouse
+		ast::Id nodeIdOnTop = ast::NoId;
+		for (i32 depthIdx = depthStack.Size() - 1; depthIdx >= 0; --depthIdx)
 		{
-			for (i32 depthIdx = 0; depthIdx < depthStack.Size(); ++depthIdx)
+			const ast::Id nodeId = depthStack[depthIdx];
+			if (gNodes->nodeIdsOverlappingWithMouse.contains(nodeId))
 			{
-				if (depthStack[depthIdx] == nodeId && (depthIdx > largestDepthIdx))
-				{
-					largestDepthIdx = depthIdx;
-					nodeIdOnTop     = nodeId;
-				}
+				nodeIdOnTop = nodeId;
+				break;
 			}
 		}
 
-		assert(nodeIdOnTop != AST::NoId);
+		assert(nodeIdOnTop != ast::NoId);
 		return nodeIdOnTop;
 	}
 
@@ -1168,14 +1114,11 @@ namespace rift::Nodes
 		float smallestDistance = FLT_MAX;
 		OptionalIndex linkIdxWithSmallestDistance;
 
-		// There are two ways a link can be detected as "hovered".
-		// 1. The link is within hover distance to the mouse. The closest such link is selected
-		// as being hovered over.
-		// 2. If the link is connected to the currently hovered pin.
-		//
-		// The latter is a requirement for link detaching with drag click to work, as both a
-		// link and pin are required to be hovered over for the feature to work.
+		const float zoom              = GetZoom();
+		const float linkHoverDistance = gNodes->style.LinkHoverDistance * zoom;
 
+		// A link is hovered when it is close to the mouse, or when it is connected to the
+		// hovered pin. The latter is needed to detach links by dragging them from a pin
 		for (i32 idx = 0; idx < links.pool.Size(); ++idx)
 		{
 			if (!links.inUse.IsSet(idx))
@@ -1203,7 +1146,7 @@ namespace rift::Nodes
 			// when rendering the links
 
 			const CubicBezier cubicBezier = MakeCubicBezier(outputPin.position, inputPin.position,
-			    PinType::Output, gNodes->style.linkLineSegmentsPerLength);
+			    PinType::Output, gNodes->style.linkLineSegmentsPerLength * zoom);
 
 			// The distance test
 			{
@@ -1220,7 +1163,7 @@ namespace rift::Nodes
 					// LinkData, since we're not calling this function in the same scope as
 					// Nodes::Link(). The rendered/detected link might have a different hover
 					// distance than what the user had specified when calling Link()
-					if (distance < gNodes->style.LinkHoverDistance && distance < smallestDistance)
+					if (distance < linkHoverDistance && distance < smallestDistance)
 					{
 						smallestDistance            = distance;
 						linkIdxWithSmallestDistance = idx;
@@ -1239,49 +1182,307 @@ namespace rift::Nodes
 		return {ImGui::GetItemRectMin(), ImGui::GetItemRectMax()};
 	}
 
-	v2 GetNodeTitleBarOrigin(const NodeData& node)
+	// [SECTION] node table layout
+	//
+	// A node is two tables of the same width: the header, which holds the title between the
+	// execution pins, and the body, which holds the pins. Cells are placed with the sizes
+	// measured on the last frame, so that all rows and columns line up in a single pass.
+
+	// The size of a grid tile in screen space
+	float GetNodeGridSize()
 	{
-		return node.Origin + node.LayoutStyle.Padding;
+		return gNodes->style.GridSpacing * GetZoom();
 	}
 
-	v2 GetNodeContentOrigin(const NodeData& node)
+	float SnapToGrid(const float size)
 	{
-		const v2 titleBarHeight =
-		    v2(0.f, node.TitleBarContentRect.GetSize().y + 2.0f * node.LayoutStyle.Padding.y);
-		return node.Origin + titleBarHeight + node.LayoutStyle.Padding;
+		const float grid = GetNodeGridSize();
+		return grid > 0.f ? p::Ceil(size / grid) * grid : size;
 	}
 
-	Rect GetNodeTitleRect(const NodeData& node)
+	// Execution pins without a label take no width: the padding of the other cells is enough
+	float GetNodeCellWidth(const NodeRow_ row, const NodeColumn_ column)
 	{
-		Rect expandedTitleRect = node.TitleBarContentRect;
-		expandedTitleRect.Expand(node.LayoutStyle.Padding);
+		const NodeLayout& layout = gNodes->nodeLayout;
+		const v2 content         = layout.prevCellContentSize[row][column];
+		if (content.y <= 0.f)
+		{
+			return 0.f;
+		}
+		return content.x > 0.f ? content.x + 2.f * layout.padding.x : 0.f;
+	}
 
-		return {expandedTitleRect.min, expandedTitleRect.min + v2(node.rect.GetSize().x, 0.f)
-		                                   + v2(0.f, expandedTitleRect.GetSize().y)};
+	float GetNodeRowHeight(const NodeRow_ row)
+	{
+		const NodeLayout& layout = gNodes->nodeLayout;
+		float height             = 0.f;
+		for (i32 c = 0; c < NodeColumn_COUNT; ++c)
+		{
+			height = ImMax(height, layout.prevCellContentSize[row][c].y);
+		}
+		return SnapToGrid(height);
+	}
+
+	void EndNodeCell()
+	{
+		NodeLayout& layout = gNodes->nodeLayout;
+		if (!layout.cellOpen)
+		{
+			return;
+		}
+		layout.cellOpen = false;
+
+		// Each cell owns exactly one ImGui group, so no group may span a cell boundary
+		assert(GImGui->GroupStack.Size == layout.groupDepth + 1);
+		while (GImGui->GroupStack.Size > layout.groupDepth)
+		{
+			ImGui::EndGroup();
+		}
+
+		const v2 contentSize = GetItemRect().GetSize();
+		if (contentSize.x <= 0.f && contentSize.y <= 0.f)
+		{
+			return;
+		}
+
+		// Blocks stack by grid slots, and the cell grows with them
+		layout.blockHeight[layout.row][layout.column] = contentSize.y;
+		layout.cellY[layout.column] +=
+		    ImMax(GetNodeGridSize(), layout.prevBlockHeight[layout.row][layout.column]);
+		v2& cellSize = layout.cellContentSize[layout.row][layout.column];
+		cellSize     = v2(ImMax(cellSize.x, contentSize.x), layout.cellY[layout.column]);
+	}
+
+	// A node that was not closed properly would have leaked its cell and its ImGui id
+	void CloseLeakedNode()
+	{
+		if (!gNodes->nodeLayout.nodeOpen)
+		{
+			return;
+		}
+		EndNodeCell();
+		ImGui::PopID();
+		gNodes->nodeLayout.nodeOpen = false;
+	}
+
+	void BeginNodeCell(const NodeColumn_ column)
+	{
+		NodeLayout& layout = gNodes->nodeLayout;
+		if (layout.cellOpen && layout.column == column)
+		{
+			return;
+		}
+		EndNodeCell();
+
+		assert(GImGui->GroupStack.Size == layout.groupDepth);
+
+		layout.column   = column;
+		layout.cellOpen = true;
+
+		// Outputs sit next to their pin, the title is centered and the rest start at the padding
+		float x = layout.padding.x;
+		if (column == NodeColumn_Outputs)
+		{
+			x = layout.nodeWidth - layout.padding.x
+			  - layout.prevCellContentSize[layout.row][column].x;
+		}
+		else if (column == NodeColumn_Name)
+		{
+			if (layout.row == NodeRow_Header)
+			{
+				const float titleWidth   = GetNodeCellWidth(NodeRow_Header, NodeColumn_Name);
+				const float inputsWidth  = GetNodeCellWidth(NodeRow_Header, NodeColumn_Inputs);
+				const float outputsWidth = GetNodeCellWidth(NodeRow_Header, NodeColumn_Outputs);
+				const float margin       = layout.padding.x;
+				const float centered     = (layout.nodeWidth - titleWidth) * 0.5f;
+				const float min          = inputsWidth + margin;
+				const float max          = layout.nodeWidth - outputsWidth - margin - titleWidth;
+				x                        = (min > max ? min : ImClamp(centered, min, max)) + margin;
+			}
+			else
+			{
+				x = GetNodeCellWidth(NodeRow_Body, NodeColumn_Inputs) + layout.padding.x;
+			}
+		}
+
+		// Rows stack, and the blocks of a column stack by grid slots, centered in them
+		float y = 0.f;
+		for (i32 r = 0; r < layout.row; ++r)
+		{
+			y += GetNodeRowHeight(NodeRow_(r));
+		}
+		const float blockHeight = layout.prevBlockHeight[layout.row][column];
+		const float slotHeight  = ImMax(GetNodeGridSize(), blockHeight);
+		y += layout.cellY[column] + (slotHeight - blockHeight) * 0.5f;
+
+		const v2 pos = layout.origin + v2(x, y);
+		ImGui::SetCursorScreenPos(pos);
+		ImGui::BeginGroup();
+		// A SameLine() would move the content out of the cell, so the line is pointed at it
+		ImGui::GetCurrentWindow()->DC.CursorPosPrevLine = pos;
+		// An empty cell has to measure zero instead of reaching back to the previous item
+		ImGui::ItemAdd(ImRect(pos, pos), 0);
+	}
+
+	void SetNodeRow(const NodeRow_ row)
+	{
+		EndNodeCell();
+
+		NodeLayout& layout = gNodes->nodeLayout;
+		layout.row         = row;
+		for (i32 i = 0; i < NodeColumn_COUNT; ++i)
+		{
+			layout.cellY[i] = 0.f;
+		}
 	}
 
 	void DrawGrid(EditorContext& editor, const v2& canvasSize)
 	{
+		// The grid is defined in grid space, so its spacing scales with the zoom
+		const float spacing = gNodes->style.GridSpacing * GetZoom();
+		if (spacing <= 0.f)
+		{
+			return;
+		}
+
 		const v2 offset   = editor.panning;
 		u32 lineColor     = gNodes->style.colors[ColorVar_GridLine].ToPackedABGR();
 		u32 lineColorPrim = gNodes->style.colors[ColorVar_GridLinePrimary].ToPackedABGR();
 		bool drawPrimary  = gNodes->style.Flags & StyleFlags_GridLinesPrimary;
 
-		for (float x = fmodf(offset.x, gNodes->style.GridSpacing); x < canvasSize.x;
-		     x += gNodes->style.GridSpacing)
+		for (float x = fmodf(offset.x, spacing); x < canvasSize.x; x += spacing)
 		{
 			gNodes->CanvasDrawList->AddLine(EditorToScreenPosition(v2(x, 0.0f)),
 			    EditorToScreenPosition(v2(x, canvasSize.y)),
 			    offset.x - x == 0.f && drawPrimary ? lineColorPrim : lineColor);
 		}
 
-		for (float y = fmodf(offset.y, gNodes->style.GridSpacing); y < canvasSize.y;
-		     y += gNodes->style.GridSpacing)
+		for (float y = fmodf(offset.y, spacing); y < canvasSize.y; y += spacing)
 		{
 			gNodes->CanvasDrawList->AddLine(EditorToScreenPosition(v2(0.0f, y)),
 			    EditorToScreenPosition(v2(canvasSize.x, y)),
 			    offset.y - y == 0.f && drawPrimary ? lineColorPrim : lineColor);
 		}
+	}
+
+	// [SECTION] zoom indicator
+
+	static constexpr float zoomBoxWidth          = 26.f;
+	static constexpr float zoomBoxHeight         = 150.f;
+	static constexpr float zoomBoxMargin         = 14.f;
+	static constexpr float zoomTrackInset        = 10.f;
+	static constexpr float zoomIndicatorShowTime = 2.f;
+
+	void ZoomIndicator::Update()
+	{
+		EditorContext& editor = GetEditorContext();
+
+		const Rect canvas   = gNodes->CanvasRectScreenSpace;
+		const v2 canvasSize = canvas.GetSize();
+
+		// Hide the indicator entirely if the canvas is too small to hold it.
+		if (canvasSize.x < zoomBoxWidth + zoomBoxMargin * 2.f
+		    || canvasSize.y < zoomBoxHeight + zoomBoxMargin * 2.f)
+		{
+			rectScreenSpace = Rect(v2::Zero(), v2::Zero());
+			hovered         = false;
+			dragging        = false;
+			alpha           = 0.f;
+			lastZoom        = GetZoom();
+			return;
+		}
+
+		const v2 boxMax = v2{canvas.max.x - zoomBoxMargin, canvas.max.y - zoomBoxMargin};
+		const v2 boxMin = v2{boxMax.x - zoomBoxWidth, boxMax.y - zoomBoxHeight};
+		rectScreenSpace = Rect(boxMin, boxMax);
+
+		hovered = IsMouseInCanvas()
+		       && ImGui::IsMouseHoveringRect(rectScreenSpace.min, rectScreenSpace.max);
+
+		if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+		{
+			dragging = true;
+		}
+		if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+		{
+			dragging = false;
+		}
+
+		if (dragging)
+		{
+			const float trackTop    = boxMin.y + zoomTrackInset;
+			const float trackBottom = boxMax.y - zoomTrackInset;
+			const float t =
+			    Clamp((trackBottom - ImGui::GetMousePos().y) / (trackBottom - trackTop), 0.f, 1.f);
+
+			// Zoom is mapped logarithmically so that 100% sits in the middle of the range.
+			const float logMin  = logf(ZoomConfig().min);
+			const float logMax  = logf(ZoomConfig().max);
+			const float newZoom = expf(logMin + t * (logMax - logMin));
+
+			// Keep the canvas centered while dragging.
+			const v2 centerScreen = canvas.GetCenter();
+			const v2 centerGrid   = ScreenToGridPosition(editor, centerScreen);
+			SetZoom(newZoom);
+			editor.panning =
+			    centerScreen - gNodes->CanvasOriginScreenSpace - centerGrid * GetZoom();
+		}
+
+		// Reveal the indicator whenever the zoom changes (wheel, slider or programmatic).
+		if (GetZoom() != lastZoom)
+		{
+			visibleEndTime = ImGui::GetTime() + zoomIndicatorShowTime;
+			lastZoom       = GetZoom();
+		}
+
+		const float dt = ImGui::GetIO().DeltaTime;
+		const float targetAlpha =
+		    (hovered || dragging || ImGui::GetTime() < visibleEndTime) ? 1.f : 0.f;
+		const float fadeSpeed = targetAlpha > alpha ? 14.f : 5.f;
+		alpha += (targetAlpha - alpha) * Clamp(dt * fadeSpeed, 0.f, 1.f);
+	}
+
+	void ZoomIndicator::Draw()
+	{
+		if (alpha <= 0.001f)
+		{
+			return;
+		}
+
+		const EditorContext& editor = GetEditorContext();
+		const float fade            = Clamp(alpha, 0.f, 1.f);
+
+		const v2 boxMin = rectScreenSpace.min;
+		const v2 boxMax = rectScreenSpace.max;
+
+		const float boxRounding = 8.f;
+		const float trackHalf   = 3.f;
+		const float trackX      = (boxMin.x + boxMax.x) * 0.5f;
+		const float trackTop    = boxMin.y + zoomTrackInset;
+		const float trackBottom = boxMax.y - zoomTrackInset;
+
+		ImDrawList* drawList = gNodes->CanvasDrawList;
+
+		drawList->AddRectFilled(
+		    boxMin, boxMax, ImGui::GetColorU32(ImGuiCol_WindowBg, 0.8f * fade), boxRounding);
+		drawList->AddRect(boxMin, boxMax, ImGui::GetColorU32(ImGuiCol_Border, 0.8f * fade),
+		    boxRounding, ImDrawFlags_RoundCornersAll, 1.f);
+
+		drawList->AddRectFilled(v2{trackX - trackHalf, trackTop},
+		    v2{trackX + trackHalf, trackBottom}, ImGui::GetColorU32(ImGuiCol_FrameBg, 0.9f * fade),
+		    trackHalf);
+
+		const float logMin  = logf(ZoomConfig().min);
+		const float logMax  = logf(ZoomConfig().max);
+		const float t       = Clamp((logf(GetZoom()) - logMin) / (logMax - logMin), 0.f, 1.f);
+		const float fillTop = trackBottom - t * (trackBottom - trackTop);
+
+		drawList->AddRectFilled(v2{trackX - trackHalf, fillTop},
+		    v2{trackX + trackHalf, trackBottom}, ImGui::GetColorU32(ImGuiCol_SliderGrab, fade),
+		    trackHalf);
+
+		drawList->AddCircleFilled(
+		    v2{trackX, fillTop}, 6.f, ImGui::GetColorU32(ImGuiCol_SliderGrabActive, fade), 16);
 	}
 
 	struct QuadOffsets
@@ -1310,15 +1511,7 @@ namespace rift::Nodes
 
 	TriangleOffsets CalculateTriangleOffsets(const float sideLength)
 	{
-		// Calculates the Vec2 offsets from an equilateral triangle's midpoint to
-		// its vertices. Here is how the left_offset and right_offset are
-		// calculated.
-		//
-		// For an equilateral triangle of side length s, the
-		// triangle's height, h, is h = s * sqrt(3) / 2.
-		//
-		// The length from the base to the midpoint is (1 / 3) * h. The length from
-		// the midpoint to the triangle vertex is (2 / 3) * h.
+		// Offsets of an equilateral triangle's vertices from its midpoint
 		const float sqrt3          = sqrtf(3.0f);
 		const float leftOffset     = -0.1666666666667f * sqrt3 * sideLength;
 		const float rightOffset    = 0.333333333333f * sqrt3 * sideLength;
@@ -1332,31 +1525,36 @@ namespace rift::Nodes
 		return offset;
 	}
 
-	void DrawPinShape(const v2& pinPos, const PinData& pin, const Color pinColor)
+	void DrawPinShape(const v2& pinPos, const PinData& pin, const Color pinColor, const float zoom)
 	{
 		static const i32 circleNumSegments = 8;
+
+		const float lineThickness = gNodes->style.PinLineThickness * zoom;
 
 		switch (pin.Shape)
 		{
 			case PinShape_Circle: {
-				gNodes->CanvasDrawList->AddCircle(pinPos, gNodes->style.PinCircleRadius,
-				    pinColor.ToPackedABGR(), circleNumSegments, gNodes->style.PinLineThickness);
+				gNodes->CanvasDrawList->AddCircle(pinPos, gNodes->style.PinCircleRadius * zoom,
+				    pinColor.ToPackedABGR(), circleNumSegments, lineThickness);
 			}
 			break;
 			case PinShape_CircleFilled: {
-				gNodes->CanvasDrawList->AddCircleFilled(pinPos, gNodes->style.PinCircleRadius,
-				    pinColor.ToPackedABGR(), circleNumSegments);
+				gNodes->CanvasDrawList->AddCircleFilled(pinPos,
+				    gNodes->style.PinCircleRadius * zoom, pinColor.ToPackedABGR(),
+				    circleNumSegments);
 			}
 			break;
 			case PinShape_Quad: {
-				const QuadOffsets offset = CalculateQuadOffsets(gNodes->style.PinQuadSideLength);
+				const QuadOffsets offset =
+				    CalculateQuadOffsets(gNodes->style.PinQuadSideLength * zoom);
 				gNodes->CanvasDrawList->AddQuad(pinPos + offset.topLeft, pinPos + offset.bottomLeft,
 				    pinPos + offset.bottomRight, pinPos + offset.topRight, pinColor.ToPackedABGR(),
-				    gNodes->style.PinLineThickness);
+				    lineThickness);
 			}
 			break;
 			case PinShape_QuadFilled: {
-				const QuadOffsets offset = CalculateQuadOffsets(gNodes->style.PinQuadSideLength);
+				const QuadOffsets offset =
+				    CalculateQuadOffsets(gNodes->style.PinQuadSideLength * zoom);
 				gNodes->CanvasDrawList->AddQuadFilled(pinPos + offset.topLeft,
 				    pinPos + offset.bottomLeft, pinPos + offset.bottomRight,
 				    pinPos + offset.topRight, pinColor.ToPackedABGR());
@@ -1364,33 +1562,29 @@ namespace rift::Nodes
 			break;
 			case PinShape_Triangle: {
 				const TriangleOffsets offset =
-				    CalculateTriangleOffsets(gNodes->style.PinTriangleSideLength);
+				    CalculateTriangleOffsets(gNodes->style.PinTriangleSideLength * zoom);
 				gNodes->CanvasDrawList->AddTriangle(pinPos + offset.topLeft,
 				    pinPos + offset.bottomLeft, pinPos + offset.right, pinColor.ToPackedABGR(),
-				    // NOTE: for some weird reason, the line drawn by AddTriangle is
-				    // much thinner than the lines drawn by AddCircle or AddQuad.
-				    // Multiplying the line thickness by two seemed to solve the
-				    // problem at a few different thickness values.
-				    2.f * gNodes->style.PinLineThickness);
+				    // AddTriangle draws thinner lines than AddCircle/AddQuad, so it is doubled
+				    2.f * lineThickness);
 			}
 			break;
 			case PinShape_TriangleFilled: {
 				const TriangleOffsets offset =
-				    CalculateTriangleOffsets(gNodes->style.PinTriangleSideLength);
+				    CalculateTriangleOffsets(gNodes->style.PinTriangleSideLength * zoom);
 				gNodes->CanvasDrawList->AddTriangleFilled(pinPos + offset.topLeft,
 				    pinPos + offset.bottomLeft, pinPos + offset.right, pinColor.ToPackedABGR());
 			}
 			break;
 			case PinShape_Diamond: {
-				const float halfSide = 0.5f * gNodes->style.PinDiamondSideLength;
+				const float halfSide = 0.5f * gNodes->style.PinDiamondSideLength * zoom;
 				gNodes->CanvasDrawList->AddQuad(pinPos + v2{0.f, halfSide},
 				    pinPos + v2{halfSide, 0.f}, pinPos + v2{0.f, -halfSide},
-				    pinPos + v2{-halfSide, 0.f}, pinColor.ToPackedABGR(),
-				    gNodes->style.PinLineThickness);
+				    pinPos + v2{-halfSide, 0.f}, pinColor.ToPackedABGR(), lineThickness);
 			}
 			break;
 			case PinShape_DiamondFilled: {
-				const float halfSide = 0.5f * gNodes->style.PinDiamondSideLength;
+				const float halfSide = 0.5f * gNodes->style.PinDiamondSideLength * zoom;
 				gNodes->CanvasDrawList->AddQuadFilled(pinPos + v2{0.f, halfSide},
 				    pinPos + v2{halfSide, 0.f}, pinPos + v2{0.f, -halfSide},
 				    pinPos + v2{-halfSide, 0.f}, pinColor.ToPackedABGR());
@@ -1405,7 +1599,9 @@ namespace rift::Nodes
 		PinData& pinData           = editor.GetPinData(pin);
 		const Rect& parentNodeRect = editor.nodes[pinData.parentNodeId].rect;
 
-		pinData.position = GetScreenSpacePinCoordinates(parentNodeRect, pin.type, pinData.rect);
+		const float zoom = GetZoom();
+		pinData.position =
+		    GetScreenSpacePinCoordinates(parentNodeRect, pin.type, pinData.rect, zoom);
 
 		Color pinColor = pinData.colorStyle.Background;
 		if (gNodes->HoveredPinIdx == pin)
@@ -1413,13 +1609,13 @@ namespace rift::Nodes
 			pinColor = pinData.colorStyle.Hovered;
 		}
 
-		DrawPinShape(pinData.position, pinData, pinColor);
+		DrawPinShape(pinData.position, pinData, pinColor, zoom);
 	}
 
-	void DrawNode(EditorContext& editor, const AST::Id nodeId)
+	void DrawNode(EditorContext& editor, const ast::Id nodeId)
 	{
 		const NodeData& node = editor.nodes[nodeId];
-		ImGui::SetCursorPos(node.Origin + editor.panning);
+		ImGui::SetCursorPos(node.Origin * GetZoom() + editor.panning);
 
 		const bool nodeHovered = gNodes->hoveredNodeId == nodeId
 		                      && editor.clickInteraction.type != ClickInteractionType_BoxSelection;
@@ -1443,9 +1639,11 @@ namespace rift::Nodes
 			    nodeBackground.ToPackedABGR(), node.LayoutStyle.CornerRounding);
 
 			// title bar:
-			if (node.TitleBarContentRect.GetSize().y > 0.f)
+			if (node.rowHeight[NodeRow_Header] > 0.f)
 			{
-				Rect titleBarRect = GetNodeTitleRect(node);
+				// The header is the first row, so it always starts at the top of the node
+				const Rect titleBarRect = Rect(node.rect.min,
+				    v2(node.rect.max.x, node.rect.min.y + node.rowHeight[NodeRow_Header]));
 
 				gNodes->CanvasDrawList->AddRectFilled(titleBarRect.min, titleBarRect.max,
 				    titlebarBackground.ToPackedABGR(), node.LayoutStyle.CornerRounding,
@@ -1468,6 +1666,9 @@ namespace rift::Nodes
 			}
 		}
 
+		// Pins are drawn on their own channel, above every node, so a node body can never
+		// cover them and they are always interactable
+		DrawListActivatePinChannel();
 		for (i32 pinIndex : node.inputs)
 		{
 			DrawPin(editor, {pinIndex, PinType::Input});
@@ -1490,15 +1691,10 @@ namespace rift::Nodes
 		const PinData& endPin   = editor.inputs.pool[link.inputIdx];
 
 		const CubicBezier cubicBezier = MakeCubicBezier(startPin.position, endPin.position,
-		    PinType::Output, gNodes->style.linkLineSegmentsPerLength);
+		    PinType::Output, gNodes->style.linkLineSegmentsPerLength * GetZoom());
 
 		const bool linkHovered = gNodes->HoveredLinkIdx == linkIdx
 		                      && editor.clickInteraction.type != ClickInteractionType_BoxSelection;
-
-		if (linkHovered)
-		{
-			gNodes->HoveredLinkIdx = linkIdx;
-		}
 
 		// It's possible for a link to be deleted in begin_link_i32eraction. A user
 		// may detach a link, resulting in the link wire snapping to the mouse
@@ -1521,16 +1717,19 @@ namespace rift::Nodes
 		}
 
 		gNodes->CanvasDrawList->AddBezierCubic(cubicBezier.p0, cubicBezier.p1, cubicBezier.p2,
-		    cubicBezier.p3, linkColor.ToPackedABGR(), gNodes->style.LinkThickness,
+		    cubicBezier.p3, linkColor.ToPackedABGR(), gNodes->style.LinkThickness * GetZoom(),
 		    cubicBezier.numSegments);
 	}
 
-	void BeginPin(const i32 id, const PinType type, const PinShape shape, AST::Id nodeId)
+	void BeginPin(const i32 id, const PinType type, const PinShape shape, ast::Id nodeId)
 	{
 		// Make sure to call BeginNode() before calling
 		// BeginPin()
 		assert(gNodes->currentScope == Scope::Node);
 		gNodes->currentScope = Scope::Pin;
+
+		// The whole pin block is a single item of its column
+		BeginNodeCell(type == PinType::Input ? NodeColumn_Inputs : NodeColumn_Outputs);
 
 		ImGui::BeginGroup();
 		ImGui::PushID(id);
@@ -1575,6 +1774,9 @@ namespace rift::Nodes
 			case PinType::Input: node.inputs.push_back(gNodes->CurrentPinIdx.index); break;
 			case PinType::Output: node.outputs.push_back(gNodes->CurrentPinIdx.index);
 		}
+
+		// Blocks submitted after a pin go back to the name column
+		BeginNodeCell(NodeColumn_Name);
 	}
 
 	void Initialize(Context* context)
@@ -1584,7 +1786,7 @@ namespace rift::Nodes
 		context->currentScope            = Scope::None;
 
 		context->CurrentPinIdx = PinIdx::Invalid();
-		context->currentNodeId = AST::NoId;
+		context->currentNodeId = ast::NoId;
 
 		context->DefaultEditorCtx = EditorContextCreate();
 		SetEditorContext(gNodes->DefaultEditorCtx);
@@ -1642,7 +1844,9 @@ namespace rift::Nodes
 	{
 		auto* ctx = IM_NEW(Context)();
 		if (gNodes == nullptr)
+		{
 			SetCurrentContext(ctx);
+		}
 		Initialize(ctx);
 		return ctx;
 	}
@@ -1650,10 +1854,14 @@ namespace rift::Nodes
 	void DestroyContext(Context* ctx)
 	{
 		if (ctx == nullptr)
+		{
 			ctx = gNodes;
+		}
 		Shutdown(ctx);
 		if (gNodes == ctx)
+		{
 			SetCurrentContext(nullptr);
+		}
 		IM_DELETE(ctx);
 	}
 
@@ -1697,14 +1905,29 @@ namespace rift::Nodes
 		editor.panning        = pos;
 	}
 
-	void MoveToNode(AST::Id nodeId, v2 offset)
+	void MoveToNode(ast::Id nodeId, v2 offset)
 	{
 		EditorContext& editor = GetEditorContext();
 		NodeData& node        = editor.nodes.Get(nodeId);
 
-		editor.panning.x = -node.Origin.x;
-		editor.panning.y = -node.Origin.y;
+		editor.panning.x = -node.Origin.x * GetZoom();
+		editor.panning.y = -node.Origin.y * GetZoom();
 		editor.panning += offset;
+	}
+
+	float GetZoom()
+	{
+		return ZoomConfig().current;
+	}
+
+	void SetZoom(float zoom)
+	{
+		ZoomConfig().current = Clamp(zoom, ZoomConfig().min, ZoomConfig().max);
+	}
+
+	void ResetZoom()
+	{
+		SetZoom(ZoomConfig().defaultZoom);
 	}
 
 	void SetImGuiContext(ImGuiContext* ctx)
@@ -1792,8 +2015,6 @@ namespace rift::Nodes
 		gNodes->style.colors[ColorVar_MiniMapOutlineHovered] = Color::FromRGB(150, 150, 150, 200);
 		gNodes->style.colors[ColorVar_MiniMapNodeBackground] = Color::FromRGB(200, 200, 200, 100);
 		gNodes->style.colors[ColorVar_MiniMapNodeBackgroundSelected] =
-		    gNodes->style.colors[ColorVar_MiniMapNodeBackgroundHovered];
-		gNodes->style.colors[ColorVar_MiniMapNodeBackgroundSelected] =
 		    Color::FromRGB(200, 200, 240);
 		gNodes->style.colors[ColorVar_MiniMapNodeOutline] = Color::FromRGB(200, 200, 200, 100);
 		gNodes->style.colors[ColorVar_MiniMapLink]        = gNodes->style.colors[ColorVar_Link];
@@ -1833,8 +2054,6 @@ namespace rift::Nodes
 		gNodes->style.colors[ColorVar_MiniMapOutlineHovered] = Color::FromRGB(150, 150, 150, 200);
 		gNodes->style.colors[ColorVar_MiniMapNodeBackground] = Color::FromRGB(200, 200, 200, 100);
 		gNodes->style.colors[ColorVar_MiniMapNodeBackgroundSelected] =
-		    gNodes->style.colors[ColorVar_MiniMapNodeBackgroundHovered];
-		gNodes->style.colors[ColorVar_MiniMapNodeBackgroundSelected] =
 		    Color::FromRGB(200, 200, 240);
 		gNodes->style.colors[ColorVar_MiniMapNodeOutline] = Color::FromRGB(200, 200, 200, 100);
 		gNodes->style.colors[ColorVar_MiniMapLink]        = gNodes->style.colors[ColorVar_Link];
@@ -1861,7 +2080,7 @@ namespace rift::Nodes
 		ObjectPoolReset(editor.outputs);
 		ObjectPoolReset(editor.links);
 
-		gNodes->hoveredNodeId = AST::NoId;
+		gNodes->hoveredNodeId = ast::NoId;
 		gNodes->HoveredLinkIdx.Reset();
 		gNodes->HoveredPinIdx = PinIdx::Invalid();
 		gNodes->DeletedLinkIdx.Reset();
@@ -1886,7 +2105,7 @@ namespace rift::Nodes
 		gNodes->altMouseScrollDelta    = ImGui::GetIO().MouseWheel;
 		gNodes->multipleSelectModifier = (gNodes->io.multipleSelectModifier.modifier != nullptr
 		                                      ? *gNodes->io.multipleSelectModifier.modifier
-		                                      : ImGui::GetIO().KeyCtrl);
+											  : ImGui::GetIO().KeyCtrl);
 		gNodes->activePin              = false;
 
 		ImGui::BeginGroup();
@@ -1904,6 +2123,19 @@ namespace rift::Nodes
 			// BeginChild(), otherwise the ImGui UI elements are going to be
 			// rendered i32o the parent window draw list.
 			DrawListSet(ImGui::GetWindowDrawList());
+
+			// Scale the font and the style metrics used by the node content so that node
+			// widgets (text, input fields, checkboxes...) follow the canvas zoom. Pushed here
+			// and popped in EndNodeEditor().
+			{
+				ImGuiStyle& style = ImGui::GetStyle();
+				ImGui::PushFont(nullptr, style.FontSizeBase * GetZoom());
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, style.FramePadding * GetZoom());
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, style.ItemSpacing * GetZoom());
+				ImGui::PushStyleVar(
+				    ImGuiStyleVar_ItemInnerSpacing, style.ItemInnerSpacing * GetZoom());
+				ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, style.IndentSpacing * GetZoom());
+			}
 
 			{
 				const v2 canvasSize = ImGui::GetWindowSize();
@@ -1951,16 +2183,13 @@ namespace rift::Nodes
 		        || editor.clickInteraction.type == ClickInteractionType_LinkCreation)
 		    && IsMouseInCanvas() && !editor.miniMap.IsHovered())
 		{
-			// Pins needs some special care. We need to check the depth stack to see which pins
-			// are being occluded by other nodes.
-			ResolveOccludedPins(editor, gNodes->occludedPinIndices);
-
-			gNodes->HoveredPinIdx =
-			    ResolveHoveredPin(editor.outputs, PinType::Output, gNodes->occludedPinIndices);
+			// Pins are drawn above every node, so they are never occluded and are always
+			// interactable. They also take precedence over the node body, which is the
+			// selection target.
+			gNodes->HoveredPinIdx = ResolveHoveredPin(editor.outputs, PinType::Output);
 			if (!gNodes->HoveredPinIdx)
 			{
-				gNodes->HoveredPinIdx =
-				    ResolveHoveredPin(editor.inputs, PinType::Input, gNodes->occludedPinIndices);
+				gNodes->HoveredPinIdx = ResolveHoveredPin(editor.inputs, PinType::Input);
 			}
 
 			if (!gNodes->HoveredPinIdx)
@@ -1979,7 +2208,10 @@ namespace rift::Nodes
 			}
 		}
 
-		for (AST::Id nodeId : editor.nodes)
+		// Pins get a channel above all the nodes, so they are never covered by a node body
+		DrawListAppendPinChannel();
+
+		for (ast::Id nodeId : editor.nodes)
 		{
 			DrawListActivateNodeBackground(nodeId);
 			DrawNode(editor, nodeId);
@@ -2009,9 +2241,30 @@ namespace rift::Nodes
 			editor.miniMap.Update();
 		}
 
+		// Zoom the canvas with the mouse wheel, keeping the point under the cursor fixed.
+		if (gNodes->altMouseScrollDelta != 0.f && !editor.miniMap.IsHovered() && IsMouseInCanvas()
+		    && editor.clickInteraction.type == ClickInteractionType_None
+		    && !ImGui::IsAnyItemActive())
+		{
+			const v2 mousePos = gNodes->mousePosition;
+			const v2 gridPos  = ScreenToGridPosition(editor, mousePos);
+			const float newZoom =
+			    Clamp(GetZoom() * powf(ZoomConfig().step, gNodes->altMouseScrollDelta),
+			        ZoomConfig().min, ZoomConfig().max);
+			if (newZoom != GetZoom())
+			{
+				SetZoom(newZoom);
+				editor.panning = mousePos - gNodes->CanvasOriginScreenSpace - gridPos * newZoom;
+			}
+		}
+
+		// Update the zoom indicator overlay (input, dragging and visibility).
+		editor.zoomIndicator.Update();
+
 		// Handle node graph interaction
 
-		if (!editor.miniMap.IsHovered())
+		if (!editor.miniMap.IsHovered() && !editor.zoomIndicator.hovered
+		    && !editor.zoomIndicator.dragging)
 		{
 			if (gNodes->leftMouseClicked && gNodes->HoveredLinkIdx.IsValid())
 			{
@@ -2050,10 +2303,13 @@ namespace rift::Nodes
 		}
 		UpdateClickInteraction(editor);
 
+		// Draw the zoom indicator on top of the canvas content.
+		editor.zoomIndicator.Draw();
+
 		// At this point, draw commands have been issued for all nodes (and pins). Update the
 		// node pool to detect unused node slots and remove those indices from the depth stack
 		// before sorting the node draw commands by depth.
-		for (AST::Id nodeId : editor.nodes)
+		for (ast::Id nodeId : editor.nodes)
 		{
 			auto& node = editor.nodes[nodeId];
 			node.inputs.clear();
@@ -2073,6 +2329,15 @@ namespace rift::Nodes
 		// Finally, merge the draw channels
 		gNodes->CanvasDrawList->ChannelsMerge();
 
+		// Restore the node content font/style scaling pushed in BeginNodeEditor().
+		ImGui::PopStyleVar();    // pop indent spacing
+		ImGui::PopStyleVar();    // pop item inner spacing
+		ImGui::PopStyleVar();    // pop item spacing
+		ImGui::PopStyleVar();    // pop frame padding
+		ImGui::PopFont();
+
+		CloseLeakedNode();
+
 		// pop style
 		ImGui::EndChild();         // end scrolling region
 		ImGui::PopStyleColor();    // pop child window background color
@@ -2081,13 +2346,15 @@ namespace rift::Nodes
 		ImGui::EndGroup();
 	}
 
-	void BeginNode(const AST::Id nodeId)
+	void BeginNode(const ast::Id nodeId)
 	{
 		// Remember to call BeginNodeEditor before calling BeginNode
 		assert(gNodes->currentScope == Scope::Editor);
 		gNodes->currentScope = Scope::Node;
 
 		EditorContext& editor = GetEditorContext();
+
+		CloseLeakedNode();
 
 		gNodes->currentNodeId = nodeId;
 
@@ -2100,20 +2367,55 @@ namespace rift::Nodes
 		node.colorStyle.Titlebar           = gNodes->style.colors[ColorVar_TitleBar];
 		node.colorStyle.TitlebarHovered    = gNodes->style.colors[ColorVar_TitleBarHovered];
 		node.colorStyle.TitlebarSelected   = gNodes->style.colors[ColorVar_TitleBarSelected];
-		node.LayoutStyle.CornerRounding    = gNodes->style.NodeCornerRounding;
-		node.LayoutStyle.Padding           = gNodes->style.NodePadding;
-		node.LayoutStyle.BorderThickness   = gNodes->style.NodeBorderThickness;
+		node.LayoutStyle.CornerRounding    = gNodes->style.NodeCornerRounding * GetZoom();
+		node.LayoutStyle.Padding           = gNodes->style.NodePadding * GetZoom();
+		node.LayoutStyle.BorderThickness   = gNodes->style.NodeBorderThickness * GetZoom();
 
-		// ImGui::SetCursorPos sets the cursor position, local to the current widget
-		// (in this case, the child object started in BeginNodeEditor). Use
-		// ImGui::SetCursorScreenPos to set the screen space coordinates directly.
-		ImGui::SetCursorPos(GridToEditorPosition(editor, GetNodeTitleBarOrigin(node)));
+		// Lay out the node's table with the sizes measured last frame, so that every row and
+		// column lines up in a single pass. The body row is the default one, the header row
+		// is entered with BeginTitleBar().
+		NodeLayout& layout = gNodes->nodeLayout;
+		layout             = {};
+		layout.groupDepth  = GImGui->GroupStack.Size;
+		layout.padding     = node.LayoutStyle.Padding;
+		layout.origin      = GridToScreenPosition(editor, node.Origin);
+		// The measurements of the last frame are in screen pixels, so they have to be scaled
+		// when the zoom changed, or the node would change size with it
+		const float zoom = GetZoom();
+		if (node.contentZoom > 0.f && node.contentZoom != zoom)
+		{
+			const float scale = zoom / node.contentZoom;
+			for (i32 r = 0; r < NodeRow_COUNT; ++r)
+			{
+				for (i32 c = 0; c < NodeColumn_COUNT; ++c)
+				{
+					node.cellContentSize[r][c] *= scale;
+					node.blockHeight[r][c] *= scale;
+				}
+			}
+			node.nodeWidth *= scale;
+		}
+		node.contentZoom = zoom;
+
+		layout.nodeWidth = node.nodeWidth;
+		for (i32 r = 0; r < NodeRow_COUNT; ++r)
+		{
+			for (i32 c = 0; c < NodeColumn_COUNT; ++c)
+			{
+				layout.prevCellContentSize[r][c] = node.cellContentSize[r][c];
+				layout.prevBlockHeight[r][c]     = node.blockHeight[r][c];
+			}
+		}
 
 		DrawListAddNode(nodeId);
 		DrawListActivateCurrentNodeForeground();
 
-		ImGui::PushID(GetIdIndex(nodeId));
-		ImGui::BeginGroup();
+		ImGui::PushID(nodeId.GetIndex());
+		gNodes->nodeLayout.nodeOpen = true;
+
+		// Content submitted outside of a pin block goes to the name column
+		SetNodeRow(NodeRow_Body);
+		BeginNodeCell(NodeColumn_Name);
 	}
 
 	void EndNode()
@@ -2121,18 +2423,45 @@ namespace rift::Nodes
 		assert(gNodes->currentScope == Scope::Node);
 		gNodes->currentScope = Scope::Editor;
 
+		EndNodeCell();
+
 		EditorContext& editor = GetEditorContext();
+		NodeData& node        = editor.nodes[gNodes->currentNodeId];
 
-		// The node's rectangle depends on the ImGui UI group size.
-		ImGui::EndGroup();
+		// The node is as big as its two tables
+		for (i32 r = 0; r < NodeRow_COUNT; ++r)
+		{
+			for (i32 c = 0; c < NodeColumn_COUNT; ++c)
+			{
+				node.cellContentSize[r][c] = gNodes->nodeLayout.cellContentSize[r][c];
+				node.blockHeight[r][c]     = gNodes->nodeLayout.blockHeight[r][c];
+			}
+			node.rowHeight[r] = GetNodeRowHeight(NodeRow_(r));
+		}
+		// The node is as wide as its widest table, snapped to the grid. The header's input and
+		// output cells are the same size, so that the title is centered.
+		const float headerInputs  = GetNodeCellWidth(NodeRow_Header, NodeColumn_Inputs);
+		const float headerOutputs = GetNodeCellWidth(NodeRow_Header, NodeColumn_Outputs);
+		const float titleWidth    = GetNodeCellWidth(NodeRow_Header, NodeColumn_Name);
+		const float bodyWidth     = GetNodeCellWidth(NodeRow_Body, NodeColumn_Inputs)
+		                          + GetNodeCellWidth(NodeRow_Body, NodeColumn_Name)
+		                          + GetNodeCellWidth(NodeRow_Body, NodeColumn_Outputs);
+		node.nodeWidth =
+		    SnapToGrid(ImMax(ImMax(ImMax(headerInputs, headerOutputs) * 2.f, bodyWidth),
+		        titleWidth + headerInputs + headerOutputs + 2.f * gNodes->nodeLayout.padding.x));
+
+		node.rect = Rect(gNodes->nodeLayout.origin,
+		    gNodes->nodeLayout.origin
+		        + v2(
+		            node.nodeWidth, node.rowHeight[NodeRow_Header] + node.rowHeight[NodeRow_Body]));
+
+		// Register the node as an item so it counts as an ImGui interaction
+		ImGui::ItemAdd(ImRect(node.rect.min, node.rect.max), ImGui::GetID("node"));
 		ImGui::PopID();
-
-		NodeData& node = editor.nodes[gNodes->currentNodeId];
-		node.rect      = GetItemRect();
-		node.rect.Expand(node.LayoutStyle.Padding);
+		gNodes->nodeLayout.nodeOpen = false;
 
 		editor.gridContentBounds.Merge(node.Origin);
-		editor.gridContentBounds.Merge(node.Origin + node.rect.GetSize());
+		editor.gridContentBounds.Merge(node.Origin + node.rect.GetSize() / GetZoom());
 
 		if (node.rect.Contains(gNodes->mousePosition))
 		{
@@ -2140,7 +2469,7 @@ namespace rift::Nodes
 		}
 	}
 
-	v2 GetNodeDimensions(AST::Id nodeId)
+	v2 GetNodeDimensions(ast::Id nodeId)
 	{
 		assert(!IsNone(nodeId));
 		EditorContext& editor = GetEditorContext();
@@ -2148,25 +2477,18 @@ namespace rift::Nodes
 		return node.rect.GetSize();
 	}
 
-	void BeginNodeTitleBar()
+	void BeginTitleBar()
 	{
 		assert(gNodes->currentScope == Scope::Node);
-		ImGui::BeginGroup();
+		SetNodeRow(NodeRow_Header);
+		BeginNodeCell(NodeColumn_Name);
 	}
 
-	void EndNodeTitleBar()
+	void EndTitleBar()
 	{
 		assert(gNodes->currentScope == Scope::Node);
-		ImGui::EndGroup();
-
-		EditorContext& editor    = GetEditorContext();
-		NodeData& node           = editor.nodes[gNodes->currentNodeId];
-		node.TitleBarContentRect = GetItemRect();
-
-		Rect nodeTitleRect = GetNodeTitleRect(node);
-		ImGui::ItemAdd({nodeTitleRect.min, nodeTitleRect.max}, ImGui::GetID("title_bar"));
-
-		ImGui::SetCursorPos(GridToEditorPosition(editor, GetNodeContentOrigin(node)));
+		SetNodeRow(NodeRow_Body);
+		BeginNodeCell(NodeColumn_Name);
 	}
 
 	void BeginInput(const i32 id, const PinShape shape)
@@ -2210,7 +2532,8 @@ namespace rift::Nodes
 		assert(gNodes->currentScope == Scope::Editor);
 
 		EditorContext& editor    = GetEditorContext();
-		LinkData& link           = ObjectPoolFindOrCreateObject(editor.links, id);
+		const i32 linkIdx        = ObjectPoolFindOrCreateIndex(editor.links, id);
+		LinkData& link           = editor.links.pool[linkIdx];
 		link.id                  = id;
 		link.outputIdx           = ObjectPoolFindOrCreateIndex(editor.outputs, outputPin);
 		link.inputIdx            = ObjectPoolFindOrCreateIndex(editor.inputs, inputPin);
@@ -2226,7 +2549,7 @@ namespace rift::Nodes
 		    || (editor.clickInteraction.linkCreation.outputIdx == link.inputIdx
 		        && editor.clickInteraction.linkCreation.inputIdx == link.outputIdx))
 		{
-			gNodes->SnapLinkIdx = ObjectPoolFindOrCreateIndex(editor.links, id);
+			gNodes->SnapLinkIdx = linkIdx;
 		}
 	}
 
@@ -2260,38 +2583,38 @@ namespace rift::Nodes
 	};
 
 	static const StyleVarInfo gStyleVarInfo[] = {
-  // StyleVar_GridSpacing
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, GridSpacing)              },
- // StyleVar_NodeCornerRounding
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, NodeCornerRounding)       },
- // StyleVar_NodePadding
-	    {ImGuiDataType_Float, 2, (u32)IM_OFFSETOF(Style, NodePadding)              },
- // StyleVar_NodeBorderThickness
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, NodeBorderThickness)      },
- // StyleVar_LinkThickness
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, LinkThickness)            },
- // StyleVar_linkLineSegmentsPerLength
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, linkLineSegmentsPerLength)},
- // StyleVar_LinkHoverDistance
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, LinkHoverDistance)        },
- // StyleVar_PinCircleRadius
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinCircleRadius)          },
- // StyleVar_PinQuadSideLength
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinQuadSideLength)        },
- // StyleVar_PinTriangleSideLength
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinTriangleSideLength)    },
- // StyleVar_PinDiamondSideLength
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinDiamondSideLength)     },
- // StyleVar_PinLineThickness
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinLineThickness)         },
- // StyleVar_PinHoverRadius
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinHoverRadius)           },
- // StyleVar_PinOffset
-	    {ImGuiDataType_Float, 1, (u32)IM_OFFSETOF(Style, PinOffset)                },
- // StyleVar_MiniMapPadding
-	    {ImGuiDataType_Float, 2, (u32)IM_OFFSETOF(Style, miniMapPadding)           },
- // StyleVar_MiniMapOffset
-	    {ImGuiDataType_Float, 2, (u32)IM_OFFSETOF(Style, miniMapOffset)            },
+	    // StyleVar_GridSpacing
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, GridSpacing)              },
+	    // StyleVar_NodeCornerRounding
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, NodeCornerRounding)       },
+	    // StyleVar_NodePadding
+	    {ImGuiDataType_Float, 2, (u32)offsetof(Style, NodePadding)              },
+	    // StyleVar_NodeBorderThickness
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, NodeBorderThickness)      },
+	    // StyleVar_LinkThickness
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, LinkThickness)            },
+	    // StyleVar_linkLineSegmentsPerLength
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, linkLineSegmentsPerLength)},
+	    // StyleVar_LinkHoverDistance
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, LinkHoverDistance)        },
+	    // StyleVar_PinCircleRadius
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, PinCircleRadius)          },
+	    // StyleVar_PinQuadSideLength
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, PinQuadSideLength)        },
+	    // StyleVar_PinTriangleSideLength
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, PinTriangleSideLength)    },
+	    // StyleVar_PinDiamondSideLength
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, PinDiamondSideLength)     },
+	    // StyleVar_PinLineThickness
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, PinLineThickness)         },
+	    // StyleVar_PinHoverRadius
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, PinHoverRadius)           },
+	    // StyleVar_PinOffset
+	    {ImGuiDataType_Float, 1, (u32)offsetof(Style, PinOffset)                },
+	    // StyleVar_MiniMapPadding
+	    {ImGuiDataType_Float, 2, (u32)offsetof(Style, miniMapPadding)           },
+	    // StyleVar_MiniMapOffset
+	    {ImGuiDataType_Float, 2, (u32)offsetof(Style, miniMapOffset)            },
 	};
 
 	static const StyleVarInfo* GetStyleVarInfo(StyleVar idx)
@@ -2349,35 +2672,35 @@ namespace rift::Nodes
 		}
 	}
 
-	void SetNodeScreenSpacePos(AST::Id nodeId, const v2& screenSpacePos)
+	void SetNodeScreenSpacePos(ast::Id nodeId, const v2& screenSpacePos)
 	{
 		EditorContext& editor = GetEditorContext();
 		NodeData& node        = editor.nodes.GetOrAdd(nodeId);
 		node.Origin           = ScreenToGridPosition(editor, screenSpacePos);
 	}
 
-	void SetNodeEditorSpacePos(AST::Id nodeId, const v2& editorSpacePos)
+	void SetNodeEditorSpacePos(ast::Id nodeId, const v2& editorSpacePos)
 	{
 		EditorContext& editor = GetEditorContext();
 		NodeData& node        = editor.nodes.GetOrAdd(nodeId);
 		node.Origin           = EditorToGridPosition(editor, editorSpacePos);
 	}
 
-	void SetNodeGridSpacePos(AST::Id nodeId, const v2& gridPos)
+	void SetNodeGridSpacePos(ast::Id nodeId, const v2& gridPos)
 	{
 		EditorContext& editor = GetEditorContext();
 		NodeData& node        = editor.nodes.GetOrAdd(nodeId);
 		node.Origin           = gridPos;
 	}
 
-	void SetNodeDraggable(AST::Id nodeId, const bool draggable)
+	void SetNodeDraggable(ast::Id nodeId, const bool draggable)
 	{
 		EditorContext& editor = GetEditorContext();
 		NodeData& node        = editor.nodes.GetOrAdd(nodeId);
 		node.Draggable        = draggable;
 	}
 
-	v2 GetNodeScreenSpacePos(AST::Id nodeId)
+	v2 GetNodeScreenSpacePos(ast::Id nodeId)
 	{
 		assert(!IsNone(nodeId));
 		EditorContext& editor = GetEditorContext();
@@ -2385,7 +2708,7 @@ namespace rift::Nodes
 		return GridToScreenPosition(editor, node.Origin);
 	}
 
-	v2 GetNodeEditorSpacePos(AST::Id nodeId)
+	v2 GetNodeEditorSpacePos(ast::Id nodeId)
 	{
 		assert(!IsNone(nodeId));
 		EditorContext& editor = GetEditorContext();
@@ -2393,7 +2716,7 @@ namespace rift::Nodes
 		return GridToEditorPosition(editor, node.Origin);
 	}
 
-	v2 GetNodeGridSpacePos(AST::Id nodeId)
+	v2 GetNodeGridSpacePos(ast::Id nodeId)
 	{
 		assert(!IsNone(nodeId));
 		EditorContext& editor = GetEditorContext();
@@ -2406,34 +2729,62 @@ namespace rift::Nodes
 		return IsMouseInCanvas();
 	}
 
-	AST::Id GetHoveredNode()
+	ast::Id GetHoveredNode()
 	{
 		return gNodes->hoveredNodeId;
 	}
 
-	AST::Id GetHoveredLink()
+	ast::Id GetHoveredLink()
 	{
 		if (gNodes->HoveredLinkIdx.IsValid())
 		{
 			const EditorContext& editor = GetEditorContext();
-			return AST::Id(editor.links.pool[gNodes->HoveredLinkIdx.Value()].id);
+			return ast::Id::MakeRaw(editor.links.pool[gNodes->HoveredLinkIdx.Value()].id);
 		}
-		return AST::NoId;
+		return ast::NoId;
 	}
 
-	bool IsNodeHovered(AST::Id nodeId)
+	bool IsNodeHovered(ast::Id nodeId)
 	{
 		assert(gNodes->currentScope != Scope::None);
-		return gNodes->hoveredNodeId == nodeId && gNodes->hoveredNodeId != AST::NoId;
+		return gNodes->hoveredNodeId == nodeId && gNodes->hoveredNodeId != ast::NoId;
 	}
 
-	bool IsLinkHovered(AST::Id linkId)
+	bool GetPinScreenData(Id pinId, PinType type, v2& outPosition, Color& outColor)
+	{
+		const EditorContext& editor     = GetEditorContext();
+		const ObjectPool<PinData>& pool = editor.GetPinPool(type);
+		const i32 idx                   = ObjectPoolFind(pool, pinId);
+		if (idx < 0 || !pool.inUse.IsSet(idx))
+		{
+			return false;
+		}
+
+		outPosition = pool.pool[idx].position;
+		outColor    = pool.pool[idx].colorStyle.Background;
+		return true;
+	}
+
+	bool GetHoveredPin(Id& outPinId, PinType& outType)
+	{
+		if (!gNodes->HoveredPinIdx)
+		{
+			return false;
+		}
+
+		const EditorContext& editor = GetEditorContext();
+		outPinId                    = editor.GetPinData(gNodes->HoveredPinIdx).id;
+		outType                     = gNodes->HoveredPinIdx.type;
+		return true;
+	}
+
+	bool IsLinkHovered(ast::Id linkId)
 	{
 		assert(gNodes->currentScope != Scope::None);
 
 		const EditorContext& editor = GetEditorContext();
 		return gNodes->HoveredLinkIdx.IsValid()
-		    && linkId == AST::Id(editor.links.pool[gNodes->HoveredLinkIdx.Value()].id);
+		    && linkId == ast::Id::MakeRaw(editor.links.pool[gNodes->HoveredLinkIdx.Value()].id);
 	}
 
 	bool IsPinHovered(Id* const pin)
@@ -2441,7 +2792,6 @@ namespace rift::Nodes
 		assert(gNodes->currentScope != Scope::None);
 		assert(pin != nullptr);
 
-		const bool isHovered = gNodes->HoveredPinIdx;
 		if (gNodes->HoveredPinIdx)
 		{
 			const EditorContext& editor = GetEditorContext();
@@ -2465,20 +2815,20 @@ namespace rift::Nodes
 		return editor.selectedLinkIndices.size();
 	}
 
-	const TArray<AST::Id>& GetSelectedNodes()
+	const TArray<ast::Id>& GetSelectedNodes()
 	{
 		const EditorContext& editor = GetEditorContext();
 		return editor.selectedNodeIds;
 	}
 
-	bool GetSelectedLinks(TArray<AST::Id>& linkIds)
+	bool GetSelectedLinks(TArray<ast::Id>& linkIds)
 	{
 		const EditorContext& editor = GetEditorContext();
 		linkIds.Resize(editor.selectedLinkIndices.size());
 		for (i32 i = 0; i < editor.selectedLinkIndices.size(); ++i)
 		{
 			const i32 linkIdx = editor.selectedLinkIndices[i];
-			linkIds[i]        = AST::Id(editor.links.pool[linkIdx].id);
+			linkIds[i]        = ast::Id::MakeRaw(editor.links.pool[linkIdx].id);
 		}
 		return !linkIds.IsEmpty();
 	}
@@ -2489,7 +2839,7 @@ namespace rift::Nodes
 		editor.selectedNodeIds.Clear();
 	}
 
-	void ClearNodeSelection(AST::Id nodeId)
+	void ClearNodeSelection(ast::Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
 		editor.selectedNodeIds.Remove(nodeId);
@@ -2510,7 +2860,7 @@ namespace rift::Nodes
 		editor.selectedLinkIndices.find_erase_unsorted(idx);
 	}
 
-	void SelectNode(AST::Id nodeId)
+	void SelectNode(ast::Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
 		editor.selectedNodeIds.AddUnique(nodeId);
@@ -2525,7 +2875,7 @@ namespace rift::Nodes
 		editor.selectedLinkIndices.push_back(idx);
 	}
 
-	bool IsNodeSelected(AST::Id nodeId)
+	bool IsNodeSelected(ast::Id nodeId)
 	{
 		EditorContext& editor = GetEditorContext();
 		return editor.selectedNodeIds.Contains(nodeId);
@@ -2545,7 +2895,7 @@ namespace rift::Nodes
 
 	bool IsPinActive()
 	{
-		Check(HasFlag(gNodes->currentScope, Scope::Node));
+		P_Check(HasFlag(gNodes->currentScope, Scope::Node));
 
 		if (!gNodes->activePin)
 		{
@@ -2557,7 +2907,7 @@ namespace rift::Nodes
 
 	bool IsAnyPinActive(Id* const pinId)
 	{
-		Check(!HasAnyFlags(gNodes->currentScope, (Scope::Node | Scope::Pin)));
+		P_Check(!HasAnyFlags(gNodes->currentScope, (Scope::Node | Scope::Pin)));
 
 		if (!gNodes->activePin)
 		{
@@ -2599,8 +2949,8 @@ namespace rift::Nodes
 	bool IsLinkDropped(Id* outputId, Id* inputId, bool includingDetachedLinks)
 	{
 		// Call this function after EndNodeEditor()!
-		Check(gNodes->currentScope != Scope::None);
-		Check(outputId != nullptr);
+		P_Check(gNodes->currentScope == Scope::None);
+		P_Check(outputId != nullptr);
 
 		const EditorContext& editor = GetEditorContext();
 
@@ -2628,7 +2978,7 @@ namespace rift::Nodes
 
 	bool IsLinkCreated(Id& outputPinId, Id& inputPinId, bool* createdFromSnap)
 	{
-		Check(gNodes->currentScope == Scope::None);
+		P_Check(gNodes->currentScope == Scope::None);
 
 		if ((gNodes->UIState & UIState_LinkCreated) != 0)
 		{
@@ -2651,10 +3001,10 @@ namespace rift::Nodes
 		return false;
 	}
 
-	bool IsLinkCreated(AST::Id& outputNodeId, Id& outputPinId, AST::Id& inputNodeId, Id& inputPinId,
+	bool IsLinkCreated(ast::Id& outputNodeId, Id& outputPinId, ast::Id& inputNodeId, Id& inputPinId,
 	    bool* createdFromSnap)
 	{
-		Check(gNodes->currentScope == Scope::None);
+		P_Check(gNodes->currentScope == Scope::None);
 
 		if ((gNodes->UIState & UIState_LinkCreated) != 0)
 		{
@@ -2681,7 +3031,7 @@ namespace rift::Nodes
 
 	bool IsLinkDestroyed(Id& linkId)
 	{
-		Check(gNodes->currentScope == Scope::None);
+		P_Check(gNodes->currentScope == Scope::None);
 
 		const bool linkDestroyed = gNodes->DeletedLinkIdx.IsValid();
 		if (linkDestroyed)

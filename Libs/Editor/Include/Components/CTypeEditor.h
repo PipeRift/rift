@@ -1,19 +1,33 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include "DockSpaceLayout.h"
 
 #include <AST/Id.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 #include <UI/UI.h>
 #include <Utils/NodesInternal.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	struct CTypeEditor : public p::Struct
+	struct MenuContext
 	{
-		STRUCT(CTypeEditor, p::Struct, p::Struct_NotSerialized)
+		Id sourcePin        = NoId;
+		Nodes::PinType type = Nodes::PinType::None;
+		v2 location         = v2::Zero();
+		Id hoveredNodeId    = NoId;
+		Id hoveredLinkId    = NoId;
+
+		bool HasSource() const
+		{
+			return !IsNone(sourcePin);
+		}
+	};
+
+	struct CTypeEditor
+	{
+		P_STRUCT(CTypeEditor, p::TF_NotSerialized)
 
 		static const Tag rightTopNode;
 		static const Tag rightBottomNode;
@@ -22,19 +36,26 @@ namespace rift::Editor
 		ImGuiID dockspaceID = 0;
 		DockSpaceLayout layout;
 
-		bool pendingFocus = false;
-		bool showGraph    = true;
-		bool showElements = true;
-		bool showDetails  = true;
+		bool pendingFocus      = false;
+		ast::Id pendingFocusId = ast::NoId;
+		bool showGraph         = true;
+		bool showElements      = true;
+		bool showDetails       = true;
 
-		AST::Id selectedPropertyId      = AST::NoId;
-		AST::Id pendingDeletePropertyId = AST::NoId;
+		ast::Id selectedPropertyId      = ast::NoId;
+		ast::Id pendingDeletePropertyId = ast::NoId;
+
+		// Last type picked for a function input/output pin. Used as the default type
+		// when creating new pins.
+		ast::Id lastPinTypeId = ast::NoId;
 
 		Nodes::EditorContext nodesEditor;
 		ImGuiTextFilter elementsFilter;
+
+		MenuContext menuContext;
 	};
 
 	inline const Tag CTypeEditor::rightTopNode{"rightTopNode"};
 	inline const Tag CTypeEditor::rightBottomNode{"rightBottomNode"};
 	inline const Tag CTypeEditor::centralNode{"centralNode"};
-}    // namespace rift::Editor
+}    // namespace rift::editor

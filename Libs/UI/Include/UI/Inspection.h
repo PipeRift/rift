@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
@@ -6,57 +6,46 @@
 #include "UI/UIImgui.h"
 #include "UI/Widgets.h"
 
-#include <Pipe/Reflect/ClassType.h>
-#include <Pipe/Reflect/EnumType.h>
-#include <Pipe/Reflect/GetType.h>
-#include <Pipe/Reflect/Handles/PropertyHandle.h>
-#include <Pipe/Reflect/NativeType.h>
-#include <Pipe/Reflect/StructType.h>
+#include <Misc/PipeImGui.h>
+#include <PipeReflect.h>
 
 
 namespace rift::UI
 {
-	using namespace p;
+	using CustomKeyValue = p::TFunction<void(p::StringView label, void* data, p::TypeId type)>;
+
+	// Registers additional type inspections when an inspector appears
+	using RegisterInspections = p::TFunction<void()>;
 
 
-	// label, data, type
-	using CustomKeyValue = TFunction<void(StringView label, void*, Type*)>;
-
-
-	void RegisterCustomInspection(Type* typeId, const CustomKeyValue& custom);
+	// Registers a custom single-row inspection for a type. The callback draws both the key
+	// and the value.
+	void RegisterCustomInspection(p::TypeId type, const CustomKeyValue& custom);
 	template<typename T>
 	void RegisterCustomInspection(const CustomKeyValue& custom)
 	{
-		RegisterCustomInspection(GetType<T>(), custom);
+		RegisterCustomInspection(p::GetTypeId<T>(), custom);
 	}
 
-	void DrawEnumValue(void* data, EnumType* type);
-	void DrawNativeValue(void* data, NativeType* type);
-	void DrawKeyValue(StringView label, void* data, Type* type);
-
-	void InspectProperty(const PropertyHandle& property);
-	void InspectProperties(void* container, DataType* type);
-
-	inline void InspectStruct(Struct* data, StructType* type)
-	{
-		InspectProperties(data, type);
-	}
+	// Inspects the properties of a reflected struct. Only properties marked as editable are
+	// shown when the inspector was opened with BeginInspector(editableOnly = true).
+	void InspectStruct(void* data, p::TypeId type);
 	template<typename T>
-	inline void InspectStruct(T* data)
-	    requires(Derived<T, p::Struct>)
+	void InspectStruct(T* data) requires(p::IsStructOrClass<T>)
 	{
-		InspectStruct(data, T::GetStaticType());
-	}
-	inline void InspectClass(Class* data, ClassType* type)
-	{
-		InspectProperties(data, type);
+		InspectStruct(data, p::GetTypeId<T>());
 	}
 
-	bool BeginInspectHeader(StringView label, bool isLeaf = false);
-	void EndInspectHeader();
+	void InspectChildrenProperties(void* data, p::TypeId type);
 
-	bool BeginInspector(const char* name, v2 size = v2{0.f, 0.f});
+	bool BeginCategory(p::StringView name, bool isLeaf);
+	void EndCategory();
+
+	// Opens a reflection inspector. When editableOnly is true, properties without PF_Edit are
+	// hidden instead of being disabled. registerTypes is invoked on the appearing frame, so
+	// callers can register their own type inspections into the current context. idContext is an
+	// optional Id registry used by Id related inspections.
+	bool BeginInspector(const char* name, p::v2 size = p::v2{0.f, 0.f}, bool editableOnly = false,
+	    RegisterInspections registerTypes = {}, p::IdContext* idContext = nullptr);
 	void EndInspector();
-
-	void RegisterCoreKeyValueInspections();
 }    // namespace rift::UI

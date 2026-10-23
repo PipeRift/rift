@@ -1,39 +1,43 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
-#include "AST/Components/CDeclType.h"
+#include "AST/Components/Declarations.h"
 #include "AST/Id.h"
 #include "AST/Tree.h"
 #include "View.h"
 
+#include <Pipe/Core/Log.h>
 #include <Pipe/Core/Tag.h>
-#include <Pipe/PipeECS.h>
-#include <Pipe/Reflect/Class.h>
-#include <Pipe/Reflect/ClassType.h>
+#include <PipeECS.h>
+#include <PipeReflect.h>
 
 
 namespace rift
 {
-	void EnableModule(p::ClassType* type);
-	void DisableModule(p::ClassType* type);
-	p::TPtr<class Module> GetModule(p::ClassType* type);
+	void EnableModule(p::TypeId type);
+	void DisableModule(p::TypeId type);
+	void DisableAllModules();
+	p::TPtr<class Module> GetModule(p::TypeId type);
+
+	// Logger that writes every message to the standard output
+	p::Logger MakeLogger();
 
 
 	template<typename T>
 	void EnableModule()
 	{
-		EnableModule(T::GetStaticType());
+		EnableModule(p::GetTypeId<T>());
 	}
 	template<typename T>
 	void DisableModule()
 	{
-		DisableModule(T::GetStaticType());
+		DisableModule(p::GetTypeId<T>());
 	}
 	template<typename T>
 	p::TPtr<T> GetModule()
 	{
-		return GetModule(T::GetStaticType()).template Cast<T>();
+		return Cast<T>(GetModule(p::GetTypeId<T>()));
 	}
 
 	void RegisterView(View view);

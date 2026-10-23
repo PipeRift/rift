@@ -1,21 +1,20 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include "Assets/TypePropertiesPanel.h"
 #include "DockSpaceLayout.h"
 #include "NodeGraph/NodeGraphPanel.h"
 
-#include <Pipe/Reflect/Struct.h>
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	struct CDeclRename : public p::Struct
+	struct CDeclRename
 	{
-		STRUCT(CDeclRename, p::Struct, p::Struct_NotSerialized)
+		P_STRUCT(CDeclRename, p::TF_NotSerialized)
 
 		// Renaming uses this buffer to temporarely store the name being edited
 		p::String buffer;
 	};
-}    // namespace rift::Editor
+}    // namespace rift::editor

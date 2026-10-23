@@ -1,12 +1,11 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Utils/NodesMiniMap.h"
 
 #include "Utils/Nodes.h"
 #include "Utils/NodesInternal.h"
 
-#include <Pipe/Math/Math.h>
-#include <Pipe/Math/Vector.h>
+#include <PipeMath.h>
 
 
 namespace rift::Nodes
@@ -87,7 +86,7 @@ namespace rift::Nodes
 		scaling            = miniMapScaling;
 	}
 
-	void MiniMap::DrawNode(EditorContext& editor, const AST::Id nodeId)
+	void MiniMap::DrawNode(EditorContext& editor, const ast::Id nodeId)
 	{
 		const NodeData& node = editor.nodes[nodeId];
 
@@ -95,7 +94,7 @@ namespace rift::Nodes
 		    ScreenToMiniMapPosition(editor, node.rect.max)};
 
 		// Round to near whole pixel value for corner-rounding to prevent visual glitches
-		const float miniMapNodeRounding = math::Floor(node.LayoutStyle.CornerRounding * scaling);
+		const float miniMapNodeRounding = p::Floor(node.LayoutStyle.CornerRounding * scaling);
 
 		Color miniMapNodeBackground;
 		if (editor.clickInteraction.type == ClickInteractionType_None
@@ -151,7 +150,7 @@ namespace rift::Nodes
 		const Color linkColor =
 		    gNodes->style
 		        .colors[editor.selectedLinkIndices.contains(linkIdx) ? ColorVar_MiniMapLinkSelected
-		                                                             : ColorVar_MiniMapLink];
+				                                                     : ColorVar_MiniMapLink];
 
 		gNodes->CanvasDrawList->AddBezierCubic(cubicBezier.p0, cubicBezier.p1, cubicBezier.p2,
 		    cubicBezier.p3, linkColor.ToPackedABGR(), gNodes->style.LinkThickness * scaling,
@@ -199,7 +198,7 @@ namespace rift::Nodes
 			}
 		}
 
-		for (AST::Id nodeId : editor.nodes)
+		for (ast::Id nodeId : editor.nodes)
 		{
 			DrawNode(editor, nodeId);
 		}
@@ -229,7 +228,7 @@ namespace rift::Nodes
 		{
 			v2 target      = MiniMapToGridPosition(editor, ImGui::GetMousePos());
 			v2 center      = gNodes->CanvasRectScreenSpace.GetSize() * 0.5f;
-			editor.panning = ImFloor(center - target);
+			editor.panning = ImFloor(center - target * GetZoom());
 		}
 
 		// Reset callback info after use

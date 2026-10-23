@@ -1,45 +1,44 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "AST/Utils/Expressions.h"
 
 #include "AST/Id.h"
+#include "AST/Systems/CastSystem.h"
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	bool WouldExprLoop(
-	    TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access, Id outputNodeId, Id inputNodeId)
+	bool WouldExprLoop(p::TIdScopeRef<CExprInputs, CExprOutputs, CExprTypeId> scope,
+	    Id outputNodeId, Id inputNodeId)
 	{
-		TArray<Id> currentNodeIds{outputNodeId};
-		TArray<Id> nextNodeIds{};
-		while (!currentNodeIds.IsEmpty())
+		// Walk upstream from the output node. If the input node feeds it, the link would loop.
+		// The array doubles as the queue and the visited set, so each node is walked once.
+		p::TArray<Id> nodeIds{outputNodeId};
+		for (p::i32 i = 0; i < nodeIds.Size(); ++i)
 		{
-			for (Id id : currentNodeIds)
+			const auto* inputs = scope.TryGet<const CExprInputs>(nodeIds[i]);
+			if (!inputs)
 			{
-				if (const auto* inputs = access.TryGet<const CExprInputs>(id))
+				continue;
+			}
+
+			for (const ExprOutput& output : inputs->linkedOutputs)
+			{
+				if (output.nodeId == inputNodeId)
 				{
-					nextNodeIds.ReserveMore(inputs->linkedOutputs.Size());
-					for (ExprOutput output : inputs->linkedOutputs)
-					{
-						if (output.nodeId == inputNodeId)
-						{
-							return true;
-						}
-						else if (!IsNone(output.nodeId))
-						{
-							nextNodeIds.Add(output.nodeId);
-						}
-					}
+					return true;
+				}
+				else if (!IsNone(output.nodeId))
+				{
+					nodeIds.Add(output.nodeId);
 				}
 			}
-			currentNodeIds = nextNodeIds;
-			nextNodeIds.Clear(false);
 		}
 		return false;
 	}
 
-	bool CanConnectExpr(TAccessRef<CExprInputs, CExprOutputs, CExprTypeId> access,
-	    ExprOutput output, ExprInput input)
+	bool CanConnectExpr(p::TIdScopeRef<CExprInputs, CExprOutputs, CExprTypeId> scope,
+	    const ExprOutput& output, const ExprInput& input)
 	{
 		if (output.IsNone() || input.IsNone())
 		{
@@ -51,26 +50,26 @@ namespace rift::AST
 			return false;    // Can't connect to same node or same pin
 		}
 
-		if (!access.Has<CExprOutputs>(output.nodeId) || !access.Has<CExprInputs>(input.nodeId))
+		if (!scope.Has<CExprOutputs>(output.nodeId) || !scope.Has<CExprInputs>(input.nodeId))
 		{
 			return false;
 		}
 
-		if (!access.Get<const CExprOutputs>(output.nodeId).pinIds.Contains(output.pinId)
-		    || !access.Get<const CExprInputs>(input.nodeId).pinIds.Contains(input.pinId))
+		if (!scope.Get<const CExprOutputs>(output.nodeId).pinIds.Contains(output.pinId)
+		    || !scope.Get<const CExprInputs>(input.nodeId).pinIds.Contains(input.pinId))
 		{
 			return false;
 		}
 
 		{    // Type checking
-			const auto* outputType = access.TryGet<const CExprTypeId>(output.pinId);
+			const auto* outputType = scope.TryGet<const CExprTypeId>(output.pinId);
 			// Can connect if output is any or not void
 			if (outputType && outputType->id == NoId)
 			{
 				return false;
 			}
 
-			const auto* inputType = access.TryGet<const CExprTypeId>(input.pinId);
+			const auto* inputType = scope.TryGet<const CExprTypeId>(input.pinId);
 			// Can connect if input is any or not void
 			if (inputType && inputType->id == NoId)
 			{
@@ -79,8 +78,10 @@ namespace rift::AST
 
 			if (outputType && inputType)
 			{
-				// TODO: Check if different types can be implicitly casted
-				if (outputType->id != inputType->id)
+				// Different types can still be connected when the value can be cast into the
+				// type of the input on its own
+				if (outputType->id != inputType->id
+				    && !CastSystem::CanCastImplicit(scope, outputType->id, inputType->id))
 				{
 					return false;
 				}
@@ -88,24 +89,22 @@ namespace rift::AST
 		}
 
 		// Ensure output and input wouldn't loop
-		return !WouldExprLoop(access, output.nodeId, input.nodeId);
+		return !WouldExprLoop(scope, output.nodeId, input.nodeId);
 	}
 
-	bool TryConnectExpr(TAccessRef<TWrite<CExprInputs>, CExprOutputs, CExprTypeId> access,
-	    ExprOutput output, ExprInput input)
+	bool TryConnectExpr(p::TIdScopeRef<p::Writes<CExprInputs>, CExprOutputs, CExprTypeId> scope,
+	    const ExprOutput& output, ExprInput input)
 	{
-		if (!CanConnectExpr(access, output, input))
+		if (!CanConnectExpr(scope, output, input))
 		{
 			return false;
 		}
 
-		auto& inputs = access.Get<CExprInputs>(input.nodeId);
+		auto& inputs = scope.Get<CExprInputs>(input.nodeId);
 
 		// Find pin index
-		const i32 index = inputs.pinIds.FindIndex([&input](Id pinId) {
-			return input.pinId == pinId;
-		});
-		if (index != NO_INDEX && Ensure(index < inputs.linkedOutputs.Size()))
+		const p::i32 index = inputs.pinIds.FindIndex(input.pinId);
+		if (index != p::NO_INDEX && P_Ensure(index < inputs.linkedOutputs.Size()))
 		{
 			inputs.linkedOutputs[index] = output;
 			return true;
@@ -113,7 +112,7 @@ namespace rift::AST
 		return false;    // Pin was invalid
 	}
 
-	bool DisconnectExpr(Tree& ast, ExprInput input)
+	bool DisconnectExpr(Tree& ast, const ExprInput& input)
 	{
 		if (input.IsNone() || !ast.Has<CExprInputs>(input.nodeId))
 		{
@@ -123,10 +122,8 @@ namespace rift::AST
 		auto& inputs = ast.Get<CExprInputs>(input.nodeId);
 
 		// Find pin index
-		const i32 index = inputs.pinIds.FindIndex([&input](Id pinId) {
-			return input.pinId == pinId;
-		});
-		if (index != NO_INDEX && Ensure(index < inputs.linkedOutputs.Size())) [[likely]]
+		const p::i32 index = inputs.pinIds.FindIndex(input.pinId);
+		if (index != p::NO_INDEX && P_Ensure(index < inputs.linkedOutputs.Size())) [[likely]]
 		{
 			ExprOutput& linked = inputs.linkedOutputs[index];
 			linked             = {};
@@ -136,56 +133,64 @@ namespace rift::AST
 	}
 
 
-	bool RemoveExprInputPin(TAccessRef<CExprInputs, TWrite<CInvalid>> access, ExprInput input)
+	bool RemoveExprInputPin(
+	    p::TIdScopeRef<p::Writes<CInvalid>, CExprInputs> scope, const ExprInput& input)
 	{
 		if (!input.IsNone())
 		{
-			const auto* inputs = access.TryGet<const CExprInputs>(input.nodeId);
-			if (inputs && inputs->pinIds.FindIndex(input.pinId) != NO_INDEX)
+			const auto* inputs = scope.TryGet<const CExprInputs>(input.nodeId);
+			if (inputs && inputs->pinIds.Contains(input.pinId))
 			{
-				access.Add<CInvalid>(input.pinId);
+				scope.Add<CInvalid>(input.pinId);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	bool RemoveExprOutputPin(TAccessRef<CExprOutputs, TWrite<CInvalid>> access, ExprOutput output)
+	bool RemoveExprOutputPin(
+	    p::TIdScopeRef<p::Writes<CInvalid>, CExprOutputs> scope, const ExprOutput& output)
 	{
 		if (!output.IsNone())
 		{
-			if (access.Has<CExprOutputs>(output.nodeId))
+			if (scope.Has<CExprOutputs>(output.nodeId))
 			{
-				access.Add<CInvalid>(output.pinId);
+				scope.Add<CInvalid>(output.pinId);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	ExprInput GetExprInputFromPin(TAccessRef<CExprInputs, CChild> access, Id pinId)
+	ExprInput GetExprInputFromPin(p::TIdScopeRef<CExprInputs, CChild> scope, Id pinId)
 	{
 		ExprInput input{};
 		input.pinId = pinId;
 		// If node is not the pin itself, it must be the parent
 		input.nodeId = pinId;
-		if (!IsNone(input.nodeId) && !access.Has<CExprInputs>(input.nodeId))
+		if (!IsNone(input.nodeId) && !scope.Has<CExprInputs>(input.nodeId))
 		{
-			input.nodeId = p::GetParent(access, pinId);
+			input.nodeId = p::GetIdParent(scope, pinId);
 		}
 		return input;
 	}
 
-	ExprOutput GetExprOutputFromPin(TAccessRef<CExprOutputs, CChild> access, Id pinId)
+	ExprOutput GetExprOutputFromPin(p::TIdScopeRef<CExprOutputs, CChild> scope, Id pinId)
 	{
 		ExprOutput output{};
 		output.pinId = pinId;
 		// If node is not the pin itself, it must be the parent
 		output.nodeId = pinId;
-		if (!IsNone(output.nodeId) && !access.Has<CExprOutputs>(output.nodeId))
+		if (!IsNone(output.nodeId) && !scope.Has<CExprOutputs>(output.nodeId))
 		{
-			output.nodeId = p::GetParent(access, pinId);
+			output.nodeId = p::GetIdParent(scope, pinId);
 		}
 		return output;
 	}
-}    // namespace rift::AST
+
+	Id GetPinType(p::TIdScopeRef<CExprTypeId> scope, Id pinId)
+	{
+		const auto* type = scope.TryGet<const CExprTypeId>(pinId);
+		return type ? type->id : NoId;
+	}
+}    // namespace rift::ast

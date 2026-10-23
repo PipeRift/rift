@@ -1,15 +1,15 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include <AST/Id.h>
 #include <Pipe/Core/EnumFlags.h>
-#include <Pipe/Math/Color.h>
-#include <Pipe/Math/Vector.h>
+#include <PipeColor.h>
+#include <PipeMath.h>
 #include <UI/UIImgui.h>
 
 
 #ifdef IMNODES_USER_CONFIG
-#	include IMNODES_USER_CONFIG
+	#include IMNODES_USER_CONFIG
 #endif
 
 struct ImGuiContext;
@@ -151,18 +151,12 @@ namespace rift::Nodes
 	};
 
 
-	// This enum controls the way the attribute pins behave.
 	enum PinFlags_
 	{
 		PinFlags_None = 0,
-		// Allow detaching a link by left-clicking and dragging the link at a pin it is connected
-		// to. NOTE: the user has to actually delete the link for this to work. A deleted link can
-		// be detected by calling IsLinkDestroyed() after EndNodeEditor().
+		// A link can be detached by dragging it from the pin. The link still has to be deleted
 		PinFlags_EnableLinkDetachWithDragClick = 1 << 0,
-		// Visual snapping of an in progress link will trigger IsLink Created/Destroyed events.
-		// Allows for previewing the creation of a link while dragging it across attributes. NOTE:
-		// the user has to actually delete the link for this to work. A deleted link can be detected
-		// by calling IsLinkDestroyed() after EndNodeEditor().
+		// Dragging a link over a pin previews the link it would create
 		PinFlags_EnableLinkCreationOnSnap = 1 << 1
 	};
 
@@ -170,46 +164,26 @@ namespace rift::Nodes
 	{
 		struct EmulateThreeButtonMouse
 		{
-			// The keyboard modifier to use in combination with mouse left click to pan the editor
-			// view. Set to nullptr by default. To enable this feature, set the modifier to point to
-			// a boolean indicating the state of a modifier. For example,
-			//
-			// Nodes::GetIO().emulateThreeButtonMouse.modifier = &ImGui::GetIO().KeyAlt;
+			// Modifier that pans the editor while the left mouse button is held
 			const bool* modifier = nullptr;
 		} emulateThreeButtonMouse;
 
 		struct LinkDetachWithModifierClick
 		{
-			// Pointer to a boolean value indicating when the desired modifier is pressed. Set to
-			// nullptr by default. To enable the feature, set the modifier to point to a boolean
-			// indicating the state of a modifier. For example,
-			//
-			// Nodes::GetIO().linkDetachWithModifierClick.modifier = &ImGui::GetIO().KeyCtrl;
-			//
-			// Left-clicking a link with this modifier pressed will detach that link. NOTE: the user
-			// has to actually delete the link for this to work. A deleted link can be detected by
-			// calling IsLinkDestroyed() after EndNodeEditor().
+			// Modifier that detaches a link when it is left-clicked
 			const bool* modifier = nullptr;
 		} linkDetachWithModifierClick;
 
 		struct MultipleSelectModifier
 		{
-			// Pointer to a boolean value indicating when the desired modifier is pressed. Set to
-			// nullptr by default. To enable the feature, set the modifier to point to a boolean
-			// indicating the state of a modifier. For example,
-			//
-			// Nodes::GetIO().multipleSelectModifier.modifier = &ImGui::GetIO().KeyCtrl;
-			//
-			// Left-clicking a node with this modifier pressed will add the node to the list of
-			// currently selected nodes. If this value is nullptr, the Ctrl key will be used.
+			// Modifier that adds a clicked node to the selection. Ctrl when null
 			const bool* modifier = nullptr;
 		} multipleSelectModifier;
 
-		// Holding alt mouse button pans the node area, by default middle mouse button will be used
-		// Set based on ImGuiMouseButton values
+		// Mouse button that pans the node editor, as an ImGuiMouseButton value
 		i32 AltMouseButton = ImGuiMouseButton_Middle;
 
-		// Panning speed when dragging an element and mouse is outside the main editor view.
+		// Panning speed when dragging an element with the mouse outside the editor view
 		float AutoPanningSpeed = 1000.f;
 	};
 
@@ -225,38 +199,23 @@ namespace rift::Nodes
 		float linkLineSegmentsPerLength;
 		float LinkHoverDistance;
 
-		// The following variables control the look and behavior of the pins. The default size of
-		// each pin shape is balanced to occupy approximately the same surface area on the screen.
-
-		// The circle radius used when the pin shape is either PinShape_Circle or
-		// PinShape_CircleFilled.
+		// Pin shapes are sized to occupy a similar surface area on screen
 		float PinCircleRadius;
-		// The quad side length used when the shape is either PinShape_Quad or
-		// PinShape_QuadFilled.
 		float PinQuadSideLength;
-		// The equilateral triangle side length used when the pin shape is either
-		// PinShape_Triangle or PinShape_TriangleFilled.
 		float PinTriangleSideLength;
-		// The quad side length used when the shape is either PinShape_Diamond or
-		// PinShape_DiamondFilled.
 		float PinDiamondSideLength;
-		// The thickness of the line used when the pin shape is not filled.
+		// Thickness of the line of unfilled pins
 		float PinLineThickness;
-		// The radius from the pin's center position inside of which it is detected as being hovered
-		// over.
+		// Radius around a pin that counts as hovering it
 		float PinHoverRadius;
-		// Offsets the pins' positions from the edge of the node to the outside of the node.
+		// Offset of the pins outside the node
 		float PinOffset;
 
-		// Mini-map padding size between mini-map edge and mini-map content.
 		v2 miniMapPadding{8.f, 8.f};
-		// Mini-map offset from the screen side.
 		v2 miniMapOffset{4.f, 4.f};
 
-		// By default, StyleFlags_NodeOutline and StyleFlags_Gridlines are enabled.
 		StyleFlags Flags;
-		// Set these mid-frame using Push/PopStyleColor. You can index this color array with with a
-		// Color value.
+		// Indexed by ColorVar_*
 		Color colors[u8(ColorVar_COUNT)];
 
 		Style();
@@ -270,11 +229,7 @@ namespace rift::Nodes
 
 	struct Context;
 
-	// An editor context corresponds to a set of nodes in a single workspace (created with a single
-	// Begin/EndNodeEditor pair)
-	//
-	// By default, the library creates an editor context behind the scenes, so using any of the
-	// nodes functions don't require you to explicitly create a context.
+	// The nodes of a single workspace, one Begin/EndNodeEditor pair. One is created by default
 	struct EditorContext;
 
 
@@ -298,7 +253,13 @@ namespace rift::Nodes
 	void SetEditorContext(EditorContext*);
 	v2 GetPanning();
 	void ResetPanning(const v2& pos);
-	void MoveToNode(AST::Id nodeId, v2 offset = v2::Zero());
+	void MoveToNode(ast::Id nodeId, v2 offset = v2::Zero());
+
+	// Canvas zoom, read from and written to the editor settings. Zooming keeps the point
+	// under the mouse cursor fixed. Use ResetZoom() to return to the default zoom.
+	float GetZoom();
+	void SetZoom(float zoom);
+	void ResetZoom();
 
 	IO& GetIO();
 
@@ -330,34 +291,25 @@ namespace rift::Nodes
 	v2 ScreenToMiniMapPosition(const v2& v);
 
 
-	// Use PushStyleColor and PopStyleColor to modify UI::Colors mid-frame.
 	void PushStyleColor(ColorVar item, Color color);
 	void PopStyleColor(i32 count = 1);
 	void PushStyleVar(StyleVar style_item, float value);
 	void PushStyleVar(StyleVar style_item, const v2& value);
 	void PopStyleVar(i32 count = 1);
 
-	// id can be any positive or negative integer, but INT_MIN is currently reserved for
-	// internal use.
-	void BeginNode(AST::Id id);
+	// id can be any positive or negative integer, but INT_MIN is reserved for internal use.
+	// Content is placed by column: BeginInput() blocks in the inputs, BeginOutput() blocks in
+	// the outputs and anything else in the name. Rows and columns without content collapse.
+	void BeginNode(ast::Id id);
 	void EndNode();
 
-	v2 GetNodeDimensions(AST::Id id);
+	v2 GetNodeDimensions(ast::Id id);
 
-	// Place your node title bar content (such as the node title, using ImGui::Text) between the
-	// following function calls. These functions have to be called before adding any attributes,
-	// or the layout of the node will be incorrect.
-	void BeginNodeTitleBar();
-	void EndNodeTitleBar();
+	// The title bar fills the header row. Draw it before adding any pins
+	void BeginTitleBar();
+	void EndTitleBar();
 
-	// Pins are ImGui UI elements embedded within the node. Pins can have pin shapes
-	// rendered next to them. Links are created between pins.
-	//
-	// The activity status of an attribute can be checked via the IsPinActive() and
-	// IsAnyPinActive() function calls. This is one easy way of checking for any changes
-	// made to an attribute's drag float UI, for instance.
-	//
-	// Each attribute id must be unique.
+	// Each pin id must be unique
 
 	// Create an input attribute block. The pin is rendered on left side.
 	void BeginInput(Id id, PinShape shape = PinShape_CircleFilled);
@@ -366,100 +318,68 @@ namespace rift::Nodes
 	void BeginOutput(Id id, PinShape shape = PinShape_CircleFilled);
 	void EndOutput();
 
-	// Push a single PinFlags value. By default, only PinFlags_None is set.
 	void PushPinFlag(PinFlags flag);
 	void PopPinFlag();
 
-	// Render a link between attributes.
-	// The attributes ids used here must match the ids used in Begin(Input|Output)
-	// function calls. The order of start_attr and end_attr doesn't make a difference for
-	// rendering the link.
+	// The pins must match the ids used by Begin(Input|Output)
 	void Link(Id id, Id outputPin, Id inputPin);
 
 	// Enable or disable the ability to click and drag a specific node.
 	void SetNodeDraggable(Id nodeId, const bool draggable);
 
-	// The node's position can be expressed in three coordinate systems:
-	// * screen space coordinates, -- the origin is the upper left corner of the window.
-	// * editor space coordinates -- the origin is the upper left corner of the node editor
-	// window
-	// * grid space coordinates, -- the origin is the upper left corner of the node editor
-	// window, translated by the current editor panning vector (see GetEditorContextPanning()
-	// and EditorContextResetPanning())
+	// Node positions can be addressed in screen, editor and grid space
+	void SetNodeScreenSpacePos(ast::Id nodeId, const v2& screen_space_pos);
+	void SetNodeEditorSpacePos(ast::Id nodeId, const v2& editor_space_pos);
+	void SetNodeGridSpacePos(ast::Id nodeId, const v2& grid_pos);
 
-	// Use the following functions to get and set the node's coordinates in these coordinate
-	// systems.
+	v2 GetNodeScreenSpacePos(ast::Id nodeId);
+	v2 GetNodeEditorSpacePos(ast::Id nodeId);
+	v2 GetNodeGridSpacePos(ast::Id nodeId);
 
-	void SetNodeScreenSpacePos(AST::Id nodeId, const v2& screen_space_pos);
-	void SetNodeEditorSpacePos(AST::Id nodeId, const v2& editor_space_pos);
-	void SetNodeGridSpacePos(AST::Id nodeId, const v2& grid_pos);
-
-	v2 GetNodeScreenSpacePos(AST::Id nodeId);
-	v2 GetNodeEditorSpacePos(AST::Id nodeId);
-	v2 GetNodeGridSpacePos(AST::Id nodeId);
-
-	// Returns true if the current node editor canvas is being hovered over by the mouse, and is
-	// not blocked by any other windows.
+	// True when the canvas is hovered and no other window is blocking the mouse
 	bool IsEditorHovered();
-	AST::Id GetHoveredNode();
-	AST::Id GetHoveredLink();
+	ast::Id GetHoveredNode();
+	ast::Id GetHoveredLink();
 
-	bool IsNodeHovered(AST::Id nodeId);
-	bool IsLinkHovered(AST::Id linkId);
+	bool IsNodeHovered(ast::Id nodeId);
+	bool IsLinkHovered(ast::Id linkId);
 	bool IsPinHovered(Id* attributeId);
 
-	// Use The following two functions to query the number of selected nodes or links in the
-	// current editor. Use after calling EndNodeEditor().
+	// Returns the on-screen position and color of a pin, if it currently exists
+	bool GetPinScreenData(Id pinId, PinType type, v2& outPosition, Color& outColor);
+	// Returns the currently hovered pin, if any. Valid after EndNodeEditor()
+	bool GetHoveredPin(Id& outPinId, PinType& outType);
+
+	// Selection is queried and changed after EndNodeEditor()
 	int NumSelectedLinks();
-	// Get the selected node/link ids. The pointer argument should point to an integer array
-	// with at least as many elements as the respective NumSelectedNodes/NumSelectedLinks
-	// function call returned.
-	const TArray<AST::Id>& GetSelectedNodes();
-	bool GetSelectedLinks(TArray<AST::Id>& linkIds);
-	// Clears the list of selected nodes/links. Useful if you want to delete a selected node or
-	// link.
+	const TArray<ast::Id>& GetSelectedNodes();
+	bool GetSelectedLinks(TArray<ast::Id>& linkIds);
 	void ClearNodeSelection();
 	void ClearLinkSelection();
-	// Use the following functions to add or remove individual nodes or links from the current
-	// editors selection. Note that all functions require the id to be an existing valid id for
-	// this editor. Select-functions has the precondition that the object is currently
-	// considered unselected. Clear-functions has the precondition that the object is currently
-	// considered selected. Preconditions listed above can be checked via
-	// IsNodeSelected/IsLinkSelected if not already known.
-	void ClearNodeSelection(AST::Id nodeId);
+	void ClearNodeSelection(ast::Id nodeId);
 	void ClearLinkSelection(Id linkId);
-	void SelectNode(AST::Id nodeId);
+	void SelectNode(ast::Id nodeId);
 	void SelectLink(Id linkId);
-	bool IsNodeSelected(AST::Id nodeId);
+	bool IsNodeSelected(ast::Id nodeId);
 	bool IsLinkSelected(Id linkId);
 	bool IsLinkSelectedByIdx(i32 linkIdx);
 
-	// Was the previous pin active? This will continuously return true while the left
-	// mouse button is being pressed over the UI content of the pin.
+	// True while the left mouse button is pressed over the content of a pin
 	bool IsPinActive();
-	// Was any pin active? If so, sets the active pin id to the output function
-	// argument.
+	// True while any pin is active. Sets the active pin id when given
 	bool IsAnyPinActive(Id* attributeId = nullptr);
 
-	// Use the following functions to query a change of state for an existing link, or new link.
-	// Call these after EndNodeEditor().
-
+	// Link state changes, valid after EndNodeEditor()
 	bool IsDraggingLink();
 	TPair<Id, PinType> GetDraggedOriginPin();
-	// Did the user drop the dragged link before attaching it to a pin?
-	// There are two different kinds of situations to consider when handling this event:
-	// 1) a link which is created at a pin and then dropped
-	// 2) an existing link which is detached from a pin and then dropped
-	// Use the including_detached_links flag to control whether this function triggers when the
-	// user detaches a link and drops it.
+	// True when a dragged link is dropped away from a pin. includingDetachedLinks also reports
+	// links detached from a pin
 	bool IsLinkDropped(
 	    Id* outputId = nullptr, Id* inputId = nullptr, bool includingDetachedLinks = true);
-	// Did the user finish creating a new link?
 	bool IsLinkCreated(Id& outputPinId, Id& inputPinId, bool* createdFromSnap = nullptr);
-	bool IsLinkCreated(AST::Id& outputNodeId, Id& outputPinId, AST::Id& inputNodeId, Id& inputPinId,
+	bool IsLinkCreated(ast::Id& outputNodeId, Id& outputPinId, ast::Id& inputNodeId, Id& inputPinId,
 	    bool* createdFromSnap = nullptr);
 
-	// Was an existing link detached from a pin by the user? The detached link's id is assigned
-	// to the output argument linkId.
+	// True when an existing link was detached. Returns its id in linkId
 	bool IsLinkDestroyed(Id& linkId);
 }    // namespace rift::Nodes

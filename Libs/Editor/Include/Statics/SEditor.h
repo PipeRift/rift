@@ -1,29 +1,25 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include "AST/Id.h"
 #include "DockSpaceLayout.h"
 #include "Panels/FileExplorerPanel.h"
+#include "Tools/ArenaDebugger.h"
 #include "Tools/ASTDebugger.h"
+#include "Tools/EditorSettingsWindow.h"
 #include "Tools/GraphPlayground.h"
-#include "Tools/MemoryDebugger.h"
 #include "Tools/ReflectionDebugger.h"
 
-#include <Pipe/Files/FileWatcher.h>
 #include <Pipe/Memory/OwnPtr.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeFiles.h>
 #include <UI/UI.h>
 
 
-namespace rift::Editor
+namespace rift::editor
 {
-	using namespace p::core;
-	using namespace p::files;
-
-
-	struct SEditor : public Struct
+	struct SEditor
 	{
-		STRUCT(SEditor, Struct)
+		P_STRUCT(SEditor)
 
 		ImGuiID dockspaceID = 0;
 		DockSpaceLayout layout;
@@ -31,19 +27,19 @@ namespace rift::Editor
 		static const Tag centralNode;
 
 		String currentProjectPath;
-		TArray<AST::Id> pendingTypesToClose;
+		TArray<ast::Id> pendingTypesToClose;
 
-		FileWatcher fileWatcher;
 		FileExplorerPanel fileExplorer{};
 
 		ReflectionDebugger reflectionDebugger;
 		ASTDebugger astDebugger;
-		MemoryDebugger memoryDebugger;
+		ArenaDebugger arenaDebugger;
 		GraphPlayground graphPlayground;
+		EditorSettingsWindow editorSettings;
 
 		bool skipFrameAfterMenu = false;
 	};
 
 	inline const Tag SEditor::leftNode{"leftNode"};
 	inline const Tag SEditor::centralNode{"centralNode"};
-}    // namespace rift::Editor
+}    // namespace rift::editor

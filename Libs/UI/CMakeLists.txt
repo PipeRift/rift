@@ -1,18 +1,23 @@
 # Copyright 2015-2023 Piperift - All rights reserved
 
-add_library(RiftUI STATIC)
+add_library(RiftUILib STATIC)
 
-target_include_directories(RiftUI PUBLIC Include)
+target_include_directories(RiftUILib PUBLIC Include)
 file(GLOB_RECURSE UI_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
-target_sources(RiftUI PRIVATE ${UI_SOURCE_FILES})
+target_sources(RiftUILib PRIVATE ${UI_SOURCE_FILES})
 
-target_link_libraries(RiftUI PUBLIC
+target_link_libraries(RiftUILib PUBLIC
     Pipe
     glfw
     gl3w
     imgui
     IconFontCppHeaders
 )
-target_compile_definitions(RiftUI PRIVATE NOMINMAX)
+target_link_libraries(RiftUILib PRIVATE stb_image)
+target_compile_definitions(RiftUILib PRIVATE NOMINMAX)
 
-rift_module(RiftUI)
+if(PLATFORM_WINDOWS)
+    target_link_libraries(RiftUILib PRIVATE dwmapi)
+endif()
+
+rift_module(RiftUILib)

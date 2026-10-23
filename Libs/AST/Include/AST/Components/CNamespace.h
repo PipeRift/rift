@@ -1,17 +1,19 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include <Pipe/Core/Tag.h>
-#include <Pipe/Reflect/Struct.h>
+#include <Pipe/Core/TypeFlags.h>
+#include <PipeContainers.h>
+#include <PipeReflect.h>
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	struct CNamespace : public p::Struct
+	struct CNamespace
 	{
-		STRUCT(CNamespace, p::Struct)
+		P_STRUCT(CNamespace)
 
-		PROP(name);
+		P_PROP(name, p::PF_Edit);
 		p::Tag name;
 
 
@@ -38,26 +40,21 @@ namespace rift::AST
 	}
 
 
-	struct Namespace : public p::Struct
+	struct Namespace
 	{
-		STRUCT(Namespace, p::Struct)
+		P_STRUCT(Namespace)
 
 		static constexpr p::i32 scopeCount = 8;
 		p::Tag scopes[scopeCount];    // TODO: Implement Inline arrays
 
 
 		Namespace() = default;
-		template<p::i32 M>
-		Namespace(p::Tag scopes[M])
-		    requires(M <= scopeCount)
-		    : scopes{scopes}
-		{}
 		Namespace(p::StringView value);
 		// Prevent initializer list from stealing string constructor
 		Namespace(const p::String& value) : Namespace(p::StringView{value}) {}
 		Namespace(std::initializer_list<p::Tag> values)
 		{
-			const p::i32 size = p::math::Min(p::i32(values.size()), scopeCount);
+			const p::i32 size = p::Min(p::i32(values.size()), scopeCount);
 			for (p::i32 i = 0; i < size; ++i)
 			{
 				scopes[i] = *(values.begin() + i);
@@ -67,8 +64,9 @@ namespace rift::AST
 		bool Equals(const Namespace& other) const;
 		bool IsEmpty() const;
 		p::i32 Size() const;
+		// True when this namespace lies within 'other', which is then its prefix
 		bool Contains(const Namespace& other) const;
-		p::String ToString(bool isLocal = false) const;
+		p::String ToString(bool isLocal = false, char separator = '.') const;
 		p::Tag& First()
 		{
 			return scopes[0];
@@ -80,13 +78,13 @@ namespace rift::AST
 		p::Tag& Last()
 		{
 			const p::i32 size      = Size();
-			const p::i32 lastIndex = size > 0 ? (size - 1) : 0;    // Is Size is 0, last is first
+			const p::i32 lastIndex = size > 0 ? (size - 1) : 0;    // If size is 0, last is first
 			return scopes[lastIndex];
 		}
 		const p::Tag& Last() const
 		{
 			const p::i32 size      = Size();
-			const p::i32 lastIndex = size > 0 ? (size - 1) : 0;    // Is Size is 0, last is first
+			const p::i32 lastIndex = size > 0 ? (size - 1) : 0;    // If size is 0, last is first
 			return scopes[lastIndex];
 		}
 		bool operator==(const Namespace& other) const
@@ -95,7 +93,7 @@ namespace rift::AST
 		}
 		p::Tag operator[](p::i32 index) const
 		{
-			Check(index >= 0 && index < scopeCount);
+			P_Check(index >= 0 && index < scopeCount);
 			return scopes[index];
 		}
 		operator bool() const
@@ -123,4 +121,18 @@ namespace rift::AST
 		void Read(p::Reader& ct);
 		void Write(p::Writer& ct) const;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast
+
+
+namespace p
+{
+	// Namespace uses its own member Read/Write (a tag array), not reflection.
+	template<>
+	struct TFlags<rift::ast::Namespace> : public DefaultTFlags
+	{
+		enum
+		{
+			HasMemberSerialize = true
+		};
+	};
+}    // namespace p

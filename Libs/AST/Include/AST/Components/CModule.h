@@ -1,10 +1,11 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include <Pipe/Files/Paths.h>
-#include <Pipe/Reflect/Struct.h>
+#include <PipeReflect.h>
 
-namespace rift::AST
+
+namespace rift::ast
 {
 	enum class RiftModuleTarget : p::u8
 	{
@@ -12,22 +13,22 @@ namespace rift::AST
 		Shared,
 		Static
 	};
-}    // namespace rift::AST
-ENUM(rift::AST::RiftModuleTarget)
+}    // namespace rift::ast
+P_ENUM(rift::ast::RiftModuleTarget)
 
 
-namespace rift::AST
+namespace rift::ast
 {
-	static constexpr p::StringView moduleFilename = "__module__.rf";
+	static constexpr p::StringView moduleFilename = ".module.rf";
 
-	struct CModule : public p::Struct
+	struct CModule
 	{
-		STRUCT(CModule, p::Struct)
+		P_STRUCT(CModule)
 
-		PROP(target)
+		P_PROP(target)
 		RiftModuleTarget target = RiftModuleTarget::Executable;
 
-		PROP(dependencies)
+		P_PROP(dependencies, p::PF_Edit)
 		p::TArray<p::Tag> dependencies;
 	};
-}    // namespace rift::AST
+}    // namespace rift::ast

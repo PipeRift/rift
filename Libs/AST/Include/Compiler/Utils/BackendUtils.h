@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
@@ -6,11 +6,11 @@
 #include "Compiler/Compiler.h"
 
 #include <Pipe/Memory/OwnPtr.h>
-#include <Pipe/Reflect/ClassType.h>
+#include <PipeReflect.h>
 
 
 namespace rift
 {
-	TArray<ClassType*> GetBackendTypes();
-	TArray<TOwnPtr<Backend>> CreateBackends();
+	p::TArray<p::TypeId> GetBackendTypes();
+	p::TArray<p::TOwnPtr<Backend>> CreateBackends();
 }    // namespace rift
