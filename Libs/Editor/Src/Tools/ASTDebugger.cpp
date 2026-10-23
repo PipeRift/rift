@@ -90,33 +90,6 @@ namespace rift::editor
 		p::EndDebug();
 	}
 
-	void ASTDebugger::OnInspectEntity(ast::Id id)
-	{
-		bool bOpenNewInspector = false;
-		if (ImGui::GetIO().KeyCtrl)    // Inspector found and Ctrl? Open a new one
-		{
-			OpenAvailableSecondaryInspector(id);
-		}
-		else
-		{
-			bool wasInspected = secondaryInspectors.RemoveIf([id](const auto& inspector)
-			{
-				return inspector.id == id;
-			}) > 0;
-			if (mainInspector.id == id)
-			{
-				mainInspector.id = ast::NoId;
-				wasInspected     = true;
-			}
-
-			if (!wasInspected)
-			{
-				mainInspector.id           = id;
-				mainInspector.pendingFocus = true;
-			}
-		}
-	}
-
 	void ASTDebugger::DrawEntityInspector(p::StringView label, p::StringView id, ast::Tree& ast,
 	    InspectorPanel& inspector, bool* open)
 	{
@@ -127,12 +100,6 @@ namespace rift::editor
 
 		p::String name;
 		p::FormatTo(name, "{}: {}{}###{}", label, inspector.id, removed ? " (removed)" : "", id);
-
-		if (inspector.pendingFocus)
-		{
-			ImGui::SetNextWindowFocus();
-			inspector.pendingFocus = false;
-		}
 
 		UI::SetNextWindowPos(ImGui::GetCursorScreenPos() + ImVec2(20, 20), ImGuiCond_Appearing);
 		UI::SetNextWindowSizeConstraints(ImVec2(300.f, 200.f), ImVec2(800, FLT_MAX));

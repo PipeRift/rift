@@ -517,6 +517,43 @@ namespace rift::editor::Graph
 		PopNodeBackgroundColor();
 	}
 
+	// Id of the type whose graph is being drawn
+	static ast::Id GetCurrentType(p::TIdScopeRef<const CTypeEditor> scope)
+	{
+		const Nodes::Context* context = Nodes::GetCurrentContext();
+		for (ast::Id typeId : p::FindAllIdsWith<CTypeEditor>(scope))
+		{
+			if (&scope.Get<const CTypeEditor>(typeId).nodesEditor == context->EditorCtx)
+			{
+				return typeId;
+			}
+		}
+		return ast::NoId;
+	}
+
+	// Opens the type that owns a function and selects its node there
+	void ShowFunction(ShowFunctionScope scope, ast::Id functionId)
+	{
+		const ast::Id owner = p::GetIdParent(scope, functionId);
+		if (IsNone(owner))
+		{
+			return;
+		}
+
+		if (owner == GetCurrentType(scope))
+		{
+			// The function is already in this graph. Select it
+			Nodes::ClearNodeSelection();
+			Nodes::SelectNode(functionId);
+			Nodes::MoveToNode(functionId, v2{150.f, 150.f});
+			return;
+		}
+
+		// Open the owning type and let its graph focus the function once drawn
+		OpenType(scope, owner);
+		scope.Get<CTypeEditor>(owner).pendingFocusId = functionId;
+	}
+
 	using CallsScope = TIdScopeRef<Writes<ast::CChanged, ast::CFileDirty, CNodePosition>,
 	    ast::CChild, ast::CFileRef, ast::CExprCall, ast::CExprInputs, ast::CExprOutputs,
 	    ast::CNamespace, ast::CExprTypeId, ast::CInvalid, ast::CDeclType>;
@@ -1267,6 +1304,23 @@ namespace rift::editor::Graph
 				Nodes::DrawMiniMap(0.2f, Nodes::MiniMapCorner::TopRight);
 				PopNodeStyle();
 				Nodes::EndNodeEditor();
+
+				// Focus a node requested by another graph now that it's been drawn
+				if (!IsNone(typeEditor.pendingFocusId))
+				{
+					const ast::Id nodeId      = typeEditor.pendingFocusId;
+					typeEditor.pendingFocusId = ast::NoId;
+					ShowFunction(ast, nodeId);
+				}
+				// The hovered node is known once the editor has been drawn
+				if (UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				{
+					const ast::Id hoveredId = Nodes::GetHoveredNode();
+					if (const auto* callId = ast.TryGet<const ast::CExprCallId>(hoveredId))
+					{
+						ShowFunction(ast, callId->functionId);
+					}
+				}
 
 				// Now that the pins are drawn, casts spawned from a link can be attached to
 				// the pin they feed

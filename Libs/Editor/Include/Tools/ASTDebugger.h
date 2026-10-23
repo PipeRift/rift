@@ -18,9 +18,8 @@ namespace rift::editor
 {
 	struct InspectorPanel
 	{
-		ast::Id id        = ast::NoId;
-		bool pendingFocus = true;
-		bool open         = true;
+		ast::Id id = ast::NoId;
+		bool open  = true;
 
 		bool operator==(const InspectorPanel& other) const
 		{
@@ -46,8 +45,6 @@ namespace rift::editor
 		void Draw(ast::Tree& ast);
 
 	private:
-		void OnInspectEntity(ast::Id id);
-
 		void DrawEntityInspector(p::StringView label, p::StringView id, ast::Tree& ast,
 		    InspectorPanel& inspector, bool* open = nullptr);
 

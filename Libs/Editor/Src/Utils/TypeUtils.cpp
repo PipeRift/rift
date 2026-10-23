@@ -11,17 +11,18 @@
 
 namespace rift::editor
 {
-	StringView GetTypeIcon(ast::Tree& ast, ast::Id typeId)
+	StringView GetTypeIcon(
+	    p::TIdScopeRef<ast::CDeclStruct, ast::CDeclClass, ast::CDeclStatic> scope, ast::Id typeId)
 	{
-		if (ast::IsStructType(ast, typeId))
+		if (ast::IsStructType(scope, typeId))
 		{
 			return ICON_FA_FILE_ALT;
 		}
-		if (ast::IsClassType(ast, typeId))
+		if (ast::IsClassType(scope, typeId))
 		{
 			return ICON_FA_FILE_INVOICE;
 		}
-		if (ast::IsStaticType(ast, typeId))
+		if (ast::IsStaticType(scope, typeId))
 		{
 			return ICON_FA_FILE_WORD;
 		}
