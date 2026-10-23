@@ -59,18 +59,16 @@ namespace rift
 		ast::FunctionsSystem::ResolveCallFunctionIds(ast);
 		ast::TypeSystem::ResolveExprTypeIds(ast);
 		ast::FunctionsSystem::MarkAllCallsDirty(ast);
-		ast::TypeSystem::PropagateVariableTypes(ast);
 		ast::FunctionsSystem::PushInvalidPinsBack(ast);
 		ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
 		ast::FunctionsSystem::SyncReturnPinsFromFunction(ast);
-		ast::TypeSystem::PropagateExpressionTypes(ast);
+		ast::TypeSystem::PropagateTypes(ast);
 		ast::FunctionsSystem::HealGraph(ast);
 
 		OptimizationSystem::PruneDisconnectedExpressions(ast);
 
 
 		p::Info("Building project '{}'", ast::GetProjectName(compiler.ast));
-		// Clean build folders
 		p::Info("Cleaning previous build");
 		Delete(compiler.config.binariesPath, true, false);
 		CreateFolder(compiler.config.binariesPath, true);
