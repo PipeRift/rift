@@ -35,7 +35,6 @@ namespace rift::editor::Graph
 		return ast.Has<ast::CExprType>(pinId) || ast.Has<ast::CExprTypeId>(pinId);
 	}
 
-	// Can a value of 'valueType' be used where a value of 'targetType' is expected?
 	static bool IsTypeCompatible(ast::Tree& ast, Id valueType, Id targetType)
 	{
 		if (valueType == targetType)
@@ -50,8 +49,7 @@ namespace rift::editor::Graph
 		return ast::CastSystem::CanCastImplicit(ast, valueType, targetType);
 	}
 
-	// The first pin on 'nodeId' that the dropped link can connect to. For expression links
-	// it's the first pin with a matching type, for execution links the node's exec pin.
+	// First pin of the node the dropped link can connect to
 	static Id FindMatchingPin(ast::Tree& ast, Id nodeId, const MenuContext& context)
 	{
 		const Id sourceType = GetPinType(ast, context.sourcePin);
@@ -186,8 +184,7 @@ namespace rift::editor::Graph
 		return lowercased;
 	}
 
-	// Standardizes text to match searches: lowercased and without separators. Lets a
-	// search for "Print Line" also match "PrintLine", "print_line" or "print-line"
+	// Lowercases and strips separators so "Print Line" matches "PrintLine" or "print-line"
 	static String StandardizeSearchText(StringView text)
 	{
 		String standardized;
@@ -201,8 +198,7 @@ namespace rift::editor::Graph
 		return standardized;
 	}
 
-	// An item of the context menu. Entries are cached before drawing so filtering and
-	// scoring run as a fast step over all of them
+	// An item of the context menu
 	struct MenuEntry
 	{
 		ContextItemKind kind = ContextItemKind::Literal;
@@ -220,12 +216,11 @@ namespace rift::editor::Graph
 		Color background = Color::Transparent();
 		// Position in the cache, used to keep a stable draw order
 		i32 order = 0;
-		// Whether the item matches the current search. Updated while filtering
+		// Whether the item matches the current search
 		bool isVisible = true;
-		// How well the item matches the current search. Updated while filtering
+		// How well the item matches the current search
 		i32 score = 0;
 
-		// Adds a name that can match a search
 		void AddKeyword(StringView name)
 		{
 			SearchKeyword& keyword = keywords.AddRef();
@@ -245,7 +240,7 @@ namespace rift::editor::Graph
 		// Cached subcategories and entries
 		TArray<i32> children;
 		TArray<i32> entries;
-		// Visible items and their best match score. Updated while filtering
+		// Visible items and their best match score
 		TArray<i32> visibleChildren;
 		TArray<i32> visibleEntries;
 		bool isVisible = true;
@@ -258,9 +253,9 @@ namespace rift::editor::Graph
 		// Every entry is drawn under the hidden root category at index 0
 		TArray<MenuCategory> categories;
 		TArray<MenuEntry> entries;
-		// Visible entries in menu order, ignoring categories. Updated while filtering
+		// Visible entries in menu order, ignoring categories
 		TArray<i32> flatEntries;
-		// First entry in menu order: the item Enter falls back to. Updated while filtering
+		// First entry in menu order: the item Enter falls back to
 		i32 defaultEntry = -1;
 		// Item selected with the arrow keys, or -1 to select the first item drawn
 		i32 selectedEntry = -1;
@@ -376,8 +371,7 @@ namespace rift::editor::Graph
 		return query;
 	}
 
-	// Whether a search word matches a name: a substring of the name, or of its
-	// standardized form. Words of symbols match the name directly
+	// Whether a word matches a name, on its plain or standardized form
 	static bool MatchesSearchWord(const SearchKeyword& keyword, const SearchWord& word)
 	{
 		if (p::Strings::Contains(keyword.name, word.name))
@@ -412,8 +406,7 @@ namespace rift::editor::Graph
 		return true;
 	}
 
-	// Whether an entry matches the search: any term can match, all its words must match,
-	// and excluded terms must not match
+	// Whether an entry matches the search. Any term can match, excluded terms must not
 	static bool MatchesSearch(const SearchQuery& query, const TArray<SearchKeyword>& keywords)
 	{
 		for (const TArray<SearchWord>& words : query.excludes)
@@ -437,7 +430,7 @@ namespace rift::editor::Graph
 		return false;
 	}
 
-	// Scores of the different ways a search word can match a name. Used to rank results
+	// Scores of the different ways a search word can match a name
 	constexpr i32 searchExactScore    = 400;
 	constexpr i32 searchPrefixScore   = 300;
 	constexpr i32 searchContainsScore = 200;
@@ -479,9 +472,7 @@ namespace rift::editor::Graph
 		return score;
 	}
 
-	// The best score of an entry against the search, used to rank results. A term scores
-	// the sum of its words, and matches of the item's own name rank above matches of its
-	// other names
+	// The best score of an entry against the search. Terms score the sum of their words
 	static i32 ScoreSearch(const SearchQuery& query, const TArray<SearchKeyword>& keywords)
 	{
 		i32 best = 0;
@@ -526,7 +517,6 @@ namespace rift::editor::Graph
 				}
 				else if (isOutput)
 				{
-					// Input matches type?
 					if (const auto* inputs = ast.TryGet<const ast::CExprInputs>(itemId))
 					{
 						for (Id pinId : inputs->pinIds)
@@ -540,7 +530,6 @@ namespace rift::editor::Graph
 				}
 				else
 				{
-					// Output matches type?
 					if (const auto* outputs = ast.TryGet<const ast::CExprOutputs>(itemId))
 					{
 						for (Id pinId : outputs->pinIds)
@@ -649,90 +638,17 @@ namespace rift::editor::Graph
 		return pressed;
 	}
 
-	constexpr float contextChipRounding = 2.f;
-	constexpr float contextChipPadding  = 4.f;
-	constexpr float contextChipSpacing  = 4.f;
-
-	// Draws a context menu row. When a background is given it's painted by the row itself,
-	// with the content drawn on top. Highlighted rows draw as if hovered. Returns whether
-	// the row was picked
-	bool DrawContextChipRow(StringView label, ImVec2& outMin, ImVec2& outMax,
+	// Draws a context menu row and closes the menu when it's picked
+	bool ContextChipRow(StringView label, ImVec2& outMin, ImVec2& outMax,
 	    Color background = Color::Transparent(), float height = 16.f, bool highlighted = false)
 	{
-		UI::PushStyleVar(ImGuiStyleVar_ItemSpacing, v2{UI::GetStyle().ItemSpacing.x, 2.f});
-		UI::PushStyleVar(ImGuiStyleVar_SelectableRounding, contextChipRounding);
-		ImGuiSelectableFlags flags = ImGuiSelectableFlags_NoPadWithHalfSpacing;
-		if (highlighted)
-		{
-			flags |= ImGuiSelectableFlags_Highlight;    // Draw as if hovered
-		}
-		const bool hasBackground = background.a > 0.f;
-		if (hasBackground)
-		{
-			UI::PushHeaderColor(background);
-			if (highlighted)
-			{
-				// A highlighted row draws a clearly brighter version of its color
-				UI::PushStyleColor(ImGuiCol_HeaderHovered, background.Tint(0.2f));
-			}
-		}
-		const bool pressed = UI::Selectable(label, hasBackground, flags, v2{0.f, height});
-		if (hasBackground)
-		{
-			if (highlighted)
-			{
-				UI::PopStyleColor();
-			}
-			UI::PopHeaderColor();
-		}
-		UI::PopStyleVar(2);
+		const bool pressed =
+		    UI::SelectableRow(label, outMin, outMax, background, height, highlighted);
 		if (pressed)
 		{
 			UI::CloseCurrentPopup();
 		}
-
-		outMin = UI::GetItemRectMin();
-		outMax = UI::GetItemRectMax();
 		return pressed;
-	}
-
-	// Draws text centered on the row, advancing 'x'
-	void DrawContextItemText(ImDrawList& drawList, float& x, float centerY, StringView text)
-	{
-		const ImVec2 size = UI::CalcTextSize(text);
-		drawList.AddText(ImVec2{x, centerY - size.y * 0.5f}, UI::GetColorU32(ImGuiCol_Text),
-		    text.data(), text.data() + text.size());
-		x += size.x;
-	}
-
-	// Draws a type name over a rounded background of its own color, advancing 'x'. The icon,
-	// when given, is drawn smaller and before the name
-	void DrawContextTypeChip(ImDrawList& drawList, float& x, float centerY, StringView name,
-	    const Color& color, const char* icon = nullptr)
-	{
-		ImFont* font          = UI::GetFont();
-		const float fontSize  = UI::GetFontSize();
-		const float iconSize  = fontSize * 0.75f;
-		const float iconWidth = icon ? font->CalcTextSizeA(iconSize, FLT_MAX, 0.f, icon).x : 0.f;
-
-		const ImVec2 textSize    = UI::CalcTextSize(name);
-		const float contentWidth = iconWidth + textSize.x;
-		const float height       = UI::GetTextLineHeight() + 2.f;
-		const ImVec2 chipMin{x, centerY - height * 0.5f};
-		const ImVec2 chipMax{x + contentWidth + contextChipPadding * 2.f, centerY + height * 0.5f};
-
-		drawList.AddRectFilled(chipMin, chipMax, color.ToPackedABGR(), contextChipRounding);
-		// The icon shares the top of the text line, instead of being centred on its own
-		if (icon)
-		{
-			const float textY = centerY - (iconSize * 0.5f) + 2.f;
-			drawList.AddText(font, iconSize, ImVec2{chipMin.x + contextChipPadding, textY},
-			    UI::GetColorU32(ImGuiCol_Text), icon);
-		}
-		const float textY = centerY - textSize.y * 0.5f;
-		drawList.AddText(ImVec2{chipMin.x + contextChipPadding + iconWidth, textY},
-		    UI::GetColorU32(ImGuiCol_Text), name.data(), name.data() + name.size());
-		x = chipMax.x;
 	}
 
 	// A cast of the context menu: each type carries a rounded background of its own color
@@ -747,22 +663,21 @@ namespace rift::editor::Graph
 		UI::PushID(cast.toType);
 		ImVec2 itemMin;
 		ImVec2 itemMax;
-		const bool pressed = DrawContextChipRow(
-		    "###Item", itemMin, itemMax, Color::Transparent(), 16.f, highlighted);
+		const bool pressed =
+		    ContextChipRow("###Item", itemMin, itemMax, Color::Transparent(), 16.f, highlighted);
 		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
-		float x             = itemMin.x + contextChipPadding;
-		DrawContextTypeChip(*drawList, x, centerY, fromName, GetTypeColor(ast, cast.fromType));
-		x += contextChipSpacing;
-		DrawContextItemText(*drawList, x, centerY, ICON_FA_ARROW_RIGHT);
-		x += contextChipSpacing;
-		DrawContextTypeChip(*drawList, x, centerY, toName, GetTypeColor(ast, cast.toType));
+		float x             = itemMin.x + UI::chipPadding;
+		UI::DrawChip(*drawList, x, centerY, fromName, GetTypeColor(ast, cast.fromType));
+		x += UI::chipSpacing;
+		UI::DrawChipText(*drawList, x, centerY, ICON_FA_ARROW_RIGHT);
+		x += UI::chipSpacing;
+		UI::DrawChip(*drawList, x, centerY, toName, GetTypeColor(ast, cast.toType));
 		UI::PopID();
 		UI::PopID();
 		return pressed;
 	}
 
-	// A function of the context menu: its name followed by its arguments and returns, each a
-	// chip with its name colored as its type. Returns are marked with an upward arrow
+	// A function entry: its name followed by its argument and return chips
 	bool ContextFunctionItem(ast::Tree& ast, Id id, StringView name, bool highlighted = false)
 	{
 		ImDrawList* drawList = UI::GetWindowDrawList();
@@ -773,9 +688,9 @@ namespace rift::editor::Graph
 		// The function carries its own background, slightly thicker than the pin chips
 		const float rowHeight = UI::GetTextLineHeight() + 4.f;
 		const bool pressed =
-		    DrawContextChipRow("###Item", itemMin, itemMax, functionColor, rowHeight, highlighted);
+		    ContextChipRow("###Item", itemMin, itemMax, functionColor, rowHeight, highlighted);
 		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
-		float x             = itemMin.x + contextChipPadding;
+		float x             = itemMin.x + UI::chipPadding;
 
 		// Arguments produce a value inside the function, returns consume one
 		const auto* args    = ast.TryGet<const ast::CExprOutputs>(id);
@@ -784,14 +699,12 @@ namespace rift::editor::Graph
 		bool first   = true;
 		auto drawPin = [&](Id pinId, bool isReturn)
 		{
-			DrawContextItemText(*drawList, x, centerY, first ? "" : ", ");
+			UI::DrawChipText(*drawList, x, centerY, first ? "" : ", ");
 			first = false;
 
-			// The chip carries the name of the pin, colored as its type. Returns lead with an
-			// arrow inside of the chip
+			// Pin chip, leading with an arrow for returns
 			const auto* ns = ast.TryGet<const ast::CNamespace>(pinId);
-			DrawContextTypeChip(*drawList, x, centerY,
-			    ns ? ns->name.AsString() : StringView{"none"},
+			UI::DrawChip(*drawList, x, centerY, ns ? ns->name.AsString() : StringView{"none"},
 			    GetTypeColor(ast, GetPinType(ast, pinId)),
 			    isReturn ? ICON_FA_LONG_ARROW_ALT_UP : nullptr);
 		};
@@ -807,8 +720,8 @@ namespace rift::editor::Graph
 			}
 		};
 
-		DrawContextItemText(*drawList, x, centerY, name);
-		DrawContextItemText(*drawList, x, centerY, "(");
+		UI::DrawChipText(*drawList, x, centerY, name);
+		UI::DrawChipText(*drawList, x, centerY, "(");
 		if (args)
 		{
 			drawPins(args->pinIds, false);
@@ -817,7 +730,7 @@ namespace rift::editor::Graph
 		{
 			drawPins(returns->pinIds, true);
 		}
-		DrawContextItemText(*drawList, x, centerY, ")");
+		UI::DrawChipText(*drawList, x, centerY, ")");
 		UI::PopID();
 		return pressed;
 	}
@@ -830,13 +743,13 @@ namespace rift::editor::Graph
 		UI::PushID(id);
 		ImVec2 itemMin;
 		ImVec2 itemMax;
-		const bool pressed = DrawContextChipRow(
-		    "###Item", itemMin, itemMax, Color::Transparent(), 16.f, highlighted);
+		const bool pressed =
+		    ContextChipRow("###Item", itemMin, itemMax, Color::Transparent(), 16.f, highlighted);
 		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
-		float x             = itemMin.x + contextChipPadding;
-		DrawContextItemText(*drawList, x, centerY, "Make ");
-		x += contextChipSpacing;
-		DrawContextTypeChip(*drawList, x, centerY, typeName, color);
+		float x             = itemMin.x + UI::chipPadding;
+		UI::DrawChipText(*drawList, x, centerY, "Make ");
+		x += UI::chipSpacing;
+		UI::DrawChip(*drawList, x, centerY, typeName, color);
 		UI::PopID();
 		return pressed;
 	}
@@ -928,8 +841,7 @@ namespace rift::editor::Graph
 		}
 	}
 
-	// Caches the functions and variables under a namespace: functions and variables become
-	// entries, modules and types become categories
+	// Caches the functions and variables under a namespace
 	static void AddNamespaceEntries(MenuCache& cache, ast::Tree& ast, const MenuContext& context,
 	    const TArray<Id>& ids, i32 parent)
 	{
@@ -1022,7 +934,6 @@ namespace rift::editor::Graph
 
 		const i32 operators = cache.AddCategory("Operators", 0);
 		String label;
-		// Unary operators
 		for (auto type : GetEnumValues<ast::UnaryOperatorType>())
 		{
 			if (!FitsContext(ast, context, ContextItemKind::UnaryOperator))
@@ -1041,7 +952,6 @@ namespace rift::editor::Graph
 			entry.AddKeyword(String{longName});
 			cache.AddEntry(p::Move(entry), operators);
 		}
-		// Binary operators
 		for (auto type : GetEnumValues<ast::BinaryOperatorType>())
 		{
 			if (!FitsContext(ast, context, ContextItemKind::BinaryOperator))
@@ -1100,8 +1010,7 @@ namespace rift::editor::Graph
 		}
 	}
 
-	// Caches every entry of the menu before drawing, so each frame only filters and scores
-	// the cached entries
+	// Caches every entry of the menu before drawing
 	static void BuildMenuCache(MenuCache& cache, ast::Tree& ast, const MenuContext& context)
 	{
 		cache.Reset();
@@ -1111,8 +1020,7 @@ namespace rift::editor::Graph
 		    cache, ast, context, p::FindAllIdsWith<ast::CModule, ast::CNamespace>(ast), 0);
 	}
 
-	// Collects the visible entries of a menu category in order. Categories themselves are
-	// ignored
+	// Collects the visible entries of a category in order
 	static void CollectFlatEntries(
 	    const MenuCache& cache, i32 categoryIdx, TArray<i32>& outEntryIndices)
 	{
@@ -1127,8 +1035,7 @@ namespace rift::editor::Graph
 		}
 	}
 
-	// Updates which cached entries match the search and how well they match, along with
-	// the draw order of every category. A category scores as its best entry
+	// Filters and scores the cached entries and orders the categories
 	static void FilterMenuCache(MenuCache& cache, const ImGuiTextFilter& filter)
 	{
 		const bool isSearching  = filter.IsActive();
@@ -1205,8 +1112,7 @@ namespace rift::editor::Graph
 		SetPositionAndConnect(ast, newId, context);
 	}
 
-	// Draws a cached entry and spawns its node when picked. Highlighted rows draw as if
-	// hovered
+	// Draws a cached entry and spawns its node when picked
 	static void DrawMenuEntry(ast::Tree& ast, Id typeId, const MenuContext& context,
 	    const MenuEntry& entry, bool highlighted)
 	{
@@ -1251,9 +1157,7 @@ namespace rift::editor::Graph
 	static void DrawMenuCategory(ast::Tree& ast, Id typeId, const MenuContext& context,
 	    MenuCache& cache, i32 categoryIdx, bool showSelection, bool& scrollToSelection);
 
-	// Draws the entries and subcategories of a category. The first item drawn becomes the
-	// selected one when the results change, and the selection is scrolled into view when
-	// it moves
+	// Draws the entries and subcategories of a category
 	static void DrawMenuCategoryContents(ast::Tree& ast, Id typeId, const MenuContext& context,
 	    MenuCache& cache, const MenuCategory& category, bool showSelection, bool& scrollToSelection)
 	{
@@ -1279,8 +1183,7 @@ namespace rift::editor::Graph
 		}
 	}
 
-	// Draws a cached category and its contents. Categories with nothing visible inside are
-	// skipped, and they draw open by default so the first item is always reachable
+	// Draws a cached category and its contents, skipping empty ones
 	static void DrawMenuCategory(ast::Tree& ast, Id typeId, const MenuContext& context,
 	    MenuCache& cache, i32 categoryIdx, bool showSelection, bool& scrollToSelection)
 	{
@@ -1290,8 +1193,7 @@ namespace rift::editor::Graph
 			return;
 		}
 
-		// Categories open by default, so the first item is selected even without a search.
-		// Only applies while the user hasn't opened or closed the category themselves
+		// Categories open by default, unless the user opened or closed them before
 		UI::SetNextItemOpen(true, ImGuiCond_Once);
 		if (!UI::TreeNode(category.label.c_str()))
 		{
@@ -1323,8 +1225,7 @@ namespace rift::editor::Graph
 		UI::SetNavCursorVisible(false);
 		if (filterActive)
 		{
-			// Up and down move the selected item below instead of navigating the window,
-			// so the search can keep being refined while browsing results
+			// Move the selection instead of navigating, so the search stays writable
 			UI::GetCurrentContext()->ActiveIdUsingNavDirMask |=
 			    (1 << ImGuiDir_Up) | (1 << ImGuiDir_Down);
 		}
@@ -1347,7 +1248,7 @@ namespace rift::editor::Graph
 			BuildMenuCache(cache, ast, context);
 		}
 
-		// The default item takes the focus while the results change, so Enter applies it
+		// The first item drawn becomes the selected one when the results change
 		const bool focusDefault = isAppearing || filterChanged;
 
 		// Only the results scroll, so the search bar stays visible. The results take the rest
@@ -1392,8 +1293,7 @@ namespace rift::editor::Graph
 				cache.selectedEntry = selectedEntry;
 			}
 
-			// The hidden root category only wraps the contents of the menu. Scrolling only
-			// follows the selection when it changes, so manual scrolling is left alone
+			// The hidden root category only wraps the contents of the menu
 			DrawMenuCategoryContents(
 			    ast, typeId, context, cache, cache.categories[0], filterActive, scrollToSelection);
 
