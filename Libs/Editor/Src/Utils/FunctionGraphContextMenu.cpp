@@ -160,42 +160,23 @@ namespace rift::editor::Graph
 		Cast,
 	};
 
-	// A name that can match a search: the lowercased name and its standardized form
-	struct SearchKeyword
+	// Whether a character is matched through when searching
+	static bool IsSearchSeparator(char c)
 	{
-		String name;
-		String standardized;
-	};
-
-	// Whether a character stays in standardized search text
-	static bool IsSearchAlphanumeric(char c)
-	{
-		return p::TCharHelpers<char>::IsAlpha(c) || (c >= '0' && c <= '9');
+		return !p::TCharHelpers<char>::IsAlpha(c) && (c < '0' || c > '9');
 	}
 
-	// Lowercases text so searches match regardless of case
-	static String LowercaseSearchText(StringView text)
+	// Whether text has a character that isn't a separator
+	static bool HasSearchText(StringView text)
 	{
-		String lowercased;
 		for (const char c : text)
 		{
-			lowercased.push_back(p::TCharHelpers<char>::ToLower(c));
-		}
-		return lowercased;
-	}
-
-	// Lowercases and strips separators so "Print Line" matches "PrintLine" or "print-line"
-	static String StandardizeSearchText(StringView text)
-	{
-		String standardized;
-		for (const char c : text)
-		{
-			if (IsSearchAlphanumeric(c))
+			if (!IsSearchSeparator(c))
 			{
-				standardized.push_back(p::TCharHelpers<char>::ToLower(c));
+				return true;
 			}
 		}
-		return standardized;
+		return false;
 	}
 
 	// An item of the context menu
@@ -208,10 +189,10 @@ namespace rift::editor::Graph
 		ast::Cast cast{};
 		// Operator of a unary or binary operator entry
 		i32 operatorType = 0;
-		// Name drawn in simple items
-		String label;
+		// Name drawn in simple items. Operators format theirs when drawn
+		StringView label;
 		// Names that can match a search. The first one is the item's own name
-		TArray<SearchKeyword> keywords;
+		TArray<StringView, 4> keywords;
 		// Background of the item's row, when it has one
 		Color background = Color::Transparent();
 		// Position in the cache, used to keep a stable draw order
@@ -220,13 +201,6 @@ namespace rift::editor::Graph
 		bool isVisible = true;
 		// How well the item matches the current search
 		i32 score = 0;
-
-		void AddKeyword(StringView name)
-		{
-			SearchKeyword& keyword = keywords.AddRef();
-			keyword.name           = LowercaseSearchText(name);
-			keyword.standardized   = StandardizeSearchText(name);
-		}
 	};
 
 	// A labelled group of menu entries and subcategories
@@ -247,6 +221,14 @@ namespace rift::editor::Graph
 		i32 score      = 0;
 	};
 
+	// A parsed search: terms of words that must all match. Terms are alternatives, and a
+	// leading '-' excludes a term's matches
+	struct SearchQuery
+	{
+		TArray<TArray<StringView>> includes;
+		TArray<TArray<StringView>> excludes;
+	};
+
 	// Entries of the context menu, cached in categories before drawing
 	struct MenuCache
 	{
@@ -259,20 +241,25 @@ namespace rift::editor::Graph
 		i32 defaultEntry = -1;
 		// Item selected with the arrow keys, or -1 to select the first item drawn
 		i32 selectedEntry = -1;
+		// Last parsed search, and its parsed query
+		String searchText;
+		SearchQuery query;
 
 		void Reset()
 		{
 			categories.Clear(p::Shrink::No);
 			entries.Clear(p::Shrink::No);
-			AddCategory({}, -1);
+			searchText.clear();
+			query.includes.Clear();
+			query.excludes.Clear();
+			AddCategory(-1);
 		}
 
-		// Adds a category under 'parent', or a root category when 'parent' is -1
-		i32 AddCategory(StringView label, i32 parent)
+		// Adds an empty category under 'parent', or a root category when 'parent' is -1
+		i32 AddCategory(i32 parent)
 		{
 			const i32 categoryIdx  = categories.Size();
 			MenuCategory& category = categories.AddRef();
-			category.label         = String{label};
 			category.parent        = parent;
 			category.order         = categoryIdx;
 			if (parent != -1)
@@ -292,25 +279,88 @@ namespace rift::editor::Graph
 		}
 	};
 
-	// A word of a search term: the lowercased word and its standardized form
-	struct SearchWord
+	// Finds 'word' in 'text' ignoring case, or -1
+	static i32 FindIgnoreCase(StringView text, StringView word)
 	{
-		String name;
-		String standardized;
-	};
+		const i32 textSize = i32(text.size());
+		const i32 wordSize = i32(word.size());
+		if (wordSize > textSize)
+		{
+			return -1;
+		}
+		for (i32 start = 0; start + wordSize <= textSize; ++start)
+		{
+			i32 i = 0;
+			while (i < wordSize
+			       && p::TCharHelpers<char>::ToLower(text[start + i])
+			              == p::TCharHelpers<char>::ToLower(word[i]))
+			{
+				++i;
+			}
+			if (i == wordSize)
+			{
+				return start;
+			}
+		}
+		return -1;
+	}
 
-	// A parsed search: terms of words that must all match. Terms are alternatives, and a
-	// '-' before a term excludes its matches from the results
-	struct SearchQuery
+	// Whether 'text' contains 'word', ignoring case. Separators are matched through, so
+	// "print_line" finds "PrintLine". Words of symbols match literally
+	static bool ContainsWord(StringView text, StringView word)
 	{
-		TArray<TArray<SearchWord>> includes;
-		TArray<TArray<SearchWord>> excludes;
-	};
+		if (word.empty())
+		{
+			return true;
+		}
 
-	// Splits search text into words on its blanks
-	static TArray<SearchWord> ParseSearchWords(StringView text)
+		// Symbols aren't separators for matching
+		const bool skipSeparators = HasSearchText(word);
+		const i32 textSize        = i32(text.size());
+		const i32 wordSize        = i32(word.size());
+		for (i32 start = 0; start < textSize; ++start)
+		{
+			i32 textIdx  = start;
+			i32 wordIdx  = 0;
+			bool matched = true;
+			while (wordIdx < wordSize)
+			{
+				if (skipSeparators)
+				{
+					while (textIdx < textSize && IsSearchSeparator(text[textIdx]))
+					{
+						++textIdx;
+					}
+					while (wordIdx < wordSize && IsSearchSeparator(word[wordIdx]))
+					{
+						++wordIdx;
+					}
+					if (wordIdx >= wordSize)
+					{
+						break;
+					}
+				}
+				if (textIdx >= textSize
+				    || p::TCharHelpers<char>::ToLower(text[textIdx])
+				           != p::TCharHelpers<char>::ToLower(word[wordIdx]))
+				{
+					matched = false;
+					break;
+				}
+				++textIdx;
+				++wordIdx;
+			}
+			if (matched)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// Splits text into its words on blanks
+	static void ParseWords(StringView text, TArray<StringView>& outWords)
 	{
-		TArray<SearchWord> words;
 		i32 wordStart = 0;
 		for (i32 i = 0; i <= i32(text.size()); ++i)
 		{
@@ -318,24 +368,22 @@ namespace rift::editor::Graph
 			{
 				continue;
 			}
-			const StringView wordText = text.substr(wordStart, i - wordStart);
-			wordStart                 = i + 1;
-			if (wordText.empty())
+			const StringView word = text.substr(wordStart, i - wordStart);
+			wordStart             = i + 1;
+			if (!word.empty())
 			{
-				continue;
+				outWords.Add(word);
 			}
-			SearchWord& word  = words.AddRef();
-			word.name         = LowercaseSearchText(wordText);
-			word.standardized = StandardizeSearchText(wordText);
 		}
-		return words;
 	}
 
 	// Parses search text like the search filter does: comma separated terms, with a
-	// leading '-' to exclude
-	static SearchQuery ParseSearch(StringView search)
+	// leading '-' to exclude. Words are views into 'search'
+	static void ParseSearch(StringView search, SearchQuery& query)
 	{
-		SearchQuery query;
+		query.includes.Clear();
+		query.excludes.Clear();
+
 		i32 termStart = 0;
 		for (i32 i = 0; i <= i32(search.size()); ++i)
 		{
@@ -349,50 +397,32 @@ namespace rift::editor::Graph
 			{
 				term.remove_prefix(1);
 			}
-			while (!term.empty() && (term.back() == ' ' || term.back() == '\t'))
-			{
-				term.remove_suffix(1);
-			}
 
-			bool isExcluded = false;
+			bool excluded = false;
 			if (!term.empty() && term.front() == '-')
 			{
-				isExcluded = true;
+				excluded = true;
 				term.remove_prefix(1);
 			}
 
-			TArray<SearchWord> words = ParseSearchWords(term);
-			if (words.IsEmpty())
+			TArray<StringView> words;
+			ParseWords(term, words);
+			if (!words.IsEmpty())
 			{
-				continue;
+				(excluded ? query.excludes : query.includes).Add(p::Move(words));
 			}
-			(isExcluded ? query.excludes : query.includes).Add(p::Move(words));
 		}
-		return query;
 	}
 
-	// Whether a word matches a name, on its plain or standardized form
-	static bool MatchesSearchWord(const SearchKeyword& keyword, const SearchWord& word)
+	// Whether a term matches an entry: every word of the term must match one of its names
+	static bool MatchesTerm(const TArray<StringView>& words, TView<StringView> keywords)
 	{
-		if (p::Strings::Contains(keyword.name, word.name))
-		{
-			return true;
-		}
-		return !word.standardized.empty() && !keyword.standardized.empty()
-		    && p::Strings::Contains(keyword.standardized, word.standardized);
-	}
-
-	// Whether a search term matches an entry: every word of the term must match one of
-	// its names
-	static bool MatchesSearchTerm(
-	    const TArray<SearchWord>& words, const TArray<SearchKeyword>& keywords)
-	{
-		for (const SearchWord& word : words)
+		for (const StringView word : words)
 		{
 			bool found = false;
-			for (const SearchKeyword& keyword : keywords)
+			for (const StringView keyword : keywords)
 			{
-				if (MatchesSearchWord(keyword, word))
+				if (ContainsWord(keyword, word))
 				{
 					found = true;
 					break;
@@ -407,11 +437,11 @@ namespace rift::editor::Graph
 	}
 
 	// Whether an entry matches the search. Any term can match, excluded terms must not
-	static bool MatchesSearch(const SearchQuery& query, const TArray<SearchKeyword>& keywords)
+	static bool MatchesSearch(const SearchQuery& query, TView<StringView> keywords)
 	{
-		for (const TArray<SearchWord>& words : query.excludes)
+		for (const TArray<StringView>& words : query.excludes)
 		{
-			if (MatchesSearchTerm(words, keywords))
+			if (MatchesTerm(words, keywords))
 			{
 				return false;
 			}
@@ -420,9 +450,9 @@ namespace rift::editor::Graph
 		{
 			return true;
 		}
-		for (const TArray<SearchWord>& words : query.includes)
+		for (const TArray<StringView>& words : query.includes)
 		{
-			if (MatchesSearchTerm(words, keywords))
+			if (MatchesTerm(words, keywords))
 			{
 				return true;
 			}
@@ -431,62 +461,47 @@ namespace rift::editor::Graph
 	}
 
 	// Scores of the different ways a search word can match a name
-	constexpr i32 searchExactScore    = 400;
-	constexpr i32 searchPrefixScore   = 300;
-	constexpr i32 searchContainsScore = 200;
+	constexpr i32 searchExactScore     = 400;
+	constexpr i32 searchPrefixScore    = 300;
+	constexpr i32 searchContainsScore  = 200;
+	constexpr i32 searchSeparatorScore = 100;
 	// Matches of secondary names rank below matches of the item's own name
 	constexpr i32 searchKeywordPenalty = 150;
 
 	// How well a word matches a name. Exact matches score the highest, followed by
-	// prefixes and substrings
-	static i32 ScoreSearchText(StringView text, StringView word)
+	// prefixes, substrings and matches through separators
+	static i32 ScoreWord(StringView name, StringView word)
 	{
-		if (word.empty())
+		const i32 found = FindIgnoreCase(name, word);
+		if (found < 0)
 		{
-			return 0;
+			return ContainsWord(name, word) ? searchSeparatorScore : 0;
 		}
-		if (p::Strings::Equals(text, word))
+		if (i32(name.size()) == i32(word.size()))
 		{
 			return searchExactScore;
 		}
-		const sizet found = p::Strings::Find(text, word);
 		if (found == 0)
 		{
 			return searchPrefixScore;
 		}
-		if (found != StringView::npos)
-		{
-			return searchContainsScore - i32(p::Min(found, sizet(99)));
-		}
-		return 0;
-	}
-
-	// How well a search word matches a name, on its plain or standardized form
-	static i32 ScoreSearchWord(const SearchKeyword& keyword, const SearchWord& word)
-	{
-		i32 score = ScoreSearchText(keyword.name, word.name);
-		if (!word.standardized.empty() && !keyword.standardized.empty())
-		{
-			score = p::Max(score, ScoreSearchText(keyword.standardized, word.standardized));
-		}
-		return score;
+		return searchContainsScore - p::Min(found, 99);
 	}
 
 	// The best score of an entry against the search. Terms score the sum of their words
-	static i32 ScoreSearch(const SearchQuery& query, const TArray<SearchKeyword>& keywords)
+	static i32 ScoreSearch(const SearchQuery& query, TView<StringView> keywords)
 	{
 		i32 best = 0;
-		for (const TArray<SearchWord>& words : query.includes)
+		for (const TArray<StringView>& words : query.includes)
 		{
 			i32 termScore = 0;
-			for (const SearchWord& word : words)
+			for (const StringView word : words)
 			{
 				i32 wordScore = 0;
 				for (i32 keywordIdx = 0; keywordIdx < keywords.Size(); ++keywordIdx)
 				{
 					const i32 penalty = keywordIdx > 0 ? searchKeywordPenalty : 0;
-					wordScore =
-					    p::Max(wordScore, ScoreSearchWord(keywords[keywordIdx], word) - penalty);
+					wordScore = p::Max(wordScore, ScoreWord(keywords[keywordIdx], word) - penalty);
 				}
 				termScore += wordScore;
 			}
@@ -878,8 +893,8 @@ namespace rift::editor::Graph
 				MenuEntry entry;
 				entry.kind  = ContextItemKind::Function;
 				entry.id    = childId;
-				entry.label = String{childName};
-				entry.AddKeyword(String{childName});
+				entry.label = childName;
+				entry.keywords.Add(childName);
 				cache.AddEntry(p::Move(entry), parent);
 			}
 			else if (ast.Has<ast::CDeclVariable>(childId))
@@ -892,9 +907,9 @@ namespace rift::editor::Graph
 				MenuEntry entry;
 				entry.kind       = ContextItemKind::Variable;
 				entry.id         = childId;
-				entry.label      = String{childName};
+				entry.label      = childName;
 				entry.background = GetTypeColor(ast, variable ? variable->typeId : ast::NoId);
-				entry.AddKeyword(String{childName});
+				entry.keywords.Add(childName);
 				cache.AddEntry(p::Move(entry), parent);
 			}
 			else
@@ -910,24 +925,46 @@ namespace rift::editor::Graph
 					continue;
 				}
 
-				const StringView icon = GetFileIcon(ast, childId);
-				const String label    = p::Format("{} {}", icon, childName);
-				const i32 category    = cache.AddCategory(label, parent);
+				const i32 category = cache.AddCategory(parent);
+				p::FormatTo(cache.categories[category].label, "{} {}", GetFileIcon(ast, childId),
+				    childName);
 				AddNamespaceEntries(cache, ast, context, categoryChildren, category);
 			}
+		}
+	}
+
+	// Caches the entries of an operator kind
+	template<typename EnumType>
+	static void AddOperatorEntries(MenuCache& cache, ast::Tree& ast, const MenuContext& context,
+	    i32 category, ContextItemKind kind, StringView (*getName)(EnumType),
+	    StringView (*getLongName)(EnumType))
+	{
+		if (!FitsContext(ast, context, kind))
+		{
+			return;    // Operators of this kind don't fit the menu context
+		}
+		for (const EnumType type : GetEnumValues<EnumType>())
+		{
+			MenuEntry entry;
+			entry.kind         = kind;
+			entry.operatorType = i32(type);
+			entry.keywords.Add(getName(type));
+			entry.keywords.Add(getLongName(type));
+			cache.AddEntry(p::Move(entry), category);
 		}
 	}
 
 	// Caches the flow, operator, constructor and cast entries of the menu
 	static void AddBuiltinEntries(MenuCache& cache, ast::Tree& ast, const MenuContext& context)
 	{
-		const i32 flow = cache.AddCategory("Flow", 0);
+		const i32 flow               = cache.AddCategory(0);
+		cache.categories[flow].label = "Flow";
 		if (FitsContext(ast, context, ContextItemKind::Return))
 		{
 			MenuEntry entry;
 			entry.kind  = ContextItemKind::Return;
 			entry.label = "Return";
-			entry.AddKeyword("Return");
+			entry.keywords.Add("Return");
 			cache.AddEntry(p::Move(entry), flow);
 		}
 		if (FitsContext(ast, context, ContextItemKind::If))
@@ -935,7 +972,7 @@ namespace rift::editor::Graph
 			MenuEntry entry;
 			entry.kind  = ContextItemKind::If;
 			entry.label = "If";
-			entry.AddKeyword("If");
+			entry.keywords.Add("If");
 			cache.AddEntry(p::Move(entry), flow);
 		}
 		if (FitsContext(ast, context, ContextItemKind::For))
@@ -943,50 +980,19 @@ namespace rift::editor::Graph
 			MenuEntry entry;
 			entry.kind  = ContextItemKind::For;
 			entry.label = "For";
-			entry.AddKeyword("For");
+			entry.keywords.Add("For");
 			cache.AddEntry(p::Move(entry), flow);
 		}
 
-		const i32 operators = cache.AddCategory("Operators", 0);
-		String label;
-		for (auto type : GetEnumValues<ast::UnaryOperatorType>())
-		{
-			if (!FitsContext(ast, context, ContextItemKind::UnaryOperator))
-			{
-				continue;
-			}
-			const StringView shortName = GetUnaryOperatorName(type);
-			const StringView longName  = GetUnaryOperatorLongName(type);
-			label.clear();
-			p::FormatTo(label, "{}   ({})", shortName, longName);
-			MenuEntry entry;
-			entry.kind         = ContextItemKind::UnaryOperator;
-			entry.operatorType = i32(type);
-			entry.label        = label;
-			entry.AddKeyword(String{shortName});
-			entry.AddKeyword(String{longName});
-			cache.AddEntry(p::Move(entry), operators);
-		}
-		for (auto type : GetEnumValues<ast::BinaryOperatorType>())
-		{
-			if (!FitsContext(ast, context, ContextItemKind::BinaryOperator))
-			{
-				continue;
-			}
-			const StringView shortName = GetBinaryOperatorName(type);
-			const StringView longName  = GetBinaryOperatorLongName(type);
-			label.clear();
-			p::FormatTo(label, "{}   ({})", shortName, longName);
-			MenuEntry entry;
-			entry.kind         = ContextItemKind::BinaryOperator;
-			entry.operatorType = i32(type);
-			entry.label        = label;
-			entry.AddKeyword(String{shortName});
-			entry.AddKeyword(String{longName});
-			cache.AddEntry(p::Move(entry), operators);
-		}
+		const i32 operators               = cache.AddCategory(0);
+		cache.categories[operators].label = "Operators";
+		AddOperatorEntries(cache, ast, context, operators, ContextItemKind::UnaryOperator,
+		    &GetUnaryOperatorName, &GetUnaryOperatorLongName);
+		AddOperatorEntries(cache, ast, context, operators, ContextItemKind::BinaryOperator,
+		    &GetBinaryOperatorName, &GetBinaryOperatorLongName);
 
-		const i32 constructors = cache.AddCategory("Constructors", 0);
+		const i32 constructors               = cache.AddCategory(0);
+		cache.categories[constructors].label = "Constructors";
 		{
 			TIdScope<ast::CDeclType, ast::CNamespace> typesScope{ast};
 			for (Id literalTypeId : FindAllIdsWith<ast::CDeclType>(typesScope))
@@ -1000,15 +1006,16 @@ namespace rift::editor::Graph
 				MenuEntry entry;
 				entry.kind       = ContextItemKind::Literal;
 				entry.id         = literalTypeId;
-				entry.label      = String{typeName};
+				entry.label      = typeName;
 				entry.background = GetTypeColor(ast, literalTypeId);
-				entry.AddKeyword("Make");
-				entry.AddKeyword(String{typeName});
+				entry.keywords.Add("Make");
+				entry.keywords.Add(typeName);
 				cache.AddEntry(p::Move(entry), constructors);
 			}
 		}
 
-		const i32 casts = cache.AddCategory("Casts", 0);
+		const i32 casts               = cache.AddCategory(0);
+		cache.categories[casts].label = "Casts";
 		for (const ast::Cast& cast : ast::CastSystem::GetCasts(ast))
 		{
 			if (!FitsContext(ast, context, ContextItemKind::Cast, ast::NoId, &cast))
@@ -1018,9 +1025,9 @@ namespace rift::editor::Graph
 			MenuEntry entry;
 			entry.kind = ContextItemKind::Cast;
 			entry.cast = cast;
-			entry.AddKeyword("Cast");
-			entry.AddKeyword(String{ast::GetName(ast, cast.fromType).AsString()});
-			entry.AddKeyword(String{ast::GetName(ast, cast.toType).AsString()});
+			entry.keywords.Add("Cast");
+			entry.keywords.Add(ast::GetName(ast, cast.fromType).AsString());
+			entry.keywords.Add(ast::GetName(ast, cast.toType).AsString());
 			cache.AddEntry(p::Move(entry), casts);
 		}
 	}
@@ -1053,13 +1060,20 @@ namespace rift::editor::Graph
 	// Filters and scores the cached entries and orders the categories
 	static void FilterMenuCache(MenuCache& cache, const ImGuiTextFilter& filter)
 	{
-		const bool isSearching  = filter.IsActive();
-		const SearchQuery query = ParseSearch(filter.InputBuf);
+		// Parse the search only when it changes
+		const StringView search = filter.InputBuf;
+		if (search != cache.searchText)
+		{
+			cache.searchText.clear();
+			cache.searchText += search;
+			ParseSearch(cache.searchText.AsView(), cache.query);
+		}
 
+		const bool isSearching = filter.IsActive();
 		for (MenuEntry& entry : cache.entries)
 		{
-			entry.isVisible = !isSearching || MatchesSearch(query, entry.keywords);
-			entry.score     = entry.isVisible ? ScoreSearch(query, entry.keywords) : 0;
+			entry.isVisible = !isSearching || MatchesSearch(cache.query, entry.keywords);
+			entry.score     = entry.isVisible ? ScoreSearch(cache.query, entry.keywords) : 0;
 		}
 
 		// Categories collect their contents bottom-up, so children are scored first
@@ -1131,15 +1145,25 @@ namespace rift::editor::Graph
 	static void DrawMenuEntry(ast::Tree& ast, Id typeId, const MenuContext& context,
 	    const MenuEntry& entry, bool highlighted)
 	{
+		StringView label = entry.label;
+		if (entry.kind == ContextItemKind::UnaryOperator
+		    || entry.kind == ContextItemKind::BinaryOperator)
+		{
+			// Operators show both of their names together
+			static String operatorLabel;
+			operatorLabel.clear();
+			p::FormatTo(operatorLabel, "{}   ({})", entry.keywords[0], entry.keywords[1]);
+			label = operatorLabel.AsView();
+		}
+
 		bool pressed = false;
 		switch (entry.kind)
 		{
 			case ContextItemKind::Function:
-				pressed = ContextFunctionItem(ast, entry.id, entry.label.AsView(), highlighted);
+				pressed = ContextFunctionItem(ast, entry.id, label, highlighted);
 				break;
 			case ContextItemKind::Literal:
-				pressed = ContextConstructItem(
-				    entry.label.AsView(), entry.id, entry.background, highlighted);
+				pressed = ContextConstructItem(label, entry.id, entry.background, highlighted);
 				break;
 			case ContextItemKind::Cast:
 				pressed = ContextCastItem(ast, entry.cast, highlighted);
@@ -1150,8 +1174,7 @@ namespace rift::editor::Graph
 			case ContextItemKind::Variable:
 			case ContextItemKind::UnaryOperator:
 			case ContextItemKind::BinaryOperator:
-				pressed =
-				    ContextItem(entry.label.AsView(), entry.id, entry.background, highlighted);
+				pressed = ContextItem(label, entry.id, entry.background, highlighted);
 				break;
 		}
 		if (pressed)
