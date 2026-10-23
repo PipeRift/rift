@@ -11,6 +11,7 @@
 #include "Utils/EditorStyle.h"
 #include "Utils/FunctionGraphContextMenu.h"
 #include "Utils/Nodes.h"
+#include "Utils/TypeUtils.h"
 #include "Utils/Widgets.h"
 
 #include <AST/Utils/Expressions.h>
@@ -148,6 +149,10 @@ namespace rift::editor
 		    (selected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf);
 		if (UI::IsItemHovered() && UI::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 		{
+			// Open the file that owns the function, then select and reveal its node
+			OpenType(ast, typeId);
+			Nodes::ClearNodeSelection();
+			Nodes::SelectNode(id);
 			Nodes::MoveToNode(id, v2{150.f, 150.f});
 		}
 		else if (UI::IsItemClicked())
@@ -185,9 +190,9 @@ namespace rift::editor
 			UI::PopStyleVar();
 			if (showTable)
 			{
-				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.45f);
-				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.25f);
-				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.30f);
+				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.38f);
+				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.38f);
+				ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch, 0.24f);
 				for (ast::Id child : variableIds)
 				{
 					if (scope.Has<ast::CDeclVariable>(child))
