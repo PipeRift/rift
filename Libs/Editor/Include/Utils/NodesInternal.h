@@ -412,6 +412,13 @@ namespace rift::Nodes
 	};
 
 
+	// A node dragged along with the primary node, and its origin relative to it
+	struct NodeDragOrigin
+	{
+		ast::Id id;
+		v2 origin;
+	};
+
 	struct EditorContext
 	{
 		NodeArray<NodeData> nodes;
@@ -429,8 +436,8 @@ namespace rift::Nodes
 		TArray<ast::Id> selectedNodeIds;
 		ImVector<i32> selectedLinkIndices;
 
-		// Relative origins of selected nodes for snapping of dragged nodes
-		ImVector<v2> SelectedNodeOrigins;
+		// Nodes dragged along with the primary node, recorded when the drag starts
+		ImVector<NodeDragOrigin> DragOrigins;
 		// Offset of the primary node origin relative to the mouse cursor.
 		v2 PrimaryNodeOffset;
 
