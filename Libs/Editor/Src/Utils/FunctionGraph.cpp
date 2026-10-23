@@ -271,7 +271,6 @@ namespace rift::editor::Graph
 
 	void EndNode(const ast::TransactionScope& scope)
 	{
-		// Selection outline
 		const auto* context = Nodes::GetCurrentContext();
 		if (Nodes::IsNodeSelected(context->currentNodeId))
 		{
@@ -548,7 +547,6 @@ namespace rift::editor::Graph
 					}
 					Nodes::EndNodeTitleBar();
 
-					// Inputs
 					UI::BeginGroup();
 					if (const auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
 					{
@@ -557,7 +555,6 @@ namespace rift::editor::Graph
 					UI::EndGroup();
 					UI::SameLine();
 
-					// Outputs
 					UI::BeginGroup();
 					if (const auto* outputs = scope.TryGet<const ast::CExprOutputs>(id))
 					{
@@ -569,6 +566,94 @@ namespace rift::editor::Graph
 				PopNodeTitleColor();
 				PopNodeBackgroundColor();
 			}
+		}
+	}
+
+	using AssignsScope = TIdScopeRef<Writes<ast::CChanged, ast::CFileDirty, CNodePosition>,
+	    ast::CChild, ast::CFileRef, ast::CStmtAssign, ast::CExprInputs, ast::CExprOutputs,
+	    ast::CNamespace, ast::CExprTypeId, ast::CInvalid, ast::CDeclVariable>;
+
+	void DrawAssigns(AssignsScope scope, const TArray<ast::Id>& children)
+	{
+		for (ast::Id id : FindIdsWith<ast::CStmtAssign>(scope, children))
+		{
+			const auto* assign = scope.TryGet<const ast::CStmtAssign>(id);
+			if (!assign)
+			{
+				continue;
+			}
+			const ast::Id variableId = assign->declarationId;
+
+			StringView name = "Invalid";
+			ast::Id typeId  = ast::NoId;
+			if (const auto* variable = scope.TryGet<const ast::CDeclVariable>(variableId))
+			{
+				typeId = variable->typeId;
+			}
+			if (scope.IsValid(variableId) && scope.Has<ast::CNamespace>(variableId))
+			{
+				name = scope.Get<const ast::CNamespace>(variableId).name.AsString();
+			}
+
+			const Color typeColor =
+			    GetTypeColor(static_cast<ast::Tree&>(scope.GetContext()), typeId);
+			PushNodeBackgroundColor(typeColor.Shade(0.25f));
+			PushNodeTitleColor(typeColor);
+			BeginNode(scope, id);
+			{
+				Nodes::BeginNodeTitleBar();
+				{
+					PushExecutionPinStyle();
+
+					Nodes::BeginInput(i32(id.value), Nodes::PinShape_TriangleFilled);
+					UI::TextUnformatted("");
+					Nodes::EndInput();
+					UI::SameLine();
+
+					UI::BeginGroup();
+					UI::TextUnformatted(name.data());
+					UI::EndGroup();
+
+					UI::SameLine();
+					Nodes::BeginOutput(i32(id.value), Nodes::PinShape_TriangleFilled);
+					UI::TextUnformatted("");
+					Nodes::EndOutput();
+
+					PopExecutionPinStyle();
+				}
+				Nodes::EndNodeTitleBar();
+
+				UI::BeginGroup();
+				if (const auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
+				{
+					if (!inputs->pinIds.IsEmpty())
+					{
+						const ast::Id valueInId = inputs->pinIds[0];
+						const bool invalid      = scope.Has<ast::CInvalid>(valueInId);
+						BeginExprInput(scope, valueInId, invalid);
+						UI::TextUnformatted("");
+						EndExprInput(invalid);
+					}
+				}
+				UI::EndGroup();
+				UI::SameLine();
+
+				UI::BeginGroup();
+				if (const auto* outputs = scope.TryGet<const ast::CExprOutputs>(id))
+				{
+					for (ast::Id pinId : outputs->pinIds)
+					{
+						const bool pinInvalid = scope.Has<ast::CInvalid>(pinId);
+						BeginExprOutput(scope, pinId, pinInvalid);
+						UI::TextUnformatted("");
+						EndExprOutput(pinInvalid);
+					}
+				}
+				UI::EndGroup();
+			}
+			EndNode(scope);
+			PopNodeTitleColor();
+			PopNodeBackgroundColor();
 		}
 	}
 
@@ -804,7 +889,6 @@ namespace rift::editor::Graph
 				}
 				Nodes::EndNodeTitleBar();
 
-				// Inputs
 				UI::BeginGroup();
 				{
 					auto& inputs = scope.Get<const ast::CExprInputs>(id);
@@ -822,7 +906,6 @@ namespace rift::editor::Graph
 				UI::EndGroup();
 				UI::SameLine();
 
-				// Outputs
 				UI::BeginGroup();
 				{
 					auto& outputs = scope.Get<const ast::CExprOutputs>(id);
@@ -1156,12 +1239,12 @@ namespace rift::editor::Graph
 				TArray<ast::Id> children;
 				p::GetIdChildren(ast, typeId, children);
 
-				// Nodes
 				DrawFunctionDecls(ast, FindIdsWith<ast::CDeclFunction>(ast, children));
 				DrawReturns(ast, children);
 				DrawCalls(ast, typeId, children);
 				DrawLiterals(ast, children);
 				DrawVariableRefs(ast, children);
+				DrawAssigns(ast, children);
 
 				DrawIfs(ast, children);
 				DrawFors(ast, children);
@@ -1169,7 +1252,6 @@ namespace rift::editor::Graph
 				DrawBinaryOperators(ast, children);
 				DrawCasts(ast, children);
 
-				// Links
 				DrawStatementLinks(ast, children);
 				DrawExpressionLinks(ast, children);
 
@@ -1318,7 +1400,6 @@ namespace rift::editor::Graph
 				}
 			}
 
-			// Show the hovered pin's type in a tooltip
 			Nodes::Id hoveredPinId;
 			Nodes::PinType hoveredPinType;
 			if (Nodes::GetHoveredPin(hoveredPinId, hoveredPinType))
@@ -1382,7 +1463,6 @@ namespace rift::editor::Graph
 			}
 			DrawContextMenu(ast, typeId, typeEditor.menuContext);
 
-			// Forget the pin that was dropped once the menu goes away
 			if (!ImGui::IsPopupOpen("ContextMenu"))
 			{
 				typeEditor.menuContext = {};
