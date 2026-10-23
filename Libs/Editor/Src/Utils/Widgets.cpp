@@ -32,8 +32,9 @@ namespace rift::editor
 			ImVec2 rowMax;
 			const bool pressed = UI::SelectableRow("###Type", rowMin, rowMax,
 			    p::LinearColor::Transparent(), rowHeight, id == selectedId);
-			// The chip is a non-interactive item, so the dropdown grows to fit it
-			UI::SameLine(0.f, 0.f);
+			// The chip is a non-interactive item laid over the row, so the dropdown grows
+			// to fit it
+			UI::SetCursorScreenPos(ImVec2{rowMin.x + UI::chipPadding, rowMin.y});
 			UI::Chip(name, GetTypeColor(ast, id), icon.empty() ? nullptr : icon.data());
 			UI::PopID();
 			if (pressed)
@@ -46,7 +47,7 @@ namespace rift::editor
 	bool TypeCombo(p::TIdScopeRef<ast::CNamespace, ast::CDeclType, ast::CDeclNative,
 	                   ast::CDeclStruct, ast::CDeclClass>
 	                   scope,
-	    p::StringView label, ast::Id& selectedId, bool selectedAsChip, bool showCategories)
+	    p::StringView label, ast::Id& selectedId, TypeComboFlags flags)
 	{
 		p::Tag ownerName;
 		if (!IsNone(selectedId))
@@ -55,17 +56,16 @@ namespace rift::editor
 		}
 		const StringView ownerDisplayName = ownerName.AsString();
 
-		// The selected type can be drawn as a chip inside the combo
-		const bool previewAsChip = selectedAsChip && !IsNone(selectedId);
-		ImGuiComboFlags flags    = previewAsChip ? ImGuiComboFlags_CustomPreview : 0;
+		const bool selectedAsChip = p::HasFlag(flags, TypeComboFlags::SelectedAsChip);
+		const bool showCategories = p::HasFlag(flags, TypeComboFlags::ShowCategories);
+		const bool previewAsChip  = selectedAsChip && !IsNone(selectedId);
 
 		ast::Tree& ast                = static_cast<ast::Tree&>(scope.GetContext());
 		const StringView selectedIcon = previewAsChip ? GetTypeIcon(ast, selectedId) : StringView{};
 
 		ast::Id lastId = selectedId;
-		const bool open =
-		    UI::BeginCombo(label.data(), previewAsChip ? nullptr : ownerDisplayName.data(), flags);
-		if (open)
+		if (UI::BeginCombo(label.data(), previewAsChip ? nullptr : ownerDisplayName.data(),
+		        previewAsChip ? ImGuiComboFlags_CustomPreview : 0))
 		{
 			static ImGuiTextFilter filter;
 			if (UI::IsWindowAppearing())
@@ -75,57 +75,32 @@ namespace rift::editor
 			UI::SetNextItemWidth(-FLT_MIN);
 			filter.Draw("##Filter");
 
-			auto nativeIds =
-			    p::FindAllIdsWith<ast::CDeclType, ast::CDeclNative, ast::CNamespace>(scope);
-			auto structIds =
-			    p::FindAllIdsWith<ast::CDeclType, ast::CDeclStruct, ast::CNamespace>(scope);
-			auto classIds =
-			    p::FindAllIdsWith<ast::CDeclType, ast::CDeclClass, ast::CNamespace>(scope);
+			TArray<ast::Id> typeIds = p::FindAllIdsWith<ast::CDeclType, ast::CNamespace>(scope);
 			if (!showCategories)
 			{
-				// A flat list of every type, sorted by name
-				p::TArray<ast::Id> typeIds;
-				typeIds.Append(nativeIds);
-				typeIds.Append(structIds);
-				typeIds.Append(classIds);
-				typeIds.Sort([&scope](ast::Id a, ast::Id b)
-				{
-					return scope.Get<const ast::CNamespace>(a).name.AsString()
-					     < scope.Get<const ast::CNamespace>(b).name.AsString();
-				});
 				ListTypesFromFilter(scope, typeIds, selectedId, filter);
-			}
-			else if (filter.IsActive())
-			{
-				if (UI::TreeNodeEx("Native##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					ListTypesFromFilter(scope, nativeIds, selectedId, filter);
-					UI::TreePop();
-				}
-				if (UI::TreeNodeEx("Structs##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					ListTypesFromFilter(scope, structIds, selectedId, filter);
-					UI::TreePop();
-				}
-				if (UI::TreeNodeEx("Classes##Filtered", ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					ListTypesFromFilter(scope, classIds, selectedId, filter);
-					UI::TreePop();
-				}
 			}
 			else
 			{
+				// Ordered by expected quantities
+				TArray<ast::Id> structIds = ExtractIdsWith<ast::CDeclStruct>(scope, typeIds);
+				TArray<ast::Id> classIds  = ExtractIdsWith<ast::CDeclClass>(scope, typeIds);
+				ExcludeIdsWithout<ast::CDeclNative>(scope, typeIds);
+
+				// Categories stay open while searching
+				const ImGuiTreeNodeFlags categoryFlags =
+				    filter.IsActive() ? ImGuiTreeNodeFlags_DefaultOpen : 0;
 				if (UI::TreeNodeEx("Native", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					ListTypesFromFilter(scope, nativeIds, selectedId, filter);
+					ListTypesFromFilter(scope, typeIds, selectedId, filter);
 					UI::TreePop();
 				}
-				if (UI::TreeNode("Structs"))
+				if (UI::TreeNodeEx("Structs", categoryFlags))
 				{
 					ListTypesFromFilter(scope, structIds, selectedId, filter);
 					UI::TreePop();
 				}
-				if (UI::TreeNode("Classes"))
+				if (UI::TreeNodeEx("Classes", categoryFlags))
 				{
 					ListTypesFromFilter(scope, classIds, selectedId, filter);
 					UI::TreePop();
