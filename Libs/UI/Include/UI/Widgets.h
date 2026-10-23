@@ -116,4 +116,32 @@ namespace rift::UI
 
 	bool CollapsingHeaderWithButton(p::StringView label, ImGuiTreeNodeFlags flags,
 	    bool& buttonClicked, p::StringView buttonLabel, p::v2 buttonSize = p::v2(18.f, 14.f));
+
+
+	// Rounding, padding and spacing shared by chips
+	inline constexpr float chipRounding = 2.f;
+	inline constexpr float chipPadding  = 4.f;
+	inline constexpr float chipSpacing  = 4.f;
+
+	// Draws text centered on a row, advancing 'x'
+	void DrawChipText(ImDrawList& drawList, float& x, float centerY, p::StringView text);
+
+	// Draws a name over a rounded background of its color, with an optional icon. Names
+	// are ellipsized to fit 'maxWidth'
+	void DrawChip(ImDrawList& drawList, float& x, float centerY, p::StringView name,
+	    const p::Color& color, const char* icon = nullptr, float maxWidth = FLT_MAX);
+
+	// Draws a chip as a non-interactive item: it takes layout space but has no id, so it
+	// can't be clicked or navigated
+	void Chip(p::StringView name, const p::Color& color, const char* icon = nullptr,
+	    float maxWidth = FLT_MAX);
+
+	// Total width of a chip with the given name and optional icon
+	float CalcChipWidth(p::StringView name, const char* icon = nullptr);
+
+	// Draws a selectable row, painting 'background' behind content drawn on top.
+	// Highlighted rows draw as if hovered. 'label' must be zero-terminated
+	bool SelectableRow(p::StringView label, ImVec2& outMin, ImVec2& outMax,
+	    const p::LinearColor& background = p::LinearColor::Transparent(), float height = 16.f,
+	    bool highlighted = false);
 }    // namespace rift::UI
