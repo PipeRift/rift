@@ -1,9 +1,12 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
+#include <AST/Components/Declarations.h>
 #include <AST/Systems/FunctionsSystem.h>
+#include <AST/Systems/TypeSystem.h>
 #include <AST/Tree.h>
 #include <AST/Utils/Statements.h>
 #include <AST/Utils/TypeUtils.h>
+#include <ASTModule.h>
 #include <PipeTest.h>
 
 
@@ -203,5 +206,116 @@ P_SPEC("AST.Statements", []()
 		{
 			Expect(ast.IsValid(inputs->pinIds[0])).ToBeTrue();
 		}
+	});
+
+	It("Creates assignments with execution and value pins", []()
+	{
+		ast::Tree ast;
+
+		ast::Id variableId = ast::AddVariable({ast, ast::NoId}, "MyVar");
+		ast::Id assignId   = ast::AddAssign({ast, ast::NoId}, variableId);
+
+		Expect(ast.Has<ast::CStmtAssign>(assignId)).ToBeTrue();
+		Expect(ast.Get<ast::CStmtAssign>(assignId).declarationId).ToEqual(variableId);
+
+		Expect(ast.Has<ast::CStmtInput>(assignId)).ToBeTrue();
+		Expect(ast.Has<ast::CStmtOutput>(assignId)).ToBeTrue();
+
+		const auto* inputs = ast.TryGet<const ast::CExprInputs>(assignId);
+		Expect(inputs != nullptr).ToBeTrue();
+		Expect(inputs->pinIds.Size()).ToEqual(1u);
+		const auto* outputs = ast.TryGet<const ast::CExprOutputs>(assignId);
+		Expect(outputs != nullptr).ToBeTrue();
+		Expect(outputs->pinIds.Size()).ToEqual(1u);
+	});
+
+	It("Connects assignments to other statements", []()
+	{
+		ast::Tree ast;
+
+		ast::Id functionId = ast::AddFunction({ast, ast::NoId}, "TestFunction");
+		ast::Id variableId = ast::AddVariable({ast, ast::NoId}, "MyVar");
+		ast::Id assignId   = ast::AddAssign({ast, ast::NoId}, variableId);
+		ast::Id callId     = ast::AddCall({ast, ast::NoId}, functionId);
+
+		Expect(ast::TryConnectStmt(ast, functionId, assignId)).ToBeTrue();
+		Expect(ast::TryConnectStmt(ast, assignId, callId)).ToBeTrue();
+
+		Expect(ast.Get<ast::CStmtInput>(assignId).linkOutputNode).ToEqual(functionId);
+		Expect(ast.Get<ast::CStmtOutput>(assignId).linkInputNode).ToEqual(callId);
+	});
+
+	It("Propagates the type of the variable to the assignment pins", []()
+	{
+		ast::Tree ast;
+
+		ast::Id variableId = ast::AddVariable({ast, ast::NoId}, "MyVar");
+		ast.Get<ast::CDeclVariable>(variableId).typeId = ast.GetNativeTypes().i32Id;
+		ast::Id assignId = ast::AddAssign({ast, ast::NoId}, variableId);
+
+		ast::TypeSystem::PropagateTypes(ast);
+
+		const auto& inputs       = ast.Get<const ast::CExprInputs>(assignId);
+		const auto& outputs      = ast.Get<const ast::CExprOutputs>(assignId);
+		const ast::Id valueInId  = inputs.pinIds[0];
+		const ast::Id valueOutId = outputs.pinIds[0];
+
+		Expect(ast.Get<ast::CExprTypeId>(valueInId).id).ToEqual(ast.GetNativeTypes().i32Id);
+		Expect(ast.Get<ast::CExprTypeId>(valueOutId).id).ToEqual(ast.GetNativeTypes().i32Id);
+	});
+
+	It("Does not type the execution pins of an assignment", []()
+	{
+		ast::Tree ast;
+
+		ast::Id variableId = ast::AddVariable({ast, ast::NoId}, "MyVar");
+		ast.Get<ast::CDeclVariable>(variableId).typeId = ast.GetNativeTypes().i32Id;
+		ast::Id assignId = ast::AddAssign({ast, ast::NoId}, variableId);
+
+		ast::TypeSystem::PropagateTypes(ast);
+
+		// The node is the execution pin, so it must not be typed as an expression
+		Expect(ast.Has<ast::CExprTypeId>(assignId)).ToBeFalse();
+		Expect(ast.Has<ast::CExprType>(assignId)).ToBeFalse();
+	});
+
+	It("Serializes assignments", []()
+	{
+		ast::Tree ast;
+		const ast::Id typeId     = ast::CreateType(ast, ASTModule::classType, "TestClass");
+		const ast::Id variableId = ast::AddVariable({ast, typeId}, "MyVar");
+		ast.Get<ast::CDeclVariable>(variableId).typeId = ast.GetNativeTypes().i32Id;
+		const ast::Id assignId                         = ast::AddAssign({ast, typeId}, variableId);
+
+		ast::TypeSystem::PropagateTypes(ast);
+
+		p::String data;
+		ast::SerializeType(ast, typeId, data);
+
+		// Load the type back into a new tree
+		ast::Tree loaded;
+		const ast::Id loadedTypeId = ast::CreateType(loaded, ASTModule::classType, "TestClass");
+		ast::DeserializeType(loaded, loadedTypeId, data);
+
+		TArray<ast::Id> children;
+		p::GetIdChildren(loaded, loadedTypeId, children);
+		ast::Id loadedAssignId = ast::NoId;
+		for (ast::Id id : children)
+		{
+			if (loaded.Has<ast::CStmtAssign>(id))
+			{
+				loadedAssignId = id;
+			}
+		}
+		Expect(loadedAssignId != ast::NoId).ToBeTrue();
+		if (loadedAssignId == ast::NoId)
+		{
+			return;
+		}
+
+		const ast::Id loadedVariableId = loaded.Get<ast::CStmtAssign>(loadedAssignId).declarationId;
+		Expect(loaded.IsValid(loadedVariableId)).ToBeTrue();
+		Expect(loaded.Get<ast::CNamespace>(loadedVariableId).name.AsString().data())
+		    .ToEqual("MyVar");
 	});
 });

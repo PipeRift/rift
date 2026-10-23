@@ -47,7 +47,6 @@ namespace rift::editor
 	{
 		fileWatcher.StartWatchingAsync();
 
-		// Setup window
 		p::Info("Initializing editor...");
 		if (!rift::UI::Init())
 		{
@@ -59,7 +58,6 @@ namespace rift::editor
 		// Don't write an imgui.ini in the working directory while no project is open.
 		ImGui::GetIO().IniFilename = nullptr;
 
-		// Open a project if a path has been provided
 		OpenProject(projectPath, false);
 
 		while (!UI::WantsToClose())
@@ -75,7 +73,6 @@ namespace rift::editor
 			frameTime.PostTick();
 		}
 
-		// Close the current project (if any)
 		CloseProject();
 
 		Graph::Shutdown();
@@ -108,12 +105,11 @@ namespace rift::editor
 			ast::FunctionsSystem::HealGraph(ast);
 
 			EditorSystem::Draw(ast);
-			ast::TypeSystem::PropagateVariableTypes(ast);
 			ast::FunctionsSystem::PropagateDirtyIntoCalls(ast);
 			ast::FunctionsSystem::PushInvalidPinsBack(ast);
 			ast::FunctionsSystem::SyncCallPinsFromFunction(ast);
 			ast::FunctionsSystem::SyncReturnPinsFromFunction(ast);
-			ast::TypeSystem::PropagateExpressionTypes(ast);
+			ast::TypeSystem::PropagateTypes(ast);
 		}
 		else
 		{
@@ -168,7 +164,6 @@ namespace rift::editor
 			auto projectPath = ast::GetProjectPath(ast);
 			SetUIConfigFile(p::JoinPaths(projectPath, "Saved/UI.ini"));
 
-			// Start watching the project folder for file changes
 			ast.Add(GetProjectId(ast), fileWatcher.ListenPath(projectPath, true,
 			                               [](FileWatchId id, StringView path, StringView filename,
 			                                   FileWatchAction action, StringView oldFilename)

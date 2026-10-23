@@ -535,6 +535,11 @@ namespace rift::MIR
 				AddCall(id, *call);
 				code->append(";\n");
 			}
+			else if (scope.Has<const ast::CStmtAssign>(id))
+			{
+				// Not generated: report instead of dropping the statement
+				compiler.Error("Variable assignments are not supported yet");
+			}
 		}
 
 		if (splitId != ast::NoId)
@@ -608,6 +613,10 @@ namespace rift::MIR
 		else if (const auto* binary = scope.TryGet<const ast::CExprBinaryOperator>(output.nodeId))
 		{
 			AddBinaryOperator(output.nodeId, *binary);
+		}
+		else if (scope.Has<const ast::CStmtAssign>(output.nodeId))
+		{
+			compiler.Error("Variable assignments are not supported yet");
 		}
 		else if (scope.Has<ast::CExprCast>(output.nodeId))
 		{

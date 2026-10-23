@@ -5,6 +5,7 @@
 #include "AST/Components/CModule.h"
 #include "AST/Components/Declarations.h"
 #include "AST/Components/Expressions.h"
+#include "AST/Components/Statements.h"
 #include "AST/Components/Tags/CChanged.h"
 
 #include <PipeECS.h>
@@ -21,13 +22,12 @@ namespace rift::ast::TypeSystem
 
 	void SyncTypesByPath(p::TIdScopeRef<CDeclType, CFileRef> scope);
 
-	using PropagateVariableTypesScope =
-	    p::TIdScopeRef<p::Writes<CExprTypeId>, CExprDeclRefId, CDeclVariable>;
-	void PropagateVariableTypes(PropagateVariableTypesScope scope);
-
-	using PropagateExpressionTypesScope = p::TIdScopeRef<p::Writes<CExprTypeId>, CDeclType,
-	    CChanged, CExprInputs, CExprOutputs, CExprUnaryOperator, CExprBinaryOperator, p::CParent>;
-	void PropagateExpressionTypes(PropagateExpressionTypesScope scope);
+	using PropagateTypesScope = p::TIdScopeRef<p::Writes<CExprTypeId, CStmtAssign>, CExprDeclRefId,
+	    CDeclVariable, CExprInputs, CExprOutputs, CExprUnaryOperator, CExprBinaryOperator,
+	    CDeclType, CChanged, p::CParent>;
+	// Propagates the type of every expression from the variable it references or assigns and
+	// from the expressions it is connected to. Operators pass on the first type they receive.
+	void PropagateTypes(PropagateTypesScope scope);
 
 	void ResolveExprTypeIds(p::TIdScopeRef<p::Writes<CExprTypeId>, CExprType, CNamespace,
 	    p::CParent, p::CChild, CModule, CDeclNative>

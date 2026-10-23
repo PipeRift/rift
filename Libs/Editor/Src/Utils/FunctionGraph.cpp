@@ -735,6 +735,71 @@ namespace rift::editor::Graph
 	}
 
 
+	using AssignsScope = TIdScopeRef<Writes<ast::CChanged, ast::CFileDirty, CNodePosition>,
+	    ast::CChild, ast::CFileRef, ast::CStmtAssign, ast::CExprInputs, ast::CExprOutputs,
+	    ast::CNamespace, ast::CExprTypeId, ast::CInvalid, ast::CDeclVariable>;
+
+	// Assigns the value of an expression to a variable
+	void DrawAssigns(AssignsScope scope, const TArray<ast::Id>& children)
+	{
+		for (ast::Id id : FindIdsWith<ast::CStmtAssign>(scope, children))
+		{
+			const auto* assign = scope.TryGet<const ast::CStmtAssign>(id);
+			if (!assign)
+			{
+				continue;
+			}
+			const ast::Id variableId = assign->declarationId;
+
+			StringView name = "Invalid";
+			ast::Id typeId  = ast::NoId;
+			if (const auto* variable = scope.TryGet<const ast::CDeclVariable>(variableId))
+			{
+				typeId = variable->typeId;
+			}
+			if (scope.IsValid(variableId) && scope.Has<ast::CNamespace>(variableId))
+			{
+				name = scope.Get<const ast::CNamespace>(variableId).name.AsString();
+			}
+
+			const Color typeColor =
+			    GetTypeColor(static_cast<ast::Tree&>(scope.GetContext()), typeId);
+			PushNodeBackgroundColor(typeColor.Shade(0.25f));
+			PushNodeTitleColor(typeColor);
+			BeginNode(scope, id);
+			{
+				Nodes::BeginTitleBar();
+				{
+					AddStmtInput(id);
+					UI::TextUnformatted(name.data());
+					AddStmtOutput(id);
+				}
+				Nodes::EndTitleBar();
+
+				if (const auto* inputs = scope.TryGet<const ast::CExprInputs>(id))
+				{
+					if (!inputs->pinIds.IsEmpty())
+					{
+						const bool connected = !inputs->linkedOutputs[0].IsNone();
+						AddExprInput(scope, inputs->pinIds[0], "", connected);
+					}
+				}
+
+				if (const auto* outputs = scope.TryGet<const ast::CExprOutputs>(id))
+				{
+					for (ast::Id pinId : outputs->pinIds)
+					{
+						AddExprOutput(scope, pinId);
+					}
+				}
+			}
+			EndNode(scope);
+			PopNodeTitleColor();
+			PopNodeBackgroundColor();
+		}
+	}
+
+
 	void Init()
 	{
 		Nodes::CreateContext();
@@ -1213,6 +1278,7 @@ namespace rift::editor::Graph
 				DrawCalls(ast, typeId, children);
 				DrawLiterals(ast, children);
 				DrawVariableRefs(ast, children);
+				DrawAssigns(ast, children);
 
 				DrawIfs(ast, children);
 				DrawFors(ast, children);
