@@ -155,10 +155,18 @@ namespace rift::editor::Graph
 		For,
 		Function,
 		Variable,
+		VariableAssign,
 		UnaryOperator,
 		BinaryOperator,
 		Cast,
 	};
+
+	// Assignments are statements, so they are created dragging from an execution output pin
+	static bool IsExecutionContext(ast::Tree& ast, const MenuContext& context)
+	{
+		return context.HasSource() && !IsExprPin(ast, context.sourcePin)
+		    && context.type == Nodes::PinType::Output;
+	}
 
 	// Whether a character is matched through when searching
 	static bool IsSearchSeparator(char c)
@@ -580,6 +588,9 @@ namespace rift::editor::Graph
 					}
 				}
 				break;
+			case ContextItemKind::VariableAssign:
+				// Assignments are statements, so they need an execution context
+				return !isExpr && isOutput;
 			case ContextItemKind::UnaryOperator:
 			case ContextItemKind::BinaryOperator: return isExpr;
 			case ContextItemKind::Cast:
@@ -668,6 +679,30 @@ namespace rift::editor::Graph
 		return pressed;
 	}
 
+	// A variable of the context menu: the icon of its action, followed by the variable as a
+	// chip of its type
+	bool ContextVariableItem(StringView name, Id variableId, const Color& color, bool isSetter)
+	{
+		UI::PushID(variableId);
+		UI::PushID(isSetter);
+		ImVec2 itemMin;
+		ImVec2 itemMax;
+		const bool pressed =
+		    ContextChipRow("###Item", itemMin, itemMax, Color::Transparent(), 16.f, false);
+
+		UI::SetCursorScreenPos(ImVec2{itemMin.x + UI::chipPadding, itemMin.y});
+		UI::Chip(isSetter ? ICON_FA_SIGN_IN_ALT : ICON_FA_SIGN_OUT_ALT, Color::Transparent(),
+		    nullptr, FLT_MAX, UI::ChipFlags::None);
+		UI::SameLine(0.f, UI::chipSpacing);
+		UI::Chip(name, color);
+		UI::PopID();
+		UI::PopID();
+
+		UI::SetItemTooltip(
+		    "%s value of variable %.*s", isSetter ? "Set" : "Get", i32(name.size()), name.data());
+		return pressed;
+	}
+
 	// A cast of the context menu: each type carries a rounded background of its own color
 	bool ContextCastItem(ast::Tree& ast, const ast::Cast& cast, bool highlighted = false)
 	{
@@ -690,6 +725,9 @@ namespace rift::editor::Graph
 		UI::Chip(toName, GetTypeColor(ast, cast.toType));
 		UI::PopID();
 		UI::PopID();
+
+		UI::SetItemTooltip("Cast %.*s into %.*s", i32(fromName.size()), fromName.data(),
+		    i32(toName.size()), toName.data());
 		return pressed;
 	}
 
@@ -771,6 +809,8 @@ namespace rift::editor::Graph
 		UI::SameLine(0.f, UI::chipSpacing);
 		UI::Chip(typeName, color);
 		UI::PopID();
+
+		UI::SetItemTooltip("Make a new value of %.*s", i32(typeName.size()), typeName.data());
 		return pressed;
 	}
 
@@ -899,18 +939,36 @@ namespace rift::editor::Graph
 			}
 			else if (ast.Has<ast::CDeclVariable>(childId))
 			{
-				if (!FitsContext(ast, context, ContextItemKind::Variable, childId))
+				const auto* variable   = ast.TryGet<const ast::CDeclVariable>(childId);
+				const Color color      = GetTypeColor(ast, variable ? variable->typeId : ast::NoId);
+				const bool isExecution = IsExecutionContext(ast, context);
+
+				// Assignments are created from an execution pin or an empty canvas
+				if (!context.HasSource() || isExecution)
 				{
-					continue;
+					if (FitsContext(ast, context, ContextItemKind::VariableAssign, childId))
+					{
+						MenuEntry entry;
+						entry.kind       = ContextItemKind::VariableAssign;
+						entry.id         = childId;
+						entry.label      = childName;
+						entry.background = color;
+						entry.keywords.Add(childName);
+						entry.keywords.Add("Set");
+						cache.AddEntry(p::Move(entry), parent);
+					}
 				}
-				const auto* variable = ast.TryGet<const ast::CDeclVariable>(childId);
-				MenuEntry entry;
-				entry.kind       = ContextItemKind::Variable;
-				entry.id         = childId;
-				entry.label      = childName;
-				entry.background = GetTypeColor(ast, variable ? variable->typeId : ast::NoId);
-				entry.keywords.Add(childName);
-				cache.AddEntry(p::Move(entry), parent);
+				if (!isExecution && FitsContext(ast, context, ContextItemKind::Variable, childId))
+				{
+					MenuEntry entry;
+					entry.kind       = ContextItemKind::Variable;
+					entry.id         = childId;
+					entry.label      = childName;
+					entry.background = color;
+					entry.keywords.Add(childName);
+					entry.keywords.Add("Get");
+					cache.AddEntry(p::Move(entry), parent);
+				}
 			}
 			else
 			{
@@ -1130,6 +1188,9 @@ namespace rift::editor::Graph
 				// Attach to the edited type, not the variable's owning type
 				newId = ast::AddDeclarationReference({ast, typeId}, entry.id);
 				break;
+			case ContextItemKind::VariableAssign:
+				newId = ast::AddAssign({ast, typeId}, entry.id);
+				break;
 			case ContextItemKind::Literal:
 				// Attach to the edited type, not the literal's own type
 				newId = ast::AddLiteral({ast, typeId}, entry.id);
@@ -1168,10 +1229,15 @@ namespace rift::editor::Graph
 			case ContextItemKind::Cast:
 				pressed = ContextCastItem(ast, entry.cast, highlighted);
 				break;
+			case ContextItemKind::Variable:
+				pressed = ContextVariableItem(label, entry.id, entry.background, false);
+				break;
+			case ContextItemKind::VariableAssign:
+				pressed = ContextVariableItem(label, entry.id, entry.background, true);
+				break;
 			case ContextItemKind::Return:
 			case ContextItemKind::If:
 			case ContextItemKind::For:
-			case ContextItemKind::Variable:
 			case ContextItemKind::UnaryOperator:
 			case ContextItemKind::BinaryOperator:
 				pressed = ContextItem(label, entry.id, entry.background, highlighted);

@@ -22,14 +22,15 @@ namespace rift
 
 namespace rift::MIR
 {
-	// Defines a single ecs scope dfor the entire IR generation
+	// Scope covering everything IR generation reads and writes
 	using MIRScope = p::TIdScopeRef<p::Writes<CMIRType, CMIRFunctionSignature, CMIRLiteral>,
 	    ast::CStmtOutput, ast::CStmtOutputs, ast::CExprInputs, ast::CStmtFor, ast::CStmtIf,
 	    ast::CExprCallId, ast::CExprTypeId, ast::CExprOutputs, ast::CNamespace, ast::CDeclType,
 	    ast::CDeclVariable, ast::CDeclStruct, ast::CDeclClass, ast::CDeclStatic, ast::CParent,
 	    ast::CInvalid, ast::CChild, ast::CModule, ast::CLiteralBool, ast::CLiteralIntegral,
 	    ast::CLiteralFloating, ast::CLiteralString, ast::CDeclFunction, ast::CExprUnaryOperator,
-	    ast::CExprBinaryOperator, ast::CExprCast, ast::CGeneratedName, CDeclCStruct, CDeclCStatic>;
+	    ast::CExprBinaryOperator, ast::CStmtAssign, ast::CExprCast, ast::CGeneratedName,
+	    CDeclCStruct, CDeclCStatic>;
 
 	void GenerateC(Compiler& compiler);
 

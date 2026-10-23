@@ -56,6 +56,21 @@ namespace rift::ast
 	};
 
 
+	/** Assignment of a value to a variable.
+	 *
+	 * The assigned variable is referenced by the id of its declaration, the same way
+	 * variable getters reference theirs. The value to assign is read from the input pin,
+	 * or from the literal this statement stores when the pin is not connected.
+	 */
+	struct CStmtAssign
+	{
+		P_STRUCT(CStmtAssign)
+
+		P_PROP(declarationId)
+		p::Id declarationId = p::NoId;
+	};
+
+
 	/** Represents a return expression of a function
 	 * Return arguments are dynamically populated depending on the function this expression is
 	 * connected to.
