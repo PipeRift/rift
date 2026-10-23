@@ -14,7 +14,8 @@ namespace rift::editor
 	bool TypeCombo(p::TIdScopeRef<ast::CNamespace, ast::CDeclType, ast::CDeclNative,
 	                   ast::CDeclStruct, ast::CDeclClass>
 	                   scope,
-	    p::StringView label, ast::Id& selectedTypeId);
+	    p::StringView label, ast::Id& selectedTypeId, bool selectedAsChip = true,
+	    bool showCategories = false);
 
 	bool InputLiteralValue(ast::Tree& ast, p::StringView label, ast::Id literalId);
 }    // namespace rift::editor
