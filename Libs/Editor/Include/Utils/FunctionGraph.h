@@ -38,9 +38,6 @@ namespace rift::editor::Graph
 	inline Settings settings{};
 
 
-	void DrawLiteralBool(ast::Tree& ast, ast::Id id, bool& value);
-	void DrawLiteralString(ast::Tree& ast, ast::Id id, String& value);
-
 	void Init();
 	void Shutdown();
 

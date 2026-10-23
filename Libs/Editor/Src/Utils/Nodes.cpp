@@ -1,13 +1,5 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-// the structure of this file:
-//
-// [SECTION] bezier curve helpers
-// [SECTION] draw list helper
-// [SECTION] ui state logic
-// [SECTION] render helpers
-// [SECTION] API implementation
-
 #include "Utils/Nodes.h"
 
 #include "Statics/EditorSettings.h"
@@ -304,13 +296,9 @@ namespace rift::Nodes
 			return;
 		}
 
-		// NOTE: this logic has been lifted from ImDrawListSplitter::Split with slight
-		// modifications to allow nested splits. The main modification is that we only create
-		// new ImDrawChannel instances after splitter._Count, instead of over the whole
-		// splitter._Channels array like the regular ImDrawListSplitter::Split method does.
+		// Same as ImDrawListSplitter::Split, but growing the channels in smaller steps
 
-		const i32 oldChannelCapacity = splitter._Channels.Size;
-		// NOTE: _Channels is not resized down, and therefore _Count <= _Channels.size()!
+		const i32 oldChannelCapacity    = splitter._Channels.Size;
 		const i32 oldChannelCount       = splitter._Count;
 		const i32 requestedChannelCount = oldChannelCount + numChannels;
 		if (oldChannelCapacity < oldChannelCount + numChannels)
@@ -324,14 +312,11 @@ namespace rift::Nodes
 		{
 			ImDrawChannel& channel = splitter._Channels[i];
 
-			// If we're inside the old capacity region of the array, we need to reuse the
-			// existing memory of the command and index buffers.
 			if (i < oldChannelCapacity)
 			{
 				channel._CmdBuffer.resize(0);
 				channel._IdxBuffer.resize(0);
 			}
-			// Else, we need to construct new draw channels.
 			else
 			{
 				IM_PLACEMENT_NEW(&channel) ImDrawChannel();
@@ -381,24 +366,8 @@ namespace rift::Nodes
 		gNodes->nodeSubmissionOrder.clear();
 	}
 
-	// The draw list channels are structured as follows. First we have our base channel, the
-	// canvas grid on which we render the grid lines in BeginNodeEditor(). The base channel is
-	// the reason draw_list_submission_idx_to_background_channel_idx offsets the index by one.
-	// Each BeginNode() call appends two new draw channels, for the node background and
-	// foreground. The node foreground is the channel i32o which the node's ImGui content is
-	// rendered. Finally, in EndNodeEditor() we append one last draw channel for rendering the
-	// selection box and the incomplete link on top of everything else.
-	//
-	// +----------+----------+----------+----------+----------+----------+
-	// |          |          |          |          |          |          |
-	// |canvas    |node      |node      |...       |...       |click     |
-	// |grid      |background|foreground|          |          |i32eraction
-	// |          |          |          |          |          |          |
-	// +----------+----------+----------+----------+----------+----------+
-	//            |                     |
-	//            |   submission idx    |
-	//            |                     |
-	//            -----------------------
+	// Channels, from back to front: the canvas grid, two channels for each submitted node
+	// (background and content) and one last channel for the selection box and active link
 
 	void DrawListAddNode(ast::Id nodeId)
 	{
@@ -548,7 +517,10 @@ namespace rift::Nodes
 		const float pinOffset = gNodes->style.PinOffset * zoom;
 		const float x =
 		    type == PinType::Input ? (nodeRect.min.x - pinOffset) : (nodeRect.max.x + pinOffset);
-		return {x, 0.5f * (pinRect.min.y + pinRect.max.y)};
+		// Pins sit on the first grid tile of their block, so a pin with content below its
+		// label keeps the shape next to the label. A single line block is centered as a whole.
+		const float grid = gNodes->style.GridSpacing * zoom;
+		return {x, pinRect.min.y + ImMin(0.5f * pinRect.GetSize().y, 0.5f * grid)};
 	}
 
 	v2 GetScreenSpacePinCoordinates(const EditorContext& editor, PinType type, const PinData& pin)
@@ -568,23 +540,13 @@ namespace rift::Nodes
 
 	void BeginNodeSelection(EditorContext& editor, ast::Id nodeId)
 	{
-		// Don't start selecting a node if we are e.g. already creating and dragging
-		// a new link! New link creation can happen when the mouse is clicked over
-		// a node, but within the hover radius of a pin.
+		// A link can start being created over a node, within the hover radius of a pin
 		if (editor.clickInteraction.type != ClickInteractionType_None)
 		{
 			return;
 		}
 
 		editor.clickInteraction.type = ClickInteractionType_Node;
-		// If the node is not already contained in the selection, then we want only
-		// the i32eraction node to be selected, effective immediately.
-		//
-		// If the multiple selection modifier is active, we want to add this node
-		// to the current list of selected nodes.
-		//
-		// Otherwise, we want to allow for the possibility of multiple nodes to be
-		// moved at once.
 		if (!editor.selectedNodeIds.Contains(nodeId))
 		{
 			editor.selectedLinkIndices.clear();
@@ -1155,14 +1117,8 @@ namespace rift::Nodes
 		const float zoom              = GetZoom();
 		const float linkHoverDistance = gNodes->style.LinkHoverDistance * zoom;
 
-		// There are two ways a link can be detected as "hovered".
-		// 1. The link is within hover distance to the mouse. The closest such link is selected
-		// as being hovered over.
-		// 2. If the link is connected to the currently hovered pin.
-		//
-		// The latter is a requirement for link detaching with drag click to work, as both a
-		// link and pin are required to be hovered over for the feature to work.
-
+		// A link is hovered when it is close to the mouse, or when it is connected to the
+		// hovered pin. The latter is needed to detach links by dragging them from a pin
 		for (i32 idx = 0; idx < links.pool.Size(); ++idx)
 		{
 			if (!links.inUse.IsSet(idx))
@@ -1226,31 +1182,163 @@ namespace rift::Nodes
 		return {ImGui::GetItemRectMin(), ImGui::GetItemRectMax()};
 	}
 
-	v2 GetNodeTitleBarOrigin(const NodeData& node)
+	// [SECTION] node table layout
+	//
+	// A node is two tables of the same width: the header, which holds the title between the
+	// execution pins, and the body, which holds the pins. Cells are placed with the sizes
+	// measured on the last frame, so that all rows and columns line up in a single pass.
+
+	// The size of a grid tile in screen space
+	float GetNodeGridSize()
 	{
-		// LayoutStyle.Padding is in screen space, while Origin is in grid space.
-		return node.Origin + node.LayoutStyle.Padding / GetZoom();
+		return gNodes->style.GridSpacing * GetZoom();
 	}
 
-	v2 GetNodeContentOrigin(const NodeData& node)
+	float SnapToGrid(const float size)
 	{
-		const float zoom        = GetZoom();
-		const v2 titleBarHeight = v2(
-		    0.f, (node.TitleBarContentRect.GetSize().y + 2.0f * node.LayoutStyle.Padding.y) / zoom);
-		return node.Origin + titleBarHeight + node.LayoutStyle.Padding / zoom;
+		const float grid = GetNodeGridSize();
+		return grid > 0.f ? p::Ceil(size / grid) * grid : size;
 	}
 
-	Rect GetNodeTitleRect(const NodeData& node)
+	// Execution pins without a label take no width: the padding of the other cells is enough
+	float GetNodeCellWidth(const NodeRow_ row, const NodeColumn_ column)
 	{
-		Rect titleRect = node.TitleBarContentRect;
-		titleRect.Expand(node.LayoutStyle.Padding);
-		return titleRect;
+		const NodeLayout& layout = gNodes->nodeLayout;
+		const v2 content         = layout.prevCellContentSize[row][column];
+		if (content.y <= 0.f)
+		{
+			return 0.f;
+		}
+		return content.x > 0.f ? content.x + 2.f * layout.padding.x : 0.f;
+	}
+
+	float GetNodeRowHeight(const NodeRow_ row)
+	{
+		const NodeLayout& layout = gNodes->nodeLayout;
+		float height             = 0.f;
+		for (i32 c = 0; c < NodeColumn_COUNT; ++c)
+		{
+			height = ImMax(height, layout.prevCellContentSize[row][c].y);
+		}
+		return SnapToGrid(height);
+	}
+
+	void EndNodeCell()
+	{
+		NodeLayout& layout = gNodes->nodeLayout;
+		if (!layout.cellOpen)
+		{
+			return;
+		}
+		layout.cellOpen = false;
+
+		// Each cell owns exactly one ImGui group, so no group may span a cell boundary
+		assert(GImGui->GroupStack.Size == layout.groupDepth + 1);
+		while (GImGui->GroupStack.Size > layout.groupDepth)
+		{
+			ImGui::EndGroup();
+		}
+
+		const v2 contentSize = GetItemRect().GetSize();
+		if (contentSize.x <= 0.f && contentSize.y <= 0.f)
+		{
+			return;
+		}
+
+		// Blocks stack by grid slots, and the cell grows with them
+		layout.blockHeight[layout.row][layout.column] = contentSize.y;
+		layout.cellY[layout.column] +=
+		    ImMax(GetNodeGridSize(), layout.prevBlockHeight[layout.row][layout.column]);
+		v2& cellSize = layout.cellContentSize[layout.row][layout.column];
+		cellSize     = v2(ImMax(cellSize.x, contentSize.x), layout.cellY[layout.column]);
+	}
+
+	// A node that was not closed properly would have leaked its cell and its ImGui id
+	void CloseLeakedNode()
+	{
+		if (!gNodes->nodeLayout.nodeOpen)
+		{
+			return;
+		}
+		EndNodeCell();
+		ImGui::PopID();
+		gNodes->nodeLayout.nodeOpen = false;
+	}
+
+	void BeginNodeCell(const NodeColumn_ column)
+	{
+		NodeLayout& layout = gNodes->nodeLayout;
+		if (layout.cellOpen && layout.column == column)
+		{
+			return;
+		}
+		EndNodeCell();
+
+		assert(GImGui->GroupStack.Size == layout.groupDepth);
+
+		layout.column   = column;
+		layout.cellOpen = true;
+
+		// Outputs sit next to their pin, the title is centered and the rest start at the padding
+		float x = layout.padding.x;
+		if (column == NodeColumn_Outputs)
+		{
+			x = layout.nodeWidth - layout.padding.x
+			  - layout.prevCellContentSize[layout.row][column].x;
+		}
+		else if (column == NodeColumn_Name)
+		{
+			if (layout.row == NodeRow_Header)
+			{
+				const float titleWidth   = GetNodeCellWidth(NodeRow_Header, NodeColumn_Name);
+				const float inputsWidth  = GetNodeCellWidth(NodeRow_Header, NodeColumn_Inputs);
+				const float outputsWidth = GetNodeCellWidth(NodeRow_Header, NodeColumn_Outputs);
+				const float margin       = layout.padding.x;
+				const float centered     = (layout.nodeWidth - titleWidth) * 0.5f;
+				const float min          = inputsWidth + margin;
+				const float max          = layout.nodeWidth - outputsWidth - margin - titleWidth;
+				x                        = (min > max ? min : ImClamp(centered, min, max)) + margin;
+			}
+			else
+			{
+				x = GetNodeCellWidth(NodeRow_Body, NodeColumn_Inputs) + layout.padding.x;
+			}
+		}
+
+		// Rows stack, and the blocks of a column stack by grid slots, centered in them
+		float y = 0.f;
+		for (i32 r = 0; r < layout.row; ++r)
+		{
+			y += GetNodeRowHeight(NodeRow_(r));
+		}
+		const float blockHeight = layout.prevBlockHeight[layout.row][column];
+		const float slotHeight  = ImMax(GetNodeGridSize(), blockHeight);
+		y += layout.cellY[column] + (slotHeight - blockHeight) * 0.5f;
+
+		const v2 pos = layout.origin + v2(x, y);
+		ImGui::SetCursorScreenPos(pos);
+		ImGui::BeginGroup();
+		// A SameLine() would move the content out of the cell, so the line is pointed at it
+		ImGui::GetCurrentWindow()->DC.CursorPosPrevLine = pos;
+		// An empty cell has to measure zero instead of reaching back to the previous item
+		ImGui::ItemAdd(ImRect(pos, pos), 0);
+	}
+
+	void SetNodeRow(const NodeRow_ row)
+	{
+		EndNodeCell();
+
+		NodeLayout& layout = gNodes->nodeLayout;
+		layout.row         = row;
+		for (i32 i = 0; i < NodeColumn_COUNT; ++i)
+		{
+			layout.cellY[i] = 0.f;
+		}
 	}
 
 	void DrawGrid(EditorContext& editor, const v2& canvasSize)
 	{
-		// The grid is defined in grid space, so its screen (window-local) spacing scales with
-		// the zoom factor.
+		// The grid is defined in grid space, so its spacing scales with the zoom
 		const float spacing = gNodes->style.GridSpacing * GetZoom();
 		if (spacing <= 0.f)
 		{
@@ -1375,18 +1463,15 @@ namespace rift::Nodes
 
 		ImDrawList* drawList = gNodes->CanvasDrawList;
 
-		// Semi-transparent rounded background.
 		drawList->AddRectFilled(
 		    boxMin, boxMax, ImGui::GetColorU32(ImGuiCol_WindowBg, 0.8f * fade), boxRounding);
 		drawList->AddRect(boxMin, boxMax, ImGui::GetColorU32(ImGuiCol_Border, 0.8f * fade),
 		    boxRounding, ImDrawFlags_RoundCornersAll, 1.f);
 
-		// Track.
 		drawList->AddRectFilled(v2{trackX - trackHalf, trackTop},
 		    v2{trackX + trackHalf, trackBottom}, ImGui::GetColorU32(ImGuiCol_FrameBg, 0.9f * fade),
 		    trackHalf);
 
-		// Fill: empty at the bottom (min zoom) and full at the top (max zoom).
 		const float logMin  = logf(ZoomConfig().min);
 		const float logMax  = logf(ZoomConfig().max);
 		const float t       = Clamp((logf(GetZoom()) - logMin) / (logMax - logMin), 0.f, 1.f);
@@ -1396,7 +1481,6 @@ namespace rift::Nodes
 		    v2{trackX + trackHalf, trackBottom}, ImGui::GetColorU32(ImGuiCol_SliderGrab, fade),
 		    trackHalf);
 
-		// Handle.
 		drawList->AddCircleFilled(
 		    v2{trackX, fillTop}, 6.f, ImGui::GetColorU32(ImGuiCol_SliderGrabActive, fade), 16);
 	}
@@ -1427,15 +1511,7 @@ namespace rift::Nodes
 
 	TriangleOffsets CalculateTriangleOffsets(const float sideLength)
 	{
-		// Calculates the Vec2 offsets from an equilateral triangle's midpoint to
-		// its vertices. Here is how the left_offset and right_offset are
-		// calculated.
-		//
-		// For an equilateral triangle of side length s, the
-		// triangle's height, h, is h = s * sqrt(3) / 2.
-		//
-		// The length from the base to the midpoint is (1 / 3) * h. The length from
-		// the midpoint to the triangle vertex is (2 / 3) * h.
+		// Offsets of an equilateral triangle's vertices from its midpoint
 		const float sqrt3          = sqrtf(3.0f);
 		const float leftOffset     = -0.1666666666667f * sqrt3 * sideLength;
 		const float rightOffset    = 0.333333333333f * sqrt3 * sideLength;
@@ -1489,10 +1565,7 @@ namespace rift::Nodes
 				    CalculateTriangleOffsets(gNodes->style.PinTriangleSideLength * zoom);
 				gNodes->CanvasDrawList->AddTriangle(pinPos + offset.topLeft,
 				    pinPos + offset.bottomLeft, pinPos + offset.right, pinColor.ToPackedABGR(),
-				    // NOTE: for some weird reason, the line drawn by AddTriangle is
-				    // much thinner than the lines drawn by AddCircle or AddQuad.
-				    // Multiplying the line thickness by two seemed to solve the
-				    // problem at a few different thickness values.
+				    // AddTriangle draws thinner lines than AddCircle/AddQuad, so it is doubled
 				    2.f * lineThickness);
 			}
 			break;
@@ -1566,10 +1639,11 @@ namespace rift::Nodes
 			    nodeBackground.ToPackedABGR(), node.LayoutStyle.CornerRounding);
 
 			// title bar:
-			if (node.TitleBarContentRect.GetSize().y > 0.f)
+			if (node.rowHeight[NodeRow_Header] > 0.f)
 			{
-				Rect titleBarRect  = GetNodeTitleRect(node);
-				titleBarRect.max.x = node.rect.max.x;    // span the node's full width
+				// The header is the first row, so it always starts at the top of the node
+				const Rect titleBarRect = Rect(node.rect.min,
+				    v2(node.rect.max.x, node.rect.min.y + node.rowHeight[NodeRow_Header]));
 
 				gNodes->CanvasDrawList->AddRectFilled(titleBarRect.min, titleBarRect.max,
 				    titlebarBackground.ToPackedABGR(), node.LayoutStyle.CornerRounding,
@@ -1654,6 +1728,9 @@ namespace rift::Nodes
 		assert(gNodes->currentScope == Scope::Node);
 		gNodes->currentScope = Scope::Pin;
 
+		// The whole pin block is a single item of its column
+		BeginNodeCell(type == PinType::Input ? NodeColumn_Inputs : NodeColumn_Outputs);
+
 		ImGui::BeginGroup();
 		ImGui::PushID(id);
 
@@ -1697,6 +1774,9 @@ namespace rift::Nodes
 			case PinType::Input: node.inputs.push_back(gNodes->CurrentPinIdx.index); break;
 			case PinType::Output: node.outputs.push_back(gNodes->CurrentPinIdx.index);
 		}
+
+		// Blocks submitted after a pin go back to the name column
+		BeginNodeCell(NodeColumn_Name);
 	}
 
 	void Initialize(Context* context)
@@ -2256,6 +2336,8 @@ namespace rift::Nodes
 		ImGui::PopStyleVar();    // pop frame padding
 		ImGui::PopFont();
 
+		CloseLeakedNode();
+
 		// pop style
 		ImGui::EndChild();         // end scrolling region
 		ImGui::PopStyleColor();    // pop child window background color
@@ -2272,6 +2354,8 @@ namespace rift::Nodes
 
 		EditorContext& editor = GetEditorContext();
 
+		CloseLeakedNode();
+
 		gNodes->currentNodeId = nodeId;
 
 		NodeData& node = editor.nodes.GetOrAdd(nodeId);
@@ -2287,16 +2371,51 @@ namespace rift::Nodes
 		node.LayoutStyle.Padding           = gNodes->style.NodePadding * GetZoom();
 		node.LayoutStyle.BorderThickness   = gNodes->style.NodeBorderThickness * GetZoom();
 
-		// ImGui::SetCursorPos sets the cursor position, local to the current widget
-		// (in this case, the child object started in BeginNodeEditor). Use
-		// ImGui::SetCursorScreenPos to set the screen space coordinates directly.
-		ImGui::SetCursorPos(GridToEditorPosition(editor, GetNodeTitleBarOrigin(node)));
+		// Lay out the node's table with the sizes measured last frame, so that every row and
+		// column lines up in a single pass. The body row is the default one, the header row
+		// is entered with BeginTitleBar().
+		NodeLayout& layout = gNodes->nodeLayout;
+		layout             = {};
+		layout.groupDepth  = GImGui->GroupStack.Size;
+		layout.padding     = node.LayoutStyle.Padding;
+		layout.origin      = GridToScreenPosition(editor, node.Origin);
+		// The measurements of the last frame are in screen pixels, so they have to be scaled
+		// when the zoom changed, or the node would change size with it
+		const float zoom = GetZoom();
+		if (node.contentZoom > 0.f && node.contentZoom != zoom)
+		{
+			const float scale = zoom / node.contentZoom;
+			for (i32 r = 0; r < NodeRow_COUNT; ++r)
+			{
+				for (i32 c = 0; c < NodeColumn_COUNT; ++c)
+				{
+					node.cellContentSize[r][c] *= scale;
+					node.blockHeight[r][c] *= scale;
+				}
+			}
+			node.nodeWidth *= scale;
+		}
+		node.contentZoom = zoom;
+
+		layout.nodeWidth = node.nodeWidth;
+		for (i32 r = 0; r < NodeRow_COUNT; ++r)
+		{
+			for (i32 c = 0; c < NodeColumn_COUNT; ++c)
+			{
+				layout.prevCellContentSize[r][c] = node.cellContentSize[r][c];
+				layout.prevBlockHeight[r][c]     = node.blockHeight[r][c];
+			}
+		}
 
 		DrawListAddNode(nodeId);
 		DrawListActivateCurrentNodeForeground();
 
 		ImGui::PushID(nodeId.GetIndex());
-		ImGui::BeginGroup();
+		gNodes->nodeLayout.nodeOpen = true;
+
+		// Content submitted outside of a pin block goes to the name column
+		SetNodeRow(NodeRow_Body);
+		BeginNodeCell(NodeColumn_Name);
 	}
 
 	void EndNode()
@@ -2304,17 +2423,42 @@ namespace rift::Nodes
 		assert(gNodes->currentScope == Scope::Node);
 		gNodes->currentScope = Scope::Editor;
 
+		EndNodeCell();
+
 		EditorContext& editor = GetEditorContext();
+		NodeData& node        = editor.nodes[gNodes->currentNodeId];
 
-		ImGui::Dummy(ImVec2(0.f, 0.f));
+		// The node is as big as its two tables
+		for (i32 r = 0; r < NodeRow_COUNT; ++r)
+		{
+			for (i32 c = 0; c < NodeColumn_COUNT; ++c)
+			{
+				node.cellContentSize[r][c] = gNodes->nodeLayout.cellContentSize[r][c];
+				node.blockHeight[r][c]     = gNodes->nodeLayout.blockHeight[r][c];
+			}
+			node.rowHeight[r] = GetNodeRowHeight(NodeRow_(r));
+		}
+		// The node is as wide as its widest table, snapped to the grid. The header's input and
+		// output cells are the same size, so that the title is centered.
+		const float headerInputs  = GetNodeCellWidth(NodeRow_Header, NodeColumn_Inputs);
+		const float headerOutputs = GetNodeCellWidth(NodeRow_Header, NodeColumn_Outputs);
+		const float titleWidth    = GetNodeCellWidth(NodeRow_Header, NodeColumn_Name);
+		const float bodyWidth     = GetNodeCellWidth(NodeRow_Body, NodeColumn_Inputs)
+		                          + GetNodeCellWidth(NodeRow_Body, NodeColumn_Name)
+		                          + GetNodeCellWidth(NodeRow_Body, NodeColumn_Outputs);
+		node.nodeWidth =
+		    SnapToGrid(ImMax(ImMax(ImMax(headerInputs, headerOutputs) * 2.f, bodyWidth),
+		        titleWidth + headerInputs + headerOutputs + 2.f * gNodes->nodeLayout.padding.x));
 
-		// The node's rectangle depends on the ImGui UI group size.
-		ImGui::EndGroup();
+		node.rect = Rect(gNodes->nodeLayout.origin,
+		    gNodes->nodeLayout.origin
+		        + v2(
+		            node.nodeWidth, node.rowHeight[NodeRow_Header] + node.rowHeight[NodeRow_Body]));
+
+		// Register the node as an item so it counts as an ImGui interaction
+		ImGui::ItemAdd(ImRect(node.rect.min, node.rect.max), ImGui::GetID("node"));
 		ImGui::PopID();
-
-		NodeData& node = editor.nodes[gNodes->currentNodeId];
-		node.rect      = GetItemRect();
-		node.rect.Expand(node.LayoutStyle.Padding);
+		gNodes->nodeLayout.nodeOpen = false;
 
 		editor.gridContentBounds.Merge(node.Origin);
 		editor.gridContentBounds.Merge(node.Origin + node.rect.GetSize() / GetZoom());
@@ -2333,28 +2477,18 @@ namespace rift::Nodes
 		return node.rect.GetSize();
 	}
 
-	void BeginNodeTitleBar()
+	void BeginTitleBar()
 	{
 		assert(gNodes->currentScope == Scope::Node);
-		ImGui::BeginGroup();
+		SetNodeRow(NodeRow_Header);
+		BeginNodeCell(NodeColumn_Name);
 	}
 
-	void EndNodeTitleBar()
+	void EndTitleBar()
 	{
 		assert(gNodes->currentScope == Scope::Node);
-		ImGui::EndGroup();
-
-		EditorContext& editor    = GetEditorContext();
-		NodeData& node           = editor.nodes[gNodes->currentNodeId];
-		node.TitleBarContentRect = GetItemRect();
-
-		// Register the title bar as an item (using its content bounds, not the previous
-		// frame's node width) so it counts as an ImGui interaction without making empty
-		// content groups grow the node.
-		Rect titleRect = GetNodeTitleRect(node);
-		ImGui::ItemAdd({titleRect.min, titleRect.max}, ImGui::GetID("title_bar"));
-
-		ImGui::SetCursorPos(GridToEditorPosition(editor, GetNodeContentOrigin(node)));
+		SetNodeRow(NodeRow_Body);
+		BeginNodeCell(NodeColumn_Name);
 	}
 
 	void BeginInput(const i32 id, const PinShape shape)

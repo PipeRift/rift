@@ -13,13 +13,6 @@
 #include <PipeMath.h>
 
 
-// the structure of this file:
-//
-// [SECTION] internal enums
-// [SECTION] internal data structures
-// [SECTION] global and editor context structs
-// [SECTION] object pool implementation
-
 namespace rift::Nodes
 {
 	// using namespace p::EnumOperators;
@@ -70,14 +63,7 @@ namespace rift::Nodes
 
 	// [SECTION] internal data structures
 
-	// The object T must have the following interface:
-	//
-	// struct T
-	// {
-	//     T();
-	//
-	//     i32 id;
-	// };
+	// T must be default constructible and hold an i32 id
 	template<typename T>
 	struct ObjectPool
 	{
@@ -108,7 +94,6 @@ namespace rift::Nodes
 			frameIds.AddUniqueSorted(id, {}, &added);
 			if (added && !lastFrameIds.ContainsSorted(id))
 			{
-				// Id added
 				if (outAdded)
 				{
 					*outAdded = true;
@@ -169,8 +154,6 @@ namespace rift::Nodes
 			}
 		}
 
-		// Clears ids that have not been used for one frame from the container
-		// @returns the invalid ids
 		void SwapFrameIds()
 		{
 			lastFrameIds = Move(frameIds);
@@ -204,7 +187,6 @@ namespace rift::Nodes
 		{
 			bool added = false;
 			T& node    = TIndexedArray<T>::GetOrAdd(id, &added);
-			// If id has not been added before
 			if (added)
 			{
 				depthOrder.Add(id);
@@ -285,11 +267,35 @@ namespace rift::Nodes
 	};
 
 
+	// Rows and columns of the table a node is laid out as
+	enum NodeRow_
+	{
+		NodeRow_Header = 0,
+		NodeRow_Body,
+		NodeRow_COUNT
+	};
+
+	enum NodeColumn_
+	{
+		NodeColumn_Inputs = 0,
+		NodeColumn_Name,
+		NodeColumn_Outputs,
+		NodeColumn_COUNT
+	};
+
+
 	struct NodeData
 	{
 		v2 Origin = v2::Zero();    // The node origin is in editor space
-		Rect TitleBarContentRect;
 		Rect rect{v2::Zero(), v2::Zero()};
+
+		// Measurements of the node's cells on the last frame, used to lay it out
+		v2 cellContentSize[NodeRow_COUNT][NodeColumn_COUNT]{};
+		float blockHeight[NodeRow_COUNT][NodeColumn_COUNT]{};
+		float rowHeight[NodeRow_COUNT]{};
+		float nodeWidth = 0.f;
+		// The zoom the measurements were taken at, so that they can be scaled back
+		float contentZoom = 0.f;
 
 		struct
 		{
@@ -310,6 +316,35 @@ namespace rift::Nodes
 
 
 		NodeData() {}
+	};
+
+
+	// Table layout of the node being submitted, valid between BeginNode() and EndNode()
+	struct NodeLayout
+	{
+		// Row and column being submitted
+		NodeRow_ row       = NodeRow_Body;
+		NodeColumn_ column = NodeColumn_Name;
+		bool cellOpen      = false;
+		// True between BeginNode() and EndNode(), so that a leaked node can be cleaned up
+		bool nodeOpen = false;
+		// Depth of the ImGui group stack when the node started
+		i32 groupDepth = 0;
+
+		// Screen space position of the node's top left corner and padding of every cell
+		v2 origin  = v2::Zero();
+		v2 padding = v2::Zero();
+		// The width of the node, from the last frame
+		float nodeWidth = 0.f;
+
+		// Measurements of each cell, this frame and the one before. The last one lays the
+		// node out, the current one is picked up by the next frame.
+		v2 cellContentSize[NodeRow_COUNT][NodeColumn_COUNT]     = {};
+		v2 prevCellContentSize[NodeRow_COUNT][NodeColumn_COUNT] = {};
+		float blockHeight[NodeRow_COUNT][NodeColumn_COUNT]      = {};
+		float prevBlockHeight[NodeRow_COUNT][NodeColumn_COUNT]  = {};
+		// How far the next cell of each column has stacked in the row being submitted
+		float cellY[NodeColumn_COUNT] = {};
 	};
 
 
@@ -512,6 +547,7 @@ namespace rift::Nodes
 
 		// UI element state
 		ast::Id currentNodeId;
+		NodeLayout nodeLayout;
 		PinIdx CurrentPinIdx;
 		i32 CurrentPinId;
 
@@ -586,7 +622,6 @@ namespace rift::Nodes
 	{
 		i32 index = objects.idMap.GetInt(static_cast<ImGuiID>(id), -1);
 
-		// Construct new object
 		if (index == -1)
 		{
 			if (objects.availableIds.IsEmpty())
@@ -606,7 +641,6 @@ namespace rift::Nodes
 			objects.idMap.SetInt(static_cast<ImGuiID>(id), index);
 		}
 
-		// Flag it as used
 		objects.inUse.SetTrue(index);
 		return index;
 	}
