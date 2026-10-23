@@ -5,6 +5,7 @@
 #include "Components/CTypeEditor.h"
 #include "Utils/Nodes.h"
 
+#include <AST/Components/Declarations.h>
 #include <AST/Tree.h>
 #include <PipeMath.h>
 
@@ -52,6 +53,9 @@ namespace rift::editor::Graph
 	void PopInnerNodeStyle();
 
 	void DrawTypeGraph(ast::Tree& ast, ast::Id typeId, CTypeEditor& typeEditor);
+
+	using ShowFunctionScope = p::TIdScopeRef<p::Writes<CTypeEditor>, ast::CDeclType, ast::CChild>;
+	void ShowFunction(ShowFunctionScope scope, ast::Id functionId);
 
 	void SetNodePosition(ast::Id id, v2 position);
 	v2 GetNodePosition(ast::Id id);

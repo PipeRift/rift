@@ -638,10 +638,12 @@ namespace rift::editor::Graph
 		return pressed;
 	}
 
-	// Draws a context menu row and closes the menu when it's picked
+	// Draws a context menu row and closes the menu when it's picked. Row content is drawn
+	// as chips over it, so the row must allow overlapping items
 	bool ContextChipRow(StringView label, ImVec2& outMin, ImVec2& outMax,
 	    Color background = Color::Transparent(), float height = 16.f, bool highlighted = false)
 	{
+		UI::SetNextItemAllowOverlap();
 		const bool pressed =
 		    UI::SelectableRow(label, outMin, outMax, background, height, highlighted);
 		if (pressed)
@@ -654,7 +656,6 @@ namespace rift::editor::Graph
 	// A cast of the context menu: each type carries a rounded background of its own color
 	bool ContextCastItem(ast::Tree& ast, const ast::Cast& cast, bool highlighted = false)
 	{
-		ImDrawList* drawList      = UI::GetWindowDrawList();
 		const StringView fromName = ast::GetName(ast, cast.fromType).AsString();
 		const StringView toName   = ast::GetName(ast, cast.toType).AsString();
 
@@ -665,13 +666,13 @@ namespace rift::editor::Graph
 		ImVec2 itemMax;
 		const bool pressed =
 		    ContextChipRow("###Item", itemMin, itemMax, Color::Transparent(), 16.f, highlighted);
-		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
-		float x             = itemMin.x + UI::chipPadding;
-		UI::DrawChip(*drawList, x, centerY, fromName, GetTypeColor(ast, cast.fromType));
-		x += UI::chipSpacing;
-		UI::DrawChipText(*drawList, x, centerY, ICON_FA_ARROW_RIGHT);
-		x += UI::chipSpacing;
-		UI::DrawChip(*drawList, x, centerY, toName, GetTypeColor(ast, cast.toType));
+
+		UI::SetCursorScreenPos(ImVec2{itemMin.x + UI::chipPadding, itemMin.y});
+		UI::Chip(fromName, GetTypeColor(ast, cast.fromType));
+		UI::SameLine(0.f, UI::chipSpacing);
+		UI::Chip(ICON_FA_ARROW_RIGHT, Color::Transparent(), nullptr, FLT_MAX, UI::ChipFlags::None);
+		UI::SameLine(0.f, UI::chipSpacing);
+		UI::Chip(toName, GetTypeColor(ast, cast.toType));
 		UI::PopID();
 		UI::PopID();
 		return pressed;
@@ -680,7 +681,6 @@ namespace rift::editor::Graph
 	// A function entry: its name followed by its argument and return chips
 	bool ContextFunctionItem(ast::Tree& ast, Id id, StringView name, bool highlighted = false)
 	{
-		ImDrawList* drawList = UI::GetWindowDrawList();
 		UI::PushID(id);
 		ImVec2 itemMin;
 		ImVec2 itemMax;
@@ -689,8 +689,6 @@ namespace rift::editor::Graph
 		const float rowHeight = UI::GetTextLineHeight() + 4.f;
 		const bool pressed =
 		    ContextChipRow("###Item", itemMin, itemMax, functionColor, rowHeight, highlighted);
-		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
-		float x             = itemMin.x + UI::chipPadding;
 
 		// Arguments produce a value inside the function, returns consume one
 		const auto* args    = ast.TryGet<const ast::CExprOutputs>(id);
@@ -699,12 +697,17 @@ namespace rift::editor::Graph
 		bool first   = true;
 		auto drawPin = [&](Id pinId, bool isReturn)
 		{
-			UI::DrawChipText(*drawList, x, centerY, first ? "" : ", ");
+			if (!first)
+			{
+				UI::SameLine(0.f, UI::chipSpacing);
+				UI::Chip(", ", Color::Transparent(), nullptr, FLT_MAX, UI::ChipFlags::None);
+			}
 			first = false;
 
 			// Pin chip, leading with an arrow for returns
 			const auto* ns = ast.TryGet<const ast::CNamespace>(pinId);
-			UI::DrawChip(*drawList, x, centerY, ns ? ns->name.AsString() : StringView{"none"},
+			UI::SameLine(0.f, UI::chipSpacing);
+			UI::Chip(ns ? ns->name.AsString() : StringView{"none"},
 			    GetTypeColor(ast, GetPinType(ast, pinId)),
 			    isReturn ? ICON_FA_LONG_ARROW_ALT_UP : nullptr);
 		};
@@ -720,8 +723,10 @@ namespace rift::editor::Graph
 			}
 		};
 
-		UI::DrawChipText(*drawList, x, centerY, name);
-		UI::DrawChipText(*drawList, x, centerY, "(");
+		UI::SetCursorScreenPos(ImVec2{itemMin.x + UI::chipPadding, itemMin.y});
+		UI::Chip(name, Color::Transparent(), nullptr, FLT_MAX, UI::ChipFlags::None);
+		UI::SameLine(0.f, UI::chipSpacing);
+		UI::Chip("(", Color::Transparent(), nullptr, FLT_MAX, UI::ChipFlags::None);
 		if (args)
 		{
 			drawPins(args->pinIds, false);
@@ -730,7 +735,8 @@ namespace rift::editor::Graph
 		{
 			drawPins(returns->pinIds, true);
 		}
-		UI::DrawChipText(*drawList, x, centerY, ")");
+		UI::SameLine(0.f, UI::chipSpacing);
+		UI::Chip(")", Color::Transparent(), nullptr, FLT_MAX, UI::ChipFlags::None);
 		UI::PopID();
 		return pressed;
 	}
@@ -739,17 +745,16 @@ namespace rift::editor::Graph
 	bool ContextConstructItem(
 	    StringView typeName, Id id, const Color& color, bool highlighted = false)
 	{
-		ImDrawList* drawList = UI::GetWindowDrawList();
 		UI::PushID(id);
 		ImVec2 itemMin;
 		ImVec2 itemMax;
 		const bool pressed =
 		    ContextChipRow("###Item", itemMin, itemMax, Color::Transparent(), 16.f, highlighted);
-		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
-		float x             = itemMin.x + UI::chipPadding;
-		UI::DrawChipText(*drawList, x, centerY, "Make ");
-		x += UI::chipSpacing;
-		UI::DrawChip(*drawList, x, centerY, typeName, color);
+
+		UI::SetCursorScreenPos(ImVec2{itemMin.x + UI::chipPadding, itemMin.y});
+		UI::Chip("Make ", Color::Transparent(), nullptr, FLT_MAX, UI::ChipFlags::None);
+		UI::SameLine(0.f, UI::chipSpacing);
+		UI::Chip(typeName, color);
 		UI::PopID();
 		return pressed;
 	}
@@ -765,17 +770,27 @@ namespace rift::editor::Graph
 		}
 
 		Id firstNodeId = nodeIds[0];
-		if (nodeIds.Size() == 1 && ast.Has<ast::CDeclFunction>(firstNodeId))
+		if (nodeIds.Size() == 1)
 		{
-			if (canEditBody && UI::MenuItem("Add return node"))
+			if (ast.Has<ast::CDeclFunction>(firstNodeId))
 			{
-				Id newId = ast::AddReturn({ast, typeId});
-				if (!IsNone(newId))
+				if (canEditBody && UI::MenuItem("Add return node"))
 				{
-					v2 position = ast.Get<CNodePosition>(firstNodeId).position;
-					ast.Add<CNodePosition>(newId, position + v2{10.f, 0.f});
+					Id newId = ast::AddReturn({ast, typeId});
+					if (!IsNone(newId))
+					{
+						v2 position = ast.Get<CNodePosition>(firstNodeId).position;
+						ast.Add<CNodePosition>(newId, position + v2{10.f, 0.f});
 
-					ast::TryConnectStmt(ast, firstNodeId, newId);
+						ast::TryConnectStmt(ast, firstNodeId, newId);
+					}
+				}
+			}
+			else if (const auto* callId = ast.TryGet<const ast::CExprCallId>(firstNodeId))
+			{
+				if (UI::MenuItem("Show function"))
+				{
+					ShowFunction(ast, callId->functionId);
 				}
 			}
 		}
