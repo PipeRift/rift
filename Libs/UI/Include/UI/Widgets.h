@@ -5,6 +5,8 @@
 #include "UI/Style.h"
 #include "UI/UIImgui.h"
 
+#include <Pipe/Core/EnumFlags.h>
+
 
 namespace rift::UI
 {
@@ -123,21 +125,17 @@ namespace rift::UI
 	inline constexpr float chipPadding  = 4.f;
 	inline constexpr float chipSpacing  = 4.f;
 
-	// Draws text centered on a row, advancing 'x'
-	void DrawChipText(ImDrawList& drawList, float& x, float centerY, p::StringView text);
-
-	// Draws a name over a rounded background of its color, with an optional icon. Names
-	// are ellipsized to fit 'maxWidth'
-	void DrawChip(ImDrawList& drawList, float& x, float centerY, p::StringView name,
-	    const p::Color& color, const char* icon = nullptr, float maxWidth = FLT_MAX);
+	enum class ChipFlags
+	{
+		None       = 0,
+		Background = 1 << 0,    // Paints the chip's background
+	};
+	P_DEFINE_FLAG_OPERATORS(ChipFlags)
 
 	// Draws a chip as a non-interactive item: it takes layout space but has no id, so it
-	// can't be clicked or navigated
+	// can't be clicked or navigated. Long names are ellipsized to fit 'maxWidth'
 	void Chip(p::StringView name, const p::Color& color, const char* icon = nullptr,
-	    float maxWidth = FLT_MAX);
-
-	// Total width of a chip with the given name and optional icon
-	float CalcChipWidth(p::StringView name, const char* icon = nullptr);
+	    float maxWidth = FLT_MAX, ChipFlags flags = ChipFlags::Background);
 
 	// Draws a selectable row, painting 'background' behind content drawn on top.
 	// Highlighted rows draw as if hovered. 'label' must be zero-terminated

@@ -5,6 +5,7 @@
 #include "UI/Texture.h"
 
 #include <IconsFontAwesome5.h>
+#include <Pipe/Core/EnumFlags.h>
 #include <PipeTime.h>
 
 
@@ -266,14 +267,6 @@ namespace rift::UI
 		return isOpen;
 	}
 
-	void DrawChipText(ImDrawList& drawList, float& x, float centerY, p::StringView text)
-	{
-		const ImVec2 size = UI::CalcTextSize(text);
-		drawList.AddText(ImVec2{x, centerY - size.y * 0.5f}, UI::GetColorU32(ImGuiCol_Text),
-		    text.data(), text.data() + text.size());
-		x += size.x;
-	}
-
 	// Shortens text with a trailing ellipsis until it fits the given width
 	static p::String EllipsizeText(p::StringView text, float maxWidth)
 	{
@@ -291,53 +284,8 @@ namespace rift::UI
 		return fitted;
 	}
 
-	void DrawChip(ImDrawList& drawList, float& x, float centerY, p::StringView name,
-	    const p::Color& color, const char* icon, float maxWidth)
-	{
-		ImFont* font          = UI::GetFont();
-		const float fontSize  = UI::GetFontSize();
-		const float iconSize  = fontSize * 0.75f;
-		const float iconWidth = icon ? font->CalcTextSizeA(iconSize, FLT_MAX, 0.f, icon).x : 0.f;
-
-		p::String fittedName;
-		p::StringView displayName   = name;
-		const float maxContentWidth = maxWidth - iconWidth - chipPadding * 2.f;
-		if (UI::CalcTextSize(name).x > maxContentWidth)
-		{
-			fittedName  = EllipsizeText(name, maxContentWidth);
-			displayName = fittedName.AsView();
-		}
-
-		const ImVec2 textSize    = UI::CalcTextSize(displayName);
-		const float contentWidth = iconWidth + textSize.x;
-		const float height       = UI::GetTextLineHeight() + 2.f;
-		const ImVec2 chipMin{x, centerY - height * 0.5f};
-		const ImVec2 chipMax{x + contentWidth + chipPadding * 2.f, centerY + height * 0.5f};
-
-		drawList.AddRectFilled(chipMin, chipMax, color.ToPackedABGR(), chipRounding);
-		// The icon shares the top of the text line instead of being centred
-		if (icon)
-		{
-			const float textY = centerY - (iconSize * 0.5f) + 2.f;
-			drawList.AddText(font, iconSize, ImVec2{chipMin.x + chipPadding, textY},
-			    UI::GetColorU32(ImGuiCol_Text), icon);
-		}
-		const float textY = centerY - textSize.y * 0.5f;
-		drawList.AddText(ImVec2{chipMin.x + chipPadding + iconWidth, textY},
-		    UI::GetColorU32(ImGuiCol_Text), displayName.data(),
-		    displayName.data() + displayName.size());
-		x = chipMax.x;
-	}
-
-	float CalcChipWidth(p::StringView name, const char* icon)
-	{
-		const float iconWidth =
-		    icon ? UI::GetFont()->CalcTextSizeA(UI::GetFontSize() * 0.75f, FLT_MAX, 0.f, icon).x
-			     : 0.f;
-		return iconWidth + UI::CalcTextSize(name).x + chipPadding * 2.f;
-	}
-
-	void Chip(p::StringView name, const p::Color& color, const char* icon, float maxWidth)
+	void Chip(p::StringView name, const p::Color& color, const char* icon, float maxWidth,
+	    ChipFlags flags)
 	{
 		ImGuiWindow* window = UI::GetCurrentWindow();
 		if (window->SkipItems)
@@ -345,15 +293,46 @@ namespace rift::UI
 			return;
 		}
 
-		// A non-interactive item: it takes layout space but has no id, so it can't be used
-		const float width = p::Min(CalcChipWidth(name, icon), maxWidth);
-		const ImVec2 size{width, UI::GetTextLineHeight() + 2.f};
+		ImFont* font             = UI::GetFont();
+		const float fontSize     = UI::GetFontSize();
+		const float iconSize     = fontSize * 0.75f;
+		const float iconWidth    = icon ? font->CalcTextSizeA(iconSize, FLT_MAX, 0.f, icon).x : 0.f;
+		const bool hasBackground = p::HasFlag(flags, ChipFlags::Background);
+		const float padding      = hasBackground ? chipPadding * 2.f : 0.f;
+		const float contentWidth = maxWidth - iconWidth - padding;
+
+		// Shorten the name to fit the chip
+		p::String fittedName;
+		p::StringView displayName = name;
+		if (UI::CalcTextSize(name).x > contentWidth)
+		{
+			fittedName  = EllipsizeText(name, contentWidth);
+			displayName = fittedName.AsView();
+		}
+
+		// A non-interactive item: it takes layout space but has no id
+		const ImVec2 textSize = UI::CalcTextSize(displayName);
+		const ImVec2 size{iconWidth + textSize.x + padding, UI::GetTextLineHeight() + 2.f};
 		const ImRect bb(window->DC.CursorPos, window->DC.CursorPos + size);
 		UI::ItemSize(size);
 		UI::ItemAdd(bb, 0);
 
-		float x = bb.Min.x;
-		DrawChip(*window->DrawList, x, bb.GetCenter().y, name, color, icon, width);
+		ImDrawList* drawList = window->DrawList;
+		if (hasBackground)
+		{
+			drawList->AddRectFilled(bb.Min, bb.Max, color.ToPackedABGR(), chipRounding);
+		}
+		const float contentX = bb.Min.x + (hasBackground ? chipPadding : 0.f);
+		// The icon shares the top of the text line instead of being centred
+		if (icon)
+		{
+			drawList->AddText(font, iconSize,
+			    ImVec2{contentX, bb.GetCenter().y - iconSize * 0.5f + 2.f},
+			    UI::GetColorU32(ImGuiCol_Text), icon);
+		}
+		drawList->AddText(ImVec2{contentX + iconWidth, bb.GetCenter().y - textSize.y * 0.5f},
+		    UI::GetColorU32(ImGuiCol_Text), displayName.data(),
+		    displayName.data() + displayName.size());
 	}
 
 	bool SelectableRow(p::StringView label, ImVec2& outMin, ImVec2& outMax,
