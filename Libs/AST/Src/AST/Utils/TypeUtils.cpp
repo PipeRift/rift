@@ -33,8 +33,8 @@ namespace rift::ast
 		rw.template SerializePools<CChild, CDeclVariable, CDeclFunction, CExprBinaryOperator,
 		    CExprCall, CExprDeclRefId, CExprOutputs, CExprInputs, CStmtReturn, CExprType,
 		    CExprUnaryOperator, CNodePosition, CNamespace, CParent, CLiteralBool, CLiteralFloating,
-		    CLiteralIntegral, CLiteralString, CStmtFor, CStmtIf, CStmtOutput, CStmtOutputs,
-		    CStmtInput, CExprCast>();
+		    CLiteralIntegral, CLiteralString, CStmtAssign, CStmtFor, CStmtIf, CStmtOutput,
+		    CStmtOutputs, CStmtInput, CExprCast>();
 	};
 
 	void InitTypeFromFileType(Tree& ast, Id id, p::Tag typeId)
@@ -305,7 +305,6 @@ namespace rift::ast
 		ast.Add<CStmtIf>(id);
 		ast.Add<CStmtInput>(id);
 
-		// Bool input
 		const Id valueId = p::AddId(ast);
 		ast.Add<CExprTypeId>(valueId, {.id = ast.GetNativeTypes().boolId});
 		ast.Add<CExprType>(id).type = GetNamespace(ast, ast.GetNativeTypes().boolId);
@@ -350,7 +349,6 @@ namespace rift::ast
 		p::AttachId(ast, id, endId);
 		inputs.Add(endId);
 
-		// Index output
 		const Id indexId = p::AddId(ast);
 		ast.Add<CNamespace>(indexId, p::Tag{"index"});
 		ast.Add<CExprTypeId>(indexId, {.id = indexTypeId});
@@ -382,6 +380,31 @@ namespace rift::ast
 			p::AttachId(ast, type.GetId(), returnId);
 		}
 		return returnId;
+	}
+
+	Id AddAssign(TypeRef type, Id variableId)
+	{
+		Tree& ast   = type.GetContext();
+		const Id id = p::AddId(ast);
+
+		ast.Add<CStmtInput, CStmtOutput>(id);
+
+		// Value pins are unnamed, like the ones of casts
+		const Id valueInId = p::AddId(ast);
+		p::AttachId(ast, id, valueInId);
+		ast.Add<CExprInputs>(id).Add(valueInId);
+
+		const Id valueOutId = p::AddId(ast);
+		p::AttachId(ast, id, valueOutId);
+		ast.Add<CExprOutputs>(id).Add(valueOutId);
+
+		ast.Add<CStmtAssign>(id, {variableId});
+
+		if (type)
+		{
+			p::AttachId(ast, type.GetId(), id);
+		}
+		return id;
 	}
 
 	Id AddLiteral(TypeRef type, Id literalTypeId)
@@ -443,7 +466,6 @@ namespace rift::ast
 		}
 		else
 		{
-			// Not a literal type, discard the node
 			p::RmId(ast, id);
 			return NoId;
 		}
@@ -515,14 +537,12 @@ namespace rift::ast
 		const Id id = p::AddId(ast);
 		ast.Add<CExprCast>(id);
 
-		// The input pin takes the value to cast
 		const Id inputId = p::AddId(ast);
 		ast.Add<CExprTypeId>(inputId, {.id = fromTypeId});
 		ast.Add<CExprType>(inputId).type = GetNamespace(ast, fromTypeId);
 		p::AttachId(ast, id, inputId);
 		ast.Add<CExprInputs>(id).Add(inputId);
 
-		// The output pin holds the cast value
 		const Id outputId = p::AddId(ast);
 		ast.Add<CExprTypeId>(outputId, {.id = toTypeId});
 		ast.Add<CExprType>(outputId).type = GetNamespace(ast, toTypeId);
