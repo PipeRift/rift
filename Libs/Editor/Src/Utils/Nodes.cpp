@@ -576,11 +576,11 @@ namespace rift::Nodes
 		editor.PrimaryNodeOffset = refOrigin * GetZoom() + gNodes->CanvasOriginScreenSpace
 		                         + editor.panning - gNodes->mousePosition;
 
-		editor.SelectedNodeOrigins.clear();
+		editor.DragOrigins.clear();
 		for (ast::Id id : editor.selectedNodeIds)
 		{
 			const v2 nodeOrigin = editor.nodes.Get(id).Origin - refOrigin;
-			editor.SelectedNodeOrigins.push_back(nodeOrigin);
+			editor.DragOrigins.push_back({id, nodeOrigin});
 		}
 	}
 
@@ -845,14 +845,14 @@ namespace rift::Nodes
 			    SnapOriginToGrid((gNodes->mousePosition + editor.PrimaryNodeOffset
 			                         - gNodes->CanvasOriginScreenSpace - editor.panning)
 			                     / GetZoom());
-			for (i32 i = 0; i < editor.selectedNodeIds.Size(); ++i)
+			// Only the nodes captured when the drag started move, even if the selection
+			// changes while dragging
+			for (const NodeDragOrigin& dragOrigin : editor.DragOrigins)
 			{
-				const v2 nodeRel     = editor.SelectedNodeOrigins[i];
-				const ast::Id nodeId = editor.selectedNodeIds[i];
-				NodeData& node       = editor.nodes[nodeId];
+				NodeData& node = editor.nodes[dragOrigin.id];
 				if (node.Draggable)
 				{
-					node.Origin = origin + nodeRel;
+					node.Origin = origin + dragOrigin.origin;
 				}
 			}
 		}

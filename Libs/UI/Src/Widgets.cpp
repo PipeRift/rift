@@ -5,6 +5,7 @@
 #include "UI/Texture.h"
 
 #include <IconsFontAwesome5.h>
+#include <Pipe/Core/EnumFlags.h>
 #include <PipeTime.h>
 
 
@@ -101,7 +102,7 @@ namespace rift::UI
 		{
 			// Jump straight to the frame the elapsed time lands on
 			const p::u32 advance = p::u32(p::Floor(-currentFrameRemainingTime / rate)) + 1;
-			currentFrame.x = (currentFrame.x + advance) % frames;
+			currentFrame.x       = (currentFrame.x + advance) % frames;
 			currentFrameRemainingTime += float(advance) * rate;
 		}
 	}
@@ -264,5 +265,109 @@ namespace rift::UI
 		g.LastItemData = lastItemBackup;
 
 		return isOpen;
+	}
+
+	// Shortens text with a trailing ellipsis until it fits the given width
+	static p::String EllipsizeText(p::StringView text, float maxWidth)
+	{
+		constexpr p::StringView ellipsis = "...";
+		const float ellipsisWidth        = UI::CalcTextSize(ellipsis).x;
+		p::String fitted{text};
+		while (!fitted.empty() && UI::CalcTextSize(fitted.AsView()).x + ellipsisWidth > maxWidth)
+		{
+			fitted.pop_back();
+		}
+		if (fitted.size() < text.size())
+		{
+			fitted += ellipsis;
+		}
+		return fitted;
+	}
+
+	void Chip(p::StringView name, const p::Color& color, const char* icon, float maxWidth,
+	    ChipFlags flags)
+	{
+		ImGuiWindow* window = UI::GetCurrentWindow();
+		if (window->SkipItems)
+		{
+			return;
+		}
+
+		ImFont* font             = UI::GetFont();
+		const float fontSize     = UI::GetFontSize();
+		const float iconSize     = fontSize * 0.75f;
+		const float iconWidth    = icon ? font->CalcTextSizeA(iconSize, FLT_MAX, 0.f, icon).x : 0.f;
+		const bool hasBackground = p::HasFlag(flags, ChipFlags::Background);
+		const float padding      = hasBackground ? chipPadding * 2.f : 0.f;
+		const float contentWidth = maxWidth - iconWidth - padding;
+
+		// Shorten the name to fit the chip
+		p::String fittedName;
+		p::StringView displayName = name;
+		if (UI::CalcTextSize(name).x > contentWidth)
+		{
+			fittedName  = EllipsizeText(name, contentWidth);
+			displayName = fittedName.AsView();
+		}
+
+		// A non-interactive item: it takes layout space but has no id
+		const ImVec2 textSize = UI::CalcTextSize(displayName);
+		const ImVec2 size{iconWidth + textSize.x + padding, UI::GetTextLineHeight() + 2.f};
+		const ImRect bb(window->DC.CursorPos, window->DC.CursorPos + size);
+		UI::ItemSize(size);
+		UI::ItemAdd(bb, 0);
+
+		ImDrawList* drawList = window->DrawList;
+		if (hasBackground)
+		{
+			drawList->AddRectFilled(bb.Min, bb.Max, color.ToPackedABGR(), chipRounding);
+		}
+		const float contentX = bb.Min.x + (hasBackground ? chipPadding : 0.f);
+		// The icon shares the top of the text line instead of being centred
+		if (icon)
+		{
+			drawList->AddText(font, iconSize,
+			    ImVec2{contentX, bb.GetCenter().y - iconSize * 0.5f + 2.f},
+			    UI::GetColorU32(ImGuiCol_Text), icon);
+		}
+		drawList->AddText(ImVec2{contentX + iconWidth, bb.GetCenter().y - textSize.y * 0.5f},
+		    UI::GetColorU32(ImGuiCol_Text), displayName.data(),
+		    displayName.data() + displayName.size());
+	}
+
+	bool SelectableRow(p::StringView label, ImVec2& outMin, ImVec2& outMax,
+	    const p::LinearColor& background, float height, bool highlighted)
+	{
+		UI::PushStyleVar(ImGuiStyleVar_ItemSpacing, p::v2{UI::GetStyle().ItemSpacing.x, 2.f});
+		UI::PushStyleVar(ImGuiStyleVar_SelectableRounding, chipRounding);
+		ImGuiSelectableFlags flags = ImGuiSelectableFlags_NoPadWithHalfSpacing;
+		if (highlighted)
+		{
+			flags |= ImGuiSelectableFlags_Highlight;    // Draw as if hovered
+		}
+		const bool hasBackground = background.a > 0.f;
+		if (hasBackground)
+		{
+			UI::PushHeaderColor(background);
+			if (highlighted)
+			{
+				// A highlighted row draws a clearly brighter version of its color
+				UI::PushStyleColor(ImGuiCol_HeaderHovered, background.Tint(0.2f));
+			}
+		}
+		const bool pressed = UI::Selectable(label.data(), hasBackground, flags, p::v2{0.f, height});
+		if (hasBackground)
+		{
+			if (highlighted)
+			{
+				UI::PopStyleColor();
+			}
+			UI::PopHeaderColor();
+		}
+		UI::PopStyleVar(2);
+
+		outMin = UI::GetItemRectMin();
+		outMax = UI::GetItemRectMax();
+		return pressed;
 	}
 }    // namespace rift::UI

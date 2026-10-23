@@ -36,10 +36,11 @@ namespace rift::editor
 		ImGuiID dockspaceID = 0;
 		DockSpaceLayout layout;
 
-		bool pendingFocus = false;
-		bool showGraph    = true;
-		bool showElements = true;
-		bool showDetails  = true;
+		bool pendingFocus      = false;
+		ast::Id pendingFocusId = ast::NoId;
+		bool showGraph         = true;
+		bool showElements      = true;
+		bool showDetails       = true;
 
 		ast::Id selectedPropertyId      = ast::NoId;
 		ast::Id pendingDeletePropertyId = ast::NoId;

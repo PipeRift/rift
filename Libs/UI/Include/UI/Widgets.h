@@ -5,6 +5,8 @@
 #include "UI/Style.h"
 #include "UI/UIImgui.h"
 
+#include <Pipe/Core/EnumFlags.h>
+
 
 namespace rift::UI
 {
@@ -116,4 +118,28 @@ namespace rift::UI
 
 	bool CollapsingHeaderWithButton(p::StringView label, ImGuiTreeNodeFlags flags,
 	    bool& buttonClicked, p::StringView buttonLabel, p::v2 buttonSize = p::v2(18.f, 14.f));
+
+
+	// Rounding, padding and spacing shared by chips
+	inline constexpr float chipRounding = 2.f;
+	inline constexpr float chipPadding  = 4.f;
+	inline constexpr float chipSpacing  = 4.f;
+
+	enum class ChipFlags
+	{
+		None       = 0,
+		Background = 1 << 0,    // Paints the chip's background
+	};
+	P_DEFINE_FLAG_OPERATORS(ChipFlags)
+
+	// Draws a chip as a non-interactive item: it takes layout space but has no id, so it
+	// can't be clicked or navigated. Long names are ellipsized to fit 'maxWidth'
+	void Chip(p::StringView name, const p::Color& color, const char* icon = nullptr,
+	    float maxWidth = FLT_MAX, ChipFlags flags = ChipFlags::Background);
+
+	// Draws a selectable row, painting 'background' behind content drawn on top.
+	// Highlighted rows draw as if hovered. 'label' must be zero-terminated
+	bool SelectableRow(p::StringView label, ImVec2& outMin, ImVec2& outMax,
+	    const p::LinearColor& background = p::LinearColor::Transparent(), float height = 16.f,
+	    bool highlighted = false);
 }    // namespace rift::UI
