@@ -32,64 +32,84 @@ namespace rift::ast::TypeSystem
 		}
 	}
 
-	void PropagateVariableTypes(PropagateVariableTypesScope scope)
+	namespace
 	{
+		bool PropagateUnaryOperator(
+		    p::TIdScope<p::Writes<CExprTypeId>, CExprInputs> scope, Id nodeId)
+		{
+			const Id outputId  = nodeId;    // Output in unary operator is same as the node itself
+			const auto& inputs = scope.Get<const CExprInputs>(nodeId);
+			const ExprOutput* linkedOutput = inputs.linkedOutputs.At(0);
+			if (linkedOutput && linkedOutput->pinId != NoId)
+			{
+				return CopyExpressionType(scope, linkedOutput->pinId, outputId);
+			}
+			return false;
+		}
+
+		bool PropagateBinaryOperator(
+		    p::TIdScope<p::Writes<CExprTypeId>, CExprInputs> scope, Id nodeId)
+		{
+			const auto& inputs = scope.Get<const CExprInputs>(nodeId);
+			Id outputId        = nodeId;    // Output in binary operator is same as the node itself
+			if (inputs.pinIds.Size() == 2) [[likely]]
+			{
+				const ExprOutput firstLinkedOutput = inputs.linkedOutputs[0];
+				CopyExpressionType(scope, firstLinkedOutput.pinId, inputs.pinIds[0]);
+				CopyExpressionType(scope, inputs.linkedOutputs[1].pinId, inputs.pinIds[1]);
+				return CopyExpressionType(scope, firstLinkedOutput.pinId, outputId);
+			}
+			return false;
+		}
+	}    // namespace
+
+	void PropagateTypes(PropagateTypesScope scope)
+	{
+		// References and assignments share the type of their variable
 		for (Id id : FindAllIdsWith<CExprDeclRefId>(scope))
 		{
 			const Id declId = scope.Get<const CExprDeclRefId>(id).declarationId;
-			if (scope.IsValid(declId))
+			if (const auto* variable = scope.TryGet<const CDeclVariable>(declId))
 			{
-				const Id typeId = scope.Get<const CDeclVariable>(declId).typeId;
-				scope.Add<CExprTypeId>(id, {.id = typeId});
+				scope.Add<CExprTypeId>(id, {.id = variable->typeId});
 			}
 		}
-	}
 
-	bool PropagateUnaryOperator(p::TIdScope<p::Writes<CExprTypeId>, CExprInputs> scope, Id nodeId)
-	{
-		Id outputId        = nodeId;    // Output in unary operator is same as the node itself
-		const auto& inputs = scope.Get<const CExprInputs>(nodeId);
-		const ExprOutput* linkedOutput = inputs.linkedOutputs.At(0);
-		if (linkedOutput && linkedOutput->pinId != NoId)
+		for (Id id : FindAllIdsWith<CStmtAssign>(scope))
 		{
-			return CopyExpressionType(scope, linkedOutput->pinId, outputId);
-		}
-		return false;
-	}
+			const auto* variable =
+			    scope.TryGet<const CDeclVariable>(scope.Get<const CStmtAssign>(id).declarationId);
+			if (!variable)
+			{
+				continue;
+			}
 
-	bool PropagateBinaryOperator(p::TIdScope<p::Writes<CExprTypeId>, CExprInputs> scope, Id nodeId)
-	{
-		const auto& inputs = scope.Get<const CExprInputs>(nodeId);
-		Id outputId        = nodeId;    // Output in binary operator is same as the node itself
-		if (inputs.pinIds.Size() == 2) [[likely]]
-		{
-			const ExprOutput firstLinkedOutput = inputs.linkedOutputs[0];
-			// Set input types
-			CopyExpressionType(scope, firstLinkedOutput.pinId, inputs.pinIds[0]);
-			CopyExpressionType(scope, inputs.linkedOutputs[1].pinId, inputs.pinIds[1]);
-			// Set output type from first connection
-			return CopyExpressionType(scope, firstLinkedOutput.pinId, outputId);
-		}
-		return false;
-	}
+			const auto* inputs  = scope.TryGet<const CExprInputs>(id);
+			const auto* outputs = scope.TryGet<const CExprOutputs>(id);
+			if (!inputs || !outputs || inputs->pinIds.IsEmpty() || outputs->pinIds.IsEmpty())
+			{
+				continue;
+			}
 
-	void PropagateExpressionTypes(PropagateExpressionTypesScope scope)
-	{
+			const Id typeId = variable->typeId;
+			scope.Add<CExprTypeId>(inputs->pinIds[0], {.id = typeId});
+			scope.Add<CExprTypeId>(outputs->pinIds[0], {.id = typeId});
+		}
+
+		// Operators take the type of their first input, so keep propagating until none changes
 		p::TArray<Id> dirtyTypeIds = p::FindAllIdsWith<CDeclType, CChanged>(scope);
 
 		p::TArray<Id> dirtyNodeIds;
 		p::GetIdChildren(scope, dirtyTypeIds, dirtyNodeIds);
 
-		// Make sure the nodes have inputs and outputs
 		p::ExcludeIdsWithout<CExprInputs, CExprOutputs>(scope, dirtyNodeIds);
 
-		// Only Unary or Binary operators propagate as of right now
+		// Only unary and binary operators propagate
 		p::ExcludeIdsWithoutAny<CExprUnaryOperator, CExprBinaryOperator>(scope, dirtyNodeIds);
 
-		while (!dirtyNodeIds.IsEmpty())    // Repeat until nothing to propagate
+		while (!dirtyNodeIds.IsEmpty())
 		{
 			bool anyPropagated = false;
-			// Propagate all dirty nodes, remove successfully propagated ones
 			for (p::i32 i = dirtyNodeIds.Size() - 1; i >= 0; --i)
 			{
 				const Id nodeId = dirtyNodeIds[i];
@@ -112,7 +132,7 @@ namespace rift::ast::TypeSystem
 				}
 			}
 
-			if (!anyPropagated)    // If nothing propagated, there is nothing else we can do
+			if (!anyPropagated)
 			{
 				break;
 			}

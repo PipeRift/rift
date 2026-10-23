@@ -35,6 +35,13 @@ namespace rift::editor::Graph
 		return ast.Has<ast::CExprType>(pinId) || ast.Has<ast::CExprTypeId>(pinId);
 	}
 
+	// Assignments are statements, so they are created dragging from an execution output pin
+	static bool IsExecutionContext(ast::Tree& ast, const MenuContext& context)
+	{
+		return context.HasSource() && !IsExprPin(ast, context.sourcePin)
+		    && context.type == Nodes::PinType::Output;
+	}
+
 	// Can a value of 'valueType' be used where a value of 'targetType' is expected?
 	static bool IsTypeCompatible(ast::Tree& ast, Id valueType, Id targetType)
 	{
@@ -157,6 +164,7 @@ namespace rift::editor::Graph
 		For,
 		Function,
 		Variable,
+		VariableAssign,
 		Operator,
 		Cast,
 	};
@@ -219,7 +227,6 @@ namespace rift::editor::Graph
 				}
 				else if (isOutput)
 				{
-					// Input matches type?
 					if (const auto* inputs = ast.TryGet<const ast::CExprInputs>(itemId))
 					{
 						for (Id pinId : inputs->pinIds)
@@ -233,7 +240,6 @@ namespace rift::editor::Graph
 				}
 				else
 				{
-					// Output matches type?
 					if (const auto* outputs = ast.TryGet<const ast::CExprOutputs>(itemId))
 					{
 						for (Id pinId : outputs->pinIds)
@@ -269,6 +275,9 @@ namespace rift::editor::Graph
 					}
 				}
 				break;
+			case ContextItemKind::VariableAssign:
+				// Assignments are statements, so they need an execution context
+				return !isExpr && isOutput;
 			case ContextItemKind::Operator: return isExpr;
 			case ContextItemKind::Cast:
 				// A cast takes the value in its input pin and produces it in its output pin
@@ -594,11 +603,27 @@ namespace rift::editor::Graph
 			}
 			else if (ast.Has<ast::CDeclVariable>(childId))
 			{
-				const auto* variable = ast.TryGet<const ast::CDeclVariable>(childId);
-				if (MatchesContext(
+				const auto* variable   = ast.TryGet<const ast::CDeclVariable>(childId);
+				const Color color      = GetTypeColor(ast, variable ? variable->typeId : ast::NoId);
+				const bool isExecution = IsExecutionContext(ast, context);
+
+				// Assignments are created from an execution pin or an empty canvas
+				if (isExecution || !context.HasSource())
+				{
+					const String label = p::Format("{} =", childName);
+					if (MatchesContext(
+					        ast, context, ContextItemKind::VariableAssign, {label}, filter, childId)
+					    && ContextItem(label, childId, color))
+					{
+						// Attach to the edited type, not the variable's owning type
+						Id newId = ast::AddAssign({ast, typeId}, childId);
+						SetPositionAndConnect(ast, newId, context);
+					}
+				}
+				if (!isExecution
+				    && MatchesContext(
 				        ast, context, ContextItemKind::Variable, {childName}, filter, childId)
-				    && ContextItem(childName, childId,
-				        GetTypeColor(ast, variable ? variable->typeId : ast::NoId)))
+				    && ContextItem(childName, childId, color))
 				{
 					// Attach to the edited type, not the variable's owning type
 					Id newId = ast::AddDeclarationReference({ast, typeId}, childId);
@@ -689,7 +714,6 @@ namespace rift::editor::Graph
 			if (ContextTreeNode("Operators", filter))
 			{
 				String name;
-				// Unary operators
 				for (auto type : GetEnumValues<ast::UnaryOperatorType>())
 				{
 					name.clear();
@@ -704,7 +728,6 @@ namespace rift::editor::Graph
 						SetPositionAndConnect(ast, newId, context);
 					}
 				}
-				// Binary operators
 				for (auto type : GetEnumValues<ast::BinaryOperatorType>())
 				{
 					name.clear();
@@ -768,7 +791,6 @@ namespace rift::editor::Graph
 				ContextTreePop(filter);
 			}
 
-			// Functions and variables, grouped under their module and type namespaces
 			DrawNamespaceChildren(ast, typeId,
 			    p::FindAllIdsWith<ast::CModule, ast::CNamespace>(ast), filter, context);
 		}
