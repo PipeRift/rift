@@ -308,29 +308,31 @@ namespace rift::editor::Graph
 	void DrawLiteralBool(ast::Tree& ast, ast::Id id, bool& value)
 	{
 		static constexpr Color color = GetTypeColor<bool>();
-
-		PushNodeBackgroundColor(color);
+		PushNodeTitleColor(color);
 
 		BeginNode(ast, id);
 		{
+			Nodes::BeginNodeTitleBar();
 			BeginExprOutput(ast, id, false);
 			PushInnerNodeStyle();
 			UI::Checkbox("##value", &value);
 			PopInnerNodeStyle();
 			EndExprOutput(false);
+			Nodes::EndNodeTitleBar();
 		}
 		EndNode(ast);
-		PopNodeBackgroundColor();
+		PopNodeTitleColor();
 	}
 
 	void DrawLiteralIntegral(ast::Tree& ast, ast::Id id, ast::CLiteralIntegral& value)
 	{
 		const bool isSigned = value.IsSigned();
 		const Color color   = isSigned ? GetTypeColor<i32>() : GetTypeColor<u32>();
-		PushNodeBackgroundColor(color);
+		PushNodeTitleColor(color);
 
 		BeginNode(ast, id);
 		{
+			Nodes::BeginNodeTitleBar();
 			BeginExprOutput(ast, id, false);
 			PushInnerNodeStyle();
 
@@ -355,18 +357,20 @@ namespace rift::editor::Graph
 
 			PopInnerNodeStyle();
 			EndExprOutput(false);
+			Nodes::EndNodeTitleBar();
 		}
 		EndNode(ast);
-		PopNodeBackgroundColor();
+		PopNodeTitleColor();
 	}
 
 	void DrawLiteralFloating(ast::Tree& ast, ast::Id id, ast::CLiteralFloating& value)
 	{
 		const bool isDouble = value.type == ast::FloatingType::F64;
 		const Color color   = isDouble ? GetTypeColor<double>() : GetTypeColor<float>();
-		PushNodeBackgroundColor(color);
+		PushNodeTitleColor(color);
 		BeginNode(ast, id);
 		{
+			Nodes::BeginNodeTitleBar();
 			BeginExprOutput(ast, id, false);
 			PushInnerNodeStyle();
 
@@ -378,18 +382,20 @@ namespace rift::editor::Graph
 
 			PopInnerNodeStyle();
 			EndExprOutput(false);
+			Nodes::EndNodeTitleBar();
 		}
 		EndNode(ast);
-		PopNodeBackgroundColor();
+		PopNodeTitleColor();
 	}
 
 	void DrawLiteralString(ast::Tree& ast, ast::Id id, String& value)
 	{
 		static constexpr Color color = GetTypeColor<String>();
-		PushNodeBackgroundColor(color);
+		PushNodeTitleColor(color);
 
 		BeginNode(ast, id);
 		{
+			Nodes::BeginNodeTitleBar();
 			BeginExprOutput(ast, id, false);
 
 			const float zoom     = Nodes::GetZoom();
@@ -422,6 +428,7 @@ namespace rift::editor::Graph
 
 			UI::InputTextMultiline("##value", value, size);
 			EndExprOutput(false);
+			Nodes::EndNodeTitleBar();
 		}
 		EndNode(ast);
 
@@ -430,7 +437,7 @@ namespace rift::editor::Graph
 		ImGui::PopStyleVar(2);
 		ImGui::PopFont();
 
-		PopNodeBackgroundColor();
+		PopNodeTitleColor();
 	}
 
 	using FunctionDeclsScope =
@@ -750,10 +757,11 @@ namespace rift::editor::Graph
 			ast::Id typeId                   = exprType ? exprType->id : ast::NoId;
 
 			const Color color = GetTypeColor(ast, typeId);
-			PushNodeBackgroundColor(color);
+			PushNodeTitleColor(color);
 
 			BeginNode(ast, id);
 			{
+				Nodes::BeginNodeTitleBar();
 				BeginExprOutput(ast, id, false);
 				PushInnerNodeStyle();
 				StringView name = "Invalid";
@@ -764,10 +772,11 @@ namespace rift::editor::Graph
 				UI::Text(name);
 				PopInnerNodeStyle();
 				EndExprOutput(false);
+				Nodes::EndNodeTitleBar();
 			}
 			EndNode(ast);
 
-			PopNodeBackgroundColor();
+			PopNodeTitleColor();
 		}
 	}
 
