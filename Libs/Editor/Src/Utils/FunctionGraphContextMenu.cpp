@@ -432,6 +432,8 @@ namespace rift::editor::Graph
 		DrawContextTypeChip(*drawList, x, centerY, toName, GetTypeColor(ast, cast.toType));
 		UI::PopID();
 		UI::PopID();
+
+		UI::SetItemTooltip(p::Format("Cast {} into {}", fromName, toName));
 		return pressed;
 	}
 
@@ -510,6 +512,31 @@ namespace rift::editor::Graph
 		x += contextChipSpacing;
 		DrawContextTypeChip(*drawList, x, centerY, typeName, color);
 		UI::PopID();
+
+		UI::SetItemTooltip(p::Format("Make a new value of {}", typeName));
+		return pressed;
+	}
+
+	// A variable of the context menu: the icon of its action, followed by the variable as a
+	// chip of its type
+	bool ContextVariableItem(StringView name, Id variableId, const Color& color, bool isSetter)
+	{
+		ImDrawList* drawList = UI::GetWindowDrawList();
+		UI::PushID(variableId);
+		UI::PushID(isSetter);
+		ImVec2 itemMin;
+		ImVec2 itemMax;
+		const bool pressed  = DrawContextChipRow("###Item", itemMin, itemMax);
+		const float centerY = (itemMin.y + itemMax.y) * 0.5f;
+		float x             = itemMin.x + contextChipPadding;
+		DrawContextItemText(
+		    *drawList, x, centerY, isSetter ? ICON_FA_SIGN_IN_ALT : ICON_FA_SIGN_OUT_ALT);
+		x += contextChipSpacing;
+		DrawContextTypeChip(*drawList, x, centerY, name, color);
+		UI::PopID();
+		UI::PopID();
+
+		UI::SetItemTooltip(p::Format("{} value of variable {}", isSetter ? "Set" : "Get", name));
 		return pressed;
 	}
 
@@ -610,10 +637,9 @@ namespace rift::editor::Graph
 				// Assignments are created from an execution pin or an empty canvas
 				if (isExecution || !context.HasSource())
 				{
-					const String label = p::Format("{} =", childName);
-					if (MatchesContext(
-					        ast, context, ContextItemKind::VariableAssign, {label}, filter, childId)
-					    && ContextItem(label, childId, color))
+					if (MatchesContext(ast, context, ContextItemKind::VariableAssign,
+					        {childName, "Set"}, filter, childId)
+					    && ContextVariableItem(childName, childId, color, true))
 					{
 						// Attach to the edited type, not the variable's owning type
 						Id newId = ast::AddAssign({ast, typeId}, childId);
@@ -621,9 +647,9 @@ namespace rift::editor::Graph
 					}
 				}
 				if (!isExecution
-				    && MatchesContext(
-				        ast, context, ContextItemKind::Variable, {childName}, filter, childId)
-				    && ContextItem(childName, childId, color))
+				    && MatchesContext(ast, context, ContextItemKind::Variable, {childName, "Get"},
+				        filter, childId)
+				    && ContextVariableItem(childName, childId, color, false))
 				{
 					// Attach to the edited type, not the variable's owning type
 					Id newId = ast::AddDeclarationReference({ast, typeId}, childId);
